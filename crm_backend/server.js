@@ -42,10 +42,12 @@ const authRoutes = require('./routes/authRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const dscRoutes = require('./routes/dscRoutes');
+const complianceRoutes = require('./routes/complianceRoutes');
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/dsc', dscRoutes);
+app.use('/api/compliance', complianceRoutes);
 
 // Start Express Server
 app.listen(PORT, () => {

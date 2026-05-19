@@ -16,7 +16,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
 
   void _showNotificationPanel(BuildContext context, WidgetRef ref) {
     final selectedEntity = ref.read(selectedEntityProvider);
-    final filteredReminders = mockReminders
+    final reminders = ref.read(complianceRemindersProvider).value ?? [];
+    final filteredReminders = reminders
         .where((r) => r.entityName == selectedEntity)
         .toList();
 
@@ -122,7 +123,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
 
   void _showPendingCompliancesPanel(BuildContext context, WidgetRef ref) {
     final selectedEntity = ref.read(selectedEntityProvider);
-    final pendingReminders = mockReminders
+    final reminders = ref.read(complianceRemindersProvider).value ?? [];
+    final pendingReminders = reminders
         .where((r) => r.entityName == selectedEntity && r.status != ReminderStatus.expired)
         .toList();
 
@@ -230,10 +232,44 @@ class ComplianceRadarScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Responsive.init(context);
     final currentEntity = ref.watch(selectedEntityProvider);
-    final pendingReminders = mockReminders
+    
+    final remindersAsync = ref.watch(complianceRemindersProvider);
+    final reminders = remindersAsync.value ?? [];
+    final isLoading = remindersAsync.isLoading && reminders.isEmpty;
+
+    // Auto-correct stale selected entity (e.g. from hot reload state) to a valid database entity
+    final validEntities = reminders.map((r) => r.entityName).toSet().toList();
+    if (reminders.isNotEmpty && !validEntities.contains(currentEntity)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedEntityProvider.notifier).state = validEntities.first;
+      });
+    }
+
+    final pendingReminders = reminders
         .where((r) => r.entityName == currentEntity && r.status != ReminderStatus.expired)
         .toList();
     final pendingCountStr = pendingReminders.length.toString().padLeft(2, '0');
+
+    // Calculate Health Score dynamically based on active/expired database reminders
+    final totalForEntity = reminders.where((r) => r.entityName == currentEntity).length;
+    final expiredCount = reminders.where((r) => r.entityName == currentEntity && r.status == ReminderStatus.expired).length;
+    final score = totalForEntity == 0 ? 1.0 : (totalForEntity - expiredCount) / totalForEntity;
+    final healthStatus = score >= 0.8 ? 'EXCELLENT' : score >= 0.5 ? 'WARNING' : 'CRITICAL';
+    final healthMessage = score >= 0.8
+        ? 'Your entity compliance health is safe.'
+        : 'Action required: resolve expired/urgent items.';
+
+    // Find the most urgent deadline dynamically
+    final urgentReminder = pendingReminders.isEmpty
+        ? null
+        : pendingReminders.reduce((a, b) => a.daysLeft < b.daysLeft ? a : b);
+
+    // Map upcoming items dynamically to the timeline card
+    final timelineItems = pendingReminders.map((r) => {
+      'title': r.serviceName,
+      'status': r.message,
+      'type': r.status == ReminderStatus.urgent ? 'Urgent' : 'Upcoming',
+    }).toList();
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -242,232 +278,223 @@ class ComplianceRadarScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 24.r),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 24.r),
-                // --- Header Section ---
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
+          child: isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.deepTeal),
+                  ),
+                )
+              : SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.symmetric(horizontal: 24.r),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 24.r),
+                      // --- Header Section ---
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'COMPLIANCE CENTER',
-                            style: TextStyle(
-                              color: AppTheme.deepTeal.withOpacity(0.4),
-                              fontSize: 10.sp,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                          SizedBox(height: 4.r),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  currentEntity,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'COMPLIANCE CENTER',
                                   style: TextStyle(
-                                    color: AppTheme.deepTeal,
-                                    fontSize: 18.sp,
+                                    color: AppTheme.deepTeal.withOpacity(0.4),
+                                    fontSize: 10.sp,
                                     fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.5,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              SizedBox(width: 12.r),
-                              GestureDetector(
-                                onTap: () => Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const MyEntitiesScreen(),
+                                    letterSpacing: 2,
                                   ),
                                 ),
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 10.r,
-                                    vertical: 6.r,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.deepTeal.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(12.r),
-                                    border: Border.all(
-                                      color: AppTheme.deepTeal.withOpacity(0.1),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        LucideIcons.arrowLeftRight,
-                                        size: 12.ip,
-                                        color: AppTheme.deepTeal,
-                                      ),
-                                      SizedBox(width: 6.r),
-                                      Text(
-                                        'SWITCH',
+                                SizedBox(height: 4.r),
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        currentEntity,
                                         style: TextStyle(
-                                          fontSize: 10.sp,
-                                          fontWeight: FontWeight.w900,
                                           color: AppTheme.deepTeal,
+                                          fontSize: 18.sp,
+                                          fontWeight: FontWeight.w900,
+                                          letterSpacing: -0.5,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    SizedBox(width: 12.r),
+                                    GestureDetector(
+                                      onTap: () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const MyEntitiesScreen(),
                                         ),
                                       ),
-                                    ],
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 10.r,
+                                          vertical: 6.r,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.deepTeal.withOpacity(0.05),
+                                          borderRadius: BorderRadius.circular(12.r),
+                                          border: Border.all(
+                                            color: AppTheme.deepTeal.withOpacity(0.1),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              LucideIcons.arrowLeftRight,
+                                              size: 12.ip,
+                                              color: AppTheme.deepTeal,
+                                            ),
+                                            SizedBox(width: 6.r),
+                                            Text(
+                                              'SWITCH',
+                                              style: TextStyle(
+                                                fontSize: 10.sp,
+                                                fontWeight: FontWeight.w900,
+                                                color: AppTheme.deepTeal,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          Stack(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(14.r),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.03),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: IconButton(
+                                  onPressed: () =>
+                                      _showNotificationPanel(context, ref),
+                                  icon: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedNotification01,
+                                    color: AppTheme.deepTeal,
+                                    size: 20.ip,
                                   ),
                                 ),
                               ),
+                              if (reminders.where((r) => r.entityName == currentEntity && r.status == ReminderStatus.urgent).isNotEmpty)
+                                Positioned(
+                                  right: 12,
+                                  top: 12,
+                                  child: Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                         ],
                       ),
-                    ),
-                    Stack(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14.r),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.03),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
+                      SizedBox(height: 32.r),
+
+                      // --- Grid Layout ---
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: _BentoHealthCard(
+                              score: score,
+                              status: healthStatus,
+                              message: healthMessage,
+                            ),
+                          ),
+                          SizedBox(width: 16.r),
+                          Expanded(
+                            flex: 1,
+                            child: _BentoSimpleStatCard(
+                              label: 'Pending',
+                              value: pendingCountStr,
+                              icon: LucideIcons.clock,
+                              color: AppTheme.activeOrange,
+                              onTap: () => _showPendingCompliancesPanel(context, ref),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16.r),
+
+                      // Row 2: Urgent Deadline (Wide)
+                      _BentoDeadlineCard(
+                        title: urgentReminder != null ? urgentReminder.serviceName : 'All Compliances Met',
+                        timeLeft: urgentReminder != null ? '${urgentReminder.daysLeft} Days Left' : 'Up to date',
+                        date: urgentReminder != null ? 'Due soon' : 'No upcoming deadlines',
+                        color: urgentReminder != null && urgentReminder.status == ReminderStatus.urgent
+                            ? const Color.fromARGB(255, 223, 105, 75)
+                            : AppTheme.deepTeal,
+                      ),
+                      SizedBox(height: 16.r),
+
+                      // Row 3: Tools (Grid Row)
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _BentoToolCard(
+                              label: 'Name Check',
+                              icon: LucideIcons.search,
+                              color: AppTheme.corporateBlue,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const NameCheckScreen(),
+                                ),
                               ),
-                            ],
-                          ),
-                          child: IconButton(
-                            onPressed: () =>
-                                _showNotificationPanel(context, ref),
-                            icon: HugeIcon(
-                              icon: HugeIcons.strokeRoundedNotification01,
-                              color: AppTheme.deepTeal,
-                              size: 20.ip,
                             ),
                           ),
-                        ),
-                        Positioned(
-                          right: 12,
-                          top: 12,
-                          child: Container(
-                            width: 8,
-                            height: 8,
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
+                          SizedBox(width: 16.r),
+                          Expanded(
+                            child: _BentoToolCard(
+                              label: 'GST Portal',
+                              icon: LucideIcons.fileText,
+                              color: AppTheme.activeOrange,
+                              onTap: () {},
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 32.r),
-
-                // --- Grid Layout ---
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: _BentoHealthCard(
-                        score: currentEntity.contains('Balaji') ? 0.85 : 0.92,
-                        status: 'EXCELLENT',
-                        message: currentEntity.contains('Balaji')
-                            ? 'Your entity is in safe zone.'
-                            : 'Operational standards are peak.',
-                      ),
-                    ),
-                    SizedBox(width: 16.r),
-                    Expanded(
-                      flex: 1,
-                      child: _BentoSimpleStatCard(
-                        label: 'Pending',
-                        value: pendingCountStr,
-                        icon: LucideIcons.clock,
-                        color: AppTheme.activeOrange,
-                        onTap: () => _showPendingCompliancesPanel(context, ref),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.r),
-
-                // Row 2: Urgent Deadline (Wide)
-                const _BentoDeadlineCard(
-                  title: 'GSTR-1 Filling',
-                  timeLeft: '4 Days Left',
-                  date: 'Due 20 Apr 2026',
-                  color: Color.fromARGB(255, 223, 105, 75),
-                ),
-                SizedBox(height: 16.r),
-
-                // Row 3: Tools (Grid Row)
-                Row(
-                  children: [
-                    Expanded(
-                      child: _BentoToolCard(
-                        label: 'Name Check',
-                        icon: LucideIcons.search,
-                        color: AppTheme.corporateBlue,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const NameCheckScreen(),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 16.r),
-                    Expanded(
-                      child: _BentoToolCard(
-                        label: 'GST Portal',
-                        icon: LucideIcons.fileText,
-                        color: AppTheme.activeOrange,
-                        onTap: () {},
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.r),
-
-                // Timeline Filtered
-                _BentoTimelineCard(
-                  items: currentEntity.contains('Balaji')
-                      ? [
-                          {
-                            'title': 'TDS Payment',
-                            'status': 'Next Week',
-                            'type': 'Tax',
-                          },
-                          {
-                            'title': 'MCA Annual Return',
-                            'status': '30 Days',
-                            'type': 'Statutory',
-                          },
-                        ]
-                      : [
-                          {
-                            'title': 'LLP Audit',
-                            'status': 'Tomorrow',
-                            'type': 'Tax',
-                          },
-                          {
-                            'title': 'DIR-3 KYC',
-                            'status': 'Scheduled',
-                            'type': 'Compliance',
-                          },
                         ],
+                      ),
+                      SizedBox(height: 16.r),
+
+                      // Timeline Filtered
+                      _BentoTimelineCard(
+                        items: timelineItems.isNotEmpty
+                            ? timelineItems
+                            : const [
+                                {
+                                  'title': 'No pending tasks',
+                                  'status': 'All clear',
+                                  'type': 'Compliance',
+                                },
+                              ],
+                      ),
+                      SizedBox(height: 32.r),
+                    ],
+                  ),
                 ),
-                SizedBox(height: 32.r),
-              ],
-            ),
-          ),
         ),
       ),
     );
@@ -488,8 +515,8 @@ class _BentoHealthCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 190.r,
-      padding: EdgeInsets.all(26.r),
+      height: 215.r,
+      padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [AppTheme.deepTeal, const Color(0xFF1E293B)],
@@ -604,8 +631,8 @@ class _BentoSimpleStatCard extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        height: 190.r,
-        padding: EdgeInsets.all(26.r),
+        height: 215.r,
+        padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(32.r),

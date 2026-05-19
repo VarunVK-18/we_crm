@@ -5,6 +5,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const User = require('./models/User');
 const ServiceOrder = require('./models/ServiceOrder');
 const DscOrder = require('./models/DscOrder');
+const ComplianceReminder = require('./models/ComplianceReminder');
 
 const seedUser = async () => {
   const mongoURI = process.env.MONGO_URI;
@@ -31,8 +32,9 @@ const seedUser = async () => {
       // Clean up existing service orders and DSC orders for this user
       await ServiceOrder.deleteMany({ clientUid: existingUser._id.toString() });
       await DscOrder.deleteMany({ clientUid: existingUser._id.toString() });
+      await ComplianceReminder.deleteMany({ clientUid: existingUser._id.toString() });
       await User.deleteOne({ email: testEmail });
-      console.log('🗑️ Existing test user, service orders, and DSC orders deleted.');
+      console.log('🗑️ Existing test user, service orders, DSC orders, and compliance reminders deleted.');
     }
 
     console.log(`🧹 Checking for existing admin user: ${adminEmail}...`);
@@ -149,8 +151,55 @@ const seedUser = async () => {
       }
     ]);
 
+    // 6. Seed default Compliance Reminders for the test customer
+    console.log('📦 Seeding default Compliance Reminders for the customer...');
+    await ComplianceReminder.create([
+      {
+        clientUid: userIdStr,
+        serviceName: 'GST Monthly Filing',
+        entityName: 'Wealth Empires Tech',
+        daysLeft: 2,
+        status: 'expiringSoon'
+      },
+      {
+        clientUid: userIdStr,
+        serviceName: 'MCA Annual Return',
+        entityName: 'Wealth Empires Tech',
+        daysLeft: 1,
+        status: 'urgent'
+      },
+      {
+        clientUid: userIdStr,
+        serviceName: 'Trademark Protection',
+        entityName: 'Wealth Empires Tech',
+        daysLeft: 0,
+        status: 'expired'
+      },
+      {
+        clientUid: userIdStr,
+        serviceName: 'Income Tax Audit',
+        entityName: 'Acme Corp',
+        daysLeft: 5,
+        status: 'expiringSoon'
+      },
+      {
+        clientUid: userIdStr,
+        serviceName: 'LLP Form 8 Filing',
+        entityName: 'Acme Corp',
+        daysLeft: 1,
+        status: 'urgent'
+      },
+      {
+        clientUid: userIdStr,
+        serviceName: 'Professional Tax',
+        entityName: 'Acme Corp',
+        daysLeft: 0,
+        status: 'expired'
+      }
+    ]);
+
     console.log('====================================');
-    console.log('🎉 Test Users, Service Orders & DSC Orders seeded successfully!');
+    console.log('🎉 Test Users, Service Orders, DSC Orders & Compliance Reminders seeded successfully!');
     console.log('------------------------------------');
     console.log(`📧 Customer Email   : ${newUser.email}`);
     console.log('🔑 Customer Password: 123456');

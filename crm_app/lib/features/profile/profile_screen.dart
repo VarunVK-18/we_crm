@@ -13,8 +13,6 @@ import 'dsc_orders_screen.dart';
 import 'subscriptions_screen.dart';
 import '../../core/utils/responsive.dart';
 
-
-
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 
 class ProfileScreen extends ConsumerWidget {
@@ -50,9 +48,9 @@ class ProfileScreen extends ConsumerWidget {
             title: Text(
               'Profile',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.bold,
-              ),
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             centerTitle: false,
           ),
@@ -67,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
                   _UserInfoCard(
                     name: user?.name ?? 'User',
                     email: user?.email ?? '---',
-                    phone: '8072286963',
+                    phone: user?.phone ?? '---',
                   ),
 
                   SizedBox(height: 32.r),
@@ -76,9 +74,9 @@ class ProfileScreen extends ConsumerWidget {
                   Text(
                     'Quick Actions',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16.sp,
-                    ),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16.sp,
+                        ),
                   ),
                   SizedBox(height: 16.r),
                   _SectionCard(
@@ -158,9 +156,9 @@ class ProfileScreen extends ConsumerWidget {
                   Text(
                     'Account Management',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16.sp,
-                    ),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16.sp,
+                        ),
                   ),
                   SizedBox(height: 16.r),
                   _SectionCard(
@@ -184,50 +182,49 @@ class ProfileScreen extends ConsumerWidget {
                     child: ElevatedButton.icon(
                       onPressed: () =>
                           ref.read(authRepositoryProvider).signOut(),
-                      style:
-                          ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          221,
+                          121,
+                          114,
+                        ),
+                        foregroundColor: const Color.fromARGB(
+                          255,
+                          33,
+                          42,
+                          44,
+                        ),
+                        elevation: 0,
+                        shadowColor: const Color.fromARGB(
+                          255,
+                          255,
+                          253,
+                          253,
+                        ).withValues(alpha: 0.1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.r),
+                          side: BorderSide(
+                            color: const Color.fromARGB(
                               255,
-                              221,
-                              121,
-                              114,
-                            ),
-                            foregroundColor: const Color.fromARGB(
-                              255,
-                              33,
-                              42,
-                              44,
-                            ),
-                            elevation: 0,
-                            shadowColor: const Color.fromARGB(
-                              255,
-                              255,
-                              253,
-                              253,
+                              158,
+                              158,
+                              158,
                             ).withValues(alpha: 0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
-                              side: BorderSide(
-                                color: const Color.fromARGB(
-                                  255,
-                                  158,
-                                  158,
-                                  158,
-                                ).withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ).copyWith(
-                            elevation: WidgetStateProperty.resolveWith<double>(
-                              (states) =>
-                                  states.contains(WidgetState.pressed) ? 2 : 4,
-                            ),
                           ),
+                        ),
+                      ).copyWith(
+                        elevation: WidgetStateProperty.resolveWith<double>(
+                          (states) =>
+                              states.contains(WidgetState.pressed) ? 2 : 4,
+                        ),
+                      ),
                       icon: Icon(LucideIcons.logOut, size: 20.ip),
                       label: Text(
                         'Sign Out',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                              fontWeight: FontWeight.w700,
+                            ),
                       ),
                     ),
                   ),
@@ -255,8 +252,6 @@ class _UserInfoCard extends ConsumerWidget {
     required this.email,
     required this.phone,
   });
-
-
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -307,10 +302,10 @@ class _UserInfoCard extends ConsumerWidget {
                 Text(
                   name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.deepTeal,
-                    fontSize: 18.sp,
-                  ),
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.deepTeal,
+                        fontSize: 18.sp,
+                      ),
                 ),
                 SizedBox(height: 12.r),
                 Row(
@@ -321,9 +316,9 @@ class _UserInfoCard extends ConsumerWidget {
                       child: Text(
                         email,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey,
-                          fontSize: 11.sp,
-                        ),
+                              color: Colors.grey,
+                              fontSize: 11.sp,
+                            ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -337,9 +332,9 @@ class _UserInfoCard extends ConsumerWidget {
                     Text(
                       phone,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey,
-                        fontSize: 11.sp,
-                      ),
+                            color: Colors.grey,
+                            fontSize: 11.sp,
+                          ),
                     ),
                   ],
                 ),
