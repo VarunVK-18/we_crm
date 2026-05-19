@@ -1,12 +1,238 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../core/theme/app_theme.dart';
+import '../../core/constants/port.dart';
+import '../../providers/auth_provider.dart';
+import '../../core/utils/responsive.dart';
 
-class SupportTicketsScreen extends StatelessWidget {
+class SupportTicketsScreen extends ConsumerStatefulWidget {
   const SupportTicketsScreen({super.key});
 
   @override
+  ConsumerState<SupportTicketsScreen> createState() => _SupportTicketsScreenState();
+}
+
+class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
+  List<dynamic> _tickets = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // Schedule fetch after first frame when context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchTickets();
+    });
+  }
+
+  Future<void> _fetchTickets() async {
+    final user = ref.read(userProfileProvider).value;
+    if (user == null) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = "User profile not loaded.";
+      });
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/tickets/user/${user.id}'),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _tickets = data['tickets'] ?? [];
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = "Failed to load tickets: ${response.statusCode}";
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Connection error. Please try again.";
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _createNewTicket(String subject, String description) async {
+    final user = ref.read(userProfileProvider).value;
+    if (user == null) return;
+
+    try {
+      final response = await http.post(
+        Uri.parse('$kBaseUrl/api/tickets'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'userId': user.id,
+          'userName': user.name,
+          'userEmail': user.email,
+          'subject': subject,
+          'description': description,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      if (response.statusCode == 201) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Ticket created successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        _fetchTickets();
+      } else {
+        throw Exception("Server returned ${response.statusCode}");
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to raise ticket: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showNewTicketDialog() {
+    final formKey = GlobalKey<FormState>();
+    final subjectController = TextEditingController();
+    final descriptionController = TextEditingController();
+    bool isSubmitting = false;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Text(
+                'Raise New Ticket',
+                style: TextStyle(
+                  color: AppTheme.deepTeal,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      TextFormField(
+                        controller: subjectController,
+                        decoration: const InputDecoration(
+                          labelText: 'Subject',
+                          hintText: 'e.g., GST Registration Failure',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a subject';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: descriptionController,
+                        maxLines: 4,
+                        decoration: const InputDecoration(
+                          labelText: 'Description',
+                          hintText: 'Describe your issue in detail...',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter a description';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting ? null : () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: isSubmitting
+                      ? null
+                      : () async {
+                          if (formKey.currentState!.validate()) {
+                            setDialogState(() {
+                              isSubmitting = true;
+                            });
+                            await _createNewTicket(
+                              subjectController.text.trim(),
+                              descriptionController.text.trim(),
+                            );
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.deepTeal,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: isSubmitting
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Text('Submit', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
+
+    // Split tickets into Active (Pending, In Progress) and History (Resolved)
+    final activeTickets = _tickets
+        .where((t) => t['status'] == 'Pending' || t['status'] == 'In Progress')
+        .toList();
+    final previousTickets = _tickets
+        .where((t) => t['status'] == 'Resolved')
+        .toList();
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -24,48 +250,112 @@ class SupportTicketsScreen extends StatelessWidget {
             fontSize: 20,
           ),
         ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          _buildActiveTicketCard(),
-          const SizedBox(height: 32),
-          const Text(
-            'Previous Tickets',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: AppTheme.deepTeal,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildHistoryTicket(
-            id: 'TKT-1204',
-            subject: 'Payment failed for GST service',
-            status: 'Resolved',
-            date: '10 Apr 2024',
-            color: Colors.green,
-          ),
-          _buildHistoryTicket(
-            id: 'TKT-1198',
-            subject: 'Document upload error in MCA filing',
-            status: 'Resolved',
-            date: '05 Apr 2024',
-            color: Colors.green,
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.refreshCw, color: AppTheme.deepTeal, size: 18),
+            onPressed: _fetchTickets,
           ),
         ],
       ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(_errorMessage!, textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _fetchTickets,
+                          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.deepTeal),
+                          child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                        )
+                      ],
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _fetchTickets,
+                  child: ListView(
+                    padding: const EdgeInsets.all(24),
+                    children: [
+                      // Active Tickets Header & List
+                      const Text(
+                        'Active Tickets',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.deepTeal,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (activeTickets.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Text(
+                              'No active tickets.',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        )
+                      else
+                        ...activeTickets.map((t) => _buildTicketCard(t)),
+
+                      const SizedBox(height: 32),
+
+                      // History Tickets Header & List
+                      const Text(
+                        'Previous Tickets',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.deepTeal,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (previousTickets.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: Text(
+                              'No previous resolved tickets.',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        )
+                      else
+                        ...previousTickets.map((t) => _buildHistoryTicket(t)),
+                    ],
+                  ),
+                ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: _showNewTicketDialog,
         backgroundColor: AppTheme.deepTeal,
         icon: const Icon(LucideIcons.plus, color: Colors.white),
-        label: const Text('New Ticket', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text(
+          'New Ticket',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildActiveTicketCard() {
+  Widget _buildTicketCard(dynamic ticket) {
+    final status = ticket['status'] ?? 'Pending';
+    final expert = ticket['expert'] ?? 'Unassigned';
+    final ticketId = ticket['ticketId'] ?? 'TKT-0000';
+    final subject = ticket['subject'] ?? 'No Subject';
+    final description = ticket['description'] ?? '';
+
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: AppTheme.premiumGradient,
@@ -90,30 +380,30 @@ class SupportTicketsScreen extends StatelessWidget {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'In Progress',
-                  style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                child: Text(
+                  status,
+                  style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
-              const Text(
-                'ID: TKT-1245',
-                style: TextStyle(color: Colors.white70, fontSize: 11),
+              Text(
+                'ID: $ticketId',
+                style: const TextStyle(color: Colors.white70, fontSize: 11),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Incorrect GSTIN on Invoice',
-            style: TextStyle(
+          Text(
+            subject,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.w900,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Our team is reviewing the corrected documents you shared.',
-            style: TextStyle(color: Colors.white70, fontSize: 13),
+          Text(
+            description,
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: 24),
           const Divider(color: Colors.white24),
@@ -126,14 +416,9 @@ class SupportTicketsScreen extends StatelessWidget {
                 child: Icon(LucideIcons.user, size: 12, color: Colors.white),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'Expert: Vikram Singh',
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-              ),
-              const Spacer(),
-              const Text(
-                'Updated 2h ago',
-                style: TextStyle(color: Colors.white60, fontSize: 11),
+              Text(
+                'Expert: $expert',
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -142,13 +427,11 @@ class SupportTicketsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHistoryTicket({
-    required String id,
-    required String subject,
-    required String status,
-    required String date,
-    required Color color,
-  }) {
+  Widget _buildHistoryTicket(dynamic ticket) {
+    final ticketId = ticket['ticketId'] ?? 'TKT-0000';
+    final subject = ticket['subject'] ?? 'No Subject';
+    final status = ticket['status'] ?? 'Resolved';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -179,7 +462,7 @@ class SupportTicketsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '$id • $date',
+                  ticketId,
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
                 ),
               ],
@@ -188,13 +471,13 @@ class SupportTicketsScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: Colors.green.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               status,
-              style: TextStyle(
-                color: color,
+              style: const TextStyle(
+                color: Colors.green,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
               ),

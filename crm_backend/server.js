@@ -39,7 +39,9 @@ app.get('/', (req, res) => {
 
 // Import and mount Authentication Routes
 const authRoutes = require('./routes/authRoutes');
+const ticketRoutes = require('./routes/ticketRoutes');
 app.use('/api', authRoutes);
+app.use('/api', ticketRoutes);
 
 // Start Express Server
 app.listen(PORT, () => {

@@ -34,6 +34,8 @@ class ProfileScreen extends ConsumerWidget {
             floating: true,
             pinned: true,
             elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
             backgroundColor: AppTheme.backgroundLight,
             leading: Navigator.canPop(context)
                 ? IconButton(

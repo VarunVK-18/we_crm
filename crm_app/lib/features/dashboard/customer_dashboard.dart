@@ -125,12 +125,12 @@ class CustomerDashboard extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           '$greeting, $name',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16.sp,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.titleLarge?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16.sp,
+                                  ),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -199,7 +199,9 @@ class CustomerDashboard extends ConsumerWidget {
               // Section 3: Refer & Earn
               const _ReferAndEarnBanner(),
 
-              SizedBox(height: 130.r), // Increased bottom padding to clear the floating bottom navigation bar (extendBody: true)
+              SizedBox(
+                  height: 130
+                      .r), // Increased bottom padding to clear the floating bottom navigation bar (extendBody: true)
             ]),
           ),
         ],
@@ -245,8 +247,8 @@ class _HeroRegistrationCard extends StatelessWidget {
             Positioned(
               right: -20,
               top: -20,
-              child: Icon(
-                LucideIcons.rocket,
+              child: HugeIcon(
+                icon: HugeIcons.strokeRoundedStartUp02,
                 size: 120.ip,
                 color: AppTheme.deepTeal.withValues(alpha: 0.03),
               ),
@@ -264,9 +266,9 @@ class _HeroRegistrationCard extends StatelessWidget {
                           color: AppTheme.deepTeal.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12.r),
                         ),
-                        child: Icon(
-                          LucideIcons.rocket,
-                          size: 24.ip,
+                        child: HugeIcon(
+                          icon: HugeIcons.strokeRoundedStartUp02,
+                          size: 28.ip,
                           color: AppTheme.deepTeal,
                         ),
                       ),
@@ -277,15 +279,21 @@ class _HeroRegistrationCard extends StatelessWidget {
                           children: [
                             Text(
                               'READY TO SCALE?',
-                              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                fontSize: 10.sp,
-                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge
+                                  ?.copyWith(
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                             ),
                             Text(
                               'Register Your Business',
-                              style: Theme.of(context).textTheme.titleMedium
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
                                   ?.copyWith(
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w800,
                                     fontSize: 16.sp,
                                   ),
                             ),
@@ -300,9 +308,9 @@ class _HeroRegistrationCard extends StatelessWidget {
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(
-                      height: 1.5,
-                      fontSize: 13.sp,
-                    ),
+                          height: 1.5,
+                          fontSize: 13.sp,
+                        ),
                   ),
                   SizedBox(height: 24.r),
                   ElevatedButton(
@@ -378,8 +386,7 @@ class _HorizontalServiceList extends StatelessWidget {
                 return;
               }
 
-              final isTool =
-                  label.contains('Calc') ||
+              final isTool = label.contains('Calc') ||
                   label.contains('Finder') ||
                   label.contains('Interest');
 
@@ -435,18 +442,18 @@ class _ReferAndEarnBanner extends StatelessWidget {
                   style: Theme.of(
                     context,
                   ).textTheme.labelLarge?.copyWith(
-                    color: Colors.amber,
-                    fontSize: 11.sp,
-                  ),
+                        color: Colors.amber,
+                        fontSize: 11.sp,
+                      ),
                 ),
                 SizedBox(height: 8.r),
                 Text(
                   'Share Wealth Empires with your network and get rewarded for every referral.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.7),
-                    height: 1.4,
-                    fontSize: 11.sp,
-                  ),
+                        color: Colors.white.withValues(alpha: 0.7),
+                        height: 1.4,
+                        fontSize: 11.sp,
+                      ),
                 ),
               ],
             ),
