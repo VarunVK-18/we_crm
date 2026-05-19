@@ -6,11 +6,10 @@
   min-height: 100vh;
   width: 100%;
   overflow-x: hidden;
-  --deep-teal: #0D1B1E;
-  --accent-cyan: #00E5FF;
-  --neon-purple: #7C4DFF;
-  --premium-gradient: linear-gradient(135deg, #0D1B1E 0%, #1E3A3A 100%);
-  --soft-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+  --accent-cyan: var(--accent-primary);
+  --neon-purple: var(--accent-primary);
+  --premium-gradient: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+  --soft-shadow: var(--card-shadow);
 }
 
 /* ==========================================================================
@@ -20,7 +19,7 @@
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   position: relative;
 }
 
@@ -46,13 +45,13 @@
 
 /* Logo Box Container */
 .logo-box {
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   border-radius: 24px;
   padding: 24px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--card-shadow);
   margin-bottom: 2rem;
 }
 
@@ -63,11 +62,11 @@
 }
 
 .branding-narrative {
-  font-family: 'Outfit', 'Inter', sans-serif;
-  font-size: 1.35rem;
+  font-family: var(--font-heading);
+  font-size: var(--text-3xl); /* 20px */
   line-height: 1.6;
   font-weight: 400;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--text-muted);
   margin: 0;
   letter-spacing: -0.01em;
 }
@@ -75,7 +74,7 @@
 /* Right side panel: Auth Form */
 .form-side {
   flex: 1;
-  background-color: #ffffff;
+  background-color: var(--bg-secondary);
   position: relative;
   display: flex;
   flex-direction: column;
@@ -97,7 +96,7 @@
   right: -100px;
   width: 300px;
   height: 300px;
-  background-color: rgba(0, 229, 255, 0.03); /* accentCyan 3% */
+  background-color: rgba(0, 229, 255, 0.01);
 }
 
 .purple-circle {
@@ -105,7 +104,7 @@
   left: -50px;
   width: 200px;
   height: 200px;
-  background-color: rgba(124, 77, 255, 0.02); /* neonPurple 2% */
+  background-color: rgba(124, 77, 255, 0.01);
 }
 
 /* ==========================================================================
@@ -144,20 +143,20 @@
 }
 
 .main-title {
-  font-family: 'Inter', 'Outfit', sans-serif;
-  font-size: 2.5rem; /* ~ 24.sp scaled in browser */
-  font-weight: 900;
+  font-family: var(--font-heading);
+  font-size: var(--text-5xl); /* 32px */
+  font-weight: 800;
   letter-spacing: -0.5px;
-  color: var(--deep-teal);
+  color: var(--text-primary);
   margin: 0 0 12px 0;
 }
 
 .main-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem; /* ~ 12.sp */
+  font-family: var(--font-body);
+  font-size: var(--text-lg); /* 14px */
   font-weight: 500;
   line-height: 1.5;
-  color: #6b7280;
+  color: var(--text-secondary);
   margin: 0 0 40px 0;
 }
 
@@ -177,10 +176,10 @@
 }
 
 .input-label {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.875rem; /* ~ 12.sp */
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
   font-weight: 600;
-  color: var(--deep-teal);
+  color: var(--text-primary);
 }
 
 .input-relative-container {
@@ -193,7 +192,7 @@
 .field-icon {
   position: absolute;
   left: 16px;
-  color: #9ca3af;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   pointer-events: none;
@@ -207,35 +206,35 @@
 .styled-text-input {
   width: 100%;
   height: 56px;
-  background-color: #ffffff;
-  border: 1px solid rgba(156, 163, 175, 0.25);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 12px 14px 12px 48px;
-  color: var(--deep-teal);
-  font-family: 'Outfit', 'Inter', sans-serif;
-  font-size: 0.95rem; /* ~ 13.sp */
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
   outline: none;
   box-sizing: border-box;
-  transition: all 0.25s ease;
+  transition: all var(--transition-fast);
 }
 
 .styled-text-input::placeholder {
-  color: #9ca3af;
-  font-family: 'Outfit', sans-serif;
+  color: var(--text-muted);
+  font-family: var(--font-body);
 }
 
 .styled-text-input:hover {
-  border-color: rgba(156, 163, 175, 0.45);
+  border-color: var(--text-muted);
 }
 
 .styled-text-input:focus {
   border-color: var(--accent-cyan);
   border-width: 2px;
-  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.05);
 }
 
 .styled-text-input.error-border {
-  border-color: #ef4444;
+  border-color: var(--hc-danger);
 }
 
 /* Suffix button toggle */
@@ -244,16 +243,14 @@
   right: 16px;
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--text-muted);
   cursor: pointer;
-  display: flex;
-  align-items: center;
   padding: 0;
-  transition: color 0.2s ease;
+  transition: color var(--transition-fast);
 }
 
 .suffix-toggle-btn:hover {
-  color: var(--deep-teal);
+  color: var(--text-primary);
 }
 
 .eye-svg {
@@ -262,9 +259,9 @@
 }
 
 .validation-error-text {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.775rem;
-  color: #ef4444;
+  font-family: var(--font-body);
+  font-size: var(--text-xs); /* 10px */
+  color: var(--hc-danger);
   margin-top: 2px;
   padding-left: 4px;
 }
@@ -279,18 +276,18 @@
 .btn-forgot-password {
   background: none;
   border: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.825rem; /* ~ 11.sp */
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
   font-weight: 600;
-  color: rgba(13, 27, 30, 0.6);
+  color: var(--text-secondary);
   letter-spacing: 0.3px;
   cursor: pointer;
   padding: 4px 0;
-  transition: color 0.2s ease;
+  transition: color var(--transition-fast);
 }
 
 .btn-forgot-password:hover {
-  color: var(--deep-teal);
+  color: var(--text-primary);
 }
 
 /* ==========================================================================
@@ -301,17 +298,17 @@
   height: 56px;
   background: var(--premium-gradient);
   border-radius: 16px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--card-shadow);
   padding: 0;
   overflow: hidden;
   box-sizing: border-box;
   display: flex;
-  transition: all 0.25s ease;
+  transition: all var(--transition-fast);
 }
 
 .submit-button-container:hover {
   transform: translateY(-1px);
-  box-shadow: 0 16px 40px rgba(13, 27, 30, 0.15);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
 }
 
 .btn-primary-submit {
@@ -319,9 +316,9 @@
   height: 100%;
   background: transparent;
   border: none;
-  color: #ffffff;
-  font-family: 'Inter', 'Outfit', sans-serif;
-  font-size: 1rem; /* ~ 14.sp */
+  color: var(--bg-secondary);
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl); /* 16px */
   font-weight: 700;
   cursor: pointer;
   display: flex;
@@ -340,7 +337,7 @@
   width: 24px;
   height: 24px;
   border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #ffffff;
+  border-top-color: var(--bg-secondary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -354,23 +351,23 @@
 .btn-contact-support {
   background: transparent;
   border: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.85rem; /* ~ 12.sp */
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
   font-weight: 700;
-  color: rgba(13, 27, 30, 0.6);
+  color: var(--text-secondary);
   cursor: pointer;
   padding: 8px 16px;
   border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .btn-contact-support:hover {
-  color: var(--deep-teal);
-  background-color: rgba(13, 27, 30, 0.04);
+  color: var(--text-primary);
+  background-color: var(--border-color);
 }
 
 /* ==========================================================================
-   Logged In Succesful Card Overlay
+   Logged In Successful Card Overlay
    ========================================================================== */
 .logged-in-box {
   display: flex;
@@ -387,7 +384,7 @@
   height: 64px;
   border-radius: 50%;
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
+  color: var(--bg-secondary);
   margin-bottom: 1.5rem;
   box-shadow: 0 10px 25px rgba(16, 185, 129, 0.25);
 }
@@ -398,24 +395,24 @@
 }
 
 .welcome-heading {
-  font-family: 'Outfit', sans-serif;
-  font-size: 2.25rem;
+  font-family: var(--font-heading);
+  font-size: var(--text-5xl); /* 32px */
   font-weight: 800;
-  color: var(--deep-teal);
+  color: var(--text-primary);
   margin: 0 0 8px 0;
 }
 
 .welcome-desc {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  color: #4b5563;
+  font-family: var(--font-body);
+  font-size: var(--text-lg); /* 14px */
+  color: var(--text-secondary);
   margin: 0 0 2rem 0;
 }
 
 .user-details-card {
   width: 100%;
-  background-color: #f8fafc;
-  border: 1px solid rgba(0,0,0,0.05);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 1.5rem;
   display: flex;
@@ -429,25 +426,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
 }
 
 .lbl {
-  color: #6b7280;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .val {
-  color: var(--deep-teal);
+  color: var(--text-primary);
   font-weight: 700;
 }
 
 .role-tag {
-  background-color: rgba(13, 27, 30, 0.08);
+  background-color: var(--border-color);
+  color: var(--text-primary);
   padding: 2px 8px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: var(--text-xs); /* 10px */
   letter-spacing: 0.05em;
   font-weight: 800;
 }
@@ -455,25 +453,25 @@
 .btn-sign-out {
   width: 100%;
   height: 56px;
-  background-color: #ffffff;
-  border: 1px solid rgba(13, 27, 30, 0.15);
-  color: var(--deep-teal);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
   border-radius: 16px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
   font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
 }
 
 .btn-sign-out:hover {
   background-color: rgba(239, 68, 68, 0.08);
   border-color: rgba(239, 68, 68, 0.25);
-  color: #ef4444;
+  color: var(--hc-danger);
 }
 
 .logout-svg {
@@ -490,7 +488,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.35); /* Flutter barrierColor */
+  background-color: rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 1000;
@@ -500,12 +498,12 @@
 }
 
 .dialog-card {
-  background-color: #ffffff; /* Flutter AlertDialog default bg */
-  border-radius: 24px; /* BorderRadius.circular(24) */
+  background-color: var(--bg-secondary);
+  border-radius: 24px;
   padding: 24px 24px 16px 24px;
   width: 90%;
   max-width: 360px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--card-shadow);
   box-sizing: border-box;
 }
 
@@ -523,11 +521,11 @@
 }
 
 .dialog-icon.error-icon {
-  color: #ef4444; /* Colors.redAccent */
+  color: var(--hc-danger);
 }
 
 .dialog-icon.success-icon {
-  color: #14b8a6; /* AppTheme.deepTeal / cyan green */
+  color: #14b8a6;
 }
 
 .dialog-svg {
@@ -536,18 +534,18 @@
 }
 
 .dialog-title-text {
-  font-family: 'Outfit', 'Inter', sans-serif;
-  font-size: 1.25rem;
+  font-family: var(--font-heading);
+  font-size: var(--text-2xl); /* 16px */
   font-weight: 700;
-  color: var(--deep-teal);
+  color: var(--text-primary);
   margin: 0;
 }
 
 .dialog-body-content {
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
   line-height: 1.5;
-  color: #4b5563; /* Colors.grey[700] */
+  color: var(--text-secondary);
   margin-bottom: 24px;
 }
 
@@ -559,18 +557,18 @@
 .dialog-action-ok-btn {
   background: none;
   border: none;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.9rem;
-  font-weight: 800; /* bold */
-  color: #3b82f6; /* Colors.blue style or primary color */
+  font-family: var(--font-body);
+  font-size: var(--text-base); /* 13px */
+  font-weight: 800;
+  color: var(--accent-cyan);
   cursor: pointer;
   padding: 8px 16px;
   border-radius: 8px;
-  transition: background-color 0.2s ease;
+  transition: background-color var(--transition-fast);
 }
 
 .dialog-action-ok-btn:hover {
-  background-color: rgba(59, 130, 246, 0.06);
+  background-color: rgba(15, 23, 42, 0.05);
 }
 
 /* ==========================================================================
@@ -640,6 +638,6 @@
   }
   
   .main-title {
-    font-size: 2.15rem;
+    font-size: var(--text-4xl); /* 24px */
   }
 }

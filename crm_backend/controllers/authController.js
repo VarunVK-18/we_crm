@@ -94,8 +94,24 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+// @desc    Get all client users (role = 'customer')
+// @route   GET /api/users/clients
+// @access  Public
+const getClients = async (req, res) => {
+  try {
+    const clients = await User.find({ role: 'customer' }).select('-password');
+    res.json({
+      success: true,
+      clients
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getUserProfile
+  getUserProfile,
+  getClients
 };

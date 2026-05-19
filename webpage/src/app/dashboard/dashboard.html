@@ -1,0 +1,314 @@
+<div class="dashboard-shell">
+  
+  <!-- Desktop Layout Sidebar -->
+  <div class="desktop-sidebar-area">
+    <app-sidebar 
+      [currentTab]="currentTab()" 
+      (tabChanged)="handleTabChanged($event)"
+      (logoutClicked)="handleLogout()">
+    </app-sidebar>
+  </div>
+
+  <!-- Main Content Panel -->
+  <div class="main-panel-area">
+    
+    <!-- Premium AppBar -->
+    <div class="premium-appbar">
+      <div class="appbar-title-section">
+        <h1 class="appbar-title">{{ getTabLabel() }}</h1>
+        <span class="appbar-subtitle">Propelling Wealth to New Frontiers</span>
+      </div>
+      
+      <div class="appbar-actions">
+        <!-- Search bar (Only active for main dashboard; clients page has its own filter bar below) -->
+        @if (currentTab() === 'dashboard') {
+          <div class="search-box">
+            <hugeicons-icon [icon]="Search01Icon" size="18" color="#94A3B8"></hugeicons-icon>
+            <input type="text" placeholder="Search anything..." class="search-input" />
+          </div>
+        }
+        
+        <!-- User Badge -->
+        @if (user()) {
+          <div class="user-badge">
+            <div class="divider"></div>
+            <div class="user-badge-text">
+              <span class="badge-name">{{ user().owner_name }}</span>
+              <span class="badge-status">Online • Prime</span>
+            </div>
+            <div class="badge-avatar">
+              {{ getInitials() }}
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Active Tab Screen Content -->
+    <div class="screen-content-wrapper">
+      
+      <!-- DASHBOARD TAB (Home Overview) -->
+      @if (currentTab() === 'dashboard') {
+        <div class="tab-view fade-in">
+          <!-- Glass welcome banner -->
+          <div class="welcome-banner">
+            <h2 class="banner-heading">Welcome Back, {{ user()?.owner_name || 'Admin' }}!</h2>
+            <p class="banner-subtext">Manage your professional audits, attendance files, and corporate HR configurations securely in one unified portal.</p>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            @for (stat of stats; track stat.title) {
+              <div class="stat-card">
+                <div class="stat-title">{{ stat.title }}</div>
+                <div class="stat-value" [class.warning]="stat.isWarning">{{ stat.value }}</div>
+                <div class="stat-detail" [class.up]="stat.isTrendUp" [class.warning-text]="stat.isWarning" [class.good-text]="stat.isGood">
+                  {{ stat.detail }}
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="section-container">
+            <h3 class="section-title">Quick Actions</h3>
+            <div class="actions-row">
+              <button class="action-btn blue-btn" (click)="currentTab.set('clients')">
+                <hugeicons-icon [icon]="DiplomaIcon" size="20"></hugeicons-icon>
+                <span>View Clients Directory</span>
+              </button>
+              <button class="action-btn green-btn" (click)="openCreateModal(); currentTab.set('clients')">
+                <hugeicons-icon [icon]="PlusSignIcon" size="20"></hugeicons-icon>
+                <span>Register New Client</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- CLIENTS TAB (Directory Page) -->
+      @if (currentTab() === 'clients') {
+        <div class="tab-view fade-in">
+          
+          <!-- Clients Dashboard statistics row -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-title">Total Clients</div>
+              <div class="stat-value">{{ clients().length }}</div>
+              <div class="stat-detail good-text">Active Accounts</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-title">Active Subscriptions</div>
+              <div class="stat-value">{{ getTotalServicesCount() }}</div>
+              <div class="stat-detail">Services Provided</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-title">Corporate Share</div>
+              <div class="stat-value">{{ getCorporateClientPercentage() }}</div>
+              <div class="stat-detail up">Corporate Profiles</div>
+            </div>
+          </div>
+
+          <!-- Filters & Action Bar -->
+          <div class="filter-action-bar">
+            <div class="search-box directory-search">
+              <hugeicons-icon [icon]="Search01Icon" size="18" color="#94A3B8"></hugeicons-icon>
+              <input 
+                type="text" 
+                placeholder="Filter clients by name, email, phone, or company..." 
+                class="search-input"
+                [ngModel]="searchQuery()"
+                (ngModelChange)="searchQuery.set($event)"
+              />
+            </div>
+            <button class="add-client-btn" (click)="openCreateModal()">
+              <hugeicons-icon [icon]="PlusSignIcon" size="18"></hugeicons-icon>
+              <span>Add New Client</span>
+            </button>
+          </div>
+
+          <!-- Clients Cards Grid -->
+          <div class="clients-directory-grid">
+            @for (client of getFilteredClients(); track client._id) {
+              <div class="client-profile-card">
+                <div class="client-card-header">
+                  <div class="client-avatar">
+                    {{ getInitials(client.owner_name) }}
+                  </div>
+                  <div class="client-card-meta">
+                    <h4 class="client-title">{{ client.owner_name }}</h4>
+                    <p class="client-company">{{ client.company_name || 'Individual Account' }}</p>
+                  </div>
+                </div>
+
+                <div class="client-card-body">
+                  <div class="contact-info-row">
+                    <hugeicons-icon [icon]="Mail01Icon" size="14" color="#64748B"></hugeicons-icon>
+                    <span class="contact-text">{{ client.email }}</span>
+                  </div>
+                  @if (client.phone) {
+                    <div class="contact-info-row">
+                      <hugeicons-icon [icon]="CallIcon" size="14" color="#64748B"></hugeicons-icon>
+                      <span class="contact-text">{{ client.phone }}</span>
+                    </div>
+                  }
+
+                  <!-- Subscribed Services Badges -->
+                  <div class="client-services-area">
+                    <span class="services-label">Registered Services:</span>
+                    <div class="services-badges-list">
+                      @for (srv of client.services; track srv) {
+                        <span class="service-badge">{{ srv }}</span>
+                      }
+                      @if (!client.services || client.services.length === 0) {
+                        <span class="no-services-badge">No services registered</span>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+            @if (getFilteredClients().length === 0) {
+              <div class="no-results-placeholder">
+                <div class="placeholder-icon-circle">
+                  <hugeicons-icon [icon]="Search01Icon" size="32" color="#94A3B8"></hugeicons-icon>
+                </div>
+                <h3>No clients found</h3>
+                <p>Try refining your search query or add a new client to get started.</p>
+              </div>
+            }
+          </div>
+
+        </div>
+      }
+
+    </div>
+  </div>
+
+  <!-- Create Client Dialog Modal Overlay -->
+  @if (isCreateModalOpen()) {
+    <div class="modal-overlay" (click)="closeCreateModal()">
+      <div class="modal-card-box" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <h3>Create New Client Profile</h3>
+          <button class="close-modal-btn" (click)="closeCreateModal()">
+            <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+          </button>
+        </div>
+
+        <form (ngSubmit)="submitCreateClient()" class="modal-form">
+          <div class="modal-body">
+            
+            <!-- Notifications inside modal -->
+            @if (errorMessage()) {
+              <div class="modal-error-message">
+                {{ errorMessage() }}
+              </div>
+            }
+            @if (successMessage()) {
+              <div class="modal-success-message">
+                {{ successMessage() }}
+              </div>
+            }
+
+            <div class="form-row-grid">
+              <!-- Owner Name -->
+              <div class="form-group-item">
+                <label class="form-input-label">Client Name *</label>
+                <input 
+                  type="text" 
+                  name="owner_name"
+                  placeholder="e.g. John Doe" 
+                  class="form-control-input"
+                  [(ngModel)]="newClient.owner_name"
+                  required
+                />
+              </div>
+
+              <!-- Company Name -->
+              <div class="form-group-item">
+                <label class="form-input-label">Company Name</label>
+                <input 
+                  type="text" 
+                  name="company_name"
+                  placeholder="e.g. Acme Corp" 
+                  class="form-control-input"
+                  [(ngModel)]="newClient.company_name"
+                />
+              </div>
+            </div>
+
+            <div class="form-row-grid">
+              <!-- Email -->
+              <div class="form-group-item">
+                <label class="form-input-label">Email Address *</label>
+                <input 
+                  type="email" 
+                  name="email"
+                  placeholder="e.g. client@example.com" 
+                  class="form-control-input"
+                  [(ngModel)]="newClient.email"
+                  required
+                />
+              </div>
+
+              <!-- Phone -->
+              <div class="form-group-item">
+                <label class="form-input-label">Phone Number</label>
+                <input 
+                  type="tel" 
+                  name="phone"
+                  placeholder="e.g. +91 98765 43210" 
+                  class="form-control-input"
+                  [(ngModel)]="newClient.phone"
+                />
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group-item">
+              <label class="form-input-label">Temporary Password *</label>
+              <input 
+                type="password" 
+                name="password"
+                placeholder="Set secure password for client portal" 
+                class="form-control-input"
+                [(ngModel)]="newClient.password"
+                required
+              />
+            </div>
+
+            <!-- Services Checklist selection -->
+            <div class="form-group-item services-selection-group">
+              <label class="form-input-label">Assign Wealth/Compliance Services</label>
+              <div class="services-checkbox-grid">
+                @for (srv of availableServices; track srv) {
+                  <div 
+                    class="service-check-item" 
+                    [class.checked]="newClient.services.includes(srv)"
+                    (click)="toggleService(srv)">
+                    <div class="checkbox-indicator">
+                      @if (newClient.services.includes(srv)) {
+                        <hugeicons-icon [icon]="CheckmarkCircle02Icon" size="14" color="#10B981"></hugeicons-icon>
+                      }
+                    </div>
+                    <span class="service-check-label">{{ srv }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
+            <button type="submit" class="btn-submit">Register Client Account</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+</div>

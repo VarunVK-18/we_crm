@@ -42,6 +42,7 @@ export class Login implements OnInit {
     if (savedUser) {
       try {
         this.loggedInUser.set(JSON.parse(savedUser));
+        this.router.navigate(['/dashboard']).catch(() => {});
       } catch (e) {
         localStorage.removeItem('user');
       }
