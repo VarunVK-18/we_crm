@@ -15,7 +15,8 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required']
+    required: false,
+    default: ''
   },
   phone: {
     type: String,
@@ -38,6 +39,11 @@ const UserSchema = new mongoose.Schema({
 
 // Pre-save middleware to encrypt password before saving to database
 UserSchema.pre('save', async function() {
+  // If password is not set or empty, do not hash it
+  if (!this.password || this.password.trim() === '') {
+    return;
+  }
+
   // Only hash password if it has been modified or is new
   if (!this.isModified('password')) {
     return;

@@ -219,7 +219,7 @@
                 <input 
                   type="text" 
                   name="owner_name"
-                  placeholder="e.g. John Doe" 
+                  placeholder="Enter client's full name" 
                   class="form-control-input"
                   [(ngModel)]="newClient.owner_name"
                   required
@@ -232,7 +232,7 @@
                 <input 
                   type="text" 
                   name="company_name"
-                  placeholder="e.g. Acme Corp" 
+                  placeholder="Enter organization or company name" 
                   class="form-control-input"
                   [(ngModel)]="newClient.company_name"
                 />
@@ -246,7 +246,7 @@
                 <input 
                   type="email" 
                   name="email"
-                  placeholder="e.g. client@example.com" 
+                  placeholder="Enter client's contact email" 
                   class="form-control-input"
                   [(ngModel)]="newClient.email"
                   required
@@ -259,7 +259,7 @@
                 <input 
                   type="tel" 
                   name="phone"
-                  placeholder="e.g. +91 98765 43210" 
+                  placeholder="Enter client's contact phone number" 
                   class="form-control-input"
                   [(ngModel)]="newClient.phone"
                 />
@@ -268,14 +268,13 @@
 
             <!-- Password -->
             <div class="form-group-item">
-              <label class="form-input-label">Temporary Password *</label>
+              <label class="form-input-label">Temporary Password (Leave blank to set on first login)</label>
               <input 
                 type="password" 
                 name="password"
-                placeholder="Set secure password for client portal" 
+                placeholder="Set secure password or leave blank" 
                 class="form-control-input"
                 [(ngModel)]="newClient.password"
-                required
               />
             </div>
 

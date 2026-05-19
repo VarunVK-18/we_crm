@@ -172,8 +172,8 @@ export class Dashboard implements OnInit {
     this.errorMessage.set('');
     this.successMessage.set('');
 
-    if (!this.newClient.owner_name || !this.newClient.email || !this.newClient.password) {
-      this.errorMessage.set('Name, email and password are required.');
+    if (!this.newClient.owner_name || !this.newClient.email) {
+      this.errorMessage.set('Name and email are required.');
       return;
     }
 
