@@ -58,8 +58,20 @@ class AuthRepository {
         // Handle cases where the response might be { user: { ... }, token: "..." }
         final userData = data['user'] ?? data;
         
+        String extractedUid = 'unknown';
+        final rawId = userData['_id'];
+        if (rawId != null) {
+          if (rawId is Map && rawId['\$oid'] != null) {
+            extractedUid = rawId['\$oid'].toString();
+          } else {
+            extractedUid = rawId.toString();
+          }
+        } else if (userData['id'] != null) {
+          extractedUid = userData['id'].toString();
+        }
+
         _currentUser = MockAuthUser(
-          uid: userData['_id']?['\$oid']?.toString() ?? userData['id']?.toString() ?? 'unknown',
+          uid: extractedUid,
           email: userData['email']?.toString() ?? email,
           displayName: userData['owner_name']?.toString() ?? userData['name']?.toString(),
         );
@@ -100,8 +112,20 @@ class AuthRepository {
         final data = jsonDecode(response.body);
         final userData = data['user'] ?? data;
 
+        String extractedUid = 'unknown';
+        final rawId = userData['_id'];
+        if (rawId != null) {
+          if (rawId is Map && rawId['\$oid'] != null) {
+            extractedUid = rawId['\$oid'].toString();
+          } else {
+            extractedUid = rawId.toString();
+          }
+        } else if (userData['id'] != null) {
+          extractedUid = userData['id'].toString();
+        }
+
         _currentUser = MockAuthUser(
-          uid: userData['_id']?['\$oid']?.toString() ?? userData['id']?.toString() ?? 'unknown',
+          uid: extractedUid,
           email: userData['email']?.toString() ?? email,
           displayName: userData['owner_name']?.toString() ?? userData['name']?.toString(),
         );

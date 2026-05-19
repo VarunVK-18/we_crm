@@ -26,8 +26,12 @@ class UserModel {
   factory UserModel.fromMap(Map<String, dynamic> data, [String? id]) {
     // Handle MongoDB $oid structure for ID
     String extractedId = id ?? '';
-    if (data['_id'] != null && data['_id'] is Map && data['_id']['\$oid'] != null) {
-      extractedId = data['_id']['\$oid'].toString();
+    if (data['_id'] != null) {
+      if (data['_id'] is Map && data['_id']['\$oid'] != null) {
+        extractedId = data['_id']['\$oid'].toString();
+      } else {
+        extractedId = data['_id'].toString();
+      }
     } else if (data['id'] != null) {
       extractedId = data['id'].toString();
     }

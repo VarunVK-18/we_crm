@@ -3,7 +3,7 @@ const Ticket = require('../models/Ticket');
 // Create a new support ticket
 exports.createTicket = async (req, res) => {
   try {
-    const { userId, userName, userEmail, subject, description } = req.body;
+    const { userId, userName, userEmail, subject, description, category, priority } = req.body;
     
     if (!userId || !userName || !userEmail || !subject || !description) {
       return res.status(400).json({ message: 'All fields are required.' });
@@ -14,7 +14,9 @@ exports.createTicket = async (req, res) => {
       userName,
       userEmail,
       subject,
-      description
+      description,
+      category: category || 'General Support',
+      priority: priority || 'Low'
     });
 
     await ticket.save();

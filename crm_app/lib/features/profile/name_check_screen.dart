@@ -14,8 +14,10 @@ class NameCheckScreen extends StatefulWidget {
 
 class _NameCheckScreenState extends State<NameCheckScreen> {
   late TextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
   Timer? _debounce;
   bool _isChecking = false;
+  bool _isFocused = false;
   String? _statusMessage;
   String? _finalResult;
   Color _statusColor = AppTheme.deepTeal;
@@ -26,16 +28,23 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
     super.initState();
     _controller = TextEditingController();
     _controller.addListener(_onSearchChanged);
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+      });
+    });
   }
 
   @override
   void dispose() {
     _debounce?.cancel();
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   void _onSearchChanged() {
+    setState(() {});
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 600), () {
       if (_controller.text.trim().length > 3) {
@@ -123,7 +132,7 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
           'Name Availability',
           style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             fontSize: 20,
           ),
         ),
@@ -136,8 +145,8 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
             Text(
               'Reserve your brand name',
               style: GoogleFonts.outfit(
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.deepTeal,
                 letterSpacing: -0.5,
               ),
@@ -152,38 +161,56 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _isFocused
+                      ? AppTheme.corporateBlue
+                      : Colors.grey.withOpacity(0.2),
+                  width: _isFocused ? 2.0 : 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: AppTheme.deepTeal.withOpacity(0.08),
-                    blurRadius: 30,
-                    offset: const Offset(0, 10),
+                    color: _isFocused
+                        ? AppTheme.corporateBlue.withOpacity(0.12)
+                        : AppTheme.deepTeal.withOpacity(0.04),
+                    blurRadius: _isFocused ? 20 : 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
               child: TextField(
                 controller: _controller,
+                focusNode: _focusNode,
                 style: GoogleFonts.outfit(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                   color: AppTheme.deepTeal,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Enter brand name...',
                   hintStyle: GoogleFonts.outfit(
                     color: Colors.grey.shade400,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 15,
                   ),
                   border: InputBorder.none,
+                  prefixIcon: Icon(
+                    LucideIcons.search,
+                    color: _isFocused
+                        ? AppTheme.corporateBlue
+                        : Colors.grey.shade400,
+                    size: 20,
+                  ),
                   suffixIcon: _isChecking
                       ? Container(
                           width: 20,
                           height: 20,
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.all(14),
                           child: const CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
@@ -191,12 +218,22 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
                             ),
                           ),
                         )
-                      : Icon(LucideIcons.search, color: Colors.grey.shade400),
+                      : (_controller.text.isNotEmpty
+                          ? IconButton(
+                              icon: Icon(
+                                LucideIcons.xCircle,
+                                color: Colors.grey.shade400,
+                                size: 18,
+                              ),
+                              onPressed: () {
+                                _controller.clear();
+                              },
+                            )
+                          : null),
                 ),
                 textCapitalization: TextCapitalization.characters,
               ),
             ),
-
             if (_statusMessage != null) ...[
               const SizedBox(height: 24),
               AnimatedContainer(
