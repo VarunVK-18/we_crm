@@ -12,205 +12,7 @@ import '../../models/order_model.dart';
 import '../../core/utils/whatsapp_utils.dart';
 import 'service_order_detail_screen.dart';
 import 'invoice_screen.dart';
-
-// ─── Mock Data ───────────────────────────────────────────────────────────────
-// Replace _mockOrders with a Firestore/Riverpod stream when backend is ready.
-
-final _mockOrders = <ServiceOrder>[
-  ServiceOrder(
-    id: 'ORD-001',
-    clientUid: 'mock',
-    entityName: 'Balaji',
-    serviceType: 'Private Limited Incorporation',
-    companyName: 'Balaji Enterprises Pvt Ltd',
-    status: ServiceStatus.active,
-    stage: OrderStage.workInProgress,
-    assignedExpert: 'Rohan Mehra',
-    expertPhone: '918072286963',
-    createdAt: DateTime(2026, 3, 10),
-    steps: const [
-      ServiceStep(
-        title: 'Documents Collected',
-        description:
-            'Identity proof, address proof, and director declarations received.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'Name Approval (RUN)',
-        description:
-            'Company name submitted to MCA for reservation. Approval received.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'Filing of SPICe+ Form',
-        description:
-            'Drafting and filing the SPICe+ form with MCA portal is in progress.',
-        isCompleted: false,
-      ),
-      ServiceStep(
-        title: 'Government Approval',
-        description:
-            'Awaiting Certificate of Incorporation from the Registrar of Companies.',
-        isCompleted: false,
-      ),
-      ServiceStep(
-        title: 'Document Delivery',
-        description:
-            'COI, PAN, and TAN will be delivered to your registered email.',
-        isCompleted: false,
-      ),
-    ],
-  ),
-  ServiceOrder(
-    id: 'ORD-002',
-    clientUid: 'mock',
-    entityName: 'Balaji',
-    serviceType: 'GST Registration',
-    companyName: 'Balaji Enterprises Pvt Ltd',
-    status: ServiceStatus.active,
-    stage: OrderStage.workAssigned,
-    assignedExpert: 'Priya Sharma',
-    expertPhone: '918072286963',
-    createdAt: DateTime(2026, 4, 1),
-    steps: const [
-      ServiceStep(
-        title: 'Application Initiated',
-        description: 'GST registration application has been initiated.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'Documents Under Review',
-        description: 'Business documents are being verified by our team.',
-        isCompleted: false,
-      ),
-      ServiceStep(
-        title: 'GST Application Filing',
-        description: 'Filing Form REG-01 on the GST portal.',
-        isCompleted: false,
-      ),
-      ServiceStep(
-        title: 'ARN Generation',
-        description: 'Application Reference Number will be shared with you.',
-        isCompleted: false,
-      ),
-      ServiceStep(
-        title: 'GSTIN Issued',
-        description: 'Your unique GST Identification Number will be delivered.',
-        isCompleted: false,
-      ),
-    ],
-  ),
-  ServiceOrder(
-    id: 'ORD-003',
-    clientUid: 'mock',
-    entityName: 'Tech Solutions',
-    serviceType: 'TDS Filing (Q4 2025-26)',
-    companyName: 'Tech Solutions LLP',
-    status: ServiceStatus.active,
-    stage: OrderStage.testing,
-    assignedExpert: 'Amit Joshi',
-    expertPhone: '918072286963',
-    createdAt: DateTime(2026, 4, 5),
-    steps: const [
-      ServiceStep(
-        title: 'Data Collection',
-        description: 'Salary and payment data collected from client.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'TDS Challan Payment',
-        description: 'TDS amount deposited via NSDL portal.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'Return Preparation',
-        description: 'Form 24Q/26Q prepared based on the data.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'Filing Verification',
-        description: 'Final return is under review before submission.',
-        isCompleted: false,
-      ),
-      ServiceStep(
-        title: 'Acknowledgement',
-        description: 'Filed return acknowledgement will be shared with you.',
-        isCompleted: false,
-      ),
-    ],
-  ),
-  ServiceOrder(
-    id: 'ORD-004',
-    clientUid: 'mock',
-    entityName: 'Balaji',
-    serviceType: 'DSC Registration',
-    companyName: 'Balaji Enterprises Pvt Ltd',
-    status: ServiceStatus.complete,
-    stage: OrderStage.completed,
-    assignedExpert: 'Rohan Mehra',
-    expertPhone: '918072286963',
-    createdAt: DateTime(2026, 2, 15),
-    steps: const [
-      ServiceStep(
-        title: 'Application Submitted',
-        description: 'DSC application submitted with identity proof.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'Verification Done',
-        description: 'Identity verification completed successfully.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'DSC Issued',
-        description: 'Digital Signature Certificate issued and delivered.',
-        isCompleted: true,
-      ),
-    ],
-  ),
-  ServiceOrder(
-    id: 'ORD-005',
-    clientUid: 'mock',
-    entityName: 'Tech Solutions',
-    serviceType: 'Annual ROC Filing',
-    companyName: 'Tech Solutions LLP',
-    status: ServiceStatus.complete,
-    stage: OrderStage.completed,
-    assignedExpert: 'Priya Sharma',
-    expertPhone: '918072286963',
-    createdAt: DateTime(2026, 1, 20),
-    steps: const [
-      ServiceStep(
-        title: 'Financial Statements Prepared',
-        description: 'Balance sheet and P&L prepared.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'Board Approval',
-        description: 'Directors approved the financial statements.',
-        isCompleted: true,
-      ),
-      ServiceStep(
-        title: 'AOC-4 & MGT-7 Filed',
-        description: 'Annual returns filed with MCA.',
-        isCompleted: true,
-      ),
-    ],
-  ),
-  ServiceOrder(
-    id: 'ORD-006',
-    clientUid: 'mock',
-    entityName: 'Balaji',
-    serviceType: 'Trademark Registration',
-    companyName: 'Balaji Enterprises Pvt Ltd',
-    status: ServiceStatus.notInitialized,
-    stage: OrderStage.reqReceived,
-    assignedExpert: 'To be assigned',
-    expertPhone: '918072286963',
-    createdAt: DateTime(2026, 4, 12),
-    steps: const [],
-  ),
-];
+import '../../providers/orders_provider.dart';
 
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
@@ -238,18 +40,20 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Build entity list from mock data
-    final entities = _mockOrders.map((o) => o.entityName).toSet().toList()
-      ..sort();
+    final ordersAsync = ref.watch(serviceOrdersProvider);
+    final orders = ordersAsync.value ?? [];
+    final isLoading = ordersAsync.isLoading && orders.isEmpty;
+
+    // Build entity list from database data
+    final entities = orders.map((o) => o.entityName).toSet().toList()..sort();
 
     // Filter by selected entity
     final entityFiltered = _selectedEntity == null
-        ? _mockOrders
-        : _mockOrders.where((o) => o.entityName == _selectedEntity).toList();
+        ? orders
+        : orders.where((o) => o.entityName == _selectedEntity).toList();
 
-    final activeList = entityFiltered
-        .where((o) => o.status == ServiceStatus.active)
-        .toList();
+    final activeList =
+        entityFiltered.where((o) => o.status == ServiceStatus.active).toList();
     final completeList = entityFiltered
         .where((o) => o.status == ServiceStatus.complete)
         .toList();
@@ -526,15 +330,22 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
             // ── Service List or Empty State ─────────────────────────────────
             Expanded(
-              child: visibleList.isEmpty
-                  ? _EmptyState(tab: _selectedTab)
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: visibleList.length,
-                      itemBuilder: (context, i) =>
-                          _ServiceCard(order: visibleList[i]),
-                    ),
+              child: isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(AppTheme.deepTeal),
+                      ),
+                    )
+                  : visibleList.isEmpty
+                      ? _EmptyState(tab: _selectedTab)
+                      : ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: visibleList.length,
+                          itemBuilder: (context, i) =>
+                              _ServiceCard(order: visibleList[i]),
+                        ),
             ),
           ],
         ),
@@ -558,27 +369,27 @@ class _ServiceCard extends StatelessWidget {
   };
 
   ({Color bg, Color text}) get _badgeColors => switch (order.stage) {
-    OrderStage.reqReceived => (
-      bg: const Color(0xFFEBF3FF),
-      text: const Color(0xFF2563EB),
-    ),
-    OrderStage.workAssigned => (
-      bg: const Color.fromARGB(255, 228, 244, 229),
-      text: const Color.fromARGB(255, 18, 127, 74),
-    ),
-    OrderStage.workInProgress => (
-      bg: const Color(0xFFFFF4E6),
-      text: const Color(0xFFD97706),
-    ),
-    OrderStage.testing => (
-      bg: const Color.fromARGB(255, 232, 231, 179),
-      text: const Color.fromARGB(255, 12, 12, 4),
-    ),
-    OrderStage.completed => (
-      bg: const Color(0xFFF0FFF4),
-      text: const Color(0xFF16A34A),
-    ),
-  };
+        OrderStage.reqReceived => (
+            bg: const Color(0xFFEBF3FF),
+            text: const Color(0xFF2563EB),
+          ),
+        OrderStage.workAssigned => (
+            bg: const Color.fromARGB(255, 228, 244, 229),
+            text: const Color.fromARGB(255, 18, 127, 74),
+          ),
+        OrderStage.workInProgress => (
+            bg: const Color(0xFFFFF4E6),
+            text: const Color(0xFFD97706),
+          ),
+        OrderStage.testing => (
+            bg: const Color.fromARGB(255, 232, 231, 179),
+            text: const Color.fromARGB(255, 12, 12, 4),
+          ),
+        OrderStage.completed => (
+            bg: const Color(0xFFF0FFF4),
+            text: const Color(0xFF16A34A),
+          ),
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -593,17 +404,18 @@ class _ServiceCard extends StatelessWidget {
     return GestureDetector(
       onTap: isActive
           ? () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ServiceOrderDetailScreen(order: order),
-              ),
-            )
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ServiceOrderDetailScreen(order: order),
+                ),
+              )
           : isComplete
-          ? () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => InvoiceScreen(order: order)),
-            )
-          : null,
+              ? () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => InvoiceScreen(order: order)),
+                  )
+              : null,
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(20),
@@ -817,21 +629,21 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final (icon, message) = switch (tab) {
       _ServiceTab.active => (
-        HugeIcons.strokeRoundedTask01,
-        'No active services found',
-      ),
+          HugeIcons.strokeRoundedTask01,
+          'No active services found',
+        ),
       _ServiceTab.complete => (
-        HugeIcons.strokeRoundedTaskDone01,
-        'No completed services yet',
-      ),
+          HugeIcons.strokeRoundedTaskDone01,
+          'No completed services yet',
+        ),
       _ServiceTab.notInitialized => (
-        HugeIcons.strokeRoundedHourglass,
-        'No pending services',
-      ),
+          HugeIcons.strokeRoundedHourglass,
+          'No pending services',
+        ),
       _ServiceTab.history => (
-        HugeIcons.strokeRoundedClock01,
-        'No order history found',
-      ),
+          HugeIcons.strokeRoundedClock01,
+          'No order history found',
+        ),
     };
 
     return Center(

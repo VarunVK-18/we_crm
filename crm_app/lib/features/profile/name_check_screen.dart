@@ -161,24 +161,15 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: _isFocused
-                      ? AppTheme.corporateBlue
-                      : Colors.grey.withOpacity(0.2),
-                  width: _isFocused ? 2.0 : 1.5,
-                ),
+                borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
                     color: _isFocused
-                        ? AppTheme.corporateBlue.withOpacity(0.12)
-                        : AppTheme.deepTeal.withOpacity(0.04),
-                    blurRadius: _isFocused ? 20 : 10,
+                        ? AppTheme.corporateBlue.withOpacity(0.08)
+                        : AppTheme.deepTeal.withOpacity(0.03),
+                    blurRadius: 20,
                     offset: const Offset(0, 4),
                   ),
                 ],
@@ -192,13 +183,14 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
                   color: AppTheme.deepTeal,
                 ),
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
                   hintText: 'Enter brand name...',
                   hintStyle: GoogleFonts.outfit(
                     color: Colors.grey.shade400,
                     fontWeight: FontWeight.w400,
                     fontSize: 15,
                   ),
-                  border: InputBorder.none,
                   prefixIcon: Icon(
                     LucideIcons.search,
                     color: _isFocused
@@ -212,7 +204,7 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
                           height: 20,
                           padding: const EdgeInsets.all(14),
                           child: const CircularProgressIndicator(
-                            strokeWidth: 2,
+                            strokeWidth: 2.5,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               AppTheme.corporateBlue,
                             ),
@@ -230,6 +222,15 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
                               },
                             )
                           : null),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: Colors.grey.withOpacity(0.15), width: 1.5),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(color: AppTheme.corporateBlue, width: 2),
+                  ),
                 ),
                 textCapitalization: TextCapitalization.characters,
               ),

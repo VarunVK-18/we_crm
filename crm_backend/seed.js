@@ -3,6 +3,8 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const User = require('./models/User');
+const ServiceOrder = require('./models/ServiceOrder');
+const DscOrder = require('./models/DscOrder');
 
 const seedUser = async () => {
   const mongoURI = process.env.MONGO_URI;
@@ -14,7 +16,7 @@ const seedUser = async () => {
 
   try {
     console.log('====================================');
-    console.log('⏳ Connecting to MongoDB to seed user...');
+    console.log('⏳ Connecting to MongoDB to seed user, service orders, and DSC orders...');
     await mongoose.connect(mongoURI);
     console.log('🚀 Connected successfully!');
     console.log('====================================');
@@ -26,8 +28,11 @@ const seedUser = async () => {
     console.log(`🧹 Checking for existing test user: ${testEmail}...`);
     const existingUser = await User.findOne({ email: testEmail });
     if (existingUser) {
+      // Clean up existing service orders and DSC orders for this user
+      await ServiceOrder.deleteMany({ clientUid: existingUser._id.toString() });
+      await DscOrder.deleteMany({ clientUid: existingUser._id.toString() });
       await User.deleteOne({ email: testEmail });
-      console.log('🗑️ Existing test user deleted successfully.');
+      console.log('🗑️ Existing test user, service orders, and DSC orders deleted.');
     }
 
     console.log(`🧹 Checking for existing admin user: ${adminEmail}...`);
@@ -61,14 +66,97 @@ const seedUser = async () => {
       services: ['All Portal Access', 'System Administration']
     });
 
+    // 4. Seed default Service Orders for the test customer
+    console.log('📦 Seeding default service orders for the customer...');
+    const userIdStr = newUser._id.toString();
+
+    await ServiceOrder.create([
+      {
+        clientUid: userIdStr,
+        entityName: 'Proprietorship',
+        serviceType: 'GST Registration',
+        companyName: 'Wealth Empires Tech',
+        status: 'active',
+        stage: 'workInProgress',
+        steps: [
+          {
+            title: 'Requirement Gathering',
+            description: 'Collecting all mandatory documents.',
+            isCompleted: true,
+            completedAt: new Date(Date.now() - 24 * 60 * 60 * 1000)
+          },
+          {
+            title: 'GST Portal Application',
+            description: 'Submitting details to the GST portal.',
+            isCompleted: false
+          },
+          {
+            title: 'Certificate Issuance',
+            description: 'Obtaining verified GSTIN document.',
+            isCompleted: false
+          }
+        ],
+        assignedExpert: 'Rajesh Kumar',
+        expertPhone: '918072286963'
+      },
+      {
+        clientUid: userIdStr,
+        entityName: 'Company',
+        serviceType: 'Trademark Registration',
+        companyName: 'Acme Corp',
+        status: 'notInitialized',
+        stage: 'reqReceived',
+        steps: [
+          {
+            title: 'Document Collection',
+            description: 'Provide utility bill and digital signature.',
+            isCompleted: false
+          },
+          {
+            title: 'Search Report Creation',
+            description: 'Analyze potential duplicate names.',
+            isCompleted: false
+          },
+          {
+            title: 'Form TM-A Filing',
+            description: 'Officially file application with IP India.',
+            isCompleted: false
+          }
+        ],
+        assignedExpert: 'To be assigned',
+        expertPhone: ''
+      }
+    ]);
+
+    // 5. Seed default DSC Orders for the test customer
+    console.log('📦 Seeding default DSC orders for the customer...');
+    await DscOrder.create([
+      {
+        clientUid: userIdStr,
+        name: 'KUMAR S',
+        type: 'Class 3 (Signature + Encryption)',
+        stage: 'Pending Verification',
+        progress: 0.6,
+        isCompleted: false
+      },
+      {
+        clientUid: userIdStr,
+        name: 'ANITA REDDY',
+        type: 'Class 3 (Signature Only)',
+        stage: 'Certificate Issued',
+        progress: 1.0,
+        isCompleted: true
+      }
+    ]);
+
     console.log('====================================');
-    console.log('🎉 Test Users seeded successfully!');
+    console.log('🎉 Test Users, Service Orders & DSC Orders seeded successfully!');
     console.log('------------------------------------');
     console.log(`📧 Customer Email   : ${newUser.email}`);
-    console.log('🔑 Customer Password: 123');
+    console.log('🔑 Customer Password: 123456');
     console.log('------------------------------------');
     console.log(`📧 Admin Email      : ${newAdmin.email}`);
-    console.log('🔑 Admin Password   : admin');
+    console.log('🔑 Admin Password   : admin123456');
     console.log('====================================');
 
   } catch (error) {

@@ -1,52 +1,52 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import '../core/constants/port.dart';
 import '../models/order_model.dart';
 import 'auth_provider.dart';
 
-/// Mock stream of [ServiceOrder] documents.
+/// Real-time stream of [ServiceOrder] documents from the database.
 final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) {
   final uid = ref.watch(authStateProvider).value?.uid;
   if (uid == null) return Stream.value([]);
 
-  // Mock data for UI testing
-  return Stream.value([
-    ServiceOrder(
-      id: 'mock_order_1',
-      clientUid: uid,
-      entityName: 'Proprietorship',
-      serviceType: 'GST Registration',
-      companyName: 'Wealth Empires Tech',
-      status: ServiceStatus.active,
-      stage: OrderStage.workInProgress,
-      steps: [
-        const ServiceStep(
-          title: 'Requirement Gathering',
-          description: 'Collecting all mandatory documents.',
-          isCompleted: true,
-        ),
-        const ServiceStep(
-          title: 'GST Portal Application',
-          description: 'Submitting details to the GST portal.',
-          isCompleted: false,
-        ),
-      ],
-      assignedExpert: 'Rajesh Kumar',
-      expertPhone: '918072286963',
-      createdAt: DateTime.now().subtract(const Duration(days: 2)),
-    ),
-    ServiceOrder(
-      id: 'mock_order_2',
-      clientUid: uid,
-      entityName: 'Company',
-      serviceType: 'Trademark Registration',
-      companyName: 'Acme Corp',
-      status: ServiceStatus.notInitialized,
-      stage: OrderStage.reqReceived,
-      steps: [],
-      assignedExpert: 'To be assigned',
-      expertPhone: '',
-      createdAt: DateTime.now().subtract(const Duration(days: 5)),
-    ),
-  ]);
+  final controller = StreamController<List<ServiceOrder>>();
+
+  Future<void> fetchOrders() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/orders/user/$uid'),
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final List<dynamic> ordersJson = data['orders'] ?? [];
+        final orders = ordersJson.map((o) {
+          final id = o['_id']?.toString() ?? '';
+          return ServiceOrder.fromMap(o as Map<String, dynamic>, id);
+        }).toList();
+        if (!controller.isClosed) {
+          controller.add(orders);
+        }
+      }
+    } catch (e) {
+      print("Error fetching real-time service orders: $e");
+    }
+  }
+
+  // Fetch immediately on load
+  fetchOrders();
+
+  // Poll database every 4 seconds for real-time progress updates
+  final timer = Timer.periodic(const Duration(seconds: 4), (_) => fetchOrders());
+
+  ref.onDispose(() {
+    timer.cancel();
+    controller.close();
+  });
+
+  return controller.stream;
 });
 
 /// Convenience derived providers for filtered lists.

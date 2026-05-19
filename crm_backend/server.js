@@ -37,11 +37,15 @@ app.get('/', (req, res) => {
   });
 });
 
-// Import and mount Authentication Routes
+// Import and mount Authentication, Ticket, Order, and DSC Routes
 const authRoutes = require('./routes/authRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
+const orderRoutes = require('./routes/orderRoutes');
+const dscRoutes = require('./routes/dscRoutes');
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/dsc', dscRoutes);
 
 // Start Express Server
 app.listen(PORT, () => {

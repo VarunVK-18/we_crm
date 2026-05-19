@@ -34,7 +34,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                 message:
                     'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
               ),
-              backgroundColor: const Color(0xFF25D366),
+              backgroundColor: const Color.fromARGB(255, 18, 140, 126),
               icon: const Icon(LucideIcons.messageCircle,
                   color: Colors.white, size: 18),
               label: const Text(
@@ -256,100 +256,11 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                           ),
                         ),
                         const Icon(LucideIcons.trendingUp,
-                            color: Colors.green, size: 20),
+                            color: Color.fromARGB(255, 66, 126, 68), size: 20),
                       ],
                     ),
                   ),
                 ),
-
-                const SizedBox(height: 24),
-
-                // ── WhatsApp Expert Card ──────────────────────────────────────
-                if (order.expertPhone.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: GestureDetector(
-                      onTap: () => openWhatsApp(
-                        phone: '918072286963',
-                        message:
-                            'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF1DA851), Color(0xFF25D366)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF25D366)
-                                  .withValues(alpha: 0.3),
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(LucideIcons.messageCircle,
-                                  color: Colors.white, size: 22),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Chat with Your Expert',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    order.assignedExpert,
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.8),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
-                                'Open',
-                                style: TextStyle(
-                                  color: Color(0xFF25D366),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
 
                 const SizedBox(height: 80), // space for FAB
               ]),

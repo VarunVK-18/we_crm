@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/theme/app_theme.dart';
+import '../../models/order_model.dart';
 import '../../providers/compliance_provider.dart';
+import '../../providers/orders_provider.dart';
 import '../services/registration_services_screen.dart';
 
-// --- Mock Data ---
-class _Entity {
+class Entity {
   final String name;
   final String companyName;
   final String type;
@@ -14,7 +15,7 @@ class _Entity {
   final IconData icon;
   final Color color;
 
-  const _Entity({
+  const Entity({
     required this.name,
     required this.companyName,
     required this.type,
@@ -24,30 +25,52 @@ class _Entity {
   });
 }
 
-const _mockEntities = [
-  _Entity(
-    name: 'Balaji',
-    companyName: 'Balaji Enterprises Pvt Ltd',
-    type: 'Private Limited',
-    serviceCount: 4,
-    icon: LucideIcons.building2,
-    color: Color(0xFF6366F1),
-  ),
-  _Entity(
-    name: 'Tech Solutions',
-    companyName: 'Tech Solutions LLP',
-    type: 'LLP',
-    serviceCount: 3,
-    icon: LucideIcons.cpu,
-    color: Color(0xFF10B981),
-  ),
-];
-
 class MyEntitiesScreen extends ConsumerWidget {
   const MyEntitiesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final ordersAsync = ref.watch(serviceOrdersProvider);
+    final orders = ordersAsync.value ?? [];
+    final isLoading = ordersAsync.isLoading && orders.isEmpty;
+
+    // Group orders by companyName to dynamically extract entities
+    final Map<String, List<ServiceOrder>> grouped = {};
+    for (final order in orders) {
+      if (order.companyName.isEmpty) continue;
+      grouped.putIfAbsent(order.companyName, () => []).add(order);
+    }
+
+    final entities = grouped.entries.map((entry) {
+      final compName = entry.key;
+      final compOrders = entry.value;
+      final firstOrder = compOrders.first;
+
+      // Determine type
+      String type = 'Private Limited';
+      if (compName.toLowerCase().contains('llp')) {
+        type = 'LLP';
+      } else if (compName.toLowerCase().contains('partnership')) {
+        type = 'Partnership';
+      }
+
+      // Count active services
+      final activeCount =
+          compOrders.where((o) => o.status == ServiceStatus.active).length;
+
+      return Entity(
+        name: firstOrder.entityName.isNotEmpty
+            ? firstOrder.entityName
+            : compName.split(' ').first,
+        companyName: compName,
+        type: type,
+        serviceCount: activeCount,
+        icon: type == 'LLP' ? LucideIcons.cpu : LucideIcons.building2,
+        color:
+            type == 'LLP' ? const Color(0xFF10B981) : const Color(0xFF6366F1),
+      );
+    }).toList();
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -66,15 +89,21 @@ class MyEntitiesScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: _mockEntities.isEmpty
-          ? const _EntitiesEmptyState()
-          : ListView.builder(
-              padding: const EdgeInsets.all(24),
-              itemCount: _mockEntities.length,
-              itemBuilder: (context, index) =>
-                  _EntityCard(entity: _mockEntities[index]),
-            ),
-      floatingActionButton: _mockEntities.isNotEmpty
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.deepTeal),
+              ),
+            )
+          : entities.isEmpty
+              ? const _EntitiesEmptyState()
+              : ListView.builder(
+                  padding: const EdgeInsets.all(24),
+                  itemCount: entities.length,
+                  itemBuilder: (context, index) =>
+                      _EntityCard(entity: entities[index]),
+                ),
+      floatingActionButton: entities.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.push(
                 context,
@@ -98,7 +127,7 @@ class MyEntitiesScreen extends ConsumerWidget {
 }
 
 class _EntityCard extends ConsumerWidget {
-  final _Entity entity;
+  final Entity entity;
   const _EntityCard({required this.entity});
 
   @override
@@ -124,8 +153,8 @@ class _EntityCard extends ConsumerWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected 
-                  ? AppTheme.accentCyan.withOpacity(0.1) 
+              color: isSelected
+                  ? AppTheme.accentCyan.withOpacity(0.1)
                   : Colors.black.withOpacity(0.04),
               blurRadius: 20,
               offset: const Offset(0, 10),
@@ -191,8 +220,9 @@ class _EntityCard extends ConsumerWidget {
                 ],
               ),
             ),
-            if (isSelected) 
-              const Icon(LucideIcons.checkCircle2, color: AppTheme.accentCyan, size: 24)
+            if (isSelected)
+              const Icon(LucideIcons.checkCircle2,
+                  color: AppTheme.accentCyan, size: 24)
             else
               Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
           ],
