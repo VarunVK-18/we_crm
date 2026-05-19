@@ -57,3 +57,18 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## Demo / Test Credentials
+
+The database can be seeded with the following credentials using `node seed.js` in the `crm_backend` directory:
+
+### Customer User
+- **Email**: `test@wecrm.com`
+- **Password**: `123456`
+- **Role**: `customer`
+
+### Admin User
+- **Email**: `admin@wecrm.com`
+- **Password**: `admin123456`
+- **Role**: `admin`
+

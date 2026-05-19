@@ -20,8 +20,9 @@ const seedUser = async () => {
     console.log('====================================');
 
     const testEmail = 'test@wecrm.com';
+    const adminEmail = 'admin@wecrm.com';
 
-    // 1. Delete the user if they already exist to ensure a fresh, clean credentials seed
+    // 1. Delete existing users to ensure clean seeding
     console.log(`🧹 Checking for existing test user: ${testEmail}...`);
     const existingUser = await User.findOne({ email: testEmail });
     if (existingUser) {
@@ -29,24 +30,45 @@ const seedUser = async () => {
       console.log('🗑️ Existing test user deleted successfully.');
     }
 
-    // 2. Create the new test user (Password '123' will be automatically hashed by our User schema pre-save hook)
-    console.log('👤 Creating fresh test user account...');
+    console.log(`🧹 Checking for existing admin user: ${adminEmail}...`);
+    const existingAdmin = await User.findOne({ email: adminEmail });
+    if (existingAdmin) {
+      await User.deleteOne({ email: adminEmail });
+      console.log('🗑️ Existing admin user deleted successfully.');
+    }
+
+    // 2. Create the fresh test customer user
+    console.log('👤 Creating fresh test customer user account...');
     const newUser = await User.create({
       owner_name: 'Test CRM User',
       email: testEmail,
-      password: '123',
+      password: '123456',
       phone: '1234567890',
       role: 'customer',
       company_name: 'WE CRM Inc.',
       services: ['CRM Setup', 'Lead Tracking']
     });
 
+    // 3. Create the fresh admin user
+    console.log('👤 Creating fresh admin user account...');
+    const newAdmin = await User.create({
+      owner_name: 'WeCRM Administrator',
+      email: adminEmail,
+      password: 'admin123456',
+      phone: '0987654321',
+      role: 'admin',
+      company_name: 'WE CRM Inc.',
+      services: ['All Portal Access', 'System Administration']
+    });
+
     console.log('====================================');
-    console.log('🎉 Test User seeded successfully!');
+    console.log('🎉 Test Users seeded successfully!');
     console.log('------------------------------------');
-    console.log(`📧 Email   : ${newUser.email}`);
-    console.log('🔑 Password: 123 (Encrypted safely in DB)');
-    console.log(`🆔 ID      : ${newUser._id}`);
+    console.log(`📧 Customer Email   : ${newUser.email}`);
+    console.log('🔑 Customer Password: 123');
+    console.log('------------------------------------');
+    console.log(`📧 Admin Email      : ${newAdmin.email}`);
+    console.log('🔑 Admin Password   : admin');
     console.log('====================================');
 
   } catch (error) {

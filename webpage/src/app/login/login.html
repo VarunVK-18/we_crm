@@ -1,0 +1,202 @@
+<div class="screen-layout">
+  
+  <!-- Left Side: Branding (Desktop/Tablet only, hidden <= 900px) -->
+  <div class="branding-side">
+    <div class="branding-content animate-slide-up">
+      <!-- Official Logo Container -->
+      <div class="logo-box">
+        <img src="/logo.jpg" alt="WeCRM Logo" class="brand-logo" />
+      </div>
+      
+      <!-- Brand Narrative Text -->
+      <h2 class="branding-narrative">
+        India's No.1 Professional Audit & CRM Platform.<br />Manage your future with confidence.
+      </h2>
+    </div>
+  </div>
+
+  <!-- Right Side: Auth Form -->
+  <div class="form-side">
+    <!-- Atmospheric Background Accents (From Flutter AppTheme) -->
+    <div class="accent-circle cyan-circle"></div>
+    <div class="accent-circle purple-circle"></div>
+
+    <div class="form-scroll-container">
+      <div class="form-inner-wrapper animate-fade-in">
+        
+        <!-- Mobile Logo (Only visible <= 900px) -->
+        <div class="mobile-logo-header">
+          <img src="/logo.jpg" alt="WeCRM Logo" class="brand-logo-mobile" />
+        </div>
+
+        <!-- Success Screen Overlay (When User is already Logged In) -->
+        <div *ngIf="loggedInUser() && !isDialogVisible()" class="logged-in-box fade-in">
+          <div class="welcome-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="badge-icon">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <h1 class="welcome-heading">Welcome Back</h1>
+          <p class="welcome-desc">You are authenticated as <strong>{{ loggedInUser().owner_name }}</strong></p>
+          
+          <div class="user-details-card">
+            <div class="user-detail-row">
+              <span class="lbl">Email</span>
+              <span class="val">{{ loggedInUser().email }}</span>
+            </div>
+            <div class="user-detail-row">
+              <span class="lbl">Role</span>
+              <span class="val role-tag">{{ loggedInUser().role | uppercase }}</span>
+            </div>
+            <div *ngIf="loggedInUser().company_name" class="user-detail-row">
+              <span class="lbl">Company</span>
+              <span class="val">{{ loggedInUser().company_name }}</span>
+            </div>
+          </div>
+
+          <button (click)="logout()" class="btn-sign-out">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="logout-svg">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+              <polyline points="16 17 21 12 16 7"></polyline>
+              <line x1="21" y1="12" x2="9" y2="12"></line>
+            </svg>
+            Sign Out Account
+          </button>
+        </div>
+
+        <!-- Normal Sign In Form -->
+        <div *ngIf="!loggedInUser()" class="login-box">
+          <h1 class="main-title">Welcome back</h1>
+          <p class="main-subtitle">Enter your credentials to access your account</p>
+
+          <form (submit)="handleSignIn()" class="auth-form">
+            
+            <!-- Email Input Field -->
+            <div class="form-field-group">
+              <label class="input-label">Email Address</label>
+              <div class="input-relative-container">
+                <span class="field-icon">
+                  <!-- LucideIcons.mail -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-svg">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                    <polyline points="22,6 12,13 2,6"></polyline>
+                  </svg>
+                </span>
+                <input 
+                  [ngModel]="email()" 
+                  (ngModelChange)="email.set($event)" 
+                  name="email"
+                  type="email" 
+                  placeholder="name@company.com" 
+                  class="styled-text-input" 
+                  [class.error-border]="emailError()"
+                  required />
+              </div>
+              <span *ngIf="emailError()" class="validation-error-text">{{ emailError() }}</span>
+            </div>
+
+            <!-- Password Input Field -->
+            <div class="form-field-group">
+              <label class="input-label">Password</label>
+              <div class="input-relative-container">
+                <span class="field-icon">
+                  <!-- LucideIcons.lock -->
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="icon-svg">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                </span>
+                <input 
+                  [ngModel]="password()" 
+                  (ngModelChange)="password.set($event)" 
+                  name="password"
+                  [type]="isPasswordVisible() ? 'text' : 'password'" 
+                  placeholder="••••••••" 
+                  class="styled-text-input" 
+                  [class.error-border]="passwordError()"
+                  required />
+                
+                <!-- Password Visibility Toggle -->
+                <button 
+                  type="button" 
+                  (click)="togglePasswordVisibility()" 
+                  class="suffix-toggle-btn"
+                  aria-label="Toggle Password Visibility">
+                  <svg *ngIf="!isPasswordVisible()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-svg">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg *ngIf="isPasswordVisible()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="eye-svg">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
+              <span *ngIf="passwordError()" class="validation-error-text">{{ passwordError() }}</span>
+            </div>
+
+            <!-- Forgot Password link -->
+            <div class="forgot-pwd-row">
+              <button (click)="handleForgotPassword()" type="button" class="btn-forgot-password">
+                Forgot password?
+              </button>
+            </div>
+
+            <!-- Submit Button Container (with gradient, rounded borders, soft shadow) -->
+            <div class="submit-button-container">
+              <button 
+                [disabled]="isLoading()" 
+                type="submit" 
+                class="btn-primary-submit">
+                
+                <span *ngIf="isLoading()" class="button-loading-spinner"></span>
+                <span *ngIf="!isLoading()">Sign In</span>
+                
+              </button>
+            </div>
+
+            <!-- Contact Support Button -->
+            <div class="support-link-container">
+              <button (click)="contactSupport()" type="button" class="btn-contact-support">
+                Don't have an account? Contact support
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Dialog Modal Overlay (Replicates Flutter's _showAuthDialog) -->
+  <div *ngIf="isDialogVisible()" class="dialog-backdrop fade-in" (click)="closeAuthDialog()">
+    <div class="dialog-card scale-in" (click)="$event.stopPropagation()">
+      <div class="dialog-title-row">
+        <!-- LucideIcons.alertTriangle vs checkCircle2 -->
+        <span class="dialog-icon" [class.error-icon]="dialogIsError()" [class.success-icon]="!dialogIsError()">
+          <svg *ngIf="dialogIsError()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="dialog-svg">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <svg *ngIf="!dialogIsError()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="dialog-svg">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </span>
+        <h3 class="dialog-title-text">{{ dialogTitle() }}</h3>
+      </div>
+      
+      <div class="dialog-body-content">
+        <p>{{ dialogMessage() }}</p>
+      </div>
+
+      <div class="dialog-footer-actions">
+        <button (click)="closeAuthDialog()" class="dialog-action-ok-btn" type="button">OK</button>
+      </div>
+    </div>
+  </div>
+
+</div>
