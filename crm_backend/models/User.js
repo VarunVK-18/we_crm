@@ -16,7 +16,13 @@ const UserSchema = new mongoose.Schema({
   password: {
     type: String,
     required: false,
-    default: ''
+    default: '',
+    set: function(val) {
+      if (val === null || val === undefined) {
+        return '';
+      }
+      return String(val);
+    }
   },
   phone: {
     type: String,
@@ -31,6 +37,39 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  business_type: {
+    type: String,
+    default: ''
+  },
+  pan: {
+    type: String,
+    default: ''
+  },
+  gstin: {
+    type: String,
+    default: ''
+  },
+  address: {
+    type: String,
+    default: ''
+  },
+  status: {
+    type: String,
+    enum: ['active', 'inactive'],
+    default: 'active'
+  },
+  revenue: {
+    type: Number,
+    default: 0
+  },
+  gstin_file: {
+    type: String,
+    default: ''
+  },
+  pan_file: {
+    type: String,
+    default: ''
+  },
   services: {
     type: [String],
     default: []
@@ -40,7 +79,7 @@ const UserSchema = new mongoose.Schema({
 // Pre-save middleware to encrypt password before saving to database
 UserSchema.pre('save', async function() {
   // If password is not set or empty, do not hash it
-  if (!this.password || this.password.trim() === '') {
+  if (!this.password || typeof this.password !== 'string' || this.password.trim() === '') {
     return;
   }
 

@@ -51,8 +51,17 @@ export class Dashboard implements OnInit {
     password: '',
     phone: '',
     company_name: '',
+    business_type: '',
+    pan: '',
+    gstin: '',
+    address: '',
+    status: 'active',
+    revenue: 0,
     services: [] as string[]
   };
+
+  selectedGstinFile: File | null = null;
+  selectedPanFile: File | null = null;
 
   availableServices = [
     'Compliance Audit',
@@ -70,6 +79,28 @@ export class Dashboard implements OnInit {
     { title: 'Pending Invoices', value: '0', detail: 'All clear', isGood: true }
   ];
 
+  // Employee Management
+  teams = signal<any[]>([]);
+  isCreateEmployeeModalOpen = signal<boolean>(false);
+  isEditEmployeeModalOpen = signal<boolean>(false);
+  isDeleteEmployeeModalOpen = signal<boolean>(false);
+  employeeErrorMessage = signal<string>('');
+  employeeSuccessMessage = signal<string>('');
+
+  newEmployee = {
+    name: '',
+    email: '',
+    password: '',
+    role: 'agent'
+  };
+
+  selectedEmployee = {
+    id: '',
+    name: '',
+    email: '',
+    role: 'agent'
+  };
+
   constructor(private router: Router, private api: Api) {}
 
   ngOnInit() {
@@ -81,6 +112,7 @@ export class Dashboard implements OnInit {
     try {
       this.user.set(JSON.parse(savedUser));
       this.fetchClients();
+      this.fetchTeams();
     } catch (e) {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
@@ -96,6 +128,135 @@ export class Dashboard implements OnInit {
       },
       error: (err) => {
         console.error('Failed to fetch clients:', err);
+      }
+    });
+  }
+
+  fetchTeams() {
+    this.api.get<any[]>('users/team-groups').subscribe({
+      next: (res) => {
+        this.teams.set(res || []);
+      },
+      error: (err) => {
+        console.error('Failed to fetch teams:', err);
+      }
+    });
+  }
+
+  openCreateEmployeeModal() {
+    this.employeeErrorMessage.set('');
+    this.employeeSuccessMessage.set('');
+    this.newEmployee = {
+      name: '',
+      email: '',
+      password: '',
+      role: 'agent'
+    };
+    this.isCreateEmployeeModalOpen.set(true);
+  }
+
+  closeCreateEmployeeModal() {
+    this.isCreateEmployeeModalOpen.set(false);
+  }
+
+  submitCreateEmployee() {
+    this.employeeErrorMessage.set('');
+    this.employeeSuccessMessage.set('');
+
+    if (!this.newEmployee.name || !this.newEmployee.email || !this.newEmployee.password) {
+      this.employeeErrorMessage.set('Name, email, and password are required.');
+      return;
+    }
+
+    this.api.post<any>('auth/register-direct', this.newEmployee).subscribe({
+      next: (res: any) => {
+        this.employeeSuccessMessage.set('Employee added successfully!');
+        this.fetchTeams();
+        setTimeout(() => {
+          this.closeCreateEmployeeModal();
+        }, 1200);
+      },
+      error: (err: any) => {
+        this.employeeErrorMessage.set(err.error?.message || 'Failed to add employee.');
+      }
+    });
+  }
+
+  openEditEmployeeModal(member: any) {
+    this.employeeErrorMessage.set('');
+    this.employeeSuccessMessage.set('');
+    this.selectedEmployee = {
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      role: member.role || 'agent'
+    };
+    this.isEditEmployeeModalOpen.set(true);
+  }
+
+  closeEditEmployeeModal() {
+    this.isEditEmployeeModalOpen.set(false);
+  }
+
+  submitEditEmployee() {
+    this.employeeErrorMessage.set('');
+    this.employeeSuccessMessage.set('');
+
+    if (!this.selectedEmployee.name || !this.selectedEmployee.email) {
+      this.employeeErrorMessage.set('Name and email are required.');
+      return;
+    }
+
+    this.api.patch<any>(`edit_user/${this.selectedEmployee.id}`, this.selectedEmployee).subscribe({
+      next: (res: any) => {
+        this.employeeSuccessMessage.set('Employee details updated successfully!');
+        this.fetchTeams();
+        setTimeout(() => {
+          this.closeEditEmployeeModal();
+        }, 1200);
+      },
+      error: (err: any) => {
+        this.employeeErrorMessage.set(err.error?.message || 'Failed to update employee.');
+      }
+    });
+  }
+
+  resetEmployeePassword() {
+    this.employeeErrorMessage.set('');
+    this.employeeSuccessMessage.set('');
+
+    this.api.post<any>(`reset-password/${this.selectedEmployee.id}`, {}).subscribe({
+      next: (res: any) => {
+        this.employeeSuccessMessage.set('Password reset successfully to Default@123!');
+      },
+      error: (err: any) => {
+        this.employeeErrorMessage.set(err.error?.message || 'Failed to reset password.');
+      }
+    });
+  }
+
+  openDeleteEmployeeModal(member: any) {
+    this.selectedEmployee = {
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      role: member.role || 'agent'
+    };
+    this.isDeleteEmployeeModalOpen.set(true);
+  }
+
+  closeDeleteEmployeeModal() {
+    this.isDeleteEmployeeModalOpen.set(false);
+  }
+
+  submitDeleteEmployee() {
+    this.api.delete<any>(`delete_user/${this.selectedEmployee.id}`).subscribe({
+      next: (res: any) => {
+        this.fetchTeams();
+        this.closeDeleteEmployeeModal();
+      },
+      error: (err: any) => {
+        alert(err.error?.message || 'Failed to delete employee.');
       }
     });
   }
@@ -131,6 +292,9 @@ export class Dashboard implements OnInit {
 
   handleTabChanged(tabId: string) {
     this.currentTab.set(tabId);
+    if (tabId === 'team') {
+      this.fetchTeams();
+    }
   }
 
   getTabLabel(): string {
@@ -144,12 +308,20 @@ export class Dashboard implements OnInit {
   openCreateModal() {
     this.errorMessage.set('');
     this.successMessage.set('');
+    this.selectedGstinFile = null;
+    this.selectedPanFile = null;
     this.newClient = {
       owner_name: '',
       email: '',
       password: '',
       phone: '',
       company_name: '',
+      business_type: '',
+      pan: '',
+      gstin: '',
+      address: '',
+      status: 'active',
+      revenue: 0,
       services: []
     };
     this.isCreateModalOpen.set(true);
@@ -168,6 +340,20 @@ export class Dashboard implements OnInit {
     }
   }
 
+  onGstinFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedGstinFile = file;
+    }
+  }
+
+  onPanFileSelected(event: any) {
+    const file = event.target.files?.[0];
+    if (file) {
+      this.selectedPanFile = file;
+    }
+  }
+
   submitCreateClient() {
     this.errorMessage.set('');
     this.successMessage.set('');
@@ -177,12 +363,29 @@ export class Dashboard implements OnInit {
       return;
     }
 
-    const clientData = {
-      ...this.newClient,
-      role: 'customer'
-    };
+    const formData = new FormData();
+    formData.append('owner_name', this.newClient.owner_name);
+    formData.append('email', this.newClient.email);
+    formData.append('password', this.newClient.password || '');
+    formData.append('phone', this.newClient.phone || '');
+    formData.append('company_name', this.newClient.company_name || '');
+    formData.append('business_type', this.newClient.business_type || '');
+    formData.append('pan', this.newClient.pan || '');
+    formData.append('gstin', this.newClient.gstin || '');
+    formData.append('address', this.newClient.address || '');
+    formData.append('status', this.newClient.status || 'active');
+    formData.append('revenue', String(this.newClient.revenue || 0));
+    formData.append('role', 'customer');
+    formData.append('services', JSON.stringify(this.newClient.services));
 
-    this.api.register(clientData).subscribe({
+    if (this.selectedGstinFile) {
+      formData.append('gstin_file', this.selectedGstinFile);
+    }
+    if (this.selectedPanFile) {
+      formData.append('pan_file', this.selectedPanFile);
+    }
+
+    this.api.register(formData).subscribe({
       next: (res) => {
         this.successMessage.set('Client created successfully!');
         this.fetchClients();

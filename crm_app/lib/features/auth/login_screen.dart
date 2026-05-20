@@ -72,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
     } catch (e) {
       String title = 'Sign In Failed';
-      String message = 'An unexpected error occurred.';
+      String message = e.toString().replaceAll('Exception: ', '');
 
       if (e.toString().contains('wrong-password')) {
         title = 'Wrong Password';
@@ -351,6 +351,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 fontSize: 12.sp,
                                                 fontWeight: FontWeight.w600,
                                                 color: AppTheme.deepTeal,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'First-time logging in? Enter your desired password to set it.',
+                                              style: TextStyle(
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.w500,
+                                                color: Colors.grey[500],
                                               ),
                                             ),
                                             const SizedBox(height: 8),

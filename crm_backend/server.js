@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB Connection
 const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/we_crm';
@@ -17,15 +18,11 @@ console.log('Mongoose is attempting to connect to:', mongoURI);
 
 mongoose.connect(mongoURI)
   .then(() => {
-    console.log('====================================');
-    console.log('🚀 Connected successfully to MongoDB!');
-    console.log('====================================');
+    console.log('Connected to MongoDB.');
   })
   .catch((err) => {
-    console.error('====================================');
-    console.error('❌ MongoDB Connection Error:', err.message);
-    console.error('Make sure your MongoDB server is running or your URI is correct.');
-    console.log('====================================');
+    console.error('MongoDB Connection Error:', err.message);
+    console.log('Make sure your MongoDB server is running or your URI is correct.');
   });
 
 // Base Route
@@ -51,8 +48,6 @@ app.use('/api/compliance', complianceRoutes);
 
 // Start Express Server
 app.listen(PORT, () => {
-  console.log('====================================');
-  console.log(`📡 Server running on port ${PORT}`);
-  console.log(`👉 Access URL: http://localhost:${PORT}`);
-  console.log('====================================');
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Access URL: http://localhost:${PORT}`);
 });

@@ -26,6 +26,7 @@ export class Sidebar implements OnInit {
       items: [
         { id: 'dashboard', label: 'Dashboard', color: '#2563EB' },
         { id: 'clients', label: 'Clients', color: '#10B981' },
+        { id: 'team', label: 'Employees', color: '#8B5CF6' }
       ]
     }
   ];

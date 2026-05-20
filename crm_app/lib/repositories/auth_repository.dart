@@ -57,6 +57,12 @@ class AuthRepository {
         
         // Handle cases where the response might be { user: { ... }, token: "..." }
         final userData = data['user'] ?? data;
+
+        // Only clients (role: 'customer') can log in to the mobile application
+        final role = userData['role']?.toString();
+        if (role != null && role != 'customer') {
+          throw Exception('Only clients can log in to the mobile application.');
+        }
         
         String extractedUid = 'unknown';
         final rawId = userData['_id'];

@@ -30,12 +30,11 @@ export class Api {
     return this.http.post<any>(url, body, { headers: this.getHeaders() });
   }
 
-  /**
-   * Register a new user in the system
-   * @param userData Registration data (email, password, owner_name, role, etc.)
-   */
   register(userData: any): Observable<any> {
     const url = `${this.baseUrl}/register`;
+    if (userData instanceof FormData) {
+      return this.http.post<any>(url, userData);
+    }
     return this.http.post<any>(url, userData, { headers: this.getHeaders() });
   }
 
@@ -70,6 +69,14 @@ export class Api {
   put<T>(endpoint: string, body: any): Observable<T> {
     const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
     return this.http.put<T>(url, body, { headers: this.getHeaders() });
+  }
+
+  /**
+   * General purpose PATCH request
+   */
+  patch<T>(endpoint: string, body: any): Observable<T> {
+    const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    return this.http.patch<T>(url, body, { headers: this.getHeaders() });
   }
 
   /**
