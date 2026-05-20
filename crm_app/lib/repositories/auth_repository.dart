@@ -31,16 +31,7 @@ class AuthRepository {
 
   // Sign In with Email/Password (Real API)
   Future<void> signIn(String email, String password) async {
-    // Hardcoded Test Account for Testing
-    if (email == 'test@wecrm.com' && password == 'password123') {
-      _currentUser = MockAuthUser(
-        uid: 'test-user-id',
-        email: 'test@wecrm.com',
-        displayName: 'Test User',
-      );
-      _authStateController.add(_currentUser);
-      return;
-    }
+
 
     try {
       final response = await http.post(
@@ -158,17 +149,7 @@ class AuthRepository {
       return;
     }
 
-    // Bypass for Test User
-    if (uid == 'test-user-id') {
-      yield UserModel(
-        id: uid,
-        name: 'Test User',
-        email: 'test@wecrm.com',
-        phone: '1234567890',
-        role: UserRole.customer,
-      );
-      return;
-    }
+
 
     try {
       final response = await http.get(

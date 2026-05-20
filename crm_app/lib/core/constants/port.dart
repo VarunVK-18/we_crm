@@ -11,9 +11,9 @@ String getBaseUrl() {
     }
     if (Platform.isAndroid) {
       if (isEmulator) {
-        return 'http://192.168.29.10:5001';
+        return 'http://10.0.2.2:5001'; // Default IP for Android emulator to connect to local host
       } else {
-        return 'http://192.168.29.10:5001';
+        return 'http://192.168.0.5:5001'; // User's current WiFi IP address
       }
     }
     return 'http://localhost:5001';
