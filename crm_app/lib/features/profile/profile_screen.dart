@@ -49,7 +49,7 @@ class ProfileScreen extends ConsumerWidget {
               'Profile',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w700,
                   ),
             ),
             centerTitle: false,
@@ -68,7 +68,7 @@ class ProfileScreen extends ConsumerWidget {
                     phone: user?.phone ?? '---',
                   ),
 
-                  SizedBox(height: 32.r),
+                  SizedBox(height: 16.r),
 
                   // ── Quick Actions ─────────────────────────────────────────
                   Text(
@@ -150,7 +150,7 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ),
 
-                  SizedBox(height: 32.r),
+                  SizedBox(height: 16.r),
 
                   // ── Account Management ────────────────────────────────────
                   Text(
@@ -173,7 +173,7 @@ class ProfileScreen extends ConsumerWidget {
                     ],
                   ),
 
-                  SizedBox(height: 48.r),
+                  SizedBox(height: 28.r),
 
                   // ── Sign Out ─────────────────────────────────────────────
                   SizedBox(

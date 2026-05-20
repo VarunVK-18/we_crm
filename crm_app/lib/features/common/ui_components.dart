@@ -383,7 +383,7 @@ class ResponsiveHeader extends StatelessWidget {
   }
 }
 
-class ProfileTile extends StatelessWidget {
+class ProfileTile extends StatefulWidget {
   final dynamic icon;
   final String title;
   final String subtitle;
@@ -400,47 +400,70 @@ class ProfileTile extends StatelessWidget {
   });
 
   @override
+  State<ProfileTile> createState() => _ProfileTileState();
+}
+
+class _ProfileTileState extends State<ProfileTile> {
+  bool _isPressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(horizontal: 24.r, vertical: 8.r),
-      leading: Container(
-        padding: EdgeInsets.all(12.r),
-        decoration: BoxDecoration(
-          color: (color ?? AppTheme.corporateBlue).withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12.r),
-        ),
-        child: icon is IconData
-            ? Icon(
-                icon as IconData,
-                color: color ?? AppTheme.corporateBlue,
-                size: 22.ip,
-              )
-            : HugeIcon(
-                icon: icon,
-                color: color ?? AppTheme.corporateBlue,
-                size: 22.ip,
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _isPressed = false),
+      child: AnimatedScale(
+        scale: _isPressed ? 0.98 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: Container(
+          color: Colors.transparent, // Required for GestureDetector to catch taps on empty space
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 24.r, vertical: 6.r),
+            leading: Container(
+              padding: EdgeInsets.all(12.r),
+              decoration: BoxDecoration(
+                color: (widget.color ?? AppTheme.corporateBlue).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12.r),
               ),
-      ),
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: color ?? AppTheme.deepTeal,
-          fontWeight: FontWeight.w400,
-          fontSize: 15.sp,
+              child: widget.icon is IconData
+                  ? Icon(
+                      widget.icon as IconData,
+                      color: widget.color ?? AppTheme.corporateBlue,
+                      size: 22.ip,
+                    )
+                  : HugeIcon(
+                      icon: widget.icon,
+                      color: widget.color ?? AppTheme.corporateBlue,
+                      size: 22.ip,
+                    ),
+            ),
+            title: Text(
+              widget.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: widget.color ?? AppTheme.deepTeal,
+                fontWeight: FontWeight.w600, // Card title weight 600
+                fontSize: 15.sp,
+              ),
+            ),
+            subtitle: Text(
+              widget.subtitle,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[500],
+                fontWeight: FontWeight.w400, // Subtitle weight 400
+                fontSize: 11.sp,
+              ),
+            ),
+            trailing: Icon(
+              LucideIcons.chevronRight,
+              size: 18.ip,
+              color: Colors.grey[400],
+            ),
+          ),
         ),
-      ),
-      subtitle: Text(
-        subtitle,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: Colors.grey[500],
-          fontSize: 11.sp,
-        ),
-      ),
-      trailing: Icon(
-        LucideIcons.chevronRight,
-        size: 18.ip,
-        color: Colors.grey[400],
       ),
     );
   }

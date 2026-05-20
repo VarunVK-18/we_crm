@@ -111,8 +111,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             setState(() => _currentIndex = index);
             _pageController.animateToPage(
               index,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeInOutCubic,
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutQuart,
             );
           },
           title: navItems[_currentIndex].label,
@@ -136,8 +136,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
                     if (_pageController.position.haveDimensions) {
                       final pageVal = _pageController.page ?? _pageController.initialPage.toDouble();
                       final diff = (pageVal - index).abs();
-                      scale = (1 - (diff * 0.03)).clamp(0.97, 1.0);
-                      opacity = (1 - (diff * 0.4)).clamp(0.0, 1.0);
+                      scale = (1 - (diff * 0.04)).clamp(0.96, 1.0);
+                      opacity = (1 - (diff * 0.6)).clamp(0.0, 1.0);
                     } else {
                       scale = index == _currentIndex ? 1.0 : 0.97;
                       opacity = index == _currentIndex ? 1.0 : 0.0;

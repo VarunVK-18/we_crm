@@ -489,7 +489,7 @@ class _ModernBottomNav extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(28),
         child: Container(
-          height: 75,
+          height: 65,
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.95),
             borderRadius: BorderRadius.circular(28),
@@ -528,7 +528,7 @@ class _ModernBottomNav extends StatelessWidget {
                   color: isSelected
                       ? AppTheme.deepTeal.withOpacity(0.85)
                       : Colors.grey[500],
-                  strokeWidth: isSelected ? 2.0 : 1.5,
+                  strokeWidth: isSelected ? 2.0 : 1.8,
                 );
               } else {
                 // Fallback for dynamic types
@@ -538,7 +538,7 @@ class _ModernBottomNav extends StatelessWidget {
                   color: isSelected
                       ? AppTheme.deepTeal.withOpacity(0.85)
                       : Colors.grey[500],
-                  strokeWidth: isSelected ? 2.0 : 1.5,
+                  strokeWidth: isSelected ? 2.0 : 1.8,
                 );
               }
 
@@ -549,13 +549,11 @@ class _ModernBottomNav extends StatelessWidget {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+                    horizontal: 12,
+                    vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppTheme.deepTeal.withOpacity(0.12)
-                        : Colors.transparent,
+                    color: Colors.transparent, // Removed the heavy background
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -570,13 +568,22 @@ class _ModernBottomNav extends StatelessWidget {
                         item.label,
                         style: TextStyle(
                           fontSize: 10,
-                          fontWeight: isSelected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
+                          fontWeight: FontWeight.w500, // nav lable weight 500
                           color: isSelected
                               ? AppTheme.deepTeal.withOpacity(0.85)
                               : Colors.grey[600],
                           letterSpacing: 0.2,
+                        ),
+                      ),
+                      // Smaller rounded active indicator
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.only(top: 4),
+                        height: 4,
+                        width: isSelected ? 16 : 0,
+                        decoration: BoxDecoration(
+                          color: isSelected ? AppTheme.deepTeal : Colors.transparent,
+                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ],
