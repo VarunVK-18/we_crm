@@ -67,6 +67,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _emailController.text.trim(),
             _passwordController.text.trim(),
           );
+      TextInput.finishAutofillContext();
     } catch (e) {
       String title = 'Sign In Failed';
       String message = e.toString().replaceAll('Exception: ', '');
@@ -268,234 +269,257 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                       child: Form(
                                         key: _formKey,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
-                                          children: [
-                                            if (MediaQuery.of(
-                                                  context,
-                                                ).size.width <=
-                                                900) ...[
-                                              Center(
-                                                child: Image.asset(
-                                                  'assets/logo.jpg',
-                                                  height: 180,
-                                                  width: 180,
-                                                  fit: BoxFit.contain,
+                                        child: AutofillGroup(
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.stretch,
+                                            children: [
+                                              if (MediaQuery.of(
+                                                    context,
+                                                  ).size.width <=
+                                                  900) ...[
+                                                Center(
+                                                  child: Image.asset(
+                                                    'assets/logo.jpg',
+                                                    height: 180,
+                                                    width: 180,
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 16),
+                                              ],
+                                              Text(
+                                                'Welcome back',
+                                                style: GoogleFonts.inter(
+                                                  color: AppTheme.deepTeal,
+                                                  fontSize: 24.sp,
+                                                  fontWeight: FontWeight.w900,
+                                                  letterSpacing: -0.5,
                                                 ),
                                               ),
-                                              const SizedBox(height: 16),
-                                            ],
-                                            Text(
-                                              'Welcome back',
-                                              style: GoogleFonts.inter(
-                                                color: AppTheme.deepTeal,
-                                                fontSize: 24.sp,
-                                                fontWeight: FontWeight.w900,
-                                                letterSpacing: -0.5,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 12),
-                                            Text(
-                                              'Enter your credentials to access your account',
-                                              style: GoogleFonts.inter(
-                                                color: Colors.grey[600],
-                                                fontSize: 12.sp,
-                                                fontWeight: FontWeight.w500,
-                                                height: 1.5,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 40),
-                                            const SizedBox(height: 0),
-                                            Text(
-                                              'Email Address',
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppTheme.deepTeal,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            TextFormField(
-                                              controller: _emailController,
-                                              keyboardType:
-                                                  TextInputType.emailAddress,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 13.sp),
-                                              decoration: const InputDecoration(
-                                                hintText: 'name@company.com',
-                                                prefixIcon: Icon(
-                                                  LucideIcons.mail,
-                                                  size: 20,
+                                              const SizedBox(height: 12),
+                                              Text(
+                                                'Enter your credentials to access your account',
+                                                style: GoogleFonts.inter(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w500,
+                                                  height: 1.5,
                                                 ),
                                               ),
-                                              validator: (val) {
-                                                if (val == null ||
-                                                    val.isEmpty) {
-                                                  return 'Email is required';
-                                                }
-                                                if (!RegExp(
-                                                  r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                                                ).hasMatch(val)) {
-                                                  return 'Enter a valid email address';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const SizedBox(height: 20),
-                                            Text(
-                                              'Password',
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12.sp,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppTheme.deepTeal,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              'First-time logging in? Enter your desired password to set it.',
-                                              style: TextStyle(
-                                                fontSize: 10.5,
-                                                fontWeight: FontWeight.w500,
-                                                color: Colors.grey[500],
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            TextFormField(
-                                              controller: _passwordController,
-                                              obscureText: !_isPasswordVisible,
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 13.sp),
-                                              decoration: InputDecoration(
-                                                hintText: '••••••••',
-                                                prefixIcon: const Icon(
-                                                  LucideIcons.lock,
-                                                  size: 20,
+                                              const SizedBox(height: 40),
+                                              const SizedBox(height: 0),
+                                              Text(
+                                                'Email Address',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppTheme.deepTeal,
                                                 ),
-                                                suffixIcon: IconButton(
-                                                  icon: Icon(
-                                                    _isPasswordVisible
-                                                        ? LucideIcons.eye
-                                                        : LucideIcons.eyeOff,
+                                              ),
+                                              const SizedBox(height: 8),
+                                              TextFormField(
+                                                controller: _emailController,
+                                                keyboardType:
+                                                    TextInputType.emailAddress,
+                                                autofillHints: const [
+                                                  AutofillHints.email
+                                                ],
+                                                textInputAction:
+                                                    TextInputAction.next,
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 13.sp),
+                                                decoration:
+                                                    const InputDecoration(
+                                                  hintText: 'name@company.com',
+                                                  prefixIcon: Icon(
+                                                    LucideIcons.mail,
                                                     size: 20,
                                                   ),
-                                                  onPressed: () => setState(
-                                                    () => _isPasswordVisible =
-                                                        !_isPasswordVisible,
-                                                  ),
                                                 ),
-                                              ),
-                                              validator: (val) {
-                                                if (val == null ||
-                                                    val.isEmpty) {
-                                                  return 'Password is required';
-                                                }
-                                                if (val.length < 6) {
-                                                  return 'Password must be at least 6 characters';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Align(
-                                              alignment: Alignment.centerRight,
-                                              child: TextButton(
-                                                onPressed: () {
-                                                  // TODO: Reset Password
-                                                  _showAuthDialog(
-                                                    title: 'Notice',
-                                                    message:
-                                                        'Contact Support To Reset Your Password.',
-                                                    isError: false,
-                                                  );
+                                                validator: (val) {
+                                                  if (val == null ||
+                                                      val.isEmpty) {
+                                                    return 'Email is required';
+                                                  }
+                                                  if (!RegExp(
+                                                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                                  ).hasMatch(val)) {
+                                                    return 'Enter a valid email address';
+                                                  }
+                                                  return null;
                                                 },
-                                                child: Text(
-                                                  'Forgot password?',
-                                                  style: GoogleFonts.inter(
-                                                    fontSize: 11.sp,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: AppTheme.deepTeal
-                                                        .withValues(alpha: 0.6),
-                                                    letterSpacing: 0.3,
-                                                  ),
-                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 24),
-                                            Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 12.r),
-                                              child: AnimatedContainer(
-                                                duration: const Duration(
-                                                  milliseconds: 300,
-                                                ),
-                                                height: 56.r,
-                                                decoration: BoxDecoration(
-                                                  gradient:
-                                                      AppTheme.premiumGradient,
-                                                  borderRadius:
-                                                      BorderRadius.circular(
-                                                          16.r),
-                                                  boxShadow:
-                                                      AppTheme.softShadow,
-                                                ),
-                                                child: ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Colors.transparent,
-                                                    shadowColor:
-                                                        Colors.transparent,
-                                                  ),
-                                                  onPressed: _isLoading
-                                                      ? null
-                                                      : _handleSignIn,
-                                                  child: _isLoading
-                                                      ? SizedBox(
-                                                          height: 24.r,
-                                                          width: 24.r,
-                                                          child:
-                                                              CircularProgressIndicator(
-                                                            color: Colors.white,
-                                                            strokeWidth: 2.r,
-                                                          ),
-                                                        )
-                                                      : Text(
-                                                          'Sign In',
-                                                          style:
-                                                              GoogleFonts.inter(
-                                                            fontSize: 14.sp,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.white,
-                                                          ),
-                                                        ),
-                                                ),
-                                              ),
-                                            ),
-                                            SizedBox(height: 16.r),
-                                            TextButton(
-                                              onPressed: _contactSupport,
-                                              style: TextButton.styleFrom(
-                                                backgroundColor:
-                                                    Colors.transparent,
-                                                foregroundColor: AppTheme
-                                                    .deepTeal
-                                                    .withValues(alpha: 0.6),
-                                                padding: EdgeInsets.symmetric(
-                                                    vertical: 8.r),
-                                              ),
-                                              child: Text(
-                                                'Don\'t have an account? Contact support',
+                                              const SizedBox(height: 20),
+                                              Text(
+                                                'Password',
                                                 style: GoogleFonts.inter(
-                                                  fontWeight: FontWeight.w700,
                                                   fontSize: 12.sp,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppTheme.deepTeal,
                                                 ),
                                               ),
-                                            ),
-                                          ],
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'First-time logging in? Enter your desired password to set it.',
+                                                style: TextStyle(
+                                                  fontSize: 10.5,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: Colors.grey[500],
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              TextFormField(
+                                                controller: _passwordController,
+                                                obscureText:
+                                                    !_isPasswordVisible,
+                                                autofillHints: const [
+                                                  AutofillHints.password
+                                                ],
+                                                textInputAction:
+                                                    TextInputAction.done,
+                                                onEditingComplete: () =>
+                                                    TextInput
+                                                        .finishAutofillContext(),
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 13.sp),
+                                                decoration: InputDecoration(
+                                                  hintText: '••••••••',
+                                                  prefixIcon: const Icon(
+                                                    LucideIcons.lock,
+                                                    size: 20,
+                                                  ),
+                                                  suffixIcon: IconButton(
+                                                    icon: Icon(
+                                                      _isPasswordVisible
+                                                          ? LucideIcons.eye
+                                                          : LucideIcons.eyeOff,
+                                                      size: 20,
+                                                    ),
+                                                    onPressed: () => setState(
+                                                      () => _isPasswordVisible =
+                                                          !_isPasswordVisible,
+                                                    ),
+                                                  ),
+                                                ),
+                                                validator: (val) {
+                                                  if (val == null ||
+                                                      val.isEmpty) {
+                                                    return 'Password is required';
+                                                  }
+                                                  if (val.length < 6) {
+                                                    return 'Password must be at least 6 characters';
+                                                  }
+                                                  return null;
+                                                },
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Align(
+                                                alignment:
+                                                    Alignment.centerRight,
+                                                child: TextButton(
+                                                  onPressed: () {
+                                                    // TODO: Reset Password
+                                                    _showAuthDialog(
+                                                      title: 'Notice',
+                                                      message:
+                                                          'Contact Support To Reset Your Password.',
+                                                      isError: false,
+                                                    );
+                                                  },
+                                                  child: Text(
+                                                    'Forgot password?',
+                                                    style: GoogleFonts.inter(
+                                                      fontSize: 11.sp,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: AppTheme.deepTeal
+                                                          .withValues(
+                                                              alpha: 0.6),
+                                                      letterSpacing: 0.3,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 24),
+                                              Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 12.r),
+                                                child: AnimatedContainer(
+                                                  duration: const Duration(
+                                                    milliseconds: 300,
+                                                  ),
+                                                  height: 56.r,
+                                                  decoration: BoxDecoration(
+                                                    gradient: AppTheme
+                                                        .premiumGradient,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16.r),
+                                                    boxShadow:
+                                                        AppTheme.softShadow,
+                                                  ),
+                                                  child: ElevatedButton(
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.transparent,
+                                                      shadowColor:
+                                                          Colors.transparent,
+                                                    ),
+                                                    onPressed: _isLoading
+                                                        ? null
+                                                        : _handleSignIn,
+                                                    child: _isLoading
+                                                        ? SizedBox(
+                                                            height: 24.r,
+                                                            width: 24.r,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                              color:
+                                                                  Colors.white,
+                                                              strokeWidth: 2.r,
+                                                            ),
+                                                          )
+                                                        : Text(
+                                                            'Sign In',
+                                                            style: GoogleFonts
+                                                                .inter(
+                                                              fontSize: 14.sp,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
+                                                          ),
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(height: 16.r),
+                                              TextButton(
+                                                onPressed: _contactSupport,
+                                                style: TextButton.styleFrom(
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                  foregroundColor: AppTheme
+                                                      .deepTeal
+                                                      .withValues(alpha: 0.6),
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 8.r),
+                                                ),
+                                                child: Text(
+                                                  'Don\'t have an account? Contact support',
+                                                  style: GoogleFonts.inter(
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 12.sp,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
