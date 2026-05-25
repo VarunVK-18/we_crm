@@ -163,6 +163,13 @@ class CustomerDashboard extends ConsumerWidget {
               // Hero Registration Card (Modernized)
               const _HeroRegistrationCard(),
 
+              if (user?.services != null && user!.services.isNotEmpty) ...[
+                SizedBox(height: 32.r),
+                _buildSectionHeader('Registered Services'),
+                SizedBox(height: 16.r),
+                _RegisteredServicesList(services: user.services),
+              ],
+
               SizedBox(height: 32.r),
 
               // Section 1: Services
@@ -468,6 +475,95 @@ class _ReferAndEarnBanner extends StatelessWidget {
             child: Icon(LucideIcons.gift, color: Colors.amber, size: 24.ip),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RegisteredServicesList extends StatelessWidget {
+  final List<String> services;
+  const _RegisteredServicesList({required this.services});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 24.r),
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: services.map((srv) {
+          return Container(
+            margin: EdgeInsets.only(right: 16.r),
+            padding: EdgeInsets.all(16.r),
+            width: 220.r,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: AppTheme.deepTeal.withOpacity(0.08),
+                width: 1.0.r,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10.r),
+                      decoration: BoxDecoration(
+                        color: AppTheme.deepTeal.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedTask01,
+                        color: AppTheme.deepTeal,
+                        size: 20,
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 8.r,
+                        vertical: 3.r,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFDCFCE7),
+                        borderRadius: BorderRadius.circular(6.r),
+                      ),
+                      child: Text(
+                        'Active',
+                        style: TextStyle(
+                          fontSize: 9.sp,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF15803D),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 16.r),
+                Text(
+                  srv,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.deepTeal,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }

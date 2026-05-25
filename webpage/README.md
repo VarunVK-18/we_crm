@@ -63,7 +63,7 @@ For more information on using the Angular CLI, including detailed command refere
 The database can be seeded with the following credentials using `node seed.js` in the `crm_backend` directory:
 
 ### Customer User
-- **Email**: `test@wecrm.com`
+- **Email**: `demo@gmail.com`
 - **Password**: `123456`
 - **Role**: `customer`
 

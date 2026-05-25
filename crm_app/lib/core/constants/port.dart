@@ -9,14 +9,11 @@ String getBaseUrl() {
     if (kIsWeb) {
       return 'http://localhost:5001';
     }
-    if (Platform.isAndroid) {
-      if (isEmulator) {
-        return 'http://10.0.2.2:5001'; // Default IP for Android emulator to connect to local host
-      } else {
-        return 'http://192.168.0.5:5001'; // User's current WiFi IP address
-      }
+    if (Platform.isAndroid && isEmulator) {
+      return 'http://10.0.2.2:5001'; // Android emulator specific loopback
     }
-    return 'http://localhost:5001';
+    // For iOS simulator, iOS physical device, and Android physical device:
+    return 'http://192.168.0.3:5001';
   }
   return 'https://peoplesoft-develop.onrender.com'; // Develop Backend
 }

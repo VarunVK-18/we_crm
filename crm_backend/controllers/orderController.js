@@ -1,4 +1,5 @@
 const ServiceOrder = require('../models/ServiceOrder');
+const User = require('../models/User');
 
 // Get all service orders for a user
 exports.getUserOrders = async (req, res) => {
@@ -61,3 +62,26 @@ exports.updateOrder = async (req, res) => {
     res.status(500).json({ message: 'Server error while updating order.', error: error.message });
   }
 };
+
+// Get all service orders belonging to clients of a given company
+exports.getCompanyOrders = async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    if (!companyId) {
+      return res.status(400).json({ message: 'Company ID is required.' });
+    }
+    const clients = await User.find({ company_id: companyId, role: 'customer' }).select('_id');
+    const clientIds = clients.map(client => client._id.toString());
+    const orders = await ServiceOrder.find({
+      $or: [
+        { clientUid: { $in: clientIds } },
+        { companyId: companyId }
+      ]
+    }).sort({ createdAt: -1 });
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error('Error fetching company orders:', error);
+    res.status(500).json({ message: 'Server error while fetching company orders.', error: error.message });
+  }
+};
+

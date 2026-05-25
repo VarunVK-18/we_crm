@@ -68,7 +68,89 @@ class ProfileScreen extends ConsumerWidget {
                     phone: user?.phone ?? '---',
                   ),
 
-                  SizedBox(height: 16.r),
+                  if (user?.services != null && user!.services.isNotEmpty) ...[
+                    SizedBox(height: 24.r),
+                    Text(
+                      'Registered Services',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16.sp,
+                          ),
+                    ),
+                    SizedBox(height: 16.r),
+                    Container(
+                      padding: EdgeInsets.all(20.r),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24.r),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: user.services.map((srv) {
+                          final isLast = user.services.last == srv;
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              top: 8.r,
+                              bottom: isLast ? 8.r : 16.r,
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.all(10.r),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.deepTeal.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(12.r),
+                                  ),
+                                  child: const HugeIcon(
+                                    icon: HugeIcons.strokeRoundedTask01,
+                                    color: AppTheme.deepTeal,
+                                    size: 18,
+                                  ),
+                                ),
+                                SizedBox(width: 16.r),
+                                Expanded(
+                                  child: Text(
+                                    srv,
+                                    style: TextStyle(
+                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.deepTeal,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 10.r,
+                                    vertical: 4.r,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFDCFCE7),
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  child: Text(
+                                    'Active',
+                                    style: TextStyle(
+                                      fontSize: 10.sp,
+                                      fontWeight: FontWeight.w800,
+                                      color: const Color(0xFF15803D),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+
+                  SizedBox(height: 24.r),
 
                   // ── Quick Actions ─────────────────────────────────────────
                   Text(

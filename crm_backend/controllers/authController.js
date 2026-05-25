@@ -1,6 +1,9 @@
 const User = require('../models/User');
+const Company = require('../models/Company');
+const AuditLog = require('../models/AuditLog');
+const { logActivity } = require('../middleware/rbac');
 
-// @desc    Register a new user
+// @desc    Register a new user (client) — scoped to a company
 // @route   POST /api/register
 // @access  Public
 const registerUser = async (req, res) => {
@@ -18,7 +21,8 @@ const registerUser = async (req, res) => {
       gstin,
       address,
       status,
-      revenue
+      revenue,
+      company_id   // company scope passed from admin dashboard
     } = req.body;
 
     // Check if user already exists
@@ -52,8 +56,22 @@ const registerUser = async (req, res) => {
       }
     }
 
+    const finalCompanyId = req.user ? req.user.company_id : (company_id || null);
+    const creatorId = req.user ? req.user._id : null;
+    
+    // Set onboarding status based on creator role and input
+    let onboarding_status = req.body.onboarding_status || 'Prospect';
+    if (req.user) {
+      if (req.user.role === 'admin') {
+        onboarding_status = req.body.onboarding_status || 'Approved';
+      } else if (req.user.role === 'account_manager') {
+        onboarding_status = req.body.onboarding_status || 'Pending Verification';
+      }
+    }
+
     // Create user (password is automatically hashed via mongoose pre-save hook)
     const user = await User.create({
+      company_id: finalCompanyId,
       email: email.toLowerCase().trim(),
       password: password || '',
       owner_name,
@@ -68,13 +86,25 @@ const registerUser = async (req, res) => {
       revenue: revenue ? Number(revenue) : 0,
       gstin_file,
       pan_file,
-      services: parsedServices || []
+      services: parsedServices || [],
+      created_by: creatorId,
+      onboarding_status
     });
 
     if (user) {
       // Remove password from response
       const userResponse = user.toObject();
       delete userResponse.password;
+
+      // Log the registration action
+      const performer = req.user ? req.user._id : user._id;
+      const performerCompany = req.user ? req.user.company_id : user.company_id;
+      await logActivity(
+        performer,
+        'client_registration',
+        `Registered client account: ${user.owner_name} (${user.email}) with onboarding status: ${onboarding_status}`,
+        performerCompany
+      );
 
       res.status(201).json({
         message: 'Registration successful',
@@ -99,8 +129,8 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Please provide email and password' });
     }
 
-    // Find user by email
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    // Find user by email, populate company details
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).populate('company_id');
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -143,7 +173,7 @@ const loginUser = async (req, res) => {
 // @access  Public
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
+    const user = await User.findById(req.params.id).select('-password').populate('company_id');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -155,12 +185,32 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// @desc    Get all client users (role = 'customer')
-// @route   GET /api/users/clients
-// @access  Public
 const getClients = async (req, res) => {
   try {
-    const clients = await User.find({ role: 'customer' }).select('-password');
+    const userCompanyId = req.user ? req.user.company_id : req.query.company_id;
+    const filter = { role: 'customer' };
+    if (userCompanyId) {
+      filter.company_id = userCompanyId;
+    }
+
+    // Apply role-based client listing scoping
+    if (req.user) {
+      const role = req.user.role;
+      if (role === 'account_manager') {
+        // Account Manager: view assigned clients only
+        filter.assigned_to = req.user._id;
+      } else if (role === 'sales_staff' || role === 'agent') {
+        // Sales Staff & Agent: view own clients only
+        filter.created_by = req.user._id;
+      } else if (role === 'filling_staff') {
+        // Filling Staff: view assigned clients only
+        filter.assigned_to = req.user._id;
+      }
+    }
+
+    const clients = await User.find(filter)
+      .select('-password')
+      .populate('assigned_to', 'owner_name email role');
     res.json({
       success: true,
       clients
@@ -170,37 +220,54 @@ const getClients = async (req, res) => {
   }
 };
 
-// @desc    Register employee directly
+// @desc    Register employee directly — scoped to a company
 // @route   POST /api/auth/register-direct
 // @access  Public (should be restricted in production)
 const registerDirect = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, company_id } = req.body;
     let user = await User.findOne({ email: email.toLowerCase().trim() });
     if (user) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
+    const finalCompanyId = req.user ? req.user.company_id : (company_id || null);
     user = new User({ 
       owner_name: name, 
       email: email.toLowerCase().trim(), 
       password: password || 'Default@123', 
-      role: role || 'agent' 
+      role: role || 'agent',
+      company_id: finalCompanyId
     });
     await user.save();
+
+    if (req.user) {
+      await logActivity(
+        req.user._id,
+        'employee_creation',
+        `Registered new employee: ${user.owner_name} (${user.email}) with role: ${user.role}`,
+        req.user.company_id
+      );
+    }
+
     res.status(201).json({ success: true, message: 'User registered successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// @desc    Get team groups of employees
-// @route   GET /api/users/team-groups
+// @desc    Get team groups of employees — scoped by company_id
+// @route   GET /api/users/team-groups?company_id=<id>
 // @access  Public
 const getTeamGroups = async (req, res) => {
   try {
-    // Exclude role = 'customer' from team groups as customers are clients
-    const users = await User.find({ role: { $ne: 'customer' } }).select('owner_name email role');
+    const { company_id } = req.query;
+    const filter = { role: { $ne: 'customer' } };
+    if (company_id) {
+      filter.company_id = company_id;
+    }
+
+    const users = await User.find(filter).select('owner_name email role company_id');
     
     // Group users by role
     const groups = users.reduce((acc, user) => {
@@ -232,7 +299,15 @@ const getTeamGroups = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-    await User.findByIdAndDelete(id);
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (deletedUser && req.user) {
+      await logActivity(
+        req.user._id,
+        'employee_deletion',
+        `Removed employee: ${deletedUser.owner_name} (${deletedUser.email})`,
+        req.user.company_id
+      );
+    }
     res.status(200).json({ success: true, message: 'User deleted' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -251,6 +326,16 @@ const editUser = async (req, res) => {
       email: email.toLowerCase().trim(), 
       role 
     }, { new: true });
+
+    if (user && req.user) {
+      await logActivity(
+        req.user._id,
+        'employee_edit',
+        `Updated details of employee: ${user.owner_name} (${user.email}) to role: ${user.role}`,
+        req.user.company_id
+      );
+    }
+
     res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -270,9 +355,220 @@ const resetPassword = async (req, res) => {
     
     user.password = 'Default@123';
     await user.save();
+
+    if (req.user) {
+      await logActivity(
+        req.user._id,
+        'employee_password_reset',
+        `Reset password of employee: ${user.owner_name} (${user.email}) to default`,
+        req.user.company_id
+      );
+    }
+
     res.status(200).json({ success: true, message: 'Password reset to default' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Register a new company + create admin account
+// @route   POST /api/auth/register-company
+// @access  Public
+const registerCompany = async (req, res) => {
+  try {
+    const {
+      company_code,
+      company_name,
+      gstin,
+      owner_name,
+      email,
+      password,
+      phone,
+      address
+    } = req.body;
+
+    // Validate required fields
+    if (!company_code || !company_name || !owner_name || !email || !password) {
+      return res.status(400).json({ message: 'Please fill in all required fields (Company Code, Company Name, Owner Name, Email, Password)' });
+    }
+
+    const codeUpper = company_code.toUpperCase().trim();
+
+    // Check if company code already exists
+    const companyExists = await Company.findOne({ company_code: codeUpper });
+    if (companyExists) {
+      return res.status(400).json({ message: `A company with code "${codeUpper}" is already registered` });
+    }
+
+    // Check if email already exists
+    const emailExists = await User.findOne({ email: email.toLowerCase().trim() });
+    if (emailExists) {
+      return res.status(400).json({ message: 'User already exists with this email address' });
+    }
+
+    // Step 1: Create the Company document
+    const company = await Company.create({
+      company_code: codeUpper,
+      company_name,
+      gstin: gstin || '',
+      phone: phone || '',
+      address: address || '',
+      status: 'active'
+    });
+
+    // Step 2: Create the admin User linked to this company
+    const user = await User.create({
+      company_id: company._id,
+      company_code: codeUpper,
+      company_name,
+      gstin: gstin || '',
+      owner_name,
+      email: email.toLowerCase().trim(),
+      password,
+      phone: phone || '',
+      address: address || '',
+      role: 'admin',
+      status: 'active'
+    });
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+    // Attach company object so the frontend has full context
+    userResponse.company_id = company.toObject();
+
+    res.status(201).json({
+      message: 'Company registered successfully',
+      user: userResponse
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Assign client to an employee (Account Manager or Filling Staff)
+// @route   PATCH /api/users/clients/:id/assign
+// @access  Private (Admin, Account Manager)
+const assignClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { employee_id } = req.body;
+
+    const client = await User.findById(id);
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'Client not found' });
+    }
+
+    let employeeName = 'None';
+    if (employee_id) {
+      const employee = await User.findById(employee_id);
+      if (!employee) {
+        return res.status(404).json({ success: false, message: 'Employee not found' });
+      }
+      employeeName = employee.owner_name;
+      client.assigned_to = employee_id;
+    } else {
+      client.assigned_to = null;
+    }
+
+    await client.save();
+
+    if (req.user) {
+      await logActivity(
+        req.user._id,
+        'client_assigned',
+        `Assigned client '${client.owner_name}' to employee '${employeeName}'`,
+        req.user.company_id
+      );
+    }
+
+    res.status(200).json({ success: true, message: 'Client assigned successfully', client });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Update client onboarding status (onboarding workflow)
+// @route   PATCH /api/users/clients/:id/onboarding
+// @access  Private (Admin, Account Manager, Sales Staff, Agent)
+const approveClient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { onboarding_status } = req.body;
+
+    const client = await User.findById(id);
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'Client not found' });
+    }
+
+    const oldStatus = client.onboarding_status;
+    client.onboarding_status = onboarding_status;
+    await client.save();
+
+    if (req.user) {
+      await logActivity(
+        req.user._id,
+        'onboarding_status_update',
+        `Transitioned client '${client.owner_name}' onboarding status from '${oldStatus}' to '${onboarding_status}'`,
+        req.user.company_id
+      );
+    }
+
+    res.status(200).json({ success: true, message: 'Client onboarding status updated successfully', client });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get system audit logs
+// @route   GET /api/audit-logs
+// @access  Private (Admin, Auditor)
+const getAuditLogs = async (req, res) => {
+  try {
+    const userCompanyId = req.user.company_id;
+    const filter = {};
+    if (userCompanyId) {
+      filter.company_id = userCompanyId;
+    }
+
+    const logs = await AuditLog.find(filter)
+      .populate('performed_by', 'owner_name email role')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, logs });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const subscribeService = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { serviceName } = req.body;
+
+    if (!serviceName) {
+      return res.status(400).json({ message: 'Service name is required' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.services.includes(serviceName)) {
+      user.services.push(serviceName);
+      await user.save();
+
+      await logActivity(
+        user._id,
+        'Client Subscribed to Service',
+        `User registered to service: ${serviceName}`,
+        req.ip
+      );
+    }
+
+    res.status(200).json({ success: true, services: user.services });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -285,5 +581,10 @@ module.exports = {
   getTeamGroups,
   deleteUser,
   editUser,
-  resetPassword
+  resetPassword,
+  registerCompany,
+  assignClient,
+  approveClient,
+  getAuditLogs,
+  subscribeService
 };

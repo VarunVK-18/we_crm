@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
+  // Link every user to a company (multi-tenant scoping)
+  company_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    default: null
+  },
   owner_name: {
     type: String,
     required: [true, 'Owner name is required']
@@ -30,8 +36,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['customer', 'admin', 'agent'],
     default: 'customer'
+  },
+  company_code: {
+    type: String,
+    default: 'WE',
+    trim: true,
+    uppercase: true
   },
   company_name: {
     type: String,
@@ -71,6 +82,25 @@ const UserSchema = new mongoose.Schema({
     default: ''
   },
   services: {
+    type: [String],
+    default: []
+  },
+  assigned_to: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  created_by: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  onboarding_status: {
+    type: String,
+    enum: ['Prospect', 'Pending Verification', 'Ready for Approval', 'Approved', 'Rejected'],
+    default: 'Prospect'
+  },
+  permissions: {
     type: [String],
     default: []
   }

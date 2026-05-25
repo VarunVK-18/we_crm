@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 280px;
+  width: 240px;
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border-color);
   padding: 0 0 4px 0;
@@ -13,7 +13,7 @@
 
 /* Branding Header */
 .branding-header {
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;

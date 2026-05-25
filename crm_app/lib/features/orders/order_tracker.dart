@@ -13,6 +13,7 @@ import '../../core/utils/whatsapp_utils.dart';
 import 'service_order_detail_screen.dart';
 import 'invoice_screen.dart';
 import '../../providers/orders_provider.dart';
+import '../../providers/auth_provider.dart';
 
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
@@ -41,8 +42,48 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(serviceOrdersProvider);
-    final orders = ordersAsync.value ?? [];
+    var orders = ordersAsync.value ?? [];
     final isLoading = ordersAsync.isLoading && orders.isEmpty;
+
+    final user = ref.watch(userProfileProvider).value;
+    final registeredServices = user?.services ?? [];
+    final existingServiceTypes = orders.map((o) => o.serviceType.toLowerCase()).toSet();
+    final List<ServiceOrder> mockRegisteredOrders = [];
+    for (final srv in registeredServices) {
+      if (!existingServiceTypes.contains(srv.toLowerCase())) {
+        mockRegisteredOrders.add(
+          ServiceOrder(
+            id: 'reg-${srv.toLowerCase().replaceAll(' ', '-')}',
+            clientUid: user?.id ?? '',
+            entityName: (user != null && user.companyName.isNotEmpty) ? user.companyName : 'Default Entity',
+            serviceType: srv,
+            companyName: user?.companyName ?? '',
+            status: ServiceStatus.active,
+            stage: OrderStage.workInProgress,
+            steps: [
+              const ServiceStep(
+                title: 'Service Activated',
+                description: 'Your registered service has been activated successfully.',
+                isCompleted: true,
+              ),
+              const ServiceStep(
+                title: 'Setup Completed',
+                description: 'Service setup is complete and active on your profile.',
+                isCompleted: true,
+              ),
+            ],
+            assignedExpert: 'Account Admin',
+            expertPhone: '',
+            createdAt: user?.createdAt ?? DateTime.now(),
+          ),
+        );
+      }
+    }
+
+    if (mockRegisteredOrders.isNotEmpty) {
+      orders = [...orders, ...mockRegisteredOrders];
+    }
+
 
     // Build entity list from database data
     final entities = orders.map((o) => o.entityName).toSet().toList()..sort();

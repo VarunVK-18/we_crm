@@ -12,8 +12,15 @@ const {
   getTeamGroups,
   deleteUser,
   editUser,
-  resetPassword
+  resetPassword,
+  registerCompany,
+  assignClient,
+  approveClient,
+  getAuditLogs,
+  subscribeService
 } = require('../controllers/authController');
+
+const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../uploads');
@@ -35,20 +42,32 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Authentication routes
-router.post('/register', upload.any(), registerUser);
+router.post('/register', (req, res, next) => {
+  if (req.headers['x-user-id']) {
+    return checkUser(req, res, next);
+  }
+  next();
+}, preventAuditorWrite, upload.any(), registerUser);
 router.post('/login', loginUser);
-router.post('/auth/register-direct', registerDirect);
+router.post('/auth/register-direct', checkUser, preventAuditorWrite, permit('admin'), registerDirect);
+router.post('/auth/register-company', registerCompany);
 
 // User profile route
 router.get('/users/profile/:id', getUserProfile);
+router.post('/users/profile/:id/subscribe-service', subscribeService);
 
-// Client users listing route
-router.get('/users/clients', getClients);
+// Client users listing & actions route
+router.get('/users/clients', checkUser, getClients);
+router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'account_manager'), assignClient);
+router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'account_manager', 'sales_staff', 'agent'), approveClient);
 
 // Employee/Team routes
-router.get('/users/team-groups', getTeamGroups);
-router.delete('/delete_user/:id', deleteUser);
-router.patch('/edit_user/:id', editUser);
-router.post('/reset-password/:id', resetPassword);
+router.get('/users/team-groups', checkUser, getTeamGroups);
+router.delete('/delete_user/:id', checkUser, preventAuditorWrite, permit('admin'), deleteUser);
+router.patch('/edit_user/:id', checkUser, preventAuditorWrite, permit('admin'), editUser);
+router.post('/reset-password/:id', checkUser, preventAuditorWrite, permit('admin'), resetPassword);
+
+// Audit logs route
+router.get('/audit-logs', checkUser, permit('admin', 'auditor'), getAuditLogs);
 
 module.exports = router;

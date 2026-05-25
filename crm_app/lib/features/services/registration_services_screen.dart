@@ -70,6 +70,21 @@ class _RegistrationServicesScreenState
       ],
     },
     {
+      'title': 'Compliance Audit',
+      'description':
+          'Ensure your business complies with all statutory regulations through our comprehensive audit, risk identification, and rectification support.',
+      'icon': HugeIcons.strokeRoundedTask01,
+      'color': const Color(0xFF10B981),
+      'category': 'Compliance Services',
+      'features': [
+        'Statutory Compliance Audit',
+        'Operational Risk Assessment',
+        'Filing Gap Analysis',
+        'Detailed Compliance Report',
+        'Expert Remediation Advisory',
+      ],
+    },
+    {
       'title': 'Proprietorship Registration',
       'description':
           'Sole vendor formation with business identification and MSME certification.',

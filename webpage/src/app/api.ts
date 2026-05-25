@@ -10,12 +10,18 @@ export class Api {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Helper to construct auth headers
-   */
   private getHeaders(): HttpHeaders {
+    const savedUser = localStorage.getItem('user');
+    let userId = '';
+    if (savedUser) {
+      try {
+        const u = JSON.parse(savedUser);
+        userId = u._id || '';
+      } catch (e) {}
+    }
     return new HttpHeaders({
       'Content-Type': 'application/json',
+      'x-user-id': userId
     });
   }
 
@@ -32,8 +38,17 @@ export class Api {
 
   register(userData: any): Observable<any> {
     const url = `${this.baseUrl}/register`;
+    const savedUser = localStorage.getItem('user');
+    let userId = '';
+    if (savedUser) {
+      try {
+        const u = JSON.parse(savedUser);
+        userId = u._id || '';
+      } catch (e) {}
+    }
     if (userData instanceof FormData) {
-      return this.http.post<any>(url, userData);
+      const headers = new HttpHeaders({ 'x-user-id': userId });
+      return this.http.post<any>(url, userData, { headers });
     }
     return this.http.post<any>(url, userData, { headers: this.getHeaders() });
   }

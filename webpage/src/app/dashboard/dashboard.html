@@ -53,6 +53,12 @@
           <!-- Glass welcome banner -->
           <div class="welcome-banner">
             <h2 class="banner-heading">Welcome Back, {{ user()?.owner_name || 'Admin' }}!</h2>
+            @if (getCompanyName()) {
+              <div class="company-badge-row">
+                <span class="company-code-chip">{{ getCompanyCode() }}</span>
+                <span class="company-name-tag">{{ getCompanyName() }}</span>
+              </div>
+            }
             <p class="banner-subtext">Manage your professional audits, attendance files, and corporate HR configurations securely in one unified portal.</p>
           </div>
 
@@ -165,13 +171,78 @@
                       }
                     </div>
                   </div>
+
+                  <!-- Client Lifecycle & Assignment Section -->
+                  <div class="client-lifecycle-actions" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Onboarding Status Chip -->
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span class="services-label" style="margin: 0;">Onboarding:</span>
+                      <span class="service-badge" 
+                            [style.background-color]="client.onboarding_status === 'Approved' ? 'rgba(16, 185, 129, 0.15)' : client.onboarding_status === 'Rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)'"
+                            [style.color]="client.onboarding_status === 'Approved' ? '#10B981' : client.onboarding_status === 'Rejected' ? '#EF4444' : '#F59E0B'"
+                            [style.border]="client.onboarding_status === 'Approved' ? '1px solid #10B981' : client.onboarding_status === 'Rejected' ? '1px solid #EF4444' : '1px solid #F59E0B'"
+                            style="padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        {{ client.onboarding_status || 'Prospect' }}
+                      </span>
+                    </div>
+
+                    <!-- Change Onboarding Status Dropdown (Accessible to Staff) -->
+                    @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'sales_staff' || user()?.role === 'agent') {
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Update Onboarding Phase:</label>
+                        <select [ngModel]="client.onboarding_status || 'Prospect'" 
+                                (ngModelChange)="updateOnboardingStatus(client._id, $event)"
+                                style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px;">
+                          <option value="Prospect">Prospect</option>
+                          <option value="Pending Verification">Pending Verification</option>
+                          <option value="Ready for Approval">Ready for Approval</option>
+                          <option value="Approved">Approved</option>
+                          <option value="Rejected">Rejected</option>
+                        </select>
+                      </div>
+                    }
+
+                    <!-- Assigned Employee Dropdown (Admin & Account Managers) -->
+                    @if (user()?.role === 'admin' || user()?.role === 'account_manager') {
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Assigned Consultant:</label>
+                        <select [ngModel]="client.assigned_to?._id || client.assigned_to || ''" 
+                                (ngModelChange)="assignClientToEmployee(client._id, $event)"
+                                style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px;">
+                          <option value="">-- Unassigned --</option>
+                          @for (emp of getFlatEmployees(); track emp.id) {
+                            <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+                          }
+                        </select>
+                      </div>
+                    } @else if (client.assigned_to) {
+                      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+                        <span style="color: var(--text-secondary);">Assigned to:</span>
+                        <span style="color: var(--text-primary); font-weight: 500;">
+                          {{ client.assigned_to?.owner_name || client.assigned_to }}
+                        </span>
+                      </div>
+                    }
+
+                    <!-- Create Task Button (Admin & Account Manager) -->
+                    @if (user()?.role === 'admin' || user()?.role === 'account_manager') {
+                      <button (click)="openCreateTaskModal(client._id)" 
+                              style="width: 100%; margin-top: 4px; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--accent-primary); border-radius: 6px; color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                        <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
+                        <span>Create Filing Task</span>
+                      </button>
+                    }
+                  </div>
                 </div>
               </div>
             }
             @if (getFilteredClients().length === 0) {
               <div class="no-results-placeholder">
                 <div class="placeholder-icon-circle">
-                  <hugeicons-icon [icon]="Search01Icon" size="32" color="#94A3B8"></hugeicons-icon>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                  </svg>
                 </div>
                 <h3>No clients found</h3>
                 <p>Try refining your search query or add a new client to get started.</p>
@@ -197,13 +268,13 @@
           <div class="clients-directory-grid">
             @for (team of teams(); track team.name) {
               <div class="client-profile-card">
-                <div class="client-card-header">
-                  <div class="client-avatar" style="background-color: var(--accent-light); color: var(--accent-primary);">
-                    <hugeicons-icon [icon]="DiplomaIcon" size="18"></hugeicons-icon>
+                <div class="client-card-header" style="display: flex; align-items: center; gap: 16px; width: 100%;">
+                  <div class="client-avatar" style="background-color: var(--bg-active); color: var(--accent-primary); border-radius: 12px; font-weight: 700; font-size: var(--text-xl); display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0;">
+                    {{ team.name.charAt(0).toUpperCase() }}
                   </div>
-                  <div class="client-card-meta">
-                    <h4 class="client-title">{{ team.name }}s</h4>
-                    <p class="client-company">{{ team.members.length }} Active Member(s)</p>
+                  <div class="client-card-meta" style="display: flex; flex-direction: column; text-align: left;">
+                    <h4 class="client-title" style="margin: 0; font-family: var(--font-heading); font-size: var(--text-xl); font-weight: 600; color: var(--text-primary);">{{ team.name }}s</h4>
+                    <p class="client-company" style="margin: 2px 0 0 0; font-size: var(--text-md); color: var(--text-secondary); font-weight: 500;">{{ team.members.length }} Active Member(s)</p>
                   </div>
                 </div>
 
@@ -235,12 +306,288 @@
             @if (teams().length === 0) {
               <div class="no-results-placeholder" style="grid-column: 1 / -1;">
                 <div class="placeholder-icon-circle">
-                  <hugeicons-icon [icon]="DiplomaIcon" size="32" color="#94A3B8"></hugeicons-icon>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  </svg>
                 </div>
                 <h3>No employees found</h3>
                 <p>Add a new employee to start building your organization.</p>
               </div>
             }
+          </div>
+        </div>
+      }
+
+      <!-- FILING TASKS TAB -->
+      @if (currentTab() === 'tasks') {
+        <div class="tab-view fade-in">
+          <div class="filter-action-bar">
+            <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Legal Filings & Task Pipeline</h2>
+            @if (user()?.role === 'admin' || user()?.role === 'account_manager') {
+              <button class="add-client-btn" (click)="openCreateTaskModal()">
+                <hugeicons-icon [icon]="PlusSignIcon" size="18"></hugeicons-icon>
+                <span>New Filing Task</span>
+              </button>
+            }
+          </div>
+
+          <div class="clients-directory-grid">
+            @for (task of tasks(); track task._id) {
+              <div class="client-profile-card" style="border-left: 4px solid var(--accent-primary);">
+                <div class="client-card-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+                  <span class="service-badge" style="background-color: rgba(99, 102, 241, 0.15); color: #6366F1; border: 1px solid #6366F1; font-size: 11px; text-transform: uppercase; font-weight: 600;">
+                    Filing Task
+                  </span>
+                  <h4 class="client-title" style="font-size: 18px; font-weight: 600; color: var(--text-primary);">{{ task.title }}</h4>
+                  <p style="color: var(--text-secondary); font-size: 13px; margin: 0;">{{ task.description || 'No description provided.' }}</p>
+                </div>
+
+                <div class="client-card-body" style="padding-top: 8px; display: flex; flex-direction: column; gap: 12px;">
+                  <!-- Client Details -->
+                  <div style="font-size: 13px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                    <div style="color: var(--text-secondary); font-weight: 500;">Client:</div>
+                    <div style="color: var(--text-primary); font-weight: 600;">{{ task.client_id?.owner_name }}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">{{ task.client_id?.company_name || 'Individual' }}</div>
+                  </div>
+
+                  <!-- Task Status selector or label -->
+                  <div>
+                    <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500; display: block; margin-bottom: 4px;">Filing Status:</label>
+                    @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'filling_staff') {
+                      <select [ngModel]="task.status" 
+                              (ngModelChange)="updateTaskStatus(task._id, $event)"
+                              style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px;">
+                        <option value="Not Started">Not Started</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Pending Documents">Pending Documents</option>
+                        <option value="Under Review">Under Review</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                      </select>
+                    } @else {
+                      <span class="service-badge" 
+                            [style.background-color]="task.status === 'Approved' ? 'rgba(16, 185, 129, 0.15)' : task.status === 'Rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)'"
+                            [style.color]="task.status === 'Approved' ? '#10B981' : task.status === 'Rejected' ? '#EF4444' : '#F59E0B'"
+                            style="padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 12px;">
+                        {{ task.status }}
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Assigned Employee Dropdown -->
+                  @if (user()?.role === 'admin' || user()?.role === 'account_manager') {
+                    <div>
+                      <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500; display: block; margin-bottom: 4px;">Assign Filling Staff:</label>
+                      <select [ngModel]="task.assigned_to?._id || task.assigned_to || ''" 
+                              (ngModelChange)="assignTaskToStaff(task._id, $event)"
+                              style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px;">
+                        <option value="">-- Unassigned --</option>
+                        @for (emp of getFlatEmployees(); track emp.id) {
+                          @if (emp.role === 'filling_staff') {
+                            <option [value]="emp.id">{{ emp.name }}</option>
+                          }
+                        }
+                      </select>
+                    </div>
+                  } @else {
+                    <div style="font-size: 13px;">
+                      <span style="color: var(--text-secondary);">Assigned Staff:</span>
+                      <span style="color: var(--text-primary); font-weight: 500; margin-left: 8px;">
+                        {{ task.assigned_to?.owner_name || 'None' }}
+                      </span>
+                    </div>
+                  }
+
+                  <!-- Documents list -->
+                  <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                      <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Incorporation Documents:</span>
+                      @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'filling_staff') {
+                        <button (click)="openUploadDocModal(task)" style="background: none; border: none; color: var(--accent-primary); font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                          <hugeicons-icon [icon]="PlusSignIcon" size="12"></hugeicons-icon> Upload
+                        </button>
+                      }
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                      @for (doc of task.documents; track doc._id) {
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 12px;">
+                          <span style="color: var(--text-primary); font-weight: 500; text-overflow: ellipsis; white-space: nowrap; overflow: hidden; max-width: 140px;">
+                            {{ doc.name }}
+                          </span>
+                          <a [href]="'http://localhost:5000/' + doc.fileUrl" target="_blank" style="color: var(--accent-primary); font-weight: 600; text-decoration: none;">Download</a>
+                        </div>
+                      }
+                      @if (!task.documents || task.documents.length === 0) {
+                        <div style="color: var(--text-secondary); font-size: 12px; font-style: italic;">No documents uploaded yet.</div>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Comments & Timeline Activity -->
+                  <div style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Activity Comments ({{ task.comments?.length || 0 }}):</span>
+                      <button (click)="openCommentModal(task)" style="background: none; border: none; color: var(--accent-primary); font-size: 11px; font-weight: 600; cursor: pointer;">
+                        Add Comment
+                      </button>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 6px; max-height: 120px; overflow-y: auto; padding-right: 4px;">
+                      @for (c of task.comments; track c._id) {
+                        <div style="padding: 6px 10px; background-color: var(--bg-primary); border-radius: 6px; font-size: 12px;">
+                          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                            <span style="font-weight: 600; color: var(--text-primary);">{{ c.author }}</span>
+                            <span style="font-size: 10px; color: var(--text-secondary);">{{ c.timestamp | date:'shortTime' }}</span>
+                          </div>
+                          <div style="color: var(--text-secondary);">{{ c.text }}</div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            }
+            @if (tasks().length === 0) {
+              <div class="no-results-placeholder" style="grid-column: 1 / -1;">
+                <div class="placeholder-icon-circle">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="9" y1="9" x2="15" y2="9"></line>
+                    <line x1="9" y1="13" x2="15" y2="13"></line>
+                    <line x1="9" y1="17" x2="15" y2="17"></line>
+                  </svg>
+                </div>
+                <h3>No filing tasks found</h3>
+                <p>Tasks assigned or registered will appear in this pipeline.</p>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- SYSTEM AUDIT LOGS TAB -->
+      @if (currentTab() === 'logs') {
+        <div class="tab-view fade-in">
+          <div class="filter-action-bar">
+            <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Security & System Audit Log</h2>
+          </div>
+
+          <div style="background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 16px;">
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+                <thead>
+                  <tr style="background-color: var(--bg-primary); border-bottom: 1px solid var(--border-color); color: var(--text-secondary);">
+                    <th style="padding: 12px 16px;">Timestamp</th>
+                    <th style="padding: 12px 16px;">Performed By</th>
+                    <th style="padding: 12px 16px;">Category</th>
+                    <th style="padding: 12px 16px;">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (log of logs(); track log._id) {
+                    <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
+                      <td style="padding: 12px 16px; white-space: nowrap; color: var(--text-secondary);">{{ log.createdAt | date:'medium' }}</td>
+                      <td style="padding: 12px 16px; white-space: nowrap;">
+                        <div style="font-weight: 600;">{{ log.performed_by?.owner_name }}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary);">{{ log.performed_by?.role | titlecase }}</div>
+                      </td>
+                      <td style="padding: 12px 16px; white-space: nowrap;">
+                        <span class="service-badge" style="background-color: rgba(99, 102, 241, 0.1); color: #6366F1; border: 1px solid #6366F1; padding: 2px 6px; font-size: 11px;">
+                          {{ log.action_type }}
+                        </span>
+                      </td>
+                      <td style="padding: 12px 16px; color: var(--text-secondary);">{{ log.details }}</td>
+                    </tr>
+                  }
+                  @if (logs().length === 0) {
+                    <tr>
+                      <td colspan="4" style="padding: 24px; text-align: center; color: var(--text-secondary);">
+                        No system operations logged yet.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- SYSTEM SETTINGS TAB -->
+      @if (currentTab() === 'settings') {
+        <div class="tab-view fade-in">
+          <div class="filter-action-bar">
+            <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Company System Settings</h2>
+          </div>
+
+          <div class="client-profile-card" style="max-width: 600px; margin-top: 16px; padding: 24px;">
+            <form (ngSubmit)="saveSettings()" style="display: flex; flex-direction: column; gap: 20px;">
+              <!-- Fee setting -->
+              <div class="form-group-item">
+                <label class="form-input-label" style="font-weight: 600; color: var(--text-primary);">Default Company Incorporation Fee (INR) *</label>
+                <input type="number" 
+                       [(ngModel)]="settings().incorporation_fee" 
+                       name="incorporation_fee" 
+                       [disabled]="user()?.role !== 'admin'"
+                       class="form-control-input" 
+                       required />
+              </div>
+
+              <!-- Tax percentage -->
+              <div class="form-group-item">
+                <label class="form-input-label" style="font-weight: 600; color: var(--text-primary);">Filing Tax Percentage (%) *</label>
+                <input type="number" 
+                       [(ngModel)]="settings().default_filing_tax" 
+                       name="default_filing_tax" 
+                       [disabled]="user()?.role !== 'admin'"
+                       class="form-control-input" 
+                       required />
+              </div>
+
+              <!-- Allow Agent registration checkbox -->
+              <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <input type="checkbox" 
+                       id="allow_agent" 
+                       [(ngModel)]="settings().allow_agent_registration" 
+                       name="allow_agent_registration" 
+                       [disabled]="user()?.role !== 'admin'"
+                       style="width: 18px; height: 18px; cursor: pointer;" />
+                <label for="allow_agent" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer;">
+                  Allow Agents to register clients directly
+                </label>
+              </div>
+
+              <!-- Require Verification checkbox -->
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" 
+                       id="require_verify" 
+                       [(ngModel)]="settings().require_document_verification" 
+                       name="require_document_verification" 
+                       [disabled]="user()?.role !== 'admin'"
+                       style="width: 18px; height: 18px; cursor: pointer;" />
+                <label for="require_verify" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer;">
+                  Force mandatory document verification before final approval
+                </label>
+              </div>
+
+              <!-- Submit button (Admins only) -->
+              @if (user()?.role === 'admin') {
+                <div style="margin-top: 10px;">
+                  <button type="submit" class="btn-submit" style="width: 100%; padding: 12px; font-weight: bold; background-color: var(--accent-primary); border-radius: 8px;">
+                    Save System Settings
+                  </button>
+                </div>
+              } @else {
+                <div style="padding: 10px; border-radius: 8px; background-color: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; font-size: 13px; color: #F59E0B;">
+                  <strong>Note:</strong> You have view-only access to company configurations. Only Administrator roles can modify settings.
+                </div>
+              }
+            </form>
           </div>
         </div>
       }
@@ -559,6 +906,7 @@
                 [(ngModel)]="newEmployee.role"
               >
                 <option value="admin">Admin</option>
+                <option value="auditor">Auditor</option>
                 <option value="account_manager">Account Manager</option>
                 <option value="sales_staff">Sales Staff</option>
                 <option value="filling_staff">Filling Staff</option>
@@ -636,6 +984,7 @@
                 [(ngModel)]="selectedEmployee.role"
               >
                 <option value="admin">Admin</option>
+                <option value="auditor">Auditor</option>
                 <option value="account_manager">Account Manager</option>
                 <option value="sales_staff">Sales Staff</option>
                 <option value="filling_staff">Filling Staff</option>
@@ -654,6 +1003,172 @@
           <div class="modal-footer-actions">
             <button type="button" class="btn-cancel" (click)="closeEditEmployeeModal()">Cancel</button>
             <button type="submit" class="btn-submit">Save Changes</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- Create Filing Task Dialog Modal Overlay -->
+  @if (isCreateTaskModalOpen()) {
+    <div class="modal-overlay" (click)="isCreateTaskModalOpen.set(false)">
+      <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <h3>Create New Filing Task</h3>
+          <button class="close-modal-btn" (click)="isCreateTaskModalOpen.set(false)">
+            <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+          </button>
+        </div>
+
+        <form (ngSubmit)="submitCreateTask()" class="modal-form">
+          <div class="modal-body">
+            
+            @if (taskErrorMessage()) {
+              <div class="modal-error-message">
+                {{ taskErrorMessage() }}
+              </div>
+            }
+            @if (taskSuccessMessage()) {
+              <div class="modal-success-message">
+                {{ taskSuccessMessage() }}
+              </div>
+            }
+
+            <div class="form-group-item">
+              <label class="form-input-label">Select Client *</label>
+              <select name="task_client" 
+                      class="form-control-input select-input"
+                      [(ngModel)]="newTaskClientId" 
+                      required>
+                <option value="">-- Select client profile --</option>
+                @for (client of clients(); track client._id) {
+                  <option [value]="client._id">{{ client.owner_name }} ({{ client.company_name || 'Individual' }})</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group-item" style="margin-top: 16px;">
+              <label class="form-input-label">Task Title *</label>
+              <input type="text" 
+                     name="task_title"
+                     placeholder="e.g. GST Filing FY 2025-26" 
+                     class="form-control-input"
+                     [(ngModel)]="newTaskTitle"
+                     required />
+            </div>
+
+            <div class="form-group-item" style="margin-top: 16px;">
+              <label class="form-input-label">Description / Instructions</label>
+              <textarea name="task_desc"
+                        placeholder="Provide details on necessary steps and document criteria..."
+                        class="form-control-input"
+                        rows="3"
+                        style="resize: vertical; font-family: inherit;"
+                        [(ngModel)]="newTaskDescription"></textarea>
+            </div>
+
+            <div class="form-group-item" style="margin-top: 16px;">
+              <label class="form-input-label">Assign Filling Staff</label>
+              <select name="task_assignee" 
+                      class="form-control-input select-input"
+                      [(ngModel)]="newTaskAssignedTo">
+                <option value="">-- Unassigned (Pool) --</option>
+                @for (emp of getFlatEmployees(); track emp.id) {
+                  @if (emp.role === 'filling_staff') {
+                    <option [value]="emp.id">{{ emp.name }}</option>
+                  }
+                }
+              </select>
+            </div>
+
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn-cancel" (click)="isCreateTaskModalOpen.set(false)">Cancel</button>
+            <button type="submit" class="btn-submit">Create Task</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- Task Activity Comments Modal Overlay -->
+  @if (isCommentModalOpen()) {
+    <div class="modal-overlay" (click)="isCommentModalOpen.set(false)">
+      <div class="modal-card-box" style="max-width: 450px;" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <h3>Add Activity Comment</h3>
+          <button class="close-modal-btn" (click)="isCommentModalOpen.set(false)">
+            <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+          </button>
+        </div>
+
+        <form (ngSubmit)="submitComment()" class="modal-form">
+          <div class="modal-body">
+            <div class="form-group-item">
+              <label class="form-input-label">Comment text *</label>
+              <textarea name="comment_text"
+                        placeholder="Type update or filing notes..."
+                        class="form-control-input"
+                        rows="4"
+                        style="resize: vertical; font-family: inherit;"
+                        [(ngModel)]="commentText"
+                        required></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn-cancel" (click)="isCommentModalOpen.set(false)">Cancel</button>
+            <button type="submit" class="btn-submit">Add Comment</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+  <!-- Upload Incorporation Document Modal Overlay -->
+  @if (isUploadDocModalOpen()) {
+    <div class="modal-overlay" (click)="isUploadDocModalOpen.set(false)">
+      <div class="modal-card-box" style="max-width: 450px;" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <h3>Upload Filing Document</h3>
+          <button class="close-modal-btn" (click)="isUploadDocModalOpen.set(false)">
+            <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+          </button>
+        </div>
+
+        <form (ngSubmit)="submitUploadDoc()" class="modal-form">
+          <div class="modal-body">
+            
+            <div class="form-group-item">
+              <label class="form-input-label">Document Name *</label>
+              <input type="text" 
+                     name="doc_name"
+                     placeholder="e.g. MOA, AOA, PAN Certificate" 
+                     class="form-control-input"
+                     [(ngModel)]="selectedTaskDocName"
+                     required />
+            </div>
+
+            <div class="form-group-item" style="margin-top: 16px;">
+              <label class="form-input-label">File attachment *</label>
+              <input type="file" 
+                     (change)="onTaskDocFileSelected($event)" 
+                     class="form-control-input" 
+                     required />
+            </div>
+
+          </div>
+
+          <div class="modal-footer-actions">
+            <button type="button" class="btn-cancel" (click)="isUploadDocModalOpen.set(false)">Cancel</button>
+            <button type="submit" class="btn-submit">Upload Document</button>
           </div>
         </form>
 

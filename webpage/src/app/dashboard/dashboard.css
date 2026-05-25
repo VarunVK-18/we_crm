@@ -897,3 +897,35 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Company Badge in Welcome Banner */
+.company-badge-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  padding: 6px 14px;
+  border-radius: 99px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.company-code-chip {
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+  font-size: var(--text-xs);
+  font-weight: 750;
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.company-name-tag {
+  color: var(--bg-secondary);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+

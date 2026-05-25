@@ -40,14 +40,19 @@ const ticketRoutes = require('./routes/ticketRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const dscRoutes = require('./routes/dscRoutes');
 const complianceRoutes = require('./routes/complianceRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/dsc', dscRoutes);
 app.use('/api/compliance', complianceRoutes);
+app.use('/api', taskRoutes);
+app.use('/api', settingsRoutes);
 
 // Start Express Server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Access URL: http://localhost:${PORT}`);
 });

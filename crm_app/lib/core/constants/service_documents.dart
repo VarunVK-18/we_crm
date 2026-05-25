@@ -5,6 +5,7 @@ const Map<String, List<String>> kServiceRequiredDocuments = {
   'Private Limited Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)'],
   
   // Compliance Services
+  'Compliance Audit': ['Company PAN', 'Previous Audit Reports', 'Statutory Registers', 'GST & TDS Filings'],
   'MCA Compliance Package (Private Ltd)': ['Company PAN', 'AOC-4 & MGT-7', 'DSC & DIN of Directors', 'Bank Statements'],
   'MCA Compliance Package (LLP)': ['LLP PAN', 'Form 8 & Form 11', 'DSC of Partners', 'Bank Statements'],
   'GST Compliance Package': ['GST Certificate', 'Invoices List', 'Bank Statements', 'Purchase/Sales Register'],

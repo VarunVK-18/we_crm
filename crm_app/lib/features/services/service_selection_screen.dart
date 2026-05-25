@@ -165,6 +165,22 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
         'Cyber-Legal Compliance',
       ],
     },
+    {
+      'title': 'Compliance Audit',
+      'subtitle': 'Comprehensive statutory & operational audit',
+      'icon': HugeIcons.strokeRoundedTask01,
+      'color': const Color(0xFF10B981),
+      'category': 'Legal',
+      'description':
+          'Ensure your business complies with all statutory regulations through our comprehensive audit, risk identification, and rectification support.',
+      'features': [
+        'Statutory Compliance Audit',
+        'Operational Risk Assessment',
+        'Filing Gap Analysis',
+        'Detailed Compliance Report',
+        'Expert Remediation Advisory',
+      ],
+    },
   ];
 
   List<Map<String, dynamic>> get _filteredServices {

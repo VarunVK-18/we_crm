@@ -7,6 +7,9 @@ import '../../core/theme/app_theme.dart';
 import '../../core/constants/service_documents.dart';
 import '../../providers/auth_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../core/constants/port.dart';
 
 class ServiceRequestSummarySheet extends ConsumerStatefulWidget {
   final String packageName;
@@ -314,6 +317,26 @@ class _ServiceRequestSummarySheetState
     super.dispose();
   }
 
+  Future<void> _submitServiceRequest() async {
+    final userProfile = ref.read(userProfileProvider).value;
+    if (userProfile == null) return;
+    
+    try {
+      final response = await http.post(
+        Uri.parse('$kBaseUrl/api/users/profile/${userProfile.id}/subscribe-service'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'serviceName': widget.packageName}),
+      );
+      if (response.statusCode == 200) {
+        debugPrint('Successfully registered service on backend: ${widget.packageName}');
+      } else {
+        debugPrint('Failed to register service on backend: ${response.body}');
+      }
+    } catch (e) {
+      debugPrint('Error registering service: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -431,12 +454,16 @@ class _ServiceRequestSummarySheetState
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _isFormValid
-                        ? () {
+                        ? () async {
                             debugPrint('Submitting request:');
                             debugPrint('Package: ${widget.packageName}');
                             
-                            Navigator.pop(context); // Close sheet
-                            _showSuccessDialog(context);
+                            await _submitServiceRequest();
+                            
+                            if (mounted) {
+                              Navigator.pop(context); // Close sheet
+                              _showSuccessDialog(context);
+                            }
                           }
                         : null,
                     style: ElevatedButton.styleFrom(

@@ -1,7 +1,7 @@
 import { Component, input, output, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, Logout01Icon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,20 +16,53 @@ export class Sidebar implements OnInit {
   logoutClicked = output<void>();
 
   readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
-  readonly Logout01Icon = Logout01Icon;
 
   user = signal<any>(null);
 
-  navGroups = [
-    {
-      header: '',
-      items: [
-        { id: 'dashboard', label: 'Dashboard', color: '#2563EB' },
-        { id: 'clients', label: 'Clients', color: '#10B981' },
-        { id: 'team', label: 'Employees', color: '#8B5CF6' }
-      ]
+  getNavGroups() {
+    const u = this.user();
+    if (!u) return [];
+
+    const items = [
+      { id: 'dashboard', label: 'Dashboard', color: '#2563EB' }
+    ];
+
+    const role = u.role;
+    
+    // Add Clients (scoped role-based label)
+    if (role === 'sales_staff') {
+      items.push({ id: 'clients', label: 'Leads & Prospects', color: '#10B981' });
+    } else {
+      items.push({ id: 'clients', label: 'Clients Directory', color: '#10B981' });
     }
-  ];
+
+    // Add Employees (Admin only)
+    if (role === 'admin') {
+      items.push({ id: 'team', label: 'Employees & Team', color: '#8B5CF6' });
+    }
+
+    // Add Filing Tasks (Admin, Auditor, Account Manager, Filling Staff, Sales Staff, Agent)
+    if (role !== 'customer') {
+      items.push({ id: 'tasks', label: 'Filing Tasks', color: '#F59E0B' });
+    }
+
+    // Add Audit Logs (Admin, Auditor)
+    if (role === 'admin' || role === 'auditor') {
+      items.push({ id: 'logs', label: 'Audit Logs', color: '#EC4899' });
+    }
+
+    // Add Settings (Admin, Auditor)
+    if (role === 'admin' || role === 'auditor') {
+      items.push({ id: 'settings', label: 'System Settings', color: '#6366F1' });
+    }
+
+    return [
+      {
+        header: '',
+        items
+      }
+    ];
+  }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

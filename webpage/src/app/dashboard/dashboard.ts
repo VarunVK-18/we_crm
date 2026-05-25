@@ -72,7 +72,10 @@ export class Dashboard implements OnInit {
   ];
 
   // Stats Grid (Dashboard tab)
-  stats = [
+  complianceReminders = signal<any[]>([]);
+  orders = signal<any[]>([]);
+
+  stats: any[] = [
     { title: 'Active Services', value: '4', detail: '+12% from last month', isTrendUp: true },
     { title: 'Compliance Score', value: '98%', detail: 'Excellent Standing', isTrendUp: true },
     { title: 'Open Audit Tasks', value: '2', detail: 'Requires your review', isWarning: true },
@@ -86,6 +89,37 @@ export class Dashboard implements OnInit {
   isDeleteEmployeeModalOpen = signal<boolean>(false);
   employeeErrorMessage = signal<string>('');
   employeeSuccessMessage = signal<string>('');
+
+  // Filing Tasks State
+  tasks = signal<any[]>([]);
+  isCreateTaskModalOpen = signal<boolean>(false);
+  newTaskTitle = '';
+  newTaskDescription = '';
+  newTaskClientId = '';
+  newTaskAssignedTo = '';
+  taskErrorMessage = signal<string>('');
+  taskSuccessMessage = signal<string>('');
+
+  // Comment Modal State
+  isCommentModalOpen = signal<boolean>(false);
+  commentText = '';
+  selectedTaskId = '';
+
+  // Upload Doc Modal State
+  isUploadDocModalOpen = signal<boolean>(false);
+  selectedTaskDocName = '';
+  selectedTaskDocFile: File | null = null;
+
+  // System Audit Logs State
+  logs = signal<any[]>([]);
+
+  // Settings State
+  settings = signal<any>({
+    incorporation_fee: 5000,
+    default_filing_tax: 18,
+    allow_agent_registration: true,
+    require_document_verification: true
+  });
 
   newEmployee = {
     name: '',
@@ -110,20 +144,63 @@ export class Dashboard implements OnInit {
       return;
     }
     try {
-      this.user.set(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      if (parsedUser.role === 'customer') {
+        localStorage.removeItem('user');
+        this.router.navigate(['/login']);
+        return;
+      }
+      this.user.set(parsedUser);
       this.fetchClients();
       this.fetchTeams();
+      this.fetchCompanyComplianceReminders();
+      this.fetchCompanyOrders();
+      this.fetchTasks();
     } catch (e) {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
     }
   }
 
+  /** Returns the company_id string for the logged-in admin's company */
+  getCompanyId(): string | null {
+    const u = this.user();
+    if (!u) return null;
+    // company_id can be a populated object or a plain ObjectId string
+    if (u.company_id && typeof u.company_id === 'object') {
+      return u.company_id._id || null;
+    }
+    return u.company_id || null;
+  }
+
+  /** Returns the company display name */
+  getCompanyName(): string {
+    const u = this.user();
+    if (!u) return '';
+    if (u.company_id && typeof u.company_id === 'object' && u.company_id.company_name) {
+      return u.company_id.company_name;
+    }
+    return u.company_name || '';
+  }
+
+  /** Returns the company code */
+  getCompanyCode(): string {
+    const u = this.user();
+    if (!u) return '';
+    if (u.company_id && typeof u.company_id === 'object' && u.company_id.company_code) {
+      return u.company_id.company_code;
+    }
+    return u.company_code || '';
+  }
+
   fetchClients() {
-    this.api.get<any>('users/clients').subscribe({
+    const companyId = this.getCompanyId();
+    const endpoint = companyId ? `users/clients?company_id=${companyId}` : 'users/clients';
+    this.api.get<any>(endpoint).subscribe({
       next: (res) => {
         if (res && res.clients) {
           this.clients.set(res.clients);
+          this.updateStats();
         }
       },
       error: (err) => {
@@ -133,7 +210,9 @@ export class Dashboard implements OnInit {
   }
 
   fetchTeams() {
-    this.api.get<any[]>('users/team-groups').subscribe({
+    const companyId = this.getCompanyId();
+    const endpoint = companyId ? `users/team-groups?company_id=${companyId}` : 'users/team-groups';
+    this.api.get<any[]>(endpoint).subscribe({
       next: (res) => {
         this.teams.set(res || []);
       },
@@ -141,6 +220,99 @@ export class Dashboard implements OnInit {
         console.error('Failed to fetch teams:', err);
       }
     });
+  }
+
+  fetchCompanyComplianceReminders() {
+    const companyId = this.getCompanyId();
+    if (!companyId) return;
+    this.api.get<any>(`compliance/company/${companyId}`).subscribe({
+      next: (res) => {
+        if (res && res.reminders) {
+          this.complianceReminders.set(res.reminders);
+          this.updateStats();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch company compliance reminders:', err);
+      }
+    });
+  }
+
+  fetchCompanyOrders() {
+    const companyId = this.getCompanyId();
+    if (!companyId) return;
+    this.api.get<any>(`orders/company/${companyId}`).subscribe({
+      next: (res) => {
+        if (res && res.orders) {
+          this.orders.set(res.orders);
+          this.updateStats();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch company orders:', err);
+      }
+    });
+  }
+
+  updateStats() {
+    const activeServicesCount = this.getTotalServicesCount();
+
+    const reminders = this.complianceReminders();
+    let complianceScoreValue = 100;
+    let complianceDetail = 'Excellent Standing';
+    let complianceTrendUp = true;
+    if (reminders.length > 0) {
+      const expired = reminders.filter(r => r.status === 'expired').length;
+      const urgent = reminders.filter(r => r.status === 'urgent').length;
+      const expiringSoon = reminders.filter(r => r.status === 'expiringSoon').length;
+      complianceScoreValue = Math.max(0, Math.round(100 - (expired * 20 + urgent * 10 + expiringSoon * 2)));
+
+      if (complianceScoreValue >= 95) {
+        complianceDetail = 'Excellent Standing';
+        complianceTrendUp = true;
+      } else if (complianceScoreValue >= 80) {
+        complianceDetail = 'Good Standing';
+        complianceTrendUp = true;
+      } else if (complianceScoreValue >= 60) {
+        complianceDetail = 'Needs Attention';
+        complianceTrendUp = false;
+      } else {
+        complianceDetail = 'Critical Actions Required';
+        complianceTrendUp = false;
+      }
+    }
+
+    const openTasksCount = this.tasks().filter(t => !['Approved', 'Completed', 'Rejected'].includes(t.status)).length;
+    const pendingInvoicesCount = this.orders().filter(o => o.status === 'notInitialized').length;
+
+    this.stats = [
+      { 
+        title: 'Active Services', 
+        value: activeServicesCount.toString(), 
+        detail: '+12% from last month', 
+        isTrendUp: true 
+      },
+      { 
+        title: 'Compliance Score', 
+        value: `${complianceScoreValue}%`, 
+        detail: complianceDetail, 
+        isTrendUp: complianceTrendUp 
+      },
+      { 
+        title: 'Open Audit Tasks', 
+        value: openTasksCount.toString(), 
+        detail: openTasksCount > 0 ? 'Requires your review' : 'All caught up', 
+        isWarning: openTasksCount > 0,
+        isGood: openTasksCount === 0 
+      },
+      { 
+        title: 'Pending Invoices', 
+        value: pendingInvoicesCount.toString(), 
+        detail: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} requires initialization` : 'All clear', 
+        isGood: pendingInvoicesCount === 0,
+        isWarning: pendingInvoicesCount > 0
+      }
+    ];
   }
 
   openCreateEmployeeModal() {
@@ -168,7 +340,12 @@ export class Dashboard implements OnInit {
       return;
     }
 
-    this.api.post<any>('auth/register-direct', this.newEmployee).subscribe({
+    const payload = {
+      ...this.newEmployee,
+      company_id: this.getCompanyId()
+    };
+
+    this.api.post<any>('auth/register-direct', payload).subscribe({
       next: (res: any) => {
         this.employeeSuccessMessage.set('Employee added successfully!');
         this.fetchTeams();
@@ -294,6 +471,14 @@ export class Dashboard implements OnInit {
     this.currentTab.set(tabId);
     if (tabId === 'team') {
       this.fetchTeams();
+    } else if (tabId === 'tasks') {
+      this.fetchTasks();
+      this.fetchClients();
+      this.fetchTeams();
+    } else if (tabId === 'logs') {
+      this.fetchLogs();
+    } else if (tabId === 'settings') {
+      this.fetchSettings();
     }
   }
 
@@ -301,6 +486,10 @@ export class Dashboard implements OnInit {
     switch (this.currentTab()) {
       case 'dashboard': return 'Dashboard';
       case 'clients': return 'Clients Directory';
+      case 'team': return 'Employees & Team';
+      case 'tasks': return 'Filing Tasks';
+      case 'logs': return 'System Audit Logs';
+      case 'settings': return 'System Settings';
       default: return 'Dashboard';
     }
   }
@@ -378,6 +567,12 @@ export class Dashboard implements OnInit {
     formData.append('role', 'customer');
     formData.append('services', JSON.stringify(this.newClient.services));
 
+    // Scope client to the admin's company
+    const companyId = this.getCompanyId();
+    if (companyId) {
+      formData.append('company_id', companyId);
+    }
+
     if (this.selectedGstinFile) {
       formData.append('gstin_file', this.selectedGstinFile);
     }
@@ -395,6 +590,202 @@ export class Dashboard implements OnInit {
       },
       error: (err) => {
         this.errorMessage.set(err.error?.message || 'Failed to create client.');
+      }
+    });
+  }
+
+  getFlatEmployees() {
+    const flat: any[] = [];
+    this.teams().forEach(g => {
+      if (g.members) {
+        flat.push(...g.members);
+      }
+    });
+    return flat;
+  }
+
+  assignClientToEmployee(clientId: string, employeeId: string) {
+    this.api.patch<any>(`users/clients/${clientId}/assign`, { employee_id: employeeId || null }).subscribe({
+      next: (res) => {
+        this.fetchClients();
+        alert('Client assigned successfully!');
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to assign client.');
+      }
+    });
+  }
+
+  updateOnboardingStatus(clientId: string, status: string) {
+    this.api.patch<any>(`users/clients/${clientId}/onboarding`, { onboarding_status: status }).subscribe({
+      next: (res) => {
+        this.fetchClients();
+        alert('Onboarding status updated!');
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to update onboarding status.');
+      }
+    });
+  }
+
+  fetchTasks() {
+    this.api.get<any>('tasks').subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.tasks.set(res.tasks);
+          this.updateStats();
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch tasks:', err);
+      }
+    });
+  }
+
+  openCreateTaskModal(clientId?: string) {
+    this.newTaskTitle = '';
+    this.newTaskDescription = '';
+    this.newTaskClientId = clientId || '';
+    this.newTaskAssignedTo = '';
+    this.taskErrorMessage.set('');
+    this.taskSuccessMessage.set('');
+    this.isCreateTaskModalOpen.set(true);
+  }
+
+  submitCreateTask() {
+    this.taskErrorMessage.set('');
+    this.taskSuccessMessage.set('');
+    if (!this.newTaskClientId || !this.newTaskTitle) {
+      this.taskErrorMessage.set('Client and Task Title are required.');
+      return;
+    }
+    const payload = {
+      client_id: this.newTaskClientId,
+      assigned_to: this.newTaskAssignedTo || null,
+      title: this.newTaskTitle,
+      description: this.newTaskDescription
+    };
+    this.api.post<any>('tasks', payload).subscribe({
+      next: (res) => {
+        this.taskSuccessMessage.set('Task created successfully!');
+        this.fetchTasks();
+        setTimeout(() => {
+          this.isCreateTaskModalOpen.set(false);
+        }, 1200);
+      },
+      error: (err) => {
+        this.taskErrorMessage.set(err.error?.message || 'Failed to create task.');
+      }
+    });
+  }
+
+  updateTaskStatus(taskId: string, newStatus: string) {
+    this.api.patch<any>(`tasks/${taskId}`, { status: newStatus }).subscribe({
+      next: (res) => {
+        this.fetchTasks();
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to update task status.');
+      }
+    });
+  }
+
+  assignTaskToStaff(taskId: string, staffId: string) {
+    this.api.patch<any>(`tasks/${taskId}`, { assigned_to: staffId || null }).subscribe({
+      next: (res) => {
+        this.fetchTasks();
+        alert('Task assigned successfully!');
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to assign task.');
+      }
+    });
+  }
+
+  openCommentModal(task: any) {
+    this.selectedTaskId = task._id;
+    this.commentText = '';
+    this.isCommentModalOpen.set(true);
+  }
+
+  submitComment() {
+    if (!this.commentText.trim()) return;
+    this.api.post<any>(`tasks/${this.selectedTaskId}/comments`, { comment: this.commentText }).subscribe({
+      next: (res) => {
+        this.fetchTasks();
+        this.isCommentModalOpen.set(false);
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to add comment.');
+      }
+    });
+  }
+
+  openUploadDocModal(task: any) {
+    this.selectedTaskId = task._id;
+    this.selectedTaskDocName = '';
+    this.selectedTaskDocFile = null;
+    this.isUploadDocModalOpen.set(true);
+  }
+
+  onTaskDocFileSelected(event: any) {
+    this.selectedTaskDocFile = event.target.files?.[0] || null;
+  }
+
+  submitUploadDoc() {
+    if (!this.selectedTaskDocName || !this.selectedTaskDocFile) {
+      alert('Document name and file are required.');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('document_name', this.selectedTaskDocName);
+    formData.append('file', this.selectedTaskDocFile);
+
+    this.api.post<any>(`tasks/${this.selectedTaskId}/documents`, formData).subscribe({
+      next: (res) => {
+        this.fetchTasks();
+        this.isUploadDocModalOpen.set(false);
+        alert('Document uploaded successfully!');
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to upload document.');
+      }
+    });
+  }
+
+  fetchLogs() {
+    this.api.get<any>('audit-logs').subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.logs.set(res.logs);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch audit logs:', err);
+      }
+    });
+  }
+
+  fetchSettings() {
+    this.api.get<any>('settings').subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.settings.set(res.settings);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch settings:', err);
+      }
+    });
+  }
+
+  saveSettings() {
+    this.api.post<any>('settings', this.settings()).subscribe({
+      next: (res) => {
+        alert('Settings saved successfully!');
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to save settings.');
       }
     });
   }

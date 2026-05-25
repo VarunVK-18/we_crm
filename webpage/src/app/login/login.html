@@ -29,44 +29,8 @@
           <img src="/logo.jpg" alt="WeCRM Logo" class="brand-logo-mobile" />
         </div>
 
-        <!-- Success Screen Overlay (When User is already Logged In) -->
-        <div *ngIf="loggedInUser() && !isDialogVisible()" class="logged-in-box fade-in">
-          <div class="welcome-badge">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="badge-icon">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-              <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-          </div>
-          <h1 class="welcome-heading">Welcome Back</h1>
-          <p class="welcome-desc">You are authenticated as <strong>{{ loggedInUser().owner_name }}</strong></p>
-          
-          <div class="user-details-card">
-            <div class="user-detail-row">
-              <span class="lbl">Email</span>
-              <span class="val">{{ loggedInUser().email }}</span>
-            </div>
-            <div class="user-detail-row">
-              <span class="lbl">Role</span>
-              <span class="val role-tag">{{ loggedInUser().role | uppercase }}</span>
-            </div>
-            <div *ngIf="loggedInUser().company_name" class="user-detail-row">
-              <span class="lbl">Company</span>
-              <span class="val">{{ loggedInUser().company_name }}</span>
-            </div>
-          </div>
-
-          <button (click)="logout()" class="btn-sign-out">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="logout-svg">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-              <polyline points="16 17 21 12 16 7"></polyline>
-              <line x1="21" y1="12" x2="9" y2="12"></line>
-            </svg>
-            Sign Out Account
-          </button>
-        </div>
-
         <!-- Normal Sign In Form -->
-        <div *ngIf="!loggedInUser()" class="login-box">
+        <div *ngIf="!isRegistering()" class="login-box">
           <h1 class="main-title">Welcome back</h1>
           <p class="main-subtitle">Enter your credentials to access your account</p>
 
@@ -88,7 +52,7 @@
                   (ngModelChange)="email.set($event)" 
                   name="email"
                   type="email" 
-                  placeholder="name@company.com" 
+                  placeholder="Enter email address" 
                   class="styled-text-input" 
                   [class.error-border]="emailError()"
                   required />
@@ -112,7 +76,7 @@
                   (ngModelChange)="password.set($event)" 
                   name="password"
                   [type]="isPasswordVisible() ? 'text' : 'password'" 
-                  placeholder="••••••••" 
+                  placeholder="Enter password" 
                   class="styled-text-input" 
                   [class.error-border]="passwordError()"
                   required />
@@ -156,10 +120,157 @@
               </button>
             </div>
 
-            <!-- Contact Support Button -->
+            <!-- Register Company Link -->
             <div class="support-link-container">
-              <button (click)="contactSupport()" type="button" class="btn-contact-support">
-                Don't have an account? Contact support
+              <button (click)="showRegisterForm()" type="button" class="btn-contact-support">
+                Don't have an account? Register your company
+              </button>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- Company Registration Form -->
+        <div *ngIf="isRegistering()" class="login-box fade-in">
+          <h1 class="main-title">Register company</h1>
+          <p class="main-subtitle">Enter your company and ownership details to begin</p>
+
+          <form (submit)="handleRegisterCompany()" class="auth-form">
+            <!-- Grid for code and name -->
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+              <div class="form-field-group">
+                <label class="input-label">Code</label>
+                <input 
+                  [ngModel]="companyCode()" 
+                  (ngModelChange)="companyCode.set($event)" 
+                  name="companyCode"
+                  type="text" 
+                  placeholder="Enter code" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="companyCodeError()"
+                  required />
+                <span *ngIf="companyCodeError()" class="validation-error-text">{{ companyCodeError() }}</span>
+              </div>
+              <div class="form-field-group">
+                <label class="input-label">Company Name</label>
+                <input 
+                  [ngModel]="companyName()" 
+                  (ngModelChange)="companyName.set($event)" 
+                  name="companyName"
+                  type="text" 
+                  placeholder="Enter company name" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="companyNameError()"
+                  required />
+                <span *ngIf="companyNameError()" class="validation-error-text">{{ companyNameError() }}</span>
+              </div>
+            </div>
+
+            <!-- GSTIN & Owner Name -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-field-group">
+                <label class="input-label">GSTIN (Optional)</label>
+                <input 
+                  [ngModel]="gstin()" 
+                  (ngModelChange)="gstin.set($event)" 
+                  name="gstin"
+                  type="text" 
+                  placeholder="Enter 15-digit GSTIN" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="gstinError()" />
+                <span *ngIf="gstinError()" class="validation-error-text">{{ gstinError() }}</span>
+              </div>
+              <div class="form-field-group">
+                <label class="input-label">Owner Name</label>
+                <input 
+                  [ngModel]="ownerName()" 
+                  (ngModelChange)="ownerName.set($event)" 
+                  name="ownerName"
+                  type="text" 
+                  placeholder="Enter owner name" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="ownerNameError()"
+                  required />
+                <span *ngIf="ownerNameError()" class="validation-error-text">{{ ownerNameError() }}</span>
+              </div>
+            </div>
+
+            <!-- Email & Password -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-field-group">
+                <label class="input-label">Email Address</label>
+                <input 
+                  [ngModel]="registerEmail()" 
+                  (ngModelChange)="registerEmail.set($event)" 
+                  name="registerEmail"
+                  type="email" 
+                  placeholder="Enter email address" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="registerEmailError()"
+                  required />
+                <span *ngIf="registerEmailError()" class="validation-error-text">{{ registerEmailError() }}</span>
+              </div>
+              <div class="form-field-group">
+                <label class="input-label">Password</label>
+                <input 
+                  [ngModel]="registerPassword()" 
+                  (ngModelChange)="registerPassword.set($event)" 
+                  name="registerPassword"
+                  type="password" 
+                  placeholder="Enter password" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="registerPasswordError()"
+                  required />
+                <span *ngIf="registerPasswordError()" class="validation-error-text">{{ registerPasswordError() }}</span>
+              </div>
+            </div>
+
+            <!-- Phone & Address -->
+            <div class="form-field-group">
+              <label class="input-label">Phone Number</label>
+              <input 
+                [ngModel]="phone()" 
+                (ngModelChange)="phone.set($event)" 
+                name="phone"
+                type="tel" 
+                placeholder="Enter phone number" 
+                class="styled-text-input" 
+                style="padding-left: 16px;" />
+            </div>
+
+            <div class="form-field-group">
+              <label class="input-label">Corporate Address</label>
+              <input 
+                [ngModel]="address()" 
+                (ngModelChange)="address.set($event)" 
+                name="address"
+                type="text" 
+                placeholder="Enter corporate address" 
+                class="styled-text-input" 
+                style="padding-left: 16px;" />
+            </div>
+
+            <!-- Submit Button -->
+            <div class="submit-button-container">
+              <button 
+                [disabled]="isLoading()" 
+                type="submit" 
+                class="btn-primary-submit">
+                <span *ngIf="isLoading()" class="button-loading-spinner"></span>
+                <span *ngIf="!isLoading()">Register Company</span>
+              </button>
+            </div>
+
+            <!-- Toggle Back Link -->
+            <div class="support-link-container">
+              <button (click)="showLoginForm()" type="button" class="btn-contact-support">
+                Already have an account? Sign in
               </button>
             </div>
 

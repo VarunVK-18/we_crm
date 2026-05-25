@@ -25,6 +25,29 @@ export class Login implements OnInit {
   emailError = signal('');
   passwordError = signal('');
 
+  // Registration state
+  isRegistering = signal(false);
+
+  // Registration form inputs
+  companyCode = signal('');
+  companyName = signal('');
+  gstin = signal('');
+  ownerName = signal('');
+  registerEmail = signal('');
+  registerPassword = signal('');
+  phone = signal('');
+  address = signal('');
+
+  // Registration errors
+  companyCodeError = signal('');
+  companyNameError = signal('');
+  gstinError = signal('');
+  ownerNameError = signal('');
+  registerEmailError = signal('');
+  registerPasswordError = signal('');
+  phoneError = signal('');
+  addressError = signal('');
+
   // Seeded/Authenticated user state
   loggedInUser = signal<any>(null);
 
@@ -116,19 +139,18 @@ export class Login implements OnInit {
       // Connect through type-safe Api service
       const data = await firstValueFrom(this.api.login(emailVal, passwordVal));
 
+      if (data.user && data.user.role === 'customer') {
+        throw new Error('Only staff and administrators are permitted to sign in to the management portal.');
+      }
+
       // Successful login
       localStorage.setItem('user', JSON.stringify(data.user));
       this.loggedInUser.set(data.user);
 
-      // Brief showcase of success before redirect
-      this.showAuthDialog('Welcome Back', 'Login successful! Welcome to your WeCRM Dashboard.', false);
-
-      setTimeout(() => {
-        this.closeAuthDialog();
-        this.router.navigate(['/dashboard']).catch(() => {
-          console.log('Dashboard route not registered yet. Logged in successfully.');
-        });
-      }, 2000);
+      // Navigate immediately to dashboard
+      this.router.navigate(['/dashboard']).catch(() => {
+        console.log('Dashboard route not registered yet. Logged in successfully.');
+      });
 
     } catch (err: any) {
       console.error('Authentication Error:', err);
@@ -150,7 +172,7 @@ export class Login implements OnInit {
         message = "We couldn't find an account matching these credentials.";
       } else if (err.status === 0 || message.toLowerCase().includes('unknown error') || message.toLowerCase().includes('http failure')) {
         title = 'Network Error';
-        message = 'Please check your internet connection or make sure the WeCRM backend service is active on port 5000.';
+        message = 'Please check your internet connection or make sure the WeCRM backend service is active on port 5001.';
       }
 
       this.showAuthDialog(title, message, true);
@@ -166,5 +188,142 @@ export class Login implements OnInit {
     this.password.set('');
     this.emailError.set('');
     this.passwordError.set('');
+  }
+
+  showRegisterForm() {
+    this.isRegistering.set(true);
+    this.clearErrors();
+  }
+
+  showLoginForm() {
+    this.isRegistering.set(false);
+    this.clearErrors();
+  }
+
+  clearErrors() {
+    this.emailError.set('');
+    this.passwordError.set('');
+    this.companyCodeError.set('');
+    this.companyNameError.set('');
+    this.gstinError.set('');
+    this.ownerNameError.set('');
+    this.registerEmailError.set('');
+    this.registerPasswordError.set('');
+    this.phoneError.set('');
+    this.addressError.set('');
+  }
+
+  async handleRegisterCompany() {
+    // Reset errors
+    this.clearErrors();
+
+    let hasError = false;
+
+    // Validate Company Code
+    const codeVal = this.companyCode().trim();
+    if (!codeVal) {
+      this.companyCodeError.set('Company Code is required');
+      hasError = true;
+    } else if (codeVal.length < 2) {
+      this.companyCodeError.set('Code must be at least 2 characters');
+      hasError = true;
+    }
+
+    // Validate Company Name
+    const companyVal = this.companyName().trim();
+    if (!companyVal) {
+      this.companyNameError.set('Company Name is required');
+      hasError = true;
+    }
+
+    // Validate Owner Name
+    const ownerVal = this.ownerName().trim();
+    if (!ownerVal) {
+      this.ownerNameError.set('Owner Name is required');
+      hasError = true;
+    }
+
+    // Validate Email
+    const emailVal = this.registerEmail().trim();
+    if (!emailVal) {
+      this.registerEmailError.set('Email is required');
+      hasError = true;
+    } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailVal)) {
+      this.registerEmailError.set('Enter a valid email address');
+      hasError = true;
+    }
+
+    // Validate Password
+    const passwordVal = this.registerPassword().trim();
+    if (!passwordVal) {
+      this.registerPasswordError.set('Password is required');
+      hasError = true;
+    } else if (passwordVal.length < 6) {
+      this.registerPasswordError.set('Password must be at least 6 characters');
+      hasError = true;
+    }
+
+    // Validate GST (optional, but if present must be 15 chars)
+    const gstinVal = this.gstin().trim();
+    if (gstinVal && gstinVal.length !== 15) {
+      this.gstinError.set('GSTIN must be exactly 15 characters');
+      hasError = true;
+    }
+
+    if (hasError) return;
+
+    this.isLoading.set(true);
+
+    try {
+      const payload = {
+        company_code: codeVal,
+        company_name: companyVal,
+        gstin: gstinVal,
+        owner_name: ownerVal,
+        email: emailVal,
+        password: passwordVal,
+        phone: this.phone().trim(),
+        address: this.address().trim()
+      };
+
+      // Call API using dynamic post method
+      await firstValueFrom(this.api.post<any>('auth/register-company', payload));
+
+      this.showAuthDialog(
+        'Registration Successful',
+        `Company "${companyVal}" has been registered successfully! You can now log in.`,
+        false
+      );
+
+      // Reset registration form inputs
+      this.companyCode.set('');
+      this.companyName.set('');
+      this.gstin.set('');
+      this.ownerName.set('');
+      this.registerEmail.set('');
+      this.registerPassword.set('');
+      this.phone.set('');
+      this.address.set('');
+
+      // Redirect to login view after success dialog
+      setTimeout(() => {
+        this.closeAuthDialog();
+        this.isRegistering.set(false);
+        // Pre-fill email for login convenience
+        this.email.set(emailVal);
+      }, 2500);
+
+    } catch (err: any) {
+      console.error('Registration Error:', err);
+      let message = 'An unexpected registration error occurred.';
+      if (err.error && err.error.message) {
+        message = err.error.message;
+      } else if (err.message) {
+        message = err.message;
+      }
+      this.showAuthDialog('Registration Failed', message, true);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 }

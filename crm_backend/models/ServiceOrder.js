@@ -9,6 +9,10 @@ const ServiceStepSchema = new mongoose.Schema({
 
 const ServiceOrderSchema = new mongoose.Schema({
   clientUid: { type: String, required: true },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company'
+  },
   entityName: { type: String, default: 'Proprietorship' },
   serviceType: { type: String, required: true },
   companyName: { type: String, default: '' },
