@@ -32,26 +32,25 @@ class ServiceOrderDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       // ── WhatsApp FAB ─────────────────────────────────────────────────────
-      floatingActionButton: order.expertPhone.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: () => openWhatsApp(
-                phone: '918072286963',
-                message:
-                    'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
-              ),
-              backgroundColor: const Color.fromARGB(255, 18, 140, 126),
-              icon: const Icon(LucideIcons.messageCircle,
-                  color: Colors.white, size: 18),
-              label: const Text(
-                'Chat on WhatsApp',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => openWhatsApp(
+          phone:
+              order.expertPhone.isNotEmpty ? order.expertPhone : '918072286963',
+          message:
+              'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
+        ),
+        backgroundColor: const Color.fromARGB(255, 18, 140, 126),
+        icon: const Icon(LucideIcons.messageCircle,
+            color: Colors.white, size: 18),
+        label: const Text(
+          'Chat on WhatsApp',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w800,
+            fontSize: 13,
+          ),
+        ),
+      ),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: CustomScrollView(

@@ -101,74 +101,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       letterSpacing: -0.5,
                     ),
                   ),
-                  const Spacer(),
-                  GestureDetector(
-                    onTap: () {
-                      ref.read(notificationProvider.notifier).markAllAsRead();
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: Colors.transparent,
-                        isScrollControlled: true,
-                        builder: (context) => const NotificationSheet(),
-                      );
-                    },
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.06),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: const Center(
-                            child: HugeIcon(
-                              icon: HugeIcons.strokeRoundedNotification03,
-                              size: 20,
-                              color: AppTheme.deepTeal,
-                            ),
-                          ),
-                        ),
-                        if (ref.watch(unreadNotificationCountProvider) > 0)
-                          Positioned(
-                            top: -2,
-                            right: -2,
-                            child: Container(
-                              width: 18,
-                              height: 18,
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  ref
-                                      .watch(unreadNotificationCountProvider)
-                                      .toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+
                 ],
               ),
             ),
