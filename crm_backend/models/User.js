@@ -97,7 +97,7 @@ const UserSchema = new mongoose.Schema({
   },
   onboarding_status: {
     type: String,
-    enum: ['Prospect', 'Pending Verification', 'Ready for Approval', 'Approved', 'Rejected'],
+    enum: ['Prospect', 'Ready for Approval', 'Approved', 'Rejected'],
     default: 'Prospect'
   },
   permissions: {

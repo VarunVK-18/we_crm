@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/checklist_provider.dart';
+import '../../models/checklist_model.dart';
 import '../common/ui_components.dart';
 import '../services/service_selection_screen.dart';
 import '../services/service_detail_screen.dart';
@@ -165,7 +167,7 @@ class CustomerDashboard extends ConsumerWidget {
 
               if (user?.services != null && user!.services.isNotEmpty) ...[
                 SizedBox(height: 32.r),
-                _buildSectionHeader('Registered Services'),
+                _buildSectionHeader('My Services'),
                 SizedBox(height: 16.r),
                 _RegisteredServicesList(services: user.services),
               ],
@@ -480,91 +482,209 @@ class _ReferAndEarnBanner extends StatelessWidget {
   }
 }
 
-class _RegisteredServicesList extends StatelessWidget {
+class _RegisteredServicesList extends ConsumerWidget {
   final List<String> services;
   const _RegisteredServicesList({required this.services});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final checklistsAsync = ref.watch(myChecklistsProvider);
+    final checklists = checklistsAsync.maybeWhen(
+      data: (data) => data,
+      orElse: () => <ChecklistModel>[],
+    );
+
+    // Build a lookup map: service_name -> checklist
+    final checklistMap = <String, ChecklistModel>{};
+    for (final c in checklists) {
+      checklistMap[c.serviceName] = c;
+    }
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: EdgeInsets.symmetric(horizontal: 24.r),
       physics: const BouncingScrollPhysics(),
       child: Row(
         children: services.map((srv) {
-          return Container(
-            margin: EdgeInsets.only(right: 16.r),
-            padding: EdgeInsets.all(16.r),
-            width: 220.r,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20.r),
-              border: Border.all(
-                color: AppTheme.deepTeal.withOpacity(0.08),
-                width: 1.0.r,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(10.r),
-                      decoration: BoxDecoration(
-                        color: AppTheme.deepTeal.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: const HugeIcon(
-                        icon: HugeIcons.strokeRoundedTask01,
-                        color: AppTheme.deepTeal,
-                        size: 20,
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.r,
-                        vertical: 3.r,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
-                        borderRadius: BorderRadius.circular(6.r),
-                      ),
-                      child: Text(
-                        'Active',
-                        style: TextStyle(
-                          fontSize: 9.sp,
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF15803D),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.r),
-                Text(
-                  srv,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.deepTeal,
-                  ),
-                ),
-              ],
-            ),
+          final checklist = checklistMap[srv];
+          return _ServiceProgressCard(
+            serviceName: srv,
+            checklist: checklist,
           );
         }).toList(),
       ),
     );
   }
 }
+
+class _ServiceProgressCard extends StatelessWidget {
+  final String serviceName;
+  final ChecklistModel? checklist;
+  const _ServiceProgressCard({required this.serviceName, this.checklist});
+
+  Color get _statusColor {
+    if (checklist == null) return Colors.grey.shade400;
+    switch (checklist!.status) {
+      case ChecklistStatus.completed:
+        return const Color(0xFF16A34A);
+      case ChecklistStatus.inProgress:
+        return AppTheme.corporateBlue;
+      case ChecklistStatus.pending:
+        return Colors.orange.shade600;
+    }
+  }
+
+  Color get _statusBgColor {
+    if (checklist == null) return Colors.grey.shade100;
+    switch (checklist!.status) {
+      case ChecklistStatus.completed:
+        return const Color(0xFFDCFCE7);
+      case ChecklistStatus.inProgress:
+        return const Color(0xFFDBEAFE);
+      case ChecklistStatus.pending:
+        return const Color(0xFFFEF3C7);
+    }
+  }
+
+  String get _statusLabel {
+    if (checklist == null) return 'Not Started';
+    switch (checklist!.status) {
+      case ChecklistStatus.completed:
+        return 'Completed';
+      case ChecklistStatus.inProgress:
+        return 'In Progress';
+      case ChecklistStatus.pending:
+        return 'Pending';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double progress = checklist?.progress ?? 0.0;
+    final int totalItems = checklist?.items.length ?? 0;
+    final int completedItems = checklist?.completedCount ?? 0;
+
+    return Container(
+      margin: EdgeInsets.only(right: 16.r),
+      padding: EdgeInsets.all(16.r),
+      width: 240.r,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(
+          color: AppTheme.deepTeal.withOpacity(0.08),
+          width: 1.0.r,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header row: icon + status badge
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.r),
+                decoration: BoxDecoration(
+                  color: AppTheme.deepTeal.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: const HugeIcon(
+                  icon: HugeIcons.strokeRoundedTask01,
+                  color: AppTheme.deepTeal,
+                  size: 20,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 8.r,
+                  vertical: 3.r,
+                ),
+                decoration: BoxDecoration(
+                  color: _statusBgColor,
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Text(
+                  _statusLabel,
+                  style: TextStyle(
+                    fontSize: 9.sp,
+                    fontWeight: FontWeight.w800,
+                    color: _statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.r),
+          // Service name
+          Text(
+            serviceName,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              fontSize: 13.sp,
+              fontWeight: FontWeight.bold,
+              color: AppTheme.deepTeal,
+              height: 1.3,
+            ),
+          ),
+          SizedBox(height: 14.r),
+          // Filing Status label
+          Text(
+            'Filing Status',
+            style: TextStyle(
+              fontSize: 10.sp,
+              fontWeight: FontWeight.w700,
+              color: Colors.grey.shade500,
+              letterSpacing: 0.3,
+            ),
+          ),
+          SizedBox(height: 6.r),
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4.r),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey.shade100,
+              valueColor: AlwaysStoppedAnimation<Color>(_statusColor),
+              minHeight: 6,
+            ),
+          ),
+          SizedBox(height: 6.r),
+          // Progress text
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                totalItems > 0
+                    ? '$completedItems / $totalItems tasks done'
+                    : 'Awaiting tasks',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  color: Colors.grey.shade500,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                '${(progress * 100).toInt()}%',
+                style: TextStyle(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w800,
+                  color: _statusColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+

@@ -42,6 +42,7 @@ const dscRoutes = require('./routes/dscRoutes');
 const complianceRoutes = require('./routes/complianceRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
+const checklistRoutes = require('./routes/checklistRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
@@ -50,6 +51,7 @@ app.use('/api/dsc', dscRoutes);
 app.use('/api/compliance', complianceRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', settingsRoutes);
+app.use('/api', checklistRoutes);
 
 // Start Express Server
 app.listen(PORT, '0.0.0.0', () => {

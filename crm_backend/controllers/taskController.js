@@ -62,22 +62,21 @@ const getTasks = async (req, res) => {
     // Role scoping
     const role = req.user.role;
     if (role === 'filling_staff') {
-      // Filling Staff: View assigned cases only
+      // Filling Staff: View only tasks assigned to them
       filter.assigned_to = req.user._id;
     } else if (role === 'account_manager') {
-      // Account Manager: View tasks they created or tasks for clients they are assigned to
+      // Account Manager: View tasks for clients assigned to them
       const clients = await User.find({ assigned_to: req.user._id }).select('_id');
       const clientIds = clients.map(c => c._id);
       filter.$or = [
         { created_by: req.user._id },
         { client_id: { $in: clientIds } }
       ];
-    } else if (role === 'sales_staff' || role === 'agent') {
-      // Sales Staff/Agent: View tasks for clients they registered
-      const clients = await User.find({ created_by: req.user._id }).select('_id');
-      const clientIds = clients.map(c => c._id);
-      filter.client_id = { $in: clientIds };
+    } else if (role === 'client_manager') {
+      // Client Manager: View tasks they created
+      filter.created_by = req.user._id;
     }
+    // admin sees all tasks — no extra filter
 
     const tasks = await FilingTask.find(filter)
       .populate('client_id', 'owner_name company_name email phone')

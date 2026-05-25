@@ -64,8 +64,8 @@ const registerUser = async (req, res) => {
     if (req.user) {
       if (req.user.role === 'admin') {
         onboarding_status = req.body.onboarding_status || 'Approved';
-      } else if (req.user.role === 'account_manager') {
-        onboarding_status = req.body.onboarding_status || 'Pending Verification';
+      } else if (req.user.role === 'client_manager') {
+        onboarding_status = req.body.onboarding_status || 'Prospect';
       }
     }
 
@@ -196,16 +196,17 @@ const getClients = async (req, res) => {
     // Apply role-based client listing scoping
     if (req.user) {
       const role = req.user.role;
-      if (role === 'account_manager') {
+      if (role === 'client_manager') {
+        // Client Manager: view only clients they onboarded
+        filter.created_by = req.user._id;
+      } else if (role === 'account_manager') {
         // Account Manager: view assigned clients only
         filter.assigned_to = req.user._id;
-      } else if (role === 'sales_staff' || role === 'agent') {
-        // Sales Staff & Agent: view own clients only
-        filter.created_by = req.user._id;
       } else if (role === 'filling_staff') {
         // Filling Staff: view assigned clients only
         filter.assigned_to = req.user._id;
       }
+      // admin sees all clients — no extra filter
     }
 
     const clients = await User.find(filter)
@@ -231,12 +232,16 @@ const registerDirect = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
+    // Validate role — only these three staff roles are allowed
+    const allowedRoles = ['client_manager', 'filling_staff', 'account_manager'];
+    const assignedRole = allowedRoles.includes(role) ? role : 'client_manager';
+
     const finalCompanyId = req.user ? req.user.company_id : (company_id || null);
     user = new User({ 
       owner_name: name, 
       email: email.toLowerCase().trim(), 
       password: password || 'Default@123', 
-      role: role || 'agent',
+      role: assignedRole,
       company_id: finalCompanyId
     });
     await user.save();

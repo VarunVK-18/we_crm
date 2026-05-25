@@ -90,6 +90,13 @@ export class Dashboard implements OnInit {
   employeeErrorMessage = signal<string>('');
   employeeSuccessMessage = signal<string>('');
 
+  // Mobile sidebar navigation drawer state
+  isMobileSidebarOpen = signal<boolean>(false);
+
+  toggleMobileSidebar() {
+    this.isMobileSidebarOpen.update(val => !val);
+  }
+
   // Filing Tasks State
   tasks = signal<any[]>([]);
   isCreateTaskModalOpen = signal<boolean>(false);
@@ -113,6 +120,23 @@ export class Dashboard implements OnInit {
   // System Audit Logs State
   logs = signal<any[]>([]);
 
+  // Checklists State
+  checklists = signal<any[]>([]);
+  isCreateChecklistModalOpen = signal<boolean>(false);
+  isAddChecklistItemModalOpen = signal<boolean>(false);
+  selectedChecklistId = '';
+  newChecklistItemLabel = '';
+  checklistErrorMessage = signal<string>('');
+  checklistSuccessMessage = signal<string>('');
+  newChecklist = {
+    client_id: '',
+    service_name: '',
+    assigned_to: '',
+    notes: '',
+    items: [] as string[]
+  };
+  newChecklistItemInput = '';
+
   // Settings State
   settings = signal<any>({
     incorporation_fee: 5000,
@@ -125,14 +149,14 @@ export class Dashboard implements OnInit {
     name: '',
     email: '',
     password: '',
-    role: 'agent'
+    role: 'client_manager'
   };
 
   selectedEmployee = {
     id: '',
     name: '',
     email: '',
-    role: 'agent'
+    role: 'client_manager'
   };
 
   constructor(private router: Router, private api: Api) {}
@@ -152,10 +176,14 @@ export class Dashboard implements OnInit {
       }
       this.user.set(parsedUser);
       this.fetchClients();
-      this.fetchTeams();
-      this.fetchCompanyComplianceReminders();
-      this.fetchCompanyOrders();
       this.fetchTasks();
+      this.fetchChecklists();
+      // Admin-only fetches
+      if (parsedUser.role === 'admin') {
+        this.fetchTeams();
+        this.fetchCompanyComplianceReminders();
+        this.fetchCompanyOrders();
+      }
     } catch (e) {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
@@ -475,6 +503,10 @@ export class Dashboard implements OnInit {
       this.fetchTasks();
       this.fetchClients();
       this.fetchTeams();
+    } else if (tabId === 'checklists') {
+      this.fetchChecklists();
+      this.fetchClients();
+      this.fetchTeams();
     } else if (tabId === 'logs') {
       this.fetchLogs();
     } else if (tabId === 'settings') {
@@ -488,6 +520,7 @@ export class Dashboard implements OnInit {
       case 'clients': return 'Clients Directory';
       case 'team': return 'Employees & Team';
       case 'tasks': return 'Filing Tasks';
+      case 'checklists': return 'Service Checklists';
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';
       default: return 'Dashboard';
@@ -793,5 +826,151 @@ export class Dashboard implements OnInit {
   handleLogout() {
     localStorage.removeItem('user');
     this.router.navigate(['/login']);
+  }
+
+  // ── Role helpers ────────────────────────────────────────────
+  isAdmin(): boolean { return this.user()?.role === 'admin'; }
+  isClientManager(): boolean { return this.user()?.role === 'client_manager'; }
+  isFillingStaff(): boolean { return this.user()?.role === 'filling_staff'; }
+  isAccountManager(): boolean { return this.user()?.role === 'account_manager'; }
+
+  /** Can create clients, tasks, checklists */
+  canCreate(): boolean {
+    return this.isAdmin() || this.isClientManager();
+  }
+
+  /** Can manage (assign/update) tasks and checklists */
+  canManage(): boolean {
+    return this.isAdmin() || this.isClientManager();
+  }
+
+  getRoleLabel(role: string): string {
+    const labels: Record<string, string> = {
+      admin: 'Administrator',
+      client_manager: 'Client Manager',
+      filling_staff: 'Filing Staff',
+      account_manager: 'Account Manager'
+    };
+    return labels[role] || role;
+  }
+
+  // ── Checklist methods ────────────────────────────────────────
+  fetchChecklists() {
+    this.api.get<any>('checklists').subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.checklists.set(res.checklists);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch checklists:', err);
+      }
+    });
+  }
+
+  openCreateChecklistModal() {
+    this.newChecklist = { client_id: '', service_name: '', assigned_to: '', notes: '', items: [] };
+    this.newChecklistItemInput = '';
+    this.checklistErrorMessage.set('');
+    this.checklistSuccessMessage.set('');
+    this.isCreateChecklistModalOpen.set(true);
+  }
+
+  closeCreateChecklistModal() {
+    this.isCreateChecklistModalOpen.set(false);
+  }
+
+  addItemToNewChecklist() {
+    const label = this.newChecklistItemInput.trim();
+    if (label) {
+      this.newChecklist.items.push(label);
+      this.newChecklistItemInput = '';
+    }
+  }
+
+  removeNewChecklistItem(idx: number) {
+    this.newChecklist.items.splice(idx, 1);
+  }
+
+  submitCreateChecklist() {
+    this.checklistErrorMessage.set('');
+    this.checklistSuccessMessage.set('');
+    if (!this.newChecklist.client_id || !this.newChecklist.service_name) {
+      this.checklistErrorMessage.set('Client and service name are required.');
+      return;
+    }
+    const payload = {
+      client_id: this.newChecklist.client_id,
+      service_name: this.newChecklist.service_name,
+      assigned_to: this.newChecklist.assigned_to || null,
+      notes: this.newChecklist.notes,
+      items: JSON.stringify(this.newChecklist.items)
+    };
+    this.api.post<any>('checklists', payload).subscribe({
+      next: (res) => {
+        this.checklistSuccessMessage.set('Checklist created successfully!');
+        this.fetchChecklists();
+        setTimeout(() => this.closeCreateChecklistModal(), 1200);
+      },
+      error: (err) => {
+        this.checklistErrorMessage.set(err.error?.message || 'Failed to create checklist.');
+      }
+    });
+  }
+
+  toggleChecklistItem(checklistId: string, itemIndex: number) {
+    this.api.patch<any>(`checklists/${checklistId}/items/${itemIndex}`, {}).subscribe({
+      next: (res) => {
+        this.fetchChecklists();
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to update checklist item.');
+      }
+    });
+  }
+
+  openAddChecklistItemModal(checklistId: string) {
+    this.selectedChecklistId = checklistId;
+    this.newChecklistItemLabel = '';
+    this.isAddChecklistItemModalOpen.set(true);
+  }
+
+  closeAddChecklistItemModal() {
+    this.isAddChecklistItemModalOpen.set(false);
+  }
+
+  submitAddChecklistItem() {
+    if (!this.newChecklistItemLabel.trim()) return;
+    this.api.post<any>(`checklists/${this.selectedChecklistId}/items`, { label: this.newChecklistItemLabel }).subscribe({
+      next: (res) => {
+        this.fetchChecklists();
+        this.closeAddChecklistItemModal();
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to add checklist item.');
+      }
+    });
+  }
+
+  assignChecklist(checklistId: string, staffId: string) {
+    this.api.patch<any>(`checklists/${checklistId}`, { assigned_to: staffId || null }).subscribe({
+      next: () => this.fetchChecklists(),
+      error: (err) => alert(err.error?.message || 'Failed to assign checklist.')
+    });
+  }
+
+  getChecklistProgress(checklist: any): number {
+    if (!checklist.items || checklist.items.length === 0) return 0;
+    const checked = checklist.items.filter((i: any) => i.isChecked).length;
+    return Math.round((checked / checklist.items.length) * 100);
+  }
+
+  getChecklistStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      pending: 'status-pending',
+      in_progress: 'status-in-progress',
+      completed: 'status-completed'
+    };
+    return map[status] || 'status-pending';
   }
 }

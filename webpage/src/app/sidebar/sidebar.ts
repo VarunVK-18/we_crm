@@ -23,45 +23,40 @@ export class Sidebar implements OnInit {
     const u = this.user();
     if (!u) return [];
 
-    const items = [
+    const role = u.role;
+    const items: any[] = [
       { id: 'dashboard', label: 'Dashboard', color: '#2563EB' }
     ];
 
-    const role = u.role;
-    
-    // Add Clients (scoped role-based label)
-    if (role === 'sales_staff') {
-      items.push({ id: 'clients', label: 'Leads & Prospects', color: '#10B981' });
-    } else {
-      items.push({ id: 'clients', label: 'Clients Directory', color: '#10B981' });
-    }
-
-    // Add Employees (Admin only)
+    // ── Admin: full access ──────────────────────────────────
     if (role === 'admin') {
+      items.push({ id: 'clients', label: 'Clients Directory', color: '#10B981' });
       items.push({ id: 'team', label: 'Employees & Team', color: '#8B5CF6' });
-    }
-
-    // Add Filing Tasks (Admin, Auditor, Account Manager, Filling Staff, Sales Staff, Agent)
-    if (role !== 'customer') {
       items.push({ id: 'tasks', label: 'Filing Tasks', color: '#F59E0B' });
-    }
-
-    // Add Audit Logs (Admin, Auditor)
-    if (role === 'admin' || role === 'auditor') {
+      items.push({ id: 'checklists', label: 'Checklists', color: '#06B6D4' });
       items.push({ id: 'logs', label: 'Audit Logs', color: '#EC4899' });
-    }
-
-    // Add Settings (Admin, Auditor)
-    if (role === 'admin' || role === 'auditor') {
       items.push({ id: 'settings', label: 'System Settings', color: '#6366F1' });
+
+    // ── Client Manager: onboards clients, creates tasks/checklists ──
+    } else if (role === 'client_manager') {
+      items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
+      items.push({ id: 'tasks', label: 'Filing Tasks', color: '#F59E0B' });
+      items.push({ id: 'checklists', label: 'Checklists', color: '#06B6D4' });
+
+    // ── Filing Staff: sees assigned tasks & checklists ──────
+    } else if (role === 'filling_staff') {
+      items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
+      items.push({ id: 'tasks', label: 'My Tasks', color: '#F59E0B' });
+      items.push({ id: 'checklists', label: 'My Checklists', color: '#06B6D4' });
+
+    // ── Account Manager: same as filing staff ───────────────
+    } else if (role === 'account_manager') {
+      items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
+      items.push({ id: 'tasks', label: 'My Tasks', color: '#F59E0B' });
+      items.push({ id: 'checklists', label: 'My Checklists', color: '#06B6D4' });
     }
 
-    return [
-      {
-        header: '',
-        items
-      }
-    ];
+    return [{ header: '', items }];
   }
 
   ngOnInit() {

@@ -13,7 +13,7 @@
 
 /* Branding Header */
 .branding-header {
-  padding: 1.5rem 1.25rem;
+  padding: 1.375rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -123,6 +123,15 @@
   color: var(--text-secondary);
   font-weight: 500;
   transition: var(--transition-fast);
+}
+
+.nav-item-icon {
+  color: var(--text-muted);
+  transition: var(--transition-fast);
+}
+
+.nav-item-wrapper:hover .nav-item-icon {
+  color: var(--text-primary);
 }
 
 .nav-item-wrapper.selected .nav-item-label {

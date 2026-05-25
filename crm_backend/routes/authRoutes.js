@@ -58,8 +58,8 @@ router.post('/users/profile/:id/subscribe-service', subscribeService);
 
 // Client users listing & actions route
 router.get('/users/clients', checkUser, getClients);
-router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'account_manager'), assignClient);
-router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'account_manager', 'sales_staff', 'agent'), approveClient);
+router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), assignClient);
+router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);
 
 // Employee/Team routes
 router.get('/users/team-groups', checkUser, getTeamGroups);

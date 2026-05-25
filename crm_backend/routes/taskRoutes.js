@@ -34,10 +34,10 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Task Management Routes
-router.post('/tasks', checkUser, preventAuditorWrite, permit('admin', 'account_manager'), createTask);
+router.post('/tasks', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), createTask);
 router.get('/tasks', checkUser, getTasks);
-router.patch('/tasks/:id', checkUser, preventAuditorWrite, permit('admin', 'account_manager', 'filling_staff'), updateTask);
-router.post('/tasks/:id/documents', checkUser, preventAuditorWrite, permit('admin', 'account_manager', 'filling_staff'), upload.any(), uploadTaskDocument);
-router.post('/tasks/:id/comments', checkUser, preventAuditorWrite, permit('admin', 'account_manager', 'filling_staff', 'sales_staff', 'agent'), addTaskComment);
+router.patch('/tasks/:id', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), updateTask);
+router.post('/tasks/:id/documents', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadTaskDocument);
+router.post('/tasks/:id/comments', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), addTaskComment);
 
 module.exports = router;

@@ -1,11 +1,11 @@
 .dashboard-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
   width: 100%;
   background-color: var(--bg-primary);
   font-family: var(--font-body);
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
   box-sizing: border-box;
 }
 
@@ -24,7 +24,7 @@
   background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Premium White AppBar */
@@ -138,6 +138,7 @@
 .screen-content-wrapper {
   flex: 1;
   padding: 40px;
+  overflow-y: auto;
 }
 
 .tab-view {
@@ -927,5 +928,79 @@
   color: var(--bg-secondary);
   font-size: var(--text-base);
   font-weight: 600;
+}
+
+/* Mobile Menu Toggle Button in AppBar */
+.mobile-menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  transition: background-color var(--transition-fast);
+}
+
+.mobile-menu-toggle:hover {
+  background-color: var(--bg-active);
+}
+
+/* Mobile Sidebar Drawer Overlay (Fades In) */
+.mobile-sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  display: flex;
+  justify-content: flex-start;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Mobile Sidebar Drawer Box (Slides in from Left) */
+.mobile-sidebar-drawer {
+  width: 240px;
+  height: 100%;
+  background-color: var(--bg-secondary);
+  box-shadow: 20px 0 25px -5px rgba(0, 0, 0, 0.1);
+  animation: slideFromLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideFromLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* Responsive updates */
+@media (max-width: 950px) {
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
+}
+
+/* ── Checklist Status Badge Colours ────────────────────────── */
+.status-pending {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.status-in-progress {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: #3B82F6;
+  border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.status-completed {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
