@@ -39,168 +39,54 @@
 
   <!-- Clients Cards Grid -->
   <div class="clients-directory-grid">
-    @for (client of getFlattenedFilteredClients(); track client.uniqueId) {
-      <div class="client-profile-card">
-        <div class="client-card-header">
-          <div class="client-avatar">
-            {{ client.owner_name ? client.owner_name.charAt(0).toUpperCase() : 'C' }}
-          </div>
-          <div class="client-identity">
-            <h4 class="client-title">{{ client.owner_name }}</h4>
-            <p class="client-company">{{ client.company_name || 'Individual Account' }}</p>
-          </div>
-        </div>
-
-        <div class="client-card-body">
-          <div class="contact-info-row">
-            <hugeicons-icon [icon]="Mail01Icon" size="14" color="#64748B"></hugeicons-icon>
-            <span class="contact-text">{{ client.email }}</span>
-          </div>
-          @if (client.phone) {
-            <div class="contact-info-row">
-              <hugeicons-icon [icon]="CallIcon" size="14" color="#64748B"></hugeicons-icon>
-              <span class="contact-text">{{ client.phone }}</span>
-            </div>
-          }
-
-          <!-- Subscribed Services Badges -->
-          <div class="client-services-area">
-            <span class="services-label">Registered Service:</span>
-            <div class="services-badges-list">
-              @if (client.singleService) {
-                <span class="service-badge">{{ client.singleService }}</span>
-              } @else {
-                <span class="no-services-badge">No services registered</span>
-              }
+    @for (client of getFilteredClients(); track client._id) {
+      <article class="client-card-premium">
+        <!-- Left Pane: Identity & Actions -->
+        <section class="card-left-pane">
+          <div class="avatar-ring">
+            <div class="avatar-inner">
+              {{ client.owner_name ? client.owner_name.charAt(0).toUpperCase() : 'C' }}
             </div>
           </div>
-
-          <!-- Client Lifecycle & Assignment Section -->
-          <div class="client-lifecycle-actions" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
-            <!-- Onboarding Status Chip -->
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <span class="services-label" style="margin: 0;">Onboarding:</span>
-              <span class="service-badge" 
-                    [style.background-color]="client.onboarding_status === 'Approved' ? 'rgba(16, 185, 129, 0.15)' : client.onboarding_status === 'Rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)'"
-                    [style.color]="client.onboarding_status === 'Approved' ? '#10B981' : client.onboarding_status === 'Rejected' ? '#EF4444' : '#F59E0B'"
-                    [style.border]="client.onboarding_status === 'Approved' ? '1px solid #10B981' : client.onboarding_status === 'Rejected' ? '1px solid #EF4444' : '1px solid #F59E0B'"
-                    style="padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                {{ client.onboarding_status || 'Prospect' }}
-              </span>
-            </div>
-
-            <!-- Onboarding Documents Section -->
-            @if ((getServiceSpecificDocuments(client) && getServiceSpecificDocuments(client).length > 0) || client.gstin_file || client.pan_file) {
-              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
-                <span class="services-label" style="margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary);">Onboarding Documents:</span>
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  <!-- Dynamic Service Documents -->
-                  @for (doc of getServiceSpecificDocuments(client); track doc._id) {
-                    <a [href]="'http://localhost:5001/' + doc.fileUrl" 
-                       target="_blank" 
-                       style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
-                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;">{{ doc.name }}</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                    </a>
-                  }
-
-                  <!-- Legacy GSTIN Certificate -->
-                  @if (client.gstin_file) {
-                    <a [href]="'http://localhost:5001/' + client.gstin_file" 
-                       target="_blank" 
-                       style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
-                      <span>GSTIN Certificate</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                    </a>
-                  }
-
-                  <!-- Legacy PAN Card -->
-                  @if (client.pan_file) {
-                    <a [href]="'http://localhost:5001/' + client.pan_file" 
-                       target="_blank" 
-                       style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
-                      <span>PAN Card</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7 10 12 15 17 10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                    </a>
-                  }
-                </div>
-              </div>
+          <header class="card-header">
+            <h1>{{ client.owner_name }}</h1>
+            <p>{{ client.company_name || 'Individual Account' }}</p>
+          </header>
+          <div class="card-actions">
+            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
+              <button class="btn-primary-action" (click)="openAssignServiceModal(client._id)">
+                ASSIGN SERVICE & CHECKLIST
+              </button>
+              <button class="btn-secondary-action" (click)="openCreateTaskModal(client._id)">
+                CREATE FILING TASK
+              </button>
             } @else {
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
-                <span class="services-label" style="margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary);">Onboarding Documents:</span>
-                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; font-style: italic;">None Uploaded</span>
-              </div>
-            }
-
-            <!-- Change Onboarding Status Dropdown (Accessible to Admin, Client Manager & Account Manager) -->
-            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Update Onboarding Phase:</label>
-                <select [ngModel]="client.onboarding_status || 'Prospect'" 
-                        (ngModelChange)="updateOnboardingStatus(client._id, $event)"
-                        style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px;">
-                  <option value="Prospect">Prospect</option>
-                  <option value="Ready for Approval">Ready for Approval</option>
-                  <option value="Approved">Approved</option>
-                  <option value="Rejected">Rejected</option>
-                </select>
-              </div>
-            }
-
-            <!-- Assigned Employee Dropdown (Admin, Client Manager & Account Managers) -->
-            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Assigned Consultant:</label>
-                <select [ngModel]="client.assigned_to?._id || client.assigned_to || ''" 
-                        (ngModelChange)="assignClientToEmployee(client._id, $event)"
-                        style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px;">
-                  <option value="">-- Unassigned --</option>
-                  @for (emp of getFlatEmployees(); track emp.id) {
-                    <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
-                  }
-                </select>
-              </div>
-            } @else if (client.assigned_to) {
-              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
-                <span style="color: var(--text-secondary);">Assigned to:</span>
-                <span style="color: var(--text-primary); font-weight: 500;">
-                  {{ client.assigned_to?.owner_name || client.assigned_to }}
-                </span>
-              </div>
-            }
-
-            <!-- Assign Service / Create Checklist Button (Admin, Client Manager & Account Manager) -->
-            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
-              <button (click)="openAssignServiceModal(client._id)" 
-                      style="width: 100%; margin-top: 12px; padding: 8px 12px; background-color: var(--bg-active); border: 1px dashed var(--accent-primary); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
-                <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
-                <span>Assign Service & Create Checklist</span>
-              </button>
-            }
-
-            <!-- Create Task Button (Admin, Client Manager & Account Manager) -->
-            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
-              <button (click)="openCreateTaskModal(client._id)" 
-                      style="width: 100%; margin-top: 4px; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--accent-primary); border-radius: 8px; color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
-                <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
-                <span>Create Filing Task</span>
+              <button class="btn-primary-action" style="opacity: 0.5; cursor: not-allowed;">
+                ASSIGN SERVICE
               </button>
             }
           </div>
-        </div>
-      </div>
+        </section>
+
+        <!-- Right Pane: Stats & Insights -->
+        <section class="card-right-pane">
+          <div class="atmospheric-decor-1"></div>
+          <div class="atmospheric-decor-2"></div>
+
+          <div class="stat-item">
+            <span class="stat-num">{{ client.stats?.checklists || 0 }}</span>
+            <span class="stat-label">Checklists</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">{{ client.stats?.tasks || 0 }}</span>
+            <span class="stat-label">Active Tasks</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-num">{{ client.stats?.documents || 0 }}</span>
+            <span class="stat-label">Documents</span>
+          </div>
+        </section>
+      </article>
     }
     @if (getFilteredClients().length === 0) {
       <div class="no-results-placeholder">

@@ -1,0 +1,75 @@
+<div class="tab-view fade-in">
+  
+  <div class="header-actions">
+    <div>
+      <h2 class="page-title">Service Requests</h2>
+      <p class="page-subtitle">Manage new incoming orders and assign experts</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading requests...</p>
+    </div>
+  } @else if (orders().length === 0) {
+    <div class="no-results-placeholder">
+      <div class="placeholder-icon-circle">
+        <hugeicons-icon [icon]="CheckmarkBadge01Icon" size="32" color="#94A3B8"></hugeicons-icon>
+      </div>
+      <h3>No new requests</h3>
+      <p>You're all caught up! There are no pending service orders.</p>
+    </div>
+  } @else {
+    <div class="requests-grid">
+      @for (order of orders(); track order._id) {
+        <div class="request-card">
+          <div class="card-header">
+            <div class="service-badge">{{ order.serviceType }}</div>
+            <div class="date-badge">
+              <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
+              {{ formatDate(order.createdAt) }}
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <h3 class="client-name">{{ order.entityName || order.companyName || 'Client Request' }}</h3>
+            
+            <div class="info-row">
+              <span class="info-label">Status:</span>
+              <span class="status-chip" [class.active]="order.status === 'active'">
+                {{ order.status | titlecase }}
+              </span>
+            </div>
+            
+            <div class="info-row">
+              <span class="info-label">Stage:</span>
+              <span class="stage-text">{{ order.stage }}</span>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <label class="assign-label">Assign Expert:</label>
+            <div class="assign-actions">
+              <select class="form-control-input select-input" 
+                      (change)="onEmployeeSelectChange(order._id, $event)">
+                <option value="">-- Select Employee --</option>
+                @for (emp of getFlatEmployees(); track emp.id) {
+                  <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+                }
+              </select>
+              <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
+            </div>
+            
+            @if (order.assignedExpert && order.assignedExpert !== 'To be assigned') {
+              <div class="assigned-alert">
+                <hugeicons-icon [icon]="UserIcon" size="14"></hugeicons-icon>
+                Currently assigned to: <strong>{{ order.assignedExpert }}</strong>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

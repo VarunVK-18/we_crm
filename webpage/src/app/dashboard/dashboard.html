@@ -58,6 +58,9 @@
       @if (currentTab() === 'dashboard') {
         <app-home-overview></app-home-overview>
       }
+      @if (currentTab() === 'requests') {
+        <app-requests></app-requests>
+      }
       @if (currentTab() === 'clients' && user()?.role !== 'filling_staff' && user()?.role !== 'account_manager') {
         <app-clients-directory [teams]="teams()"></app-clients-directory>
       }

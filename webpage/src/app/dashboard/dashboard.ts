@@ -15,6 +15,7 @@ import { FilingTasks } from './filing-tasks/filing-tasks';
 import { ServiceChecklists } from './service-checklists/service-checklists';
 import { AuditLogs } from './audit-logs/audit-logs';
 import { SystemSettings } from './system-settings/system-settings';
+import { RequestsComponent } from './requests/requests';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,7 +31,8 @@ import { SystemSettings } from './system-settings/system-settings';
     FilingTasks,
     ServiceChecklists,
     AuditLogs,
-    SystemSettings
+    SystemSettings,
+    RequestsComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -133,6 +135,7 @@ export class Dashboard implements OnInit {
       case 'team': return 'Employees & Team';
       case 'tasks': return 'Filing Tasks';
       case 'checklists': return 'Service Checklists';
+      case 'requests': return 'New Requests';
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';
       default: return 'Dashboard';

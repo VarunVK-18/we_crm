@@ -4,7 +4,8 @@ const AuditLog = require('../models/AuditLog');
 const { logActivity } = require('../middleware/rbac');
 const Checklist = require('../models/Checklist');
 const ChecklistTemplate = require('../models/ChecklistTemplate');
-const Document = require('../models/Document'); // NEW: Import Document model
+const Document = require('../models/Document');
+const FilingTask = require('../models/FilingTask');
 
 // @desc    Register a new user (client) — scoped to a company
 // @route   POST /api/register
@@ -227,7 +228,18 @@ const getClients = async (req, res) => {
 
     const clients = await User.find(filter)
       .select('-password')
-      .populate('assigned_to', 'owner_name email role');
+      .populate('assigned_to', 'owner_name email role')
+      .lean();
+
+    // Fetch stats for each client
+    for (const client of clients) {
+      client.stats = {
+        checklists: await Checklist.countDocuments({ client_id: client._id }),
+        tasks: await FilingTask.countDocuments({ client_id: client._id }),
+        documents: await Document.countDocuments({ uploadedBy: client._id })
+      };
+    }
+
     res.json({
       success: true,
       clients

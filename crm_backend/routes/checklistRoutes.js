@@ -19,7 +19,7 @@ const fs = require('fs');
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 1 * 1024 * 1024 } // 1MB limit
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit per file
 });
 
 // Checklist Management Routes

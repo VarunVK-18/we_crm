@@ -30,6 +30,7 @@ export class Sidebar implements OnInit {
 
     // ── Admin: full access ──────────────────────────────────
     if (role === 'admin') {
+      items.push({ id: 'requests', label: 'New Requests', color: '#F43F5E' });
       items.push({ id: 'clients', label: 'Clients Directory', color: '#10B981' });
       items.push({ id: 'team', label: 'Employees & Team', color: '#8B5CF6' });
       items.push({ id: 'tasks', label: 'Filing Tasks', color: '#F59E0B' });
@@ -39,6 +40,7 @@ export class Sidebar implements OnInit {
 
     // ── Client Manager: onboards clients, creates tasks/checklists ──
     } else if (role === 'client_manager') {
+      items.push({ id: 'requests', label: 'New Requests', color: '#F43F5E' });
       items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
       items.push({ id: 'tasks', label: 'Filing Tasks', color: '#F59E0B' });
       items.push({ id: 'checklists', label: 'Checklists', color: '#06B6D4' });
