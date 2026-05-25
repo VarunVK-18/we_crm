@@ -70,6 +70,7 @@ class ChatSupportScreen extends StatelessWidget {
               subtitle: 'Connect with a support agent instantly',
               color: const Color(0xFF25D366),
               onTap: () => openWhatsApp(
+                context: context,
                 phone: '918072286963',
                 message: 'Hi Wealth Empires Support, I need help with...',
               ),

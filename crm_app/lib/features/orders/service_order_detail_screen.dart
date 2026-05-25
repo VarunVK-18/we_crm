@@ -34,8 +34,8 @@ class ServiceOrderDetailScreen extends StatelessWidget {
       // ── WhatsApp FAB ─────────────────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => openWhatsApp(
-          phone:
-              order.expertPhone.isNotEmpty ? order.expertPhone : '918072286963',
+          context: context,
+          phone: order.expertPhone,
           message:
               'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
         ),

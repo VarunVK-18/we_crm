@@ -101,7 +101,25 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       letterSpacing: -0.5,
                     ),
                   ),
-
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      ref.invalidate(serviceOrdersProvider);
+                    },
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      shadowColor: Colors.black.withValues(alpha: 0.04),
+                      elevation: 2,
+                    ),
+                    icon: const Icon(
+                      LucideIcons.refreshCw,
+                      size: 18,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -340,10 +358,10 @@ class _ServiceCard extends StatelessWidget {
             bg: const Color(0xFFF0FFF4),
             text: const Color(0xFF16A34A),
           ),
-    // TODO: Handle this case.
-    OrderStage.reqReceived => throw UnimplementedError(),
-    // TODO: Handle this case.
-    OrderStage.testing => throw UnimplementedError(),
+        // TODO: Handle this case.
+        OrderStage.reqReceived => throw UnimplementedError(),
+        // TODO: Handle this case.
+        OrderStage.testing => throw UnimplementedError(),
       };
 
   @override
@@ -497,13 +515,12 @@ class _ServiceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // WhatsApp button — visible for active orders with a phone
-                if (isActive && order.expertPhone.isNotEmpty) ...[
+                // WhatsApp button — visible for active orders
+                if (isActive) ...[
                   GestureDetector(
                     onTap: () => openWhatsApp(
-                      phone: order.expertPhone.isNotEmpty
-                          ? order.expertPhone
-                          : '918072286963',
+                      context: context,
+                      phone: order.expertPhone,
                       message:
                           'Hi ${order.assignedExpert}, I have a query regarding my ${order.serviceType} service (${order.id}).',
                     ),

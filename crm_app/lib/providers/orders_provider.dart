@@ -7,13 +7,14 @@ import '../models/order_model.dart';
 import 'auth_provider.dart';
 
 /// Real-time stream of [ServiceOrder] documents from the database.
-final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) {
+final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
   final uid = ref.watch(authStateProvider).value?.uid;
-  if (uid == null) return Stream.value([]);
+  if (uid == null) {
+    yield [];
+    return;
+  }
 
-  final controller = StreamController<List<ServiceOrder>>();
-
-  Future<void> fetchOrders() async {
+  while (true) {
     try {
       final response = await http.get(
         Uri.parse('$kBaseUrl/api/my-checklists'),
@@ -39,7 +40,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) {
             'stage': c['status'] == 'completed' ? 'completed' : (c['status'] == 'pending' ? 'reqReceived' : 'workInProgress'),
             'steps': (c['items'] as List<dynamic>? ?? []).map((i) => {
               'title': i['title'] ?? i['label'] ?? '',
-              'description': i['description'] ?? '',
+              'description': i['description'] ?? i['notes'] ?? '',
               'isCompleted': i['isChecked'] == true,
             }).toList(),
             'requestedDocuments': c['requested_documents'] ?? [],
@@ -51,27 +52,14 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) {
           return ServiceOrder.fromMap(mappedData, id);
         }).toList();
 
-        if (!controller.isClosed) {
-          controller.add(orders);
-        }
+        yield orders;
       }
     } catch (e) {
       print("Error fetching real-time service orders: $e");
     }
+
+    await Future.delayed(const Duration(seconds: 4));
   }
-
-  // Fetch immediately on load
-  fetchOrders();
-
-  // Poll database every 4 seconds for real-time progress updates
-  final timer = Timer.periodic(const Duration(seconds: 4), (_) => fetchOrders());
-
-  ref.onDispose(() {
-    timer.cancel();
-    controller.close();
-  });
-
-  return controller.stream;
 });
 
 /// Convenience derived providers for filtered lists.
