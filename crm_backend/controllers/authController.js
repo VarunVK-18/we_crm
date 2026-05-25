@@ -478,6 +478,16 @@ const assignClient = async (req, res) => {
 
     await client.save();
 
+    // Cascade the staff assignment to all active checklists for this client
+    try {
+      await Checklist.updateMany(
+        { client_id: id, status: { $ne: 'completed' } },
+        { $set: { assigned_to: client.assigned_to } }
+      );
+    } catch (e) {
+      console.error('Error cascading assignment to checklists:', e);
+    }
+
     if (req.user) {
       await logActivity(
         req.user._id,
@@ -566,8 +576,8 @@ const subscribeService = async (req, res) => {
 
       // Create a Checklist for this service automatically
       const defaultItems = [
-        { label: 'Service Activated', isChecked: true },
-        { label: 'Setup Completed', isChecked: true },
+        { label: 'Service Activated', isChecked: false },
+        { label: 'Setup Completed', isChecked: false },
         { label: 'Documents Pending', isChecked: false }
       ];
 

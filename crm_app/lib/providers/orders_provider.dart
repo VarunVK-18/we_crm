@@ -35,8 +35,8 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) {
             'entityName': companyName.isNotEmpty ? companyName : 'Default Entity',
             'serviceType': c['service_name'] ?? '',
             'companyName': companyName,
-            'status': c['status'] == 'completed' ? 'complete' : 'active',
-            'stage': c['status'] == 'completed' ? 'completed' : 'workInProgress',
+            'status': c['status'] == 'completed' ? 'complete' : (c['status'] == 'pending' ? 'notInitialized' : 'active'),
+            'stage': c['status'] == 'completed' ? 'completed' : (c['status'] == 'pending' ? 'reqReceived' : 'workInProgress'),
             'steps': (c['items'] as List<dynamic>? ?? []).map((i) => {
               'title': i['label'],
               'description': '',

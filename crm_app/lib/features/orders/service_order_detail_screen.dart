@@ -54,7 +54,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
           slivers: [
             // ── Hero Header ──────────────────────────────────────────────────
             SliverAppBar(
-              expandedHeight: 220,
+              expandedHeight: 235,
               pinned: true,
               stretch: true,
               elevation: 0,
@@ -100,7 +100,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                       ),
                       child: SafeArea(
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 56, 24, 24),
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.end,

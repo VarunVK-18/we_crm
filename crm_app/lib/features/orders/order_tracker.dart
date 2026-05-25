@@ -47,7 +47,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
     final user = ref.watch(userProfileProvider).value;
 
-
     // Build entity list from database data
     final entities = orders.map((o) => o.entityName).toSet().toList()..sort();
 
@@ -343,12 +342,22 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     )
                   : visibleList.isEmpty
                       ? _EmptyState(tab: _selectedTab)
-                      : ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: visibleList.length,
-                          itemBuilder: (context, i) =>
-                              _ServiceCard(order: visibleList[i]),
+                      : RefreshIndicator(
+                          color: AppTheme.deepTeal,
+                          onRefresh: () async {
+                            ref.invalidate(serviceOrdersProvider);
+                            // small delay to show the spinner
+                            await Future.delayed(
+                                const Duration(milliseconds: 500));
+                          },
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                            physics: const AlwaysScrollableScrollPhysics(
+                                parent: BouncingScrollPhysics()),
+                            itemCount: visibleList.length,
+                            itemBuilder: (context, i) =>
+                                _ServiceCard(order: visibleList[i]),
+                          ),
                         ),
             ),
           ],
@@ -558,7 +567,9 @@ class _ServiceCard extends StatelessWidget {
                 if (isActive && order.expertPhone.isNotEmpty) ...[
                   GestureDetector(
                     onTap: () => openWhatsApp(
-                      phone: order.expertPhone.isNotEmpty ? order.expertPhone : '918072286963',
+                      phone: order.expertPhone.isNotEmpty
+                          ? order.expertPhone
+                          : '918072286963',
                       message:
                           'Hi ${order.assignedExpert}, I have a query regarding my ${order.serviceType} service (${order.id}).',
                     ),
