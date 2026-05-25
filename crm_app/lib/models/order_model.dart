@@ -6,7 +6,7 @@ enum OrderStage {
   workAssigned,
   documentRequested,
   workInProgress,
-  completed,
+  completed, reqReceived, testing,
 }
 
 /// Status of the service from the management's perspective:

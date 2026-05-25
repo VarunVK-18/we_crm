@@ -407,6 +407,10 @@ class _ServiceCard extends StatelessWidget {
             bg: const Color(0xFFF0FFF4),
             text: const Color(0xFF16A34A),
           ),
+    // TODO: Handle this case.
+    OrderStage.reqReceived => throw UnimplementedError(),
+    // TODO: Handle this case.
+    OrderStage.testing => throw UnimplementedError(),
       };
 
   @override
