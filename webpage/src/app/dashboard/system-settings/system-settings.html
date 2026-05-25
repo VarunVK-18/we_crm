@@ -67,4 +67,60 @@
       }
     </form>
   </div>
+
+  <!-- Service Checklist Templates Builder -->
+  @if (user()?.role === 'admin') {
+    <div class="filter-action-bar" style="margin-top: 40px;">
+      <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Service Checklist Templates</h2>
+    </div>
+    
+    <div class="client-profile-card" style="max-width: 800px; margin-top: 16px; padding: 24px;">
+      <div style="margin-bottom: 24px;">
+        <label class="form-input-label" style="font-weight: 600; color: var(--text-primary);">Select Service to Configure</label>
+        <select [(ngModel)]="selectedService" (change)="onServiceChange()" class="form-control-input" style="max-width: 400px; margin-top: 8px;">
+          <option value="">-- Select a Service --</option>
+          @for (svc of availableServices; track svc) {
+            <option [value]="svc">{{ svc }}</option>
+          }
+        </select>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">Configure the default checklist items that are automatically generated when a client registers for this service.</p>
+      </div>
+
+      @if (selectedService) {
+        <div style="border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background: var(--bg-secondary);">
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Template Items for "{{ selectedService }}"</h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+            @for (item of activeTemplateItems; track $index) {
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px;">
+                <div style="display: flex; flex-direction: column;">
+                  <strong style="font-size: 14px; color: var(--text-primary);">{{ item.title }}</strong>
+                  <span style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">{{ item.description || 'No description' }}</span>
+                </div>
+                <button type="button" (click)="removeTemplateItem($index)" style="background: none; border: none; color: #EF4444; font-size: 20px; cursor: pointer; padding: 0 4px;">×</button>
+              </div>
+            }
+            @if (activeTemplateItems.length === 0) {
+              <div style="font-size: 13px; color: var(--text-secondary); font-style: italic; padding: 10px;">No default items configured. A blank checklist will be generated.</div>
+            }
+          </div>
+
+          <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+            <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Add New Template Item</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <input type="text" [(ngModel)]="newItemTitle" placeholder="Item Title (max 30 chars)" maxlength="30" class="form-control-input" />
+              <textarea [(ngModel)]="newItemDesc" placeholder="Item Description (max 200 chars)" maxlength="200" class="form-control-input" rows="2" style="resize: vertical;"></textarea>
+              <button type="button" class="btn-submit" (click)="addTemplateItem()" style="align-self: flex-start; padding: 8px 16px;">+ Add to Template</button>
+            </div>
+          </div>
+
+          <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+            <button type="button" class="btn-submit" (click)="saveTemplate()" style="background-color: var(--accent-primary); padding: 10px 24px; font-weight: bold;">
+              Save Template
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
 </div>

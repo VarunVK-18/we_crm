@@ -116,7 +116,7 @@ export class EmployeesTeam implements OnInit {
       company_id: this.getCompanyId()
     };
 
-    this.api.post<any>('auth/register-employee', payload).subscribe({
+    this.api.post<any>('auth/register-direct', payload).subscribe({
       next: (res) => {
         this.employeeSuccessMessage.set('Employee created successfully!');
         this.fetchTeams();

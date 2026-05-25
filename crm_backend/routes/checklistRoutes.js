@@ -6,7 +6,8 @@ const {
   getMyChecklists,
   toggleChecklistItem,
   addChecklistItem,
-  updateChecklist
+  updateChecklist,
+  uploadFinalDocuments
 } = require('../controllers/checklistController');
 
 const { checkUser, permit } = require('../middleware/rbac');
@@ -28,6 +29,7 @@ router.get('/my-checklists', checkUser, getMyChecklists); // For Flutter custome
 router.patch('/checklists/:id', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), updateChecklist);
 router.post('/checklists/:id/items', checkUser, permit('admin', 'client_manager'), addChecklistItem);
 router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
+router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadFinalDocuments);
 
 // Document upload route for Flutter customers
 const { uploadRequestedDocuments } = require('../controllers/checklistController');

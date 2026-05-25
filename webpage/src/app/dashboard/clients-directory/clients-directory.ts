@@ -56,11 +56,16 @@ export class ClientsDirectory implements OnInit {
   };
 
   availableServices = [
-    'Compliance Audit',
-    'GST Reconciliation',
-    'Tax Advisory',
-    'Corporate Filings',
-    'FEMA Advisory'
+    '360° Compliance',
+    'Trademark Registration',
+    'Company Incorporation',
+    'Accounting & Tax',
+    'GST Onboarding',
+    'Strategic Tax Planning',
+    'ISO Certifications',
+    'Capital Funding',
+    'Risk Management',
+    'Compliance Audit'
   ];
 
   // Task Creation Modal inside clients context
@@ -71,6 +76,13 @@ export class ClientsDirectory implements OnInit {
   newTaskAssignedTo = '';
   taskErrorMessage = signal<string>('');
   taskSuccessMessage = signal<string>('');
+
+  // Assign Service Modal State
+  isAssignServiceModalOpen = signal<boolean>(false);
+  assignServiceErrorMessage = signal<string>('');
+  assignServiceSuccessMessage = signal<string>('');
+  assignServiceClientId = '';
+  assignServiceSelected = '';
 
   constructor(private api: Api) {}
 
@@ -317,6 +329,39 @@ export class ClientsDirectory implements OnInit {
       },
       error: (err) => {
         this.taskErrorMessage.set(err.error?.message || 'Failed to create task.');
+      }
+    });
+  }
+
+  openAssignServiceModal(clientId: string) {
+    this.assignServiceClientId = clientId;
+    this.assignServiceSelected = '';
+    this.assignServiceErrorMessage.set('');
+    this.assignServiceSuccessMessage.set('');
+    this.isAssignServiceModalOpen.set(true);
+  }
+
+  submitAssignService() {
+    this.assignServiceErrorMessage.set('');
+    this.assignServiceSuccessMessage.set('');
+    if (!this.assignServiceClientId || !this.assignServiceSelected) {
+      this.assignServiceErrorMessage.set('Please select a service.');
+      return;
+    }
+
+    const payload = new FormData();
+    payload.append('service_name', this.assignServiceSelected);
+
+    this.api.post<any>(`users/profile/${this.assignServiceClientId}/subscribe-service`, payload).subscribe({
+      next: (res) => {
+        this.assignServiceSuccessMessage.set('Service assigned & Checklist created!');
+        this.fetchClients();
+        setTimeout(() => {
+          this.isAssignServiceModalOpen.set(false);
+        }, 1200);
+      },
+      error: (err) => {
+        this.assignServiceErrorMessage.set(err.error?.message || 'Failed to assign service.');
       }
     });
   }

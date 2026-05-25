@@ -67,6 +67,13 @@ export class Api {
    */
   post<T>(endpoint: string, body: any): Observable<T> {
     const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    if (body instanceof FormData) {
+      const savedUser = localStorage.getItem('user');
+      let userId = '';
+      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) {} }
+      const headers = new HttpHeaders({ 'x-user-id': userId });
+      return this.http.post<T>(url, body, { headers });
+    }
     return this.http.post<T>(url, body, { headers: this.getHeaders() });
   }
 
@@ -83,6 +90,13 @@ export class Api {
    */
   put<T>(endpoint: string, body: any): Observable<T> {
     const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    if (body instanceof FormData) {
+      const savedUser = localStorage.getItem('user');
+      let userId = '';
+      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) {} }
+      const headers = new HttpHeaders({ 'x-user-id': userId });
+      return this.http.put<T>(url, body, { headers });
+    }
     return this.http.put<T>(url, body, { headers: this.getHeaders() });
   }
 
@@ -91,6 +105,13 @@ export class Api {
    */
   patch<T>(endpoint: string, body: any): Observable<T> {
     const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    if (body instanceof FormData) {
+      const savedUser = localStorage.getItem('user');
+      let userId = '';
+      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) {} }
+      const headers = new HttpHeaders({ 'x-user-id': userId });
+      return this.http.patch<T>(url, body, { headers });
+    }
     return this.http.patch<T>(url, body, { headers: this.getHeaders() });
   }
 

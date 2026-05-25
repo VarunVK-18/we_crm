@@ -3,6 +3,7 @@ const Company = require('../models/Company');
 const AuditLog = require('../models/AuditLog');
 const { logActivity } = require('../middleware/rbac');
 const Checklist = require('../models/Checklist');
+const ChecklistTemplate = require('../models/ChecklistTemplate');
 const Document = require('../models/Document'); // NEW: Import Document model
 
 // @desc    Register a new user (client) — scoped to a company
@@ -616,20 +617,29 @@ const subscribeService = async (req, res) => {
     if (isNewSubscription) {
 
       // Create a Checklist for this service automatically
-      const defaultItems = [
-        { title: 'Service Activated', description: 'The service has been successfully activated and logged in the system.', isChecked: false },
-        { title: 'Setup Completed', description: 'Initial setup and configuration have been completed.', isChecked: false },
-        { title: 'Documents Pending', description: 'Awaiting necessary documents from the client to proceed further.', isChecked: false }
-      ];
-
+      let finalItems = [];
       try {
+        const template = await ChecklistTemplate.findOne({
+          company_id: user.company_id,
+          service_name: serviceName
+        });
+
+        if (template && template.items && template.items.length > 0) {
+          finalItems = template.items.map(item => ({
+            title: item.title,
+            description: item.description,
+            label: item.title,
+            isChecked: false
+          }));
+        }
+
         await Checklist.create({
           company_id: user.company_id || '000000000000000000000000', // fallback if null
           client_id: user._id,
           service_name: serviceName,
           assigned_to: user.assigned_to || null,
           created_by: user._id, 
-          items: defaultItems,
+          items: finalItems,
           status: 'pending',
           stage: 'quotePending',
           notes: 'Automatically generated from app registration.'

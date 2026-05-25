@@ -255,6 +255,62 @@ export class ServiceChecklists implements OnInit {
     });
   }
 
+  // Final Documents Upload State
+  finalDocsToUpload: { file: File, expiryDate: string }[] = [];
+  isFinalDocUploading = false;
+
+  onFinalFilesSelected(event: any) {
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        this.finalDocsToUpload.push({
+          file: files[i],
+          expiryDate: '' // to be filled by user
+        });
+      }
+    }
+  }
+
+  removeFinalDocFile(index: number) {
+    this.finalDocsToUpload.splice(index, 1);
+  }
+
+  submitFinalDocuments(checklistId: string) {
+    // Validate that all selected files have an expiry date
+    for (const doc of this.finalDocsToUpload) {
+      if (!doc.expiryDate) {
+        alert('Please enter an expiry date for all selected documents.');
+        return;
+      }
+    }
+
+    this.isFinalDocUploading = true;
+    const formData = new FormData();
+    const expiryDates: string[] = [];
+
+    for (const doc of this.finalDocsToUpload) {
+      formData.append('final_files', doc.file);
+      expiryDates.push(doc.expiryDate);
+    }
+    formData.append('expiry_dates', JSON.stringify(expiryDates));
+
+    this.api.post(`checklists/${checklistId}/final-documents`, formData).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          const updated = this.checklists().map(c => c._id === res.checklist._id ? res.checklist : c);
+          this.checklists.set(updated);
+          this.finalDocsToUpload = [];
+          alert('Final documents uploaded successfully!');
+        }
+        this.isFinalDocUploading = false;
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to upload final documents.');
+        this.isFinalDocUploading = false;
+      }
+    });
+  }
+
   isRequestDocModalOpen = signal<boolean>(false);
   newDocRequestName = '';
 

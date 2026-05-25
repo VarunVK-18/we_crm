@@ -292,12 +292,68 @@ const uploadRequestedDocuments = async (req, res) => {
   }
 };
 
+// @desc    Upload final documents with expiry dates
+// @route   POST /api/checklists/:id/final-documents
+// @access  Private (Admin, Client Manager, Staff)
+const uploadFinalDocuments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    let { expiry_dates } = req.body;
+    
+    // Parse expiry_dates if it's sent as a JSON string
+    if (typeof expiry_dates === 'string') {
+      expiry_dates = JSON.parse(expiry_dates);
+    }
+
+    const checklist = await Checklist.findById(id);
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    if (req.files && req.files.length > 0) {
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i];
+        const expiryDate = expiry_dates && expiry_dates[i] ? new Date(expiry_dates[i]) : new Date();
+        
+        // Save to Document collection
+        const newDoc = await Document.create({
+          filename: file.originalname,
+          contentType: file.mimetype,
+          data: file.buffer,
+          uploadedBy: req.user._id
+        });
+
+        checklist.final_documents.push({
+          name: file.originalname,
+          document_id: newDoc._id,
+          expiry_date: expiryDate,
+          uploadedAt: new Date()
+        });
+      }
+      
+      await checklist.save();
+    }
+
+    const populated = await Checklist.findById(id)
+      .populate('client_id', 'owner_name company_name email')
+      .populate('assigned_to', 'owner_name email role')
+      .populate('created_by', 'owner_name email role')
+      .populate('items.checkedBy', 'owner_name');
+
+    res.status(200).json({ success: true, checklist: populated });
+  } catch (error) {
+    console.error('Final Documents Upload Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createChecklist,
   getChecklists,
   getMyChecklists,
-  updateChecklist,
   toggleChecklistItem,
   addChecklistItem,
-  uploadRequestedDocuments
+  updateChecklist,
+  uploadRequestedDocuments,
+  uploadFinalDocuments
 };

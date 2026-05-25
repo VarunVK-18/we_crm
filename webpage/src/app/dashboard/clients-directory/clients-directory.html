@@ -181,6 +181,15 @@
               </div>
             }
 
+            <!-- Assign Service / Create Checklist Button (Admin, Client Manager & Account Manager) -->
+            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
+              <button (click)="openAssignServiceModal(client._id)" 
+                      style="width: 100%; margin-top: 12px; padding: 8px 12px; background-color: var(--bg-active); border: 1px dashed var(--accent-primary); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
+                <span>Assign Service & Create Checklist</span>
+              </button>
+            }
+
             <!-- Create Task Button (Admin, Client Manager & Account Manager) -->
             @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
               <button (click)="openCreateTaskModal(client._id)" 
@@ -358,62 +367,7 @@
             ></textarea>
           </div>
 
-          <!-- Document Upload Fields -->
-          <div class="form-row-grid" style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-            <!-- GSTIN Certificate Upload -->
-            <div class="form-group-item file-upload-item">
-              <label class="form-input-label">Upload GSTIN Certificate</label>
-              <div class="custom-file-upload">
-                <input 
-                  type="file" 
-                  id="gstinFile" 
-                  class="file-input-hidden" 
-                  (change)="onGstinFileSelected($event)" 
-                />
-                <label for="gstinFile" class="file-upload-label-btn">
-                  <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
-                  <span>{{ selectedGstinFile ? selectedGstinFile.name : 'Choose GSTIN Certificate' }}</span>
-                </label>
-              </div>
-            </div>
 
-            <!-- PAN Upload -->
-            <div class="form-group-item file-upload-item">
-              <label class="form-input-label">Upload PAN Card</label>
-              <div class="custom-file-upload">
-                <input 
-                  type="file" 
-                  id="panFile" 
-                  class="file-input-hidden" 
-                  (change)="onPanFileSelected($event)" 
-                />
-                <label for="panFile" class="file-upload-label-btn">
-                  <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
-                  <span>{{ selectedPanFile ? selectedPanFile.name : 'Choose PAN Card' }}</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Services Checklist selection -->
-          <div class="form-group-item services-selection-group">
-            <label class="form-input-label">Assign Wealth/Compliance Services</label>
-            <div class="services-checkbox-grid">
-              @for (srv of availableServices; track srv) {
-                <div 
-                  class="service-check-item" 
-                  [class.checked]="newClient.services.includes(srv)"
-                  (click)="toggleService(srv)">
-                  <div class="checkbox-indicator">
-                    @if (newClient.services.includes(srv)) {
-                      <hugeicons-icon [icon]="CheckmarkCircle02Icon" size="14" color="#10B981"></hugeicons-icon>
-                    }
-                  </div>
-                  <span class="service-check-label">{{ srv }}</span>
-                </div>
-              }
-            </div>
-          </div>
 
         </div>
 
@@ -423,6 +377,46 @@
         </div>
       </form>
 
+    </div>
+  </div>
+}
+
+<!-- Assign Service Modal Overlay -->
+@if (isAssignServiceModalOpen()) {
+  <div class="modal-overlay" (click)="isAssignServiceModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Assign Service</h3>
+        <button class="close-modal-btn" (click)="isAssignServiceModalOpen.set(false)">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitAssignService()" class="modal-form">
+        <div class="modal-body">
+          @if (assignServiceErrorMessage()) {
+            <div class="modal-error-message">{{ assignServiceErrorMessage() }}</div>
+          }
+          @if (assignServiceSuccessMessage()) {
+            <div class="modal-success-message">{{ assignServiceSuccessMessage() }}</div>
+          }
+
+          <div class="form-group-item">
+            <label class="form-input-label">Select Service to Assign *</label>
+            <select name="assign_service" class="form-control-input select-input" [(ngModel)]="assignServiceSelected" required>
+              <option value="">-- Choose a Service --</option>
+              @for (svc of availableServices; track svc) {
+                <option [value]="svc">{{ svc }}</option>
+              }
+            </select>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">Assigning a service will automatically generate a new Service Checklist for this client.</p>
+          </div>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="isAssignServiceModalOpen.set(false)">Cancel</button>
+          <button type="submit" class="btn-submit">Assign Service</button>
+        </div>
+      </form>
     </div>
   </div>
 }

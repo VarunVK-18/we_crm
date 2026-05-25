@@ -44,6 +44,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
 const documentRoutes = require('./routes/documentRoutes');
+const templateRoutes = require('./routes/templateRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
@@ -54,6 +55,7 @@ app.use('/api', taskRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api', checklistRoutes);
 app.use('/api', documentRoutes);
+app.use('/api/templates', templateRoutes);
 
 // Start Express Server
 app.listen(PORT, '0.0.0.0', () => {

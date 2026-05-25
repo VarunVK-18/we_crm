@@ -19,6 +19,24 @@ export class SystemSettings implements OnInit {
     require_document_verification: true
   });
 
+  availableServices = [
+    '360° Compliance',
+    'Trademark Registration',
+    'Company Incorporation',
+    'Accounting & Tax',
+    'GST Onboarding',
+    'Strategic Tax Planning',
+    'ISO Certifications',
+    'Capital Funding',
+    'Risk Management',
+    'Compliance Audit'
+  ];
+
+  selectedService = '';
+  activeTemplateItems: {title: string, description: string}[] = [];
+  newItemTitle = '';
+  newItemDesc = '';
+
   constructor(private api: Api) {}
 
   ngOnInit() {
@@ -50,6 +68,52 @@ export class SystemSettings implements OnInit {
       error: (err) => {
         alert(err.error?.message || 'Failed to save settings.');
       }
+    });
+  }
+
+  onServiceChange() {
+    if (!this.selectedService) {
+      this.activeTemplateItems = [];
+      return;
+    }
+    this.api.get<any>('templates/checklists').subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          const tmpl = res.templates.find((t: any) => t.service_name === this.selectedService);
+          if (tmpl && tmpl.items) {
+            this.activeTemplateItems = tmpl.items.map((i: any) => ({ title: i.title, description: i.description }));
+          } else {
+            this.activeTemplateItems = [];
+          }
+        }
+      },
+      error: (err) => console.error('Failed to fetch templates:', err)
+    });
+  }
+
+  addTemplateItem() {
+    if (this.newItemTitle.trim()) {
+      this.activeTemplateItems.push({
+        title: this.newItemTitle.trim(),
+        description: this.newItemDesc.trim()
+      });
+      this.newItemTitle = '';
+      this.newItemDesc = '';
+    }
+  }
+
+  removeTemplateItem(index: number) {
+    this.activeTemplateItems.splice(index, 1);
+  }
+
+  saveTemplate() {
+    if (!this.selectedService) return;
+    this.api.post<any>('templates/checklists', {
+      service_name: this.selectedService,
+      items: this.activeTemplateItems
+    }).subscribe({
+      next: (res) => alert('Template saved successfully!'),
+      error: (err) => alert(err.error?.message || 'Failed to save template.')
     });
   }
 }
