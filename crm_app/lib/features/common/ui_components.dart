@@ -24,8 +24,8 @@ class GlassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: width != null ? width!.r : null,
-      height: height != null ? height!.r : null,
+      width: width?.r,
+      height: height?.r,
       decoration: AppTheme.glassDecoration(context: context),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(24.r),

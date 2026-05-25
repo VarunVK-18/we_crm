@@ -29,7 +29,7 @@ class _ServiceRequestSummarySheetState
   late TextEditingController _phoneController;
   late TextEditingController _nameController;
   late TextEditingController _emailController;
-  
+
   // Private Limited Incorporation Specific Controllers
   late TextEditingController _companyNameController;
   late TextEditingController _businessActivityController;
@@ -48,7 +48,7 @@ class _ServiceRequestSummarySheetState
   late TextEditingController _businessDescController;
   late TextEditingController _tmTradeDescriptionController;
   late TextEditingController _brandUsageDateController;
-  
+
   bool _isBrandUsed = false;
 
   late TextEditingController _fssaiEmployeesController;
@@ -76,10 +76,10 @@ class _ServiceRequestSummarySheetState
   late TextEditingController _dunsYearController;
 
   String _officePreference = 'Own Address';
-  String _msmeType = 'Micro';
-  String _tradeNature = 'Goods';
-  String _markType = 'Word mark';
-  bool _tmVerification = false;
+  final String _msmeType = 'Micro';
+  final String _tradeNature = 'Goods';
+  final String _markType = 'Word mark';
+  final bool _tmVerification = false;
 
   // FSSAI State
   String _fssaiBusinessType = 'Proprietorship';
@@ -88,11 +88,21 @@ class _ServiceRequestSummarySheetState
   bool _isCorrespondenceSame = true;
   bool _fssaiDeclaration = false;
   final List<String> _selectedFssaiNatures = [];
-  
+
   final List<String> _fssaiNatureOptions = [
-    'Manufacturer', 'Trader', 'Retailer', 'Distributor', 'Wholesaler',
-    'Restaurant / Food Service', 'Caterer', 'Importer', 'Exporter',
-    'Storage / Warehouse', 'Transporter', 'E-commerce Food Seller', 'Other'
+    'Manufacturer',
+    'Trader',
+    'Retailer',
+    'Distributor',
+    'Wholesaler',
+    'Restaurant / Food Service',
+    'Caterer',
+    'Importer',
+    'Exporter',
+    'Storage / Warehouse',
+    'Transporter',
+    'E-commerce Food Seller',
+    'Other'
   ];
 
   // MSME State
@@ -101,10 +111,10 @@ class _ServiceRequestSummarySheetState
 
   // DUNS State
   String _dunsBusinessType = 'Private Limited';
-  
+
   bool _isPhoneValid = false;
   bool _isCompanyPhoneValid = false;
-  
+
   // Map to store files per document slot
   // Key is the document name from kServiceRequiredDocuments or 'Other Documents'
   final Map<String, List<PlatformFile>> _documentSlots = {};
@@ -122,7 +132,8 @@ class _ServiceRequestSummarySheetState
 
   bool get _areAllRequiredDocsUploaded {
     for (final doc in _requiredDocs) {
-      if (!_documentSlots.containsKey(doc) || (_documentSlots[doc]?.isEmpty ?? true)) {
+      if (!_documentSlots.containsKey(doc) ||
+          (_documentSlots[doc]?.isEmpty ?? true)) {
         return false;
       }
     }
@@ -147,7 +158,7 @@ class _ServiceRequestSummarySheetState
     _paidUpCapitalController = TextEditingController();
     _valuePerShareController = TextEditingController();
     _noOfSharesController = TextEditingController();
-    
+
     // Initialize Trademark Controllers
     _udyamNumberController = TextEditingController();
     _tmApplicantNameController = TextEditingController();
@@ -156,7 +167,7 @@ class _ServiceRequestSummarySheetState
     _businessDescController = TextEditingController();
     _brandUsageDateController = TextEditingController();
     _tmTradeDescriptionController = TextEditingController();
-    
+
     // Initialize FSSAI Controllers
     _fssaiEmployeesController = TextEditingController();
     _fssaiPremisesAddressController = TextEditingController();
@@ -166,7 +177,7 @@ class _ServiceRequestSummarySheetState
     _fssaiCorrVillageController = TextEditingController();
     _fssaiCorrDistrictController = TextEditingController();
     _fssaiStartDateController = TextEditingController();
-    
+
     // Initialize MSME Controllers
     _msmeUnitsController = TextEditingController();
     _msmeMaleEmployeesController = TextEditingController();
@@ -177,11 +188,11 @@ class _ServiceRequestSummarySheetState
     _msmeGstNumberController = TextEditingController();
     _msmeInvestmentController = TextEditingController();
     _msmeTurnoverController = TextEditingController();
-    
+
     // Initialize DUNS Controllers
     _dunsTradeNameController = TextEditingController();
     _dunsYearController = TextEditingController();
-    
+
     _validatePhone(_phoneController.text);
     _validateCompanyPhone(_companyPhoneController.text);
 
@@ -202,7 +213,8 @@ class _ServiceRequestSummarySheetState
 
   void _validateCompanyPhone(String value) {
     setState(() {
-      _isCompanyPhoneValid = value.length == 10 && RegExp(r'^[0-9]+$').hasMatch(value);
+      _isCompanyPhoneValid =
+          value.length == 10 && RegExp(r'^[0-9]+$').hasMatch(value);
     });
   }
 
@@ -231,12 +243,16 @@ class _ServiceRequestSummarySheetState
           showDialog(
             context: context,
             builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
               title: const Row(
                 children: [
                   Icon(LucideIcons.alertTriangle, color: Colors.redAccent),
                   SizedBox(width: 10),
-                  Text('File Too Large', style: TextStyle(fontWeight: FontWeight.w900, color: AppTheme.deepTeal)),
+                  Text('File Too Large',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.deepTeal)),
                 ],
               ),
               content: const Text(
@@ -246,7 +262,10 @@ class _ServiceRequestSummarySheetState
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('OK', style: TextStyle(fontWeight: FontWeight.bold, color: AppTheme.corporateBlue)),
+                  child: const Text('OK',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.corporateBlue)),
                 ),
               ],
             ),
@@ -292,7 +311,7 @@ class _ServiceRequestSummarySheetState
     _businessDescController.dispose();
     _brandUsageDateController.dispose();
     _tmTradeDescriptionController.dispose();
-    
+
     _fssaiEmployeesController.dispose();
     _fssaiPremisesAddressController.dispose();
     _fssaiVillageController.dispose();
@@ -301,7 +320,7 @@ class _ServiceRequestSummarySheetState
     _fssaiCorrVillageController.dispose();
     _fssaiCorrDistrictController.dispose();
     _fssaiStartDateController.dispose();
-    
+
     _msmeUnitsController.dispose();
     _msmeMaleEmployeesController.dispose();
     _msmeFemaleEmployeesController.dispose();
@@ -311,7 +330,7 @@ class _ServiceRequestSummarySheetState
     _msmeGstNumberController.dispose();
     _msmeInvestmentController.dispose();
     _msmeTurnoverController.dispose();
-    
+
     _dunsTradeNameController.dispose();
     _dunsYearController.dispose();
     super.dispose();
@@ -320,15 +339,17 @@ class _ServiceRequestSummarySheetState
   Future<void> _submitServiceRequest() async {
     final userProfile = ref.read(userProfileProvider).value;
     if (userProfile == null) return;
-    
+
     try {
       final response = await http.post(
-        Uri.parse('$kBaseUrl/api/users/profile/${userProfile.id}/subscribe-service'),
+        Uri.parse(
+            '$kBaseUrl/api/users/profile/${userProfile.id}/subscribe-service'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'serviceName': widget.packageName}),
       );
       if (response.statusCode == 200) {
-        debugPrint('Successfully registered service on backend: ${widget.packageName}');
+        debugPrint(
+            'Successfully registered service on backend: ${widget.packageName}');
       } else {
         debugPrint('Failed to register service on backend: ${response.body}');
       }
@@ -372,7 +393,7 @@ class _ServiceRequestSummarySheetState
             const SizedBox(height: 24),
 
             _buildServiceHeader(),
-            
+
             Text(
               'Service Request Details',
               style: GoogleFonts.outfit(
@@ -382,7 +403,7 @@ class _ServiceRequestSummarySheetState
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Editable Name Field
             _EditableField(
               label: 'Full Name',
@@ -419,11 +440,11 @@ class _ServiceRequestSummarySheetState
             _DetailRow(label: 'Package:', value: widget.packageName),
 
             ..._buildServiceSpecificForms(),
-            
+
             _buildDocumentSection(),
-            
+
             const SizedBox(height: 12),
-            
+
             _buildNextStepsSection(),
 
             const SizedBox(height: 40),
@@ -457,9 +478,9 @@ class _ServiceRequestSummarySheetState
                         ? () async {
                             debugPrint('Submitting request:');
                             debugPrint('Package: ${widget.packageName}');
-                            
+
                             await _submitServiceRequest();
-                            
+
                             if (mounted) {
                               Navigator.pop(context); // Close sheet
                               _showSuccessDialog(context);
@@ -496,7 +517,6 @@ class _ServiceRequestSummarySheetState
       ),
     );
   }
-
 
   void _showSuccessDialog(BuildContext context) {
     showDialog(
@@ -538,12 +558,13 @@ class _ServiceRequestSummarySheetState
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.deepTeal,
                 minimumSize: const Size(double.infinity, 56),
-                shape:
-                    RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
               ),
               child: const Text(
                 'Done',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -551,6 +572,7 @@ class _ServiceRequestSummarySheetState
       ),
     );
   }
+
   bool get _isFormValid {
     if (!_isPhoneValid || !_areAllRequiredDocsUploaded) return false;
 
@@ -599,7 +621,6 @@ class _ServiceRequestSummarySheetState
             _msmeFemaleEmployeesController.text.isNotEmpty &&
             _msmeIncDateController.text.isNotEmpty &&
             _msmeCommenceDateController.text.isNotEmpty &&
-            _msmeGstNumberController.text.isNotEmpty &&
             _msmeInvestmentController.text.isNotEmpty &&
             _msmeTurnoverController.text.isNotEmpty;
       case 'DUNS Number Registration':
@@ -620,7 +641,8 @@ class _ServiceRequestSummarySheetState
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
-      decoration: AppTheme.packageHeaderDecoration([AppTheme.corporateBlue, const Color(0xFF3B5BDB)]),
+      decoration: AppTheme.packageHeaderDecoration(
+          [AppTheme.corporateBlue, const Color(0xFF3B5BDB)]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -707,8 +729,10 @@ class _ServiceRequestSummarySheetState
 
   List<Widget> _buildServiceSpecificForms() {
     return [
-      if (widget.packageName == 'Private Limited Incorporation') ..._buildPrivateLimitedForm(),
-      if (widget.packageName == 'Trademark Registration') ..._buildTrademarkForm(),
+      if (widget.packageName == 'Private Limited Incorporation')
+        ..._buildPrivateLimitedForm(),
+      if (widget.packageName == 'Trademark Registration')
+        ..._buildTrademarkForm(),
       if (widget.packageName == 'MSME Certification') ..._buildMsmeForm(),
       if (widget.packageName == 'DUNS Number Registration') ..._buildDunsForm(),
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
@@ -720,7 +744,10 @@ class _ServiceRequestSummarySheetState
     return [
       const SizedBox(height: 32),
       Text('Incorporation Details',
-          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
       const SizedBox(height: 20),
       _EditableField(
           label: 'Proposed Company Name',
@@ -737,9 +764,15 @@ class _ServiceRequestSummarySheetState
           isRequired: true),
       const SizedBox(height: 24),
       _buildSectionHeader('Registered Office Preference'),
-      _buildModernRadio('I have my own registered office address', 'Own Address', _officePreference,
+      _buildModernRadio(
+          'I have my own registered office address',
+          'Own Address',
+          _officePreference,
           (val) => setState(() => _officePreference = val!)),
-      _buildModernRadio('I need Wealth Empires to arrange a virtual office', 'Virtual Office', _officePreference,
+      _buildModernRadio(
+          'I need Wealth Empires to arrange a virtual office',
+          'Virtual Office',
+          _officePreference,
           (val) => setState(() => _officePreference = val!)),
       const SizedBox(height: 24),
       _EditableField(
@@ -756,7 +789,10 @@ class _ServiceRequestSummarySheetState
     return [
       const SizedBox(height: 32),
       Text('Trademark Details',
-          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
       const SizedBox(height: 20),
       _EditableField(
           label: 'Proposed Brand / Logo Name',
@@ -774,8 +810,8 @@ class _ServiceRequestSummarySheetState
           isRequired: true),
       const SizedBox(height: 24),
       _buildSectionHeader('Are you already using this brand name?'),
-      _buildModernRadio<bool>('Yes, we are already using it', true, _isBrandUsed,
-          (val) => setState(() => _isBrandUsed = val!)),
+      _buildModernRadio<bool>('Yes, we are already using it', true,
+          _isBrandUsed, (val) => setState(() => _isBrandUsed = val!)),
       _buildModernRadio<bool>('No, it is a new brand name', false, _isBrandUsed,
           (val) => setState(() => _isBrandUsed = val!)),
       if (_isBrandUsed) ...[
@@ -794,19 +830,42 @@ class _ServiceRequestSummarySheetState
     return [
       const SizedBox(height: 32),
       Text('Udyam Registration Details',
-          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
+      const SizedBox(height: 24),
+      _EditableField(
+          label: 'Name of Enterprise',
+          controller: _companyNameController,
+          icon: LucideIcons.building,
+          hint: 'Eg: Wealth Empires',
+          isRequired: true),
       const SizedBox(height: 24),
       _buildSectionHeader('Type of organization'),
-      ...['Proprietorship', 'Partnership', 'LLP', 'Private Limited', 'OPC', 'Trust', 'Society']
-          .map((type) => _buildModernRadio(type, type, _msmeOrgSelection, (val) => setState(() => _msmeOrgSelection = val!))),
+      ...[
+        'Proprietorship',
+        'Partnership',
+        'LLP',
+        'Private Limited',
+        'OPC',
+        'Trust',
+        'Society'
+      ].map((type) => _buildModernRadio(type, type, _msmeOrgSelection,
+          (val) => setState(() => _msmeOrgSelection = val!))),
       const SizedBox(height: 24),
       _buildSectionHeader('Major activity'),
       Row(
         children: [
           Expanded(
               child: _buildModernRadio(
-                  'Manufacturing', 'Manufacturing', _msmeActivity, (val) => setState(() => _msmeActivity = val!))),
-          Expanded(child: _buildModernRadio('Service', 'Service', _msmeActivity, (val) => setState(() => _msmeActivity = val!))),
+                  'Manufacturing',
+                  'Manufacturing',
+                  _msmeActivity,
+                  (val) => setState(() => _msmeActivity = val!))),
+          Expanded(
+              child: _buildModernRadio('Service', 'Service', _msmeActivity,
+                  (val) => setState(() => _msmeActivity = val!))),
         ],
       ),
       const SizedBox(height: 24),
@@ -902,7 +961,7 @@ class _ServiceRequestSummarySheetState
           controller: _msmeGstNumberController,
           icon: LucideIcons.fileText,
           hint: 'Registered GSTIN',
-          isRequired: true),
+          isRequired: false),
       const SizedBox(height: 20),
       Row(
         children: [
@@ -930,7 +989,10 @@ class _ServiceRequestSummarySheetState
     return [
       const SizedBox(height: 32),
       Text('Application Details',
-          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
       const SizedBox(height: 20),
       _EditableField(
           label: 'Legal Business Name',
@@ -947,8 +1009,14 @@ class _ServiceRequestSummarySheetState
           isRequired: false),
       const SizedBox(height: 20),
       _buildSectionHeader('Business Type'),
-      ...['Private Limited', 'LLP', 'Sole Proprietorship', 'Partnership', 'Other']
-          .map((type) => _buildModernRadio(type, type, _dunsBusinessType, (val) => setState(() => _dunsBusinessType = val!))),
+      ...[
+        'Private Limited',
+        'LLP',
+        'Sole Proprietorship',
+        'Partnership',
+        'Other'
+      ].map((type) => _buildModernRadio(type, type, _dunsBusinessType,
+          (val) => setState(() => _dunsBusinessType = val!))),
       const SizedBox(height: 24),
       Row(
         children: [
@@ -978,7 +1046,10 @@ class _ServiceRequestSummarySheetState
     return [
       const SizedBox(height: 32),
       Text('LLP Details',
-          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
       const SizedBox(height: 20),
       _EditableField(
           label: 'Proposed LLP name',
@@ -1000,9 +1071,12 @@ class _ServiceRequestSummarySheetState
           isRequired: true),
       const SizedBox(height: 24),
       _buildSectionHeader('Registered Office Preference'),
-      _buildModernRadio('Do you have address for your company', 'Own Address', _officePreference,
-          (val) => setState(() => _officePreference = val!)),
-      _buildModernRadio('Do you want virtual office for your company', 'Virtual Office', _officePreference,
+      _buildModernRadio('Do you have address for your company', 'Own Address',
+          _officePreference, (val) => setState(() => _officePreference = val!)),
+      _buildModernRadio(
+          'Do you want virtual office for your company',
+          'Virtual Office',
+          _officePreference,
           (val) => setState(() => _officePreference = val!)),
       const SizedBox(height: 24),
       _EditableField(
@@ -1026,9 +1100,13 @@ class _ServiceRequestSummarySheetState
     return [
       const SizedBox(height: 32),
       Text('Business Details',
-          style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
       const SizedBox(height: 8),
-      Text('Enter your business details correctly', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+      Text('Enter your business details correctly',
+          style: TextStyle(color: Colors.grey[600], fontSize: 13)),
       const SizedBox(height: 20),
       _EditableField(
           label: 'Name of Business',
@@ -1038,15 +1116,25 @@ class _ServiceRequestSummarySheetState
           isRequired: true),
       const SizedBox(height: 20),
       _buildSectionHeader('Type of Business'),
-      ...['Proprietorship', 'Partnership', 'LLP', 'Private Limited Company', 'One Person Company', 'Other'].map(
-          (type) => _buildModernRadio(type, type, _fssaiBusinessType, (val) => setState(() => _fssaiBusinessType = val!))),
+      ...[
+        'Proprietorship',
+        'Partnership',
+        'LLP',
+        'Private Limited Company',
+        'One Person Company',
+        'Other'
+      ].map((type) => _buildModernRadio(type, type, _fssaiBusinessType,
+          (val) => setState(() => _fssaiBusinessType = val!))),
       const SizedBox(height: 24),
       _buildSectionHeader('Nature of Food Business'),
-      const Text('(Select all applicable)', style: TextStyle(fontSize: 11, color: Colors.grey)),
+      const Text('(Select all applicable)',
+          style: TextStyle(fontSize: 11, color: Colors.grey)),
       const SizedBox(height: 12),
       ..._fssaiNatureOptions.map((nature) => CheckboxListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(nature, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            title: Text(nature,
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
             value: _selectedFssaiNatures.contains(nature),
             activeColor: AppTheme.corporateBlue,
             onChanged: (val) {
@@ -1069,8 +1157,9 @@ class _ServiceRequestSummarySheetState
           isRequired: true),
       const SizedBox(height: 20),
       _buildSectionHeader('Expected Annual Turnover'),
-      ...['Below ₹12 Lakhs', '₹12 Lakhs – ₹20 Crores', 'Above ₹20 Crores']
-          .map((to) => _buildModernRadio(to, to, _fssaiTurnover, (val) => setState(() => _fssaiTurnover = val!))),
+      ...['Below ₹12 Lakhs', '₹12 Lakhs – ₹20 Crores', 'Above ₹20 Crores'].map(
+          (to) => _buildModernRadio(to, to, _fssaiTurnover,
+              (val) => setState(() => _fssaiTurnover = val!))),
       const SizedBox(height: 24),
       _EditableField(
           label: 'No. of Employees',
@@ -1083,8 +1172,12 @@ class _ServiceRequestSummarySheetState
       _buildSectionHeader('Premises Type'),
       Row(
         children: [
-          Expanded(child: _buildModernRadio('Own', 'Own', _fssaiPremisesType, (val) => setState(() => _fssaiPremisesType = val!))),
-          Expanded(child: _buildModernRadio('Rent', 'Rent', _fssaiPremisesType, (val) => setState(() => _fssaiPremisesType = val!))),
+          Expanded(
+              child: _buildModernRadio('Own', 'Own', _fssaiPremisesType,
+                  (val) => setState(() => _fssaiPremisesType = val!))),
+          Expanded(
+              child: _buildModernRadio('Rent', 'Rent', _fssaiPremisesType,
+                  (val) => setState(() => _fssaiPremisesType = val!))),
         ],
       ),
       const SizedBox(height: 20),
@@ -1100,7 +1193,11 @@ class _ServiceRequestSummarySheetState
         children: [
           Expanded(
               child: _EditableField(
-                  label: 'Village', controller: _fssaiVillageController, icon: LucideIcons.map, hint: 'Town/Village', isRequired: true)),
+                  label: 'Village',
+                  controller: _fssaiVillageController,
+                  icon: LucideIcons.map,
+                  hint: 'Town/Village',
+                  isRequired: true)),
           const SizedBox(width: 16),
           Expanded(
               child: _EditableField(
@@ -1112,19 +1209,25 @@ class _ServiceRequestSummarySheetState
         ],
       ),
       const SizedBox(height: 24),
-      _buildSectionHeader('Is your correspondence Address same as "Address of Premises"'),
+      _buildSectionHeader(
+          'Is your correspondence Address same as "Address of Premises"'),
       Row(
         children: [
           Expanded(
-              child: _buildModernRadio<bool>('Yes', true, _isCorrespondenceSame, (val) => setState(() => _isCorrespondenceSame = val!))),
+              child: _buildModernRadio<bool>('Yes', true, _isCorrespondenceSame,
+                  (val) => setState(() => _isCorrespondenceSame = val!))),
           Expanded(
-              child: _buildModernRadio<bool>('No', false, _isCorrespondenceSame, (val) => setState(() => _isCorrespondenceSame = val!))),
+              child: _buildModernRadio<bool>('No', false, _isCorrespondenceSame,
+                  (val) => setState(() => _isCorrespondenceSame = val!))),
         ],
       ),
       if (!_isCorrespondenceSame) ...[
         const SizedBox(height: 24),
         Text('Correspondence Address',
-            style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+            style: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.deepTeal)),
         const SizedBox(height: 16),
         _EditableField(
             label: 'Correspondence Address',
@@ -1160,11 +1263,17 @@ class _ServiceRequestSummarySheetState
           Checkbox(
               value: _fssaiDeclaration,
               activeColor: AppTheme.corporateBlue,
-              onChanged: (val) => setState(() => _fssaiDeclaration = val ?? false)),
+              onChanged: (val) =>
+                  setState(() => _fssaiDeclaration = val ?? false)),
           Expanded(
-              child: Text('I hereby declare that all information provided is true and correct to the best of my knowledge.',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey[700]))),
-          const Text(' *', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+              child: Text(
+                  'I hereby declare that all information provided is true and correct to the best of my knowledge.',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700]))),
+          const Text(' *',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
         ],
       ),
     ];
@@ -1174,16 +1283,23 @@ class _ServiceRequestSummarySheetState
     return Row(
       children: [
         Text(title,
-            style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.deepTeal.withValues(alpha: 0.6))),
-        const Text(' *', style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
+            style: GoogleFonts.outfit(
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.deepTeal.withValues(alpha: 0.6))),
+        const Text(' *',
+            style: TextStyle(
+                color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
       ],
     );
   }
 
-  Widget _buildModernRadio<T>(String title, T value, T groupValue, ValueChanged<T?> onChanged) {
+  Widget _buildModernRadio<T>(
+      String title, T value, T groupValue, ValueChanged<T?> onChanged) {
     return RadioListTile<T>(
       contentPadding: EdgeInsets.zero,
-      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      title: Text(title,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
       value: value,
       groupValue: groupValue,
       activeColor: AppTheme.corporateBlue,
@@ -1199,9 +1315,19 @@ class _ServiceRequestSummarySheetState
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(widget.packageName == 'FSSAI Food License' ? 'Upload Documents * (Max 2MB)' : 'Upload Documents *',
-                style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
-            Text('(Max 2MB/file)', style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.w500)),
+            Text(
+                widget.packageName == 'FSSAI Food License'
+                    ? 'Upload Documents * (Max 2MB)'
+                    : 'Upload Documents *',
+                style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.deepTeal)),
+            Text('(Max 2MB/file)',
+                style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500)),
           ],
         ),
         const SizedBox(height: 16),
@@ -1215,32 +1341,49 @@ class _ServiceRequestSummarySheetState
               children: [
                 Row(
                   children: [
-                    Icon(isOther ? LucideIcons.plusCircle : LucideIcons.fileCheck2,
-                        size: 16, color: isOther ? Colors.grey[400]! : AppTheme.corporateBlue),
+                    Icon(
+                        isOther
+                            ? LucideIcons.plusCircle
+                            : LucideIcons.fileCheck2,
+                        size: 16,
+                        color: isOther
+                            ? Colors.grey[400]!
+                            : AppTheme.corporateBlue),
                     const SizedBox(width: 8),
                     Text(slotName,
                         style: GoogleFonts.outfit(
-                            fontSize: 13, fontWeight: FontWeight.w800, color: isOther ? Colors.grey[600] : AppTheme.deepTeal)),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: isOther
+                                ? Colors.grey[600]
+                                : AppTheme.deepTeal)),
                   ],
                 ),
                 const SizedBox(height: 12),
                 if (files.isNotEmpty)
                   ...files.asMap().entries.map((entry) => Container(
                         margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                            color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey[200]!)),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[200]!)),
                         child: Row(
                           children: [
                             Expanded(
                                 child: Text(entry.value.name,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.deepTeal))),
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.deepTeal))),
                             IconButton(
                                 icon: const Icon(LucideIcons.x, size: 14),
                                 color: Colors.red[300],
-                                onPressed: () => _removeFile(slotName, entry.key),
+                                onPressed: () =>
+                                    _removeFile(slotName, entry.key),
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints()),
                           ],
@@ -1253,16 +1396,26 @@ class _ServiceRequestSummarySheetState
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                        border: Border.all(color: AppTheme.corporateBlue.withValues(alpha: 0.2), style: BorderStyle.solid),
+                        border: Border.all(
+                            color:
+                                AppTheme.corporateBlue.withValues(alpha: 0.2),
+                            style: BorderStyle.solid),
                         borderRadius: BorderRadius.circular(12),
                         color: AppTheme.corporateBlue.withValues(alpha: 0.02)),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(LucideIcons.uploadCloud, size: 16, color: AppTheme.corporateBlue),
+                        const Icon(LucideIcons.uploadCloud,
+                            size: 16, color: AppTheme.corporateBlue),
                         const SizedBox(width: 8),
-                        Text(files.isEmpty ? 'Upload $slotName' : 'Add More Files',
-                            style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.corporateBlue, fontSize: 13)),
+                        Text(
+                            files.isEmpty
+                                ? 'Upload $slotName'
+                                : 'Add More Files',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.corporateBlue,
+                                fontSize: 13)),
                       ],
                     ),
                   ),
@@ -1281,20 +1434,28 @@ class _ServiceRequestSummarySheetState
       decoration: BoxDecoration(
           color: const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppTheme.corporateBlue.withValues(alpha: 0.1))),
+          border:
+              Border.all(color: AppTheme.corporateBlue.withValues(alpha: 0.1))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
-              Icon(LucideIcons.helpCircle, color: AppTheme.corporateBlue, size: 20),
+              Icon(LucideIcons.helpCircle,
+                  color: AppTheme.corporateBlue, size: 20),
               SizedBox(width: 8),
-              Text('What happens next?', style: TextStyle(fontWeight: FontWeight.w800, color: AppTheme.deepTeal, fontSize: 15)),
+              Text('What happens next?',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.deepTeal,
+                      fontSize: 15)),
             ],
           ),
           const SizedBox(height: 12),
-          Text('Your service request will be submitted to our team. We will contact you at this number within 24 hours.',
-              style: TextStyle(color: Colors.grey[600], fontSize: 13, height: 1.5)),
+          Text(
+              'Your service request will be submitted to our team. We will contact you at this number within 24 hours.',
+              style: TextStyle(
+                  color: Colors.grey[600], fontSize: 13, height: 1.5)),
         ],
       ),
     );
@@ -1380,12 +1541,18 @@ class _EditableField extends StatelessWidget {
               style: GoogleFonts.outfit(
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
-                color: isPhoneField ? AppTheme.corporateBlue : AppTheme.deepTeal.withValues(alpha: 0.6),
+                color: isPhoneField
+                    ? AppTheme.corporateBlue
+                    : AppTheme.deepTeal.withValues(alpha: 0.6),
                 letterSpacing: 0.5,
               ),
             ),
             if (isRequired)
-              const Text(' *', style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
+              const Text(' *',
+                  style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800)),
           ],
         ),
         const SizedBox(height: 10),

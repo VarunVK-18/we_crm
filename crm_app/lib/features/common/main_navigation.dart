@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'responsive_layout.dart';
 import '../dashboard/customer_dashboard.dart';
@@ -35,25 +34,25 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
   List<NavigationItem> _getNavItems() {
     return [
-      NavigationItem(
+      const NavigationItem(
         label: 'Home',
         icon: HugeIcons.strokeRoundedHome07,
-        screen: const CustomerDashboard(),
+        screen: CustomerDashboard(),
       ),
-      NavigationItem(
+      const NavigationItem(
         label: 'My Service',
         icon: HugeIcons.strokeRoundedPackage,
-        screen: const OrderTrackerScreen(),
+        screen: OrderTrackerScreen(),
       ),
-      NavigationItem(
+      const NavigationItem(
         label: 'Compliance',
         icon: HugeIcons.strokeRoundedShield01,
-        screen: const ComplianceRadarScreen(),
+        screen: ComplianceRadarScreen(),
       ),
-      NavigationItem(
+      const NavigationItem(
         label: 'Profile',
         icon: HugeIcons.strokeRoundedUser,
-        screen: const ProfileScreen(),
+        screen: ProfileScreen(),
       ),
     ];
   }

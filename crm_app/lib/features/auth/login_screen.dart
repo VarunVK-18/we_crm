@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../../providers/auth_provider.dart';
-import '../../models/user_model.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -64,9 +63,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ref
-          .read(authRepositoryProvider)
-          .signIn(
+      await ref.read(authRepositoryProvider).signIn(
             _emailController.text.trim(),
             _passwordController.text.trim(),
           );
@@ -74,13 +71,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       String title = 'Sign In Failed';
       String message = e.toString().replaceAll('Exception: ', '');
 
-      if (e.toString().contains('wrong-password')) {
-        title = 'Wrong Password';
-        message = 'The password you entered is incorrect. Please try again.';
-      } else if (e.toString().contains('user-not-found') ||
-          e.toString().contains('invalid-credential')) {
-        title = 'Invalid Account';
-        message = 'We couldn\'t find an account matching these credentials.';
+      if (e.toString().contains('wrong-password') ||
+          e.toString().contains('user-not-found') ||
+          e.toString().contains('invalid-credential') ||
+          e.toString().contains('invalid-email')) {
+        title = 'Wrong Email/Password';
+        message =
+            'The email or password you entered is incorrect. Please try again.';
       } else if (e.toString().contains('network-request-failed')) {
         title = 'Network Error';
         message = 'Please check your internet connection and try again.';
@@ -180,7 +177,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               const SizedBox(height: 32),
                               Text(
                                 'India\'s No.1 Professional Audit & CRM Platform. Manage your future with confidence.',
-                                style: Theme.of(context).textTheme.titleLarge
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
                                     ?.copyWith(
                                       color: Colors.white.withValues(
                                         alpha: 0.8,
@@ -310,7 +309,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             ),
                                             const SizedBox(height: 40),
                                             const SizedBox(height: 0),
-
                                             Text(
                                               'Email Address',
                                               style: GoogleFonts.inter(
@@ -324,7 +322,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               controller: _emailController,
                                               keyboardType:
                                                   TextInputType.emailAddress,
-                                              style: GoogleFonts.inter(fontSize: 13.sp),
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 13.sp),
                                               decoration: const InputDecoration(
                                                 hintText: 'name@company.com',
                                                 prefixIcon: Icon(
@@ -333,8 +332,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 ),
                                               ),
                                               validator: (val) {
-                                                if (val == null || val.isEmpty)
+                                                if (val == null ||
+                                                    val.isEmpty) {
                                                   return 'Email is required';
+                                                }
                                                 if (!RegExp(
                                                   r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                                                 ).hasMatch(val)) {
@@ -344,7 +345,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               },
                                             ),
                                             const SizedBox(height: 20),
-
                                             Text(
                                               'Password',
                                               style: GoogleFonts.inter(
@@ -366,7 +366,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             TextFormField(
                                               controller: _passwordController,
                                               obscureText: !_isPasswordVisible,
-                                              style: GoogleFonts.inter(fontSize: 13.sp),
+                                              style: GoogleFonts.inter(
+                                                  fontSize: 13.sp),
                                               decoration: InputDecoration(
                                                 hintText: '••••••••',
                                                 prefixIcon: const Icon(
@@ -387,14 +388,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 ),
                                               ),
                                               validator: (val) {
-                                                if (val == null || val.isEmpty)
+                                                if (val == null ||
+                                                    val.isEmpty) {
                                                   return 'Password is required';
-                                                if (val.length < 6)
+                                                }
+                                                if (val.length < 6) {
                                                   return 'Password must be at least 6 characters';
+                                                }
                                                 return null;
                                               },
                                             ),
-
                                             const SizedBox(height: 8),
                                             Align(
                                               alignment: Alignment.centerRight,
@@ -404,7 +407,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                   _showAuthDialog(
                                                     title: 'Notice',
                                                     message:
-                                                        'Password reset feature coming soon.',
+                                                        'Contact Support To Reset Your Password.',
                                                     isError: false,
                                                   );
                                                 },
@@ -421,58 +424,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               ),
                                             ),
                                             const SizedBox(height: 24),
-
-                                            AnimatedContainer(
-                                              duration: const Duration(
-                                                milliseconds: 300,
-                                              ),
-                                              height: 56.r,
-                                              decoration: BoxDecoration(
-                                                gradient:
-                                                    AppTheme.premiumGradient,
-                                                borderRadius:
-                                                    BorderRadius.circular(16.r),
-                                                boxShadow: AppTheme.softShadow,
-                                              ),
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                  shadowColor:
-                                                      Colors.transparent,
+                                            Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 12.r),
+                                              child: AnimatedContainer(
+                                                duration: const Duration(
+                                                  milliseconds: 300,
                                                 ),
-                                                onPressed: _isLoading
-                                                    ? null
-                                                    : _handleSignIn,
-                                                child: _isLoading
-                                                    ? SizedBox(
-                                                        height: 24.r,
-                                                        width: 24.r,
-                                                        child:
-                                                            CircularProgressIndicator(
-                                                              color:
-                                                                  Colors.white,
-                                                              strokeWidth: 2.r,
-                                                            ),
-                                                      )
-                                                    : Text(
-                                                        'Sign In',
-                                                        style: GoogleFonts.inter(
-                                                          fontSize: 14.sp,
-                                                          fontWeight: FontWeight.bold,
-                                                          color: Colors.white,
+                                                height: 56.r,
+                                                decoration: BoxDecoration(
+                                                  gradient:
+                                                      AppTheme.premiumGradient,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          16.r),
+                                                  boxShadow:
+                                                      AppTheme.softShadow,
+                                                ),
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        Colors.transparent,
+                                                    shadowColor:
+                                                        Colors.transparent,
+                                                  ),
+                                                  onPressed: _isLoading
+                                                      ? null
+                                                      : _handleSignIn,
+                                                  child: _isLoading
+                                                      ? SizedBox(
+                                                          height: 24.r,
+                                                          width: 24.r,
+                                                          child:
+                                                              CircularProgressIndicator(
+                                                            color: Colors.white,
+                                                            strokeWidth: 2.r,
+                                                          ),
+                                                        )
+                                                      : Text(
+                                                          'Sign In',
+                                                          style:
+                                                              GoogleFonts.inter(
+                                                            fontSize: 14.sp,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            color: Colors.white,
+                                                          ),
                                                         ),
-                                                      ),
+                                                ),
                                               ),
                                             ),
                                             SizedBox(height: 16.r),
                                             TextButton(
                                               onPressed: _contactSupport,
                                               style: TextButton.styleFrom(
-                                                backgroundColor: Colors.transparent,
-                                                foregroundColor: AppTheme.deepTeal
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                foregroundColor: AppTheme
+                                                    .deepTeal
                                                     .withValues(alpha: 0.6),
-                                                padding: EdgeInsets.symmetric(vertical: 8.r),
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 8.r),
                                               ),
                                               child: Text(
                                                 'Don\'t have an account? Contact support',

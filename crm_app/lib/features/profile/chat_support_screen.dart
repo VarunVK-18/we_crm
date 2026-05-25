@@ -139,7 +139,7 @@ class ChatSupportScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: icon is IconData
-                      ? Icon(icon as IconData, color: color, size: 24)
+                      ? Icon(icon, color: color, size: 24)
                       : HugeIcon(icon: icon, color: color, size: 24),
                 ),
                 const SizedBox(width: 16),

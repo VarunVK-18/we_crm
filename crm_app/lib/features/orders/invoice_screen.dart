@@ -197,11 +197,11 @@ class InvoiceScreen extends StatelessWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
+                            const Expanded(
                               child: _AddressBlock(
                                 label: 'From',
                                 name: 'Wealth Empires',
-                                lines: const [
+                                lines: [
                                   '60,A Velleeswarar koil street, Srinivasa Nagar',
                                   'Mangadu, Chennai, Tamil Nadu - 600122',
                                   'GSTIN: 33AAACW1234F1Z5',
@@ -442,16 +442,16 @@ class InvoiceScreen extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: pw.BoxDecoration(
-                          color: PdfColor.fromInt(0xFFE8F5E9),
+                          color: const PdfColor.fromInt(0xFFE8F5E9),
                           borderRadius: pw.BorderRadius.circular(4),
                           border: pw.Border.all(
-                            color: PdfColor.fromInt(0xFFC8E6C9),
+                            color: const PdfColor.fromInt(0xFFC8E6C9),
                           ),
                         ),
                         child: pw.Text(
                           'PAID',
                           style: pw.TextStyle(
-                            color: PdfColor.fromInt(0xFF2E7D32),
+                            color: const PdfColor.fromInt(0xFF2E7D32),
                             fontSize: 10,
                             fontWeight: pw.FontWeight.bold,
                           ),
@@ -682,7 +682,7 @@ class InvoiceScreen extends StatelessWidget {
         children: [
           pw.Text(
             label,
-            style: pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
+            style: const pw.TextStyle(fontSize: 9, color: PdfColors.grey600),
           ),
           pw.SizedBox(width: 8),
           pw.Text(

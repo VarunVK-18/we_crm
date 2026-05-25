@@ -381,11 +381,11 @@ class _PremiumAppBar extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Row(
+              child: const Row(
                 children: [
-                  const Icon(LucideIcons.search, size: 18, color: Colors.grey),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  Icon(LucideIcons.search, size: 18, color: Colors.grey),
+                  SizedBox(width: 12),
+                  Expanded(
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: 'Search dashboard...',

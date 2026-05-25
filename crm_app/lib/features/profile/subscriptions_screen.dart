@@ -126,9 +126,9 @@ class SubscriptionsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          Row(
+          const Row(
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('STATUS', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
@@ -136,8 +136,8 @@ class SubscriptionsScreen extends StatelessWidget {
                   Text('Active', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
               ),
-              const SizedBox(width: 48),
-              const Column(
+              SizedBox(width: 48),
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('EXPIRES', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),

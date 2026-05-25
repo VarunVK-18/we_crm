@@ -16,16 +16,40 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) {
   Future<void> fetchOrders() async {
     try {
       final response = await http.get(
-        Uri.parse('$kBaseUrl/api/orders/user/$uid'),
+        Uri.parse('$kBaseUrl/api/my-checklists'),
+        headers: {'x-user-id': uid},
       ).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> ordersJson = data['orders'] ?? [];
-        final orders = ordersJson.map((o) {
-          final id = o['_id']?.toString() ?? '';
-          return ServiceOrder.fromMap(o as Map<String, dynamic>, id);
+        final List<dynamic> checklistsJson = data['checklists'] ?? [];
+        
+        final user = ref.read(userProfileProvider).value;
+        final companyName = user?.companyName ?? '';
+
+        final orders = checklistsJson.map((c) {
+          final id = c['_id']?.toString() ?? '';
+          
+          final mappedData = <String, dynamic>{
+            'clientUid': uid,
+            'entityName': companyName.isNotEmpty ? companyName : 'Default Entity',
+            'serviceType': c['service_name'] ?? '',
+            'companyName': companyName,
+            'status': c['status'] == 'completed' ? 'complete' : 'active',
+            'stage': c['status'] == 'completed' ? 'completed' : 'workInProgress',
+            'steps': (c['items'] as List<dynamic>? ?? []).map((i) => {
+              'title': i['label'],
+              'description': '',
+              'isCompleted': i['isChecked'] == true,
+            }).toList(),
+            'assignedExpert': c['assigned_to']?['owner_name'] ?? 'To be assigned',
+            'expertPhone': c['assigned_to']?['phone'] ?? '',
+            'createdAt': c['createdAt'],
+          };
+
+          return ServiceOrder.fromMap(mappedData, id);
         }).toList();
+
         if (!controller.isClosed) {
           controller.add(orders);
         }

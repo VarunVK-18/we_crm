@@ -71,15 +71,15 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       if (widget.toolName == 'GST Calc') {
         _secondaryResult = (amount * rate) / 100;
         _primaryResult = amount + _secondaryResult;
-        _detailMessage = 'Base: ₹${amount.toStringAsFixed(0)} + GST: ${rate}%';
+        _detailMessage = 'Base: ₹${amount.toStringAsFixed(0)} + GST: $rate%';
       } else if (widget.toolName == 'GST Interest') {
         // GST Interest: 18% p.a. daily
         _primaryResult = (amount * (rate / 100) / 365) * duration;
-        _detailMessage = 'Interest calculated at ${rate}% p.a. for ${duration.toStringAsFixed(0)} days';
+        _detailMessage = 'Interest calculated at $rate% p.a. for ${duration.toStringAsFixed(0)} days';
       } else if (widget.toolName == 'TDS Interest') {
         // TDS Interest: 1.5% p.m.
         _primaryResult = amount * (rate / 100) * duration;
-        _detailMessage = 'Interest calculated at ${rate}% p.m. for ${duration.toStringAsFixed(0)} months';
+        _detailMessage = 'Interest calculated at $rate% p.m. for ${duration.toStringAsFixed(0)} months';
       }
     });
   }

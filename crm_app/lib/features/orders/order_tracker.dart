@@ -46,43 +46,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
     final isLoading = ordersAsync.isLoading && orders.isEmpty;
 
     final user = ref.watch(userProfileProvider).value;
-    final registeredServices = user?.services ?? [];
-    final existingServiceTypes = orders.map((o) => o.serviceType.toLowerCase()).toSet();
-    final List<ServiceOrder> mockRegisteredOrders = [];
-    for (final srv in registeredServices) {
-      if (!existingServiceTypes.contains(srv.toLowerCase())) {
-        mockRegisteredOrders.add(
-          ServiceOrder(
-            id: 'reg-${srv.toLowerCase().replaceAll(' ', '-')}',
-            clientUid: user?.id ?? '',
-            entityName: (user != null && user.companyName.isNotEmpty) ? user.companyName : 'Default Entity',
-            serviceType: srv,
-            companyName: user?.companyName ?? '',
-            status: ServiceStatus.active,
-            stage: OrderStage.workInProgress,
-            steps: [
-              const ServiceStep(
-                title: 'Service Activated',
-                description: 'Your registered service has been activated successfully.',
-                isCompleted: true,
-              ),
-              const ServiceStep(
-                title: 'Setup Completed',
-                description: 'Service setup is complete and active on your profile.',
-                isCompleted: true,
-              ),
-            ],
-            assignedExpert: 'Account Admin',
-            expertPhone: '',
-            createdAt: user?.createdAt ?? DateTime.now(),
-          ),
-        );
-      }
-    }
-
-    if (mockRegisteredOrders.isNotEmpty) {
-      orders = [...orders, ...mockRegisteredOrders];
-    }
 
 
     // Build entity list from database data
@@ -252,7 +215,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => MyEntitiesScreen(),
+                                builder: (context) => const MyEntitiesScreen(),
                               ),
                             );
                           },
@@ -269,7 +232,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     ),
                     const SizedBox(height: 10),
                     DropdownButtonFormField<String?>(
-                      value: _selectedEntity,
+                      initialValue: _selectedEntity,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFF4F6F9),
@@ -595,7 +558,7 @@ class _ServiceCard extends StatelessWidget {
                 if (isActive && order.expertPhone.isNotEmpty) ...[
                   GestureDetector(
                     onTap: () => openWhatsApp(
-                      phone: '918072286963',
+                      phone: order.expertPhone.isNotEmpty ? order.expertPhone : '918072286963',
                       message:
                           'Hi ${order.assignedExpert}, I have a query regarding my ${order.serviceType} service (${order.id}).',
                     ),

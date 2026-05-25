@@ -185,7 +185,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                     children: [
                       const SizedBox(height: 8),
                       DropdownButtonFormField<String>(
-                        value: selectedCategory,
+                        initialValue: selectedCategory,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,

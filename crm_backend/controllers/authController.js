@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Company = require('../models/Company');
 const AuditLog = require('../models/AuditLog');
 const { logActivity } = require('../middleware/rbac');
+const Checklist = require('../models/Checklist');
 
 // @desc    Register a new user (client) — scoped to a company
 // @route   POST /api/register
@@ -562,6 +563,27 @@ const subscribeService = async (req, res) => {
     if (!user.services.includes(serviceName)) {
       user.services.push(serviceName);
       await user.save();
+
+      // Create a Checklist for this service automatically
+      const defaultItems = [
+        { label: 'Service Activated', isChecked: true },
+        { label: 'Setup Completed', isChecked: true },
+        { label: 'Documents Pending', isChecked: false }
+      ];
+
+      try {
+        await Checklist.create({
+          company_id: user.company_id || '000000000000000000000000', // fallback if null
+          client_id: user._id,
+          service_name: serviceName,
+          assigned_to: user.assigned_to || null,
+          created_by: user._id, 
+          items: defaultItems,
+          notes: 'Automatically generated from app registration.'
+        });
+      } catch (e) {
+        console.error('Error creating checklist automatically:', e);
+      }
 
       await logActivity(
         user._id,

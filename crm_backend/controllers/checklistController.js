@@ -205,9 +205,9 @@ const getMyChecklists = async (req, res) => {
     const clientId = req.user._id;
 
     const checklists = await Checklist.find({ client_id: clientId })
-      .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
-      .select('service_name status items notes createdAt updatedAt')
+      .select('service_name status items notes assigned_to created_by createdAt updatedAt')
       .sort({ updatedAt: -1 });
 
     res.status(200).json({ success: true, checklists });

@@ -518,8 +518,8 @@ class _BentoHealthCard extends StatelessWidget {
       height: 215.r,
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppTheme.deepTeal, const Color(0xFF1E293B)],
+        gradient: const LinearGradient(
+          colors: [AppTheme.deepTeal, Color(0xFF1E293B)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -960,7 +960,7 @@ class _BentoTimelineCard extends StatelessWidget {
                   ),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -1031,7 +1031,7 @@ class _ReminderItem extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => RegistrationServicesScreen(),
+                  builder: (context) => const RegistrationServicesScreen(),
                 ),
               );
             },
@@ -1048,9 +1048,9 @@ class _ReminderItem extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Text(
+              child: const Text(
                 'Renew',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
