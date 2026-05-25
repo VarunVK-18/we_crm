@@ -54,6 +54,17 @@ const ChecklistSchema = new mongoose.Schema({
     enum: ['pending', 'in_progress', 'completed'],
     default: 'pending'
   },
+  stage: {
+    type: String,
+    enum: ['quotePending', 'quoteAccepted', 'workAssigned', 'documentRequested', 'workInProgress', 'completed'],
+    default: 'quotePending'
+  },
+  requested_documents: [{
+    name: { type: String, required: true },
+    fileUrl: { type: String, default: null },
+    isUploaded: { type: Boolean, default: false },
+    uploadedAt: { type: Date, default: null }
+  }],
   notes: {
     type: String,
     default: ''

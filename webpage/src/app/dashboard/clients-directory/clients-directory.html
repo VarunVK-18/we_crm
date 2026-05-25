@@ -39,7 +39,7 @@
 
   <!-- Clients Cards Grid -->
   <div class="clients-directory-grid">
-    @for (client of getFilteredClients(); track client._id) {
+    @for (client of getFlattenedFilteredClients(); track client.uniqueId) {
       <div class="client-profile-card">
         <div class="client-card-header">
           <div class="client-avatar">
@@ -65,12 +65,11 @@
 
           <!-- Subscribed Services Badges -->
           <div class="client-services-area">
-            <span class="services-label">Registered Services:</span>
+            <span class="services-label">Registered Service:</span>
             <div class="services-badges-list">
-              @for (srv of client.services; track srv) {
-                <span class="service-badge">{{ srv }}</span>
-              }
-              @if (!client.services || client.services.length === 0) {
+              @if (client.singleService) {
+                <span class="service-badge">{{ client.singleService }}</span>
+              } @else {
                 <span class="no-services-badge">No services registered</span>
               }
             </div>
@@ -89,6 +88,61 @@
                 {{ client.onboarding_status || 'Prospect' }}
               </span>
             </div>
+
+            <!-- Onboarding Documents Section -->
+            @if ((client.onboarding_documents && client.onboarding_documents.length > 0) || client.gstin_file || client.pan_file) {
+              <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
+                <span class="services-label" style="margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary);">Onboarding Documents:</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <!-- Dynamic Service Documents -->
+                  @for (doc of client.onboarding_documents; track doc._id) {
+                    <a [href]="'http://localhost:5001/' + doc.fileUrl" 
+                       target="_blank" 
+                       style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                      <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;">{{ doc.name }}</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                    </a>
+                  }
+
+                  <!-- Legacy GSTIN Certificate -->
+                  @if (client.gstin_file) {
+                    <a [href]="'http://localhost:5001/' + client.gstin_file" 
+                       target="_blank" 
+                       style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                      <span>GSTIN Certificate</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                    </a>
+                  }
+
+                  <!-- Legacy PAN Card -->
+                  @if (client.pan_file) {
+                    <a [href]="'http://localhost:5001/' + client.pan_file" 
+                       target="_blank" 
+                       style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                      <span>PAN Card</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
+                    </a>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 4px;">
+                <span class="services-label" style="margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary);">Onboarding Documents:</span>
+                <span style="font-size: 11px; color: var(--text-muted); font-weight: 500; font-style: italic;">None Uploaded</span>
+              </div>
+            }
 
             <!-- Change Onboarding Status Dropdown (Accessible to Admin, Client Manager & Account Manager) -->
             @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {

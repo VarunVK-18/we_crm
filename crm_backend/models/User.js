@@ -85,6 +85,17 @@ const UserSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  onboarding_documents: {
+    type: [{
+      name: String,
+      fileUrl: String,
+      uploadedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    default: []
+  },
   assigned_to: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -1,14 +1,20 @@
 <div class="tab-view fade-in">
   <!-- Glass welcome banner -->
   <div class="welcome-banner">
-    <h2 class="banner-heading">Welcome Back, {{ user()?.owner_name || 'Admin' }}!</h2>
-    @if (getCompanyName()) {
-      <div class="company-badge-row">
-        <span class="company-code-chip">{{ getCompanyCode() }}</span>
-        <span class="company-name-tag">{{ getCompanyName() }}</span>
+    <div class="banner-content">
+      <h2 class="banner-heading">
+        {{ getGreeting() }},<br>
+        <span class="user-name">{{ user()?.owner_name || 'Admin' }}</span>
+      </h2>
+      <p class="banner-subtext">Track company filings, compliance reminders, and service checklists for {{ getCompanyName() || 'Wealth Empires' }} from one place.</p>
+    </div>
+    <div class="banner-decorations">
+      <div class="circle-center">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
       </div>
-    }
-    <p class="banner-subtext">Manage your professional audits, attendance files, and corporate HR configurations securely in one unified portal.</p>
+    </div>
   </div>
 
   <!-- Stats Grid -->

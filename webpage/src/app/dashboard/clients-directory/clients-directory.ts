@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -22,7 +22,7 @@ import { Api } from '../../api';
 export class ClientsDirectory implements OnInit {
   user = signal<any>(null);
   clients = signal<any[]>([]);
-  teams = signal<any[]>([]);
+  teams = input<any[]>([]);
   searchQuery = signal<string>('');
   
   // Icon assets
@@ -80,7 +80,6 @@ export class ClientsDirectory implements OnInit {
       this.user.set(JSON.parse(savedUser));
     }
     this.fetchClients();
-    this.fetchTeams();
   }
 
   getCompanyId(): string | null {
@@ -102,17 +101,7 @@ export class ClientsDirectory implements OnInit {
     });
   }
 
-  fetchTeams() {
-    const companyId = this.getCompanyId();
-    if (!companyId) return;
-    this.api.get<any>(`users/team-groups?company_id=${companyId}`).subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.teams.set(res.groups || []);
-        }
-      }
-    });
-  }
+
 
   getFilteredClients() {
     const query = this.searchQuery().toLowerCase().trim();
@@ -125,6 +114,21 @@ export class ClientsDirectory implements OnInit {
       (c.email || '').toLowerCase().includes(query) ||
       (c.phone || '').toLowerCase().includes(query)
     );
+  }
+
+  getFlattenedFilteredClients(): any[] {
+    const clients = this.getFilteredClients();
+    const flattened: any[] = [];
+    for (const c of clients) {
+      if (!c.services || c.services.length === 0) {
+        flattened.push({ ...c, singleService: null, uniqueId: `${c._id}-no-service` });
+      } else {
+        for (const srv of c.services) {
+          flattened.push({ ...c, singleService: srv, uniqueId: `${c._id}-${srv}` });
+        }
+      }
+    }
+    return flattened;
   }
 
   getTotalServicesCount(): number {

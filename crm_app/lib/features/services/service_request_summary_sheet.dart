@@ -341,15 +341,34 @@ class _ServiceRequestSummarySheetState
     if (userProfile == null) return;
 
     try {
-      final response = await http.post(
-        Uri.parse(
-            '$kBaseUrl/api/users/profile/${userProfile.id}/subscribe-service'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'serviceName': widget.packageName}),
-      );
+      final uri = Uri.parse(
+          '$kBaseUrl/api/users/profile/${userProfile.id}/subscribe-service');
+      final request = http.MultipartRequest('POST', uri);
+
+      // Add serviceName field
+      request.fields['serviceName'] = widget.packageName;
+
+      // Add selected files from document slots
+      for (var entry in _documentSlots.entries) {
+        final slotName = entry.key;
+        for (var file in entry.value) {
+          if (file.path != null) {
+            request.files.add(
+              await http.MultipartFile.fromPath(
+                slotName, // fieldname is the document type/slot name
+                file.path!,
+              ),
+            );
+          }
+        }
+      }
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 25));
+      final response = await http.Response.fromStream(streamedResponse);
+
       if (response.statusCode == 200) {
         debugPrint(
-            'Successfully registered service on backend: ${widget.packageName}');
+            'Successfully registered service and uploaded documents on backend: ${widget.packageName}');
       } else {
         debugPrint('Failed to register service on backend: ${response.body}');
       }

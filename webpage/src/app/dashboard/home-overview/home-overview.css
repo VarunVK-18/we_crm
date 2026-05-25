@@ -8,27 +8,88 @@
 
 /* Welcome Banner */
 .welcome-banner {
-  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-hover) 100%);
+  position: relative;
+  background: linear-gradient(135deg, #4aa3b5 0%, #358b9d 100%);
   border-radius: 8px;
   padding: 32px 40px;
-  color: var(--bg-secondary);
+  color: #ffffff;
   box-shadow: var(--card-shadow);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.banner-content {
+  position: relative;
+  z-index: 2;
 }
 
 .banner-heading {
   font-family: var(--font-heading);
-  font-size: var(--text-5xl); /* 32px */
-  font-weight: 600;
-  margin-bottom: 8px;
-  letter-spacing: -0.5px;
+  font-size: var(--text-6xl); /* 40px */
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+  line-height: 1.2;
+}
+
+.banner-heading .user-name {
+  font-weight: 800;
 }
 
 .banner-subtext {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.85);
   font-size: var(--text-lg); /* 14px */
-  line-height: 1.5;
+  line-height: 1.6;
   max-width: 580px;
   font-weight: 500;
+  margin: 0;
+}
+
+/* Background Decorative Concentric Circles */
+.banner-decorations {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 8px;
+}
+
+.circle-center {
+  position: absolute;
+  right: 12%;
+  top: 50%;
+  transform: translate(50%, -50%);
+  width: 0;
+  height: 0;
+}
+
+.circle {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.circle-1 {
+  width: 84px;
+  height: 84px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.circle-2 {
+  width: 156px;
+  height: 156px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.circle-3 {
+  width: 228px;
+  height: 228px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Stats Cards Grid */
@@ -44,11 +105,6 @@
   padding: 24px;
   border: 1px solid var(--border-color);
   box-shadow: var(--card-shadow);
-  transition: transform var(--transition-fast);
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
 }
 
 .stat-title {

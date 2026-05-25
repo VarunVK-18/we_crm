@@ -216,11 +216,67 @@ const getMyChecklists = async (req, res) => {
   }
 };
 
+// @desc    Upload requested documents from customer app
+// @route   POST /api/checklists/:id/upload-documents
+// @access  Private (Customer)
+const uploadRequestedDocuments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const checklist = await Checklist.findById(id);
+
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    // Ensure it belongs to the user
+    if (checklist.client_id.toString() !== req.user._id.toString() && req.user.role === 'customer') {
+      return res.status(403).json({ success: false, message: 'Not authorized to upload to this checklist' });
+    }
+
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(f => {
+        // Try to match file fieldname with requested document name
+        const docName = f.fieldname;
+        const requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
+        
+        if (requestedDocIndex !== -1) {
+          checklist.requested_documents[requestedDocIndex].fileUrl = `uploads/${f.filename}`;
+          checklist.requested_documents[requestedDocIndex].isUploaded = true;
+          checklist.requested_documents[requestedDocIndex].uploadedAt = new Date();
+        } else {
+          // If customer uploads something not explicitly requested, add it anyway
+          checklist.requested_documents.push({
+            name: docName,
+            fileUrl: `uploads/${f.filename}`,
+            isUploaded: true,
+            uploadedAt: new Date()
+          });
+        }
+      });
+      await checklist.save();
+
+      await logActivity(
+        req.user._id,
+        'document_uploaded',
+        `Uploaded requested documents for service '${checklist.service_name}'`,
+        req.user.company_id
+      );
+
+      res.status(200).json({ success: true, message: 'Documents uploaded successfully' });
+    } else {
+      res.status(400).json({ success: false, message: 'No files provided' });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createChecklist,
   getChecklists,
   getMyChecklists,
+  updateChecklist,
   toggleChecklistItem,
   addChecklistItem,
-  updateChecklist
+  uploadRequestedDocuments
 };

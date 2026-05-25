@@ -38,6 +38,7 @@ import { SystemSettings } from './system-settings/system-settings';
 export class Dashboard implements OnInit {
   currentTab = signal<string>('dashboard');
   user = signal<any>(null);
+  teams = signal<any[]>([]);
 
   // Icon assets
   readonly Search01Icon = Search01Icon;
@@ -61,6 +62,7 @@ export class Dashboard implements OnInit {
         return;
       }
       this.user.set(parsedUser);
+      this.fetchTeams();
     } catch (e) {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
@@ -69,6 +71,20 @@ export class Dashboard implements OnInit {
 
   toggleMobileSidebar() {
     this.isMobileSidebarOpen.update(val => !val);
+  }
+
+  fetchTeams() {
+    const companyId = this.getCompanyId();
+    if (!companyId) return;
+    this.api.get<any>(`users/team-groups?company_id=${companyId}`).subscribe({
+      next: (res) => {
+        if (Array.isArray(res)) {
+          this.teams.set(res);
+        } else if (res && res.success) {
+          this.teams.set(res.groups || []);
+        }
+      }
+    });
   }
 
   /** Returns the company_id string for the logged-in admin's company */

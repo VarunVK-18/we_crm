@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -19,7 +19,7 @@ import { Api } from '../../api';
 export class FilingTasks implements OnInit {
   user = signal<any>(null);
   tasks = signal<any[]>([]);
-  teams = signal<any[]>([]);
+  teams = input<any[]>([]);
   clients = signal<any[]>([]);
 
   // Icon assets
@@ -56,7 +56,6 @@ export class FilingTasks implements OnInit {
       this.user.set(JSON.parse(savedUser));
     }
     this.fetchTasks();
-    this.fetchTeams();
     this.fetchClients();
   }
 
@@ -110,17 +109,6 @@ export class FilingTasks implements OnInit {
     });
   }
 
-  fetchTeams() {
-    const companyId = this.getCompanyId();
-    if (!companyId) return;
-    this.api.get<any>(`users/team-groups?company_id=${companyId}`).subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.teams.set(res.groups || []);
-        }
-      }
-    });
-  }
 
   fetchClients() {
     this.api.get<any>('users/clients').subscribe({

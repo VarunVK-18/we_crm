@@ -5,6 +5,11 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
 import '../../core/utils/whatsapp_utils.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+import '../../core/constants/port.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/orders_provider.dart';
 
 class ServiceOrderDetailScreen extends StatelessWidget {
   final ServiceOrder order;
@@ -262,12 +267,143 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                   ),
                 ),
 
+                const SizedBox(height: 20),
+
+                // Requested Documents
+                if (order.requestedDocuments.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _RequestedDocumentsSection(order: order),
+                  ),
+
                 const SizedBox(height: 80), // space for FAB
               ]),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+// ─── Requested Documents Section ──────────────────────────────────────────────
+
+
+class _RequestedDocumentsSection extends ConsumerWidget {
+  final ServiceOrder order;
+  const _RequestedDocumentsSection({required this.order});
+
+  Future<void> _uploadDocument(BuildContext context, WidgetRef ref, String docName) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final filePath = result.files.single.path!;
+        final uri = Uri.parse('$kBaseUrl/api/checklists/${order.id}/upload-documents');
+        
+        final request = http.MultipartRequest('POST', uri);
+        request.files.add(await http.MultipartFile.fromPath(docName, filePath));
+        
+        // Use a generic auth token/header mechanism if available, or assume cookie works
+        // (Assuming session/cookie management handles auth for multipart)
+
+        final response = await request.send();
+        if (response.statusCode == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Document uploaded successfully')),
+          );
+          ref.invalidate(serviceOrdersProvider);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to upload document')),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Requested Documents',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: AppTheme.deepTeal,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...order.requestedDocuments.map((doc) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: doc.isUploaded ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  doc.isUploaded ? LucideIcons.fileCheck : LucideIcons.fileWarning,
+                  color: doc.isUploaded ? Colors.green : Colors.red,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        doc.name,
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        doc.isUploaded ? 'Uploaded' : 'Action Required',
+                        style: TextStyle(
+                          color: doc.isUploaded ? Colors.green : Colors.red,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (!doc.isUploaded)
+                  ElevatedButton.icon(
+                    onPressed: () => _uploadDocument(context, ref, doc.name),
+                    icon: const Icon(LucideIcons.upload, size: 14, color: Colors.white),
+                    label: const Text('Upload', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        }),
+      ],
     );
   }
 }

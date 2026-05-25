@@ -374,29 +374,34 @@ class _ServiceCard extends StatelessWidget {
   const _ServiceCard({required this.order});
 
   static const _stageLabels = {
-    OrderStage.reqReceived: 'Req. Received',
+    OrderStage.quotePending: 'Quote Pending',
+    OrderStage.quoteAccepted: 'Quote Accepted',
     OrderStage.workAssigned: 'Work Assigned',
+    OrderStage.documentRequested: 'Doc Requested',
     OrderStage.workInProgress: 'In Progress',
-    OrderStage.testing: 'Under Review',
     OrderStage.completed: 'Completed',
   };
 
   ({Color bg, Color text}) get _badgeColors => switch (order.stage) {
-        OrderStage.reqReceived => (
+        OrderStage.quotePending => (
             bg: const Color(0xFFEBF3FF),
             text: const Color(0xFF2563EB),
+          ),
+        OrderStage.quoteAccepted => (
+            bg: const Color.fromARGB(255, 230, 240, 255),
+            text: const Color.fromARGB(255, 20, 100, 200),
           ),
         OrderStage.workAssigned => (
             bg: const Color.fromARGB(255, 228, 244, 229),
             text: const Color.fromARGB(255, 18, 127, 74),
           ),
+        OrderStage.documentRequested => (
+            bg: const Color(0xFFFFF0F5),
+            text: const Color(0xFFE11D48),
+          ),
         OrderStage.workInProgress => (
             bg: const Color(0xFFFFF4E6),
             text: const Color(0xFFD97706),
-          ),
-        OrderStage.testing => (
-            bg: const Color.fromARGB(255, 232, 231, 179),
-            text: const Color.fromARGB(255, 12, 12, 4),
           ),
         OrderStage.completed => (
             bg: const Color(0xFFF0FFF4),
@@ -415,20 +420,12 @@ class _ServiceCard extends StatelessWidget {
     final isComplete = order.status == ServiceStatus.complete;
 
     return GestureDetector(
-      onTap: isActive
-          ? () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ServiceOrderDetailScreen(order: order),
-                ),
-              )
-          : isComplete
-              ? () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => InvoiceScreen(order: order)),
-                  )
-              : null,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ServiceOrderDetailScreen(order: order),
+        ),
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 14),
         padding: const EdgeInsets.all(20),

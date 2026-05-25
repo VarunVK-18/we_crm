@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -17,7 +17,8 @@ import { Api } from '../../api';
 })
 export class EmployeesTeam implements OnInit {
   user = signal<any>(null);
-  teams = signal<any[]>([]);
+  teams = input<any[]>([]);
+  refreshTeams = output<void>();
 
   // Icon assets
   readonly PlusSignIcon = PlusSignIcon;
@@ -56,7 +57,6 @@ export class EmployeesTeam implements OnInit {
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
     }
-    this.fetchTeams();
   }
 
   getCompanyId(): string | null {
@@ -84,18 +84,7 @@ export class EmployeesTeam implements OnInit {
   }
 
   fetchTeams() {
-    const companyId = this.getCompanyId();
-    if (!companyId) return;
-    this.api.get<any>(`users/team-groups?company_id=${companyId}`).subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.teams.set(res.groups || []);
-        }
-      },
-      error: (err) => {
-        console.error('Failed to fetch teams:', err);
-      }
-    });
+    this.refreshTeams.emit();
   }
 
   openCreateEmployeeModal() {

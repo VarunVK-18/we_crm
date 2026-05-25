@@ -570,9 +570,28 @@ const subscribeService = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    let isNewSubscription = false;
     if (!user.services.includes(serviceName)) {
       user.services.push(serviceName);
-      await user.save();
+      isNewSubscription = true;
+    }
+
+    // Process uploaded document files if present in request
+    if (req.files && req.files.length > 0) {
+      req.files.forEach(f => {
+        // Clean duplicate documents with the same name if user uploads them again
+        const docName = `${serviceName} - ${f.fieldname}`;
+        user.onboarding_documents = user.onboarding_documents.filter(d => d.name !== docName);
+        user.onboarding_documents.push({
+          name: docName,
+          fileUrl: `uploads/${f.filename}`
+        });
+      });
+    }
+
+    await user.save();
+
+    if (isNewSubscription) {
 
       // Create a Checklist for this service automatically
       const defaultItems = [
@@ -589,8 +608,11 @@ const subscribeService = async (req, res) => {
           assigned_to: user.assigned_to || null,
           created_by: user._id, 
           items: defaultItems,
+          status: 'pending',
+          stage: 'quotePending',
           notes: 'Automatically generated from app registration.'
         });
+        console.log(`Automatically created checklist for ${serviceName}`);
       } catch (e) {
         console.error('Error creating checklist automatically:', e);
       }

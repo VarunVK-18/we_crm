@@ -303,11 +303,10 @@
   overflow: hidden;
   box-sizing: border-box;
   display: flex;
-  transition: all var(--transition-fast);
+  transition: box-shadow var(--transition-fast);
 }
 
 .submit-button-container:hover {
-  transform: translateY(-1px);
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.15);
 }
 

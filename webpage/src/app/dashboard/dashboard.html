@@ -59,13 +59,13 @@
         <app-home-overview></app-home-overview>
       }
       @if (currentTab() === 'clients' && user()?.role !== 'filling_staff' && user()?.role !== 'account_manager') {
-        <app-clients-directory></app-clients-directory>
+        <app-clients-directory [teams]="teams()"></app-clients-directory>
       }
       @if (currentTab() === 'team') {
-        <app-employees-team></app-employees-team>
+        <app-employees-team [teams]="teams()" (refreshTeams)="fetchTeams()"></app-employees-team>
       }
       @if (currentTab() === 'tasks') {
-        <app-filing-tasks></app-filing-tasks>
+        <app-filing-tasks [teams]="teams()"></app-filing-tasks>
       }
       @if (currentTab() === 'checklists') {
         <app-service-checklists></app-service-checklists>

@@ -79,7 +79,7 @@ const getTasks = async (req, res) => {
     // admin sees all tasks — no extra filter
 
     const tasks = await FilingTask.find(filter)
-      .populate('client_id', 'owner_name company_name email phone')
+      .populate('client_id', 'owner_name company_name email phone onboarding_documents gstin_file pan_file')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .sort({ createdAt: -1 });

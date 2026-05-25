@@ -1,10 +1,11 @@
 // ─── Enums ─────────────────────────────────────────────────────────────────
 
 enum OrderStage {
-  reqReceived,
+  quotePending,
+  quoteAccepted,
   workAssigned,
+  documentRequested,
   workInProgress,
-  testing,
   completed,
 }
 
@@ -48,6 +49,26 @@ class ServiceStep {
   };
 }
 
+class RequestedDocument {
+  final String name;
+  final String? fileUrl;
+  final bool isUploaded;
+  
+  const RequestedDocument({
+    required this.name,
+    this.fileUrl,
+    required this.isUploaded,
+  });
+
+  factory RequestedDocument.fromMap(Map<String, dynamic> map) {
+    return RequestedDocument(
+      name: map['name']?.toString() ?? '',
+      fileUrl: map['fileUrl']?.toString(),
+      isUploaded: map['isUploaded'] == true,
+    );
+  }
+}
+
 // ─── ServiceOrder (primary model for My Services) ──────────────────────────
 
 class ServiceOrder {
@@ -59,6 +80,7 @@ class ServiceOrder {
   final ServiceStatus status;
   final OrderStage stage;
   final List<ServiceStep> steps;
+  final List<RequestedDocument> requestedDocuments;
   final String assignedExpert;
   final String
   expertPhone; // WhatsApp-capable number with country code, e.g. 919876543210
@@ -73,6 +95,7 @@ class ServiceOrder {
     required this.status,
     required this.stage,
     required this.steps,
+    required this.requestedDocuments,
     required this.assignedExpert,
     required this.expertPhone,
     required this.createdAt,
@@ -93,10 +116,13 @@ class ServiceOrder {
       ),
       stage: OrderStage.values.firstWhere(
         (e) => e.name == data['stage']?.toString(),
-        orElse: () => OrderStage.reqReceived,
+        orElse: () => OrderStage.quotePending,
       ),
       steps: rawSteps
           .map((s) => ServiceStep.fromMap(s as Map<String, dynamic>))
+          .toList(),
+      requestedDocuments: (data['requestedDocuments'] as List<dynamic>? ?? [])
+          .map((d) => RequestedDocument.fromMap(d as Map<String, dynamic>))
           .toList(),
       assignedExpert: data['assignedExpert']?.toString() ?? 'To be assigned',
       expertPhone: data['expertPhone']?.toString() ?? '',
@@ -140,7 +166,7 @@ class OrderModel {
       serviceType: data['serviceType'] ?? '',
       stage: OrderStage.values.firstWhere(
         (e) => e.name == data['stage'],
-        orElse: () => OrderStage.reqReceived,
+        orElse: () => OrderStage.quotePending,
       ),
       progress: (data['progress'] ?? 0.0).toDouble(),
     );

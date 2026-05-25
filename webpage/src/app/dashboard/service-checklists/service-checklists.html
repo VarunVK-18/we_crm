@@ -20,11 +20,17 @@
             <span class="service-badge" style="background-color: rgba(6,182,212,0.15); color: #06B6D4; border: 1px solid #06B6D4; font-size: 11px; text-transform: uppercase; font-weight: 600;">
               {{ cl.service_name }}
             </span>
-            <span class="service-badge"
-              [class]="getChecklistStatusClass(cl.status)"
-              style="font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 8px;">
-              {{ cl.status | titlecase }}
-            </span>
+            <div style="display: flex; gap: 8px; flex-direction: column; align-items: flex-end;">
+              <span [ngClass]="{
+                'status-badge': true,
+                'status-pending': cl.status === 'pending',
+                'status-in-progress': cl.status === 'in_progress',
+                'status-completed': cl.status === 'completed'
+              }">{{ cl.status | titlecase }}</span>
+              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                Stage: {{ cl.stage || 'quotePending' }}
+              </span>
+            </div>
           </div>
           <h4 class="client-title" style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0;">
             {{ cl.client_id?.owner_name }}
@@ -111,6 +117,46 @@
               </select>
             </div>
           }
+
+          <!-- Stage and Document Actions -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Update Stage:</label>
+              <select [ngModel]="cl.stage || 'quotePending'"
+                      (ngModelChange)="updateChecklistStage(cl._id, $event)"
+                      style="padding: 4px 8px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 12px;">
+                <option value="quotePending">Quote Pending</option>
+                <option value="quoteAccepted">Quote Accepted</option>
+                <option value="workAssigned">Work Assigned</option>
+                <option value="documentRequested">Document Requested</option>
+                <option value="workInProgress">Work In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            <!-- Requested Documents -->
+            @if (cl.requested_documents && cl.requested_documents.length > 0) {
+              <div style="margin-top: 8px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; display: block;">Requested Documents</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  @for (doc of cl.requested_documents; track $index) {
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; padding: 6px 8px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px;">
+                      <span style="color: var(--text-primary);">{{ doc.name }}</span>
+                      @if (doc.isUploaded) {
+                        <a [href]="'http://localhost:5001/' + doc.fileUrl" target="_blank" style="color: #10B981; font-weight: 600; text-decoration: none;">View</a>
+                      } @else {
+                        <span style="color: #F59E0B; font-weight: 500;">Pending</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <button (click)="openRequestDocModal(cl._id)" style="width: 100%; padding: 8px; background-color: transparent; border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin-top: 4px;" onmouseover="this.style.borderColor='var(--accent-primary)'; this.style.color='var(--accent-primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-secondary)'">
+              + Request Document
+            </button>
+          </div>
         </div>
       </div>
     }
@@ -253,6 +299,36 @@
         <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="closeAddChecklistItemModal()">Cancel</button>
           <button type="submit" class="btn-submit">Add Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+<!-- Request Document Modal -->
+@if (isRequestDocModalOpen()) {
+  <div class="modal-overlay" (click)="closeRequestDocModal()">
+    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Request Document</h3>
+        <button class="close-modal-btn" (click)="closeRequestDocModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitRequestDoc()" class="modal-form">
+        <div class="modal-body">
+          @if (checklistErrorMessage()) {
+            <div class="error-banner">{{ checklistErrorMessage() }}</div>
+          }
+          <div class="form-group">
+            <label>Document Name (e.g., PAN Card)</label>
+            <input type="text" [(ngModel)]="newDocRequestName" name="docName" placeholder="Enter document name" required />
+            <p class="field-hint">The client will see this request in their app and will be prompted to upload it.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeRequestDocModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Request via App</button>
         </div>
       </form>
     </div>

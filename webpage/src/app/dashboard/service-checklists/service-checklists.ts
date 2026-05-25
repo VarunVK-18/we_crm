@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -18,7 +18,7 @@ import { Api } from '../../api';
 export class ServiceChecklists implements OnInit {
   user = signal<any>(null);
   checklists = signal<any[]>([]);
-  teams = signal<any[]>([]);
+  teams = input<any[]>([]);
   clients = signal<any[]>([]);
 
   // Icon assets
@@ -58,7 +58,6 @@ export class ServiceChecklists implements OnInit {
     }
     this.fetchChecklists();
     this.fetchClients();
-    this.fetchTeams();
   }
 
   getCompanyId(): string | null {
@@ -106,17 +105,6 @@ export class ServiceChecklists implements OnInit {
     });
   }
 
-  fetchTeams() {
-    const companyId = this.getCompanyId();
-    if (!companyId) return;
-    this.api.get<any>(`users/team-groups?company_id=${companyId}`).subscribe({
-      next: (res) => {
-        if (res && res.success) {
-          this.teams.set(res.groups || []);
-        }
-      }
-    });
-  }
 
   fetchClients() {
     this.api.get<any>('users/clients').subscribe({
@@ -242,5 +230,65 @@ export class ServiceChecklists implements OnInit {
       completed: 'status-completed'
     };
     return map[status] || 'status-pending';
+  }
+
+  updateChecklistStage(checklistId: string, stage: string) {
+    this.api.patch(`checklists/${checklistId}`, { stage }).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          const updated = this.checklists().map(c => c._id === res.checklist._id ? res.checklist : c);
+          this.checklists.set(updated);
+        }
+      },
+      error: (err) => console.error('Error updating stage:', err)
+    });
+  }
+
+  isRequestDocModalOpen = signal<boolean>(false);
+  newDocRequestName = '';
+
+  openRequestDocModal(checklistId: string) {
+    this.selectedChecklistId = checklistId;
+    this.newDocRequestName = '';
+    this.checklistErrorMessage.set('');
+    this.isRequestDocModalOpen.set(true);
+  }
+
+  closeRequestDocModal() {
+    this.isRequestDocModalOpen.set(false);
+    this.selectedChecklistId = '';
+    this.newDocRequestName = '';
+  }
+
+  submitRequestDoc() {
+    if (!this.newDocRequestName.trim()) {
+      this.checklistErrorMessage.set('Document name is required');
+      return;
+    }
+
+    const cl = this.checklists().find(c => c._id === this.selectedChecklistId);
+    if (!cl) return;
+
+    const requested_documents = cl.requested_documents || [];
+    requested_documents.push({
+      name: this.newDocRequestName,
+      isUploaded: false
+    });
+
+    this.api.patch(`checklists/${this.selectedChecklistId}`, { 
+      requested_documents,
+      stage: 'documentRequested' 
+    }).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          const updated = this.checklists().map(c => c._id === res.checklist._id ? res.checklist : c);
+          this.checklists.set(updated);
+          this.closeRequestDocModal();
+        }
+      },
+      error: (err) => {
+        this.checklistErrorMessage.set(err.error?.message || 'Error requesting document');
+      }
+    });
   }
 }

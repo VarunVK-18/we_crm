@@ -54,7 +54,7 @@ router.post('/auth/register-company', registerCompany);
 
 // User profile route
 router.get('/users/profile/:id', getUserProfile);
-router.post('/users/profile/:id/subscribe-service', subscribeService);
+router.post('/users/profile/:id/subscribe-service', upload.any(), subscribeService);
 
 // Client users listing & actions route
 router.get('/users/clients', checkUser, getClients);
