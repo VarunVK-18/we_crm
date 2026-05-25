@@ -1,6 +1,45 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@100..900&display=swap');
 
 :root {
+  /* Industrial CRM Standard Variables */
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary: #64748b;
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger: #dc2626;
+
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --surface-hover: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --border: #e2e8f0;
+  --shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+
+  --radius: 8px;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  --transition: all 0.2s ease;
+
+  /* Legacy mapper for existing stylesheets */
+  --bg-primary: var(--background);
+  --bg-secondary: var(--surface);
+  --bg-active: var(--surface-hover);
+  --accent-primary: var(--primary);
+  --accent-hover: var(--primary-hover);
+  --border-color: var(--border);
+  --card-shadow: var(--shadow);
+  --border-radius: var(--radius);
+
   /* Typography Scale */
   --font-heading: 'Outfit', sans-serif;
   --font-body:    'DM Sans', sans-serif;
@@ -16,21 +55,36 @@
   --text-5xl:  2rem;       /* 32px - Display text */
   --text-6xl:  2.5rem;     /* 40px - Extra Large display */
 
-  /* Color Palette - Minimalistic Professional Theme */
-  --bg-primary: #F9FAFB;
-  --bg-secondary: #FFFFFF;
-  --bg-active: #EEF2F6;
-  --accent-primary: #0F172A;
-  --accent-hover: #334155;
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #94A3B8;
-  --border-color: #E2E8F0;
-  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  /* Semantic Colors */
+  --color-success: var(--success);
+  --color-success-hover: #15803d;
+  --color-success-bg: #f0fdf4;
+  --color-success-border: #bbf7d0;
   
-  /* Transitions */
-  --transition-fast: 0.15s ease-in-out;
-  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --color-info: var(--primary);
+  --color-info-hover: var(--primary-hover);
+  --color-info-bg: #eff6ff;
+  --color-info-border: #bfdbfe;
+
+  --color-warning: var(--warning);
+  --color-warning-hover: #d97706;
+  --color-warning-bg: #fef3c7;
+  --color-warning-border: #fde68a;
+
+  --color-danger: var(--danger);
+  --color-danger-hover: #b91c1c;
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fee2e2;
+
+  --color-purple: #7c3aed;
+  --color-purple-hover: #6d28d9;
+  --color-purple-bg: #f5f3ff;
+  --color-purple-border: #ddd6fe;
+
+  --color-teal: #0891b2;
+  --color-teal-hover: #0e7490;
+  --color-teal-bg: #ecfeff;
+  --color-teal-border: #cffafe;
 
   /* Holiday Calendar Tokens */
   --hc-bg:          #f5f5f4;
@@ -57,8 +111,6 @@
   --hc-shadow:    0 1px 4px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.04);
 
   --hc-transition: 150ms cubic-bezier(.4,0,.2,1);
-
-  --border-radius: 8px;
 
 }
 

@@ -45,13 +45,11 @@ export class Sidebar implements OnInit {
 
     // ── Filing Staff: sees assigned tasks & checklists ──────
     } else if (role === 'filling_staff') {
-      items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
       items.push({ id: 'tasks', label: 'My Tasks', color: '#F59E0B' });
       items.push({ id: 'checklists', label: 'My Checklists', color: '#06B6D4' });
 
     // ── Account Manager: same as filing staff ───────────────
     } else if (role === 'account_manager') {
-      items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
       items.push({ id: 'tasks', label: 'My Tasks', color: '#F59E0B' });
       items.push({ id: 'checklists', label: 'My Checklists', color: '#06B6D4' });
     }

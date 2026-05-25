@@ -1,0 +1,26 @@
+<div class="tab-view fade-in">
+  <!-- Glass welcome banner -->
+  <div class="welcome-banner">
+    <h2 class="banner-heading">Welcome Back, {{ user()?.owner_name || 'Admin' }}!</h2>
+    @if (getCompanyName()) {
+      <div class="company-badge-row">
+        <span class="company-code-chip">{{ getCompanyCode() }}</span>
+        <span class="company-name-tag">{{ getCompanyName() }}</span>
+      </div>
+    }
+    <p class="banner-subtext">Manage your professional audits, attendance files, and corporate HR configurations securely in one unified portal.</p>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    @for (stat of stats; track stat.title) {
+      <div class="stat-card">
+        <div class="stat-title">{{ stat.title }}</div>
+        <div class="stat-value" [class.warning]="stat.isWarning">{{ stat.value }}</div>
+        <div class="stat-detail" [class.up]="stat.isTrendUp" [class.warning-text]="stat.isWarning" [class.good-text]="stat.isGood">
+          {{ stat.detail }}
+        </div>
+      </div>
+    }
+  </div>
+</div>

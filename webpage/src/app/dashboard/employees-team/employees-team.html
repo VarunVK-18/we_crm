@@ -1,0 +1,249 @@
+<div class="tab-view fade-in">
+  <!-- Action Bar -->
+  <div class="filter-action-bar">
+    <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Employees & Team Collaboration</h2>
+    <button class="add-client-btn" (click)="openCreateEmployeeModal()">
+      <hugeicons-icon [icon]="PlusSignIcon" size="18"></hugeicons-icon>
+      <span>Add New Employee</span>
+    </button>
+  </div>
+
+  <!-- Teams Grid -->
+  <div class="clients-directory-grid">
+    @for (team of teams(); track team.name) {
+      <div class="client-profile-card">
+        <div class="client-card-header" style="display: flex; align-items: center; gap: 16px; width: 100%;">
+          <div class="client-avatar" style="background-color: var(--bg-active); color: var(--accent-primary); border-radius: 8px; font-weight: 700; font-size: var(--text-xl); display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; flex-shrink: 0;">
+            {{ team.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="client-card-meta" style="display: flex; flex-direction: column; text-align: left;">
+            <h4 class="client-title" style="margin: 0; font-family: var(--font-heading); font-size: var(--text-xl); font-weight: 600; color: var(--text-primary);">{{ team.name }}s</h4>
+            <p class="client-company" style="margin: 2px 0 0 0; font-size: var(--text-md); color: var(--text-secondary); font-weight: 500;">{{ team.members.length }} Active Member(s)</p>
+          </div>
+        </div>
+
+        <div class="client-card-body" style="padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+          @for (member of team.members; track member.id) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="avatar-box" style="width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: var(--text-xs); font-weight: bold; background-color: var(--border-color); color: var(--text-primary);">
+                  {{ getInitials(member.name) }}
+                </div>
+                <div>
+                  <div style="font-weight: 500; font-size: var(--text-sm); color: var(--text-primary);">{{ member.name }}</div>
+                  <div style="font-size: var(--text-xs); color: var(--text-secondary);">{{ member.email }}</div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 4px;">
+                <button (click)="openEditEmployeeModal(member)" style="background: none; border: none; cursor: pointer; color: var(--accent-primary); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; transition: background-color var(--transition-fast);" onmouseenter="this.style.backgroundColor='var(--bg-active)'" onmouseleave="this.style.backgroundColor='transparent'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"/></svg>
+                </button>
+                <button (click)="openDeleteEmployeeModal(member)" style="background: none; border: none; cursor: pointer; color: #EF4444; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; transition: background-color var(--transition-fast);" onmouseenter="this.style.backgroundColor='rgba(239, 68, 68, 0.1)'" onmouseleave="this.style.backgroundColor='transparent'">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+    @if (teams().length === 0) {
+      <div class="no-results-placeholder" style="grid-column: 1 / -1;">
+        <div class="placeholder-icon-circle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <h3>No employees found</h3>
+        <p>Add a new employee to start building your organization.</p>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create Employee Dialog Modal Overlay -->
+@if (isCreateEmployeeModalOpen()) {
+  <div class="modal-overlay" (click)="closeCreateEmployeeModal()">
+    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <h3>Add New Employee</h3>
+        <button class="close-modal-btn" (click)="closeCreateEmployeeModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitCreateEmployee()" class="modal-form">
+        <div class="modal-body">
+          
+          <!-- Notifications inside modal -->
+          @if (employeeErrorMessage()) {
+            <div class="modal-error-message">
+              {{ employeeErrorMessage() }}
+            </div>
+          }
+          @if (employeeSuccessMessage()) {
+            <div class="modal-success-message">
+              {{ employeeSuccessMessage() }}
+            </div>
+          }
+
+          <div class="form-group-item">
+            <label class="form-input-label">Employee Name *</label>
+            <input 
+              type="text" 
+              name="emp_name"
+              placeholder="e.g. Akash Gupta" 
+              class="form-control-input"
+              [(ngModel)]="newEmployee.name"
+              required
+            />
+          </div>
+
+          <div class="form-group-item">
+            <label class="form-input-label">Email Address *</label>
+            <input 
+              type="email" 
+              name="emp_email"
+              placeholder="akash@company.com" 
+              class="form-control-input"
+              [(ngModel)]="newEmployee.email"
+              required
+            />
+          </div>
+
+          <div class="form-row-grid">
+            <div class="form-group-item">
+              <label class="form-input-label">Password *</label>
+              <input 
+                type="password" 
+                name="emp_pass"
+                placeholder="Set password" 
+                class="form-control-input"
+                [(ngModel)]="newEmployee.password"
+                required
+              />
+            </div>
+
+            <div class="form-group-item">
+              <label class="form-input-label">System Access Role *</label>
+              <select name="emp_role" class="form-control-input" [(ngModel)]="newEmployee.role" required>
+                <option value="client_manager">Client Manager</option>
+                <option value="filling_staff">Filing Staff</option>
+                <option value="account_manager">Account Manager</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="closeCreateEmployeeModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add Employee</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}
+
+<!-- Edit Employee Dialog Modal Overlay -->
+@if (isEditEmployeeModalOpen()) {
+  <div class="modal-overlay" (click)="closeEditEmployeeModal()">
+    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <h3>Edit Employee Details</h3>
+        <button class="close-modal-btn" (click)="closeEditEmployeeModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitEditEmployee()" class="modal-form">
+        <div class="modal-body">
+          
+          <!-- Notifications inside modal -->
+          @if (employeeErrorMessage()) {
+            <div class="modal-error-message">
+              {{ employeeErrorMessage() }}
+            </div>
+          }
+          @if (employeeSuccessMessage()) {
+            <div class="modal-success-message">
+              {{ employeeSuccessMessage() }}
+            </div>
+          }
+
+          <div class="form-group-item">
+            <label class="form-input-label">Employee Name *</label>
+            <input 
+              type="text" 
+              name="edit_emp_name"
+              placeholder="e.g. Akash Gupta" 
+              class="form-control-input"
+              [(ngModel)]="editEmployee.name"
+              required
+            />
+          </div>
+
+          <div class="form-group-item">
+            <label class="form-input-label">Email Address *</label>
+            <input 
+              type="email" 
+              name="edit_emp_email"
+              placeholder="akash@company.com" 
+              class="form-control-input"
+              [(ngModel)]="editEmployee.email"
+              required
+            />
+          </div>
+
+          <div class="form-group-item">
+            <label class="form-input-label">System Access Role *</label>
+            <select name="edit_emp_role" class="form-control-input" [(ngModel)]="editEmployee.role" required>
+              <option value="client_manager">Client Manager</option>
+              <option value="filling_staff">Filing Staff</option>
+              <option value="account_manager">Account Manager</option>
+            </select>
+          </div>
+
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="closeEditEmployeeModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Save Updates</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}
+
+<!-- Delete Employee Dialog Modal Overlay -->
+@if (isDeleteEmployeeModalOpen()) {
+  <div class="modal-overlay" (click)="closeDeleteEmployeeModal()">
+    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <h3>Remove Employee</h3>
+        <button class="close-modal-btn" (click)="closeDeleteEmployeeModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p style="color: var(--text-primary);">Are you sure you want to remove <strong>{{ selectedEmployee.name }}</strong> from the team?</p>
+        <p style="color: #EF4444; font-size: var(--text-sm); margin-top: 8px;">This action cannot be undone.</p>
+      </div>
+
+      <div class="modal-footer-actions">
+        <button class="btn-cancel" (click)="closeDeleteEmployeeModal()">Cancel</button>
+        <button class="btn-submit" style="background-color: #EF4444;" (click)="submitDeleteEmployee()">Remove</button>
+      </div>
+
+    </div>
+  </div>
+}

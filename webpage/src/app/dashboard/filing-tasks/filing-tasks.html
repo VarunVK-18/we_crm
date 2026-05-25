@@ -1,0 +1,449 @@
+<div class="tab-view fade-in">
+  
+  <!-- Task Pipeline Filter & Search Bar -->
+  <div class="task-pipeline-header">
+    <div class="task-search-wrapper">
+      <span class="search-icon-span">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </span>
+      <input 
+        type="text" 
+        placeholder="Search tasks by title, description, or client..." 
+        class="task-search-input"
+        [ngModel]="taskSearchQuery()"
+        (ngModelChange)="taskSearchQuery.set($event)"
+      />
+    </div>
+
+    <!-- Pipeline Status Pills -->
+    <div class="task-pipeline-filters">
+      @for (f of ['All', 'To Do', 'In Progress', 'Pending Documents', 'Under Review', 'Approved', 'Rejected']; track f) {
+        <button 
+          class="pipeline-filter-btn" 
+          [class.active]="taskStatusFilter() === f"
+          (click)="taskStatusFilter.set(f)">
+          {{ f }}
+        </button>
+      }
+      
+      @if (canManage()) {
+        <button class="add-client-btn" style="border-radius: 8px; margin-left: 8px;" (click)="openCreateTaskModal()">
+          <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
+          <span>New Task</span>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Tasks Pipeline Grid -->
+  <div class="tasks-pipeline-grid">
+    @for (task of getFilteredTasks(); track task._id) {
+      <div class="task-pipeline-card" 
+           [class.task-todo]="task.status === 'Not Started' || task.status === 'Pending'"
+           [class.task-inprogress]="task.status === 'In Progress'"
+           [class.task-pendingdocs]="task.status === 'Pending Documents'"
+           [class.task-review]="task.status === 'Under Review' || task.status === 'Query Raised'"
+           [class.task-approved]="task.status === 'Approved' || task.status === 'Completed'"
+           [class.task-rejected]="task.status === 'Rejected'"
+           (click)="openTaskDetailModal(task)">
+        
+        <div class="task-card-header">
+          <span class="task-status-badge" 
+                [class.badge-todo]="task.status === 'Not Started' || task.status === 'Pending'"
+                [class.badge-inprogress]="task.status === 'In Progress'"
+                [class.badge-pendingdocs]="task.status === 'Pending Documents'"
+                [class.badge-review]="task.status === 'Under Review' || task.status === 'Query Raised'"
+                [class.badge-approved]="task.status === 'Approved' || task.status === 'Completed'"
+                [class.badge-rejected]="task.status === 'Rejected'">
+            {{ task.status }}
+          </span>
+          <span class="task-date">{{ task.createdAt | date:'mediumDate' }}</span>
+        </div>
+
+        <h3 class="task-card-title">{{ task.title }}</h3>
+        <p class="task-card-desc">{{ task.description || 'No description provided.' }}</p>
+
+        <div class="task-card-meta">
+          <!-- Client Details -->
+          <div class="meta-client-row">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="meta-icon">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span class="meta-client-name">{{ task.client_id?.owner_name }}</span>
+            <span class="meta-company-name">· {{ task.client_id?.company_name || 'Individual' }}</span>
+          </div>
+
+          <!-- Assignee Row -->
+          <div class="meta-assignee-row">
+            <span class="assignee-label">Assignee:</span>
+            @if (task.assigned_to) {
+              <div class="assignee-user">
+                <div class="assignee-avatar">{{ getInitials(task.assigned_to.owner_name) }}</div>
+                <span class="assignee-name">{{ task.assigned_to.owner_name }}</span>
+              </div>
+            } @else {
+              <span class="unassigned-text">Unassigned</span>
+            }
+          </div>
+        </div>
+
+        <!-- Footer Quick Stats & Action Button -->
+        <div class="task-card-footer" (click)="$event.stopPropagation()">
+          <div class="task-quick-stats">
+            <div class="stat-badge" title="Filing Documents">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>{{ task.documents?.length || 0 }}</span>
+            </div>
+
+            <div class="stat-badge" title="Activity Comments">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>{{ task.comments?.length || 0 }}</span>
+            </div>
+          </div>
+
+          <button class="manage-task-btn" (click)="openTaskDetailModal(task)">
+            <span>Manage</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    }
+
+    @if (getFilteredTasks().length === 0) {
+      <div class="no-results-placeholder" style="grid-column: 1 / -1; margin-top: 24px;">
+        <div class="placeholder-icon-circle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="9" y1="9" x2="15" y2="9"></line>
+            <line x1="9" y1="13" x2="15" y2="13"></line>
+            <line x1="9" y1="17" x2="15" y2="17"></line>
+          </svg>
+        </div>
+        <h3>No filing tasks found</h3>
+        <p>Try matching another keyword or selecting a different status filter.</p>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Consolidated Task Details Modal Overlay -->
+@if (isDetailModalOpen() && selectedDetailTask()) {
+  <div class="modal-overlay" (click)="closeTaskDetailModal()">
+    <div class="modal-card-box detail-modal-card" (click)="$event.stopPropagation()">
+      
+      <!-- Modal Header -->
+      <div class="modal-header task-detail-header">
+        <div class="header-task-title-group">
+          <span class="detail-badge"
+                [class.badge-todo]="selectedDetailTask().status === 'Not Started' || selectedDetailTask().status === 'Pending'"
+                [class.badge-inprogress]="selectedDetailTask().status === 'In Progress'"
+                [class.badge-pendingdocs]="selectedDetailTask().status === 'Pending Documents'"
+                [class.badge-review]="selectedDetailTask().status === 'Under Review' || selectedDetailTask().status === 'Query Raised'"
+                [class.badge-approved]="selectedDetailTask().status === 'Approved' || selectedDetailTask().status === 'Completed'"
+                [class.badge-rejected]="selectedDetailTask().status === 'Rejected'">
+            {{ selectedDetailTask().status }}
+          </span>
+          <h2 class="detail-task-title">{{ selectedDetailTask().title }}</h2>
+        </div>
+        <button class="close-modal-btn" (click)="closeTaskDetailModal()">&times;</button>
+      </div>
+
+      <div class="modal-body detail-modal-body">
+        <div class="detail-grid-layout">
+          
+          <!-- Left Panel: Task Details & Description & Tabs -->
+          <div class="detail-left-panel">
+            <div class="detail-section">
+              <h4 class="detail-section-title">Description</h4>
+              <p class="detail-task-desc">{{ selectedDetailTask().description || 'No description provided.' }}</p>
+            </div>
+
+            <!-- Tabs Container (Docs vs Comments) -->
+            <div class="detail-tabs-container">
+              <div class="detail-tabs-header">
+                <button class="detail-tab-btn" 
+                        [class.active]="detailActiveTab() === 'docs'"
+                        (click)="detailActiveTab.set('docs')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  <span>Documents ({{ selectedDetailTask().documents?.length || 0 }})</span>
+                </button>
+
+                <button class="detail-tab-btn" 
+                        [class.active]="detailActiveTab() === 'comments'"
+                        (click)="detailActiveTab.set('comments')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  <span>Comments ({{ selectedDetailTask().comments?.length || 0 }})</span>
+                </button>
+              </div>
+
+              <div class="detail-tabs-content">
+                <!-- Documents Tab -->
+                @if (detailActiveTab() === 'docs') {
+                  <div class="tab-pane-content fade-in">
+                    <!-- Upload Doc Section -->
+                    @if (canManage() || isFillingStaff() || isAccountManager()) {
+                      <div class="detail-upload-box">
+                        <input type="text" placeholder="Document Name (e.g. GST-R1 Filed)" class="detail-input-text" [(ngModel)]="detailDocName" />
+                        <div class="detail-file-row">
+                          <label class="custom-file-upload">
+                            <input type="file" (change)="onDetailDocFileSelected($event)" style="display: none;" />
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                              <polyline points="17 8 12 3 7 8"></polyline>
+                              <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span>{{ detailDocFile ? detailDocFile.name : 'Choose File' }}</span>
+                          </label>
+                          <button class="btn-detail-upload" (click)="submitDetailUploadDoc()">Upload</button>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Documents List -->
+                    <div class="detail-docs-list">
+                      @for (doc of selectedDetailTask().documents; track doc._id) {
+                        <div class="detail-doc-item">
+                          <div class="doc-item-left">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="doc-icon-blue">
+                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <div class="doc-text-meta">
+                              <span class="doc-name">{{ doc.name }}</span>
+                              <span class="doc-date">{{ doc.uploadedAt | date:'short' }}</span>
+                            </div>
+                          </div>
+                          <a [href]="'http://localhost:5000/' + doc.fileUrl" target="_blank" class="doc-download-link">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                              <polyline points="7 10 12 15 17 10"></polyline>
+                              <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            <span>Download</span>
+                          </a>
+                        </div>
+                      }
+                      @if (!selectedDetailTask().documents || selectedDetailTask().documents.length === 0) {
+                        <div class="empty-docs-placeholder">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5; margin-bottom: 8px;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <p>No documents uploaded yet.</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Comments Tab -->
+                @if (detailActiveTab() === 'comments') {
+                  <div class="tab-pane-content fade-in">
+                    <!-- New Comment Form -->
+                    <div class="detail-comment-form">
+                      <textarea placeholder="Write a comment about task progress..." class="detail-comment-textarea" [(ngModel)]="detailCommentText"></textarea>
+                      <button class="btn-detail-comment" (click)="submitDetailComment()">Post Comment</button>
+                    </div>
+
+                    <!-- Comments Timeline -->
+                    <div class="detail-comments-timeline">
+                      @for (c of selectedDetailTask().comments; track c._id) {
+                        <div class="detail-comment-card">
+                          <div class="comment-card-header">
+                            <div class="comment-author-avatar">{{ getInitials(c.author) }}</div>
+                            <div class="comment-author-meta">
+                              <span class="comment-author-name">{{ c.author }}</span>
+                              <span class="comment-date">{{ c.createdAt || c.timestamp | date:'short' }}</span>
+                            </div>
+                          </div>
+                          <div class="comment-text-body">{{ c.text }}</div>
+                        </div>
+                      }
+                      @if (!selectedDetailTask().comments || selectedDetailTask().comments.length === 0) {
+                        <div class="empty-comments-placeholder">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5; margin-bottom: 8px;">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                          </svg>
+                          <p>No comments posted yet.</p>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel: Side Attributes (Assignee, Status, Client) -->
+          <div class="detail-right-panel">
+            <!-- Client Section -->
+            <div class="detail-side-section">
+              <h4 class="side-section-title">Client Details</h4>
+              <div class="side-client-card">
+                <div class="client-avatar-large">{{ getInitials(selectedDetailTask().client_id?.owner_name) }}</div>
+                <div class="client-details-text">
+                  <span class="client-owner-name">{{ selectedDetailTask().client_id?.owner_name }}</span>
+                  <span class="client-comp-name">{{ selectedDetailTask().client_id?.company_name || 'Individual' }}</span>
+                  <span class="client-sub-text">{{ selectedDetailTask().client_id?.email }}</span>
+                  @if (selectedDetailTask().client_id?.phone) {
+                    <span class="client-sub-text">{{ selectedDetailTask().client_id?.phone }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Control -->
+            <div class="detail-side-section">
+              <h4 class="side-section-title">Filing Status</h4>
+              @if (canManage() || isFillingStaff() || isAccountManager()) {
+                <select [ngModel]="selectedDetailTask().status" 
+                        (ngModelChange)="updateDetailTaskStatus($event)"
+                        class="detail-side-select">
+                  <option value="Not Started">Not Started</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Pending Documents">Pending Documents</option>
+                  <option value="Under Review">Under Review</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              } @else {
+                <div class="side-static-value">
+                  <span class="task-status-badge" 
+                        [class.badge-todo]="selectedDetailTask().status === 'Not Started' || selectedDetailTask().status === 'Pending'"
+                        [class.badge-inprogress]="selectedDetailTask().status === 'In Progress'"
+                        [class.badge-pendingdocs]="selectedDetailTask().status === 'Pending Documents'"
+                        [class.badge-review]="selectedDetailTask().status === 'Under Review' || selectedDetailTask().status === 'Query Raised'"
+                        [class.badge-approved]="selectedDetailTask().status === 'Approved' || selectedDetailTask().status === 'Completed'"
+                        [class.badge-rejected]="selectedDetailTask().status === 'Rejected'">
+                    {{ selectedDetailTask().status }}
+                  </span>
+                </div>
+              }
+            </div>
+
+            <!-- Assignee Control -->
+            <div class="detail-side-section">
+              <h4 class="side-section-title">Assigned Consultant</h4>
+              @if (canManage()) {
+                <select [ngModel]="selectedDetailTask().assigned_to?._id || selectedDetailTask().assigned_to || ''" 
+                        (ngModelChange)="assignDetailTaskToStaff($event)"
+                        class="detail-side-select">
+                  <option value="">-- Unassigned --</option>
+                  @for (emp of getFlatEmployees(); track emp.id) {
+                    @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
+                      <option [value]="emp.id">{{ emp.name }} ({{ getRoleLabel(emp.role) }})</option>
+                    }
+                  }
+                </select>
+              } @else {
+                <div class="side-assignee-card">
+                  @if (selectedDetailTask().assigned_to) {
+                    <div class="assignee-avatar">{{ getInitials(selectedDetailTask().assigned_to.owner_name) }}</div>
+                    <div class="assignee-details-text">
+                      <span class="assignee-name-large">{{ selectedDetailTask().assigned_to.owner_name }}</span>
+                      <span class="assignee-role-tag">{{ getRoleLabel(selectedDetailTask().assigned_to.role) }}</span>
+                    </div>
+                  } @else {
+                    <span class="unassigned-text-large">Unassigned</span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Task Audit Info -->
+            <div class="detail-side-section timeline-info-section">
+              <span class="timeline-date">Created: {{ selectedDetailTask().createdAt | date:'medium' }}</span>
+              <span class="timeline-date">Updated: {{ selectedDetailTask().updatedAt | date:'medium' }}</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- Create Filing Task Dialog Modal Overlay -->
+@if (isCreateTaskModalOpen()) {
+  <div class="modal-overlay" (click)="isCreateTaskModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <h3>Create New Filing Task</h3>
+        <button class="close-modal-btn" (click)="isCreateTaskModalOpen.set(false)">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitCreateTask()" class="modal-form">
+        <div class="modal-body">
+          @if (taskErrorMessage()) {
+            <div class="modal-error-message">{{ taskErrorMessage() }}</div>
+          }
+          @if (taskSuccessMessage()) {
+            <div class="modal-success-message">{{ taskSuccessMessage() }}</div>
+          }
+
+          <div class="form-group-item">
+            <label class="form-input-label">Select Client *</label>
+            <select name="task_client" class="form-control-input select-input" [(ngModel)]="newTaskClientId" required>
+              <option value="">-- Select client profile --</option>
+              @for (client of clients(); track client._id) {
+                <option [value]="client._id">{{ client.owner_name }} ({{ client.company_name || 'Individual' }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group-item" style="margin-top: 16px;">
+            <label class="form-input-label">Task Title *</label>
+            <input type="text" name="task_title" placeholder="e.g. GST Filing FY 2025-26" class="form-control-input" [(ngModel)]="newTaskTitle" required />
+          </div>
+
+          <div class="form-group-item" style="margin-top: 16px;">
+            <label class="form-input-label">Description / Instructions</label>
+            <textarea name="task_desc" placeholder="Provide details on necessary steps and document criteria..." class="form-control-input" rows="3" [(ngModel)]="newTaskDescription"></textarea>
+          </div>
+
+          <div class="form-group-item" style="margin-top: 16px;">
+            <label class="form-input-label">Assign Filing Consultant</label>
+            <select name="task_assignee" class="form-control-input select-input" [(ngModel)]="newTaskAssignedTo">
+              <option value="">-- Unassigned (Pool) --</option>
+              @for (emp of getFlatEmployees(); track emp.id) {
+                @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
+                  <option [value]="emp.id">{{ emp.name }}</option>
+                }
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="isCreateTaskModalOpen.set(false)">Cancel</button>
+          <button type="submit" class="btn-submit">Create Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

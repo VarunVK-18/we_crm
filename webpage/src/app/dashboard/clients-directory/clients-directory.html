@@ -1,0 +1,428 @@
+<div class="tab-view fade-in">
+  
+  <!-- Clients Dashboard statistics row -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-title">Total Clients</div>
+      <div class="stat-value">{{ clients().length }}</div>
+      <div class="stat-detail good-text">Active Accounts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Active Subscriptions</div>
+      <div class="stat-value">{{ getTotalServicesCount() }}</div>
+      <div class="stat-detail">Services Provided</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-title">Corporate Share</div>
+      <div class="stat-value">{{ getCorporateClientPercentage() }}</div>
+      <div class="stat-detail up">Corporate Profiles</div>
+    </div>
+  </div>
+
+  <!-- Filters & Action Bar -->
+  <div class="filter-action-bar">
+    <div class="search-box directory-search">
+      <hugeicons-icon [icon]="Search01Icon" size="18" color="#94A3B8"></hugeicons-icon>
+      <input 
+        type="text" 
+        placeholder="Filter clients by name, email, phone, or company..." 
+        class="search-input"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+      />
+    </div>
+    <button class="add-client-btn" (click)="openCreateModal()">
+      <hugeicons-icon [icon]="PlusSignIcon" size="18"></hugeicons-icon>
+      <span>Add New Client</span>
+    </button>
+  </div>
+
+  <!-- Clients Cards Grid -->
+  <div class="clients-directory-grid">
+    @for (client of getFilteredClients(); track client._id) {
+      <div class="client-profile-card">
+        <div class="client-card-header">
+          <div class="client-avatar">
+            {{ client.owner_name ? client.owner_name.charAt(0).toUpperCase() : 'C' }}
+          </div>
+          <div class="client-identity">
+            <h4 class="client-title">{{ client.owner_name }}</h4>
+            <p class="client-company">{{ client.company_name || 'Individual Account' }}</p>
+          </div>
+        </div>
+
+        <div class="client-card-body">
+          <div class="contact-info-row">
+            <hugeicons-icon [icon]="Mail01Icon" size="14" color="#64748B"></hugeicons-icon>
+            <span class="contact-text">{{ client.email }}</span>
+          </div>
+          @if (client.phone) {
+            <div class="contact-info-row">
+              <hugeicons-icon [icon]="CallIcon" size="14" color="#64748B"></hugeicons-icon>
+              <span class="contact-text">{{ client.phone }}</span>
+            </div>
+          }
+
+          <!-- Subscribed Services Badges -->
+          <div class="client-services-area">
+            <span class="services-label">Registered Services:</span>
+            <div class="services-badges-list">
+              @for (srv of client.services; track srv) {
+                <span class="service-badge">{{ srv }}</span>
+              }
+              @if (!client.services || client.services.length === 0) {
+                <span class="no-services-badge">No services registered</span>
+              }
+            </div>
+          </div>
+
+          <!-- Client Lifecycle & Assignment Section -->
+          <div class="client-lifecycle-actions" style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 16px; display: flex; flex-direction: column; gap: 12px;">
+            <!-- Onboarding Status Chip -->
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span class="services-label" style="margin: 0;">Onboarding:</span>
+              <span class="service-badge" 
+                    [style.background-color]="client.onboarding_status === 'Approved' ? 'rgba(16, 185, 129, 0.15)' : client.onboarding_status === 'Rejected' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.15)'"
+                    [style.color]="client.onboarding_status === 'Approved' ? '#10B981' : client.onboarding_status === 'Rejected' ? '#EF4444' : '#F59E0B'"
+                    [style.border]="client.onboarding_status === 'Approved' ? '1px solid #10B981' : client.onboarding_status === 'Rejected' ? '1px solid #EF4444' : '1px solid #F59E0B'"
+                    style="padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                {{ client.onboarding_status || 'Prospect' }}
+              </span>
+            </div>
+
+            <!-- Change Onboarding Status Dropdown (Accessible to Admin, Client Manager & Account Manager) -->
+            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Update Onboarding Phase:</label>
+                <select [ngModel]="client.onboarding_status || 'Prospect'" 
+                        (ngModelChange)="updateOnboardingStatus(client._id, $event)"
+                        style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px;">
+                  <option value="Prospect">Prospect</option>
+                  <option value="Ready for Approval">Ready for Approval</option>
+                  <option value="Approved">Approved</option>
+                  <option value="Rejected">Rejected</option>
+                </select>
+              </div>
+            }
+
+            <!-- Assigned Employee Dropdown (Admin, Client Manager & Account Managers) -->
+            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500;">Assigned Consultant:</label>
+                <select [ngModel]="client.assigned_to?._id || client.assigned_to || ''" 
+                        (ngModelChange)="assignClientToEmployee(client._id, $event)"
+                        style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px;">
+                  <option value="">-- Unassigned --</option>
+                  @for (emp of getFlatEmployees(); track emp.id) {
+                    <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+                  }
+                </select>
+              </div>
+            } @else if (client.assigned_to) {
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+                <span style="color: var(--text-secondary);">Assigned to:</span>
+                <span style="color: var(--text-primary); font-weight: 500;">
+                  {{ client.assigned_to?.owner_name || client.assigned_to }}
+                </span>
+              </div>
+            }
+
+            <!-- Create Task Button (Admin, Client Manager & Account Manager) -->
+            @if (user()?.role === 'admin' || user()?.role === 'account_manager' || user()?.role === 'client_manager') {
+              <button (click)="openCreateTaskModal(client._id)" 
+                      style="width: 100%; margin-top: 4px; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--accent-primary); border-radius: 8px; color: var(--text-primary); font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
+                <span>Create Filing Task</span>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    }
+    @if (getFilteredClients().length === 0) {
+      <div class="no-results-placeholder">
+        <div class="placeholder-icon-circle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </div>
+        <h3>No clients found</h3>
+        <p>Try refining your search query or add a new client to get started.</p>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Create Client Dialog Modal Overlay -->
+@if (isCreateModalOpen()) {
+  <div class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-card-box" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <h3>Create New Client Profile</h3>
+        <button class="close-modal-btn" (click)="closeCreateModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitCreateClient()" class="modal-form">
+        <div class="modal-body">
+          
+          <!-- Notifications inside modal -->
+          @if (errorMessage()) {
+            <div class="modal-error-message">
+              {{ errorMessage() }}
+            </div>
+          }
+          @if (successMessage()) {
+            <div class="modal-success-message">
+              {{ successMessage() }}
+            </div>
+          }
+
+          <div class="form-row-grid">
+            <!-- Owner Name -->
+            <div class="form-group-item">
+              <label class="form-input-label">Client Name *</label>
+              <input 
+                type="text" 
+                name="owner_name"
+                placeholder="Enter client's full name" 
+                class="form-control-input"
+                [(ngModel)]="newClient.owner_name"
+                required
+              />
+            </div>
+
+            <!-- Company Name -->
+            <div class="form-group-item">
+              <label class="form-input-label">Company Name</label>
+              <input 
+                type="text" 
+                name="company_name"
+                placeholder="Business/Corporate name" 
+                class="form-control-input"
+                [(ngModel)]="newClient.company_name"
+              />
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <!-- Email -->
+            <div class="form-group-item">
+              <label class="form-input-label">Email Address *</label>
+              <input 
+                type="email" 
+                name="email"
+                placeholder="client@company.com" 
+                class="form-control-input"
+                [(ngModel)]="newClient.email"
+                required
+              />
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group-item">
+              <label class="form-input-label">Phone Number</label>
+              <input 
+                type="text" 
+                name="phone"
+                placeholder="+91 XXXXX XXXXX" 
+                class="form-control-input"
+                [(ngModel)]="newClient.phone"
+              />
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <!-- Password -->
+            <div class="form-group-item">
+              <label class="form-input-label">Client Account Password</label>
+              <input 
+                type="password" 
+                name="password"
+                placeholder="Set initial client password" 
+                class="form-control-input"
+                [(ngModel)]="newClient.password"
+              />
+            </div>
+
+            <!-- Business Type -->
+            <div class="form-group-item">
+              <label class="form-input-label">Business Structure</label>
+              <select name="business_type" class="form-control-input" [(ngModel)]="newClient.business_type">
+                <option value="">-- Select Structure --</option>
+                <option value="Proprietorship">Proprietorship</option>
+                <option value="LLP">Limited Liability Partnership (LLP)</option>
+                <option value="Private Limited">Private Limited (Pvt Ltd)</option>
+                <option value="Partnership">Partnership Firm</option>
+                <option value="Individual">Individual</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row-grid">
+            <!-- PAN -->
+            <div class="form-group-item">
+              <label class="form-input-label">PAN Number</label>
+              <input 
+                type="text" 
+                name="pan"
+                placeholder="ABCDE1234F" 
+                class="form-control-input"
+                [(ngModel)]="newClient.pan"
+                style="text-transform: uppercase;"
+              />
+            </div>
+
+            <!-- GSTIN -->
+            <div class="form-group-item">
+              <label class="form-input-label">GSTIN Number</label>
+              <input 
+                type="text" 
+                name="gstin"
+                placeholder="22AAAAA1111A1Z1" 
+                class="form-control-input"
+                [(ngModel)]="newClient.gstin"
+                style="text-transform: uppercase;"
+              />
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="form-group-item">
+            <label class="form-input-label">Registered Office Address</label>
+            <textarea 
+              name="address"
+              placeholder="Enter corporate physical address" 
+              class="form-control-input"
+              rows="3"
+              style="resize: vertical;"
+              [(ngModel)]="newClient.address"
+            ></textarea>
+          </div>
+
+          <!-- Document Upload Fields -->
+          <div class="form-row-grid" style="margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+            <!-- GSTIN Certificate Upload -->
+            <div class="form-group-item file-upload-item">
+              <label class="form-input-label">Upload GSTIN Certificate</label>
+              <div class="custom-file-upload">
+                <input 
+                  type="file" 
+                  id="gstinFile" 
+                  class="file-input-hidden" 
+                  (change)="onGstinFileSelected($event)" 
+                />
+                <label for="gstinFile" class="file-upload-label-btn">
+                  <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
+                  <span>{{ selectedGstinFile ? selectedGstinFile.name : 'Choose GSTIN Certificate' }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- PAN Upload -->
+            <div class="form-group-item file-upload-item">
+              <label class="form-input-label">Upload PAN Card</label>
+              <div class="custom-file-upload">
+                <input 
+                  type="file" 
+                  id="panFile" 
+                  class="file-input-hidden" 
+                  (change)="onPanFileSelected($event)" 
+                />
+                <label for="panFile" class="file-upload-label-btn">
+                  <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
+                  <span>{{ selectedPanFile ? selectedPanFile.name : 'Choose PAN Card' }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Services Checklist selection -->
+          <div class="form-group-item services-selection-group">
+            <label class="form-input-label">Assign Wealth/Compliance Services</label>
+            <div class="services-checkbox-grid">
+              @for (srv of availableServices; track srv) {
+                <div 
+                  class="service-check-item" 
+                  [class.checked]="newClient.services.includes(srv)"
+                  (click)="toggleService(srv)">
+                  <div class="checkbox-indicator">
+                    @if (newClient.services.includes(srv)) {
+                      <hugeicons-icon [icon]="CheckmarkCircle02Icon" size="14" color="#10B981"></hugeicons-icon>
+                    }
+                  </div>
+                  <span class="service-check-label">{{ srv }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Register Client Account</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+}
+
+<!-- Create Filing Task Dialog Modal Overlay -->
+@if (isCreateTaskModalOpen()) {
+  <div class="modal-overlay" (click)="isCreateTaskModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+      
+      <div class="modal-header">
+        <h3>Create New Filing Task</h3>
+        <button class="close-modal-btn" (click)="isCreateTaskModalOpen.set(false)">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitCreateTask()" class="modal-form">
+        <div class="modal-body">
+          @if (taskErrorMessage()) {
+            <div class="modal-error-message">{{ taskErrorMessage() }}</div>
+          }
+          @if (taskSuccessMessage()) {
+            <div class="modal-success-message">{{ taskSuccessMessage() }}</div>
+          }
+
+          <!-- Task Title -->
+          <div class="form-group-item">
+            <label class="form-input-label">Task/Filing Title *</label>
+            <input type="text" name="task_title" placeholder="e.g. GSTR-3B May Filing" class="form-control-input" [(ngModel)]="newTaskTitle" required />
+          </div>
+
+          <!-- Description -->
+          <div class="form-group-item">
+            <label class="form-input-label">Description / Instructions</label>
+            <textarea name="task_desc" placeholder="Detail the filing process or query notes..." class="form-control-input" rows="3" [(ngModel)]="newTaskDescription"></textarea>
+          </div>
+
+          <!-- Assign Employee dropdown -->
+          <div class="form-group-item">
+            <label class="form-input-label">Assign to Filing Consultant</label>
+            <select name="task_assign" class="form-control-input" [(ngModel)]="newTaskAssignedTo">
+              <option value="">-- Select Employee --</option>
+              @for (emp of getFlatEmployees(); track emp.id) {
+                <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="isCreateTaskModalOpen.set(false)">Cancel</button>
+          <button type="submit" class="btn-submit">Launch Filing Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

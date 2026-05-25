@@ -1,0 +1,44 @@
+<div class="tab-view fade-in">
+  <div class="filter-action-bar">
+    <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Security & System Audit Log</h2>
+  </div>
+
+  <div style="background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-top: 16px;">
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13px;">
+        <thead>
+          <tr style="background-color: var(--bg-primary); border-bottom: 1px solid var(--border-color); color: var(--text-secondary);">
+            <th style="padding: 12px 16px;">Timestamp</th>
+            <th style="padding: 12px 16px;">Performed By</th>
+            <th style="padding: 12px 16px;">Category</th>
+            <th style="padding: 12px 16px;">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of logs(); track log._id) {
+            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
+              <td style="padding: 12px 16px; white-space: nowrap; color: var(--text-secondary);">{{ log.createdAt | date:'medium' }}</td>
+              <td style="padding: 12px 16px; white-space: nowrap;">
+                <div style="font-weight: 600;">{{ log.performed_by?.owner_name }}</div>
+                <div style="font-size: 11px; color: var(--text-secondary);">{{ log.performed_by?.role | titlecase }}</div>
+              </td>
+              <td style="padding: 12px 16px; white-space: nowrap;">
+                <span class="service-badge" style="background-color: rgba(99, 102, 241, 0.1); color: #6366F1; border: 1px solid #6366F1; padding: 2px 6px; font-size: 11px;">
+                  {{ log.action_type }}
+                </span>
+              </td>
+              <td style="padding: 12px 16px; color: var(--text-secondary);">{{ log.details }}</td>
+            </tr>
+          }
+          @if (logs().length === 0) {
+            <tr>
+              <td colspan="4" style="padding: 24px; text-align: center; color: var(--text-secondary);">
+                No system operations logged yet.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
