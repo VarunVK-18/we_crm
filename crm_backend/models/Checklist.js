@@ -2,8 +2,16 @@ const mongoose = require('mongoose');
 
 const ChecklistItemSchema = new mongoose.Schema({
   label: {
+    type: String
+  },
+  title: {
     type: String,
-    required: true
+    maxlength: 30
+  },
+  description: {
+    type: String,
+    maxlength: 200,
+    default: ''
   },
   isChecked: {
     type: Boolean,

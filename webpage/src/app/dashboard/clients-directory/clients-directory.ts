@@ -131,6 +131,16 @@ export class ClientsDirectory implements OnInit {
     return flattened;
   }
 
+  getServiceSpecificDocuments(client: any): any[] {
+    if (!client.onboarding_documents) return [];
+    if (!client.singleService) return client.onboarding_documents;
+    
+    // Filter documents to only include those related to this service
+    return client.onboarding_documents.filter((doc: any) => {
+      return doc.name && doc.name.startsWith(client.singleService);
+    });
+  }
+
   getTotalServicesCount(): number {
     return this.clients().reduce((acc, c) => acc + (c.services?.length || 0), 0);
   }

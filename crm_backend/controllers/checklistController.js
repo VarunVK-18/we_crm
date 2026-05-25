@@ -1,6 +1,7 @@
 const Checklist = require('../models/Checklist');
 const User = require('../models/User');
 const { logActivity } = require('../middleware/rbac');
+const Document = require('../models/Document');
 
 // @desc    Create a new service checklist for a client
 // @route   POST /api/checklists
@@ -22,7 +23,15 @@ const createChecklist = async (req, res) => {
     let parsedItems = [];
     if (items) {
       const raw = typeof items === 'string' ? JSON.parse(items) : items;
-      parsedItems = raw.map(label => ({ label, isChecked: false }));
+      parsedItems = raw.map(item => {
+        if (typeof item === 'string') return { title: item, label: item, isChecked: false };
+        return { 
+          title: item.title || item.label,
+          label: item.label || item.title,
+          description: item.description || '',
+          isChecked: false 
+        };
+      });
     }
 
     const checklist = await Checklist.create({
@@ -126,7 +135,7 @@ const toggleChecklistItem = async (req, res) => {
     await logActivity(
       req.user._id,
       'checklist_item_toggled',
-      `${item.isChecked ? 'Checked' : 'Unchecked'} item '${item.label}' on checklist for service '${checklist.service_name}'`,
+      `${item.isChecked ? 'Checked' : 'Unchecked'} item '${item.title || item.label}' on checklist for service '${checklist.service_name}'`,
       req.user.company_id
     );
 
@@ -142,10 +151,10 @@ const toggleChecklistItem = async (req, res) => {
 const addChecklistItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const { label } = req.body;
+    const { title, description, label } = req.body;
 
-    if (!label) {
-      return res.status(400).json({ success: false, message: 'Item label is required' });
+    if (!title && !label) {
+      return res.status(400).json({ success: false, message: 'Item title is required' });
     }
 
     const checklist = await Checklist.findById(id);
@@ -153,7 +162,12 @@ const addChecklistItem = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Checklist not found' });
     }
 
-    checklist.items.push({ label, isChecked: false });
+    checklist.items.push({ 
+      title: title || label, 
+      label: label || title, // Keep legacy populated
+      description: description || '',
+      isChecked: false 
+    });
     await checklist.save();
 
     const populated = await Checklist.findById(id)
@@ -234,25 +248,32 @@ const uploadRequestedDocuments = async (req, res) => {
     }
 
     if (req.files && req.files.length > 0) {
-      req.files.forEach(f => {
+      for (const f of req.files) {
         // Try to match file fieldname with requested document name
         const docName = f.fieldname;
         const requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
         
+        const doc = await Document.create({
+          filename: f.originalname,
+          contentType: f.mimetype,
+          data: f.buffer,
+          uploadedBy: req.user._id
+        });
+
         if (requestedDocIndex !== -1) {
-          checklist.requested_documents[requestedDocIndex].fileUrl = `uploads/${f.filename}`;
+          checklist.requested_documents[requestedDocIndex].fileUrl = `api/documents/${doc._id}`;
           checklist.requested_documents[requestedDocIndex].isUploaded = true;
           checklist.requested_documents[requestedDocIndex].uploadedAt = new Date();
         } else {
           // If customer uploads something not explicitly requested, add it anyway
           checklist.requested_documents.push({
             name: docName,
-            fileUrl: `uploads/${f.filename}`,
+            fileUrl: `api/documents/${doc._id}`,
             isUploaded: true,
             uploadedAt: new Date()
           });
         }
-      });
+      }
       await checklist.save();
 
       await logActivity(

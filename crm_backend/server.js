@@ -43,6 +43,7 @@ const complianceRoutes = require('./routes/complianceRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
@@ -52,6 +53,7 @@ app.use('/api/compliance', complianceRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api', checklistRoutes);
+app.use('/api', documentRoutes);
 
 // Start Express Server
 app.listen(PORT, '0.0.0.0', () => {

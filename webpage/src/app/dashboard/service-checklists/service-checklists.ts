@@ -28,8 +28,9 @@ export class ServiceChecklists implements OnInit {
   // Checklist creation/edit State
   isCreateChecklistModalOpen = signal<boolean>(false);
   isAddChecklistItemModalOpen = signal<boolean>(false);
-  selectedChecklistId = '';
-  newChecklistItemLabel = '';
+  selectedChecklistId: string = '';
+  newChecklistItemTitle: string = '';
+  newChecklistItemDesc: string = '';
   checklistErrorMessage = signal<string>('');
   checklistSuccessMessage = signal<string>('');
   newChecklist = {
@@ -37,9 +38,10 @@ export class ServiceChecklists implements OnInit {
     service_name: '',
     assigned_to: '',
     notes: '',
-    items: [] as string[]
+    items: [] as {title: string, description: string}[]
   };
-  newChecklistItemInput = '';
+  newChecklistNewItemTitle = '';
+  newChecklistNewItemDesc = '';
 
   availableServices = [
     'Compliance Audit',
@@ -128,7 +130,8 @@ export class ServiceChecklists implements OnInit {
 
   openCreateChecklistModal() {
     this.newChecklist = { client_id: '', service_name: '', assigned_to: '', notes: '', items: [] };
-    this.newChecklistItemInput = '';
+    this.newChecklistNewItemTitle = '';
+    this.newChecklistNewItemDesc = '';
     this.checklistErrorMessage.set('');
     this.checklistSuccessMessage.set('');
     this.isCreateChecklistModalOpen.set(true);
@@ -139,10 +142,14 @@ export class ServiceChecklists implements OnInit {
   }
 
   addItemToNewChecklist() {
-    const label = this.newChecklistItemInput.trim();
-    if (label) {
-      this.newChecklist.items.push(label);
-      this.newChecklistItemInput = '';
+    const title = this.newChecklistNewItemTitle.trim();
+    if (title) {
+      this.newChecklist.items.push({
+        title,
+        description: this.newChecklistNewItemDesc.trim()
+      });
+      this.newChecklistNewItemTitle = '';
+      this.newChecklistNewItemDesc = '';
     }
   }
 
@@ -189,7 +196,8 @@ export class ServiceChecklists implements OnInit {
 
   openAddChecklistItemModal(checklistId: string) {
     this.selectedChecklistId = checklistId;
-    this.newChecklistItemLabel = '';
+    this.newChecklistItemTitle = '';
+    this.newChecklistItemDesc = '';
     this.isAddChecklistItemModalOpen.set(true);
   }
 
@@ -198,8 +206,11 @@ export class ServiceChecklists implements OnInit {
   }
 
   submitAddChecklistItem() {
-    if (!this.newChecklistItemLabel.trim()) return;
-    this.api.post<any>(`checklists/${this.selectedChecklistId}/items`, { label: this.newChecklistItemLabel }).subscribe({
+    if (!this.newChecklistItemTitle.trim()) return;
+    this.api.post<any>(`checklists/${this.selectedChecklistId}/items`, { 
+      title: this.newChecklistItemTitle,
+      description: this.newChecklistItemDesc
+    }).subscribe({
       next: (res) => {
         this.fetchChecklists();
         this.closeAddChecklistItemModal();

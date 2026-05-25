@@ -90,12 +90,12 @@
             </div>
 
             <!-- Onboarding Documents Section -->
-            @if ((client.onboarding_documents && client.onboarding_documents.length > 0) || client.gstin_file || client.pan_file) {
+            @if ((getServiceSpecificDocuments(client) && getServiceSpecificDocuments(client).length > 0) || client.gstin_file || client.pan_file) {
               <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 4px;">
                 <span class="services-label" style="margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary);">Onboarding Documents:</span>
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                   <!-- Dynamic Service Documents -->
-                  @for (doc of client.onboarding_documents; track doc._id) {
+                  @for (doc of getServiceSpecificDocuments(client); track doc._id) {
                     <a [href]="'http://localhost:5001/' + doc.fileUrl" 
                        target="_blank" 
                        style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; color: var(--accent-primary); font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">

@@ -1,6 +1,7 @@
 const FilingTask = require('../models/FilingTask');
 const User = require('../models/User');
 const { logActivity } = require('../middleware/rbac');
+const Document = require('../models/Document');
 
 // @desc    Create a new filing task
 // @route   POST /api/tasks
@@ -151,7 +152,13 @@ const uploadTaskDocument = async (req, res) => {
     }
 
     const file = req.files[0];
-    const fileUrl = `uploads/${file.filename}`;
+    const doc = await Document.create({
+      filename: file.originalname,
+      contentType: file.mimetype,
+      data: file.buffer,
+      uploadedBy: req.user._id
+    });
+    const fileUrl = `api/documents/${doc._id}`;
 
     task.documents.push({
       name: document_name,

@@ -38,8 +38,8 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) {
             'status': c['status'] == 'completed' ? 'complete' : (c['status'] == 'pending' ? 'notInitialized' : 'active'),
             'stage': c['status'] == 'completed' ? 'completed' : (c['status'] == 'pending' ? 'reqReceived' : 'workInProgress'),
             'steps': (c['items'] as List<dynamic>? ?? []).map((i) => {
-              'title': i['label'],
-              'description': '',
+              'title': i['title'] ?? i['label'] ?? '',
+              'description': i['description'] ?? '',
               'isCompleted': i['isChecked'] == true,
             }).toList(),
             'requestedDocuments': c['requested_documents'] ?? [],

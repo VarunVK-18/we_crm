@@ -3,6 +3,7 @@ const Company = require('../models/Company');
 const AuditLog = require('../models/AuditLog');
 const { logActivity } = require('../middleware/rbac');
 const Checklist = require('../models/Checklist');
+const Document = require('../models/Document'); // NEW: Import Document model
 
 // @desc    Register a new user (client) — scoped to a company
 // @route   POST /api/register
@@ -42,6 +43,8 @@ const registerUser = async (req, res) => {
       }
     }
 
+    const creatorId = req.user ? req.user._id : null;
+
     // Handle uploaded file paths
     let gstin_file = '';
     let pan_file = '';
@@ -50,15 +53,26 @@ const registerUser = async (req, res) => {
       const panFileObj = req.files.find(f => f.fieldname === 'pan_file');
       
       if (gstinFileObj) {
-        gstin_file = `uploads/${gstinFileObj.filename}`;
+        const doc = await Document.create({
+          filename: gstinFileObj.originalname,
+          contentType: gstinFileObj.mimetype,
+          data: gstinFileObj.buffer,
+          uploadedBy: creatorId
+        });
+        gstin_file = `api/documents/${doc._id}`;
       }
       if (panFileObj) {
-        pan_file = `uploads/${panFileObj.filename}`;
+        const doc = await Document.create({
+          filename: panFileObj.originalname,
+          contentType: panFileObj.mimetype,
+          data: panFileObj.buffer,
+          uploadedBy: creatorId
+        });
+        pan_file = `api/documents/${doc._id}`;
       }
     }
 
     const finalCompanyId = req.user ? req.user.company_id : (company_id || null);
-    const creatorId = req.user ? req.user._id : null;
     
     // Set onboarding status based on creator role and input
     let onboarding_status = req.body.onboarding_status || 'Prospect';
@@ -578,15 +592,23 @@ const subscribeService = async (req, res) => {
 
     // Process uploaded document files if present in request
     if (req.files && req.files.length > 0) {
-      req.files.forEach(f => {
+      for (const f of req.files) {
         // Clean duplicate documents with the same name if user uploads them again
         const docName = `${serviceName} - ${f.fieldname}`;
         user.onboarding_documents = user.onboarding_documents.filter(d => d.name !== docName);
+        
+        const doc = await Document.create({
+          filename: f.originalname,
+          contentType: f.mimetype,
+          data: f.buffer,
+          uploadedBy: user._id
+        });
+
         user.onboarding_documents.push({
           name: docName,
-          fileUrl: `uploads/${f.filename}`
+          fileUrl: `api/documents/${doc._id}`
         });
-      });
+      }
     }
 
     await user.save();
@@ -595,9 +617,9 @@ const subscribeService = async (req, res) => {
 
       // Create a Checklist for this service automatically
       const defaultItems = [
-        { label: 'Service Activated', isChecked: false },
-        { label: 'Setup Completed', isChecked: false },
-        { label: 'Documents Pending', isChecked: false }
+        { title: 'Service Activated', description: 'The service has been successfully activated and logged in the system.', isChecked: false },
+        { title: 'Setup Completed', description: 'Initial setup and configuration have been completed.', isChecked: false },
+        { title: 'Documents Pending', description: 'Awaiting necessary documents from the client to proceed further.', isChecked: false }
       ];
 
       try {

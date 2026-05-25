@@ -82,7 +82,12 @@
                     (change)="toggleChecklistItem(cl._id, $index)"
                     style="width: 16px; height: 16px; accent-color: #06B6D4; cursor: pointer; flex-shrink: 0;"
                   />
-                  <span [style.text-decoration]="item.isChecked ? 'line-through' : 'none'" [style.color]="item.isChecked ? 'var(--text-secondary)' : 'var(--text-primary)'" style="font-size: 13px;">{{ item.label }}</span>
+                  <div style="display: flex; flex-direction: column;">
+                    <span [style.text-decoration]="item.isChecked ? 'line-through' : 'none'" [style.color]="item.isChecked ? 'var(--text-secondary)' : 'var(--text-primary)'" style="font-size: 13px; font-weight: 600;">{{ item.title || item.label }}</span>
+                    @if (item.description) {
+                      <span style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">{{ item.description }}</span>
+                    }
+                  </div>
                   @if (item.isChecked && item.checkedBy) {
                     <span style="font-size: 10px; color: #06B6D4; margin-left: auto; flex-shrink: 0;">✓ {{ item.checkedBy.owner_name }}</span>
                   }
@@ -228,26 +233,36 @@
             </select>
           </div>
 
-          <div class="form-group-item" style="margin-top: 16px;">
-            <label class="form-input-label">Checklist Items</label>
-            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-              <input type="text"
-                     name="cl_item_input"
-                     placeholder="e.g. Upload GSTIN certificate"
-                     class="form-control-input"
-                     style="flex: 1;"
-                     [(ngModel)]="newChecklistItemInput" />
-              <button type="button" class="btn-submit" style="padding: 8px 16px; white-space: nowrap;" (click)="addItemToNewChecklist()">
-                + Add
-              </button>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto;">
-              @for (item of newChecklist.items; track $index) {
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px;">
-                  <span style="color: var(--text-primary);">{{ item }}</span>
-                  <button type="button" (click)="removeNewChecklistItem($index)" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 16px; line-height: 1;">×</button>
-                </div>
-              }
+            <div class="form-group-item" style="margin-top: 16px;">
+              <label class="form-input-label">Checklist Items</label>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+                <input type="text"
+                       name="cl_item_title"
+                       placeholder="Item Title (max 30 chars)"
+                       class="form-control-input"
+                       maxlength="30"
+                       [(ngModel)]="newChecklistNewItemTitle" />
+                <textarea name="cl_item_desc"
+                          placeholder="Item Description (max 200 chars)"
+                          class="form-control-input"
+                          rows="2"
+                          maxlength="200"
+                          style="resize: vertical;"
+                          [(ngModel)]="newChecklistNewItemDesc"></textarea>
+                <button type="button" class="btn-submit" style="padding: 8px 16px; align-self: flex-start;" (click)="addItemToNewChecklist()">
+                  + Add Item
+                </button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto;">
+                @for (item of newChecklist.items; track $index) {
+                  <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px;">
+                    <div style="display: flex; flex-direction: column;">
+                      <strong style="color: var(--text-primary);">{{ item.title }}</strong>
+                      <span style="color: var(--text-secondary); font-size: 11px;">{{ item.description }}</span>
+                    </div>
+                    <button type="button" (click)="removeNewChecklistItem($index)" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px;">×</button>
+                  </div>
+                }
               @if (newChecklist.items.length === 0) {
                 <div style="color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 4px 0;">No items added yet.</div>
               }
@@ -287,13 +302,24 @@
       <form (ngSubmit)="submitAddChecklistItem()" class="modal-form">
         <div class="modal-body">
           <div class="form-group-item">
-            <label class="form-input-label">Item Label *</label>
+            <label class="form-input-label">Item Title (max 30 chars) *</label>
             <input type="text"
-                   name="add_item_label"
+                   name="add_item_title"
                    placeholder="e.g. Submit bank statement"
                    class="form-control-input"
-                   [(ngModel)]="newChecklistItemLabel"
+                   maxlength="30"
+                   [(ngModel)]="newChecklistItemTitle"
                    required />
+          </div>
+          <div class="form-group-item" style="margin-top: 12px;">
+            <label class="form-input-label">Item Description (max 200 chars)</label>
+            <textarea name="add_item_desc"
+                      placeholder="Optional description"
+                      class="form-control-input"
+                      rows="3"
+                      maxlength="200"
+                      style="resize: vertical;"
+                      [(ngModel)]="newChecklistItemDesc"></textarea>
           </div>
         </div>
         <div class="modal-footer-actions">
