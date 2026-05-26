@@ -40,11 +40,32 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   newChecklistNewItemDesc = '';
 
   availableServices = [
+    '360° Compliance',
+    'Trademark Registration',
+    'Company Incorporation',
+    'Accounting & Tax',
+    'GST Onboarding',
+    'Strategic Tax Planning',
+    'ISO Certifications',
+    'Capital Funding',
+    'Risk Management',
     'Compliance Audit',
-    'GST Reconciliation',
-    'Tax Advisory',
-    'Corporate Filings',
-    'FEMA Advisory'
+    'MCA Compliance Package (Private Ltd)',
+    'GST Compliance Package',
+    'MCA Compliance Package (LLP)',
+    'Proprietorship Registration',
+    'Partnership Firm Registration',
+    'IEC Code Registration',
+    'Comprehensive MCA + GST + TDS',
+    'FSSAI Food License',
+    'MSME Certification',
+    'DUNS Number Registration',
+    'TAX filing',
+    'TAX Planning',
+    'GST Services',
+    'Private Limited Incorporation',
+    'LLP Incorporation',
+    'PAN, TAN & Bamk Setup'
   ];
 
   constructor(public api: Api) {}

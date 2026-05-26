@@ -87,6 +87,21 @@
               </div>
             }
 
+            @if (order.details && objectKeys(order.details).length > 0) {
+              <div class="dynamic-details">
+                <div class="details-divider"></div>
+                <span class="details-title">Application Details:</span>
+                <div class="details-grid">
+                  @for (key of objectKeys(order.details); track key) {
+                    <div class="detail-item">
+                      <span class="detail-label">{{ formatKey(key) }}</span>
+                      <span class="detail-value">{{ order.details[key] }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
             @if (order.documents && order.documents.length > 0) {
               <div class="documents-section">
                 <span class="documents-title">Attached Documents:</span>

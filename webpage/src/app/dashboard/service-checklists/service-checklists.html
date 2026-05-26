@@ -1,105 +1,99 @@
-<div class="premium-container fade-in">
-  <!-- Dynamic Hero Header -->
-  <div class="hero-header">
-    <div class="hero-content">
-      <div>
-        <h1 class="hero-title">Service Checklists</h1>
-        <p class="hero-subtitle">Propelling Wealth to New Frontiers. Track, manage, and complete client services with precision.</p>
-      </div>
-      @if (canCreate()) {
-        <button class="btn-premium-add" (click)="openCreateChecklistModal()">
-          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
-          New Checklist
-        </button>
-      }
-    </div>
-  </div>
+<div class="page-container fade-in">
 
-  <!-- Floating Glass Widgets -->
-  <div class="glass-widgets-container">
-    <div class="glass-widget">
-      <div class="widget-icon active">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dataset</span>
+  <!-- Stats Bento -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper icon-active">
+        <span class="material-symbols-outlined">grid_view</span>
       </div>
-      <div class="widget-info">
-        <p>Active Checklists</p>
-        <h4>{{ getActiveCount() }}</h4>
+      <div>
+        <p class="stat-label">Active Checklists</p>
+        <p class="stat-value">{{ getActiveCount() }}</p>
       </div>
     </div>
-    <div class="glass-widget">
-      <div class="widget-icon pending">
+    <div class="stat-card">
+      <div class="stat-icon-wrapper icon-pending">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
       </div>
-      <div class="widget-info">
-        <p>Pending Action</p>
-        <h4>{{ getPendingActionCount() }}</h4>
+      <div>
+        <p class="stat-label">Pending Action</p>
+        <p class="stat-value">{{ getPendingActionCount() }}</p>
       </div>
     </div>
-    <div class="glass-widget">
-      <div class="widget-icon completed">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+    <div class="stat-card">
+      <div class="stat-icon-wrapper icon-completed">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
       </div>
-      <div class="widget-info">
-        <p>Completed This Week</p>
-        <h4>{{ getCompletedThisWeekCount() }}</h4>
+      <div>
+        <p class="stat-label">Completed This Week</p>
+        <p class="stat-value">{{ getCompletedThisWeekCount() }}</p>
       </div>
     </div>
   </div>
 
-  <!-- Interactive Tabs -->
-  <div class="premium-tabs">
-    <button class="p-tab" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists</button>
-    <button class="p-tab" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending</button>
-    <button class="p-tab" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress</button>
-    <button class="p-tab" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed</button>
+  <!-- Filters -->
+  <div class="filter-pill-bar">
+    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists</button>
+    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending</button>
+    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress</button>
+    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed</button>
   </div>
 
-  <!-- Premium Grid -->
-  <div class="premium-grid">
-    @for (cl of filteredChecklists(); track cl._id) {
-      <div class="checklist-card" 
-           [ngClass]="{
-             'card-pending': cl.status === 'pending',
-             'card-in-progress': cl.status === 'in_progress',
-             'card-completed': cl.status === 'completed'
-           }"
-           (click)="viewDetails(cl._id)">
-        
-        <div class="card-header">
-          <span class="card-service-badge">{{ cl.service_name }}</span>
-          <span class="card-status" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
-        </div>
-
-        <div class="card-body">
-          <div class="progress-ring" [style.--progress]="getChecklistProgress(cl) + '%'">
-            <span class="progress-value">{{ getChecklistProgress(cl) }}%</span>
-          </div>
-          <div class="client-info">
-            <h3>{{ cl.client_id?.owner_name || 'Unknown' }}</h3>
-            <p>{{ cl.client_id?.company_name || 'Individual' }} • Stage: {{ cl.stage || 'quotePending' }}</p>
-          </div>
-        </div>
-
-        <div class="card-footer">
-          <div class="assignee">
-            <div class="assignee-avatar">
-              {{ cl.assigned_to?.name ? cl.assigned_to.name.charAt(0).toUpperCase() : 'U' }}
-            </div>
-            <span>{{ cl.assigned_to?.name || 'Unassigned' }}</span>
-          </div>
-          <button class="card-action" title="View Details">
-            <span class="material-symbols-outlined" style="font-size: 20px;">arrow_forward</span>
-          </button>
-        </div>
-      </div>
-    }
-  </div>
-  
+  <!-- Checklist Cards Grid -->
   @if (filteredChecklists().length === 0) {
-    <div style="text-align: center; padding: 64px 32px; color: var(--text-secondary); width: 100%;">
-      <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;">inbox</span>
-      <h3 style="font-size: 20px; font-weight: 600; color: var(--text-primary);">No Checklists Found</h3>
-      <p style="margin-top: 8px;">{{ canCreate() ? 'Create a new checklist to get started.' : 'You have no checklists assigned to this view.' }}</p>
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">inbox</span>
+      <h3>No Checklists Found</h3>
+      <p>{{ canCreate() ? 'Create a new checklist to get started.' : 'You have no checklists assigned to this view.' }}</p>
+    </div>
+  } @else {
+    <div class="cards-grid">
+      @for (cl of filteredChecklists(); track cl._id) {
+        <div class="checklist-card" (click)="viewDetails(cl._id)">
+          <div class="card-top-bar" [ngClass]="getChecklistStatusClass(cl.status)"></div>
+          <div class="card-content">
+            <div class="card-header-row">
+              <span class="service-badge">{{ cl.service_name }}</span>
+              <span class="status-pill" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
+            </div>
+            
+            <div class="card-main-info">
+              <div class="progress-container">
+                <svg class="progress-ring">
+                  <circle class="progress-bg" cx="32" cy="32" r="28"></circle>
+                  <circle class="progress-bar" [ngClass]="getChecklistStatusClass(cl.status)" cx="32" cy="32" r="28" [style.stroke-dashoffset]="2 * 3.14159 * 28 * (1 - getChecklistProgress(cl)/100)"></circle>
+                </svg>
+                <span class="progress-text">{{ getChecklistProgress(cl) }}%</span>
+              </div>
+              
+              <div class="client-details">
+                <h4 class="client-name">{{ cl.client_id?.owner_name || 'Unknown' }}</h4>
+                <p class="client-meta">
+                  {{ cl.client_id?.company_name || 'Individual' }} 
+                  <span class="meta-dot"></span> 
+                  Stage: {{ cl.stage || 'quotePending' }}
+                </p>
+              </div>
+            </div>
+            
+            <div class="card-footer">
+              <div class="assignee-info">
+                @if (cl.assigned_to?.owner_name) {
+                  <div class="assignee-avatar has-user">
+                    {{ cl.assigned_to.owner_name.charAt(0).toUpperCase() }}
+                  </div>
+                } @else {
+                  <div class="assignee-avatar no-user">U</div>
+                }
+                <span class="assignee-name">{{ cl.assigned_to?.owner_name || 'Unassigned' }}</span>
+              </div>
+              <button class="action-btn">
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   }
 </div>
@@ -185,7 +179,7 @@
               </div>
               <div style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto;">
                 @for (item of newChecklist.items; track $index) {
-                  <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px;">
+                  <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
                     <div style="display: flex; flex-direction: column;">
                       <strong style="color: var(--text-primary);">{{ item.title }}</strong>
                       <span style="color: var(--text-secondary); font-size: 11px;">{{ item.description }}</span>
