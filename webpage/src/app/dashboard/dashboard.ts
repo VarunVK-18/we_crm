@@ -155,9 +155,9 @@ export class Dashboard implements OnInit {
       case 'clients': return 'Clients Directory';
       case 'client-dashboard': return 'Client Profile Dashboard';
       case 'team': return 'Employees & Team';
-      case 'tasks': return 'Filing Tasks';
-      case 'checklists': return 'Service Checklists';
-      case 'completed-checklists': return 'Completed Checklists';
+      case 'tasks': return 'Custom Task';
+      case 'checklists': return 'Compliance';
+      case 'completed-checklists': return 'History';
       case 'checklist-details': return 'Checklist Details';
       case 'requests': return 'New Requests';
       case 'logs': return 'System Audit Logs';

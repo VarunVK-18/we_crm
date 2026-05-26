@@ -30,7 +30,23 @@ export class SystemSettings implements OnInit {
     'ISO Certifications',
     'Capital Funding',
     'Risk Management',
-    'Compliance Audit'
+    'Compliance Audit',
+    'MCA Compliance Package (Private Ltd)',
+    'GST Compliance Package',
+    'MCA Compliance Package (LLP)',
+    'Proprietorship Registration',
+    'Partnership Firm Registration',
+    'IEC Code Registration',
+    'Comprehensive MCA + GST + TDS',
+    'FSSAI Food License',
+    'MSME Certification',
+    'DUNS Number Registration',
+    'TAX filing',
+    'TAX Planning',
+    'GST Services',
+    'Private Limited Incorporation',
+    'LLP Incorporation',
+    'PAN, TAN & Bamk Setup'
   ];
 
   selectedService = '';
