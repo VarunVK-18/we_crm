@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-const bool useLocalBackend = true;
+const bool useLocalBackend = false;
 const bool isEmulator = false;
 
 String getBaseUrl() {
@@ -15,7 +15,7 @@ String getBaseUrl() {
     // For iOS simulator, iOS physical device, and Android physical device:
     return 'http://192.168.0.2:5001';
   }
-  return 'https://peoplesoft-develop.onrender.com'; // Develop Backend
+  return 'https://we-crm.onrender.com'; // Develop Backend
 }
 
 final String kBaseUrl = getBaseUrl();
