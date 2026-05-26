@@ -9,14 +9,7 @@ import 'orders_provider.dart';
 
 // Provider to track the currently selected business entity for compliance views
 final selectedEntityProvider = StateProvider<String>((ref) {
-  final orders = ref.watch(serviceOrdersProvider).value ?? [];
-  if (orders.isNotEmpty) {
-    final firstCompany = orders.first.companyName;
-    if (firstCompany.isNotEmpty) {
-      return firstCompany;
-    }
-  }
-  return 'Wealth Empires Tech'; // Fallback
+  return 'Wealth Empires Tech'; // Fallback, will be updated by UI
 });
 
 /// Real-time stream of [ComplianceReminder] documents from the database.

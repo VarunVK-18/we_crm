@@ -18,16 +18,10 @@ class InvoiceScreen extends StatelessWidget {
   String get _invoiceNumber =>
       'INV-${order.id.replaceAll('ORD-', '').padLeft(4, '0')}';
 
-  double get _servicePrice => _priceMap[order.serviceType] ?? 4999.00;
-
-  static const _priceMap = {
-    'Private Limited Incorporation': 12999.00,
-    'GST Registration': 2499.00,
-    'TDS Filing (Q4 2025-26)': 3499.00,
-    'DSC Registration': 1999.00,
-    'Annual ROC Filing': 5999.00,
-    'Trademark Registration': 8999.00,
-  };
+  // Fetch deal closed amount directly from the order
+  double get _servicePrice => order.dealClosedAmount > 0 
+      ? order.dealClosedAmount 
+      : 4999.00;
 
   double get _gst => _servicePrice * 0.18;
   double get _total => _servicePrice + _gst;

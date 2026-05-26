@@ -82,6 +82,10 @@ const ChecklistSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: ''
+  },
+  dealClosedAmount: {
+    type: Number,
+    default: 0
   }
 }, { timestamps: true });
 

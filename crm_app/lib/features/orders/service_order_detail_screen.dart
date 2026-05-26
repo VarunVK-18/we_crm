@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/orders_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'invoice_screen.dart';
+import 'document_viewer_screen.dart';
 
 class ServiceOrderDetailScreen extends StatelessWidget {
   final ServiceOrder order;
@@ -34,7 +35,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       // ── WhatsApp FAB ─────────────────────────────────────────────────────
-      floatingActionButton: order.status == ServiceStatus.complete
+      floatingActionButton: (order.status == ServiceStatus.complete || order.status == ServiceStatus.notInitialized)
           ? null
           : FloatingActionButton.extended(
               onPressed: () => openWhatsApp(
@@ -465,7 +466,7 @@ class _InfoRow extends StatelessWidget {
             child: _InfoTile(
               icon: LucideIcons.calendar,
               label: 'Started',
-              value: dateStr,
+              value: order.status == ServiceStatus.notInitialized ? '-' : dateStr,
             ),
           ),
         ],
@@ -755,15 +756,16 @@ class _FinalDeliverySection extends StatelessWidget {
   const _FinalDeliverySection({required this.order});
 
   Future<void> _downloadDocument(
-      BuildContext context, String documentId) async {
-    final url = Uri.parse('$kBaseUrl/api/documents/$documentId');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not open document link')),
-        );
-      }
-    }
+      BuildContext context, String documentId, String documentName) async {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DocumentViewerScreen(
+          documentId: documentId,
+          documentName: documentName,
+        ),
+      ),
+    );
   }
 
   @override
@@ -870,7 +872,7 @@ class _FinalDeliverySection extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
-                onTap: () => _downloadDocument(context, doc.documentId),
+                onTap: () => _downloadDocument(context, doc.documentId, doc.name),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(

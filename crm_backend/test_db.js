@@ -1,9 +1,15 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
-const User = require('./models/User');
 
-mongoose.connect('mongodb+srv://kingkohli43255_db_user:UjMgPzVdBG9353yE@cluster0.bxb9nii.mongodb.net/', { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(async () => {
-    const clients = await User.find({ role: 'customer' }).limit(1).lean();
-    console.log(clients[0].email, clients[0].phone);
-    process.exit(0);
-  });
+async function run() {
+  await mongoose.connect(process.env.MONGO_URI);
+  const collections = await mongoose.connection.db.listCollections().toArray();
+  for (const c of collections) {
+    const doc = await mongoose.connection.db.collection(c.name).findOne({});
+    if (doc) {
+      console.log(`Collection ${c.name} fields:`, Object.keys(doc));
+    }
+  }
+  process.exit(0);
+}
+run();

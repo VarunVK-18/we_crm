@@ -24,30 +24,44 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
         final List<dynamic> checklistsJson = data['checklists'] ?? [];
-        
+
         final user = ref.read(userProfileProvider).value;
         final companyName = user?.companyName ?? '';
 
         final orders = checklistsJson.map((c) {
           final id = c['_id']?.toString() ?? '';
-          
+
+          final isAssignedToExpert = c['assigned_to'] != null &&
+              c['assigned_to']['role'] != 'client_manager';
+
           final mappedData = <String, dynamic>{
             'clientUid': uid,
-            'entityName': companyName.isNotEmpty ? companyName : 'Default Entity',
+            'entityName':
+                companyName.isNotEmpty ? companyName : 'Default Entity',
             'serviceType': c['service_name'] ?? '',
             'companyName': companyName,
-            'status': c['status'] == 'completed' ? 'complete' : (c['status'] == 'pending' ? 'notInitialized' : 'active'),
-            'stage': c['status'] == 'completed' ? 'completed' : (c['status'] == 'pending' ? 'reqReceived' : 'workInProgress'),
-            'steps': (c['items'] as List<dynamic>? ?? []).map((i) => {
-              'title': i['title'] ?? i['label'] ?? '',
-              'description': i['description'] ?? i['notes'] ?? '',
-              'isCompleted': i['isChecked'] == true,
-            }).toList(),
+            'status': c['status'] == 'completed'
+                ? 'complete'
+                : (!isAssignedToExpert ? 'notInitialized' : 'active'),
+            'stage': c['status'] == 'completed'
+                ? 'completed'
+                : (!isAssignedToExpert ? 'reqReceived' : 'workInProgress'),
+            'steps': (c['items'] as List<dynamic>? ?? [])
+                .map((i) => {
+                      'title': i['title'] ?? i['label'] ?? '',
+                      'description': i['description'] ?? i['notes'] ?? '',
+                      'isCompleted': i['isChecked'] == true,
+                    })
+                .toList(),
             'requestedDocuments': c['requested_documents'] ?? [],
             'finalDocuments': c['final_documents'] ?? [],
-            'assignedExpert': c['assigned_to']?['owner_name'] ?? 'To be assigned',
-            'expertPhone': c['assigned_to']?['phone'] ?? '',
+            'assignedExpert': isAssignedToExpert
+                ? (c['assigned_to']?['owner_name'] ?? 'To be assigned')
+                : 'To be assigned',
+            'expertPhone':
+                isAssignedToExpert ? (c['assigned_to']?['phone'] ?? '') : '',
             'createdAt': c['createdAt'],
+            'dealClosedAmount': c['dealClosedAmount'] ?? 0,
           };
 
           return ServiceOrder.fromMap(mappedData, id);
@@ -76,7 +90,5 @@ final completeOrdersProvider = Provider<List<ServiceOrder>>((ref) {
 
 final notInitializedOrdersProvider = Provider<List<ServiceOrder>>((ref) {
   final orders = ref.watch(serviceOrdersProvider).value ?? [];
-  return orders
-      .where((o) => o.status == ServiceStatus.notInitialized)
-      .toList();
+  return orders.where((o) => o.status == ServiceStatus.notInitialized).toList();
 });

@@ -113,6 +113,7 @@ class ServiceOrder {
   final String
   expertPhone; // WhatsApp-capable number with country code, e.g. 919876543210
   final DateTime createdAt;
+  final double dealClosedAmount;
 
   const ServiceOrder({
     required this.id,
@@ -128,6 +129,7 @@ class ServiceOrder {
     required this.assignedExpert,
     required this.expertPhone,
     required this.createdAt,
+    this.dealClosedAmount = 0.0,
   });
 
   factory ServiceOrder.fromMap(Map<String, dynamic> data, String id) {
@@ -161,6 +163,7 @@ class ServiceOrder {
       createdAt: data['createdAt'] != null
           ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
+      dealClosedAmount: double.tryParse(data['dealClosedAmount']?.toString() ?? '0.0') ?? 0.0,
     );
   }
 

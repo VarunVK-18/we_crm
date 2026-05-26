@@ -264,7 +264,7 @@ const getMyChecklists = async (req, res) => {
     const checklists = await Checklist.find({ client_id: clientId })
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
-      .select('service_name company_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt')
+      .select('service_name company_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount')
       .sort({ updatedAt: -1 });
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
@@ -288,12 +288,27 @@ const getMyChecklists = async (req, res) => {
       }
     }
 
-    console.log(`[DEBUG] getMyChecklists returned ${checklists.length} items`);
-    if (checklists.length > 0) {
-      console.log(`[DEBUG] First checklist final_documents:`, checklists[0].final_documents);
+    // Convert to plain objects so we can enrich them without Mongoose restrictions
+    const checklistsPlain = checklists.map(c => c.toObject());
+
+    // Fetch corresponding service orders to get dealClosedAmount if present
+    const ServiceOrder = require('../models/ServiceOrder');
+    const serviceOrders = await ServiceOrder.find({ clientUid: clientId }).lean();
+    
+    const enrichedChecklists = checklistsPlain.map(c => {
+      const order = serviceOrders.find(o => o.serviceType === c.service_name);
+      return {
+        ...c,
+        dealClosedAmount: order?.dealClosedAmount || c.dealClosedAmount || 0
+      };
+    });
+
+    console.log(`[DEBUG] getMyChecklists returned ${enrichedChecklists.length} items`);
+    if (enrichedChecklists.length > 0) {
+      console.log(`[DEBUG] First checklist final_documents:`, enrichedChecklists[0].final_documents);
     }
 
-    res.status(200).json({ success: true, checklists });
+    res.status(200).json({ success: true, checklists: enrichedChecklists });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

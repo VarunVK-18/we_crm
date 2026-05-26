@@ -569,7 +569,7 @@ class _ServiceCard extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
                 Text(
-                  dateStr,
+                  order.status == ServiceStatus.notInitialized ? '-' : dateStr,
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
                 ),
                 if (isActive || isComplete) ...[

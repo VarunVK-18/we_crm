@@ -285,7 +285,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                   ),
                 )
               : SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: 24.r),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -746,6 +746,8 @@ class _BentoDeadlineCard extends StatelessWidget {
               children: [
                 Text(
                   title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.w900,
@@ -833,7 +835,8 @@ class _BentoToolCard extends StatelessWidget {
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
               padding: EdgeInsets.all(10.r),
@@ -843,9 +846,10 @@ class _BentoToolCard extends StatelessWidget {
               ),
               child: Icon(icon, color: color, size: 22.ip),
             ),
-            const Spacer(),
+            SizedBox(height: 16.r),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w900,
