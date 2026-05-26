@@ -277,7 +277,8 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                 const SizedBox(height: 20),
 
                 // Requested Documents
-                if (order.requestedDocuments.isNotEmpty)
+                if (order.requestedDocuments.isNotEmpty &&
+                    order.status != ServiceStatus.complete)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: _RequestedDocumentsSection(order: order),
@@ -318,11 +319,13 @@ class _RequestedDocumentsSection extends ConsumerWidget {
       if (result != null && result.files.single.path != null) {
         final filePath = result.files.single.path!;
         // Hardcoding the exact IP of this Windows machine to ensure it connects correctly
-        final uri =
-            Uri.parse('http://127.0.0.1:5001/api/checklists/${order.id}/upload-documents');
+        final uri = Uri.parse(
+            'http://127.0.0.1:5001/api/checklists/${order.id}/upload-documents');
 
         final request = http.MultipartRequest('POST', uri);
-        request.files.add(await http.MultipartFile.fromPath(docName, filePath));
+        request.files
+            .add(await http.MultipartFile.fromPath('document', filePath));
+        request.fields['docName'] = docName;
 
         final uid = ref.read(authStateProvider).value?.uid;
         if (uid != null) {
@@ -331,7 +334,7 @@ class _RequestedDocumentsSection extends ConsumerWidget {
 
         final response = await request.send();
         final respStr = await response.stream.bytesToString();
-        
+
         if (response.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Document uploaded successfully')),

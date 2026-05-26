@@ -335,8 +335,9 @@ const uploadRequestedDocuments = async (req, res) => {
 
     if (req.files && req.files.length > 0) {
       for (const f of req.files) {
-        // Try to match file fieldname with requested document name
-        const docName = f.fieldname;
+        // If the new Flutter app sends 'document' and docName in body, use that.
+        // Otherwise, fallback to the old Flutter app behavior where the fieldname is the document name.
+        const docName = (req.body && req.body.docName) ? req.body.docName : f.fieldname;
         const requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
         
         const doc = await Document.create({
@@ -354,7 +355,7 @@ const uploadRequestedDocuments = async (req, res) => {
           // If customer uploads something not explicitly requested, add it anyway
           checklist.requested_documents.push({
             name: docName,
-            fileUrl: `api/documents/${doc._id}`,
+            fileUrl: `/api/documents/${doc._id}`,
             isUploaded: true,
             uploadedAt: new Date()
           });
