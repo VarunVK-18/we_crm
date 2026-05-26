@@ -324,8 +324,7 @@ class _RequestedDocumentsSection extends ConsumerWidget {
 
         final request = http.MultipartRequest('POST', uri);
         request.files
-            .add(await http.MultipartFile.fromPath('document', filePath));
-        request.fields['docName'] = docName;
+            .add(await http.MultipartFile.fromPath(docName, filePath));
 
         final uid = ref.read(authStateProvider).value?.uid;
         if (uid != null) {
