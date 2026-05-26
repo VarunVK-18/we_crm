@@ -13,11 +13,12 @@ import { Api } from '../../api';
 export class SystemSettings implements OnInit {
   user = signal<any>(null);
   settings = signal<any>({
-    incorporation_fee: 5000,
     default_filing_tax: 18,
     allow_agent_registration: true,
     require_document_verification: true
   });
+
+  activeTab = signal<string>('system');
 
   availableServices = [
     '360° Compliance',
@@ -69,6 +70,14 @@ export class SystemSettings implements OnInit {
         alert(err.error?.message || 'Failed to save settings.');
       }
     });
+  }
+
+  switchTab(tabName: string) {
+    this.activeTab.set(tabName);
+    if (tabName !== 'system') {
+      this.selectedService = tabName;
+      this.onServiceChange();
+    }
   }
 
   onServiceChange() {

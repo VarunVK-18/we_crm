@@ -1,17 +1,12 @@
 import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { 
-  PlusSignIcon, 
-  Cancel01Icon 
-} from '@hugeicons/core-free-icons';
 import { Api } from '../../api';
 
 @Component({
   selector: 'app-service-checklists',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './service-checklists.html',
   styleUrl: './service-checklists.css'
 })
@@ -23,9 +18,8 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   clients = signal<any[]>([]);
   pollInterval: any;
 
-  // Icon assets
-  readonly PlusSignIcon = PlusSignIcon;
-  readonly Cancel01Icon = Cancel01Icon;
+  // Directory State
+  currentDirectoryTab = signal<string>('all');
 
   // Checklist creation/edit State
   isCreateChecklistModalOpen = signal<boolean>(false);
@@ -111,7 +105,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     this.api.get<any>('checklists').subscribe({
       next: (res) => {
         if (res && res.success) {
-          this.checklists.set(res.checklists.filter((c: any) => c.status !== 'completed'));
+          this.checklists.set(res.checklists);
         }
       },
       error: (err) => {
@@ -120,6 +114,14 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     });
   }
 
+  filteredChecklists() {
+    const all = this.checklists();
+    const tab = this.currentDirectoryTab();
+    if (tab === 'pending') return all.filter(c => c.status === 'pending');
+    if (tab === 'in_progress') return all.filter(c => c.status === 'in_progress');
+    if (tab === 'completed') return all.filter(c => c.status === 'completed');
+    return all;
+  }
 
   fetchClients() {
     this.api.get<any>('users/clients').subscribe({
@@ -249,6 +251,18 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     if (!checklist.items || checklist.items.length === 0) return 0;
     const checked = checklist.items.filter((i: any) => i.isChecked).length;
     return Math.round((checked / checklist.items.length) * 100);
+  }
+
+  getActiveCount(): number {
+    return this.checklists().filter(c => c.status !== 'completed').length;
+  }
+
+  getPendingActionCount(): number {
+    return this.checklists().filter(c => c.status === 'pending').length;
+  }
+
+  getCompletedThisWeekCount(): number {
+    return this.checklists().filter(c => c.status === 'completed').length; // Mocking "This week" with just completed count
   }
 
   getChecklistStatusClass(status: string): string {

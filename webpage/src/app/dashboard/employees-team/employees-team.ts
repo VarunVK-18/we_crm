@@ -1,17 +1,12 @@
 import { Component, OnInit, signal, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { 
-  PlusSignIcon, 
-  Cancel01Icon 
-} from '@hugeicons/core-free-icons';
 import { Api } from '../../api';
 
 @Component({
   selector: 'app-employees-team',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './employees-team.html',
   styleUrl: './employees-team.css'
 })
@@ -20,9 +15,8 @@ export class EmployeesTeam implements OnInit {
   teams = input<any[]>([]);
   refreshTeams = output<void>();
 
-  // Icon assets
-  readonly PlusSignIcon = PlusSignIcon;
-  readonly Cancel01Icon = Cancel01Icon;
+  // Directory State
+  currentDirectoryTab = signal<string>('all');
 
   // Modals state
   isCreateEmployeeModalOpen = signal<boolean>(false);
@@ -81,6 +75,52 @@ export class EmployeesTeam implements OnInit {
       account_manager: 'Account Manager'
     };
     return labels[role] || role;
+  }
+
+  getFlatEmployees() {
+    const flat: any[] = [];
+    this.teams().forEach(t => {
+      if (t.members) flat.push(...t.members);
+    });
+    return flat;
+  }
+
+  filteredEmployees() {
+    const all = this.getFlatEmployees();
+    const tab = this.currentDirectoryTab();
+    if (tab === 'all') return all;
+    if (tab === 'admins') return all.filter(m => m.role === 'admin');
+    if (tab === 'filing') return all.filter(m => m.role === 'filling_staff');
+    if (tab === 'clients') return all.filter(m => m.role === 'client_manager');
+    return all;
+  }
+
+  getDepartment(role: string): string {
+    switch(role) {
+      case 'admin': return 'IT Operations';
+      case 'filling_staff': return 'Filing Operations';
+      case 'client_manager': return 'Client Relations';
+      case 'account_manager': return 'Account Management';
+      default: return 'General Staff';
+    }
+  }
+
+  getAccessTier(role: string): string {
+    switch(role) {
+      case 'admin': return 'Tier 1 Admin';
+      case 'client_manager': return 'Standard';
+      case 'filling_staff': return 'Processing';
+      default: return 'Basic';
+    }
+  }
+
+  getAccessTierClass(role: string): string {
+    switch(role) {
+      case 'admin': return 'bg-primary-fixed-dim text-on-primary-fixed';
+      case 'client_manager': return 'bg-secondary-container text-on-secondary-container';
+      case 'filling_staff': return 'bg-tertiary-fixed text-on-tertiary-fixed';
+      default: return 'bg-surface-variant text-on-surface';
+    }
   }
 
   fetchTeams() {

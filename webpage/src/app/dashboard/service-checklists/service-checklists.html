@@ -1,62 +1,110 @@
-<div class="tab-view fade-in">
-  <!-- Header -->
-  <div class="filter-action-bar">
-    <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Service Checklists</h2>
-    @if (canCreate()) {
-      <button class="add-client-btn" (click)="openCreateChecklistModal()">
-        <hugeicons-icon [icon]="PlusSignIcon" size="18"></hugeicons-icon>
-        <span>New Checklist</span>
-      </button>
-    }
+<div class="premium-container fade-in">
+  <!-- Dynamic Hero Header -->
+  <div class="hero-header">
+    <div class="hero-content">
+      <div>
+        <h1 class="hero-title">Service Checklists</h1>
+        <p class="hero-subtitle">Propelling Wealth to New Frontiers. Track, manage, and complete client services with precision.</p>
+      </div>
+      @if (canCreate()) {
+        <button class="btn-premium-add" (click)="openCreateChecklistModal()">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+          New Checklist
+        </button>
+      }
+    </div>
   </div>
 
-  <!-- Checklist cards grid -->
-  <div class="clients-directory-grid">
-    @for (cl of checklists(); track cl._id) {
-      <div class="client-profile-card" style="border-left: 4px solid #06B6D4; cursor: pointer;" (click)="viewDetails(cl._id)">
-        <!-- Header row -->
-        <div class="client-card-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-            <span class="service-badge" style="background-color: rgba(6,182,212,0.15); color: #06B6D4; border: 1px solid #06B6D4; font-size: 11px; text-transform: uppercase; font-weight: 600;">
-              {{ cl.service_name }}
-            </span>
-            <div style="display: flex; gap: 8px; flex-direction: column; align-items: flex-end;">
-              <span [ngClass]="{
-                'status-badge': true,
-                'status-pending': cl.status === 'pending',
-                'status-in-progress': cl.status === 'in_progress',
-                'status-completed': cl.status === 'completed'
-              }">{{ cl.status | titlecase }}</span>
-              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color);">
-                Stage: {{ cl.stage || 'quotePending' }}
-              </span>
-            </div>
+  <!-- Floating Glass Widgets -->
+  <div class="glass-widgets-container">
+    <div class="glass-widget">
+      <div class="widget-icon active">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dataset</span>
+      </div>
+      <div class="widget-info">
+        <p>Active Checklists</p>
+        <h4>{{ getActiveCount() }}</h4>
+      </div>
+    </div>
+    <div class="glass-widget">
+      <div class="widget-icon pending">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+      </div>
+      <div class="widget-info">
+        <p>Pending Action</p>
+        <h4>{{ getPendingActionCount() }}</h4>
+      </div>
+    </div>
+    <div class="glass-widget">
+      <div class="widget-icon completed">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+      </div>
+      <div class="widget-info">
+        <p>Completed This Week</p>
+        <h4>{{ getCompletedThisWeekCount() }}</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Tabs -->
+  <div class="premium-tabs">
+    <button class="p-tab" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists</button>
+    <button class="p-tab" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending</button>
+    <button class="p-tab" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress</button>
+    <button class="p-tab" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed</button>
+  </div>
+
+  <!-- Premium Grid -->
+  <div class="premium-grid">
+    @for (cl of filteredChecklists(); track cl._id) {
+      <div class="checklist-card" 
+           [ngClass]="{
+             'card-pending': cl.status === 'pending',
+             'card-in-progress': cl.status === 'in_progress',
+             'card-completed': cl.status === 'completed'
+           }"
+           (click)="viewDetails(cl._id)">
+        
+        <div class="card-header">
+          <span class="card-service-badge">{{ cl.service_name }}</span>
+          <span class="card-status" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
+        </div>
+
+        <div class="card-body">
+          <div class="progress-ring" [style.--progress]="getChecklistProgress(cl) + '%'">
+            <span class="progress-value">{{ getChecklistProgress(cl) }}%</span>
           </div>
-          <h4 class="client-title" style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0;">
-            {{ cl.client_id?.owner_name }}
-            @if (cl.client_id?.company_name) {
-              <span style="font-size: 13px; color: var(--text-secondary); font-weight: 400;"> · {{ cl.client_id?.company_name }}</span>
-            }
-          </h4>
+          <div class="client-info">
+            <h3>{{ cl.client_id?.owner_name || 'Unknown' }}</h3>
+            <p>{{ cl.client_id?.company_name || 'Individual' }} • Stage: {{ cl.stage || 'quotePending' }}</p>
+          </div>
         </div>
 
-
-      </div>
-    }
-    @if (checklists().length === 0) {
-      <div class="no-results-placeholder" style="grid-column: 1 / -1;">
-        <div class="placeholder-icon-circle">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 11l3 3L22 4"/>
-            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-          </svg>
+        <div class="card-footer">
+          <div class="assignee">
+            <div class="assignee-avatar">
+              {{ cl.assigned_to?.name ? cl.assigned_to.name.charAt(0).toUpperCase() : 'U' }}
+            </div>
+            <span>{{ cl.assigned_to?.name || 'Unassigned' }}</span>
+          </div>
+          <button class="card-action" title="View Details">
+            <span class="material-symbols-outlined" style="font-size: 20px;">arrow_forward</span>
+          </button>
         </div>
-        <h3>No checklists found</h3>
-        <p>{{ canCreate() ? 'Create a service checklist for a client to get started.' : 'No checklists have been assigned to you yet.' }}</p>
       </div>
     }
   </div>
+  
+  @if (filteredChecklists().length === 0) {
+    <div style="text-align: center; padding: 64px 32px; color: var(--text-secondary); width: 100%;">
+      <span class="material-symbols-outlined" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;">inbox</span>
+      <h3 style="font-size: 20px; font-weight: 600; color: var(--text-primary);">No Checklists Found</h3>
+      <p style="margin-top: 8px;">{{ canCreate() ? 'Create a new checklist to get started.' : 'You have no checklists assigned to this view.' }}</p>
+    </div>
+  }
 </div>
+
+<!-- Modals -->
 
 <!-- Create Checklist Modal -->
 @if (isCreateChecklistModalOpen()) {
@@ -65,18 +113,22 @@
       <div class="modal-header">
         <h3>New Service Checklist</h3>
         <button class="close-modal-btn" (click)="closeCreateChecklistModal()">
-          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+          <span class="material-symbols-outlined">close</span>
         </button>
       </div>
 
       <form (ngSubmit)="submitCreateChecklist()" class="modal-form">
-        <div class="modal-body">
+        <div style="margin-bottom: 24px;">
 
           @if (checklistErrorMessage()) {
-            <div class="error-banner">{{ checklistErrorMessage() }}</div>
+            <div style="background-color: var(--color-danger-bg); color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
+              {{ checklistErrorMessage() }}
+            </div>
           }
           @if (checklistSuccessMessage()) {
-            <div class="success-banner">{{ checklistSuccessMessage() }}</div>
+            <div style="background-color: var(--color-success-bg); color: var(--color-success); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
+              {{ checklistSuccessMessage() }}
+            </div>
           }
 
           <div class="form-group-item">
@@ -138,7 +190,7 @@
                       <strong style="color: var(--text-primary);">{{ item.title }}</strong>
                       <span style="color: var(--text-secondary); font-size: 11px;">{{ item.description }}</span>
                     </div>
-                    <button type="button" (click)="removeNewChecklistItem($index)" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px;">×</button>
+                    <button type="button" (click)="removeNewChecklistItem($index)" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px;">×</button>
                   </div>
                 }
               @if (newChecklist.items.length === 0) {
@@ -174,11 +226,11 @@
       <div class="modal-header">
         <h3>Add Checklist Item</h3>
         <button class="close-modal-btn" (click)="closeAddChecklistItemModal()">
-          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+          <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <form (ngSubmit)="submitAddChecklistItem()" class="modal-form">
-        <div class="modal-body">
+        <div style="margin-bottom: 24px;">
           <div class="form-group-item">
             <label class="form-input-label">Item Title (max 30 chars) *</label>
             <input type="text"
@@ -208,6 +260,7 @@
     </div>
   </div>
 }
+
 <!-- Request Document Modal -->
 @if (isRequestDocModalOpen()) {
   <div class="modal-overlay" (click)="closeRequestDocModal()">
@@ -215,24 +268,25 @@
       <div class="modal-header">
         <h3>Request Document</h3>
         <button class="close-modal-btn" (click)="closeRequestDocModal()">
-          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+          <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-
       <form (ngSubmit)="submitRequestDoc()" class="modal-form">
-        <div class="modal-body">
+        <div style="margin-bottom: 24px;">
           @if (checklistErrorMessage()) {
-            <div class="error-banner">{{ checklistErrorMessage() }}</div>
+            <div style="background-color: var(--color-danger-bg); color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
+              {{ checklistErrorMessage() }}
+            </div>
           }
-          <div class="form-group">
-            <label>Document Name (e.g., PAN Card)</label>
-            <input type="text" [(ngModel)]="newDocRequestName" name="docName" placeholder="Enter document name" required />
-            <p class="field-hint">The client will see this request in their app and will be prompted to upload it.</p>
+          <div class="form-group-item">
+            <label class="form-input-label">Document Name (e.g., PAN Card)</label>
+            <input type="text" class="form-control-input" [(ngModel)]="newDocRequestName" name="docName" placeholder="Enter document name" required />
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">The client will see this request in their app and will be prompted to upload it.</p>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="closeRequestDocModal()">Cancel</button>
-          <button type="submit" class="btn-primary">Request via App</button>
+          <button type="submit" class="btn-submit">Request via App</button>
         </div>
       </form>
     </div>

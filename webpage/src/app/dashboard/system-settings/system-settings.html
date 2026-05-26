@@ -1,126 +1,164 @@
-<div class="tab-view fade-in">
-  <div class="filter-action-bar">
-    <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Company System Settings</h2>
-  </div>
-
-  <div class="client-profile-card" style="max-width: 600px; margin-top: 16px; padding: 24px;">
-    <form (ngSubmit)="saveSettings()" style="display: flex; flex-direction: column; gap: 20px;">
-      <!-- Fee setting -->
-      <div class="form-group-item">
-        <label class="form-input-label" style="font-weight: 600; color: var(--text-primary);">Default Company Incorporation Fee (INR) *</label>
-        <input type="number" 
-               [(ngModel)]="settings().incorporation_fee" 
-               name="incorporation_fee" 
-               [disabled]="user()?.role !== 'admin'"
-               class="form-control-input" 
-               required />
+<div class="settings-layout fade-in">
+  <!-- Settings Navigation Sidebar (Service Selector) -->
+  <aside class="settings-sidebar">
+    <div class="sidebar-card">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Configuration</h2>
       </div>
+      <div class="sidebar-content custom-scrollbar">
+        <p class="sidebar-section-title">System Wide</p>
+        <button class="nav-btn" [class.active]="activeTab() === 'system'" (click)="switchTab('system')">
+          <span class="material-symbols-outlined">account_balance</span>
+          <span class="btn-text">Company Settings</span>
+        </button>
 
-      <!-- Tax percentage -->
-      <div class="form-group-item">
-        <label class="form-input-label" style="font-weight: 600; color: var(--text-primary);">Filing Tax Percentage (%) *</label>
-        <input type="number" 
-               [(ngModel)]="settings().default_filing_tax" 
-               name="default_filing_tax" 
-               [disabled]="user()?.role !== 'admin'"
-               class="form-control-input" 
-               required />
-      </div>
-
-      <!-- Allow Agent registration checkbox -->
-      <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-        <input type="checkbox" 
-               id="allow_agent" 
-               [(ngModel)]="settings().allow_agent_registration" 
-               name="allow_agent_registration" 
-               [disabled]="user()?.role !== 'admin'"
-               style="width: 18px; height: 18px; cursor: pointer;" />
-        <label for="allow_agent" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer;">
-          Allow Agents to register clients directly
-        </label>
-      </div>
-
-      <!-- Require Verification checkbox -->
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <input type="checkbox" 
-               id="require_verify" 
-               [(ngModel)]="settings().require_document_verification" 
-               name="require_document_verification" 
-               [disabled]="user()?.role !== 'admin'"
-               style="width: 18px; height: 18px; cursor: pointer;" />
-        <label for="require_verify" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer;">
-          Force mandatory document verification before final approval
-        </label>
-      </div>
-
-      <!-- Submit button (Admins only) -->
-      @if (user()?.role === 'admin') {
-        <div style="margin-top: 10px;">
-          <button type="submit" class="btn-submit" style="width: 100%; padding: 12px; font-weight: bold; background-color: var(--accent-primary); border-radius: 8px;">
-            Save System Settings
-          </button>
-        </div>
-      } @else {
-        <div style="padding: 10px; border-radius: 8px; background-color: rgba(245, 158, 11, 0.15); border: 1px solid #F59E0B; font-size: 13px; color: #F59E0B;">
-          <strong>Note:</strong> You have view-only access to company configurations. Only Administrator roles can modify settings.
-        </div>
-      }
-    </form>
-  </div>
-
-  <!-- Service Checklist Templates Builder -->
-  @if (user()?.role === 'admin') {
-    <div class="filter-action-bar" style="margin-top: 40px;">
-      <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Service Checklist Templates</h2>
-    </div>
-    
-    <div class="client-profile-card" style="max-width: 800px; margin-top: 16px; padding: 24px;">
-      <div style="margin-bottom: 24px;">
-        <label class="form-input-label" style="font-weight: 600; color: var(--text-primary);">Select Service to Configure</label>
-        <select [(ngModel)]="selectedService" (change)="onServiceChange()" class="form-control-input" style="max-width: 400px; margin-top: 8px;">
-          <option value="">-- Select a Service --</option>
+        <p class="sidebar-section-title" style="margin-top: 16px;">Certification Templates</p>
+        <div class="nav-btn-list">
           @for (svc of availableServices; track svc) {
-            <option [value]="svc">{{ svc }}</option>
+            <button class="nav-btn" [class.active]="activeTab() === svc" (click)="switchTab(svc)">
+              <span class="material-symbols-outlined">description</span>
+              <span class="btn-text">{{ svc }}</span>
+            </button>
           }
-        </select>
-        <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">Configure the default checklist items that are automatically generated when a client registers for this service.</p>
+        </div>
       </div>
+    </div>
+  </aside>
 
-      @if (selectedService) {
-        <div style="border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; background: var(--bg-secondary);">
-          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 16px;">Template Items for "{{ selectedService }}"</h3>
-          
-          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-            @for (item of activeTemplateItems; track $index) {
-              <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px;">
-                <div style="display: flex; flex-direction: column;">
-                  <strong style="font-size: 14px; color: var(--text-primary);">{{ item.title }}</strong>
-                  <span style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">{{ item.description || 'No description' }}</span>
-                </div>
-                <button type="button" (click)="removeTemplateItem($index)" style="background: none; border: none; color: #EF4444; font-size: 20px; cursor: pointer; padding: 0 4px;">×</button>
+  <!-- Settings Content Panel -->
+  <div class="settings-content">
+    
+    <!-- Section 1: Company System Settings -->
+    @if (activeTab() === 'system') {
+      <section class="content-pane">
+        <div class="pane-card">
+          <form (ngSubmit)="saveSettings()">
+            <div class="pane-header">
+              <div>
+                <h2 class="pane-title">Company System Settings</h2>
+                <p class="pane-subtitle">Manage core global parameters for professional service delivery.</p>
               </div>
-            }
-            @if (activeTemplateItems.length === 0) {
-              <div style="font-size: 13px; color: var(--text-secondary); font-style: italic; padding: 10px;">No default items configured. A blank checklist will be generated.</div>
-            }
-          </div>
+              <button type="submit" class="btn-primary-save" [disabled]="user()?.role !== 'admin'">
+                <span class="material-symbols-outlined" style="font-size: 20px;">save</span> 
+                Save Changes
+              </button>
+            </div>
+            
+            <div class="form-grid">
+              <div class="form-group-list">
+                <div>
+                  <label class="form-input-label">Standard Filing Tax Percentage (%)</label>
+                  <input type="number" 
+                         [(ngModel)]="settings().default_filing_tax" 
+                         name="default_filing_tax" 
+                         [disabled]="user()?.role !== 'admin'"
+                         class="form-control-input" 
+                         required />
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                  <input type="checkbox" id="allow_agent" [(ngModel)]="settings().allow_agent_registration" name="allow_agent_registration" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />
+                  <label for="allow_agent" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Allow Agents to register clients directly</label>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <input type="checkbox" id="req_doc" [(ngModel)]="settings().require_document_verification" name="require_document_verification" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />
+                  <label for="req_doc" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Force mandatory document verification</label>
+                </div>
+              </div>
+              
+              <div class="form-group-list">
+                <div class="info-box">
+                  <h3 class="info-box-title">
+                    <span class="material-symbols-outlined" style="color: var(--accent-primary);">info</span> Global Tax Rules
+                  </h3>
+                  <p class="info-box-desc">
+                    These settings define the base calculation for all service requests. Changes made here will apply only to new certifications initiated after the update. Existing active certificates will retain their original fee structure.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-          <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
-            <h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px;">Add New Template Item</h4>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              <input type="text" [(ngModel)]="newItemTitle" placeholder="Item Title (max 30 chars)" maxlength="30" class="form-control-input" />
-              <textarea [(ngModel)]="newItemDesc" placeholder="Item Description (max 200 chars)" maxlength="200" class="form-control-input" rows="2" style="resize: vertical;"></textarea>
-              <button type="button" class="btn-submit" (click)="addTemplateItem()" style="align-self: flex-start; padding: 8px 16px;">+ Add to Template</button>
+          </form>
+        </div>
+      </section>
+    }
+
+    <!-- Section 2: Certification Configuration Template (Dynamic) -->
+    @if (activeTab() !== 'system') {
+      <section class="content-pane">
+        <div class="pane-card">
+          <div class="pane-header">
+            <div>
+              <h2 class="pane-title">{{ activeTab() }} Configuration</h2>
+              <p class="pane-subtitle">Customize required documents and validation steps for {{ activeTab() }} certification.</p>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <button class="btn-primary-save" (click)="saveTemplate()">Publish Updates</button>
             </div>
           </div>
 
-          <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
-            <button type="button" class="btn-submit" (click)="saveTemplate()" style="background-color: var(--accent-primary); padding: 10px 24px; font-weight: bold;">
-              Save Template
-            </button>
+          <!-- Data Table for Checklist Items -->
+          <div class="table-container">
+            <table class="checklist-table">
+              <thead>
+                <tr>
+                  <th>Requirement Name</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of activeTemplateItems; track $index) {
+                  <tr>
+                    <td style="font-weight: 600; color: var(--text-primary);">{{ item.title }}</td>
+                    <td style="color: var(--text-secondary);">{{ item.description || 'No description provided' }}</td>
+                    <td>
+                      <button class="btn-text-action btn-text-danger" (click)="removeTemplateItem($index)">Remove</button>
+                    </td>
+                  </tr>
+                }
+                @if (activeTemplateItems.length === 0) {
+                  <tr>
+                    <td colspan="3" style="text-align: center; color: var(--text-secondary);">No default items configured. A blank checklist will be generated.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="table-footer">
+              <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 8px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0;">Add New Template Item</h4>
+                <div style="display: flex; gap: 12px; align-items: flex-start;">
+                  <div style="flex: 1;">
+                    <input type="text" [(ngModel)]="newItemTitle" placeholder="Item Title (max 30 chars)" maxlength="30" class="form-control-input" />
+                  </div>
+                  <div style="flex: 2;">
+                    <textarea [(ngModel)]="newItemDesc" placeholder="Item Description (max 200 chars)" maxlength="200" class="form-control-input" rows="1" style="resize: vertical;"></textarea>
+                  </div>
+                </div>
+                <button class="btn-add-item" (click)="addTemplateItem()">
+                  <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span> Add Checklist Item
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: 32px;">
+            <div class="info-box" style="display: flex; flex-direction: column; justify-content: center;">
+              <h3 class="info-box-title" style="font-size: 24px;">Quick Guide</h3>
+              <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; color: var(--text-secondary); font-size: 14px;">
+                <li style="display: flex; gap: 8px; align-items: flex-start;">
+                  <span class="material-symbols-outlined" style="color: var(--accent-primary); font-size: 20px;">check_circle</span>
+                  System-verified items use OCR for automatic validation.
+                </li>
+                <li style="display: flex; gap: 8px; align-items: flex-start;">
+                  <span class="material-symbols-outlined" style="color: var(--accent-primary); font-size: 20px;">check_circle</span>
+                  Checklist changes affect only new certificate requests.
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-      }
-    </div>
-  }
+      </section>
+    }
+
+  </div>
 </div>
