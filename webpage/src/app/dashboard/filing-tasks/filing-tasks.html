@@ -1,5 +1,18 @@
-<div class="tab-view fade-in">
+<div class="page-container fade-in">
   
+  <div class="header-section">
+    <div>
+      <h2 class="page-title">Custom Tasks</h2>
+      <p class="page-subtitle">Propelling Wealth to New Frontiers</p>
+    </div>
+    @if (canManage() || isFillingStaff()) {
+      <button class="btn-new-checklist" (click)="openCreateTaskModal()">
+        <span class="material-symbols-outlined">add</span>
+        New Task
+      </button>
+    }
+  </div>
+
   <!-- Task Pipeline Filter & Search Bar -->
   <div class="task-pipeline-header">
     <div class="task-search-wrapper">
@@ -26,13 +39,6 @@
           [class.active]="taskStatusFilter() === f"
           (click)="taskStatusFilter.set(f)">
           {{ f }}
-        </button>
-      }
-      
-      @if (canManage()) {
-        <button class="add-client-btn" style="border-radius: 8px; margin-left: 8px;" (click)="openCreateTaskModal()">
-          <hugeicons-icon [icon]="PlusSignIcon" size="14"></hugeicons-icon>
-          <span>New Task</span>
         </button>
       }
     </div>
@@ -125,17 +131,10 @@
     }
 
     @if (getFilteredTasks().length === 0) {
-      <div class="no-results-placeholder" style="grid-column: 1 / -1; margin-top: 24px;">
-        <div class="placeholder-icon-circle">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="9" y1="9" x2="15" y2="9"></line>
-            <line x1="9" y1="13" x2="15" y2="13"></line>
-            <line x1="9" y1="17" x2="15" y2="17"></line>
-          </svg>
-        </div>
-        <h3>No filing tasks found</h3>
-        <p>Try matching another keyword or selecting a different status filter.</p>
+      <div class="empty-state" style="grid-column: 1 / -1; margin-top: 24px; text-align: center; padding: 64px 32px; background-color: var(--surface, #fff); border: 1px dashed var(--border-color); border-radius: 12px; display: flex; flex-direction: column; align-items: center;">
+        <span class="material-symbols-outlined empty-icon" style="font-size: 48px; opacity: 0.5; margin-bottom: 16px;">task</span>
+        <h3 style="font-size: 20px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; margin-top: 0;">No filing tasks found</h3>
+        <p style="color: var(--text-secondary); margin: 0;">Try matching another keyword or selecting a different status filter.</p>
       </div>
     }
   </div>

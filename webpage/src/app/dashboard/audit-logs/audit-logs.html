@@ -23,8 +23,8 @@
                 <div style="font-size: 11px; color: var(--text-secondary);">{{ log.performed_by?.role | titlecase }}</div>
               </td>
               <td style="padding: 12px 16px; white-space: nowrap;">
-                <span class="service-badge" style="background-color: rgba(99, 102, 241, 0.1); color: #6366F1; border: 1px solid #6366F1; padding: 2px 6px; font-size: 11px;">
-                  {{ log.action_type }}
+                <span class="service-badge" style="background-color: rgba(99, 102, 241, 0.1); color: #6366F1; border: 1px solid #6366F1; padding: 2px 6px; font-size: 11px; border-radius: 4px; display: inline-block;">
+                  {{ log.action }}
                 </span>
               </td>
               <td style="padding: 12px 16px; color: var(--text-secondary);">{{ log.details }}</td>

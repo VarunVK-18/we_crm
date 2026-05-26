@@ -30,43 +30,66 @@ export class Sidebar implements OnInit {
     if (!u) return [];
 
     const role = u.role;
-    const items: any[] = [
-      { id: 'dashboard', label: 'Dashboard', color: '#2563EB' }
-    ];
+    const groups: { header: string; items: any[] }[] = [];
 
-    // ── Admin: full access ──────────────────────────────────
+    // All roles get Dashboard
+    groups.push({
+      header: 'Overview',
+      items: [{ id: 'dashboard', label: 'Dashboard', color: '#2563EB' }]
+    });
+
     if (role === 'admin') {
-      items.push({ id: 'requests', label: 'New Requests', color: '#F43F5E' });
-      items.push({ id: 'clients', label: 'Clients Directory', color: '#10B981' });
-      items.push({ id: 'team', label: 'Employees & Team', color: '#8B5CF6' });
-      items.push({ id: 'tasks', label: 'Custom Task', color: '#F59E0B' });
-      items.push({ id: 'checklists', label: 'Compliance', color: '#06B6D4' });
-      items.push({ id: 'completed-checklists', label: 'History', color: '#10B981' });
-      items.push({ id: 'logs', label: 'Audit Logs', color: '#EC4899' });
-      items.push({ id: 'settings', label: 'System Settings', color: '#6366F1' });
-
-      // ── Client Manager: onboards clients, creates tasks/checklists ──
+      groups.push({
+        header: 'Operations',
+        items: [
+          { id: 'requests', label: 'New Requests', color: '#F43F5E' },
+          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
+          { id: 'checklists', label: 'Compliance', color: '#06B6D4' },
+          { id: 'completed-checklists', label: 'History', color: '#10B981' }
+        ]
+      });
+      groups.push({
+        header: 'Management',
+        items: [
+          { id: 'clients', label: 'Clients Directory', color: '#10B981' },
+          { id: 'team', label: 'Employees & Team', color: '#8B5CF6' }
+        ]
+      });
+      groups.push({
+        header: 'System',
+        items: [
+          { id: 'logs', label: 'Audit Logs', color: '#EC4899' },
+          { id: 'settings', label: 'System Settings', color: '#6366F1' }
+        ]
+      });
     } else if (role === 'client_manager') {
-      items.push({ id: 'requests', label: 'New Requests', color: '#F43F5E' });
-      items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
-      items.push({ id: 'tasks', label: 'Custom Task', color: '#F59E0B' });
-      items.push({ id: 'checklists', label: 'Compliance', color: '#06B6D4' });
-      items.push({ id: 'completed-checklists', label: 'History', color: '#10B981' });
-
-      // ── Filing Staff: sees assigned tasks & checklists ──────
-    } else if (role === 'filling_staff') {
-      items.push({ id: 'tasks', label: 'Custom Task', color: '#F59E0B' });
-      items.push({ id: 'checklists', label: 'Compliance', color: '#06B6D4' });
-      items.push({ id: 'completed-checklists', label: 'History', color: '#10B981' });
-
-      // ── Account Manager: same as filing staff ───────────────
-    } else if (role === 'account_manager') {
-      items.push({ id: 'tasks', label: 'Custom Task', color: '#F59E0B' });
-      items.push({ id: 'checklists', label: 'Compliance', color: '#06B6D4' });
-      items.push({ id: 'completed-checklists', label: 'History', color: '#10B981' });
+      groups.push({
+        header: 'Operations',
+        items: [
+          { id: 'requests', label: 'New Requests', color: '#F43F5E' },
+          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
+          { id: 'checklists', label: 'Compliance', color: '#06B6D4' },
+          { id: 'completed-checklists', label: 'History', color: '#10B981' }
+        ]
+      });
+      groups.push({
+        header: 'Management',
+        items: [
+          { id: 'clients', label: 'My Clients', color: '#10B981' }
+        ]
+      });
+    } else if (role === 'filling_staff' || role === 'account_manager') {
+      groups.push({
+        header: 'Operations',
+        items: [
+          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
+          { id: 'checklists', label: 'Compliance', color: '#06B6D4' },
+          { id: 'completed-checklists', label: 'History', color: '#10B981' }
+        ]
+      });
     }
 
-    return [{ header: '', items }];
+    return groups;
   }
 
   ngOnInit() {

@@ -117,8 +117,8 @@
   top: 50%;
   transform: translateY(-50%);
   width: 3px;
-  height: 16px;
-  border-radius: 4px;
+  height: 100%;
+  border-radius: 0;
   background-color: currentColor; /* Inherits the dynamic selected color */
   opacity: 0;
   transition: opacity var(--transition-fast);
@@ -134,7 +134,10 @@
 }
 
 .nav-item-wrapper.selected {
-  /* Dynamic color & background applied via HTML style bindings */
+  background-color: rgba(15, 23, 42, 0.05); /* Slight dark background */
+  color: var(--text-primary); /* Dark bold black text */
+  font-weight: 700;
+  border-radius: 0px; /* Border radius for the active item */
 }
 
 .nav-item-content {
