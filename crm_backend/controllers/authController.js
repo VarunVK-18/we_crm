@@ -6,6 +6,7 @@ const Checklist = require('../models/Checklist');
 const ChecklistTemplate = require('../models/ChecklistTemplate');
 const Document = require('../models/Document');
 const FilingTask = require('../models/FilingTask');
+const ServiceOrder = require('../models/ServiceOrder');
 
 // @desc    Register a new user (client) — scoped to a company
 // @route   POST /api/register
@@ -690,6 +691,19 @@ const subscribeService = async (req, res) => {
           notes: 'Automatically generated from app registration. Awaiting Client Manager review.'
         });
         console.log(`Automatically created checklist for ${serviceName}, assigned to client manager: ${assignedClientManager}`);
+
+        // Also create a ServiceOrder so it appears in the New Requests page
+        await ServiceOrder.create({
+          clientUid: user._id.toString(),
+          companyId: user.company_id,
+          entityName: user.company_name || user.owner_name || 'Client',
+          serviceType: serviceName,
+          status: 'active',
+          stage: 'reqReceived',
+          assignedExpert: 'To be assigned',
+          expertPhone: ''
+        });
+        console.log(`Created ServiceOrder for ${serviceName} — visible in New Requests`);
       } catch (e) {
         console.error('Error creating checklist automatically:', e);
       }
@@ -698,13 +712,80 @@ const subscribeService = async (req, res) => {
         user._id,
         'Client Subscribed to Service',
         `User registered to service: ${serviceName}`,
-        req.ip
+        user.company_id || null
       );
     }
 
     res.status(200).json({ success: true, services: user.services });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Migrate: re-assign pending checklists owned by filing_staff to client_manager
+// @route   POST /api/admin/migrate-checklist-assignments
+// @access  Private (Admin only)
+const migrateChecklistAssignments = async (req, res) => {
+  try {
+    const companyId = req.user.company_id;
+    let fixed = 0;
+    let skipped = 0;
+
+    // Get all pending checklists for this company
+    const pendingChecklists = await Checklist.find({
+      company_id: companyId,
+      status: { $ne: 'completed' }
+    }).populate('assigned_to', 'role _id owner_name');
+
+    for (const checklist of pendingChecklists) {
+      // Skip if already assigned to a non-filing-staff person
+      if (checklist.assigned_to && checklist.assigned_to.role !== 'filling_staff') {
+        skipped++;
+        continue;
+      }
+
+      // Find the client who owns this checklist
+      const client = await User.findById(checklist.client_id).select('created_by company_id assigned_to');
+      if (!client) { skipped++; continue; }
+
+      let newAssignee = null;
+
+      // Priority 1: Client manager who created this client
+      if (client.created_by) {
+        const creator = await User.findById(client.created_by).select('_id role');
+        if (creator && creator.role === 'client_manager') {
+          newAssignee = creator._id;
+        }
+      }
+
+      // Priority 2: Any client_manager in the same company
+      if (!newAssignee) {
+        const mgr = await User.findOne({ company_id: companyId, role: 'client_manager' }).select('_id');
+        if (mgr) newAssignee = mgr._id;
+      }
+
+      if (newAssignee) {
+        await Checklist.findByIdAndUpdate(checklist._id, { assigned_to: newAssignee });
+        fixed++;
+      } else {
+        skipped++;
+      }
+    }
+
+    await logActivity(
+      req.user._id,
+      'checklist_migration',
+      `Migrated ${fixed} checklists from filing_staff to client_manager. Skipped: ${skipped}`,
+      companyId
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `Migration complete. Fixed: ${fixed}, Skipped: ${skipped}.`
+    });
+  } catch (error) {
+    console.error('Migration error:', error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -722,5 +803,6 @@ module.exports = {
   assignClient,
   approveClient,
   getAuditLogs,
-  subscribeService
+  subscribeService,
+  migrateChecklistAssignments
 };

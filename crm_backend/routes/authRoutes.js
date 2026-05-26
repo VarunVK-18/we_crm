@@ -17,7 +17,8 @@ const {
   assignClient,
   approveClient,
   getAuditLogs,
-  subscribeService
+  subscribeService,
+  migrateChecklistAssignments
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -56,5 +57,8 @@ router.post('/reset-password/:id', checkUser, preventAuditorWrite, permit('admin
 
 // Audit logs route
 router.get('/audit-logs', checkUser, permit('admin', 'auditor'), getAuditLogs);
+
+// Migration: re-assign pending checklists from filing_staff to client_manager
+router.post('/admin/migrate-checklist-assignments', checkUser, permit('admin'), migrateChecklistAssignments);
 
 module.exports = router;

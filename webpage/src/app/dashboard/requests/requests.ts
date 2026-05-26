@@ -29,14 +29,21 @@ export class RequestsComponent implements OnInit {
   statusFilter = signal<string>('all');
 
   readonly NEW_STATUSES = ['new', 'pending'];
+  readonly NEW_STAGES = ['reqreceived', 'quot pending', 'quotepending'];
+
+  // An order is considered "new/incoming" if status is new/pending OR stage is reqReceived
+  isNewOrder(o: any): boolean {
+    const status = (o.status || '').toLowerCase();
+    const stage = (o.stage || '').toLowerCase();
+    return this.NEW_STATUSES.includes(status) || this.NEW_STAGES.includes(stage);
+  }
 
   filteredOrders = computed(() => {
     const filter = this.statusFilter();
     const all = this.orders();
     if (filter === 'all') return all;
-    if (filter === 'new') {
-      return all.filter((o: any) => this.NEW_STATUSES.includes((o.status || '').toLowerCase()));
-    }
+    if (filter === 'new') return all.filter((o: any) => this.isNewOrder(o));
+    if (filter === 'active') return all.filter((o: any) => !this.isNewOrder(o) && (o.status || '').toLowerCase() === 'active');
     return all.filter((o: any) => (o.status || '').toLowerCase() === filter);
   });
 
@@ -44,8 +51,8 @@ export class RequestsComponent implements OnInit {
     const all = this.orders();
     return {
       all: all.length,
-      new: all.filter((o: any) => this.NEW_STATUSES.includes((o.status || '').toLowerCase())).length,
-      active: all.filter((o: any) => (o.status || '').toLowerCase() === 'active').length,
+      new: all.filter((o: any) => this.isNewOrder(o)).length,
+      active: all.filter((o: any) => !this.isNewOrder(o) && (o.status || '').toLowerCase() === 'active').length,
       complete: all.filter((o: any) => (o.status || '').toLowerCase() === 'complete').length,
     };
   });
@@ -112,9 +119,12 @@ export class RequestsComponent implements OnInit {
   }
 
   fetchTeam() {
-    this.api.get<any>('users/team/my-team').subscribe({
+    this.api.get<any>('users/team-groups').subscribe({
       next: (res: any) => {
-        if (res && res.groups) {
+        // team-groups returns an array of groups directly
+        if (Array.isArray(res)) {
+          this.teams.set(res);
+        } else if (res && res.groups) {
           this.teams.set(res.groups);
         }
       },
