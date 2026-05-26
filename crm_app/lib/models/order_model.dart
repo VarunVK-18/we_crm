@@ -69,6 +69,33 @@ class RequestedDocument {
   }
 }
 
+class FinalDocument {
+  final String name;
+  final String documentId;
+  final DateTime? expiryDate;
+  final DateTime? uploadedAt;
+  
+  const FinalDocument({
+    required this.name,
+    required this.documentId,
+    this.expiryDate,
+    this.uploadedAt,
+  });
+
+  factory FinalDocument.fromMap(Map<String, dynamic> map) {
+    return FinalDocument(
+      name: map['name']?.toString() ?? '',
+      documentId: map['document_id']?.toString() ?? '',
+      expiryDate: map['expiry_date'] != null 
+          ? DateTime.tryParse(map['expiry_date'].toString()) 
+          : null,
+      uploadedAt: map['uploadedAt'] != null 
+          ? DateTime.tryParse(map['uploadedAt'].toString()) 
+          : null,
+    );
+  }
+}
+
 // ─── ServiceOrder (primary model for My Services) ──────────────────────────
 
 class ServiceOrder {
@@ -81,6 +108,7 @@ class ServiceOrder {
   final OrderStage stage;
   final List<ServiceStep> steps;
   final List<RequestedDocument> requestedDocuments;
+  final List<FinalDocument> finalDocuments;
   final String assignedExpert;
   final String
   expertPhone; // WhatsApp-capable number with country code, e.g. 919876543210
@@ -96,6 +124,7 @@ class ServiceOrder {
     required this.stage,
     required this.steps,
     required this.requestedDocuments,
+    required this.finalDocuments,
     required this.assignedExpert,
     required this.expertPhone,
     required this.createdAt,
@@ -123,6 +152,9 @@ class ServiceOrder {
           .toList(),
       requestedDocuments: (data['requestedDocuments'] as List<dynamic>? ?? [])
           .map((d) => RequestedDocument.fromMap(d as Map<String, dynamic>))
+          .toList(),
+      finalDocuments: (data['finalDocuments'] as List<dynamic>? ?? [])
+          .map((d) => FinalDocument.fromMap(d as Map<String, dynamic>))
           .toList(),
       assignedExpert: data['assignedExpert']?.toString() ?? 'To be assigned',
       expertPhone: data['expertPhone']?.toString() ?? '',

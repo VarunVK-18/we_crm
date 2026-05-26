@@ -221,8 +221,13 @@ const getMyChecklists = async (req, res) => {
     const checklists = await Checklist.find({ client_id: clientId })
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
-      .select('service_name status items notes assigned_to created_by createdAt updatedAt')
+      .select('service_name status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt')
       .sort({ updatedAt: -1 });
+
+    console.log(`[DEBUG] getMyChecklists returned ${checklists.length} items`);
+    if (checklists.length > 0) {
+      console.log(`[DEBUG] First checklist final_documents:`, checklists[0].final_documents);
+    }
 
     res.status(200).json({ success: true, checklists });
   } catch (error) {

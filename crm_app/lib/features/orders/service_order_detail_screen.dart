@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import '../../core/constants/port.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/orders_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'invoice_screen.dart';
 
 class ServiceOrderDetailScreen extends StatelessWidget {
   final ServiceOrder order;
@@ -32,25 +34,27 @@ class ServiceOrderDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       // ── WhatsApp FAB ─────────────────────────────────────────────────────
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => openWhatsApp(
-          context: context,
-          phone: order.expertPhone,
-          message:
-              'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
-        ),
-        backgroundColor: const Color.fromARGB(255, 18, 140, 126),
-        icon: const Icon(LucideIcons.messageCircle,
-            color: Colors.white, size: 18),
-        label: const Text(
-          'Chat on WhatsApp',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w800,
-            fontSize: 13,
-          ),
-        ),
-      ),
+      floatingActionButton: order.status == ServiceStatus.complete
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => openWhatsApp(
+                context: context,
+                phone: order.expertPhone,
+                message:
+                    'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
+              ),
+              backgroundColor: const Color.fromARGB(255, 18, 140, 126),
+              icon: const Icon(LucideIcons.messageCircle,
+                  color: Colors.white, size: 18),
+              label: const Text(
+                'Chat on WhatsApp',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 13,
+                ),
+              ),
+            ),
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: CustomScrollView(
@@ -62,6 +66,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
               pinned: true,
               stretch: true,
               elevation: 0,
+              actions: [],
               backgroundColor: Colors.black,
               systemOverlayStyle: SystemUiOverlayStyle
                   .light, // Forces white status bar icons for this black header
@@ -275,6 +280,14 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                     child: _RequestedDocumentsSection(order: order),
                   ),
 
+                if (order.status == ServiceStatus.complete) ...[
+                  const SizedBox(height: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _FinalDeliverySection(order: order),
+                  ),
+                ],
+
                 const SizedBox(height: 80), // space for FAB
               ]),
             ),
@@ -287,12 +300,12 @@ class ServiceOrderDetailScreen extends StatelessWidget {
 
 // ─── Requested Documents Section ──────────────────────────────────────────────
 
-
 class _RequestedDocumentsSection extends ConsumerWidget {
   final ServiceOrder order;
   const _RequestedDocumentsSection({required this.order});
 
-  Future<void> _uploadDocument(BuildContext context, WidgetRef ref, String docName) async {
+  Future<void> _uploadDocument(
+      BuildContext context, WidgetRef ref, String docName) async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -301,11 +314,12 @@ class _RequestedDocumentsSection extends ConsumerWidget {
 
       if (result != null && result.files.single.path != null) {
         final filePath = result.files.single.path!;
-        final uri = Uri.parse('$kBaseUrl/api/checklists/${order.id}/upload-documents');
-        
+        final uri =
+            Uri.parse('$kBaseUrl/api/checklists/${order.id}/upload-documents');
+
         final request = http.MultipartRequest('POST', uri);
         request.files.add(await http.MultipartFile.fromPath(docName, filePath));
-        
+
         // Use a generic auth token/header mechanism if available, or assume cookie works
         // (Assuming session/cookie management handles auth for multipart)
 
@@ -350,7 +364,10 @@ class _RequestedDocumentsSection extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: doc.isUploaded ? Colors.green.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3)),
+              border: Border.all(
+                  color: doc.isUploaded
+                      ? Colors.green.withValues(alpha: 0.3)
+                      : Colors.red.withValues(alpha: 0.3)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.03),
@@ -362,7 +379,9 @@ class _RequestedDocumentsSection extends ConsumerWidget {
             child: Row(
               children: [
                 Icon(
-                  doc.isUploaded ? LucideIcons.fileCheck : LucideIcons.fileWarning,
+                  doc.isUploaded
+                      ? LucideIcons.fileCheck
+                      : LucideIcons.fileWarning,
                   color: doc.isUploaded ? Colors.green : Colors.red,
                   size: 24,
                 ),
@@ -373,7 +392,8 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                     children: [
                       Text(
                         doc.name,
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w700, fontSize: 14),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -390,12 +410,16 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                 if (!doc.isUploaded)
                   ElevatedButton.icon(
                     onPressed: () => _uploadDocument(context, ref, doc.name),
-                    icon: const Icon(LucideIcons.upload, size: 14, color: Colors.white),
-                    label: const Text('Upload', style: TextStyle(color: Colors.white)),
+                    icon: const Icon(LucideIcons.upload,
+                        size: 14, color: Colors.white),
+                    label: const Text('Upload',
+                        style: TextStyle(color: Colors.white)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.red.shade600,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
                     ),
                   ),
               ],
@@ -720,6 +744,179 @@ class _StatusChip extends StatelessWidget {
           letterSpacing: 0.3,
         ),
       ),
+    );
+  }
+}
+
+// ─── Final Delivery Section ───────────────────────────────────────────────────
+
+class _FinalDeliverySection extends StatelessWidget {
+  final ServiceOrder order;
+  const _FinalDeliverySection({required this.order});
+
+  Future<void> _downloadDocument(
+      BuildContext context, String documentId) async {
+    final url = Uri.parse('$kBaseUrl/api/documents/$documentId');
+    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open document link')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Final Deliverables',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: AppTheme.deepTeal,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Invoice Button
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.03),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => InvoiceScreen(order: order),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppTheme.corporateBlue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(LucideIcons.receipt,
+                          color: AppTheme.corporateBlue, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Official Invoice',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w700, fontSize: 14),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Tap to view and download',
+                            style: TextStyle(
+                                color: Colors.grey.shade600, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(LucideIcons.download,
+                        color: AppTheme.corporateBlue, size: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Final Documents
+        ...order.finalDocuments.map((doc) {
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.green.withOpacity(0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () => _downloadDocument(context, doc.documentId),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(LucideIcons.fileCheck2,
+                            color: Colors.green, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              doc.name,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w700, fontSize: 14),
+                            ),
+                            if (doc.expiryDate != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Expires: ${DateFormat('dd MMM yyyy').format(doc.expiryDate!)}',
+                                style: TextStyle(
+                                    color: Colors.red.shade400,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const Icon(LucideIcons.download,
+                          color: Colors.green, size: 20),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
 }

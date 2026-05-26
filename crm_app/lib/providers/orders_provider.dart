@@ -44,6 +44,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
               'isCompleted': i['isChecked'] == true,
             }).toList(),
             'requestedDocuments': c['requested_documents'] ?? [],
+            'finalDocuments': c['final_documents'] ?? [],
             'assignedExpert': c['assigned_to']?['owner_name'] ?? 'To be assigned',
             'expertPhone': c['assigned_to']?['phone'] ?? '',
             'createdAt': c['createdAt'],

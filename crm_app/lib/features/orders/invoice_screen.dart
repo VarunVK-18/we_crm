@@ -106,81 +106,89 @@ class InvoiceScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             // Left: Logo and Brand (Mirror PDF)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.asset(
-                                    'assets/logo.jpg',
-                                    height: 105,
-                                    fit: BoxFit.contain,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Text(
-                                              'WEALTH EMPIRES',
-                                              style: AppTheme.brandStyle
-                                                  .copyWith(fontSize: 24),
-                                            ),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Global Business Excellence',
-                                  style: Theme.of(context).textTheme.labelSmall
-                                      ?.copyWith(
-                                        color: AppTheme.deepTeal.withOpacity(
-                                          0.5,
-                                        ),
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                ),
-                              ],
-                            ),
-                            // Right: Official Metadata (Mirror PDF)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  'INVOICE',
-                                  style: AppTheme.brandStyle.copyWith(
-                                    fontSize: 32,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
-                                _metadataTextRow(context, 'Invoice No:', _invoiceNumber),
-                                const SizedBox(height: 4),
-                                _metadataTextRow(context, 'Date:', dateStr),
-                                const SizedBox(height: 4),
-                                _metadataTextRow(context, 'Payment:', 'UPI'),
-                                const SizedBox(height: 16),
-                                // PAID Badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.greenAccent.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: Colors.greenAccent.withOpacity(
-                                        0.3,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.asset(
+                                      'assets/logo.jpg',
+                                      height: 105,
+                                      fit: BoxFit.contain,
+                                      errorBuilder:
+                                          (context, error, stackTrace) => Text(
+                                        'WEALTH EMPIRES',
+                                        style: AppTheme.brandStyle
+                                            .copyWith(fontSize: 24),
                                       ),
                                     ),
                                   ),
-                                  child: Text(
-                                    'PAID',
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Global Business Excellence',
                                     style: Theme.of(context)
                                         .textTheme
-                                        .labelLarge
+                                        .labelSmall
                                         ?.copyWith(
-                                          color: Colors.greenAccent,
-                                          letterSpacing: 1.5,
+                                          color: AppTheme.deepTeal.withOpacity(
+                                            0.5,
+                                          ),
+                                          fontStyle: FontStyle.italic,
                                         ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Right: Official Metadata (Mirror PDF)
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'INVOICE',
+                                    style: AppTheme.brandStyle.copyWith(
+                                      fontSize: 32,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _metadataTextRow(
+                                      context, 'Invoice No:', _invoiceNumber),
+                                  const SizedBox(height: 4),
+                                  _metadataTextRow(context, 'Date:', dateStr),
+                                  const SizedBox(height: 4),
+                                  _metadataTextRow(context, 'Payment:', 'UPI'),
+                                  const SizedBox(height: 16),
+                                  // PAID Badge
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.greenAccent.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Colors.greenAccent.withOpacity(
+                                          0.3,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'PAID',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelLarge
+                                          ?.copyWith(
+                                            color: Colors.greenAccent,
+                                            letterSpacing: 1.5,
+                                          ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -288,7 +296,9 @@ class InvoiceScreen extends StatelessWidget {
                             children: [
                               Text(
                                 'Verified & Handled by ${order.assignedExpert}',
-                                style: Theme.of(context).textTheme.labelLarge
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelLarge
                                     ?.copyWith(
                                       color: Colors.grey.shade600,
                                       fontWeight: FontWeight.w600,
@@ -297,7 +307,9 @@ class InvoiceScreen extends StatelessWidget {
                               const SizedBox(height: 16),
                               Text(
                                 'Thank you for Choosing Wealth Empires!',
-                                style: Theme.of(context).textTheme.bodyLarge
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
                                     ?.copyWith(
                                       fontWeight: FontWeight.w800,
                                       color: AppTheme.deepTeal,
@@ -306,7 +318,9 @@ class InvoiceScreen extends StatelessWidget {
                               const SizedBox(height: 8),
                               Text(
                                 'This is a system generated document. No physical signature required.',
-                                style: Theme.of(context).textTheme.labelSmall
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .labelSmall
                                     ?.copyWith(color: Colors.grey.shade400),
                               ),
                               const SizedBox(height: 24),
@@ -793,16 +807,19 @@ class InvoiceScreen extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            color: Colors.grey.shade600,
-            fontWeight: FontWeight.w500,
-          ),
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
         ),
         const SizedBox(width: 8),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: AppTheme.deepTeal,
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.deepTeal,
+                ),
           ),
         ),
       ],
@@ -846,18 +863,18 @@ class _AddressBlock extends StatelessWidget {
         Text(
           label.toUpperCase(),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: Colors.grey.shade400,
-            letterSpacing: 1.2,
-          ),
+                fontWeight: FontWeight.w800,
+                color: Colors.grey.shade400,
+                letterSpacing: 1.2,
+              ),
         ),
         const SizedBox(height: 8),
         Text(
           name,
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w900,
-            color: Colors.black,
-          ),
+                fontWeight: FontWeight.w900,
+                color: Colors.black,
+              ),
         ),
         const SizedBox(height: 4),
         ...lines.map(
@@ -866,9 +883,9 @@ class _AddressBlock extends StatelessWidget {
             child: Text(
               l,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey.shade500,
-                height: 1.4,
-              ),
+                    color: Colors.grey.shade500,
+                    height: 1.4,
+                  ),
             ),
           ),
         ),
@@ -887,19 +904,19 @@ class _LineItemHeader extends StatelessWidget {
           child: Text(
             'SERVICE DESCRIPTION',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: Colors.black,
-              letterSpacing: 1,
-            ),
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black,
+                  letterSpacing: 1,
+                ),
           ),
         ),
         Text(
           'AMOUNT',
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: Colors.black,
-            letterSpacing: 1,
-          ),
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+                letterSpacing: 1,
+              ),
         ),
       ],
     );
@@ -929,9 +946,9 @@ class _LineItem extends StatelessWidget {
               Text(
                 description,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: Colors.black,
-                ),
+                      fontWeight: FontWeight.w800,
+                      color: Colors.black,
+                    ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -946,9 +963,9 @@ class _LineItem extends StatelessWidget {
         Text(
           '₹${NumberFormat('#,##,##0.00').format(amount)}',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: Colors.black,
-          ),
+                fontWeight: FontWeight.w800,
+                color: Colors.black,
+              ),
         ),
       ],
     );
@@ -973,18 +990,18 @@ class _TotalRow extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isGst
-                ? Colors.grey.shade500
-                : AppTheme.deepTeal.withOpacity(0.7),
-          ),
+                fontWeight: FontWeight.w600,
+                color: isGst
+                    ? Colors.grey.shade500
+                    : AppTheme.deepTeal.withOpacity(0.7),
+              ),
         ),
         Text(
           '₹${NumberFormat('#,##,##0.00').format(amount)}',
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: isGst ? Colors.grey.shade700 : AppTheme.deepTeal,
-          ),
+                fontWeight: FontWeight.w700,
+                color: isGst ? Colors.grey.shade700 : AppTheme.deepTeal,
+              ),
         ),
       ],
     );
@@ -1039,9 +1056,9 @@ class _ActionButton extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: isPrimary ? Colors.white : AppTheme.deepTeal,
-                fontWeight: FontWeight.w800,
-              ),
+                    color: isPrimary ? Colors.white : AppTheme.deepTeal,
+                    fontWeight: FontWeight.w800,
+                  ),
             ),
           ],
         ),
