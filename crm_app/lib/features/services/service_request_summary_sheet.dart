@@ -127,7 +127,11 @@ class _ServiceRequestSummarySheetState
 
   // Define required documents based on service
   List<String> get _requiredDocs {
-    return kServiceRequiredDocuments[widget.packageName] ?? [];
+    final docs = kServiceRequiredDocuments[widget.packageName]?.toList() ?? [];
+    if (_officePreference == 'Virtual Office') {
+      docs.removeWhere((doc) => doc.contains('Registered Office Proof'));
+    }
+    return docs;
   }
 
   bool get _areAllRequiredDocsUploaded {
@@ -435,7 +439,8 @@ class _ServiceRequestSummarySheetState
         }
       }
 
-      final streamedResponse = await request.send().timeout(const Duration(seconds: 25));
+      final streamedResponse =
+          await request.send().timeout(const Duration(seconds: 25));
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200) {
@@ -669,9 +674,11 @@ class _ServiceRequestSummarySheetState
 
     switch (widget.packageName) {
       case 'Private Limited Incorporation':
+        final bool ownerNameValid = _officePreference == 'Virtual Office' ||
+            _ownerNameController.text.isNotEmpty;
         return _companyNameController.text.isNotEmpty &&
             _businessActivityController.text.isNotEmpty &&
-            _ownerNameController.text.isNotEmpty &&
+            ownerNameValid &&
             _companyEmailController.text.isNotEmpty &&
             _isCompanyPhoneValid &&
             _paidUpCapitalController.text.isNotEmpty &&
@@ -719,9 +726,11 @@ class _ServiceRequestSummarySheetState
             _dunsYearController.text.isNotEmpty &&
             _fssaiEmployeesController.text.isNotEmpty;
       case 'LLP Incorporation':
+        final bool ownerNameValid = _officePreference == 'Virtual Office' ||
+            _ownerNameController.text.isNotEmpty;
         return _companyNameController.text.isNotEmpty &&
             _businessActivityController.text.isNotEmpty &&
-            _ownerNameController.text.isNotEmpty &&
+            ownerNameValid &&
             _paidUpCapitalController.text.isNotEmpty;
       default:
         return true;
@@ -865,6 +874,15 @@ class _ServiceRequestSummarySheetState
           'Virtual Office',
           _officePreference,
           (val) => setState(() => _officePreference = val!)),
+      if (_officePreference == 'Own Address') ...[
+        const SizedBox(height: 24),
+        _EditableField(
+            label: 'Name of the Owner in the utility bill',
+            controller: _ownerNameController,
+            icon: LucideIcons.user,
+            hint: 'As per EB/Wifi bill',
+            isRequired: true),
+      ],
       const SizedBox(height: 24),
       _EditableField(
           label: 'Proposed Paid-up Capital (Min ₹1 Lakh)',
@@ -1169,13 +1187,15 @@ class _ServiceRequestSummarySheetState
           'Virtual Office',
           _officePreference,
           (val) => setState(() => _officePreference = val!)),
-      const SizedBox(height: 24),
-      _EditableField(
-          label: 'Name of the Owner in the utility bill',
-          controller: _ownerNameController,
-          icon: LucideIcons.user,
-          hint: 'As per EB/Wifi bill',
-          isRequired: true),
+      if (_officePreference == 'Own Address') ...[
+        const SizedBox(height: 24),
+        _EditableField(
+            label: 'Name of the Owner in the utility bill',
+            controller: _ownerNameController,
+            icon: LucideIcons.user,
+            hint: 'As per EB/Wifi bill',
+            isRequired: true),
+      ],
       const SizedBox(height: 20),
       _EditableField(
           label: 'Total Capital Contribution',
@@ -1372,12 +1392,15 @@ class _ServiceRequestSummarySheetState
 
   Widget _buildSectionHeader(String title) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: GoogleFonts.outfit(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.deepTeal.withValues(alpha: 0.6))),
+        Expanded(
+          child: Text(title,
+              style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.deepTeal.withValues(alpha: 0.6))),
+        ),
         const Text(' *',
             style: TextStyle(
                 color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),

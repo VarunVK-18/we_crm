@@ -319,6 +319,8 @@ const getMyChecklists = async (req, res) => {
 // @access  Private (Customer)
 const uploadRequestedDocuments = async (req, res) => {
   try {
+    console.log(`[DEBUG] uploadRequestedDocuments called for id: ${req.params.id}`);
+    console.log(`[DEBUG] Files received:`, req.files ? req.files.length : 0);
     const { id } = req.params;
     const checklist = await Checklist.findById(id);
 
@@ -345,7 +347,7 @@ const uploadRequestedDocuments = async (req, res) => {
         });
 
         if (requestedDocIndex !== -1) {
-          checklist.requested_documents[requestedDocIndex].fileUrl = `api/documents/${doc._id}`;
+          checklist.requested_documents[requestedDocIndex].fileUrl = `/api/documents/${doc._id}`;
           checklist.requested_documents[requestedDocIndex].isUploaded = true;
           checklist.requested_documents[requestedDocIndex].uploadedAt = new Date();
         } else {

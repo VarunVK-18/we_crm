@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import '../../core/constants/port.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/orders_provider.dart';
+import '../../providers/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
@@ -35,7 +36,8 @@ class ServiceOrderDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       // ── WhatsApp FAB ─────────────────────────────────────────────────────
-      floatingActionButton: (order.status == ServiceStatus.complete || order.status == ServiceStatus.notInitialized)
+      floatingActionButton: (order.status == ServiceStatus.complete ||
+              order.status == ServiceStatus.notInitialized)
           ? null
           : FloatingActionButton.extended(
               onPressed: () => openWhatsApp(
@@ -315,24 +317,30 @@ class _RequestedDocumentsSection extends ConsumerWidget {
 
       if (result != null && result.files.single.path != null) {
         final filePath = result.files.single.path!;
+        // Hardcoding the exact IP of this Windows machine to ensure it connects correctly
         final uri =
-            Uri.parse('$kBaseUrl/api/checklists/${order.id}/upload-documents');
+            Uri.parse('http://127.0.0.1:5001/api/checklists/${order.id}/upload-documents');
 
         final request = http.MultipartRequest('POST', uri);
         request.files.add(await http.MultipartFile.fromPath(docName, filePath));
 
-        // Use a generic auth token/header mechanism if available, or assume cookie works
-        // (Assuming session/cookie management handles auth for multipart)
+        final uid = ref.read(authStateProvider).value?.uid;
+        if (uid != null) {
+          request.headers['x-user-id'] = uid;
+        }
 
         final response = await request.send();
+        final respStr = await response.stream.bytesToString();
+        
         if (response.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Document uploaded successfully')),
           );
           ref.invalidate(serviceOrdersProvider);
         } else {
+          print("Upload failed: ${response.statusCode} - $respStr");
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to upload document')),
+            SnackBar(content: Text('Failed: $respStr')),
           );
         }
       }
@@ -466,7 +474,8 @@ class _InfoRow extends StatelessWidget {
             child: _InfoTile(
               icon: LucideIcons.calendar,
               label: 'Started',
-              value: order.status == ServiceStatus.notInitialized ? '-' : dateStr,
+              value:
+                  order.status == ServiceStatus.notInitialized ? '-' : dateStr,
             ),
           ),
         ],
@@ -872,7 +881,8 @@ class _FinalDeliverySection extends StatelessWidget {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
-                onTap: () => _downloadDocument(context, doc.documentId, doc.name),
+                onTap: () =>
+                    _downloadDocument(context, doc.documentId, doc.name),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Row(

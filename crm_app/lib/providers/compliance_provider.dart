@@ -13,7 +13,8 @@ final selectedEntityProvider = StateProvider<String>((ref) {
 });
 
 /// Real-time stream of [ComplianceReminder] documents from the database.
-final complianceRemindersProvider = StreamProvider<List<ComplianceReminder>>((ref) {
+final complianceRemindersProvider =
+    StreamProvider<List<ComplianceReminder>>((ref) {
   final uid = ref.watch(authStateProvider).value?.uid;
   if (uid == null) return Stream.value([]);
 
@@ -21,9 +22,11 @@ final complianceRemindersProvider = StreamProvider<List<ComplianceReminder>>((re
 
   Future<void> fetchReminders() async {
     try {
-      final response = await http.get(
-        Uri.parse('$kBaseUrl/api/compliance/user/$uid'),
-      ).timeout(const Duration(seconds: 5));
+      final response = await http
+          .get(
+            Uri.parse('$kBaseUrl/api/compliance/user/$uid'),
+          )
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -32,7 +35,7 @@ final complianceRemindersProvider = StreamProvider<List<ComplianceReminder>>((re
           try {
             final map = r as Map<String, dynamic>;
             final id = map['_id']?.toString() ?? '';
-            
+
             // Map status string to ReminderStatus enum
             ReminderStatus status = ReminderStatus.expiringSoon;
             final statusStr = map['status']?.toString();
@@ -42,9 +45,20 @@ final complianceRemindersProvider = StreamProvider<List<ComplianceReminder>>((re
               status = ReminderStatus.expired;
             }
 
-            final serviceName = map['serviceName']?.toString() ?? '';
-            final entityName = map['entityName']?.toString() ?? '';
-            
+            final serviceName =
+                (map['title'] ?? map['serviceName'])?.toString() ??
+                    'Compliance Alert';
+
+            // Extract entity name from either direct property or nested client_id
+            String entityName = map['entityName']?.toString() ?? '';
+            if (entityName.isEmpty && map['client_id'] != null) {
+              final clientIdMap = map['client_id'] as Map<String, dynamic>;
+              entityName = clientIdMap['company_name']?.toString() ??
+                  clientIdMap['owner_name']?.toString() ??
+                  '';
+            }
+            if (entityName.isEmpty) entityName = 'Individual';
+
             int days = 0;
             final daysVal = map['daysLeft'];
             if (daysVal != null) {
@@ -73,7 +87,7 @@ final complianceRemindersProvider = StreamProvider<List<ComplianceReminder>>((re
             );
           }
         }).toList();
-        
+
         if (!controller.isClosed) {
           controller.add(reminders);
         }
@@ -94,7 +108,8 @@ final complianceRemindersProvider = StreamProvider<List<ComplianceReminder>>((re
   fetchReminders();
 
   // Poll database every 4 seconds for real-time compliance updates
-  final timer = Timer.periodic(const Duration(seconds: 4), (_) => fetchReminders());
+  final timer =
+      Timer.periodic(const Duration(seconds: 4), (_) => fetchReminders());
 
   ref.onDispose(() {
     timer.cancel();

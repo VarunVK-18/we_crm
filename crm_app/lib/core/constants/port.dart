@@ -7,13 +7,13 @@ const bool isEmulator = false;
 String getBaseUrl() {
   if (useLocalBackend) {
     if (kIsWeb) {
-      return 'http://192.168.0.2:5001';
+      return 'http://127.0.0.1:5001';
     }
     if (Platform.isAndroid && isEmulator) {
-      return 'http://192.168.0.2:5001'; // Android emulator specific loopback
+      return 'http://127.0.0.1:5001'; // Android emulator specific loopback
     }
     // For iOS simulator, iOS physical device, and Android physical device:
-    return 'http://192.168.0.2:5001';
+    return 'http://127.0.0.1:5001';
   }
   return 'https://peoplesoft-develop.onrender.com'; // Develop Backend
 }

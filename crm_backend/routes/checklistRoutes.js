@@ -33,6 +33,6 @@ router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'clien
 
 // Document upload route for Flutter customers
 const { uploadRequestedDocuments } = require('../controllers/checklistController');
-router.post('/checklists/:id/upload-documents', checkUser, upload.array('documents'), uploadRequestedDocuments);
+router.post('/checklists/:id/upload-documents', checkUser, upload.any(), uploadRequestedDocuments);
 
 module.exports = router;
