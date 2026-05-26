@@ -1,0 +1,157 @@
+<div class="client-dashboard-container fade-in">
+  <!-- Header / Navigation -->
+  <header class="cd-header">
+    <button class="back-btn" (click)="goBack.emit()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to Clients
+    </button>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading client details...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-state">
+      <p>{{ errorMessage() }}</p>
+      <button class="retry-btn" (click)="fetchClientDetails()">Retry</button>
+    </div>
+  } @else if (client()) {
+    <div class="cd-grid">
+      <!-- Left Panel: Profile Summary -->
+      <aside class="cd-sidebar">
+        <div class="profile-card">
+          <div class="avatar-large">
+            {{ getInitials() }}
+          </div>
+          <h2 class="client-name">{{ client().owner_name }}</h2>
+          <p class="client-company">{{ client().company_name || 'Individual Account' }}</p>
+          <div class="status-badge" [class.active]="client().status === 'active'">
+            {{ client().status | titlecase }}
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Contact Information</h3>
+          <div class="info-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            <a [href]="'mailto:' + client().email">{{ client().email }}</a>
+          </div>
+          <div class="info-row">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <a [href]="'tel:' + client().phone">{{ client().phone || 'N/A' }}</a>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Business Details</h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Structure</span>
+              <span class="value">{{ client().business_type || 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">PAN</span>
+              <span class="value">{{ client().pan || 'N/A' }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">GSTIN</span>
+              <span class="value">{{ client().gstin || 'N/A' }}</span>
+            </div>
+          </div>
+          <div class="address-box">
+            <span class="label">Registered Address</span>
+            <p>{{ client().address || 'No address provided.' }}</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Panel: Main Content -->
+      <main class="cd-main-content">
+        <nav class="cd-tabs">
+          <button [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">Overview</button>
+          <button [class.active]="activeTab() === 'services'" (click)="setTab('services')">Active Services ({{ client().services?.length || 0 }})</button>
+          <button [class.active]="activeTab() === 'tasks'" (click)="setTab('tasks')">Tasks & Checklists</button>
+          <button [class.active]="activeTab() === 'documents'" (click)="setTab('documents')">Documents</button>
+        </nav>
+
+        <div class="cd-tab-content">
+          @if (activeTab() === 'overview') {
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-title">Total Services</div>
+                <div class="stat-value">{{ client().services?.length || 0 }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-title">Active Tasks</div>
+                <div class="stat-value">{{ client().stats?.tasks || 0 }}</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-title">Uploaded Docs</div>
+                <div class="stat-value">{{ client().stats?.documents || (client().onboarding_documents?.length || 0) }}</div>
+              </div>
+            </div>
+            
+            <div class="recent-activity">
+              <h3>Recent Activity</h3>
+              <div class="empty-state">
+                <p>No recent activity found for this client.</p>
+              </div>
+            </div>
+          }
+
+          @if (activeTab() === 'services') {
+            <div class="services-list">
+              @if (client().services && client().services.length > 0) {
+                @for (svc of client().services; track svc) {
+                  <div class="service-item-card">
+                    <div class="service-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <div class="service-details">
+                      <h4>{{ svc }}</h4>
+                      <p>Active Subscription</p>
+                    </div>
+                    <div class="service-status">Active</div>
+                  </div>
+                }
+              } @else {
+                <div class="empty-state">
+                  <p>No services assigned to this client yet.</p>
+                </div>
+              }
+            </div>
+          }
+
+          @if (activeTab() === 'tasks') {
+            <div class="empty-state">
+              <p>Task integration coming soon.</p>
+            </div>
+          }
+
+          @if (activeTab() === 'documents') {
+            <div class="documents-grid">
+              @if (client().onboarding_documents && client().onboarding_documents.length > 0) {
+                @for (doc of client().onboarding_documents; track doc.url) {
+                  <a [href]="doc.url" target="_blank" class="document-card">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <span>{{ doc.name || 'Document' }}</span>
+                  </a>
+                }
+              } @else {
+                <div class="empty-state">
+                  <p>No documents uploaded by this client.</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </main>
+    </div>
+  }
+</div>
+

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, input } from '@angular/core';
+import { Component, OnInit, signal, input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -20,6 +20,7 @@ import { Api } from '../../api';
   styleUrl: './clients-directory.css'
 })
 export class ClientsDirectory implements OnInit {
+  @Output() onViewClient = new EventEmitter<string>();
   user = signal<any>(null);
   clients = signal<any[]>([]);
   teams = input<any[]>([]);
@@ -121,10 +122,10 @@ export class ClientsDirectory implements OnInit {
       return this.clients();
     }
     return this.clients().filter(c => 
-      (c.owner_name || '').toLowerCase().includes(query) ||
-      (c.company_name || '').toLowerCase().includes(query) ||
-      (c.email || '').toLowerCase().includes(query) ||
-      (c.phone || '').toLowerCase().includes(query)
+      String(c.owner_name || '').toLowerCase().includes(query) ||
+      String(c.company_name || '').toLowerCase().includes(query) ||
+      String(c.email || '').toLowerCase().includes(query) ||
+      String(c.phone || '').toLowerCase().includes(query)
     );
   }
 
@@ -365,4 +366,9 @@ export class ClientsDirectory implements OnInit {
       }
     });
   }
+
+  viewClientDashboard(client: any) {
+    this.onViewClient.emit(client._id);
+  }
 }
+

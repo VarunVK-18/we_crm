@@ -16,6 +16,7 @@ import { ServiceChecklists } from './service-checklists/service-checklists';
 import { AuditLogs } from './audit-logs/audit-logs';
 import { SystemSettings } from './system-settings/system-settings';
 import { RequestsComponent } from './requests/requests';
+import { ClientDashboard } from './client-dashboard/client-dashboard';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,13 +33,15 @@ import { RequestsComponent } from './requests/requests';
     ServiceChecklists,
     AuditLogs,
     SystemSettings,
-    RequestsComponent
+    RequestsComponent,
+    ClientDashboard
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
 export class Dashboard implements OnInit {
   currentTab = signal<string>('dashboard');
+  selectedClientId = signal<string | null>(null);
   user = signal<any>(null);
   teams = signal<any[]>([]);
 
@@ -125,13 +128,22 @@ export class Dashboard implements OnInit {
   }
 
   handleTabChanged(tabId: string) {
+    if (tabId !== 'client-dashboard') {
+      this.selectedClientId.set(null);
+    }
     this.currentTab.set(tabId);
+  }
+
+  viewClient(clientId: string) {
+    this.selectedClientId.set(clientId);
+    this.currentTab.set('client-dashboard');
   }
 
   getTabLabel(): string {
     switch (this.currentTab()) {
       case 'dashboard': return 'Dashboard';
       case 'clients': return 'Clients Directory';
+      case 'client-dashboard': return 'Client Profile Dashboard';
       case 'team': return 'Employees & Team';
       case 'tasks': return 'Filing Tasks';
       case 'checklists': return 'Service Checklists';

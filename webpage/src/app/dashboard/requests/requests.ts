@@ -17,15 +17,42 @@ export class RequestsComponent implements OnInit {
   orders = signal<any[]>([]);
   teams = signal<any[]>([]);
   isLoading = signal<boolean>(true);
-  
+  toastMessage = signal<string>('');
+  toastType = signal<'success' | 'error'>('success');
+
   // Icons
   readonly UserIcon = UserIcon;
   readonly CheckmarkBadge01Icon = CheckmarkBadge01Icon;
   readonly Time01Icon = Time01Icon;
 
+  // Filter state
+  statusFilter = signal<string>('all');
+
+  readonly NEW_STATUSES = ['new', 'pending'];
+
+  filteredOrders = computed(() => {
+    const filter = this.statusFilter();
+    const all = this.orders();
+    if (filter === 'all') return all;
+    if (filter === 'new') {
+      return all.filter((o: any) => this.NEW_STATUSES.includes((o.status || '').toLowerCase()));
+    }
+    return all.filter((o: any) => (o.status || '').toLowerCase() === filter);
+  });
+
+  orderCounts = computed(() => {
+    const all = this.orders();
+    return {
+      all: all.length,
+      new: all.filter((o: any) => this.NEW_STATUSES.includes((o.status || '').toLowerCase())).length,
+      active: all.filter((o: any) => (o.status || '').toLowerCase() === 'active').length,
+      complete: all.filter((o: any) => (o.status || '').toLowerCase() === 'complete').length,
+    };
+  });
+
   // Selected employee per order { orderId: employeeData }
   selectedEmployeeForOrder = signal<Record<string, any>>({});
-  
+
   constructor(private api: Api) {}
 
   ngOnInit() {
@@ -37,9 +64,15 @@ export class RequestsComponent implements OnInit {
         console.error('Failed to parse user', e);
       }
     }
-    
+
     this.fetchOrders();
     this.fetchTeam();
+  }
+
+  showToast(message: string, type: 'success' | 'error' = 'success') {
+    this.toastMessage.set(message);
+    this.toastType.set(type);
+    setTimeout(() => this.toastMessage.set(''), 3500);
   }
 
   getCompanyId(): string | null {
@@ -53,33 +86,39 @@ export class RequestsComponent implements OnInit {
 
   fetchOrders() {
     const companyId = this.getCompanyId();
-    if (!companyId) return;
+    if (!companyId) {
+      this.isLoading.set(false);
+      return;
+    }
 
     this.isLoading.set(true);
     this.api.get<any>(`orders/company/${companyId}`).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res && res.orders) {
-          // Only show orders that need to be worked on
-          const activeOrders = res.orders.filter((o: any) => o.status !== 'complete');
-          this.orders.set(activeOrders);
+          // Sort by newest first
+          const sorted = [...res.orders].sort((a: any, b: any) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          this.orders.set(sorted);
         }
         this.isLoading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error fetching orders:', err);
         this.isLoading.set(false);
+        this.showToast('Failed to load requests.', 'error');
       }
     });
   }
 
   fetchTeam() {
     this.api.get<any>('users/team/my-team').subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res && res.groups) {
           this.teams.set(res.groups);
         }
       },
-      error: (err) => console.error('Error fetching team:', err)
+      error: (err: any) => console.error('Error fetching team:', err)
     });
   }
 
@@ -92,12 +131,12 @@ export class RequestsComponent implements OnInit {
     });
     return flat;
   }
-  
+
   onEmployeeSelectChange(orderId: string, event: any) {
     const empId = event.target.value;
     const allEmps = this.getFlatEmployees();
     const selectedEmp = allEmps.find(e => e.id === empId);
-    
+
     if (selectedEmp) {
       this.selectedEmployeeForOrder.update(prev => ({ ...prev, [orderId]: selectedEmp }));
     } else {
@@ -112,10 +151,10 @@ export class RequestsComponent implements OnInit {
   assignEmployee(orderId: string) {
     const emp = this.selectedEmployeeForOrder()[orderId];
     if (!emp) {
-      alert('Please select an employee first.');
+      this.showToast('Please select an employee first.', 'error');
       return;
     }
-    
+
     const updateData = {
       assignedExpert: emp.name,
       expertPhone: emp.phone || '',
@@ -123,17 +162,17 @@ export class RequestsComponent implements OnInit {
     };
 
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
-      next: (res) => {
-        alert('Employee assigned successfully!');
+      next: (res: any) => {
+        this.showToast(`Assigned to ${emp.name} successfully!`, 'success');
         this.fetchOrders();
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error assigning employee', err);
-        alert('Failed to assign employee.');
+        this.showToast('Failed to assign employee.', 'error');
       }
     });
   }
-  
+
   formatDate(dateString: string): string {
     if (!dateString) return '';
     const date = new Date(dateString);

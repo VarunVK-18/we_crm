@@ -62,7 +62,13 @@
         <app-requests></app-requests>
       }
       @if (currentTab() === 'clients' && user()?.role !== 'filling_staff' && user()?.role !== 'account_manager') {
-        <app-clients-directory [teams]="teams()"></app-clients-directory>
+        <app-clients-directory [teams]="teams()" (onViewClient)="viewClient($event)"></app-clients-directory>
+      }
+      @if (currentTab() === 'client-dashboard' && selectedClientId()) {
+        <app-client-dashboard 
+          [clientId]="selectedClientId()!"
+          (goBack)="handleTabChanged('clients')">
+        </app-client-dashboard>
       }
       @if (currentTab() === 'team') {
         <app-employees-team [teams]="teams()" (refreshTeams)="fetchTeams()"></app-employees-team>

@@ -645,18 +645,51 @@ const subscribeService = async (req, res) => {
           }));
         }
 
+        // ── Correct Workflow: Route new service to Client Manager first ──────
+        // Correct flow: Client → Client Manager → Filing Staff / Account Manager
+        // We should NOT auto-assign to filing_staff. Find the client manager who
+        // onboarded this client, or fall back to any client_manager in the company.
+        let assignedClientManager = null;
+
+        // Priority 1: The person who created/onboarded this client
+        if (user.created_by) {
+          const creator = await User.findById(user.created_by).select('_id role');
+          if (creator && creator.role === 'client_manager') {
+            assignedClientManager = creator._id;
+          }
+        }
+
+        // Priority 2: Any client_manager in the same company
+        if (!assignedClientManager && user.company_id) {
+          const companyManager = await User.findOne({
+            company_id: user.company_id,
+            role: 'client_manager'
+          }).select('_id');
+          if (companyManager) {
+            assignedClientManager = companyManager._id;
+          }
+        }
+
+        // Priority 3: Only fall back to existing assigned_to if they are NOT filing staff
+        if (!assignedClientManager && user.assigned_to) {
+          const currentAssignee = await User.findById(user.assigned_to).select('_id role');
+          if (currentAssignee && currentAssignee.role !== 'filling_staff') {
+            assignedClientManager = currentAssignee._id;
+          }
+        }
+
         await Checklist.create({
-          company_id: user.company_id || '000000000000000000000000', // fallback if null
+          company_id: user.company_id || '000000000000000000000000',
           client_id: user._id,
           service_name: serviceName,
-          assigned_to: user.assigned_to || null,
-          created_by: user._id, 
+          assigned_to: assignedClientManager, // Routes to client manager first
+          created_by: user._id,
           items: finalItems,
           status: 'pending',
           stage: 'quotePending',
-          notes: 'Automatically generated from app registration.'
+          notes: 'Automatically generated from app registration. Awaiting Client Manager review.'
         });
-        console.log(`Automatically created checklist for ${serviceName}`);
+        console.log(`Automatically created checklist for ${serviceName}, assigned to client manager: ${assignedClientManager}`);
       } catch (e) {
         console.error('Error creating checklist automatically:', e);
       }
