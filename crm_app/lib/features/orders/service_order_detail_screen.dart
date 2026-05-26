@@ -318,9 +318,8 @@ class _RequestedDocumentsSection extends ConsumerWidget {
 
       if (result != null && result.files.single.path != null) {
         final filePath = result.files.single.path!;
-        // Hardcoding the exact IP of this Windows machine to ensure it connects correctly
         final uri = Uri.parse(
-            'http://127.0.0.1:5001/api/checklists/${order.id}/upload-documents');
+            '$kBaseUrl/api/checklists/${order.id}/upload-documents');
 
         final request = http.MultipartRequest('POST', uri);
         request.files
