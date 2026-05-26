@@ -1,6 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, ViewChild, ElementRef, AfterViewInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Api } from '../../api';
+import Chart from 'chart.js/auto';
 
 @Component({
   selector: 'app-home-overview',
@@ -9,12 +10,24 @@ import { Api } from '../../api';
   templateUrl: './home-overview.html',
   styleUrl: './home-overview.css'
 })
-export class HomeOverview implements OnInit {
+export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
+  @Output() viewRequests = new EventEmitter<void>();
+
+  @ViewChild('growthChart') growthChartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('revenueChart') revenueChartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('activityChart') activityChartCanvas!: ElementRef<HTMLCanvasElement>;
+
+  private growthChartInstance: any = null;
+  private revenueChartInstance: any = null;
+  private activityChartInstance: any = null;
+
   user = signal<any>(null);
   complianceReminders = signal<any[]>([]);
   orders = signal<any[]>([]);
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
+  checklists = signal<any[]>([]);
+  ongoingItems = signal<any[]>([]);
 
   stats: any[] = [
     { title: 'Active Services', value: '0', detail: '+12% from last month', isTrendUp: true },
@@ -35,8 +48,9 @@ export class HomeOverview implements OnInit {
         // Fetch all metrics data
         this.fetchClients();
         this.fetchTasks();
+        this.fetchChecklists();
         
-        if (parsedUser.role === 'admin') {
+        if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager') {
           this.fetchCompanyComplianceReminders();
           this.fetchCompanyOrders();
         }
@@ -44,6 +58,21 @@ export class HomeOverview implements OnInit {
         console.error('Failed to parse user in HomeOverview:', e);
       }
     }
+  }
+
+  ngAfterViewInit() {
+    // Small delay to ensure templates have completed rendering and canvases are fully loaded in DOM
+    setTimeout(() => {
+      this.initOrUpdateCharts();
+    }, 100);
+  }
+
+  ngOnDestroy() {
+    this.destroyCharts();
+  }
+
+  goToRequests() {
+    this.viewRequests.emit();
   }
 
   getGreeting(): string {
@@ -90,6 +119,7 @@ export class HomeOverview implements OnInit {
         if (res && res.clients) {
           this.clients.set(res.clients);
           this.updateStats();
+          this.initOrUpdateCharts();
         }
       }
     });
@@ -100,7 +130,22 @@ export class HomeOverview implements OnInit {
       next: (res) => {
         if (res && res.success) {
           this.tasks.set(res.tasks);
+          this.combineOngoingItems();
           this.updateStats();
+          this.initOrUpdateCharts();
+        }
+      }
+    });
+  }
+
+  fetchChecklists() {
+    this.api.get<any>('checklists').subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.checklists.set(res.checklists);
+          this.combineOngoingItems();
+          this.updateStats();
+          this.initOrUpdateCharts();
         }
       }
     });
@@ -114,6 +159,7 @@ export class HomeOverview implements OnInit {
         if (res && res.reminders) {
           this.complianceReminders.set(res.reminders);
           this.updateStats();
+          this.initOrUpdateCharts();
         }
       }
     });
@@ -127,8 +173,311 @@ export class HomeOverview implements OnInit {
         if (res && res.orders) {
           this.orders.set(res.orders);
           this.updateStats();
+          this.initOrUpdateCharts();
         }
       }
+    });
+  }
+
+  combineOngoingItems() {
+    const list: any[] = [];
+    
+    // Add checklists
+    this.checklists().forEach(c => {
+      list.push({
+        _id: c._id,
+        title: c.service_name,
+        clientName: c.client_id?.owner_name || 'Client',
+        assignedTo: c.assigned_to?.owner_name || 'Unassigned',
+        status: c.status === 'completed' ? 'Certified' : (c.status === 'in_progress' ? 'In Progress' : 'Pending'),
+        isCompleted: c.status === 'completed',
+        createdAt: c.createdAt,
+        type: 'certification'
+      });
+    });
+
+    // Add tasks
+    this.tasks().forEach(t => {
+      list.push({
+        _id: t._id,
+        title: t.title,
+        clientName: t.client_id?.owner_name || 'Client',
+        assignedTo: t.assigned_to?.owner_name || 'Unassigned',
+        status: t.status,
+        isCompleted: t.status === 'Completed' || t.status === 'Approved',
+        createdAt: t.createdAt,
+        type: 'task'
+      });
+    });
+
+    // Sort by createdAt descending
+    list.sort((a, b) => {
+      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return db - da;
+    });
+
+    this.ongoingItems.set(list);
+  }
+
+  destroyCharts() {
+    if (this.growthChartInstance) {
+      this.growthChartInstance.destroy();
+      this.growthChartInstance = null;
+    }
+    if (this.revenueChartInstance) {
+      this.revenueChartInstance.destroy();
+      this.revenueChartInstance = null;
+    }
+    if (this.activityChartInstance) {
+      this.activityChartInstance.destroy();
+      this.activityChartInstance = null;
+    }
+  }
+
+  selectedPeriod = signal<string>('last6Months');
+
+  getPeriodLabel(): string {
+    const map: Record<string, string> = {
+      thisMonth: 'This Month',
+      last6Days: 'Last 6 Days',
+      last6Months: 'Last 6 Months'
+    };
+    return map[this.selectedPeriod()] || 'Last 6 Months';
+  }
+
+  filterPeriod(period: string) {
+    this.selectedPeriod.set(period);
+    this.initOrUpdateCharts();
+  }
+
+  initOrUpdateCharts() {
+    // Only construct if canvas elements are available in the DOM
+    if (!this.growthChartCanvas || !this.revenueChartCanvas || !this.activityChartCanvas) {
+      return;
+    }
+
+    this.destroyCharts();
+
+    let chartLabels: string[] = [];
+    let line1Data: number[] = [];
+    let line2Data: number[] = [];
+    let revenueDataPoints: number[] = [];
+    let clientActivityPoints: number[] = [];
+
+    const now = new Date();
+    const period = this.selectedPeriod();
+
+    if (period === 'last6Days') {
+      // 6 Days period
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        chartLabels.push(d.getDate() + ' ' + d.toLocaleString('default', { month: 'short' }));
+        
+        const start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0).getTime();
+        const end = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59).getTime();
+
+        let tasksCreated = 0;
+        let tasksCompleted = 0;
+        let revSum = 0;
+        let clientsCount = 0;
+
+        this.tasks().forEach(t => {
+          if (!t.createdAt) return;
+          const time = new Date(t.createdAt).getTime();
+          if (time >= start && time <= end) {
+            tasksCreated++;
+            if (t.status === 'Completed' || t.status === 'Approved') tasksCompleted++;
+          }
+        });
+
+        this.checklists().forEach(c => {
+          if (!c.createdAt) return;
+          const time = new Date(c.createdAt).getTime();
+          if (time >= start && time <= end) {
+            tasksCreated++;
+            if (c.status === 'completed') tasksCompleted++;
+          }
+        });
+
+        this.clients().forEach(client => {
+          if (!client.createdAt) return;
+          const time = new Date(client.createdAt).getTime();
+          if (time >= start && time <= end) {
+            clientsCount++;
+            revSum += client.revenue || 0;
+          }
+        });
+
+        line1Data.push(tasksCreated);
+        line2Data.push(tasksCompleted);
+        revenueDataPoints.push(revSum);
+        clientActivityPoints.push(clientsCount);
+      }
+    } else if (period === 'thisMonth') {
+      // This Month period (by weeks)
+      chartLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+
+      const weekBounds = [
+        { start: new Date(currentYear, currentMonth, 1).getTime(), end: new Date(currentYear, currentMonth, 7, 23, 59, 59).getTime() },
+        { start: new Date(currentYear, currentMonth, 8).getTime(), end: new Date(currentYear, currentMonth, 14, 23, 59, 59).getTime() },
+        { start: new Date(currentYear, currentMonth, 15).getTime(), end: new Date(currentYear, currentMonth, 21, 23, 59, 59).getTime() },
+        { start: new Date(currentYear, currentMonth, 22).getTime(), end: new Date(currentYear, currentMonth, 31, 23, 59, 59).getTime() }
+      ];
+
+      for (let i = 0; i < 4; i++) {
+        const bounds = weekBounds[i];
+        let tasksCreated = 0;
+        let tasksCompleted = 0;
+        let revSum = 0;
+        let clientsCount = 0;
+
+        this.tasks().forEach(t => {
+          if (!t.createdAt) return;
+          const time = new Date(t.createdAt).getTime();
+          if (time >= bounds.start && time <= bounds.end) {
+            tasksCreated++;
+            if (t.status === 'Completed' || t.status === 'Approved') tasksCompleted++;
+          }
+        });
+
+        this.checklists().forEach(c => {
+          if (!c.createdAt) return;
+          const time = new Date(c.createdAt).getTime();
+          if (time >= bounds.start && time <= bounds.end) {
+            tasksCreated++;
+            if (c.status === 'completed') tasksCompleted++;
+          }
+        });
+
+        this.clients().forEach(client => {
+          if (!client.createdAt) return;
+          const time = new Date(client.createdAt).getTime();
+          if (time >= bounds.start && time <= bounds.end) {
+            clientsCount++;
+            revSum += client.revenue || 0;
+          }
+        });
+
+        line1Data.push(tasksCreated);
+        line2Data.push(tasksCompleted);
+        revenueDataPoints.push(revSum);
+        clientActivityPoints.push(clientsCount);
+      }
+    } else {
+      // Last 6 Months (default)
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        chartLabels.push(d.toLocaleString('default', { month: 'short' }));
+      }
+
+      const taskCountByMonth = [0, 0, 0, 0, 0, 0];
+      const completedTaskCountByMonth = [0, 0, 0, 0, 0, 0];
+
+      this.tasks().forEach(task => {
+        if (!task.createdAt) return;
+        const createdDate = new Date(task.createdAt);
+        const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
+        if (diffMonths >= 0 && diffMonths < 6) {
+          const index = 5 - diffMonths;
+          taskCountByMonth[index]++;
+          if (task.status === 'Completed' || task.status === 'Approved') {
+            completedTaskCountByMonth[index]++;
+          }
+        }
+      });
+
+      this.checklists().forEach(checklist => {
+        if (!checklist.createdAt) return;
+        const createdDate = new Date(checklist.createdAt);
+        const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
+        if (diffMonths >= 0 && diffMonths < 6) {
+          const index = 5 - diffMonths;
+          taskCountByMonth[index]++;
+          if (checklist.status === 'completed') {
+            completedTaskCountByMonth[index]++;
+          }
+        }
+      });
+
+      line1Data = taskCountByMonth;
+      line2Data = completedTaskCountByMonth;
+
+      const revenueByMonth = [0, 0, 0, 0, 0, 0];
+      this.clients().forEach(client => {
+        const createdDate = client.createdAt ? new Date(client.createdAt) : new Date();
+        const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
+        if (diffMonths >= 0 && diffMonths < 6) {
+          const index = 5 - diffMonths;
+          revenueByMonth[index] += client.revenue || 0;
+        }
+      });
+      revenueDataPoints = revenueByMonth;
+
+      const clientCountByMonth = [0, 0, 0, 0, 0, 0];
+      this.clients().forEach(client => {
+        const createdDate = client.createdAt ? new Date(client.createdAt) : new Date();
+        const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
+        if (diffMonths >= 0 && diffMonths < 6) {
+          const index = 5 - diffMonths;
+          clientCountByMonth[index]++;
+        }
+      });
+      clientActivityPoints = clientCountByMonth;
+    }
+
+    const ctxGrowth = this.growthChartCanvas.nativeElement.getContext('2d');
+    const ctxRevenue = this.revenueChartCanvas.nativeElement.getContext('2d');
+    const ctxActivity = this.activityChartCanvas.nativeElement.getContext('2d');
+
+    if (!ctxGrowth || !ctxRevenue || !ctxActivity) return;
+
+    const chartConfigDefaults = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { display: false },
+        x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } }
+      }
+    };
+
+    this.growthChartInstance = new Chart(ctxGrowth, {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          { label: 'Total Tasks', data: line1Data, borderColor: '#006a61', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+          { label: 'Completed', data: line2Data, borderColor: '#000000', borderWidth: 2, tension: 0.4, pointRadius: 0, borderDash: [5, 5] }
+        ]
+      },
+      options: chartConfigDefaults
+    });
+
+    this.revenueChartInstance = new Chart(ctxRevenue, {
+      type: 'bar',
+      data: {
+        labels: chartLabels,
+        datasets: [{ 
+          data: revenueDataPoints,
+          backgroundColor: '#006a61',
+          borderRadius: 4
+        }]
+      },
+      options: chartConfigDefaults
+    });
+
+    this.activityChartInstance = new Chart(ctxActivity, {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          { label: 'Clients Onboarded', data: clientActivityPoints, fill: true, backgroundColor: 'rgba(0,106,97,0.05)', borderColor: '#006a61', borderWidth: 2, tension: 0.4, pointRadius: 0 }
+        ]
+      },
+      options: chartConfigDefaults
     });
   }
 
@@ -193,3 +542,4 @@ export class HomeOverview implements OnInit {
     ];
   }
 }
+

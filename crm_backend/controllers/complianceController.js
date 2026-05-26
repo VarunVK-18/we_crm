@@ -16,11 +16,15 @@ const getDynamicReminders = (checklists) => {
           else if (daysLeft <= 7) status = 'urgent';
 
           dynamicReminders.push({
-            _id: doc._id || doc.document_id, // Use document ID
-            serviceName: checklist.service_name + (doc.name ? ` (${doc.name})` : ''),
-            entityName: checklist.company_id ? checklist.company_id.company_name : 'Default Entity',
+            _id: doc._id || doc.document_id,
+            title: checklist.service_name + (doc.name ? ` (${doc.name})` : ''),
+            dueDate: doc.expiry_date,
             daysLeft,
-            status
+            status,
+            client_id: {
+              owner_name: checklist.client_id ? checklist.client_id.owner_name : 'Client',
+              company_name: checklist.client_id ? checklist.client_id.company_name : 'Individual'
+            }
           });
         }
       }
@@ -39,16 +43,31 @@ exports.getUserComplianceReminders = async (req, res) => {
     }
 
     // 1. Fetch static/manual compliance reminders
-    const manualReminders = await ComplianceReminder.find({ clientUid: userId });
+    const manualReminders = await ComplianceReminder.find({ clientUid: userId }).lean();
+
+    // Fetch user details for the manual reminders to map client_id structure
+    const client = await User.findById(userId).select('owner_name company_name').lean();
+    const manualRemindersMapped = manualReminders.map(rem => ({
+      _id: rem._id,
+      title: rem.serviceName,
+      dueDate: new Date(Date.now() + rem.daysLeft * 24 * 60 * 60 * 1000),
+      daysLeft: rem.daysLeft,
+      status: rem.status,
+      client_id: {
+        owner_name: client ? client.owner_name : 'Client',
+        company_name: client ? client.company_name : 'Individual'
+      }
+    }));
 
     // 2. Fetch dynamic compliance reminders from completed checklists
     const completedChecklists = await Checklist.find({ client_id: userId, status: 'completed' })
-      .populate('company_id', 'company_name');
+      .populate('company_id', 'company_name')
+      .populate('client_id', 'owner_name company_name');
 
     const dynamicReminders = getDynamicReminders(completedChecklists);
 
     // 3. Merge and sort
-    const reminders = [...manualReminders, ...dynamicReminders].sort((a, b) => a.daysLeft - b.daysLeft);
+    const reminders = [...manualRemindersMapped, ...dynamicReminders].sort((a, b) => a.daysLeft - b.daysLeft);
 
     res.status(200).json({ reminders });
   } catch (error) {
@@ -109,20 +128,40 @@ exports.getCompanyComplianceReminders = async (req, res) => {
     }
 
     // 1. Get client IDs for this company
-    const clients = await User.find({ company_id: companyId, role: 'customer' }).select('_id');
+    const clients = await User.find({ company_id: companyId, role: 'customer' }).select('_id owner_name company_name').lean();
     const clientIds = clients.map(client => client._id.toString());
 
+    const clientMap = {};
+    clients.forEach(c => {
+      clientMap[c._id.toString()] = c;
+    });
+
     // 2. Fetch manual reminders for these clients
-    const manualReminders = await ComplianceReminder.find({ clientUid: { $in: clientIds } });
+    const manualReminders = await ComplianceReminder.find({ clientUid: { $in: clientIds } }).lean();
+    const manualRemindersMapped = manualReminders.map(rem => {
+      const client = clientMap[rem.clientUid] || { owner_name: 'Client', company_name: 'Individual' };
+      return {
+        _id: rem._id,
+        title: rem.serviceName,
+        dueDate: new Date(Date.now() + rem.daysLeft * 24 * 60 * 60 * 1000),
+        daysLeft: rem.daysLeft,
+        status: rem.status,
+        client_id: {
+          owner_name: client.owner_name,
+          company_name: client.company_name
+        }
+      };
+    });
 
     // 3. Fetch dynamic compliance reminders from completed checklists for this company
     const completedChecklists = await Checklist.find({ company_id: companyId, status: 'completed' })
-      .populate('company_id', 'company_name');
+      .populate('company_id', 'company_name')
+      .populate('client_id', 'owner_name company_name');
 
     const dynamicReminders = getDynamicReminders(completedChecklists);
 
     // 4. Merge and sort
-    const reminders = [...manualReminders, ...dynamicReminders].sort((a, b) => a.daysLeft - b.daysLeft);
+    const reminders = [...manualRemindersMapped, ...dynamicReminders].sort((a, b) => a.daysLeft - b.daysLeft);
 
     res.status(200).json({ reminders });
   } catch (error) {

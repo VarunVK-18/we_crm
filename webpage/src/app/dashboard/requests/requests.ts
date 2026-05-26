@@ -26,7 +26,7 @@ export class RequestsComponent implements OnInit {
   readonly Time01Icon = Time01Icon;
 
   // Filter state
-  statusFilter = signal<string>('all');
+  statusFilter = signal<string>('new');
 
   readonly NEW_STATUSES = ['new', 'pending'];
   readonly NEW_STAGES = ['reqreceived', 'quot pending', 'quotepending'];
@@ -59,6 +59,8 @@ export class RequestsComponent implements OnInit {
 
   // Selected employee per order { orderId: employeeData }
   selectedEmployeeForOrder = signal<Record<string, any>>({});
+  // Deal closed amount per order { orderId: number }
+  dealClosedAmountForOrder = signal<Record<string, number>>({});
 
   constructor(private api: Api) {}
 
@@ -158,6 +160,11 @@ export class RequestsComponent implements OnInit {
     }
   }
 
+  onAmountChange(orderId: string, event: any) {
+    const val = event.target.value ? Number(event.target.value) : 0;
+    this.dealClosedAmountForOrder.update(prev => ({ ...prev, [orderId]: val }));
+  }
+
   assignEmployee(orderId: string) {
     const emp = this.selectedEmployeeForOrder()[orderId];
     if (!emp) {
@@ -165,15 +172,34 @@ export class RequestsComponent implements OnInit {
       return;
     }
 
-    const updateData = {
+    const amount = this.dealClosedAmountForOrder()[orderId] || 0;
+
+    const updateData: any = {
       assignedExpert: emp.name,
       expertPhone: emp.phone || '',
       stage: 'workAssigned'
     };
 
+    if (amount > 0) {
+      updateData.dealClosedAmount = amount;
+    }
+
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
       next: (res: any) => {
         this.showToast(`Assigned to ${emp.name} successfully!`, 'success');
+        
+        // Reset local selection & amount for this order
+        this.selectedEmployeeForOrder.update(prev => {
+          const next = { ...prev };
+          delete next[orderId];
+          return next;
+        });
+        this.dealClosedAmountForOrder.update(prev => {
+          const next = { ...prev };
+          delete next[orderId];
+          return next;
+        });
+
         this.fetchOrders();
       },
       error: (err: any) => {

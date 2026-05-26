@@ -35,6 +35,7 @@ export class Sidebar implements OnInit {
       items.push({ id: 'team', label: 'Employees & Team', color: '#8B5CF6' });
       items.push({ id: 'tasks', label: 'Filing Tasks', color: '#F59E0B' });
       items.push({ id: 'checklists', label: 'Checklists', color: '#06B6D4' });
+      items.push({ id: 'completed-checklists', label: 'Completed Checklists', color: '#10B981' });
       items.push({ id: 'logs', label: 'Audit Logs', color: '#EC4899' });
       items.push({ id: 'settings', label: 'System Settings', color: '#6366F1' });
 
@@ -44,16 +45,19 @@ export class Sidebar implements OnInit {
       items.push({ id: 'clients', label: 'My Clients', color: '#10B981' });
       items.push({ id: 'tasks', label: 'Filing Tasks', color: '#F59E0B' });
       items.push({ id: 'checklists', label: 'Checklists', color: '#06B6D4' });
+      items.push({ id: 'completed-checklists', label: 'Completed Checklists', color: '#10B981' });
 
     // ── Filing Staff: sees assigned tasks & checklists ──────
     } else if (role === 'filling_staff') {
       items.push({ id: 'tasks', label: 'My Tasks', color: '#F59E0B' });
       items.push({ id: 'checklists', label: 'My Checklists', color: '#06B6D4' });
+      items.push({ id: 'completed-checklists', label: 'Completed Checklists', color: '#10B981' });
 
     // ── Account Manager: same as filing staff ───────────────
     } else if (role === 'account_manager') {
       items.push({ id: 'tasks', label: 'My Tasks', color: '#F59E0B' });
       items.push({ id: 'checklists', label: 'My Checklists', color: '#06B6D4' });
+      items.push({ id: 'completed-checklists', label: 'Completed Checklists', color: '#10B981' });
     }
 
     return [{ header: '', items }];

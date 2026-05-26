@@ -164,7 +164,6 @@
   background-color: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -179,7 +178,6 @@
   left: 0;
   width: 4px;
   height: 100%;
-  background-color: var(--border-color);
   border-radius: 12px 0 0 12px;
 }
 
@@ -192,7 +190,6 @@
 }
 
 .request-card:hover {
-  transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0,0,0,0.08);
 }
 
@@ -319,6 +316,17 @@
   letter-spacing: 0.05em;
 }
 
+.assign-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.amount-assign-row {
+  display: flex;
+  gap: 10px;
+}
+
 .assign-actions {
   display: flex;
   gap: 10px;
@@ -364,7 +372,6 @@
 
 .btn-primary:hover {
   opacity: 0.9;
-  transform: translateY(-1px);
 }
 
 .assigned-alert {

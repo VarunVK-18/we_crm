@@ -56,6 +56,47 @@ exports.updateOrder = async (req, res) => {
       return res.status(404).json({ message: 'Order not found.' });
     }
 
+    if (updateData.dealClosedAmount) {
+      const clientUser = await User.findById(order.clientUid);
+      if (clientUser) {
+        clientUser.revenue = (clientUser.revenue || 0) + Number(updateData.dealClosedAmount);
+        await clientUser.save();
+        console.log(`Added dealClosedAmount ${updateData.dealClosedAmount} to user ${clientUser._id} revenue. New revenue: ${clientUser.revenue}`);
+      }
+    }
+
+    if (updateData.assignedExpert && updateData.assignedExpert !== 'To be assigned') {
+      try {
+        const Checklist = require('../models/Checklist');
+
+        // Find the employee by name to get their _id
+        const assignedEmployee = await User.findOne({
+          owner_name: updateData.assignedExpert
+        }).select('_id');
+
+        if (assignedEmployee) {
+          // Update all non-completed checklists for this client + service
+          const updated = await Checklist.updateMany(
+            {
+              client_id: order.clientUid,
+              service_name: order.serviceType,
+              status: { $ne: 'completed' }
+            },
+            {
+              $set: {
+                assigned_to: assignedEmployee._id,
+                stage: updateData.stage || 'workAssigned'
+              }
+            }
+          );
+          console.log(`Cascaded assignment to ${updated.modifiedCount} checklist(s) for ${order.serviceType}`);
+        }
+      } catch (cascadeErr) {
+        // Non-fatal — log but don't fail the order update
+        console.error('Warning: Could not cascade assignment to checklist:', cascadeErr.message);
+      }
+    }
+
     res.status(200).json({ message: 'Order updated successfully!', order });
   } catch (error) {
     console.error('Error updating order:', error);

@@ -89,8 +89,8 @@
           </div>
 
           <div class="card-footer">
-            <label class="assign-label">Assign Expert:</label>
-            <div class="assign-actions">
+            <div class="assign-field-group">
+              <label class="assign-label">Assign Expert:</label>
               <select class="form-control-input select-input" 
                       (change)="onEmployeeSelectChange(order._id, $event)">
                 <option value="">-- Select Employee --</option>
@@ -98,7 +98,18 @@
                   <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
                 }
               </select>
-              <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
+            </div>
+
+            <div class="assign-field-group">
+              <label class="assign-label">Deal Closed Amount (INR):</label>
+              <div class="amount-assign-row">
+                <input type="number" 
+                       class="form-control-input number-input" 
+                       placeholder="Enter amount (e.g. 5000)"
+                       [value]="dealClosedAmountForOrder()[order._id] || ''"
+                       (input)="onAmountChange(order._id, $event)">
+                <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
+              </div>
             </div>
             
             @if (order.assignedExpert && order.assignedExpert !== 'To be assigned') {

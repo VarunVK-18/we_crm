@@ -13,6 +13,7 @@ import { ClientsDirectory } from './clients-directory/clients-directory';
 import { EmployeesTeam } from './employees-team/employees-team';
 import { FilingTasks } from './filing-tasks/filing-tasks';
 import { ServiceChecklists } from './service-checklists/service-checklists';
+import { CompletedChecklists } from './completed-checklists/completed-checklists';
 import { AuditLogs } from './audit-logs/audit-logs';
 import { SystemSettings } from './system-settings/system-settings';
 import { RequestsComponent } from './requests/requests';
@@ -31,6 +32,7 @@ import { ClientDashboard } from './client-dashboard/client-dashboard';
     EmployeesTeam,
     FilingTasks,
     ServiceChecklists,
+    CompletedChecklists,
     AuditLogs,
     SystemSettings,
     RequestsComponent,
@@ -147,6 +149,7 @@ export class Dashboard implements OnInit {
       case 'team': return 'Employees & Team';
       case 'tasks': return 'Filing Tasks';
       case 'checklists': return 'Service Checklists';
+      case 'completed-checklists': return 'Completed Checklists';
       case 'requests': return 'New Requests';
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';

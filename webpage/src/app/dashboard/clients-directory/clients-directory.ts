@@ -84,6 +84,7 @@ export class ClientsDirectory implements OnInit {
   assignServiceSuccessMessage = signal<string>('');
   assignServiceClientId = '';
   assignServiceSelected = '';
+  assignServiceDealAmount = 0;
 
   constructor(private api: Api) {}
 
@@ -337,6 +338,7 @@ export class ClientsDirectory implements OnInit {
   openAssignServiceModal(clientId: string) {
     this.assignServiceClientId = clientId;
     this.assignServiceSelected = '';
+    this.assignServiceDealAmount = 0;
     this.assignServiceErrorMessage.set('');
     this.assignServiceSuccessMessage.set('');
     this.isAssignServiceModalOpen.set(true);
@@ -352,6 +354,7 @@ export class ClientsDirectory implements OnInit {
 
     const payload = new FormData();
     payload.append('service_name', this.assignServiceSelected);
+    payload.append('deal_closed_amount', String(this.assignServiceDealAmount || 0));
 
     this.api.post<any>(`users/profile/${this.assignServiceClientId}/subscribe-service`, payload).subscribe({
       next: (res) => {

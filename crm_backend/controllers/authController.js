@@ -587,7 +587,8 @@ const getAuditLogs = async (req, res) => {
 const subscribeService = async (req, res) => {
   try {
     const { id } = req.params;
-    const { serviceName } = req.body;
+    const serviceName = req.body.serviceName || req.body.service_name;
+    const dealClosedAmount = req.body.dealClosedAmount || req.body.deal_closed_amount;
 
     if (!serviceName) {
       return res.status(400).json({ message: 'Service name is required' });
@@ -596,6 +597,10 @@ const subscribeService = async (req, res) => {
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (dealClosedAmount) {
+      user.revenue = (user.revenue || 0) + Number(dealClosedAmount);
     }
 
     let isNewSubscription = false;

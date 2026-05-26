@@ -79,8 +79,15 @@ const getChecklists = async (req, res) => {
       // See only checklists assigned to them
       filter.assigned_to = req.user._id;
     } else if (role === 'client_manager') {
-      // See checklists they created
-      filter.created_by = req.user._id;
+      // See checklists for clients they created OR that are assigned to them
+      // (auto-generated checklists have created_by = client._id, not the manager's)
+      const myClients = await User.find({ created_by: req.user._id, role: 'customer' }).select('_id');
+      const myClientIds = myClients.map(c => c._id);
+      filter.$or = [
+        { created_by: req.user._id },
+        { assigned_to: req.user._id },
+        { client_id: { $in: myClientIds } }
+      ];
     }
     // admin sees all (no extra filter)
 
@@ -95,6 +102,27 @@ const getChecklists = async (req, res) => {
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name')
       .sort({ createdAt: -1 });
+
+    // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
+    const ChecklistTemplate = require('../models/ChecklistTemplate');
+    for (let cl of checklists) {
+      if (!cl.items || cl.items.length === 0) {
+        const template = await ChecklistTemplate.findOne({
+          company_id: cl.company_id,
+          service_name: cl.service_name
+        });
+        if (template && template.items && template.items.length > 0) {
+          cl.items = template.items.map(item => ({
+            title: item.title,
+            description: item.description,
+            label: item.title,
+            isChecked: false
+          }));
+          await cl.save();
+          console.log(`[DEBUG] Dynamically populated ${cl.items.length} items from template for checklist ID ${cl._id} (${cl.service_name})`);
+        }
+      }
+    }
 
     res.status(200).json({ success: true, checklists });
   } catch (error) {
@@ -188,7 +216,7 @@ const addChecklistItem = async (req, res) => {
 const updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to, notes } = req.body;
+    const { assigned_to, notes, stage, items, requested_documents, status } = req.body;
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -197,6 +225,21 @@ const updateChecklist = async (req, res) => {
 
     if (assigned_to !== undefined) checklist.assigned_to = assigned_to || null;
     if (notes !== undefined) checklist.notes = notes;
+    if (stage !== undefined) checklist.stage = stage;
+    if (status !== undefined) checklist.status = status;
+    if (requested_documents !== undefined) checklist.requested_documents = requested_documents;
+
+    // Allow bulk item update (e.g. replacing all items)
+    if (items !== undefined) {
+      const raw = typeof items === 'string' ? JSON.parse(items) : items;
+      checklist.items = raw.map((item) => ({
+        title: item.title || item.label,
+        label: item.label || item.title,
+        description: item.description || '',
+        isChecked: item.isChecked || false
+      }));
+    }
+
     await checklist.save();
 
     const populated = await Checklist.findById(id)
@@ -221,8 +264,29 @@ const getMyChecklists = async (req, res) => {
     const checklists = await Checklist.find({ client_id: clientId })
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
-      .select('service_name status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt')
+      .select('service_name company_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt')
       .sort({ updatedAt: -1 });
+
+    // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
+    const ChecklistTemplate = require('../models/ChecklistTemplate');
+    for (let cl of checklists) {
+      if (!cl.items || cl.items.length === 0) {
+        const template = await ChecklistTemplate.findOne({
+          company_id: cl.company_id,
+          service_name: cl.service_name
+        });
+        if (template && template.items && template.items.length > 0) {
+          cl.items = template.items.map(item => ({
+            title: item.title,
+            description: item.description,
+            label: item.title,
+            isChecked: false
+          }));
+          await cl.save();
+          console.log(`[DEBUG] getMyChecklists: Dynamically populated ${cl.items.length} items from template for checklist ID ${cl._id} (${cl.service_name})`);
+        }
+      }
+    }
 
     console.log(`[DEBUG] getMyChecklists returned ${checklists.length} items`);
     if (checklists.length > 0) {

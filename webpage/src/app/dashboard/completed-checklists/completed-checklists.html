@@ -1,0 +1,403 @@
+<div class="tab-view fade-in">
+  <!-- Header -->
+  <div class="filter-action-bar">
+    <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Completed Checklists</h2>
+    @if (canCreate()) {
+      <button class="add-client-btn" (click)="openCreateChecklistModal()">
+        <hugeicons-icon [icon]="PlusSignIcon" size="18"></hugeicons-icon>
+        <span>New Checklist</span>
+      </button>
+    }
+  </div>
+
+  <!-- Checklist cards grid -->
+  <div class="clients-directory-grid">
+    @for (cl of checklists(); track cl._id) {
+      <div class="client-profile-card" style="border-left: 4px solid #06B6D4;">
+        <!-- Header row -->
+        <div class="client-card-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <span class="service-badge" style="background-color: rgba(6,182,212,0.15); color: #06B6D4; border: 1px solid #06B6D4; font-size: 11px; text-transform: uppercase; font-weight: 600;">
+              {{ cl.service_name }}
+            </span>
+            <div style="display: flex; gap: 8px; flex-direction: column; align-items: flex-end;">
+              <span [ngClass]="{
+                'status-badge': true,
+                'status-pending': cl.status === 'pending',
+                'status-in-progress': cl.status === 'in_progress',
+                'status-completed': cl.status === 'completed'
+              }">{{ cl.status | titlecase }}</span>
+              <span style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                Stage: {{ cl.stage || 'quotePending' }}
+              </span>
+            </div>
+          </div>
+          <h4 class="client-title" style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0;">
+            {{ cl.client_id?.owner_name }}
+            @if (cl.client_id?.company_name) {
+              <span style="font-size: 13px; color: var(--text-secondary); font-weight: 400;"> · {{ cl.client_id?.company_name }}</span>
+            }
+          </h4>
+        </div>
+
+        <div class="client-card-body" style="padding-top: 8px; display: flex; flex-direction: column; gap: 12px;">
+          <!-- Assigned to -->
+          <div style="font-size: 12px; color: var(--text-secondary);">
+            <span style="font-weight: 500;">Assigned:</span>
+            <span style="margin-left: 6px; color: var(--text-primary);">{{ cl.assigned_to?.owner_name || 'Unassigned' }}</span>
+            @if (cl.assigned_to?.role) {
+              <span style="margin-left: 4px; color: var(--text-secondary);"> ({{ getRoleLabel(cl.assigned_to.role) }})</span>
+            }
+          </div>
+
+          <!-- Progress bar -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">Progress</span>
+              <span style="font-size: 12px; font-weight: 700; color: var(--text-primary);">{{ getChecklistProgress(cl) }}%</span>
+            </div>
+            <div style="height: 6px; border-radius: 8px; background-color: var(--border-color); overflow: hidden;">
+              <div [style.width]="getChecklistProgress(cl) + '%'" style="height: 100%; border-radius: 8px; background: linear-gradient(90deg, #06B6D4, #3B82F6); transition: width 0.4s ease;"></div>
+            </div>
+          </div>
+
+          <!-- Checklist Items -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Items ({{ cl.items?.length || 0 }})</span>
+              @if (canCreate()) {
+                <button (click)="openAddChecklistItemModal(cl._id)" style="background: none; border: none; color: var(--accent-primary); font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                  <hugeicons-icon [icon]="PlusSignIcon" size="12"></hugeicons-icon> Add Item
+                </button>
+              }
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; padding-right: 2px;">
+              @for (item of cl.items; track $index) {
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 6px 8px; border-radius: 8px; background: var(--bg-primary); border: 1px solid var(--border-color); transition: background 0.15s;" [title]="item.isChecked ? 'Checked by ' + (item.checkedBy?.owner_name || 'staff') : 'Click to mark done'">
+                  <input 
+                    type="checkbox" 
+                    [checked]="item.isChecked"
+                    [disabled]="!isFillingStaff() && !isAccountManager() && !isAdmin()"
+                    (change)="toggleChecklistItem(cl._id, $index)"
+                    style="width: 16px; height: 16px; accent-color: #06B6D4; cursor: pointer; flex-shrink: 0;"
+                  />
+                  <div style="display: flex; flex-direction: column;">
+                    <span [style.text-decoration]="item.isChecked ? 'line-through' : 'none'" [style.color]="item.isChecked ? 'var(--text-secondary)' : 'var(--text-primary)'" style="font-size: 13px; font-weight: 600;">{{ item.title || item.label }}</span>
+                    @if (item.description) {
+                      <span style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">{{ item.description }}</span>
+                    }
+                  </div>
+                  @if (item.isChecked && item.checkedBy) {
+                    <span style="font-size: 10px; color: #06B6D4; margin-left: auto; flex-shrink: 0;">✓ {{ item.checkedBy.owner_name }}</span>
+                  }
+                </label>
+              }
+              @if (!cl.items || cl.items.length === 0) {
+                <div style="color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 8px;">No items added yet.</div>
+              }
+            </div>
+          </div>
+
+          <!-- Notes -->
+          @if (cl.notes) {
+            <div style="border-top: 1px solid var(--border-color); padding-top: 10px; font-size: 12px; color: var(--text-secondary);">
+              <span style="font-weight: 500;">Notes:</span> {{ cl.notes }}
+            </div>
+          }
+
+          <!-- Assignment control for admin/client_manager -->
+          @if (canManage()) {
+            <div style="border-top: 1px solid var(--border-color); padding-top: 10px;">
+              <label style="font-size: 11px; color: var(--text-secondary); font-weight: 500; display: block; margin-bottom: 4px;">Assign to:</label>
+              <select [ngModel]="cl.assigned_to?._id || cl.assigned_to || ''"
+                      (ngModelChange)="assignChecklist(cl._id, $event)"
+                      style="width: 100%; padding: 6px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px;">
+                <option value="">-- Unassigned --</option>
+                @for (emp of getFlatEmployees(); track emp.id) {
+                  @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
+                    <option [value]="emp.id">{{ emp.name }} ({{ getRoleLabel(emp.role) }})</option>
+                  }
+                }
+              </select>
+            </div>
+          }
+
+          <!-- Stage and Document Actions -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Requested Documents -->
+            @if (cl.requested_documents && cl.requested_documents.length > 0) {
+              <div style="margin-top: 8px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; display: block;">Requested Documents</span>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  @for (doc of cl.requested_documents; track $index) {
+                    <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px; padding: 6px 8px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px;">
+                      <span style="color: var(--text-primary);">{{ doc.name }}</span>
+                      @if (doc.isUploaded) {
+                        <a [href]="'http://localhost:5001/' + doc.fileUrl" target="_blank" style="color: #10B981; font-weight: 600; text-decoration: none;">View</a>
+                      } @else {
+                        <span style="color: #F59E0B; font-weight: 500;">Pending</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <button (click)="openRequestDocModal(cl._id)" style="width: 100%; padding: 8px; background-color: transparent; border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin-top: 4px;" onmouseover="this.style.borderColor='var(--accent-primary)'; this.style.color='var(--accent-primary)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.color='var(--text-secondary)'">
+              + Request Document
+            </button>
+
+            <!-- Final Documents Upload Section (Appears when last checklist item is completed) -->
+            @if (cl.items && cl.items.length > 0 && cl.items[cl.items.length - 1].isChecked) {
+              <div style="margin-top: 12px; padding: 12px; background-color: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+                <span style="font-size: 12px; font-weight: 600; color: #0F172A; margin-bottom: 8px; display: block;">Final Delivery Documents</span>
+                
+                <!-- Display already uploaded final documents -->
+                @if (cl.final_documents && cl.final_documents.length > 0) {
+                  <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+                    @for (fdoc of cl.final_documents; track $index) {
+                      <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 6px; padding: 8px;">
+                        <span style="font-size: 12px; font-weight: 500; color: #0F172A;">{{ fdoc.name }}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                          <span style="font-size: 10px; color: #DC2626; font-weight: 600; background: #FEF2F2; padding: 2px 6px; border-radius: 4px;">
+                            Expires: {{ fdoc.expiry_date | date:'mediumDate' }}
+                          </span>
+                          <span style="font-size: 10px; color: #10B981; font-weight: 600;">Uploaded</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Upload New Final Documents -->
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <label class="custom-file-upload" style="display: inline-block; padding: 6px 12px; cursor: pointer; background: #FFFFFF; border: 1px dashed #6366F1; border-radius: 6px; color: #6366F1; font-size: 11px; font-weight: 600; text-align: center;">
+                    <input type="file" multiple (change)="onFinalFilesSelected($event)" style="display: none;" />
+                    + Select Final Documents
+                  </label>
+
+                  @if (finalDocsToUpload.length > 0) {
+                    <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+                      <span style="font-size: 11px; font-weight: 600; color: #475569;">Selected Files:</span>
+                      @for (doc of finalDocsToUpload; track $index) {
+                        <div style="display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E2E8F0; padding: 6px 8px; border-radius: 6px; gap: 4px;">
+                          <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 11px; color: #334155; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">
+                              {{ doc.file.name }}
+                            </span>
+                            <button type="button" (click)="removeFinalDocFile($index)" style="background: none; border: none; cursor: pointer; color: #EF4444; font-size: 10px; font-weight: 600;">Remove</button>
+                          </div>
+                          <div style="display: flex; align-items: center; gap: 6px;">
+                            <label style="font-size: 10px; color: #64748B;">Expiry Date *</label>
+                            <input type="date" [(ngModel)]="doc.expiryDate" required style="flex: 1; padding: 4px; font-size: 11px; border: 1px solid #CBD5E1; border-radius: 4px;" />
+                          </div>
+                        </div>
+                      }
+                      <button (click)="submitFinalDocuments(cl._id)" [disabled]="isFinalDocUploading" style="width: 100%; padding: 8px; background-color: #6366F1; border: none; border-radius: 6px; color: white; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 4px;">
+                        {{ isFinalDocUploading ? 'Uploading...' : 'Upload & Save Documents' }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+    @if (checklists().length === 0) {
+      <div class="no-results-placeholder" style="grid-column: 1 / -1;">
+        <div class="placeholder-icon-circle">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <h3>No checklists found</h3>
+        <p>{{ canCreate() ? 'Create a service checklist for a client to get started.' : 'No checklists have been assigned to you yet.' }}</p>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create Checklist Modal -->
+@if (isCreateChecklistModalOpen()) {
+  <div class="modal-overlay" (click)="closeCreateChecklistModal()">
+    <div class="modal-card-box" style="max-width: 520px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>New Service Checklist</h3>
+        <button class="close-modal-btn" (click)="closeCreateChecklistModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitCreateChecklist()" class="modal-form">
+        <div class="modal-body">
+
+          @if (checklistErrorMessage()) {
+            <div class="error-banner">{{ checklistErrorMessage() }}</div>
+          }
+          @if (checklistSuccessMessage()) {
+            <div class="success-banner">{{ checklistSuccessMessage() }}</div>
+          }
+
+          <div class="form-group-item">
+            <label class="form-input-label">Client *</label>
+            <select name="cl_client" class="form-control-input select-input" [(ngModel)]="newChecklist.client_id" required>
+              <option value="">-- Select client --</option>
+              @for (client of clients(); track client._id) {
+                <option [value]="client._id">{{ client.owner_name }} ({{ client.company_name || 'Individual' }})</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group-item" style="margin-top: 16px;">
+            <label class="form-input-label">Service Name *</label>
+            <select name="cl_service" class="form-control-input select-input" [(ngModel)]="newChecklist.service_name" required>
+              <option value="">-- Select service --</option>
+              @for (svc of availableServices; track svc) {
+                <option [value]="svc">{{ svc }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group-item" style="margin-top: 16px;">
+            <label class="form-input-label">Assign to Staff</label>
+            <select name="cl_assignee" class="form-control-input select-input" [(ngModel)]="newChecklist.assigned_to">
+              <option value="">-- Unassigned --</option>
+              @for (emp of getFlatEmployees(); track emp.id) {
+                @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
+                  <option [value]="emp.id">{{ emp.name }} ({{ getRoleLabel(emp.role) }})</option>
+                }
+              }
+            </select>
+          </div>
+
+            <div class="form-group-item" style="margin-top: 16px;">
+              <label class="form-input-label">Checklist Items</label>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+                <input type="text"
+                       name="cl_item_title"
+                       placeholder="Item Title (max 30 chars)"
+                       class="form-control-input"
+                       maxlength="30"
+                       [(ngModel)]="newChecklistNewItemTitle" />
+                <textarea name="cl_item_desc"
+                          placeholder="Item Description (max 200 chars)"
+                          class="form-control-input"
+                          rows="2"
+                          maxlength="200"
+                          style="resize: vertical;"
+                          [(ngModel)]="newChecklistNewItemDesc"></textarea>
+                <button type="button" class="btn-submit" style="padding: 8px 16px; align-self: flex-start;" (click)="addItemToNewChecklist()">
+                  + Add Item
+                </button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto;">
+                @for (item of newChecklist.items; track $index) {
+                  <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px;">
+                    <div style="display: flex; flex-direction: column;">
+                      <strong style="color: var(--text-primary);">{{ item.title }}</strong>
+                      <span style="color: var(--text-secondary); font-size: 11px;">{{ item.description }}</span>
+                    </div>
+                    <button type="button" (click)="removeNewChecklistItem($index)" style="background: none; border: none; color: #EF4444; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px;">×</button>
+                  </div>
+                }
+              @if (newChecklist.items.length === 0) {
+                <div style="color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 4px 0;">No items added yet.</div>
+              }
+            </div>
+          </div>
+
+          <div class="form-group-item" style="margin-top: 16px;">
+            <label class="form-input-label">Notes</label>
+            <textarea name="cl_notes"
+                      placeholder="Optional notes or instructions..."
+                      class="form-control-input"
+                      rows="2"
+                      style="resize: vertical; font-family: inherit;"
+                      [(ngModel)]="newChecklist.notes"></textarea>
+          </div>
+
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="closeCreateChecklistModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Create Checklist</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Add Checklist Item Modal -->
+@if (isAddChecklistItemModalOpen()) {
+  <div class="modal-overlay" (click)="closeAddChecklistItemModal()">
+    <div class="modal-card-box" style="max-width: 420px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add Checklist Item</h3>
+        <button class="close-modal-btn" (click)="closeAddChecklistItemModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+      <form (ngSubmit)="submitAddChecklistItem()" class="modal-form">
+        <div class="modal-body">
+          <div class="form-group-item">
+            <label class="form-input-label">Item Title (max 30 chars) *</label>
+            <input type="text"
+                   name="add_item_title"
+                   placeholder="e.g. Submit bank statement"
+                   class="form-control-input"
+                   maxlength="30"
+                   [(ngModel)]="newChecklistItemTitle"
+                   required />
+          </div>
+          <div class="form-group-item" style="margin-top: 12px;">
+            <label class="form-input-label">Item Description (max 200 chars)</label>
+            <textarea name="add_item_desc"
+                      placeholder="Optional description"
+                      class="form-control-input"
+                      rows="3"
+                      maxlength="200"
+                      style="resize: vertical;"
+                      [(ngModel)]="newChecklistItemDesc"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="closeAddChecklistItemModal()">Cancel</button>
+          <button type="submit" class="btn-submit">Add Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+<!-- Request Document Modal -->
+@if (isRequestDocModalOpen()) {
+  <div class="modal-overlay" (click)="closeRequestDocModal()">
+    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Request Document</h3>
+        <button class="close-modal-btn" (click)="closeRequestDocModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitRequestDoc()" class="modal-form">
+        <div class="modal-body">
+          @if (checklistErrorMessage()) {
+            <div class="error-banner">{{ checklistErrorMessage() }}</div>
+          }
+          <div class="form-group">
+            <label>Document Name (e.g., PAN Card)</label>
+            <input type="text" [(ngModel)]="newDocRequestName" name="docName" placeholder="Enter document name" required />
+            <p class="field-hint">The client will see this request in their app and will be prompted to upload it.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" (click)="closeRequestDocModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Request via App</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

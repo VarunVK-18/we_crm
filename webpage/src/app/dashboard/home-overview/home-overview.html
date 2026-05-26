@@ -1,32 +1,297 @@
-<div class="tab-view fade-in">
-  <!-- Glass welcome banner -->
-  <div class="welcome-banner">
-    <div class="banner-content">
-      <h2 class="banner-heading">
-        {{ getGreeting() }},<br>
-        <span class="user-name">{{ user()?.owner_name || 'Admin' }}</span>
-      </h2>
-      <p class="banner-subtext">Track company filings, compliance reminders, and service checklists for {{ getCompanyName() || 'Wealth Empires' }} from one place.</p>
+<div class="ho-container fade-in">
+  <!-- Hero Banner -->
+  <section class="ho-hero">
+    <div class="ho-hero-content">
+      <h3 class="ho-hero-title">{{ getGreeting() }}, <br/>{{ user()?.owner_name || 'User' }}</h3>
+      <p class="ho-hero-subtitle">
+        Track company filings, compliance reminders, and service checklists for {{ getCompanyName() || 'Wealth Empires' }} from one place. Your centralized command center for corporate governance.
+      </p>
+
     </div>
-    <div class="banner-decorations">
-      <div class="circle-center">
-        <div class="circle circle-1"></div>
-        <div class="circle circle-2"></div>
-        <div class="circle circle-3"></div>
+    <!-- Abstract decorative elements -->
+    <div class="ho-hero-decorations">
+      <div class="ho-circle ho-circle-1"></div>
+      <div class="ho-circle ho-circle-2"></div>
+      <div class="ho-circle ho-circle-3"></div>
+    </div>
+  </section>
+
+  <!-- KPI Cards Grid -->
+  <section class="ho-stats-grid">
+    <!-- Card 1 -->
+    <div class="ho-stat-card">
+      <div class="ho-stat-header">
+        <div class="ho-stat-icon-wrapper">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ho-stat-icon">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+        </div>
+        <span class="ho-stat-badge bg-secondary">ACTIVE</span>
+      </div>
+      <p class="ho-stat-label">Active Services</p>
+      <div class="ho-stat-value-row">
+        <h4 class="ho-stat-value">{{ stats[0].value }}</h4>
+        <span class="ho-stat-trend text-emerald">{{ stats[0].detail }}</span>
       </div>
     </div>
-  </div>
 
-  <!-- Stats Grid -->
-  <div class="stats-grid">
-    @for (stat of stats; track stat.title) {
-      <div class="stat-card">
-        <div class="stat-title">{{ stat.title }}</div>
-        <div class="stat-value" [class.warning]="stat.isWarning">{{ stat.value }}</div>
-        <div class="stat-detail" [class.up]="stat.isTrendUp" [class.warning-text]="stat.isWarning" [class.good-text]="stat.isGood">
-          {{ stat.detail }}
+    <!-- Card 2 -->
+    <div class="ho-stat-card">
+      <div class="ho-stat-header">
+        <div class="ho-stat-icon-wrapper">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ho-stat-icon">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            <path d="m9 11 2 2 4-4"></path>
+          </svg>
+        </div>
+        <span class="ho-stat-badge bg-emerald-badge">VERIFIED</span>
+      </div>
+      <p class="ho-stat-label">Compliance Score</p>
+      <div class="ho-stat-value-col">
+        <h4 class="ho-stat-value">{{ stats[1].value }}</h4>
+        <span class="ho-stat-trend text-emerald">{{ stats[1].detail }}</span>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="ho-stat-card">
+      <div class="ho-stat-header">
+        <div class="ho-stat-icon-wrapper">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ho-stat-icon">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            <path d="m9 14 2 2 4-4"></path>
+          </svg>
+        </div>
+        <span class="ho-stat-badge bg-surface-badge">TASKS</span>
+      </div>
+      <p class="ho-stat-label">Open Audit Tasks</p>
+      <div class="ho-stat-value-col">
+        <h4 class="ho-stat-value">{{ stats[2].value }}</h4>
+        <span class="ho-stat-trend" [class.text-emerald]="stats[2].isGood" [class.text-danger]="stats[2].isWarning">{{ stats[2].detail }}</span>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="ho-stat-card">
+      <div class="ho-stat-header">
+        <div class="ho-stat-icon-wrapper">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ho-stat-icon">
+            <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"></path>
+            <path d="M16 8H8M16 12H8M12 16H8"></path>
+          </svg>
+        </div>
+        <span class="ho-stat-badge bg-surface-badge">BILLS</span>
+      </div>
+      <p class="ho-stat-label">Pending Invoices</p>
+      <div class="ho-stat-value-col">
+        <h4 class="ho-stat-value">{{ stats[3].value }}</h4>
+        <span class="ho-stat-trend" [class.text-emerald]="stats[3].isGood" [class.text-danger]="stats[3].isWarning">{{ stats[3].detail }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Performance Overview Section -->
+  <section class="ho-perf-section">
+    <div class="ho-perf-header">
+      <h3 class="ho-perf-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ho-perf-icon" style="color: var(--secondary-color);">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+        Performance Overview
+      </h3>
+      <div class="ho-perf-actions">
+        <div class="ho-dropdown">
+          <button class="ho-btn-outline ho-dropdown-trigger">
+            {{ getPeriodLabel() }}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px; display: inline-block; vertical-align: middle;">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="ho-dropdown-menu">
+            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'thisMonth'" (click)="filterPeriod('thisMonth')">This Month</button>
+            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'last6Days'" (click)="filterPeriod('last6Days')">Last 6 Days</button>
+            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'last6Months'" (click)="filterPeriod('last6Months')">Last 6 Months</button>
+          </div>
+        </div>
+        <button class="ho-btn-dark">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Export
+        </button>
+      </div>
+    </div>
+
+    <!-- Bento Grid for Performance Cards -->
+    <div class="ho-charts-grid">
+      <!-- Certification Growth -->
+      <div class="ho-chart-card">
+        <div class="ho-chart-header">
+          <div>
+            <h4 class="ho-chart-title">Tasks & Certifications</h4>
+            <p class="ho-chart-subtitle">Tasks created & completed</p>
+          </div>
+          <span class="ho-chart-badge">+12.4%</span>
+        </div>
+        <div class="ho-chart-container">
+          <canvas #growthChart></canvas>
         </div>
       </div>
-    }
+
+      <!-- Revenue Analytics -->
+      <div class="ho-chart-card">
+        <div class="ho-chart-header">
+          <div>
+            <h4 class="ho-chart-title">Revenue Analytics</h4>
+            <p class="ho-chart-subtitle">Monthly legal services (INR)</p>
+          </div>
+          <span class="ho-chart-badge">+8.1%</span>
+        </div>
+        <div class="ho-chart-container">
+          <canvas #revenueChart></canvas>
+        </div>
+      </div>
+
+      <!-- User Activity -->
+      <div class="ho-chart-card">
+        <div class="ho-chart-header">
+          <div>
+            <h4 class="ho-chart-title">Client Onboardings</h4>
+            <p class="ho-chart-subtitle">Dynamic monthly trends</p>
+          </div>
+          <div class="ho-chart-legend">
+            <span class="ho-legend-dot"></span>
+            <span class="ho-legend-text">Client</span>
+          </div>
+        </div>
+        <div class="ho-chart-container">
+          <canvas #activityChart></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dynamic Content Area -->
+  <div class="ho-dynamic-grid">
+    <!-- Main Content: Recent Filings -->
+    <div class="ho-recent-filings">
+      <div class="ho-section-header">
+        <h3 class="ho-perf-title">Ongoing Certifications / Tasks</h3>
+      </div>
+      <div class="ho-table-container">
+        <table class="ho-table">
+          <thead>
+            <tr>
+              <th>Task / Entity</th>
+              <th>Assigned To</th>
+              <th>Status</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of ongoingItems().slice(0, 5); track item._id) {
+              <tr class="ho-table-row">
+                <td>
+                  <div class="ho-table-cell-content">
+                    <div class="ho-icon-box">
+                      @if (item.type === 'certification') {
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                          <line x1="9" y1="22" x2="9" y2="16"></line>
+                          <line x1="15" y1="22" x2="15" y2="16"></line>
+                          <line x1="9" y1="16" x2="15" y2="16"></line>
+                          <path d="M9 6h6M9 10h6"></path>
+                        </svg>
+                      } @else {
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                          <path d="m9 14 2 2 4-4"></path>
+                        </svg>
+                      }
+                    </div>
+                    <div>
+                      <p class="ho-font-semibold">{{ item.title }}</p>
+                      <p class="ho-text-xs ho-text-muted">{{ item.clientName }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="ho-text-sm">{{ item.assignedTo }}</div>
+                </td>
+                <td>
+                  <span class="ho-status-badge" 
+                        [class.certified]="item.isCompleted"
+                        [class.pending]="!item.isCompleted">
+                    <span class="ho-status-dot"></span>
+                    {{ item.status }}
+                  </span>
+                </td>
+                <td>
+                  <div class="ho-text-sm ho-text-muted ho-font-label">{{ item.createdAt | date:'mediumDate' }}</div>
+                </td>
+              </tr>
+            }
+            @if (ongoingItems().length === 0) {
+              <tr>
+                <td colspan="4" class="ho-table-empty">No active tasks or certifications found.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sidebar: Recent Activity & Reminders -->
+    <div class="ho-timeline-sidebar">
+      <h3 class="ho-perf-title">Compliance Timeline</h3>
+      <div class="ho-timeline-container">
+        <div class="ho-timeline">
+          @for (rem of complianceReminders().slice(0, 4); track rem._id) {
+            <div class="ho-timeline-event">
+              <div class="ho-timeline-dot" 
+                   [class.expired]="rem.status === 'expired'"
+                   [class.urgent]="rem.status === 'urgent'"
+                   [class.active]="rem.status !== 'expired' && rem.status !== 'urgent'">
+                @if (rem.status === 'expired') {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                } @else if (rem.status === 'urgent') {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="12" x2="12" y2="16"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
+                } @else {
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                }
+              </div>
+              <p class="ho-timeline-time">{{ rem.dueDate | date:'mediumDate' }}</p>
+              <h5 class="ho-timeline-title">{{ rem.title }}</h5>
+              <p class="ho-timeline-desc">
+                {{ rem.client_id?.owner_name || 'Client' }} ({{ rem.client_id?.company_name || 'Individual' }})
+              </p>
+            </div>
+          }
+          @if (complianceReminders().length === 0) {
+            <div class="ho-timeline-empty">No compliance reminders.</div>
+          }
+        </div>
+      </div>
+
+      <!-- Small Banner -->
+      <div class="ho-small-banner">
+        <div class="ho-small-banner-bg"></div>
+        <div class="ho-small-banner-content">
+          <h4 class="ho-banner-card-title">Need Expert Assistance?</h4>
+          <p class="ho-banner-card-desc">Our senior consultants are available for complex regulatory filings.</p>
+          <button class="ho-banner-card-btn">
+            Contact Legal Team
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+

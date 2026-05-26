@@ -303,6 +303,11 @@
             </select>
             <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">Assigning a service will automatically generate a new Service Checklist for this client.</p>
           </div>
+
+          <div class="form-group-item" style="margin-top: 16px;">
+            <label class="form-input-label">Deal Closed Amount (INR) *</label>
+            <input type="number" name="deal_closed_amount" placeholder="e.g. 15000" class="form-control-input" [(ngModel)]="assignServiceDealAmount" min="0" required />
+          </div>
         </div>
         <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="isAssignServiceModalOpen.set(false)">Cancel</button>

@@ -1,26 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Outfit:wght@100..900&display=swap');
 
 :root {
-  /* Industrial CRM Standard Variables */
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --secondary: #64748b;
-  --success: #16a34a;
+  /* Premium Hanken Grotesk & Manrope Typography & Colors from the beautiful CRM dashboard */
+  --primary: #006a61;
+  --primary-hover: #005049;
+  --secondary: #006a61;
+  --success: #009668;
   --warning: #f59e0b;
-  --danger: #dc2626;
+  --danger: #ba1a1a;
 
-  --background: #f8fafc;
+  --background: #f7f9fb;
   --surface: #ffffff;
-  --surface-hover: #f1f5f9;
+  --surface-hover: #f2f4f6;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #191c1e;
+  --text-secondary: #45464d;
+  --text-muted: #76777d;
 
-  --border: #e2e8f0;
-  --shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+  --border: #e0e3e5;
+  --shadow: 0 4px 20px rgba(0, 106, 97, 0.04), 0 2px 8px rgba(15, 23, 42, 0.04);
 
-  --radius: 8px;
+  --radius: 12px;
 
   --spacing-xs: 4px;
   --spacing-sm: 8px;
@@ -28,7 +28,7 @@
   --spacing-lg: 24px;
   --spacing-xl: 32px;
 
-  --transition: all 0.2s ease;
+  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* Legacy mapper for existing stylesheets */
   --bg-primary: var(--background);
@@ -40,20 +40,20 @@
   --card-shadow: var(--shadow);
   --border-radius: var(--radius);
 
-  /* Typography Scale */
-  --font-heading: 'Outfit', sans-serif;
-  --font-body:    'DM Sans', sans-serif;
+  /* Typography Scale matching Hanken Grotesk / Manrope */
+  --font-heading: 'Manrope', sans-serif;
+  --font-body:    'Hanken Grotesk', sans-serif;
   --text-xs:   0.625rem;   /* 10px - Labels / Metadata */
   --text-sm:   0.6875rem;  /* 11px - Badges / Timestamps */
   --text-md:   0.75rem;    /* 12px - Secondary text */
-  --text-base: 0.8125rem;  /* 13px - Primary UI text */
-  --text-lg:   0.875rem;   /* 14px - Titles / Names */
-  --text-xl:   0.9375rem;  /* 15px - Avatar text */
-  --text-2xl:  1rem;       /* 16px - Headings (H2-H4) */
-  --text-3xl:  1.25rem;    /* 20px - Main page title (H1) */
-  --text-4xl:  1.5rem;     /* 24px - Large Headers */
-  --text-5xl:  2rem;       /* 32px - Display text */
-  --text-6xl:  2.5rem;     /* 40px - Extra Large display */
+  --text-base: 0.875rem;   /* 14px - Primary UI text (Hanken Grotesk 14px) */
+  --text-lg:   1rem;       /* 16px - Large text (Hanken Grotesk 16px) */
+  --text-xl:   1.125rem;   /* 18px - Title LG */
+  --text-2xl:  1.5rem;     /* 24px - Headline MD (Manrope 24px) */
+  --text-3xl:  2rem;       /* 32px - Headline LG (Manrope 32px) */
+  --text-4xl:  3rem;       /* 48px - Display LG (Manrope 48px) */
+  --text-5xl:  3.5rem;     
+  --text-6xl:  4rem;       
 
   /* Semantic Colors */
   --color-success: var(--success);

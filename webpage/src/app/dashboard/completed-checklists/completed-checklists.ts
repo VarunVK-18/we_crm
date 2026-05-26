@@ -9,13 +9,13 @@ import {
 import { Api } from '../../api';
 
 @Component({
-  selector: 'app-service-checklists',
+  selector: 'app-completed-checklists',
   standalone: true,
   imports: [CommonModule, FormsModule, HugeiconsIconComponent],
-  templateUrl: './service-checklists.html',
-  styleUrl: './service-checklists.css'
+  templateUrl: './completed-checklists.html',
+  styleUrl: './completed-checklists.css'
 })
-export class ServiceChecklists implements OnInit, OnDestroy {
+export class CompletedChecklists implements OnInit, OnDestroy {
   user = signal<any>(null);
   checklists = signal<any[]>([]);
   teams = input<any[]>([]);
@@ -110,7 +110,8 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     this.api.get<any>('checklists').subscribe({
       next: (res) => {
         if (res && res.success) {
-          this.checklists.set(res.checklists.filter((c: any) => c.status !== 'completed'));
+          // Only show completed checklists
+          this.checklists.set(res.checklists.filter((c: any) => c.status === 'completed'));
         }
       },
       error: (err) => {
