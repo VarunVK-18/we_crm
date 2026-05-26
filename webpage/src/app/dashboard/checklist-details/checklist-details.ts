@@ -1,0 +1,316 @@
+import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Api } from '../../api';
+
+@Component({
+  selector: 'app-checklist-details',
+  standalone: true,
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  templateUrl: './checklist-details.html',
+  styleUrl: './checklist-details.css'
+})
+export class ChecklistDetails implements OnInit, OnDestroy {
+  @Output() onBack = new EventEmitter<void>();
+  checklistId = input.required<string>();
+  teams = input<any[]>([]);
+  
+  user = signal<any>(null);
+  checklist = signal<any>(null);
+  pollInterval: any;
+
+  // Icon assets removed, using material-symbols-outlined
+
+  // Add Item Modal
+  isAddChecklistItemModalOpen = signal<boolean>(false);
+  newChecklistItemTitle: string = '';
+  newChecklistItemDesc: string = '';
+
+  // Request Document Modal
+  isRequestDocModalOpen = signal<boolean>(false);
+  newDocRequestName = '';
+  checklistErrorMessage = signal<string>('');
+
+  // Notes Editing State
+  isEditingNotes = signal<boolean>(false);
+  editNotesText = '';
+
+  // Final Documents Upload State
+  finalDocsToUpload: { file: File, expiryDate: string }[] = [];
+  isFinalDocUploading = false;
+
+  constructor(public api: Api) {}
+
+  ngOnInit() {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      this.user.set(JSON.parse(savedUser));
+    }
+    this.fetchChecklist();
+    
+    // Poll for changes
+    this.pollInterval = setInterval(() => {
+      this.fetchChecklist();
+    }, 5000);
+  }
+
+  ngOnDestroy() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+    }
+  }
+
+  goBack() {
+    this.onBack.emit();
+  }
+
+  isAdmin(): boolean { return this.user()?.role === 'admin'; }
+  isClientManager(): boolean { return this.user()?.role === 'client_manager'; }
+  isFillingStaff(): boolean { return this.user()?.role === 'filling_staff'; }
+  isAccountManager(): boolean { return this.user()?.role === 'account_manager'; }
+
+  canCreate(): boolean {
+    return this.isAdmin() || this.isClientManager();
+  }
+
+  canManage(): boolean {
+    return this.isAdmin() || this.isClientManager();
+  }
+
+  getRoleLabel(role: string): string {
+    const labels: Record<string, string> = {
+      admin: 'HR Specialist',
+      client_manager: 'Client Manager',
+      filling_staff: 'Filing Staff',
+      account_manager: 'Account Manager'
+    };
+    return labels[role] || role;
+  }
+
+  fetchChecklist() {
+    this.api.get<any>('checklists').subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          const found = res.checklists.find((c: any) => c._id === this.checklistId());
+          if (found) {
+            this.checklist.set(found);
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch checklist:', err);
+      }
+    });
+  }
+
+  getFlatEmployees() {
+    const flat: any[] = [];
+    this.teams().forEach(g => {
+      if (g.members) {
+        flat.push(...g.members);
+      }
+    });
+    return flat;
+  }
+
+  toggleChecklistItem(itemIndex: number) {
+    const cl = this.checklist();
+    if (!cl) return;
+    this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, {}).subscribe({
+      next: () => this.fetchChecklist(),
+      error: (err) => alert(err.error?.message || 'Failed to update checklist item.')
+    });
+  }
+
+  openAddChecklistItemModal() {
+    this.newChecklistItemTitle = '';
+    this.newChecklistItemDesc = '';
+    this.isAddChecklistItemModalOpen.set(true);
+  }
+
+  closeAddChecklistItemModal() {
+    this.isAddChecklistItemModalOpen.set(false);
+  }
+
+  submitAddChecklistItem() {
+    if (!this.newChecklistItemTitle.trim()) return;
+    const cl = this.checklist();
+    if (!cl) return;
+    this.api.post<any>(`checklists/${cl._id}/items`, { 
+      title: this.newChecklistItemTitle,
+      description: this.newChecklistItemDesc
+    }).subscribe({
+      next: () => {
+        this.fetchChecklist();
+        this.closeAddChecklistItemModal();
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to add checklist item.');
+      }
+    });
+  }
+
+  assignChecklist(staffId: string) {
+    const cl = this.checklist();
+    if (!cl) return;
+    this.api.patch<any>(`checklists/${cl._id}`, { assigned_to: staffId || null }).subscribe({
+      next: () => this.fetchChecklist(),
+      error: (err) => alert(err.error?.message || 'Failed to assign checklist.')
+    });
+  }
+
+  startEditNotes() {
+    this.editNotesText = this.checklist()?.notes || '';
+    this.isEditingNotes.set(true);
+  }
+
+  cancelEditNotes() {
+    this.isEditingNotes.set(false);
+  }
+
+  saveNotes() {
+    const cl = this.checklist();
+    if (!cl) return;
+    
+    this.api.patch<any>(`checklists/${cl._id}`, { notes: this.editNotesText }).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+        } else {
+          this.fetchChecklist();
+        }
+        this.isEditingNotes.set(false);
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to update notes.');
+        this.isEditingNotes.set(false);
+      }
+    });
+  }
+
+  getChecklistProgress(): number {
+    const cl = this.checklist();
+    if (!cl || !cl.items || cl.items.length === 0) return 0;
+    const checked = cl.items.filter((i: any) => i.isChecked).length;
+    return Math.round((checked / cl.items.length) * 100);
+  }
+
+  getServiceSpecificDocuments(): any[] {
+    const cl = this.checklist();
+    if (!cl || !cl.client_id || !cl.client_id.onboarding_documents) return [];
+    
+    // Filter documents to only include those related to this service
+    return cl.client_id.onboarding_documents.filter((doc: any) => {
+      return doc.name && doc.name.startsWith(cl.service_name);
+    });
+  }
+
+  updateChecklistStage(stage: string) {
+    const cl = this.checklist();
+    if (!cl) return;
+    this.api.patch(`checklists/${cl._id}`, { stage }).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+        }
+      },
+      error: (err) => console.error('Error updating stage:', err)
+    });
+  }
+
+  onFinalFilesSelected(event: any) {
+    const files = event.target.files;
+    if (files) {
+      for (let i = 0; i < files.length; i++) {
+        this.finalDocsToUpload.push({
+          file: files[i],
+          expiryDate: '' 
+        });
+      }
+    }
+  }
+
+  removeFinalDocFile(index: number) {
+    this.finalDocsToUpload.splice(index, 1);
+  }
+
+  submitFinalDocuments() {
+    for (const doc of this.finalDocsToUpload) {
+      if (!doc.expiryDate) {
+        alert('Please enter an expiry date for all selected documents.');
+        return;
+      }
+    }
+
+    const cl = this.checklist();
+    if (!cl) return;
+
+    this.isFinalDocUploading = true;
+    const formData = new FormData();
+    const expiryDates: string[] = [];
+
+    for (const doc of this.finalDocsToUpload) {
+      formData.append('final_files', doc.file);
+      expiryDates.push(doc.expiryDate);
+    }
+    formData.append('expiry_dates', JSON.stringify(expiryDates));
+
+    this.api.post(`checklists/${cl._id}/final-documents`, formData).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+          this.finalDocsToUpload = [];
+          alert('Final documents uploaded successfully!');
+        }
+        this.isFinalDocUploading = false;
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to upload final documents.');
+        this.isFinalDocUploading = false;
+      }
+    });
+  }
+
+  openRequestDocModal() {
+    this.newDocRequestName = '';
+    this.checklistErrorMessage.set('');
+    this.isRequestDocModalOpen.set(true);
+  }
+
+  closeRequestDocModal() {
+    this.isRequestDocModalOpen.set(false);
+    this.newDocRequestName = '';
+  }
+
+  submitRequestDoc() {
+    if (!this.newDocRequestName.trim()) {
+      this.checklistErrorMessage.set('Document name is required');
+      return;
+    }
+
+    const cl = this.checklist();
+    if (!cl) return;
+
+    const requested_documents = cl.requested_documents || [];
+    requested_documents.push({
+      name: this.newDocRequestName,
+      isUploaded: false
+    });
+
+    this.api.patch(`checklists/${cl._id}`, { 
+      requested_documents,
+      stage: 'documentRequested' 
+    }).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+          this.closeRequestDocModal();
+        }
+      },
+      error: (err) => {
+        this.checklistErrorMessage.set(err.error?.message || 'Error requesting document');
+      }
+    });
+  }
+}

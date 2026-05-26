@@ -77,10 +77,17 @@
         <app-filing-tasks [teams]="teams()"></app-filing-tasks>
       }
       @if (currentTab() === 'checklists') {
-        <app-service-checklists [teams]="teams()"></app-service-checklists>
+        <app-service-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)"></app-service-checklists>
       }
       @if (currentTab() === 'completed-checklists') {
-        <app-completed-checklists [teams]="teams()"></app-completed-checklists>
+        <app-completed-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)"></app-completed-checklists>
+      }
+      @if (currentTab() === 'checklist-details' && selectedChecklistId()) {
+        <app-checklist-details 
+          [checklistId]="selectedChecklistId()!"
+          [teams]="teams()"
+          (onBack)="handleTabChanged('checklists')">
+        </app-checklist-details>
       }
       @if (currentTab() === 'logs') {
         <app-audit-logs></app-audit-logs>

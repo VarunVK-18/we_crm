@@ -8,6 +8,16 @@ import { Observable } from 'rxjs';
 export class Api {
   private readonly baseUrl = 'http://localhost:5001/api';
 
+  get serverUrl(): string {
+    return this.baseUrl.replace(/\/api$/, '') + '/';
+  }
+
+  getFileUrl(fileUrl: string): string {
+    if (!fileUrl) return '';
+    if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://') || fileUrl.startsWith('data:')) return fileUrl;
+    return this.serverUrl + fileUrl.replace(/^\//, '');
+  }
+
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {

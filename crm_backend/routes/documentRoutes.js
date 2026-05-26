@@ -2,6 +2,21 @@ const express = require('express');
 const router = express.Router();
 const Document = require('../models/Document');
 
+const getMimeType = (filename) => {
+  if (!filename) return 'application/octet-stream';
+  const ext = filename.split('.').pop().toLowerCase();
+  switch (ext) {
+    case 'pdf': return 'application/pdf';
+    case 'jpg':
+    case 'jpeg': return 'image/jpeg';
+    case 'png': return 'image/png';
+    case 'gif': return 'image/gif';
+    case 'txt': return 'text/plain';
+    case 'html': return 'text/html';
+    default: return 'application/octet-stream';
+  }
+};
+
 // @desc    Get document by ID
 // @route   GET /api/documents/:id
 // @access  Public (or could be Private, but keeping it simple for now)
@@ -14,7 +29,12 @@ router.get('/documents/:id', async (req, res) => {
       return res.status(404).json({ message: 'Document not found' });
     }
 
-    res.set('Content-Type', document.contentType);
+    let contentType = document.contentType;
+    if (!contentType || contentType === 'application/octet-stream') {
+      contentType = getMimeType(document.filename);
+    }
+
+    res.set('Content-Type', contentType);
     res.set('Content-Disposition', `inline; filename="${document.filename}"`);
     res.send(document.data);
   } catch (error) {

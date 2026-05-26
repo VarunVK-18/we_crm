@@ -86,6 +86,35 @@
                 <a [href]="'tel:' + (order.phone || order.contactPhone)" class="contact-link">{{ order.phone || order.contactPhone }}</a>
               </div>
             }
+
+            @if (order.documents && order.documents.length > 0) {
+              <div class="documents-section">
+                <span class="documents-title">Attached Documents:</span>
+                <div class="documents-list">
+                  @for (doc of order.documents; track doc._id || doc.fileUrl) {
+                    <div class="document-item">
+                      @if (isImage(doc.filename || doc.name)) {
+                        <div class="doc-preview-popover">
+                          <img [src]="api.getFileUrl(doc.fileUrl)" alt="Document Preview" />
+                        </div>
+                      }
+                      <svg class="doc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                      </svg>
+                      <span class="doc-name" [title]="doc.filename || doc.name">{{ doc.filename || doc.name }}</span>
+                      <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="btn-download" title="View Document">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="7 10 12 15 17 10"></polyline>
+                          <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                      </a>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           </div>
 
           <div class="card-footer">
@@ -103,10 +132,10 @@
             <div class="assign-field-group">
               <label class="assign-label">Deal Closed Amount (INR):</label>
               <div class="amount-assign-row">
-                <input type="number" 
+                <input type="text" 
                        class="form-control-input number-input" 
-                       placeholder="Enter amount (e.g. 5000)"
-                       [value]="dealClosedAmountForOrder()[order._id] || ''"
+                       placeholder="Enter amount (e.g. 5,000)"
+                       [value]="getFormattedAmount(order._id)"
                        (input)="onAmountChange(order._id, $event)">
                 <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
               </div>

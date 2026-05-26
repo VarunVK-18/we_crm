@@ -38,6 +38,12 @@ export class RequestsComponent implements OnInit {
     return this.NEW_STATUSES.includes(status) || this.NEW_STAGES.includes(stage);
   }
 
+  isImage(filename: string): boolean {
+    if (!filename) return false;
+    const ext = filename.split('.').pop()?.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
+  }
+
   filteredOrders = computed(() => {
     const filter = this.statusFilter();
     const all = this.orders();
@@ -62,7 +68,7 @@ export class RequestsComponent implements OnInit {
   // Deal closed amount per order { orderId: number }
   dealClosedAmountForOrder = signal<Record<string, number>>({});
 
-  constructor(private api: Api) {}
+  constructor(public api: Api) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -160,9 +166,21 @@ export class RequestsComponent implements OnInit {
     }
   }
 
+  getFormattedAmount(orderId: string): string {
+    const val = this.dealClosedAmountForOrder()[orderId];
+    return val ? val.toLocaleString('en-IN') : '';
+  }
+
   onAmountChange(orderId: string, event: any) {
-    const val = event.target.value ? Number(event.target.value) : 0;
+    // Strip commas to get raw number
+    const rawVal = event.target.value.replace(/,/g, '');
+    // Allow empty or partial inputs, but parse as number when possible
+    const val = rawVal && !isNaN(Number(rawVal)) ? Number(rawVal) : 0;
+    
     this.dealClosedAmountForOrder.update(prev => ({ ...prev, [orderId]: val }));
+
+    // Format the value in the input field while typing
+    event.target.value = val ? val.toLocaleString('en-IN') : '';
   }
 
   assignEmployee(orderId: string) {

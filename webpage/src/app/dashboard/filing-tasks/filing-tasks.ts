@@ -48,7 +48,7 @@ export class FilingTasks implements OnInit {
   taskErrorMessage = signal<string>('');
   taskSuccessMessage = signal<string>('');
 
-  constructor(private api: Api) {}
+  constructor(public api: Api) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

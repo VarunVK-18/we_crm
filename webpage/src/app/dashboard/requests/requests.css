@@ -166,7 +166,7 @@
   border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   transition: transform 0.2s, box-shadow 0.2s;
   position: relative;
 }
@@ -200,6 +200,7 @@
   justify-content: space-between;
   align-items: center;
   background-color: var(--bg-primary);
+  border-radius: 12px 12px 0 0;
 }
 
 .service-badge {
@@ -306,6 +307,7 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  border-radius: 0 0 12px 12px;
 }
 
 .assign-label {
@@ -420,4 +422,107 @@
 @keyframes slideInToast {
   from { opacity: 0; transform: translateY(20px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Documents list styling inside request cards */
+.documents-section {
+  margin-top: 12px;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 12px;
+}
+
+.documents-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.documents-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.document-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  position: relative;
+}
+
+.doc-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.doc-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-download {
+  color: var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.btn-download:hover {
+  background-color: var(--bg-hover);
+}
+
+.btn-download svg {
+  width: 12px;
+  height: 12px;
+}
+
+.doc-preview-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  padding: 6px;
+  border-radius: 8px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease-out;
+  z-index: 9999;
+  margin-bottom: 8px;
+  pointer-events: none;
+}
+
+.document-item:hover .doc-preview-popover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.doc-preview-popover img {
+  max-width: 400px;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
 }

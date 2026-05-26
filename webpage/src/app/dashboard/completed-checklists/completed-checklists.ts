@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, input } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -16,6 +16,7 @@ import { Api } from '../../api';
   styleUrl: './completed-checklists.css'
 })
 export class CompletedChecklists implements OnInit, OnDestroy {
+  @Output() onViewChecklist = new EventEmitter<string>();
   user = signal<any>(null);
   checklists = signal<any[]>([]);
   teams = input<any[]>([]);
@@ -52,7 +53,7 @@ export class CompletedChecklists implements OnInit, OnDestroy {
     'FEMA Advisory'
   ];
 
-  constructor(private api: Api) {}
+  constructor(public api: Api) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -139,6 +140,10 @@ export class CompletedChecklists implements OnInit, OnDestroy {
       }
     });
     return flat;
+  }
+
+  viewDetails(id: string) {
+    this.onViewChecklist.emit(id);
   }
 
   openCreateChecklistModal() {
