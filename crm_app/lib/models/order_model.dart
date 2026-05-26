@@ -53,11 +53,13 @@ class RequestedDocument {
   final String name;
   final String? fileUrl;
   final bool isUploaded;
+  final String? notes;
   
   const RequestedDocument({
     required this.name,
     this.fileUrl,
     required this.isUploaded,
+    this.notes,
   });
 
   factory RequestedDocument.fromMap(Map<String, dynamic> map) {
@@ -65,6 +67,7 @@ class RequestedDocument {
       name: map['name']?.toString() ?? '',
       fileUrl: map['fileUrl']?.toString(),
       isUploaded: map['isUploaded'] == true,
+      notes: map['notes']?.toString(),
     );
   }
 }
@@ -114,6 +117,7 @@ class ServiceOrder {
   expertPhone; // WhatsApp-capable number with country code, e.g. 919876543210
   final DateTime createdAt;
   final double dealClosedAmount;
+  final String notes;
 
   const ServiceOrder({
     required this.id,
@@ -130,6 +134,7 @@ class ServiceOrder {
     required this.expertPhone,
     required this.createdAt,
     this.dealClosedAmount = 0.0,
+    this.notes = '',
   });
 
   factory ServiceOrder.fromMap(Map<String, dynamic> data, String id) {
@@ -164,6 +169,7 @@ class ServiceOrder {
           ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
       dealClosedAmount: double.tryParse(data['dealClosedAmount']?.toString() ?? '0.0') ?? 0.0,
+      notes: data['notes']?.toString() ?? '',
     );
   }
 

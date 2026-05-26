@@ -720,7 +720,7 @@ const subscribeService = async (req, res) => {
           items: finalItems,
           status: 'pending',
           stage: 'quotePending',
-          notes: 'Automatically generated from app registration. Awaiting Client Manager review.'
+          notes: ''
         });
         console.log(`Automatically created checklist for ${serviceName}, assigned to client manager: ${assignedClientManager}`);
 

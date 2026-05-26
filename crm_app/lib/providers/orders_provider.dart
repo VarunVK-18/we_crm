@@ -62,6 +62,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
                 isAssignedToExpert ? (c['assigned_to']?['phone'] ?? '') : '',
             'createdAt': c['createdAt'],
             'dealClosedAmount': c['dealClosedAmount'] ?? 0,
+            'notes': c['notes'] ?? '',
           };
 
           return ServiceOrder.fromMap(mappedData, id);
