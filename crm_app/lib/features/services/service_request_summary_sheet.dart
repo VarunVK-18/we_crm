@@ -348,6 +348,78 @@ class _ServiceRequestSummarySheetState
       // Add serviceName field
       request.fields['serviceName'] = widget.packageName;
 
+      // Add user profile details from forms
+      request.fields['owner_name'] = _nameController.text;
+      request.fields['email'] = _emailController.text;
+      request.fields['phone'] = _phoneController.text;
+      if (_companyNameController.text.isNotEmpty) {
+        request.fields['company_name'] = _companyNameController.text;
+      }
+
+      // Collect package-specific details
+      final Map<String, String> details = {};
+      if (widget.packageName == 'Private Limited Incorporation') {
+        details['business_activity'] = _businessActivityController.text;
+        details['owner_name'] = _ownerNameController.text;
+        details['company_email'] = _companyEmailController.text;
+        details['company_phone'] = _companyPhoneController.text;
+        details['paid_up_capital'] = _paidUpCapitalController.text;
+        details['value_per_share'] = _valuePerShareController.text;
+        details['no_of_shares'] = _noOfSharesController.text;
+      } else if (widget.packageName == 'Trademark Registration') {
+        details['udyam_number'] = _udyamNumberController.text;
+        details['tm_applicant_name'] = _tmApplicantNameController.text;
+        details['tm_address'] = _tmAddressController.text;
+        details['partners_name'] = _partnersNameController.text;
+        details['business_desc'] = _businessDescController.text;
+        details['tm_trade_description'] = _tmTradeDescriptionController.text;
+        details['brand_usage_date'] = _brandUsageDateController.text;
+        details['is_brand_used'] = _isBrandUsed ? 'true' : 'false';
+      } else if (widget.packageName == 'FSSAI Food License') {
+        details['fssai_business_type'] = _fssaiBusinessType;
+        details['fssai_turnover'] = _fssaiTurnover;
+        details['fssai_premises_type'] = _fssaiPremisesType;
+        details['fssai_nature_of_business'] = _selectedFssaiNatures.join(', ');
+        details['fssai_start_date'] = _fssaiStartDateController.text;
+        details['fssai_employees'] = _fssaiEmployeesController.text;
+        details['fssai_premises_address'] = _fssaiPremisesAddressController.text;
+        details['fssai_village'] = _fssaiVillageController.text;
+        details['fssai_district'] = _fssaiDistrictController.text;
+        details['is_correspondence_same'] = _isCorrespondenceSame ? 'true' : 'false';
+        if (!_isCorrespondenceSame) {
+          details['fssai_corr_address'] = _fssaiCorrAddressController.text;
+          details['fssai_corr_village'] = _fssaiCorrVillageController.text;
+          details['fssai_corr_district'] = _fssaiCorrDistrictController.text;
+        }
+      } else if (widget.packageName == 'MSME Certification') {
+        details['msme_address'] = _tmAddressController.text;
+        details['msme_units'] = _msmeUnitsController.text;
+        details['company_phone'] = _companyPhoneController.text;
+        details['company_email'] = _companyEmailController.text;
+        details['msme_male_employees'] = _msmeMaleEmployeesController.text;
+        details['msme_female_employees'] = _msmeFemaleEmployeesController.text;
+        details['msme_inc_date'] = _msmeIncDateController.text;
+        details['msme_commence_date'] = _msmeCommenceDateController.text;
+        details['msme_prev_udyam'] = _msmePrevUdyamController.text;
+        details['msme_gst_number'] = _msmeGstNumberController.text;
+        details['msme_investment'] = _msmeInvestmentController.text;
+        details['msme_turnover'] = _msmeTurnoverController.text;
+        details['msme_org_selection'] = _msmeOrgSelection;
+        details['msme_activity'] = _msmeActivity;
+      } else if (widget.packageName == 'DUNS Number Registration') {
+        details['duns_trade_name'] = _dunsTradeNameController.text;
+        details['duns_year'] = _dunsYearController.text;
+        details['duns_employees'] = _fssaiEmployeesController.text;
+      } else if (widget.packageName == 'LLP Incorporation') {
+        details['business_activity'] = _businessActivityController.text;
+        details['owner_name'] = _ownerNameController.text;
+        details['paid_up_capital'] = _paidUpCapitalController.text;
+      }
+
+      if (details.isNotEmpty) {
+        request.fields['details'] = jsonEncode(details);
+      }
+
       // Add selected files from document slots
       for (var entry in _documentSlots.entries) {
         final slotName = entry.key;

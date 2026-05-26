@@ -7,6 +7,14 @@ const ChecklistTemplate = require('../models/ChecklistTemplate');
 const Document = require('../models/Document');
 const FilingTask = require('../models/FilingTask');
 const ServiceOrder = require('../models/ServiceOrder');
+const decodeUtf8 = (str) => {
+  if (!str) return str;
+  try {
+    return decodeURIComponent(escape(str));
+  } catch (e) {
+    return str;
+  }
+};
 
 // @desc    Register a new user (client) — scoped to a company
 // @route   POST /api/register
@@ -587,7 +595,7 @@ const getAuditLogs = async (req, res) => {
 const subscribeService = async (req, res) => {
   try {
     const { id } = req.params;
-    const serviceName = req.body.serviceName || req.body.service_name;
+    const serviceName = decodeUtf8(req.body.serviceName || req.body.service_name);
     const dealClosedAmount = req.body.dealClosedAmount || req.body.deal_closed_amount;
 
     if (!serviceName) {
@@ -598,6 +606,12 @@ const subscribeService = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    // Save/update editable user details if provided in request body
+    if (req.body.owner_name) user.owner_name = req.body.owner_name;
+    if (req.body.email) user.email = req.body.email;
+    if (req.body.phone) user.phone = req.body.phone;
+    if (req.body.company_name) user.company_name = req.body.company_name;
 
     if (dealClosedAmount) {
       user.revenue = (user.revenue || 0) + Number(dealClosedAmount);
@@ -610,6 +624,7 @@ const subscribeService = async (req, res) => {
     }
 
     // Process uploaded document files if present in request
+    const orderDocuments = [];
     if (req.files && req.files.length > 0) {
       for (const f of req.files) {
         // Clean duplicate documents with the same name if user uploads them again
@@ -627,12 +642,24 @@ const subscribeService = async (req, res) => {
           name: docName,
           fileUrl: `api/documents/${doc._id}`
         });
+
+        orderDocuments.push({
+          name: f.fieldname,
+          filename: f.originalname,
+          fileUrl: `api/documents/${doc._id}`
+        });
       }
     }
 
     await user.save();
 
-    if (isNewSubscription) {
+    const existingChecklist = await Checklist.findOne({
+      client_id: user._id,
+      service_name: serviceName,
+      status: { $ne: 'completed' }
+    });
+
+    if (isNewSubscription || !existingChecklist) {
 
       // Create a Checklist for this service automatically
       let finalItems = [];
@@ -697,6 +724,31 @@ const subscribeService = async (req, res) => {
         });
         console.log(`Automatically created checklist for ${serviceName}, assigned to client manager: ${assignedClientManager}`);
 
+        // Parse details field if present
+        let details = {};
+        if (req.body.details) {
+          try {
+            details = typeof req.body.details === 'string' ? JSON.parse(req.body.details) : req.body.details;
+          } catch (e) {
+            console.error('Error parsing details JSON:', e);
+          }
+        }
+
+        let orderSteps = [];
+        if (finalItems && finalItems.length > 0) {
+          orderSteps = finalItems.map(item => ({
+            title: item.title,
+            description: item.description || '',
+            isCompleted: false
+          }));
+        } else {
+          orderSteps = [
+            { title: 'Service Activated', description: 'The service has been successfully activated and logged in the system.', isCompleted: false },
+            { title: 'Setup Completed', description: 'Initial setup and configuration have been completed.', isCompleted: false },
+            { title: 'Documents Pending', description: 'Awaiting necessary documents from the client to proceed further.', isCompleted: false }
+          ];
+        }
+
         // Also create a ServiceOrder so it appears in the New Requests page
         await ServiceOrder.create({
           clientUid: user._id.toString(),
@@ -706,7 +758,10 @@ const subscribeService = async (req, res) => {
           status: 'active',
           stage: 'reqReceived',
           assignedExpert: 'To be assigned',
-          expertPhone: ''
+          expertPhone: '',
+          documents: orderDocuments,
+          details: details,
+          steps: orderSteps
         });
         console.log(`Created ServiceOrder for ${serviceName} — visible in New Requests`);
       } catch (e) {

@@ -29,7 +29,13 @@ const ServiceOrderSchema = new mongoose.Schema({
   steps: [ServiceStepSchema],
   assignedExpert: { type: String, default: 'To be assigned' },
   expertPhone: { type: String, default: '' },
-  dealClosedAmount: { type: Number, default: 0 }
+  dealClosedAmount: { type: Number, default: 0 },
+  details: { type: mongoose.Schema.Types.Mixed, default: {} },
+  documents: [{
+    name: { type: String },
+    filename: { type: String },
+    fileUrl: { type: String }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('ServiceOrder', ServiceOrderSchema);
