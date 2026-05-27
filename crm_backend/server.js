@@ -45,6 +45,7 @@ const settingsRoutes = require('./routes/settingsRoutes');
 const checklistRoutes = require('./routes/checklistRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const templateRoutes = require('./routes/templateRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
@@ -56,6 +57,7 @@ app.use('/api', settingsRoutes);
 app.use('/api', checklistRoutes);
 app.use('/api', documentRoutes);
 app.use('/api/templates', templateRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Start Express Server
 app.listen(PORT, '0.0.0.0', () => {

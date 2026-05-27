@@ -14,6 +14,7 @@ import '../../providers/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
+import 'order_chat_screen.dart';
 
 class ServiceOrderDetailScreen extends StatelessWidget {
   final ServiceOrder order;
@@ -35,29 +36,32 @@ class ServiceOrderDetailScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      // ── WhatsApp FAB ─────────────────────────────────────────────────────
-      floatingActionButton: (order.status == ServiceStatus.complete ||
-              order.status == ServiceStatus.notInitialized)
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: () => openWhatsApp(
-                context: context,
-                phone: order.expertPhone,
-                message:
-                    'Hi ${order.assignedExpert}, I have a query about my ${order.serviceType} service (${order.id}).',
+      // ── Internal Chat FAB ────────────────────────────────────────────────
+      floatingActionButton: order.status == ServiceStatus.active
+          ? FloatingActionButton.extended(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => OrderChatScreen(
+                    orderId: order.id,
+                    serviceName: order.serviceType,
+                    assignedExpert: order.assignedExpert,
+                  ),
+                ),
               ),
-              backgroundColor: const Color.fromARGB(255, 18, 140, 126),
-              icon: const Icon(LucideIcons.messageCircle,
+              backgroundColor: AppTheme.deepTeal,
+              icon: const Icon(LucideIcons.messageSquare,
                   color: Colors.white, size: 18),
               label: const Text(
-                'Chat on WhatsApp',
+                'Internal Chat',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                   fontSize: 13,
                 ),
               ),
-            ),
+            )
+          : null,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.light,
         child: CustomScrollView(

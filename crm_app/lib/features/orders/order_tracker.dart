@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
-import '../../core/utils/whatsapp_utils.dart';
+import 'order_chat_screen.dart';
 import 'service_order_detail_screen.dart';
 import '../../providers/orders_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -516,14 +516,18 @@ class _ServiceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // WhatsApp button — visible for active orders
+                // Internal Chat button — visible for active orders
                 if (isActive) ...[
                   GestureDetector(
-                    onTap: () => openWhatsApp(
-                      context: context,
-                      phone: order.expertPhone,
-                      message:
-                          'Hi ${order.assignedExpert}, I have a query regarding my ${order.serviceType} service (${order.id}).',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => OrderChatScreen(
+                          orderId: order.id,
+                          serviceName: order.serviceType,
+                          assignedExpert: order.assignedExpert,
+                        ),
+                      ),
                     ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -531,24 +535,19 @@ class _ServiceCard extends StatelessWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF128C7E).withValues(alpha: 0.1),
+                        color: AppTheme.corporateBlue.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: const Color(0xFF128C7E).withValues(alpha: 0.3),
+                          color: AppTheme.corporateBlue.withOpacity(0.3),
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Image.network(
-                            'https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg',
-                            width: 14,
-                            height: 14,
-                            errorBuilder: (_, __, ___) => const HugeIcon(
-                              icon: HugeIcons.strokeRoundedBubbleChat,
-                              size: 14,
-                              color: Color(0xFF128C7E),
-                            ),
+                          const HugeIcon(
+                            icon: HugeIcons.strokeRoundedBubbleChat,
+                            size: 14,
+                            color: AppTheme.corporateBlue,
                           ),
                           const SizedBox(width: 4),
                           const Text(
@@ -556,7 +555,7 @@ class _ServiceCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF128C7E),
+                              color: AppTheme.corporateBlue,
                             ),
                           ),
                         ],
