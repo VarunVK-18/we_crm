@@ -51,8 +51,9 @@ class AuthRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('auth_uid', user.uid);
     if (user.email != null) await prefs.setString('auth_email', user.email!);
-    if (user.displayName != null)
+    if (user.displayName != null) {
       await prefs.setString('auth_name', user.displayName!);
+    }
   }
 
   Future<void> _clearUser() async {

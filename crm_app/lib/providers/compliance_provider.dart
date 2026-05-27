@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import '../core/constants/port.dart';
 import '../features/compliance/compliance_reminder_model.dart';
 import 'auth_provider.dart';
-import 'orders_provider.dart';
 
 // Provider to track the currently selected business entity for compliance views
 final selectedEntityProvider = StateProvider<String>((ref) {
@@ -58,9 +57,11 @@ final complianceRemindersProvider =
                   '';
             }
             if (entityName.isEmpty) entityName = 'Individual';
-
+            
             int days = 0;
             final daysVal = map['daysLeft'];
+
+            print("DEBUG REMINDER: id=$id, service=$serviceName, entity=$entityName, days=$daysVal, status=$statusStr");
             if (daysVal != null) {
               if (daysVal is num) {
                 days = daysVal.toInt();

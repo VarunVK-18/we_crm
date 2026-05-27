@@ -574,11 +574,50 @@ class _ServiceRequestSummarySheetState
                         ? () async {
                             debugPrint('Submitting request:');
                             debugPrint('Package: ${widget.packageName}');
+                            
+                            // Show Buffering / Loading Dialog
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (BuildContext dialogContext) {
+                                return PopScope(
+                                  canPop: false,
+                                  child: AlertDialog(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                                    content: Padding(
+                                      padding: const EdgeInsets.all(24.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const CircularProgressIndicator(color: AppTheme.corporateBlue),
+                                          const SizedBox(height: 24),
+                                          Text(
+                                            'Registering service...',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              color: AppTheme.deepTeal,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            'Please wait while we connect to the server.',
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
 
                             await _submitServiceRequest();
 
                             if (mounted) {
-                              Navigator.pop(context); // Close sheet
+                              Navigator.pop(context); // Close loading dialog
+                              Navigator.pop(context); // Close bottom sheet
                               _showSuccessDialog(context);
                             }
                           }

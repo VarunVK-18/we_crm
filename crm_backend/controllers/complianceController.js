@@ -21,6 +21,7 @@ const getDynamicReminders = (checklists) => {
             dueDate: doc.expiry_date,
             daysLeft,
             status,
+            entityName: checklist.company_id ? checklist.company_id.company_name : (checklist.client_id ? checklist.client_id.company_name : 'Individual'),
             client_id: {
               owner_name: checklist.client_id ? checklist.client_id.owner_name : 'Client',
               company_name: checklist.client_id ? checklist.client_id.company_name : 'Individual'
@@ -59,8 +60,8 @@ exports.getUserComplianceReminders = async (req, res) => {
       }
     }));
 
-    // 2. Fetch dynamic compliance reminders from completed checklists
-    const completedChecklists = await Checklist.find({ client_id: userId, status: 'completed' })
+    // 2. Fetch dynamic compliance reminders from checklists with final documents
+    const completedChecklists = await Checklist.find({ client_id: userId, 'final_documents.0': { $exists: true } })
       .populate('company_id', 'company_name')
       .populate('client_id', 'owner_name company_name');
 
@@ -153,8 +154,8 @@ exports.getCompanyComplianceReminders = async (req, res) => {
       };
     });
 
-    // 3. Fetch dynamic compliance reminders from completed checklists for this company
-    const completedChecklists = await Checklist.find({ company_id: companyId, status: 'completed' })
+    // 3. Fetch dynamic compliance reminders from checklists with final documents for this company
+    const completedChecklists = await Checklist.find({ company_id: companyId, 'final_documents.0': { $exists: true } })
       .populate('company_id', 'company_name')
       .populate('client_id', 'owner_name company_name');
 

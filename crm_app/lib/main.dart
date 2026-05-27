@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
+import 'core/widgets/network_overlay_wrapper.dart';
 import 'features/auth/auth_wrapper.dart';
 
 void main() async {
@@ -39,14 +40,16 @@ class MainApp extends StatelessWidget {
       home: const AuthWrapper(),
       builder: (context, child) {
         final mediaQueryData = MediaQuery.of(context);
-        return MediaQuery(
-          data: mediaQueryData.copyWith(
-            textScaler: mediaQueryData.textScaler.clamp(
-              minScaleFactor: 0.8,
-              maxScaleFactor: 1.15,
+        return NetworkOverlayWrapper(
+          child: MediaQuery(
+            data: mediaQueryData.copyWith(
+              textScaler: mediaQueryData.textScaler.clamp(
+                minScaleFactor: 0.8,
+                maxScaleFactor: 1.15,
+              ),
             ),
+            child: child!,
           ),
-          child: child!,
         );
       },
     );

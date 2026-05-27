@@ -182,7 +182,7 @@ class InvoiceScreen extends StatelessWidget {
                       children: [
                         _MetaItem(label: 'Invoice No.', value: _invoiceNumber),
                         _MetaItem(label: 'Date', value: dateStr),
-                        _MetaItem(label: 'Payment', value: 'UPI'),
+                        const _MetaItem(label: 'Payment', value: 'UPI'),
                       ],
                     ),
                   ),

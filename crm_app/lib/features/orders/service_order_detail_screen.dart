@@ -69,7 +69,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
               pinned: true,
               stretch: true,
               elevation: 0,
-              actions: [],
+              actions: const [],
               backgroundColor: Colors.black,
               systemOverlayStyle: SystemUiOverlayStyle
                   .light, // Forces white status bar icons for this black header

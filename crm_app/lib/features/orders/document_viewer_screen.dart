@@ -1,11 +1,9 @@
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
 
