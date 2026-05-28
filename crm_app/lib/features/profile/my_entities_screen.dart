@@ -71,6 +71,17 @@ class MyEntitiesScreen extends ConsumerWidget {
       );
     }).toList();
 
+    final allEntitiesCard = Entity(
+      name: 'All Entities',
+      companyName: 'All Entities',
+      type: 'Portfolio',
+      serviceCount: orders.where((o) => o.status == ServiceStatus.active).length,
+      icon: LucideIcons.layoutGrid,
+      color: AppTheme.accentCyan,
+    );
+
+    final finalEntities = [allEntitiesCard, ...entities];
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -99,9 +110,9 @@ class MyEntitiesScreen extends ConsumerWidget {
               ? const _EntitiesEmptyState()
               : ListView.builder(
                   padding: const EdgeInsets.all(24),
-                  itemCount: entities.length,
+                  itemCount: finalEntities.length,
                   itemBuilder: (context, index) =>
-                      _EntityCard(entity: entities[index]),
+                      _EntityCard(entity: finalEntities[index]),
                 ),
       floatingActionButton: entities.isNotEmpty
           ? FloatingActionButton.extended(

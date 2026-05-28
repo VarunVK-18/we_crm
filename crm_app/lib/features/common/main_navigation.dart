@@ -8,6 +8,7 @@ import '../../providers/auth_provider.dart';
 import '../profile/profile_screen.dart';
 import '../compliance/compliance_radar_screen.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/navigation_provider.dart';
 
 class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
@@ -18,12 +19,13 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
-  int _currentIndex = 0;
-  late final PageController _pageController = PageController(initialPage: _currentIndex);
+  late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
+    final initialIndex = ref.read(navigationIndexProvider);
+    _pageController = PageController(initialPage: initialIndex);
   }
 
   @override
@@ -99,28 +101,32 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           );
         }
         final navItems = _getNavItems();
+        final currentIndex = ref.watch(navigationIndexProvider);
 
-        if (_currentIndex >= navItems.length) {
-          _currentIndex = 0;
-        }
-
-        return ResponsiveLayout(
-          currentIndex: _currentIndex,
-          onIndexChanged: (index) {
-            setState(() => _currentIndex = index);
+        ref.listen<int>(navigationIndexProvider, (previous, next) {
+          if (_pageController.hasClients && next != _pageController.page?.round()) {
             _pageController.animateToPage(
-              index,
+              next,
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeOutQuart,
             );
+          }
+        });
+
+        final safeIndex = currentIndex.clamp(0, navItems.length - 1);
+
+        return ResponsiveLayout(
+          currentIndex: safeIndex,
+          onIndexChanged: (index) {
+            ref.read(navigationIndexProvider.notifier).state = index;
           },
-          title: navItems[_currentIndex].label,
+          title: navItems[safeIndex].label,
           navItems: navItems,
           mobileBody: Container(
             color: AppTheme.backgroundLight,
             child: PageView(
               controller: _pageController,
-              onPageChanged: (index) => setState(() => _currentIndex = index),
+              onPageChanged: (index) => ref.read(navigationIndexProvider.notifier).state = index,
               physics: const ClampingScrollPhysics(),
               children: navItems.asMap().entries.map((entry) {
                 final index = entry.key;
@@ -138,8 +144,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
                       scale = (1 - (diff * 0.04)).clamp(0.96, 1.0);
                       opacity = (1 - (diff * 0.6)).clamp(0.0, 1.0);
                     } else {
-                      scale = index == _currentIndex ? 1.0 : 0.97;
-                      opacity = index == _currentIndex ? 1.0 : 0.0;
+                      scale = index == safeIndex ? 1.0 : 0.97;
+                      opacity = index == safeIndex ? 1.0 : 0.0;
                     }
 
                     return Opacity(
@@ -156,7 +162,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
           ),
           desktopBody: PageView(
             controller: _pageController,
-            onPageChanged: (index) => setState(() => _currentIndex = index),
+            onPageChanged: (index) => ref.read(navigationIndexProvider.notifier).state = index,
             physics:
                 const NeverScrollableScrollPhysics(), // No swipe on desktop
             children: navItems.map((item) => item.screen).toList(),

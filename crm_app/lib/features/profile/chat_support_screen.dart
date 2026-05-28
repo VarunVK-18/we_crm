@@ -14,6 +14,8 @@ class ChatSupportScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.backgroundLight,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
@@ -96,9 +98,21 @@ class ChatSupportScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildFAQCard('How long does DSC registration take?'),
-            _buildFAQCard('Can I change my company name after search?'),
-            _buildFAQCard('What documents are needed for GST filing?'),
+            _buildFAQCard(
+              context,
+              'How long does DSC registration take?',
+              'DSC registration typically takes 1-2 business days after all necessary documents are verified and processed.',
+            ),
+            _buildFAQCard(
+              context,
+              'Can I change my company name after search?',
+              'If the name hasn\'t been formally registered yet, you can do a new name search. If already registered, a formal name change process with MCA must be initiated.',
+            ),
+            _buildFAQCard(
+              context,
+              'What documents are needed for GST filing?',
+              'You will generally need your PAN card, Aadhaar card, business registration proof, bank statements, and relevant sales/purchase invoices.',
+            ),
           ],
         ),
       ),
@@ -180,19 +194,31 @@ class ChatSupportScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFAQCard(String question) {
+  Widget _buildFAQCard(BuildContext context, String question, String answer) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            dividerColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+          ),
+          child: ExpansionTile(
+            iconColor: Colors.grey.shade400,
+            collapsedIconColor: Colors.grey.shade400,
+            tilePadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            childrenPadding:
+                const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+            title: Text(
               question,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
@@ -200,9 +226,21 @@ class ChatSupportScreen extends StatelessWidget {
                 color: AppTheme.deepTeal,
               ),
             ),
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  answer,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 13,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
           ),
-          Icon(LucideIcons.chevronDown, color: Colors.grey.shade400, size: 16),
-        ],
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import '../core/constants/port.dart';
@@ -8,7 +9,7 @@ import 'auth_provider.dart';
 
 // Provider to track the currently selected business entity for compliance views
 final selectedEntityProvider = StateProvider<String>((ref) {
-  return 'Wealth Empires Tech'; // Fallback, will be updated by UI
+  return 'All Entities'; // Default to all entities
 });
 
 /// Real-time stream of [ComplianceReminder] documents from the database.
@@ -21,84 +22,73 @@ final complianceRemindersProvider =
 
   Future<void> fetchReminders() async {
     try {
-      final response = await http
-          .get(
-            Uri.parse('$kBaseUrl/api/compliance/user/$uid'),
-          )
-          .timeout(const Duration(seconds: 5));
+      final List<ComplianceReminder> allReminders = [];
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> remindersJson = data['reminders'] ?? [];
-        final reminders = remindersJson.map((r) {
-          try {
-            final map = r as Map<String, dynamic>;
-            final id = map['_id']?.toString() ?? '';
+      // Only fetch Checklists API for Final Documents Expiry
+      try {
+        final user = ref.read(userProfileProvider).value;
+        final companyName = user?.companyName ?? '';
 
-            // Map status string to ReminderStatus enum
-            ReminderStatus status = ReminderStatus.expiringSoon;
-            final statusStr = map['status']?.toString();
-            if (statusStr == 'urgent') {
-              status = ReminderStatus.urgent;
-            } else if (statusStr == 'expired') {
-              status = ReminderStatus.expired;
-            }
+        final ordersResponse = await http.get(
+          Uri.parse('$kBaseUrl/api/my-checklists'),
+          headers: {'x-user-id': uid},
+        ).timeout(const Duration(seconds: 5));
 
-            final serviceName =
-                (map['title'] ?? map['serviceName'])?.toString() ??
-                    'Compliance Alert';
+        if (ordersResponse.statusCode == 200) {
+          final Map<String, dynamic> data = jsonDecode(ordersResponse.body);
+          final List<dynamic> checklistsJson = data['checklists'] ?? [];
 
-            // Extract entity name from either direct property or nested client_id
-            String entityName = map['entityName']?.toString() ?? '';
-            if (entityName.isEmpty && map['client_id'] != null) {
-              final clientIdMap = map['client_id'] as Map<String, dynamic>;
-              entityName = clientIdMap['company_name']?.toString() ??
-                  clientIdMap['owner_name']?.toString() ??
-                  '';
-            }
-            if (entityName.isEmpty) entityName = 'Individual';
-            
-            int days = 0;
-            final daysVal = map['daysLeft'];
+          for (final c in checklistsJson) {
+            final String actualCompany = c['company_name']?.toString() ??
+                (c['client_id'] != null
+                    ? c['client_id']['company_name']?.toString()
+                    : null) ??
+                companyName;
+            final String serviceName = c['service_name']?.toString() ?? '';
+            final String entityName =
+                actualCompany.isNotEmpty ? actualCompany : 'Default Entity';
+            final List<dynamic> finalDocs = c['final_documents'] ?? [];
 
-            print("DEBUG REMINDER: id=$id, service=$serviceName, entity=$entityName, days=$daysVal, status=$statusStr");
-            if (daysVal != null) {
-              if (daysVal is num) {
-                days = daysVal.toInt();
-              } else {
-                days = int.tryParse(daysVal.toString()) ?? 0;
+            for (final doc in finalDocs) {
+              if (doc['expiry_date'] != null) {
+                final expiryStr = doc['expiry_date'].toString();
+                final expiryDate = DateTime.tryParse(expiryStr);
+
+                if (expiryDate != null) {
+                  final now = DateTime.now();
+                  final daysLeft = expiryDate.difference(now).inDays;
+
+                  ReminderStatus status = ReminderStatus.expiringSoon;
+                  if (daysLeft < 0) {
+                    status = ReminderStatus.expired;
+                  } else if (daysLeft <= 7) {
+                    status = ReminderStatus.urgent;
+                  }
+
+                  final docName = doc['name']?.toString() ?? 'Document';
+
+                  allReminders.add(ComplianceReminder(
+                    id: doc['document_id']?.toString() ??
+                        DateTime.now().millisecondsSinceEpoch.toString(),
+                    serviceName: serviceName,
+                    entityName: entityName,
+                    daysLeft: daysLeft,
+                    status: status,
+                  ));
+                }
               }
             }
-
-            return ComplianceReminder(
-              id: id,
-              serviceName: serviceName,
-              entityName: entityName,
-              daysLeft: days,
-              status: status,
-            );
-          } catch (e, stackTrace) {
-            print("Error mapping compliance reminder: $e\n$stackTrace");
-            return ComplianceReminder(
-              id: '',
-              serviceName: 'Filing Alert',
-              entityName: '',
-              daysLeft: 1,
-              status: ReminderStatus.expiringSoon,
-            );
           }
-        }).toList();
+        }
+      } catch (e) {
+        debugPrint("Error fetching checklists API: $e");
+      }
 
-        if (!controller.isClosed) {
-          controller.add(reminders);
-        }
-      } else {
-        if (!controller.isClosed) {
-          controller.add([]);
-        }
+      if (!controller.isClosed) {
+        controller.add(allReminders);
       }
     } catch (e) {
-      print("Error fetching real-time compliance reminders: $e");
+      debugPrint("Error in fetchReminders: $e");
       if (!controller.isClosed) {
         controller.add([]);
       }

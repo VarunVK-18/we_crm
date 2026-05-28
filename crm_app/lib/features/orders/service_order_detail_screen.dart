@@ -4,14 +4,12 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
-import '../../core/utils/whatsapp_utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/port.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/orders_provider.dart';
 import '../../providers/auth_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
@@ -383,19 +381,22 @@ class _RequestedDocumentsSection extends ConsumerWidget {
         final response = await request.send();
         final respStr = await response.stream.bytesToString();
 
+        if (!context.mounted) return;
+
         if (response.statusCode == 200) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Document uploaded successfully')),
           );
           ref.invalidate(serviceOrdersProvider);
         } else {
-          print("Upload failed: ${response.statusCode} - $respStr");
+          debugPrint("Upload failed: ${response.statusCode} - $respStr");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed: $respStr')),
           );
         }
       }
     } catch (e) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );

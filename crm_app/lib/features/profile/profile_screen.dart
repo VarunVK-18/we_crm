@@ -35,16 +35,7 @@ class ProfileScreen extends ConsumerWidget {
             scrolledUnderElevation: 0,
             surfaceTintColor: Colors.transparent,
             backgroundColor: AppTheme.backgroundLight,
-            leading: Navigator.canPop(context)
-                ? IconButton(
-                    icon: Icon(
-                      LucideIcons.arrowLeft,
-                      color: AppTheme.deepTeal,
-                      size: 24.ip,
-                    ),
-                    onPressed: () => Navigator.maybePop(context),
-                  )
-                : null,
+            automaticallyImplyLeading: false,
             title: Text(
               'Profile',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(

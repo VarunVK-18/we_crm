@@ -17,8 +17,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
   void _showNotificationPanel(BuildContext context, WidgetRef ref) {
     final selectedEntity = ref.read(selectedEntityProvider);
     final reminders = ref.read(complianceRemindersProvider).value ?? [];
-    final filteredReminders =
-        reminders.where((r) => r.entityName == selectedEntity).toList();
+    final filteredReminders = reminders
+        .where((r) =>
+            selectedEntity == 'All Entities' || r.entityName == selectedEntity)
+        .toList();
 
     showModalBottomSheet(
       context: context,
@@ -125,7 +127,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final reminders = ref.read(complianceRemindersProvider).value ?? [];
     final pendingReminders = reminders
         .where((r) =>
-            r.entityName == selectedEntity &&
+            (selectedEntity == 'All Entities' ||
+                r.entityName == selectedEntity) &&
             r.status != ReminderStatus.expired)
         .toList();
 
@@ -238,26 +241,26 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final reminders = remindersAsync.value ?? [];
     final isLoading = remindersAsync.isLoading && reminders.isEmpty;
 
-    // Auto-correct stale selected entity (e.g. from hot reload state) to a valid database entity
-    final validEntities = reminders.map((r) => r.entityName).toSet().toList();
-    if (reminders.isNotEmpty && !validEntities.contains(currentEntity)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(selectedEntityProvider.notifier).state = validEntities.first;
-      });
-    }
+    // Removed auto-correct to allow selecting entities with zero reminders
 
     final pendingReminders = reminders
         .where((r) =>
-            r.entityName == currentEntity && r.status != ReminderStatus.expired)
+            (currentEntity == 'All Entities' ||
+                r.entityName == currentEntity) &&
+            r.status != ReminderStatus.expired)
         .toList();
     final pendingCountStr = pendingReminders.length.toString().padLeft(2, '0');
 
     // Calculate Health Score dynamically based on active/expired database reminders
-    final totalForEntity =
-        reminders.where((r) => r.entityName == currentEntity).length;
+    final totalForEntity = reminders
+        .where((r) =>
+            currentEntity == 'All Entities' || r.entityName == currentEntity)
+        .length;
     final expiredCount = reminders
         .where((r) =>
-            r.entityName == currentEntity && r.status == ReminderStatus.expired)
+            (currentEntity == 'All Entities' ||
+                r.entityName == currentEntity) &&
+            r.status == ReminderStatus.expired)
         .length;
     final score = totalForEntity == 0
         ? 1.0
@@ -279,7 +282,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
     // Map upcoming items dynamically to the timeline card
     final timelineItems = pendingReminders
         .map((r) => {
-              'title': r.serviceName,
+              'title': currentEntity == 'All Entities'
+                  ? '${r.serviceName} (${r.entityName})'
+                  : r.serviceName,
               'status': r.message,
               'type': r.status == ReminderStatus.urgent ? 'Urgent' : 'Upcoming',
             })
@@ -424,7 +429,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                   ),
                                   if (reminders
                                       .where((r) =>
-                                          r.entityName == currentEntity &&
+                                          (currentEntity == 'All Entities' ||
+                                              r.entityName == currentEntity) &&
                                           r.status == ReminderStatus.urgent)
                                       .isNotEmpty)
                                     Positioned(
@@ -476,10 +482,12 @@ class ComplianceRadarScreen extends ConsumerWidget {
                           // Row 2: Urgent Deadline (Wide)
                           _BentoDeadlineCard(
                             title: urgentReminder != null
-                                ? urgentReminder.serviceName
+                                ? (currentEntity == 'All Entities'
+                                    ? '${urgentReminder.serviceName} (${urgentReminder.entityName})'
+                                    : urgentReminder.serviceName)
                                 : 'All Compliances Met',
                             timeLeft: urgentReminder != null
-                                ? '${urgentReminder.daysLeft} Days Left'
+                                ? urgentReminder.message
                                 : 'Up to date',
                             date: urgentReminder != null
                                 ? 'Due soon'
@@ -670,60 +678,67 @@ class _BentoSimpleStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        height: 215.r,
-        padding: EdgeInsets.all(20.r),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32.r),
-          border: Border.all(
-            color: AppTheme.deepTeal.withOpacity(0.08),
-            width: 1.0.r,
+    return Container(
+      height: 215.r,
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: EdgeInsets.all(12.r),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Icon(icon, color: color, size: 22.ip),
-            ),
-            const Spacer(),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 32.sp,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.deepTeal,
-                letterSpacing: -0.5,
-                height: 1.1,
+        ],
+      ),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32.r),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(32.r),
+          child: Container(
+            padding: EdgeInsets.all(20.r),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32.r),
+              border: Border.all(
+                color: AppTheme.deepTeal.withOpacity(0.08),
+                width: 1.0.r,
               ),
             ),
-            SizedBox(height: 2.r),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: Colors.grey[500],
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.2,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12.r),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: Icon(icon, color: color, size: 22.ip),
+                ),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 32.sp,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.deepTeal,
+                    letterSpacing: -0.5,
+                    height: 1.1,
+                  ),
+                ),
+                SizedBox(height: 2.r),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -783,6 +798,7 @@ class _BentoDeadlineCard extends StatelessWidget {
           ),
           SizedBox(width: 20.r),
           Expanded(
+            flex: 3,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -792,7 +808,7 @@ class _BentoDeadlineCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 18.sp,
+                    fontSize: 15.sp,
                     fontWeight: FontWeight.w900,
                     color: AppTheme.deepTeal,
                     letterSpacing: -0.5,
@@ -802,6 +818,8 @@ class _BentoDeadlineCard extends StatelessWidget {
                 SizedBox(height: 4.r),
                 Text(
                   date,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 12.sp,
                     color: Colors.grey[500],
@@ -811,27 +829,34 @@ class _BentoDeadlineCard extends StatelessWidget {
               ],
             ),
           ),
-          SizedBox(width: 16.r),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 18.r, vertical: 12.r),
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(16.r),
-              boxShadow: [
-                BoxShadow(
-                  color: color.withOpacity(0.25),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+          SizedBox(width: 12.r),
+          Flexible(
+            flex: 2,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12.r, vertical: 8.r),
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Text(
+                timeLeft,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
+                  height: 1.2,
                 ),
-              ],
-            ),
-            child: Text(
-              timeLeft,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 11.sp,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.5,
               ),
             ),
           ),
@@ -856,51 +881,57 @@ class _BentoToolCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(32.r),
-      child: Container(
-        height: 140.r,
-        padding: EdgeInsets.all(26.r),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(32.r),
-          border: Border.all(
-            color: AppTheme.deepTeal.withOpacity(0.08),
-            width: 1.0.r,
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: EdgeInsets.all(10.r),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Icon(icon, color: color, size: 22.ip),
-            ),
-            SizedBox(height: 16.r),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.deepTeal,
-                height: 1.2,
+        ],
+      ),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24.r),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(24.r),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 20.r, horizontal: 16.r),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24.r),
+              border: Border.all(
+                color: AppTheme.deepTeal.withOpacity(0.08),
+                width: 1.0.r,
               ),
             ),
-          ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10.r),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(icon, color: color, size: 22.ip),
+                ),
+                SizedBox(height: 16.r),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w900,
+                    color: AppTheme.deepTeal,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -1015,13 +1046,15 @@ class _BentoTimelineCard extends StatelessWidget {
   }
 }
 
-class _ReminderItem extends StatelessWidget {
+class _ReminderItem extends ConsumerWidget {
   final ComplianceReminder reminder;
 
   const _ReminderItem({required this.reminder});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentEntity = ref.watch(selectedEntityProvider);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(20),
@@ -1060,6 +1093,18 @@ class _ReminderItem extends StatelessWidget {
                     letterSpacing: -0.3,
                   ),
                 ),
+                if (currentEntity == 'All Entities')
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(
+                      reminder.entityName,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[500],
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 2),
                 Text(
                   reminder.message.toUpperCase(),
