@@ -592,6 +592,41 @@ const getAuditLogs = async (req, res) => {
   }
 };
 
+const savePanDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (req.body.panNumber) user.pan = req.body.panNumber;
+
+    if (req.file) {
+      const doc = await Document.create({
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        data: req.file.buffer,
+        uploadedBy: user._id
+      });
+      user.pan_file = `api/documents/${doc._id}`;
+      
+      // Remove previous PAN verification doc if any
+      user.onboarding_documents = user.onboarding_documents.filter(d => d.name !== 'PAN Card Verification');
+      
+      user.onboarding_documents.push({
+        name: 'PAN Card Verification',
+        fileUrl: `api/documents/${doc._id}`
+      });
+    }
+
+    await user.save();
+    res.status(200).json({ success: true, message: 'PAN details saved successfully', pan: user.pan, pan_file: user.pan_file });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const subscribeService = async (req, res) => {
   try {
     const { id } = req.params;
@@ -864,5 +899,6 @@ module.exports = {
   approveClient,
   getAuditLogs,
   subscribeService,
+  savePanDetails,
   migrateChecklistAssignments
 };

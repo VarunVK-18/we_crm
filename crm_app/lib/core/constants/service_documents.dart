@@ -2,7 +2,9 @@ const Map<String, List<String>> kServiceRequiredDocuments = {
   // Company Incorporation
   'Proprietorship Registration': ['PAN Card', 'Aadhaar Card', 'Business Address Proof', 'Proprietor Photo'],
   'Partnership Firm Registration': ['Partnership Deed', 'PAN of Firm', 'ID Proof of Partners', 'Address Proof of Partners'],
-  'Private Limited Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)'],
+  'Private Limited Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)', 'Payment Screenshot'],
+  'ISO Certification': ['Business Address Proof', 'Scope of Operations', 'Organization Chart'],
+  'DPIIT Startup India Certification': ['Incorporation Certificate (PDF)', 'Company PAN', 'Company logo (JPEG)', 'Pitch deck (PDF)'],
   
   // Compliance Services
   'Compliance Audit': ['Company PAN', 'Previous Audit Reports', 'Statutory Registers', 'GST & TDS Filings'],
@@ -13,7 +15,7 @@ const Map<String, List<String>> kServiceRequiredDocuments = {
   
   // Business Licenses
   'IEC Code Registration': ['PAN Card', 'Aadhaar Card', 'Bank Proof (Cancelled Cheque)', 'Address Proof'],
-  'FSSAI Food License': ['Aadhaar Card', 'PAN Card', 'Passport Size Photo', 'Business Address Proof'],
+  'FSSAI Registration': ['Aadhaar Card', 'PAN Card', 'Passport Size Photo', 'Business Address Proof'],
   'ISO Certifications': ['GST Certificate', 'Business Address Proof', 'Scope of Operations', 'Organization Chart'],
   
   // Taxation Services
@@ -26,11 +28,11 @@ const Map<String, List<String>> kServiceRequiredDocuments = {
   '360° Compliance': ['Company Profile', 'Last Year Audit', 'GST Details', 'Legal Structure Copy'],
   'Trademark Registration': ['UDYAM MSME Certificate', 'Trademark Logo', 'Signature with name'],
   'Accounting & Tax': ['Trial Balance', 'Previous Audit Report', 'Bank Statements', 'Purchase/Sales Bills'],
-  'GST Onboarding': ['PAN Card', 'Business Address Proof', 'Aadhaar Card', 'Photo'],
+  'GST Onboarding': ['Photo (JPEG | Max file size 100KB)', 'Latest EB Bill', 'House Tax Receipt (If Own)', 'Rental Agreement (If Rented)'],
   'Strategic Tax Planning': ['Latest Financial Statements', 'Tax History', 'Asset List', 'PAN Card'],
   'Capital Funding': ['Project Report', 'Previous Financials', 'Pitch Deck', 'ID Proof of Founders'],
   'Risk Management': ['Legal History', 'Internal Compliance Manual', 'Policy Papers', 'ID Proof'],
-  'MSME Certification': ['Company PAN Card'],
-  'DUNS Number Registration': ['Business Registration Proof', 'PAN Card', 'Aadhaar of Authorized Signatory'],
-  'LLP Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)'],
+  'MSME Registration': ['Company PAN Card'],
+  'DUNS Registration': ['Business Registration Proof', 'PAN Card', 'Aadhaar of Authorized Signatory'],
+  'LLP Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)', 'Payment Screenshot'],
 };

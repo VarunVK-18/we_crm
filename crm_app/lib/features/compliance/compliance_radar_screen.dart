@@ -100,22 +100,30 @@ class ComplianceRadarScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 32),
-            ...filteredReminders.map(
-              (reminder) => _ReminderItem(reminder: reminder),
-            ),
-            if (filteredReminders.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Text(
-                    'No active alerts for this entity.',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontWeight: FontWeight.w600,
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ...filteredReminders.map(
+                      (reminder) => _ReminderItem(reminder: reminder),
                     ),
-                  ),
+                    if (filteredReminders.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Text(
+                            'No active alerts for this entity.',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -210,22 +218,30 @@ class ComplianceRadarScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 32),
-            ...pendingReminders.map(
-              (reminder) => _ReminderItem(reminder: reminder),
-            ),
-            if (pendingReminders.isEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: Text(
-                    'No pending compliances for this entity.',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontWeight: FontWeight.w600,
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ...pendingReminders.map(
+                      (reminder) => _ReminderItem(reminder: reminder),
                     ),
-                  ),
+                    if (pendingReminders.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 40),
+                        child: Center(
+                          child: Text(
+                            'No pending compliances for this entity.',
+                            style: TextStyle(
+                              color: Colors.grey[400],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -482,9 +498,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                           // Row 2: Urgent Deadline (Wide)
                           _BentoDeadlineCard(
                             title: urgentReminder != null
-                                ? (currentEntity == 'All Entities'
-                                    ? '${urgentReminder.serviceName} (${urgentReminder.entityName})'
-                                    : urgentReminder.serviceName)
+                                ? urgentReminder.serviceName
                                 : 'All Compliances Met',
                             timeLeft: urgentReminder != null
                                 ? urgentReminder.message
@@ -497,6 +511,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                         ReminderStatus.urgent
                                 ? const Color.fromARGB(255, 223, 105, 75)
                                 : AppTheme.deepTeal,
+                            onTap: urgentReminder != null 
+                                ? () => _showPendingCompliancesPanel(context, ref) 
+                                : null,
                           ),
                           SizedBox(height: 16.r),
 
@@ -750,26 +767,21 @@ class _BentoDeadlineCard extends StatelessWidget {
   final String timeLeft;
   final String date;
   final Color color;
+  final VoidCallback? onTap;
 
   const _BentoDeadlineCard({
     required this.title,
     required this.timeLeft,
     required this.date,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(26.r),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(32.r),
-        border: Border.all(
-          color: AppTheme.deepTeal.withOpacity(0.08),
-          width: 1.0.r,
-        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.04),
@@ -778,7 +790,22 @@ class _BentoDeadlineCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32.r),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(32.r),
+          child: Container(
+            padding: EdgeInsets.all(26.r),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(32.r),
+              border: Border.all(
+                color: AppTheme.deepTeal.withOpacity(0.08),
+                width: 1.0.r,
+              ),
+            ),
+            child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
@@ -861,6 +888,9 @@ class _BentoDeadlineCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    ),
+  ),
       ),
     );
   }
@@ -1124,6 +1154,7 @@ class _ReminderItem extends ConsumerWidget {
               showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
+                useSafeArea: true,
                 backgroundColor: Colors.transparent,
                 builder: (context) => ServiceRequestSummarySheet(
                   packageName: reminder.serviceName,

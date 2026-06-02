@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/local_document_viewer.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dsc_provider.dart';
 
@@ -478,6 +479,61 @@ class DSCOrdersScreen extends ConsumerWidget {
                     }
 
                     final fileName = result.files.first.name;
+                    final filePath = result.files.first.path;
+                    final fileSize = result.files.first.size;
+
+                    if (fileSize > 2 * 1024 * 1024) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Warning: File is large. Max 2MB allowed')),
+                      );
+                      return;
+                    }
+
+                    if (filePath == null) return;
+
+                    // Show preview dialog
+                    if (!context.mounted) return;
+                    final shouldUpload = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Preview Document', style: TextStyle(color: AppTheme.deepTeal, fontWeight: FontWeight.bold)),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Selected: $fileName'),
+                            const SizedBox(height: 24),
+                            ElevatedButton.icon(
+                              icon: const Icon(LucideIcons.eye, color: Colors.white, size: 18),
+                              label: const Text('View Document', style: TextStyle(color: Colors.white)),
+                              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.corporateBlue),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LocalDocumentViewer(filePath: filePath),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                          ),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.deepTeal),
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('Upload Safely', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (shouldUpload != true) return;
 
                     // 2. Show loading spinner dialog
                     if (!context.mounted) return;

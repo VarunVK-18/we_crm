@@ -157,14 +157,54 @@
             </div>
             
             @if (order.assignedExpert && order.assignedExpert !== 'To be assigned') {
-              <div class="assigned-alert">
-                <hugeicons-icon [icon]="UserIcon" size="14"></hugeicons-icon>
-                Currently: <strong>{{ order.assignedExpert }}</strong>
+              <div class="assigned-alert" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <hugeicons-icon [icon]="UserIcon" size="14"></hugeicons-icon>
+                  Currently: <strong>{{ order.assignedExpert }}</strong>
+                </div>
+                <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;" (click)="openChatModal(order)">Chat</button>
+              </div>
+            } @else {
+              <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;" (click)="openChatModal(order)">Chat</button>
               </div>
             }
           </div>
         </div>
       }
+    </div>
+  }
+
+  <!-- Chat Modal Overlay -->
+  @if (isChatModalOpen() && selectedChatOrder()) {
+    <div class="modal-overlay" (click)="closeChatModal()">
+      <div class="modal-card-box" style="width: 400px; max-width: 90vw; height: 500px; display: flex; flex-direction: column;" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Chat: {{ selectedChatOrder().entityName || 'Client' }}</h3>
+          <button class="close-modal-btn" (click)="closeChatModal()">&times;</button>
+        </div>
+        <div class="chat-messages-container" style="flex: 1; overflow-y: auto; padding: 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+          @if (isLoadingChat()) {
+            <div style="text-align: center; color: #64748b;">Loading messages...</div>
+          } @else {
+            @for (msg of chatMessages(); track msg._id) {
+              <div style="display: flex; flex-direction: column;" [style.align-items]="msg.senderRole === 'client' ? 'flex-start' : 'flex-end'">
+                <div style="max-width: 80%; padding: 10px 14px; border-radius: 12px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" [style.background-color]="msg.senderRole === 'client' ? '#ffffff' : '#e0f2fe'" [style.border]="msg.senderRole === 'client' ? '1px solid #e2e8f0' : 'none'">
+                  <div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">{{ msg.senderRole === 'client' ? 'Client' : 'Staff' }}</div>
+                  <div style="font-size: 14px; color: #0f172a;">{{ msg.content }}</div>
+                </div>
+              </div>
+            }
+            @if (chatMessages().length === 0) {
+              <div style="text-align: center; color: #94a3b8; font-size: 13px; margin-top: 20px;">No messages yet. Start the conversation!</div>
+            }
+          }
+        </div>
+        <div style="padding: 16px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px;">
+          <input type="text" placeholder="Type a message..." class="form-control-input" style="flex: 1;" [(ngModel)]="newChatMessage" (keyup.enter)="sendChatMessage()">
+          <button class="btn-primary" (click)="sendChatMessage()">Send</button>
+        </div>
+      </div>
     </div>
   }
 </div>

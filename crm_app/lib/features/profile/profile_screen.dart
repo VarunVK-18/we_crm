@@ -8,6 +8,7 @@ import '../common/ui_components.dart';
 import 'my_entities_screen.dart';
 import 'name_check_screen.dart';
 import 'support_tickets_screen.dart';
+import '../documents/pan_upload_screen.dart';
 import 'chat_support_screen.dart';
 import 'dsc_orders_screen.dart';
 import 'subscriptions_screen.dart';
@@ -124,6 +125,17 @@ class ProfileScreen extends ConsumerWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const DSCOrdersScreen(),
+                          ),
+                        ),
+                      ),
+                      ProfileTile(
+                        icon: LucideIcons.scan,
+                        title: 'Auto-Detect PAN Card',
+                        subtitle: 'Upload and extract PAN details via AI',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const PanUploadScreen(),
                           ),
                         ),
                       ),

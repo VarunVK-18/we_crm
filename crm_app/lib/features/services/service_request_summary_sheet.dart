@@ -4,12 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/ocr_service.dart';
+import '../../providers/pan_provider.dart';
 import '../../core/constants/service_documents.dart';
 import '../../providers/auth_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../core/constants/port.dart';
+import 'package:hugeicons/hugeicons.dart';
+import '../../models/director_form_data.dart';
+import 'package:open_file/open_file.dart';
 
 class ServiceRequestSummarySheet extends ConsumerStatefulWidget {
   final String packageName;
@@ -29,6 +34,7 @@ class _ServiceRequestSummarySheetState
   late TextEditingController _phoneController;
   late TextEditingController _nameController;
   late TextEditingController _emailController;
+  late TextEditingController _gstPanController;
 
   // Private Limited Incorporation Specific Controllers
   late TextEditingController _companyNameController;
@@ -50,6 +56,7 @@ class _ServiceRequestSummarySheetState
   late TextEditingController _brandUsageDateController;
 
   bool _isBrandUsed = false;
+  String _selectedEducation = '';
 
   late TextEditingController _fssaiEmployeesController;
   late TextEditingController _fssaiPremisesAddressController;
@@ -114,6 +121,14 @@ class _ServiceRequestSummarySheetState
 
   bool _isPhoneValid = false;
   bool _isCompanyPhoneValid = false;
+  String _consent = 'Agree';
+  
+  final _formKey = GlobalKey<FormState>();
+  int _currentPage = 0;
+  bool _isLoading = false;
+  final ScrollController _scrollController = ScrollController();
+
+  final List<DirectorFormData> _directors = [DirectorFormData()];
 
   // Map to store files per document slot
   // Key is the document name from kServiceRequiredDocuments or 'Other Documents'
@@ -152,6 +167,7 @@ class _ServiceRequestSummarySheetState
     _phoneController = TextEditingController(text: userProfile?.phone ?? '');
     _nameController = TextEditingController(text: userProfile?.name ?? '');
     _emailController = TextEditingController(text: userProfile?.email ?? '');
+    _gstPanController = TextEditingController();
 
     // Initialize Incorporation Controllers
     _companyNameController = TextEditingController();
@@ -260,7 +276,7 @@ class _ServiceRequestSummarySheetState
                 ],
               ),
               content: const Text(
-                'Please upload the file less than 2MB',
+                'Warning: File is large. Max 2MB allowed',
                 style: TextStyle(fontWeight: FontWeight.w600),
               ),
               actions: [
@@ -300,6 +316,7 @@ class _ServiceRequestSummarySheetState
     _phoneController.dispose();
     _nameController.dispose();
     _emailController.dispose();
+    _gstPanController.dispose();
     _companyNameController.dispose();
     _businessActivityController.dispose();
     _ownerNameController.dispose();
@@ -337,6 +354,12 @@ class _ServiceRequestSummarySheetState
 
     _dunsTradeNameController.dispose();
     _dunsYearController.dispose();
+
+    for (var director in _directors) {
+      director.dispose();
+    }
+    _scrollController.dispose();
+
     super.dispose();
   }
 
@@ -362,7 +385,7 @@ class _ServiceRequestSummarySheetState
 
       // Collect package-specific details
       final Map<String, String> details = {};
-      if (widget.packageName == 'Private Limited Incorporation') {
+      if (widget.packageName == 'Private Limited Incorporation' || widget.packageName == 'LLP Incorporation') {
         details['business_activity'] = _businessActivityController.text;
         details['owner_name'] = _ownerNameController.text;
         details['company_email'] = _companyEmailController.text;
@@ -370,6 +393,9 @@ class _ServiceRequestSummarySheetState
         details['paid_up_capital'] = _paidUpCapitalController.text;
         details['value_per_share'] = _valuePerShareController.text;
         details['no_of_shares'] = _noOfSharesController.text;
+        
+        final directorsList = _directors.map((d) => d.toJson()).toList();
+        details['directors'] = jsonEncode(directorsList);
       } else if (widget.packageName == 'Trademark Registration') {
         details['udyam_number'] = _udyamNumberController.text;
         details['tm_applicant_name'] = _tmApplicantNameController.text;
@@ -439,6 +465,30 @@ class _ServiceRequestSummarySheetState
         }
       }
 
+      // Add person files for Private Limited / LLP
+      if (widget.packageName == 'Private Limited Incorporation' || widget.packageName == 'LLP Incorporation') {
+        for (int i = 0; i < _directors.length; i++) {
+          final director = _directors[i];
+          final prefix = 'director_${i + 1}_';
+          
+          if (director.photoPath != null) {
+            request.files.add(await http.MultipartFile.fromPath('${prefix}photo', director.photoPath!));
+          }
+          if (director.signaturePath != null) {
+            request.files.add(await http.MultipartFile.fromPath('${prefix}signature', director.signaturePath!));
+          }
+          if (director.addressProofPath != null) {
+            request.files.add(await http.MultipartFile.fromPath('${prefix}addressProof', director.addressProofPath!));
+          }
+          if (director.aadhaarPath != null) {
+            request.files.add(await http.MultipartFile.fromPath('${prefix}aadhaar', director.aadhaarPath!));
+          }
+          if (director.panPath != null) {
+            request.files.add(await http.MultipartFile.fromPath('${prefix}pan', director.panPath!));
+          }
+        }
+      }
+
       final streamedResponse =
           await request.send().timeout(const Duration(seconds: 25));
       final response = await http.Response.fromStream(streamedResponse);
@@ -470,7 +520,8 @@ class _ServiceRequestSummarySheetState
           topRight: Radius.circular(32),
         ),
       ),
-      child: SingleChildScrollView(
+      child: Form(
+        key: _formKey,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,167 +537,255 @@ class _ServiceRequestSummarySheetState
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-
-            _buildServiceHeader(),
-
-            Text(
-              'Service Request Details',
-              style: GoogleFonts.outfit(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: AppTheme.deepTeal,
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Editable Name Field
-            _EditableField(
-              label: 'Full Name',
-              controller: _nameController,
-              icon: LucideIcons.user,
-              hint: 'Enter your name',
-            ),
-            const SizedBox(height: 20),
-
-            // Editable Email Field
-            _EditableField(
-              label: 'Email Address',
-              controller: _emailController,
-              icon: LucideIcons.mail,
-              hint: 'name@example.com',
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 20),
-
-            // Phone Input Field (Editable)
-            _EditableField(
-              label: 'Verification Phone Number',
-              controller: _phoneController,
-              icon: LucideIcons.phone,
-              hint: 'Enter 10 digit number',
-              keyboardType: TextInputType.phone,
-              maxLength: 10,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              isPhoneField: true,
-              isPhoneValid: _isPhoneValid,
-            ),
-            const SizedBox(height: 24),
-
-            _DetailRow(label: 'Package:', value: widget.packageName),
-
-            ..._buildServiceSpecificForms(),
-
-            _buildDocumentSection(),
-
-            const SizedBox(height: 12),
-
-            _buildNextStepsSection(),
-
-            const SizedBox(height: 40),
-
-            // Action Buttons
+            const SizedBox(height: 16),
+            
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(0, 56),
-                      side: BorderSide(color: Colors.grey[300]!),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'Cancel',
-                      style: TextStyle(
-                        color: AppTheme.deepTeal,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
+                Text(
+                  'Step ${_currentPage + 1} of 2',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.corporateBlue,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isFormValid
-                        ? () async {
-                            debugPrint('Submitting request:');
-                            debugPrint('Package: ${widget.packageName}');
-                            
-                            // Show Buffering / Loading Dialog
-                            showDialog(
-                              context: context,
-                              barrierDismissible: false,
-                              builder: (BuildContext dialogContext) {
-                                return PopScope(
-                                  canPop: false,
-                                  child: AlertDialog(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                                    content: Padding(
-                                      padding: const EdgeInsets.all(24.0),
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const CircularProgressIndicator(color: AppTheme.corporateBlue),
-                                          const SizedBox(height: 24),
-                                          Text(
-                                            'Registering service...',
-                                            style: GoogleFonts.outfit(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppTheme.deepTeal,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            'Please wait while we connect to the server.',
-                                            textAlign: TextAlign.center,
-                                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-
-                            await _submitServiceRequest();
-
-                            if (mounted) {
-                              Navigator.pop(context); // Close loading dialog
-                              Navigator.pop(context); // Close bottom sheet
-                              _showSuccessDialog(context);
-                            }
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.corporateBlue,
-                      disabledBackgroundColor: Colors.grey[300],
-                      foregroundColor: Colors.white,
-                      disabledForegroundColor: Colors.grey[500],
-                      minimumSize: const Size(0, 56),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                Container(
+                  width: 60,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: _currentPage == 0 ? 1 : 2,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.corporateBlue,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Submit Request',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w900,
-                        height: 1.1,
-                        fontSize: 16,
-                      ),
-                    ),
+                      if (_currentPage == 0)
+                        const Expanded(flex: 1, child: SizedBox.shrink()),
+                    ],
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
+
+            Flexible(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (_currentPage == 0) ...[
+                      _buildServiceHeader(),
+                      Text(
+                        'Service Request Details',
+                        style: GoogleFonts.outfit(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.deepTeal,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+        
+                      _EditableField(
+                        label: 'Full Name',
+                        controller: _nameController,
+                        icon: LucideIcons.user,
+                        hint: 'Enter your name',
+                        isRequired: true,
+                      ),
+                      const SizedBox(height: 20),
+        
+                      _EditableField(
+                        label: 'Email Address',
+                        controller: _emailController,
+                        icon: LucideIcons.mail,
+                        hint: 'name@example.com',
+                        keyboardType: TextInputType.emailAddress,
+                        isRequired: true,
+                      ),
+                      const SizedBox(height: 20),
+        
+                      _EditableField(
+                        label: 'Verification Phone Number',
+                        controller: _phoneController,
+                        icon: LucideIcons.phone,
+                        hint: 'Enter 10 digit number',
+                        keyboardType: TextInputType.phone,
+                        maxLength: 10,
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        isPhoneField: true,
+                        isPhoneValid: _isPhoneValid,
+                        isRequired: true,
+                      ),
+                      const SizedBox(height: 24),
+        
+                      _DetailRow(label: 'Package:', value: widget.packageName),
+        
+                      ..._buildServiceSpecificForms(),
+                    ] else ...[
+                      if (widget.packageName == 'Private Limited Incorporation' || widget.packageName == 'LLP Incorporation') ...[
+                        ..._buildPrivateLimitedPersons(),
+                      ],
+                      if (widget.packageName == 'LLP Incorporation' || widget.packageName == 'Private Limited Incorporation') ...[
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionHeader('Consent: By submitting this form, I agree to the collection and use of my personal and professional information by Wealth Empires for consultation, compliance assessment, and service-related communication'),
+                              _buildModernRadio('Agree', 'Agree', _consent, (val) => setState(() => _consent = val!)),
+                              _buildModernRadio('Not Agree', 'Not Agree', _consent, (val) => setState(() => _consent = val!)),
+                              const SizedBox(height: 24),
+                            ],
+                          ),
+                        ),
+                      ],
+                      if (_allSlots.isNotEmpty) ...[
+                        _buildDocumentSection(),
+                      ],
+                      const SizedBox(height: 12),
+                      _buildNextStepsSection(),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                if (_currentPage == 0)
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 56),
+                        side: BorderSide(color: Colors.grey[300]!),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentPage = 0;
+                        });
+                        _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size(0, 56),
+                        side: BorderSide(color: Colors.grey[300]!),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        'Back',
+                        style: TextStyle(
+                          color: Colors.grey[700],
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                const SizedBox(width: 16),
+                if (_currentPage == 0)
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() {
+                            _currentPage = 1;
+                          });
+                          _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please fill all required fields.'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.corporateBlue,
+                        minimumSize: const Size(0, 56),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Next',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isLoading || !_areAllRequiredDocsUploaded ? null : () async {
+                        setState(() => _isLoading = true);
+                        await _submitServiceRequest();
+                        if (mounted) {
+                          setState(() => _isLoading = false);
+                          Navigator.pop(context);
+                          _showSuccessDialog(context);
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.corporateBlue,
+                        minimumSize: const Size(0, 56),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              'Submit',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
@@ -708,73 +847,7 @@ class _ServiceRequestSummarySheetState
     );
   }
 
-  bool get _isFormValid {
-    if (!_isPhoneValid || !_areAllRequiredDocsUploaded) return false;
 
-    switch (widget.packageName) {
-      case 'Private Limited Incorporation':
-        final bool ownerNameValid = _officePreference == 'Virtual Office' ||
-            _ownerNameController.text.isNotEmpty;
-        return _companyNameController.text.isNotEmpty &&
-            _businessActivityController.text.isNotEmpty &&
-            ownerNameValid &&
-            _companyEmailController.text.isNotEmpty &&
-            _isCompanyPhoneValid &&
-            _paidUpCapitalController.text.isNotEmpty &&
-            _valuePerShareController.text.isNotEmpty &&
-            _noOfSharesController.text.isNotEmpty;
-      case 'Trademark Registration':
-        return _companyNameController.text.isNotEmpty &&
-            _udyamNumberController.text.isNotEmpty &&
-            _tmApplicantNameController.text.isNotEmpty &&
-            _tmAddressController.text.isNotEmpty &&
-            _companyEmailController.text.isNotEmpty &&
-            _businessDescController.text.isNotEmpty &&
-            _brandUsageDateController.text.isNotEmpty &&
-            _tmVerification;
-      case 'FSSAI Food License':
-        return _nameController.text.isNotEmpty &&
-            _phoneController.text.isNotEmpty &&
-            _emailController.text.isNotEmpty &&
-            _companyNameController.text.isNotEmpty &&
-            _selectedFssaiNatures.isNotEmpty &&
-            _fssaiStartDateController.text.isNotEmpty &&
-            _fssaiEmployeesController.text.isNotEmpty &&
-            _fssaiPremisesAddressController.text.isNotEmpty &&
-            _fssaiVillageController.text.isNotEmpty &&
-            _fssaiDistrictController.text.isNotEmpty &&
-            _fssaiDeclaration &&
-            (_isCorrespondenceSame ||
-                (_fssaiCorrAddressController.text.isNotEmpty &&
-                    _fssaiCorrVillageController.text.isNotEmpty &&
-                    _fssaiCorrDistrictController.text.isNotEmpty));
-      case 'MSME Certification':
-        return _companyNameController.text.isNotEmpty &&
-            _tmAddressController.text.isNotEmpty &&
-            _msmeUnitsController.text.isNotEmpty &&
-            _companyPhoneController.text.isNotEmpty &&
-            _companyEmailController.text.isNotEmpty &&
-            _msmeMaleEmployeesController.text.isNotEmpty &&
-            _msmeFemaleEmployeesController.text.isNotEmpty &&
-            _msmeIncDateController.text.isNotEmpty &&
-            _msmeCommenceDateController.text.isNotEmpty &&
-            _msmeInvestmentController.text.isNotEmpty &&
-            _msmeTurnoverController.text.isNotEmpty;
-      case 'DUNS Number Registration':
-        return _companyNameController.text.isNotEmpty &&
-            _dunsYearController.text.isNotEmpty &&
-            _fssaiEmployeesController.text.isNotEmpty;
-      case 'LLP Incorporation':
-        final bool ownerNameValid = _officePreference == 'Virtual Office' ||
-            _ownerNameController.text.isNotEmpty;
-        return _companyNameController.text.isNotEmpty &&
-            _businessActivityController.text.isNotEmpty &&
-            ownerNameValid &&
-            _paidUpCapitalController.text.isNotEmpty;
-      default:
-        return true;
-    }
-  }
 
   Widget _buildServiceHeader() {
     return Container(
@@ -889,27 +962,38 @@ class _ServiceRequestSummarySheetState
               color: AppTheme.deepTeal)),
       const SizedBox(height: 20),
       _EditableField(
-          label: 'Proposed Company Name',
+          label: 'Proposed Company name',
           controller: _companyNameController,
           icon: LucideIcons.building,
-          hint: 'Eg: Wealth Empires Private Limited',
+          hint: 'Eg:\nWealth Empires Private Limited\nWealth Empires LLP',
+          maxLines: 2,
           isRequired: true),
+      const SizedBox(height: 12),
+      Text(
+          'Enter your preferred company name. This should be unique and not already registered. Avoid using words like "National", "Federal", "Central", "Republic", "Democracy", "Government" without proper authorization.',
+          style: TextStyle(color: Colors.grey[600], fontSize: 11, height: 1.4)),
       const SizedBox(height: 20),
       _EditableField(
-          label: 'Nature of Business',
+          label: 'Business Activity',
           controller: _businessActivityController,
           icon: LucideIcons.fileText,
-          hint: 'Eg: IT Services, Manufacturing, Trading',
+          hint: 'Describe the main business activities your company will undertake. Be specific about the products or services you plan to offer.',
+          maxLines: 3,
           isRequired: true),
       const SizedBox(height: 24),
       _buildSectionHeader('Registered Office Preference'),
+      const SizedBox(height: 4),
+      Text(
+          'Tell us whether you already have a registered office address or need Wealth Empires to arrange a virtual office.',
+          style: TextStyle(color: Colors.grey[600], fontSize: 11, height: 1.4)),
+      const SizedBox(height: 16),
       _buildModernRadio(
-          'I have my own registered office address',
+          'Do you have address for your company',
           'Own Address',
           _officePreference,
           (val) => setState(() => _officePreference = val!)),
       _buildModernRadio(
-          'I need Wealth Empires to arrange a virtual office',
+          'Do you want virtual office for your company',
           'Virtual Office',
           _officePreference,
           (val) => setState(() => _officePreference = val!)),
@@ -919,16 +1003,52 @@ class _ServiceRequestSummarySheetState
             label: 'Name of the Owner in the utility bill',
             controller: _ownerNameController,
             icon: LucideIcons.user,
-            hint: 'As per EB/Wifi bill',
+            hint: 'Enter the name of the person who owns or has authority over the registered office address.',
             isRequired: true),
       ],
       const SizedBox(height: 24),
       _EditableField(
-          label: 'Proposed Paid-up Capital (Min ₹1 Lakh)',
+          label: 'Company Mail',
+          controller: _companyEmailController,
+          icon: LucideIcons.mail,
+          hint: 'Should not be same as director',
+          keyboardType: TextInputType.emailAddress,
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Company Phone number',
+          controller: _companyPhoneController,
+          icon: LucideIcons.phone,
+          hint: 'Should not be same as director',
+          keyboardType: TextInputType.phone,
+          maxLength: 10,
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Paid up share capital',
           controller: _paidUpCapitalController,
           icon: LucideIcons.indianRupee,
-          hint: 'Eg: 1,00,000',
+          hint: 'Enter the total amount of share capital that has been paid by shareholders. Minimum requirement is ₹10,000 for private limited companies.',
           keyboardType: TextInputType.number,
+          maxLines: 2,
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Value per share',
+          controller: _valuePerShareController,
+          icon: LucideIcons.indianRupee,
+          hint: 'Enter the face value of each share. This is typically ₹10 or ₹100 per share.',
+          keyboardType: TextInputType.number,
+          maxLines: 2,
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'No. of shares',
+          controller: _noOfSharesController,
+          icon: LucideIcons.hash,
+          hint: 'Enter the total number of shares issued by the company. This should match the share capital structure.',
+          keyboardType: TextInputType.number,
+          maxLines: 2,
           isRequired: true),
     ];
   }
@@ -969,6 +1089,7 @@ class _ServiceRequestSummarySheetState
             controller: _brandUsageDateController,
             icon: LucideIcons.calendar,
             hint: 'DD-MM-YYYY',
+            isDatePicker: true,
             isRequired: true),
       ],
     ];
@@ -1024,6 +1145,19 @@ class _ServiceRequestSummarySheetState
           hint: 'Full physical address',
           maxLines: 2,
           isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+        label: 'Education Qualification',
+        controller: TextEditingController(text: _selectedEducation),
+        onChanged: (val) {
+          setState(() {
+            _selectedEducation = val;
+          });
+        },
+        icon: LucideIcons.graduationCap,
+        hint: 'e.g., Bachelor\'s Degree, Master\'s, etc.',
+        isRequired: true,
+      ),
       const SizedBox(height: 20),
       _EditableField(
           label: 'Name of Unit(s) / Plant (s)',
@@ -1085,6 +1219,7 @@ class _ServiceRequestSummarySheetState
                   controller: _msmeIncDateController,
                   icon: LucideIcons.calendar,
                   hint: 'DD/MM/YYYY',
+                  isDatePicker: true,
                   isRequired: true)),
           const SizedBox(width: 16),
           Expanded(
@@ -1093,6 +1228,7 @@ class _ServiceRequestSummarySheetState
                   controller: _msmeCommenceDateController,
                   icon: LucideIcons.calendarCheck,
                   hint: 'DD/MM/YYYY',
+                  isDatePicker: true,
                   isRequired: true)),
         ],
       ),
@@ -1193,17 +1329,17 @@ class _ServiceRequestSummarySheetState
   List<Widget> _buildLlpForm() {
     return [
       const SizedBox(height: 32),
-      Text('LLP Details',
+      Text('Proposed LLP Details',
           style: GoogleFonts.outfit(
               fontSize: 16,
               fontWeight: FontWeight.w800,
               color: AppTheme.deepTeal)),
-      const SizedBox(height: 20),
+      const SizedBox(height: 16),
       _EditableField(
           label: 'Proposed LLP name',
           controller: _companyNameController,
           icon: LucideIcons.building,
-          hint: 'Wealth Empires LLP',
+          hint: 'Eg: Wealth Empires LLP',
           isRequired: true),
       const SizedBox(height: 12),
       Text(
@@ -1304,6 +1440,7 @@ class _ServiceRequestSummarySheetState
           controller: _fssaiStartDateController,
           icon: LucideIcons.calendar,
           hint: 'DD/MM/YYYY',
+          isDatePicker: true,
           isRequired: true),
       const SizedBox(height: 20),
       _buildSectionHeader('Expected Annual Turnover'),
@@ -1430,20 +1567,23 @@ class _ServiceRequestSummarySheetState
   }
 
   Widget _buildSectionHeader(String title) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Text(title,
-              style: GoogleFonts.outfit(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.deepTeal.withValues(alpha: 0.6))),
-        ),
-        const Text(' *',
-            style: TextStyle(
-                color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(title,
+                style: GoogleFonts.outfit(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.deepTeal.withValues(alpha: 0.6))),
+          ),
+          const Text(' *',
+              style: TextStyle(
+                  color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
+        ],
+      ),
     );
   }
 
@@ -1532,9 +1672,19 @@ class _ServiceRequestSummarySheetState
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
                                         color: AppTheme.deepTeal))),
+                            if (entry.value.path != null)
+                              IconButton(
+                                  icon: const Icon(LucideIcons.eye, size: 14),
+                                  color: AppTheme.corporateBlue,
+                                  onPressed: () =>
+                                      OpenFile.open(entry.value.path!),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints()),
+                            if (entry.value.path != null)
+                              const SizedBox(width: 8),
                             IconButton(
-                                icon: const Icon(LucideIcons.x, size: 14),
-                                color: Colors.red[300],
+                                icon: const Icon(LucideIcons.trash2, size: 14),
+                                color: Colors.red[400],
                                 onPressed: () =>
                                     _removeFile(slotName, entry.key),
                                 padding: EdgeInsets.zero,
@@ -1613,6 +1763,270 @@ class _ServiceRequestSummarySheetState
       ),
     );
   }
+
+  Future<void> _pickDirectorFile(DirectorFormData director, String fieldName, {List<String> allowedExtensions = const ['pdf', 'jpg', 'jpeg', 'png']}) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: allowedExtensions,
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        if (file.size <= 2 * 1024 * 1024) {
+          setState(() {
+            switch (fieldName) {
+              case 'photo': director.photoPath = file.path; break;
+              case 'signature': director.signaturePath = file.path; break;
+              case 'addressProof': director.addressProofPath = file.path; break;
+              case 'aadhaar': director.aadhaarPath = file.path; break;
+              case 'pan': director.panPath = file.path; break;
+            }
+          });
+        } else {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Warning: File is large. Max 2MB allowed')));
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error picking file: $e');
+    }
+  }
+
+  Widget _buildDirectorFileUpload(DirectorFormData director, String label, String hint, String fieldName) {
+    String? currentPath;
+    switch (fieldName) {
+      case 'photo': currentPath = director.photoPath; break;
+      case 'signature': currentPath = director.signaturePath; break;
+      case 'addressProof': currentPath = director.addressProofPath; break;
+      case 'aadhaar': currentPath = director.aadhaarPath; break;
+      case 'pan': currentPath = director.panPath; break;
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(label, style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.deepTeal.withValues(alpha: 0.6))),
+            const Text(' *', style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(hint, style: TextStyle(color: Colors.grey[500], fontSize: 11)),
+        const SizedBox(height: 8),
+        InkWell(
+          onTap: currentPath == null ? () => _pickDirectorFile(director, fieldName) : null,
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            decoration: BoxDecoration(
+              border: Border.all(color: currentPath != null ? AppTheme.corporateBlue : Colors.grey[300]!),
+              borderRadius: BorderRadius.circular(12),
+              color: currentPath != null ? AppTheme.corporateBlue.withValues(alpha: 0.05) : Colors.transparent,
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  currentPath != null ? LucideIcons.fileCheck2 : LucideIcons.uploadCloud,
+                  size: 20,
+                  color: currentPath != null ? AppTheme.corporateBlue : Colors.grey[500],
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    currentPath != null ? currentPath.split('/').last.split('\\\\').last : 'Upload 1 supported file. Max 2 MB.',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: currentPath != null ? AppTheme.corporateBlue : Colors.grey[500]!,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                if (currentPath != null) ...[
+                  const SizedBox(width: 8),
+                  // View icon
+                  IconButton(
+                    iconSize: 20,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      if (currentPath != null) {
+                        OpenFile.open(currentPath);
+                      }
+                    },
+                    icon: const Icon(
+                      LucideIcons.eye,
+                      color: AppTheme.corporateBlue,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Delete icon
+                  IconButton(
+                    iconSize: 20,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      setState(() {
+                        switch (fieldName) {
+                          case 'photo':
+                            director.photoPath = null;
+                            break;
+                          case 'signature':
+                            director.signaturePath = null;
+                            break;
+                          case 'addressProof':
+                            director.addressProofPath = null;
+                            break;
+                          case 'aadhaar':
+                            director.aadhaarPath = null;
+                            break;
+                          case 'pan':
+                            director.panPath = null;
+                            break;
+                        }
+                      });
+                    },
+                    icon: Icon(
+                      LucideIcons.trash2,
+                      color: Colors.red[400],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+      ],
+    );
+  }
+
+  List<Widget> _buildPrivateLimitedPersons() {
+    return [
+      const SizedBox(height: 24),
+      ..._directors.asMap().entries.map((entry) {
+        int index = entry.key;
+        DirectorFormData data = entry.value;
+        return Container(
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Person ${index + 1} Registration', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
+                  if (_directors.length > 1)
+                    IconButton(
+                      icon: const Icon(LucideIcons.trash2, color: Colors.red),
+                      onPressed: () => setState(() => _directors.removeAt(index)),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text('Please provide the following information for registration (Later it can\'t be changed)',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+              const SizedBox(height: 24),
+
+              _EditableField(label: 'Full name', controller: data.fullNameController, icon: LucideIcons.user, hint: 'First name, middle name (if any), and last name.', isRequired: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'Father\'s name', controller: data.fatherNameController, icon: LucideIcons.user, hint: 'As it appears on official documents.', isRequired: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'DOB', controller: data.dobController, icon: LucideIcons.calendar, hint: 'DD/MM/YYYY', isRequired: true, isDatePicker: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'Place of birth', controller: data.placeOfBirthController, icon: LucideIcons.mapPin, hint: 'City and state', isRequired: true),
+              const SizedBox(height: 24),
+              _buildSectionHeader('Nationality'),
+              _buildModernRadio('Indian', 'Indian', data.nationality, (val) => setState(() => data.nationality = val!)),
+              _buildModernRadio('Others', 'Others', data.nationality, (val) => setState(() => data.nationality = val!)),
+              const SizedBox(height: 24),
+              _EditableField(label: 'Occupation', controller: data.occupationController, icon: LucideIcons.briefcase, hint: 'Business, Employment, etc.', isRequired: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'Education', controller: data.educationController, icon: LucideIcons.graduationCap, hint: 'Enter education', isRequired: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'Email', controller: data.emailController, icon: LucideIcons.mail, hint: 'Personal email address', keyboardType: TextInputType.emailAddress, isRequired: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'Phone number', controller: data.phoneController, icon: LucideIcons.phone, hint: 'Mobile number', keyboardType: TextInputType.phone, isRequired: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'Address', controller: data.addressController, icon: LucideIcons.map, hint: 'Residential address with Pin code', isRequired: true, maxLines: 3),
+              const SizedBox(height: 20),
+              _EditableField(label: 'PAN', controller: data.panController, icon: LucideIcons.creditCard, hint: '10-character PAN', isRequired: true, isPanField: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'Aadhaar Number', controller: data.aadhaarController, icon: HugeIcons.strokeRoundedUserIdVerification, hint: '12-digit Aadhaar number', isRequired: true),
+              const SizedBox(height: 20),
+              _EditableField(label: 'DIN Number', controller: data.dinController, icon: LucideIcons.hash, hint: '8-digit DIN (Leave blank if first directorship)'),
+              const SizedBox(height: 24),
+
+              _buildSectionHeader('I need DSC'),
+              _buildModernRadio('Yes', 'Yes', data.needDsc, (val) => setState(() => data.needDsc = val!)),
+              _buildModernRadio('No', 'No', data.needDsc, (val) => setState(() => data.needDsc = val!)),
+              _buildModernRadio('Maybe', 'Maybe', data.needDsc, (val) => setState(() => data.needDsc = val!)),
+              const SizedBox(height: 24),
+
+              _buildSectionHeader('Role in the company'),
+              if (widget.packageName == 'LLP Incorporation') ...[
+                _buildModernRadio('Designated Partner', 'Designated Partner', data.role, (val) => setState(() => data.role = val!)),
+                _buildModernRadio('Partner', 'Partner', data.role, (val) => setState(() => data.role = val!)),
+              ] else ...[
+                _buildModernRadio('Director', 'Director', data.role, (val) => setState(() => data.role = val!)),
+                _buildModernRadio('Shareholder', 'Shareholder', data.role, (val) => setState(() => data.role = val!)),
+                _buildModernRadio('Director & Shareholder', 'Director & Shareholder', data.role, (val) => setState(() => data.role = val!)),
+              ],
+              const SizedBox(height: 20),
+              
+              if (widget.packageName == 'LLP Incorporation') ...[
+                _EditableField(label: 'Fixed Capital Contribution', controller: data.fixedCapitalController, icon: LucideIcons.indianRupee, hint: 'Fixed capital amount', keyboardType: TextInputType.number, isRequired: true),
+                const SizedBox(height: 20),
+                _EditableField(label: 'Profit sharing ratio (%)', controller: data.profitSharingController, icon: LucideIcons.percent, hint: 'Profit sharing percentage', keyboardType: TextInputType.number, isRequired: true),
+              ] else ...[
+                _EditableField(label: 'Share holding percentage', controller: data.shareholdingController, icon: LucideIcons.percent, hint: '0 to 100', keyboardType: TextInputType.number, isRequired: true),
+              ],
+              const SizedBox(height: 24),
+
+              _buildSectionHeader('I\'m Authorized signatory (Select "Yes" if you will be an authorized signatory for the company\'s bank accounts and official documents. Yes, I want to be the authorized signatory)'),
+              _buildModernRadio('Yes', 'Yes', data.isAuthSignatory, (val) => setState(() => data.isAuthSignatory = val!)),
+              _buildModernRadio('No', 'No', data.isAuthSignatory, (val) => setState(() => data.isAuthSignatory = val!)),
+              const SizedBox(height: 24),
+
+              _buildDirectorFileUpload(data, 'Photo', 'Upload a recent passport-size photograph (3.5cm x 4.5cm) with a white background.', 'photo'),
+              _buildDirectorFileUpload(data, 'Signature', 'Upload a clear image of your signature. This is required if you are an authorized signatory.', 'signature'),
+              _buildDirectorFileUpload(data, 'Residential address proof', 'Upload proof of your residential address (utility bill, bank statement, etc.). This proof should be on the name of the person and should not be older than two months', 'addressProof'),
+              _buildDirectorFileUpload(data, 'Aadhaar Card', 'Upload Aadhaar card with front and back side pdf. The system will verify the document using OCR and cross-check with the details provided above.', 'aadhaar'),
+              _buildDirectorFileUpload(data, 'PAN Card', 'Upload PAN card. The system will verify the document using OCR and cross-check with the details provided above.', 'pan'),
+            ],
+          ),
+        );
+      }),
+      OutlinedButton.icon(
+        onPressed: () {
+          setState(() {
+            _directors.add(DirectorFormData());
+          });
+        },
+        icon: const Icon(LucideIcons.plus, size: 18),
+        label: const Text('Add Person', style: TextStyle(fontWeight: FontWeight.bold)),
+        style: OutlinedButton.styleFrom(
+          minimumSize: const Size(double.infinity, 50),
+          side: const BorderSide(color: AppTheme.corporateBlue),
+          foregroundColor: AppTheme.corporateBlue,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      const SizedBox(height: 24),
+    ];
+  }
 }
 
 class _DetailRow extends StatelessWidget {
@@ -1624,7 +2038,7 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1658,15 +2072,19 @@ class _DetailRow extends StatelessWidget {
 class _EditableField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
-  final IconData icon;
+  final dynamic icon;
   final String hint;
   final TextInputType keyboardType;
   final int? maxLength;
-  final int? maxLines;
+  final int maxLines;
   final List<TextInputFormatter>? inputFormatters;
   final bool isPhoneField;
   final bool isPhoneValid;
   final bool isRequired;
+  final bool isDatePicker;
+  final bool isPanField;
+  final ValueChanged<String>? onChanged;
+  final FormFieldValidator<String>? validator;
 
   const _EditableField({
     required this.label,
@@ -1679,12 +2097,16 @@ class _EditableField extends StatelessWidget {
     this.inputFormatters,
     this.isPhoneField = false,
     this.isPhoneValid = true,
-    this.isRequired = true,
+    this.isRequired = false,
+    this.isDatePicker = false,
+    this.isPanField = false,
+    this.onChanged,
+    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
@@ -1714,16 +2136,45 @@ class _EditableField extends StatelessWidget {
             color: const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isPhoneField && isPhoneValid
-                  ? AppTheme.corporateBlue.withValues(alpha: 0.2)
+              color: (isPhoneField && !isPhoneValid)
+                  ? Colors.red.withValues(alpha: 0.2)
                   : Colors.transparent,
             ),
           ),
           child: TextFormField(
             controller: controller,
+            onChanged: onChanged,
+            validator: validator ?? (isRequired ? (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'This field is required';
+              }
+              if (isPhoneField && value.length < 10) {
+                return 'Enter valid 10-digit number';
+              }
+              return null;
+            } : null),
             keyboardType: keyboardType,
             maxLength: maxLength,
             maxLines: maxLines,
+            readOnly: isDatePicker,
+            onTap: isDatePicker
+                ? () async {
+                    DateTime? pickedDate = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime(2100),
+                    );
+                    if (pickedDate != null) {
+                      String formattedDate =
+                          "${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.year}";
+                      controller.text = formattedDate;
+                      if (onChanged != null) {
+                        onChanged!(formattedDate);
+                      }
+                    }
+                  }
+                : null,
             inputFormatters: inputFormatters,
             style: TextStyle(
               fontWeight: FontWeight.w800,
@@ -1738,14 +2189,74 @@ class _EditableField extends StatelessWidget {
                 fontSize: 14,
                 letterSpacing: 0,
               ),
-              prefixIcon: Icon(icon, size: 18),
+              prefixIcon: icon is IconData
+                  ? Icon(icon, size: icon == HugeIcons.strokeRoundedUserIdVerification ? 16 : 18)
+                  : Transform.scale(
+                      scale: 0.65,
+                      child: HugeIcon(
+                          icon: icon,
+                          color: Colors.grey[600] ?? Colors.grey,
+                          size: 18.0),
+                    ),
+              suffixIcon: (label.contains('Full Name') || label.contains('Email Address') || label.contains('Verification Phone Number'))
+                  ? Icon(LucideIcons.pencil, size: 18, color: AppTheme.corporateBlue)
+                  : null,
               counterText: '',
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 16),
             ),
           ),
         ),
+        if (isPanField)
+          Consumer(
+            builder: (context, ref, child) {
+              final savedPans = ref.watch(panProvider);
+              if (savedPans.isEmpty) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Saved PAN Details (Tap to auto-fill):', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    ...savedPans.map((pan) {
+                      return InkWell(
+                        onTap: () {
+                          controller.text = pan.panNumber;
+                          if (onChanged != null) onChanged!(pan.panNumber);
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 4),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.corporateBlue.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppTheme.corporateBlue.withValues(alpha: 0.2)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(LucideIcons.creditCard, size: 16, color: AppTheme.corporateBlue),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${pan.panNumber} - ${pan.name}',
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.deepTeal),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              );
+            },
+          ),
       ],
+    ),
     );
   }
 }

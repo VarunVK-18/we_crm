@@ -245,4 +245,81 @@ export class RequestsComponent implements OnInit {
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
   }
+
+  // --- Chat Feature ---
+  isChatModalOpen = signal<boolean>(false);
+  selectedChatOrder = signal<any>(null);
+  chatMessages = signal<any[]>([]);
+  isLoadingChat = signal<boolean>(false);
+  newChatMessage: string = '';
+  chatPollingInterval: any;
+
+  openChatModal(order: any) {
+    this.selectedChatOrder.set(order);
+    this.isChatModalOpen.set(true);
+    this.fetchChatMessages(true);
+
+    this.chatPollingInterval = setInterval(() => {
+      this.fetchChatMessages(false);
+    }, 5000);
+  }
+
+  closeChatModal() {
+    this.isChatModalOpen.set(false);
+    this.selectedChatOrder.set(null);
+    this.chatMessages.set([]);
+    this.newChatMessage = '';
+    if (this.chatPollingInterval) {
+      clearInterval(this.chatPollingInterval);
+    }
+  }
+
+  fetchChatMessages(showLoading = false) {
+    const orderId = this.selectedChatOrder()?._id;
+    if (!orderId) return;
+
+    if (showLoading) this.isLoadingChat.set(true);
+    this.api.get<any>(`chat/${orderId}`).subscribe({
+      next: (res: any) => {
+        if (res && res.messages) {
+          this.chatMessages.set(res.messages);
+        }
+        if (showLoading) this.isLoadingChat.set(false);
+      },
+      error: (err: any) => {
+        console.error('Error fetching chat messages:', err);
+        if (showLoading) this.isLoadingChat.set(false);
+      }
+    });
+  }
+
+  sendChatMessage() {
+    if (!this.newChatMessage.trim()) return;
+    
+    const orderId = this.selectedChatOrder()?._id;
+    if (!orderId) return;
+
+    const content = this.newChatMessage.trim();
+    this.newChatMessage = ''; // Clear immediately
+    
+    // Check if the user role is admin or filling_staff or client_manager
+    const userRole = this.user()?.role || 'admin';
+
+    this.api.post<any>(`chat/${orderId}`, {
+      senderId: this.user()?._id || this.user()?.id,
+      senderRole: userRole,
+      content: content
+    }).subscribe({
+      next: (res: any) => {
+        if (res && res.message) {
+          // Optimistically append the message
+          this.chatMessages.update(prev => [...prev, res.message]);
+        }
+      },
+      error: (err: any) => {
+        console.error('Error sending chat message:', err);
+        this.showToast('Failed to send message', 'error');
+      }
+    });
+  }
 }

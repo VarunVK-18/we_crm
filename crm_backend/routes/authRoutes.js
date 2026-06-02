@@ -18,6 +18,7 @@ const {
   approveClient,
   getAuditLogs,
   subscribeService,
+  savePanDetails,
   migrateChecklistAssignments
 } = require('../controllers/authController');
 
@@ -26,7 +27,7 @@ const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac')
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 1 * 1024 * 1024 } // 1MB limit
+  limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
 });
 
 // Authentication routes
@@ -43,6 +44,7 @@ router.post('/auth/register-company', registerCompany);
 // User profile route
 router.get('/users/profile/:id', getUserProfile);
 router.post('/users/profile/:id/subscribe-service', upload.any(), subscribeService);
+router.post('/users/profile/:id/pan', upload.single('panFile'), savePanDetails);
 
 // Client users listing & actions route
 router.get('/users/clients', checkUser, getClients);

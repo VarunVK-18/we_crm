@@ -222,6 +222,7 @@ class ServiceDetailScreen extends StatelessWidget {
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
+                    useSafeArea: true,
                     backgroundColor: Colors.transparent,
                     builder: (context) => ServiceRequestSummarySheet(
                       packageName: serviceName,
