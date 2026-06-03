@@ -2,6 +2,54 @@ const FilingTask = require('../models/FilingTask');
 const User = require('../models/User');
 const { logActivity } = require('../middleware/rbac');
 const Document = require('../models/Document');
+const Company = require('../models/Company');
+const ChecklistTemplate = require('../models/ChecklistTemplate');
+const pdfParse = require('pdf-parse');
+
+function parseWrittenDate(dateStr) {
+  try {
+    const monthMatch = dateStr.match(/(January|February|March|April|May|June|July|August|September|October|November|December)/i);
+    if (!monthMatch) return null;
+    const month = monthMatch[1];
+    
+    let year = 2024;
+    const yrStr = dateStr.toLowerCase();
+    if (yrStr.includes('two thousand eighteen')) year = 2018;
+    else if (yrStr.includes('two thousand nineteen')) year = 2019;
+    else if (yrStr.includes('two thousand twenty one')) year = 2021;
+    else if (yrStr.includes('two thousand twenty two')) year = 2022;
+    else if (yrStr.includes('two thousand twenty three')) year = 2023;
+    else if (yrStr.includes('two thousand twenty four')) year = 2024;
+    else if (yrStr.includes('two thousand twenty five')) year = 2025;
+    else if (yrStr.includes('two thousand twenty')) year = 2020;
+    else {
+      const yrMatch = dateStr.match(/\b(20\d{2})\b/);
+      if (yrMatch) year = parseInt(yrMatch[1]);
+    }
+
+    let day = 1;
+    const days = {
+      thirtieth: 30, 'thirty first': 31, 'thirty-first': 31,
+      'twenty ninth': 29, 'twenty-ninth': 29, 'twenty eighth': 28, 'twenty-eighth': 28,
+      'twenty seventh': 27, 'twenty-seventh': 27, 'twenty sixth': 26, 'twenty-sixth': 26,
+      'twenty fifth': 25, 'twenty-fifth': 25, 'twenty fourth': 24, 'twenty-fourth': 24,
+      'twenty third': 23, 'twenty-third': 23, 'twenty second': 22, 'twenty-second': 22,
+      'twenty first': 21, 'twenty-first': 21, twentieth: 20, nineteenth: 19,
+      eighteenth: 18, seventeenth: 17, sixteenth: 16, fifteenth: 15, fourteenth: 14,
+      thirteenth: 13, twelfth: 12, eleventh: 11, tenth: 10, ninth: 9, eighth: 8,
+      seventh: 7, sixth: 6, fifth: 5, fourth: 4, third: 3, second: 2, first: 1
+    };
+    for (const [key, val] of Object.entries(days)) {
+      if (yrStr.includes(key)) {
+        day = val;
+        break;
+      }
+    }
+    return new Date(Date.UTC(year, new Date(`${month} 1, 2000`).getMonth(), day));
+  } catch (e) {
+    return null;
+  }
+}
 
 // @desc    Create a new filing task
 // @route   POST /api/tasks
@@ -164,6 +212,53 @@ const uploadTaskDocument = async (req, res) => {
       name: document_name,
       fileUrl
     });
+
+    // Check for OCR Extraction
+    const template = await ChecklistTemplate.findOne({
+      company_id: req.user.company_id,
+      service_name: task.title
+    });
+    
+    const extractionEnabled = template?.enable_document_extraction === true;
+    
+    if (extractionEnabled && document_name.toLowerCase().includes('incorporation') && file.mimetype === 'application/pdf') {
+      try {
+        const pdfData = await pdfParse(file.buffer);
+        const text = pdfData.text;
+        
+        let extractedCompany = '';
+        let extractedCin = '';
+        let extractedTan = '';
+        let extractedDate = null;
+
+        const nameMatch = text.match(/I hereby certify that\s+([^]+?)\s+is incorporated/i);
+        if (nameMatch) extractedCompany = nameMatch[1].replace(/\n/g, ' ').trim();
+
+        const cinMatch = text.match(/([L|U]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6})/);
+        if (cinMatch) extractedCin = cinMatch[1].trim();
+
+        const tanMatch = text.match(/([A-Z]{4}\d{5}[A-Z])/);
+        if (tanMatch) extractedTan = tanMatch[1].trim();
+
+        const dateMatch = text.match(/this\s+(.+?)\s+under the Companies Act/i);
+        if (dateMatch) {
+          extractedDate = parseWrittenDate(dateMatch[1].trim());
+        }
+
+        if (extractedCompany || extractedCin || extractedTan) {
+          const client = await User.findById(task.client_id._id);
+          if (client) {
+            if (extractedCompany) client.company_name = extractedCompany;
+            if (extractedCin) client.cin = extractedCin;
+            if (extractedTan) client.tan = extractedTan;
+            if (extractedDate) client.incorporation_date = extractedDate;
+            await client.save();
+          }
+        }
+      } catch (e) {
+        console.error('OCR Extraction Error:', e);
+      }
+    }
 
     await task.save();
 

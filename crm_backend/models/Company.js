@@ -35,7 +35,8 @@ const CompanySchema = new mongoose.Schema({
     incorporation_fee: { type: Number, default: 5000 },
     default_filing_tax: { type: Number, default: 18 },
     allow_agent_registration: { type: Boolean, default: true },
-    require_document_verification: { type: Boolean, default: true }
+    require_document_verification: { type: Boolean, default: true },
+    enable_document_extraction: { type: Boolean, default: false }
   }
 }, { timestamps: true });
 

@@ -108,8 +108,10 @@ class _PanUploadScreenState extends ConsumerState<PanUploadScreen> {
       try {
         final uri = Uri.parse('$kBaseUrl/api/users/profile/${user.id}/pan');
         final request = http.MultipartRequest('POST', uri);
-        
         request.fields['panNumber'] = verifiedData['panNumber']!;
+        request.fields['name'] = verifiedData['name']!;
+        request.fields['fatherName'] = verifiedData['fatherName']!;
+        request.fields['dob'] = verifiedData['dob']!;
         
         if (_imageFile != null) {
           request.files.add(await http.MultipartFile.fromPath('panFile', _imageFile!.path));

@@ -24,6 +24,10 @@ const ChecklistTemplateSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  enable_document_extraction: {
+    type: Boolean,
+    default: false
+  },
   items: [TemplateItemSchema]
 }, { timestamps: true });
 

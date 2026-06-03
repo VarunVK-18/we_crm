@@ -2,15 +2,19 @@ import { Component, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../api';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { DashboardSquareRemoveIcon, UserAccountIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HugeiconsIconComponent],
   templateUrl: './client-dashboard.html',
   styleUrl: './client-dashboard.css',
 })
 export class ClientDashboard implements OnInit, OnDestroy {
+  readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
+  readonly UserAccountIcon = UserAccountIcon;
   user = signal<any>(null);
   
   // Orders
@@ -57,6 +61,10 @@ export class ClientDashboard implements OnInit, OnDestroy {
 
   setTab(tab: 'active' | 'completed' | 'not-initialized') {
     this.activeTab.set(tab);
+  }
+
+  goToProfile() {
+    this.router.navigate(['/client/profile']);
   }
 
   fetchOrders() {

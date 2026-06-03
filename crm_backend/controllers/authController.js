@@ -601,6 +601,9 @@ const savePanDetails = async (req, res) => {
     }
 
     if (req.body.panNumber) user.pan = req.body.panNumber;
+    if (req.body.name) user.pan_name = req.body.name;
+    if (req.body.fatherName) user.pan_father_name = req.body.fatherName;
+    if (req.body.dob) user.pan_dob = req.body.dob;
 
     if (req.file) {
       const doc = await Document.create({

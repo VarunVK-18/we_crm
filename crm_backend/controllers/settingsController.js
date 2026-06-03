@@ -22,7 +22,8 @@ const getSettings = async (req, res) => {
         incorporation_fee: 5000,
         default_filing_tax: 18,
         allow_agent_registration: true,
-        require_document_verification: true
+        require_document_verification: true,
+        enable_document_extraction: false
       }
     });
   } catch (error) {
@@ -40,7 +41,7 @@ const updateSettings = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User is not linked to any company' });
     }
 
-    const { incorporation_fee, default_filing_tax, allow_agent_registration, require_document_verification } = req.body;
+    const { incorporation_fee, default_filing_tax, allow_agent_registration, require_document_verification, enable_document_extraction } = req.body;
 
     const company = await Company.findById(companyId);
     if (!company) {
@@ -55,6 +56,7 @@ const updateSettings = async (req, res) => {
     if (default_filing_tax !== undefined) company.settings.default_filing_tax = Number(default_filing_tax);
     if (allow_agent_registration !== undefined) company.settings.allow_agent_registration = Boolean(allow_agent_registration);
     if (require_document_verification !== undefined) company.settings.require_document_verification = Boolean(require_document_verification);
+    if (enable_document_extraction !== undefined) company.settings.enable_document_extraction = Boolean(enable_document_extraction);
 
     await company.save();
 

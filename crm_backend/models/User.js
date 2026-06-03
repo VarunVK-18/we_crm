@@ -56,6 +56,30 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  pan_name: {
+    type: String,
+    default: ''
+  },
+  pan_father_name: {
+    type: String,
+    default: ''
+  },
+  pan_dob: {
+    type: String,
+    default: ''
+  },
+  tan: {
+    type: String,
+    default: ''
+  },
+  cin: {
+    type: String,
+    default: ''
+  },
+  incorporation_date: {
+    type: Date,
+    default: null
+  },
   gstin: {
     type: String,
     default: ''

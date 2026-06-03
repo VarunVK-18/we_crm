@@ -18,7 +18,7 @@ const getTemplates = async (req, res) => {
 // @access  Private (Admin)
 const upsertTemplate = async (req, res) => {
   try {
-    const { service_name, items } = req.body;
+    const { service_name, items, enable_document_extraction } = req.body;
 
     if (!service_name) {
       return res.status(400).json({ success: false, message: 'Service name is required' });
@@ -31,12 +31,16 @@ const upsertTemplate = async (req, res) => {
 
     if (template) {
       template.items = items || [];
+      if (enable_document_extraction !== undefined) {
+        template.enable_document_extraction = enable_document_extraction;
+      }
       await template.save();
     } else {
       template = await ChecklistTemplate.create({
         company_id: req.user.company_id,
         service_name,
-        items: items || []
+        items: items || [],
+        enable_document_extraction: enable_document_extraction || false
       });
     }
 

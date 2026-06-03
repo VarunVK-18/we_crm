@@ -1,13 +1,12 @@
 import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Api } from '../../api';
 
 @Component({
   selector: 'app-checklist-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './checklist-details.html',
   styleUrl: './checklist-details.css'
 })

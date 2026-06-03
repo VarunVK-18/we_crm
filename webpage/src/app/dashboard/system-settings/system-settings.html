@@ -90,9 +90,14 @@
             <div>
               <h2 class="pane-title">{{ activeTab() }} Configuration</h2>
               <p class="pane-subtitle">Customize required documents and validation steps for {{ activeTab() }} certification.</p>
+              
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 12px;">
+                <input type="checkbox" id="enable_template_ocr" name="enable_template_ocr" [(ngModel)]="activeTemplateExtractEnabled" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />
+                <label for="enable_template_ocr" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Enable automatic document data extraction (OCR) for this template</label>
+              </div>
             </div>
             <div style="display: flex; gap: 12px;">
-              <button class="btn-primary-save" (click)="saveTemplate()">Publish Updates</button>
+              <button class="btn-primary-save" (click)="saveTemplate()" [disabled]="user()?.role !== 'admin'">Publish Updates</button>
             </div>
           </div>
 

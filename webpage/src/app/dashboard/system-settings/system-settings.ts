@@ -15,7 +15,8 @@ export class SystemSettings implements OnInit {
   settings = signal<any>({
     default_filing_tax: 18,
     allow_agent_registration: true,
-    require_document_verification: true
+    require_document_verification: true,
+    enable_document_extraction: false
   });
 
   activeTab = signal<string>('system');
@@ -51,6 +52,7 @@ export class SystemSettings implements OnInit {
 
   selectedService = '';
   activeTemplateItems: {title: string, description: string}[] = [];
+  activeTemplateExtractEnabled = false;
   newItemTitle = '';
   newItemDesc = '';
 
@@ -105,10 +107,12 @@ export class SystemSettings implements OnInit {
       next: (res) => {
         if (res && res.success) {
           const tmpl = res.templates.find((t: any) => t.service_name === this.selectedService);
-          if (tmpl && tmpl.items) {
-            this.activeTemplateItems = tmpl.items.map((i: any) => ({ title: i.title, description: i.description }));
+          if (tmpl) {
+            this.activeTemplateItems = (tmpl.items || []).map((i: any) => ({ title: i.title, description: i.description }));
+            this.activeTemplateExtractEnabled = !!tmpl.enable_document_extraction;
           } else {
             this.activeTemplateItems = [];
+            this.activeTemplateExtractEnabled = false;
           }
         }
       },
@@ -135,7 +139,8 @@ export class SystemSettings implements OnInit {
     if (!this.selectedService) return;
     this.api.post<any>('templates/checklists', {
       service_name: this.selectedService,
-      items: this.activeTemplateItems
+      items: this.activeTemplateItems,
+      enable_document_extraction: this.activeTemplateExtractEnabled
     }).subscribe({
       next: (res) => alert('Template saved successfully!'),
       error: (err) => alert(err.error?.message || 'Failed to save template.')

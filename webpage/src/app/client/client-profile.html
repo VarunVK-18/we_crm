@@ -1,0 +1,231 @@
+<div class="client-layout">
+  <div class="sidebar-container">
+    <div class="branding-header">
+      <div class="logo-box">
+        <img src="/logo.jpg" alt="Wealth Empires Logo" class="actual-brand-logo" />
+      </div>
+      <div class="branding-text">
+        <span class="branding-title">Wealth Empires</span>
+        <span class="branding-subtitle">Client Portal</span>
+      </div>
+    </div>
+    
+    <div class="navigation-list">
+      <div class="group-items">
+        <div class="nav-item-wrapper" (click)="goToDashboard()">
+          <div class="nav-item-content">
+            <hugeicons-icon 
+              [icon]="DashboardSquareRemoveIcon" 
+              [size]="18" 
+              color="currentColor"
+              class="nav-item-icon"
+              [strokeWidth]="2.2">
+            </hugeicons-icon>
+            <span class="nav-item-label">Dashboard</span>
+          </div>
+        </div>
+        
+        <div class="nav-item-wrapper selected">
+          <div class="nav-item-content">
+            <hugeicons-icon 
+              [icon]="UserAccountIcon" 
+              [size]="18" 
+              color="currentColor"
+              class="nav-item-icon"
+              [strokeWidth]="2.2">
+            </hugeicons-icon>
+            <span class="nav-item-label">Profile</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    @if (user()) {
+      <div class="sidebar-footer">
+        <div class="avatar-box">
+          {{ (user()?.company_name || user()?.name || 'C')[0] | uppercase }}
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{ user()?.company_name || user()?.name || 'Client' }}</div>
+          <div class="user-role">Client</div>
+        </div>
+        <button class="btn-logout" (click)="logout()" title="Sign Out">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </button>
+      </div>
+    }
+  </div>
+
+  <div class="client-main">
+    <div class="premium-appbar">
+      <div class="appbar-title-section">
+        <h1 class="appbar-title">My Profile</h1>
+        <span class="appbar-subtitle">Account Details & Documents</span>
+      </div>
+      
+      <div class="appbar-actions">
+        @if (user()) {
+          <div class="user-badge">
+            <div class="divider"></div>
+            <div class="user-badge-text">
+              <span class="badge-name">{{ user()?.company_name || user()?.owner_name || 'Client' }}</span>
+              <span class="badge-status">Online • Prime</span>
+            </div>
+            <div class="badge-avatar">
+              {{ (user()?.company_name || user()?.owner_name || 'C')[0] | uppercase }}
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="content-wrapper">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <span class="material-symbols-outlined rotating">sync</span>
+          <p>Loading profile details...</p>
+        </div>
+      } @else {
+        <div class="profile-grid">
+          <!-- Details Section -->
+          <div class="profile-card">
+            <div class="card-header">
+              <h2>Account Details</h2>
+              <span class="status-badge" [class]="user()?.status || 'active'">{{ (user()?.status || 'active') | titlecase }}</span>
+            </div>
+            
+            <div class="details-list">
+              <div class="detail-item">
+                <span class="detail-label">Company Name</span>
+                <span class="detail-value">{{ user()?.company_name || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Owner Name</span>
+                <span class="detail-value">{{ user()?.owner_name || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Email</span>
+                <span class="detail-value">{{ user()?.email || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Phone</span>
+                <span class="detail-value">{{ user()?.phone || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Business Type</span>
+                <span class="detail-value">{{ user()?.business_type || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">PAN</span>
+                <span class="detail-value">{{ user()?.pan || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">PAN Verified Name</span>
+                <span class="detail-value">{{ user()?.pan_name || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">PAN Father's Name</span>
+                <span class="detail-value">{{ user()?.pan_father_name || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">PAN DOB</span>
+                <span class="detail-value">{{ user()?.pan_dob || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">GSTIN</span>
+                <span class="detail-value">{{ user()?.gstin || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">TAN</span>
+                <span class="detail-value">{{ user()?.tan || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">CIN</span>
+                <span class="detail-value">{{ user()?.cin || 'N/A' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Incorporation Date</span>
+                <span class="detail-value">{{ user()?.incorporation_date ? (user()?.incorporation_date | date:'longDate') : 'N/A' }}</span>
+              </div>
+              <div class="detail-item full-width">
+                <span class="detail-label">Address</span>
+                <span class="detail-value">{{ user()?.address || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents Section -->
+          <div class="profile-card documents-card">
+            <div class="card-header">
+              <h2>Uploaded Documents</h2>
+              <span class="doc-count">{{ (user()?.onboarding_documents?.length || 0) + (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) }} Total</span>
+            </div>
+            
+            <div class="documents-list">
+              <!-- Default fields that could have documents attached directly on the user model -->
+              @if (user()?.pan_file) {
+                <div class="document-item">
+                  <div class="doc-icon-box">
+                    <hugeicons-icon [icon]="File01Icon" [size]="20" color="#2563eb" [strokeWidth]="2"></hugeicons-icon>
+                  </div>
+                  <div class="doc-info">
+                    <span class="doc-name">PAN Card Document</span>
+                  </div>
+                  <a [href]="api.getFileUrl(user()?.pan_file)" target="_blank" class="download-btn" title="View Document">
+                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="#64748b" [strokeWidth]="1.5"></hugeicons-icon>
+                  </a>
+                </div>
+              }
+              
+              @if (user()?.gstin_file) {
+                <div class="document-item">
+                  <div class="doc-icon-box">
+                    <hugeicons-icon [icon]="File01Icon" [size]="20" color="#2563eb" [strokeWidth]="2"></hugeicons-icon>
+                  </div>
+                  <div class="doc-info">
+                    <span class="doc-name">GSTIN Document</span>
+                  </div>
+                  <a [href]="api.getFileUrl(user()?.gstin_file)" target="_blank" class="download-btn" title="View Document">
+                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="#64748b" [strokeWidth]="1.5"></hugeicons-icon>
+                  </a>
+                </div>
+              }
+              
+              <!-- Additional onboarding documents array -->
+              @for (doc of user()?.onboarding_documents; track doc._id) {
+                <!-- Skip duplicates if they are already handled above based on naming, otherwise show them -->
+                @if (doc.name !== 'PAN Card Verification') {
+                  <div class="document-item">
+                    <div class="doc-icon-box">
+                      <hugeicons-icon [icon]="File01Icon" [size]="20" color="#2563eb" [strokeWidth]="2"></hugeicons-icon>
+                    </div>
+                    <div class="doc-info">
+                      <span class="doc-name">{{ doc.name }}</span>
+                      @if (doc.uploadedAt) {
+                        <span class="doc-date">{{ doc.uploadedAt | date:'mediumDate' }}</span>
+                      }
+                    </div>
+                    <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="download-btn" title="View Document">
+                      <hugeicons-icon [icon]="EyeIcon" [size]="18" color="#64748b" [strokeWidth]="1.5"></hugeicons-icon>
+                    </a>
+                  </div>
+                }
+              }
+              
+              @if (!user()?.pan_file && !user()?.gstin_file && (!user()?.onboarding_documents || user()?.onboarding_documents?.length === 0)) {
+                <div class="empty-docs">
+                  <span class="material-symbols-outlined">folder_open</span>
+                  <p>No documents uploaded yet.</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
