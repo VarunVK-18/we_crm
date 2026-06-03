@@ -37,6 +37,8 @@ class _ServiceRequestSummarySheetState
   late TextEditingController _gstPanController;
 
   // Private Limited Incorporation Specific Controllers
+  late TextEditingController _numberOfDirectorsController;
+  late TextEditingController _incorporationDetailsController;
   late TextEditingController _companyNameController;
   late TextEditingController _businessActivityController;
   late TextEditingController _ownerNameController;
@@ -170,6 +172,8 @@ class _ServiceRequestSummarySheetState
     _gstPanController = TextEditingController();
 
     // Initialize Incorporation Controllers
+    _numberOfDirectorsController = TextEditingController();
+    _incorporationDetailsController = TextEditingController();
     _companyNameController = TextEditingController();
     _businessActivityController = TextEditingController();
     _ownerNameController = TextEditingController();
@@ -317,6 +321,8 @@ class _ServiceRequestSummarySheetState
     _nameController.dispose();
     _emailController.dispose();
     _gstPanController.dispose();
+    _numberOfDirectorsController.dispose();
+    _incorporationDetailsController.dispose();
     _companyNameController.dispose();
     _businessActivityController.dispose();
     _ownerNameController.dispose();
@@ -385,7 +391,11 @@ class _ServiceRequestSummarySheetState
 
       // Collect package-specific details
       final Map<String, String> details = {};
-      if (widget.packageName == 'Private Limited Incorporation' || widget.packageName == 'LLP Incorporation') {
+      if (widget.packageName == 'Private Limited Incorporation') {
+        details['company_name'] = _companyNameController.text;
+        details['company_phone'] = _companyPhoneController.text;
+        details['business_activity'] = _businessActivityController.text;
+      } else if (widget.packageName == 'LLP Incorporation') {
         details['business_activity'] = _businessActivityController.text;
         details['owner_name'] = _ownerNameController.text;
         details['company_email'] = _companyEmailController.text;
@@ -465,8 +475,8 @@ class _ServiceRequestSummarySheetState
         }
       }
 
-      // Add person files for Private Limited / LLP
-      if (widget.packageName == 'Private Limited Incorporation' || widget.packageName == 'LLP Incorporation') {
+      // Add person files for LLP
+      if (widget.packageName == 'LLP Incorporation') {
         for (int i = 0; i < _directors.length; i++) {
           final director = _directors[i];
           final prefix = 'director_${i + 1}_';
@@ -631,7 +641,7 @@ class _ServiceRequestSummarySheetState
         
                       ..._buildServiceSpecificForms(),
                     ] else ...[
-                      if (widget.packageName == 'Private Limited Incorporation' || widget.packageName == 'LLP Incorporation') ...[
+                      if (widget.packageName == 'LLP Incorporation') ...[
                         ..._buildPrivateLimitedPersons(),
                       ],
                       if (widget.packageName == 'LLP Incorporation' || widget.packageName == 'Private Limited Incorporation') ...[
@@ -962,94 +972,29 @@ class _ServiceRequestSummarySheetState
               color: AppTheme.deepTeal)),
       const SizedBox(height: 20),
       _EditableField(
-          label: 'Proposed Company name',
+          label: 'Company Name',
           controller: _companyNameController,
           icon: LucideIcons.building,
-          hint: 'Eg:\nWealth Empires Private Limited\nWealth Empires LLP',
-          maxLines: 2,
-          isRequired: true),
-      const SizedBox(height: 12),
-      Text(
-          'Enter your preferred company name. This should be unique and not already registered. Avoid using words like "National", "Federal", "Central", "Republic", "Democracy", "Government" without proper authorization.',
-          style: TextStyle(color: Colors.grey[600], fontSize: 11, height: 1.4)),
-      const SizedBox(height: 20),
-      _EditableField(
-          label: 'Business Activity',
-          controller: _businessActivityController,
-          icon: LucideIcons.fileText,
-          hint: 'Describe the main business activities your company will undertake. Be specific about the products or services you plan to offer.',
-          maxLines: 3,
-          isRequired: true),
-      const SizedBox(height: 24),
-      _buildSectionHeader('Registered Office Preference'),
-      const SizedBox(height: 4),
-      Text(
-          'Tell us whether you already have a registered office address or need Wealth Empires to arrange a virtual office.',
-          style: TextStyle(color: Colors.grey[600], fontSize: 11, height: 1.4)),
-      const SizedBox(height: 16),
-      _buildModernRadio(
-          'Do you have address for your company',
-          'Own Address',
-          _officePreference,
-          (val) => setState(() => _officePreference = val!)),
-      _buildModernRadio(
-          'Do you want virtual office for your company',
-          'Virtual Office',
-          _officePreference,
-          (val) => setState(() => _officePreference = val!)),
-      if (_officePreference == 'Own Address') ...[
-        const SizedBox(height: 24),
-        _EditableField(
-            label: 'Name of the Owner in the utility bill',
-            controller: _ownerNameController,
-            icon: LucideIcons.user,
-            hint: 'Enter the name of the person who owns or has authority over the registered office address.',
-            isRequired: true),
-      ],
-      const SizedBox(height: 24),
-      _EditableField(
-          label: 'Company Mail',
-          controller: _companyEmailController,
-          icon: LucideIcons.mail,
-          hint: 'Should not be same as director',
-          keyboardType: TextInputType.emailAddress,
+          hint: 'Proposed Company Name',
           isRequired: true),
       const SizedBox(height: 20),
       _EditableField(
-          label: 'Company Phone number',
+          label: 'Company Phone Number',
           controller: _companyPhoneController,
           icon: LucideIcons.phone,
-          hint: 'Should not be same as director',
+          hint: '10 digit number',
           keyboardType: TextInputType.phone,
           maxLength: 10,
           isRequired: true),
       const SizedBox(height: 20),
       _EditableField(
-          label: 'Paid up share capital',
-          controller: _paidUpCapitalController,
-          icon: LucideIcons.indianRupee,
-          hint: 'Enter the total amount of share capital that has been paid by shareholders. Minimum requirement is ₹10,000 for private limited companies.',
-          keyboardType: TextInputType.number,
-          maxLines: 2,
+          label: 'Business Activities',
+          controller: _businessActivityController,
+          icon: LucideIcons.briefcase,
+          hint: 'Describe the main business activities',
+          maxLines: 4,
           isRequired: true),
-      const SizedBox(height: 20),
-      _EditableField(
-          label: 'Value per share',
-          controller: _valuePerShareController,
-          icon: LucideIcons.indianRupee,
-          hint: 'Enter the face value of each share. This is typically ₹10 or ₹100 per share.',
-          keyboardType: TextInputType.number,
-          maxLines: 2,
-          isRequired: true),
-      const SizedBox(height: 20),
-      _EditableField(
-          label: 'No. of shares',
-          controller: _noOfSharesController,
-          icon: LucideIcons.hash,
-          hint: 'Enter the total number of shares issued by the company. This should match the share capital structure.',
-          keyboardType: TextInputType.number,
-          maxLines: 2,
-          isRequired: true),
+      const SizedBox(height: 24),
     ];
   }
 

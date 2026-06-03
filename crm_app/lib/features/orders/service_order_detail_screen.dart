@@ -14,6 +14,7 @@ import '../../providers/auth_provider.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
+import 'director_details_form_screen.dart';
 
 class ServiceOrderDetailScreen extends StatelessWidget {
   final ServiceOrder order;
@@ -173,6 +174,52 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                 _InfoRow(order: order),
 
                 const SizedBox(height: 24),
+                
+                if (order.status == ServiceStatus.active && 
+                    order.serviceType == 'Private Limited Incorporation' && 
+                    (order.details['directors'] == null || (order.details['directors'] is List && (order.details['directors'] as List).isEmpty) || (order.details['directors'] is String && (order.details['directors'] as String).isEmpty) || order.details['directors'] == '[]')) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(LucideIcons.alertCircle, color: Colors.blue, size: 20),
+                              SizedBox(width: 8),
+                              Text('Action Required', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text('Please complete the director details to proceed with the registration.', style: TextStyle(fontSize: 13, color: Colors.black87)),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => DirectorDetailsFormScreen(order: order)),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.corporateBlue,
+                              minimumSize: const Size(double.infinity, 44),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: const Text('Complete Director Details', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
 
                 if (order.notes.isNotEmpty) ...[
                   Padding(

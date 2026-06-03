@@ -67,6 +67,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
             'createdAt': c['createdAt'],
             'dealClosedAmount': c['dealClosedAmount'] ?? 0,
             'notes': c['notes'] ?? '',
+            'details': c['details'] ?? {},
           };
 
           return ServiceOrder.fromMap(mappedData, id);

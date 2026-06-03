@@ -2,7 +2,7 @@ const Map<String, List<String>> kServiceRequiredDocuments = {
   // Company Incorporation
   'Proprietorship Registration': ['PAN Card', 'Aadhaar Card', 'Business Address Proof', 'Proprietor Photo'],
   'Partnership Firm Registration': ['Partnership Deed', 'PAN of Firm', 'ID Proof of Partners', 'Address Proof of Partners'],
-  'Private Limited Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)', 'Payment Screenshot'],
+  'Private Limited Incorporation': ['EB Bill / Wifi Bill < 2 months PDF'],
   'ISO Certification': ['Business Address Proof', 'Scope of Operations', 'Organization Chart'],
   'DPIIT Startup India Certification': ['Incorporation Certificate (PDF)', 'Company PAN', 'Company logo (JPEG)', 'Pitch deck (PDF)'],
   

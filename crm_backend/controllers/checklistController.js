@@ -216,7 +216,7 @@ const addChecklistItem = async (req, res) => {
 const updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to, notes, stage, items, requested_documents, status } = req.body;
+    const { assigned_to, notes, stage, items, requested_documents, status, details } = req.body;
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -228,6 +228,7 @@ const updateChecklist = async (req, res) => {
     if (stage !== undefined) checklist.stage = stage;
     if (status !== undefined) checklist.status = status;
     if (requested_documents !== undefined) checklist.requested_documents = requested_documents;
+    if (details !== undefined) checklist.details = details;
 
     // Allow bulk item update (e.g. replacing all items)
     if (items !== undefined) {

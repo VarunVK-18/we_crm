@@ -20,7 +20,7 @@ enum _ServiceTab { active, complete, notInitialized, history }
 const _tabLabels = {
   _ServiceTab.active: 'Active',
   _ServiceTab.complete: 'Complete',
-  _ServiceTab.notInitialized: 'Not Initialized',
+  _ServiceTab.notInitialized: 'Pending Registration',
   _ServiceTab.history: 'History',
 };
 
@@ -447,10 +447,12 @@ class _ServiceCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _stageLabels[order.stage] ?? '',
+                    (order.serviceType == 'Private Limited Incorporation' && order.status == ServiceStatus.notInitialized) 
+                        ? 'Registration Under Review' 
+                        : (_stageLabels[order.stage] ?? ''),
                     style: TextStyle(
                       fontSize: 10,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: badgeColors.text,
                     ),
                   ),
