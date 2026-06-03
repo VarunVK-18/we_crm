@@ -68,6 +68,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
             isLoading: false,
             error: null,
           );
+          markAsSeen();
         }
       } else {
         if (mounted && !isBackground) {
@@ -117,6 +118,18 @@ class ChatNotifier extends StateNotifier<ChatState> {
       return false;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<void> markAsSeen() async {
+    try {
+      await http.put(
+        Uri.parse('$kBaseUrl/api/chat/$orderId/seen'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'viewerRole': 'client'}),
+      );
+    } catch (e) {
+      // ignore
     }
   }
 }

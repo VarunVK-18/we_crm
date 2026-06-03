@@ -2,9 +2,9 @@
 
   <!-- Toast Notification -->
   @if (toastMessage()) {
-    <div class="toast-notification" [class.toast-error]="toastType() === 'error'">
-      {{ toastMessage() }}
-    </div>
+  <div class="toast-notification" [class.toast-error]="toastType() === 'error'">
+    {{ toastMessage() }}
+  </div>
   }
 
   <div class="header-actions">
@@ -23,186 +23,247 @@
       All
       <span class="count-pill">{{ orderCounts().all }}</span>
     </button>
-    <button class="filter-tab new-tab" [class.active]="statusFilter() === 'new' || statusFilter() === 'pending'" (click)="statusFilter.set('new')">
+    <button class="filter-tab new-tab" [class.active]="statusFilter() === 'new' || statusFilter() === 'pending'"
+      (click)="statusFilter.set('new')">
       New
       <span class="count-pill new">{{ orderCounts().new }}</span>
     </button>
-    <button class="filter-tab active-tab" [class.active]="statusFilter() === 'active'" (click)="statusFilter.set('active')">
+    <button class="filter-tab active-tab" [class.active]="statusFilter() === 'active'"
+      (click)="statusFilter.set('active')">
       Active
       <span class="count-pill active-pill">{{ orderCounts().active }}</span>
     </button>
-    <button class="filter-tab complete-tab" [class.active]="statusFilter() === 'complete'" (click)="statusFilter.set('complete')">
+    <button class="filter-tab complete-tab" [class.active]="statusFilter() === 'complete'"
+      (click)="statusFilter.set('complete')">
       Complete
       <span class="count-pill complete">{{ orderCounts().complete }}</span>
     </button>
   </div>
 
   @if (isLoading()) {
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading requests...</p>
-    </div>
+  <div class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading requests...</p>
+  </div>
   } @else if (filteredOrders().length === 0) {
-    <div class="no-results-placeholder">
-      <div class="placeholder-icon-circle">
-        <hugeicons-icon [icon]="CheckmarkBadge01Icon" size="32" color="#94A3B8"></hugeicons-icon>
-      </div>
-      <h3>No requests found</h3>
-      <p>{{ statusFilter() === 'all' ? 'No service orders found for your company.' : 'No ' + statusFilter() + ' requests at the moment.' }}</p>
+  <div class="no-results-placeholder">
+    <div class="placeholder-icon-circle">
+      <hugeicons-icon [icon]="CheckmarkBadge01Icon" size="32" color="#94A3B8"></hugeicons-icon>
     </div>
+    <h3>No requests found</h3>
+    <p>{{ statusFilter() === 'all' ? 'No service orders found for your company.' : 'No ' + statusFilter() + ' requests
+      at the moment.' }}</p>
+  </div>
   } @else {
-    <div class="requests-grid">
-      @for (order of filteredOrders(); track order._id) {
-        <div class="request-card" [class.status-new]="['new','pending'].includes((order.status||'').toLowerCase())" [class.status-complete]="(order.status||'').toLowerCase() === 'complete'">
-          <div class="card-header">
-            <div class="service-badge">{{ order.serviceType }}</div>
-            <div class="date-badge">
-              <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
-              {{ formatDate(order.createdAt) }}
-            </div>
-          </div>
-          
-          <div class="card-body">
-            <h3 class="client-name">{{ order.entityName || order.companyName || 'Client Request' }}</h3>
-            
-            <div class="info-row">
-              <span class="info-label">Status:</span>
-              <span class="status-chip"
-                [class.chip-new]="['new','pending'].includes((order.status||'').toLowerCase())"
-                [class.chip-active]="(order.status||'').toLowerCase() === 'active'"
-                [class.chip-complete]="(order.status||'').toLowerCase() === 'complete'">
-                {{ order.status | titlecase }}
-              </span>
-            </div>
-            
-            <div class="info-row">
-              <span class="info-label">Stage:</span>
-              <span class="stage-text">{{ order.stage || '—' }}</span>
-            </div>
+  <div class="requests-grid">
+    @for (order of filteredOrders(); track order._id) {
+    <div class="request-card" [class.status-new]="['new','pending'].includes((order.status||'').toLowerCase())"
+      [class.status-complete]="(order.status||'').toLowerCase() === 'complete'">
+      <div class="card-header">
+        <div class="service-badge">{{ order.serviceType }}</div>
+        <div class="date-badge">
+          <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
+          {{ formatDate(order.createdAt) }}
+        </div>
+      </div>
 
-            @if (order.phone || order.contactPhone) {
-              <div class="info-row">
-                <span class="info-label">Contact:</span>
-                <a [href]="'tel:' + (order.phone || order.contactPhone)" class="contact-link">{{ order.phone || order.contactPhone }}</a>
-              </div>
-            }
+      <div class="card-body">
+        <h3 class="client-name">{{ order.entityName || order.companyName || 'Client Request' }}</h3>
 
-            @if (order.details && objectKeys(order.details).length > 0) {
-              <div class="dynamic-details">
-                <div class="details-divider"></div>
-                <span class="details-title">Application Details:</span>
-                <div class="details-grid">
-                  @for (key of objectKeys(order.details); track key) {
-                    <div class="detail-item">
-                      <span class="detail-label">{{ formatKey(key) }}</span>
-                      <span class="detail-value">{{ order.details[key] }}</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
+        <div class="info-row">
+          <span class="info-label">Status:</span>
+          <span class="status-chip" [class.chip-new]="['new','pending'].includes((order.status||'').toLowerCase())"
+            [class.chip-active]="(order.status||'').toLowerCase() === 'active'"
+            [class.chip-complete]="(order.status||'').toLowerCase() === 'complete'">
+            {{ order.status | titlecase }}
+          </span>
+        </div>
 
-            @if (order.documents && order.documents.length > 0) {
-              <div class="documents-section">
-                <span class="documents-title">Attached Documents:</span>
-                <div class="documents-list">
-                  @for (doc of order.documents; track doc._id || doc.fileUrl) {
-                    <div class="document-item">
-                      @if (isImage(doc.filename || doc.name)) {
-                        <div class="doc-preview-popover">
-                          <img [src]="api.getFileUrl(doc.fileUrl)" alt="Document Preview" />
-                        </div>
-                      }
-                      <svg class="doc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                      </svg>
-                      <span class="doc-name" [title]="doc.filename || doc.name">{{ doc.filename || doc.name }}</span>
-                      <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="btn-download" title="View Document">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                          <polyline points="7 10 12 15 17 10"></polyline>
-                          <line x1="12" y1="15" x2="12" y2="3"></line>
-                        </svg>
-                      </a>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-          </div>
+        <div class="info-row">
+          <span class="info-label">Stage:</span>
+          <span class="stage-text">{{ order.stage || '—' }}</span>
+        </div>
 
-          <div class="card-footer">
-            <div class="assign-field-group">
-              <label class="assign-label">Assign Expert:</label>
-              <select class="form-control-input select-input" 
-                      (change)="onEmployeeSelectChange(order._id, $event)">
-                <option value="">-- Select Employee --</option>
-                @for (emp of getFlatEmployees(); track emp.id) {
-                  <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
-                }
-              </select>
+        @if (order.phone || order.contactPhone) {
+        <div class="info-row">
+          <span class="info-label">Contact:</span>
+          <a [href]="'tel:' + (order.phone || order.contactPhone)" class="contact-link">{{ order.phone ||
+            order.contactPhone }}</a>
+        </div>
+        }
+
+        @if (order.details && objectKeys(order.details).length > 0) {
+        <div class="dynamic-details">
+          <div class="details-divider"></div>
+          <span class="details-title">Application Details:</span>
+          <div class="details-grid">
+            @for (key of objectKeys(order.details); track key) {
+            <div class="detail-item">
+              <span class="detail-label">{{ formatKey(key) }}</span>
+              <span class="detail-value">{{ order.details[key] }}</span>
             </div>
-
-            <div class="assign-field-group">
-              <label class="assign-label">Deal Closed Amount (INR):</label>
-              <div class="amount-assign-row">
-                <input type="text" 
-                       class="form-control-input number-input" 
-                       placeholder="Enter amount (e.g. 5,000)"
-                       [value]="getFormattedAmount(order._id)"
-                       (input)="onAmountChange(order._id, $event)">
-                <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
-              </div>
-            </div>
-            
-            @if (order.assignedExpert && order.assignedExpert !== 'To be assigned') {
-              <div class="assigned-alert" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                  <hugeicons-icon [icon]="UserIcon" size="14"></hugeicons-icon>
-                  Currently: <strong>{{ order.assignedExpert }}</strong>
-                </div>
-                <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;" (click)="openChatModal(order)">Chat</button>
-              </div>
-            } @else {
-              <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
-                <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;" (click)="openChatModal(order)">Chat</button>
-              </div>
             }
           </div>
         </div>
-      }
+        }
+
+        @if (order.documents && order.documents.length > 0) {
+        <div class="documents-section">
+          <span class="documents-title">Attached Documents:</span>
+          <div class="documents-list">
+            @for (doc of order.documents; track doc._id || doc.fileUrl) {
+            <div class="document-item">
+              @if (isImage(doc.filename || doc.name)) {
+              <div class="doc-preview-popover">
+                <img [src]="api.getFileUrl(doc.fileUrl)" alt="Document Preview" />
+              </div>
+              }
+              <svg class="doc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+              <span class="doc-name" [title]="doc.filename || doc.name">{{ doc.filename || doc.name }}</span>
+              <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="btn-download" title="View Document">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="7 10 12 15 17 10"></polyline>
+                  <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+              </a>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+
+      <div class="card-footer">
+        <div class="assign-field-group">
+          <label class="assign-label">Assign Expert:</label>
+          <select class="form-control-input select-input" (change)="onEmployeeSelectChange(order._id, $event)">
+            <option value="">-- Select Employee --</option>
+            @for (emp of getFlatEmployees(); track emp.id) {
+            <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="assign-field-group">
+          <label class="assign-label">Deal Closed Amount (INR):</label>
+          <div class="amount-assign-row">
+            <input type="text" class="form-control-input number-input" placeholder="Enter amount (e.g. 5,000)"
+              [value]="getFormattedAmount(order._id)" (input)="onAmountChange(order._id, $event)">
+            <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
+          </div>
+        </div>
+
+        @if (order.assignedExpert && order.assignedExpert !== 'To be assigned') {
+        <div class="assigned-alert" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <hugeicons-icon [icon]="UserIcon" size="14"></hugeicons-icon>
+            Currently: <strong>{{ order.assignedExpert }}</strong>
+          </div>
+          <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;"
+            (click)="openChatModal(order)">Chat</button>
+        </div>
+        } @else {
+        <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
+          <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;"
+            (click)="openChatModal(order)">Chat</button>
+        </div>
+        }
+      </div>
     </div>
+    }
+  </div>
   }
 
-  <!-- Chat Modal Overlay -->
+  <!-- Chat Modal Popup (Sidebar Drawer) -->
   @if (isChatModalOpen() && selectedChatOrder()) {
-    <div class="modal-overlay" (click)="closeChatModal()">
-      <div class="modal-card-box" style="width: 400px; max-width: 90vw; height: 500px; display: flex; flex-direction: column;" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h3>Chat: {{ selectedChatOrder().entityName || 'Client' }}</h3>
-          <button class="close-modal-btn" (click)="closeChatModal()">&times;</button>
+    <div class="chat-popup-container" style="position: fixed; top: 0; right: 0; bottom: 0; z-index: 9999; display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out;">
+      
+      <!-- Backdrop -->
+      <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 9998;" (click)="closeChatModal()"></div>
+
+      <div class="chat-popup-box" style="position: relative; z-index: 9999; width: 400px; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; padding: 0; border-radius: 0; overflow: hidden; box-shadow: -12px 0 40px rgba(0,0,0,0.15), -4px 0 12px rgba(0,0,0,0.08); border-left: 1px solid rgba(0,0,0,0.08); background: white;">
+        
+        <div style="padding: 16px 20px; background: white; display: flex; align-items: center; justify-content: space-between; z-index: 10; border-bottom: 1px solid #f1f5f9;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; border: 1px solid #dbeafe;">
+              {{ (selectedChatOrder().entityName || selectedChatOrder().companyName || 'C')[0] | uppercase }}
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: #0f172a; line-height: 1.2;">{{ selectedChatOrder().entityName || selectedChatOrder().companyName || 'Client' }}</h3>
+              <span style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px; font-weight: 500; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 230px;">
+                <span class="material-symbols-outlined" style="font-size: 14px;">work</span>
+                {{ selectedChatOrder().serviceType || 'Service Chat' }}
+              </span>
+            </div>
+          </div>
+          <button (click)="closeChatModal()" style="background: #f8fafc; border: 1px solid #f1f5f9; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a';" onmouseout="this.style.background='#f8fafc'; this.style.color='#64748b';">
+            <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+          </button>
         </div>
-        <div class="chat-messages-container" style="flex: 1; overflow-y: auto; padding: 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 12px;">
+  
+        <!-- Chat Messages Container -->
+        <div class="chat-messages-container" style="flex: 1; overflow-y: auto; padding: 20px 16px; background: #f8fafc; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth;">
           @if (isLoadingChat()) {
-            <div style="text-align: center; color: #64748b;">Loading messages...</div>
+            <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+              <div style="padding: 8px 16px; background: white; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); color: #64748b; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 18px;">sync</span> Loading messages...
+              </div>
+            </div>
           } @else {
-            @for (msg of chatMessages(); track msg._id) {
-              <div style="display: flex; flex-direction: column;" [style.align-items]="msg.senderRole === 'client' ? 'flex-start' : 'flex-end'">
-                <div style="max-width: 80%; padding: 10px 14px; border-radius: 12px; background: white; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" [style.background-color]="msg.senderRole === 'client' ? '#ffffff' : '#e0f2fe'" [style.border]="msg.senderRole === 'client' ? '1px solid #e2e8f0' : 'none'">
-                  <div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">{{ msg.senderRole === 'client' ? 'Client' : 'Staff' }}</div>
-                  <div style="font-size: 14px; color: #0f172a;">{{ msg.content }}</div>
+            @for (msg of chatMessages(); track msg._id; let i = $index) {
+              @if (showDateDivider(i)) {
+                <div style="display: flex; justify-content: center; margin: 8px 0;">
+                  <div style="background: rgba(37, 99, 235, 0.1); color: #2563eb; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 12px;">
+                    {{ getDateDividerText(msg.createdAt) }}
+                  </div>
+                </div>
+              }
+              <div style="display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out;" [style.align-items]="msg.senderRole === 'client' ? 'flex-start' : 'flex-end'">
+                
+
+                
+                <div style="max-width: 85%; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);" 
+                     [style.background]="msg.senderRole === 'client' ? '#ffffff' : '#2563eb'" 
+                     [style.color]="msg.senderRole === 'client' ? '#1e293b' : '#ffffff'"
+                     [style.border-radius]="msg.senderRole === 'client' ? '18px 18px 18px 4px' : '18px 18px 4px 18px'"
+                     [style.border]="msg.senderRole === 'client' ? '1px solid #e2e8f0' : 'none'">
+                  
+                  <div style="font-size: 14.5px; line-height: 1.5; margin-bottom: 4px; word-break: break-word;">{{ msg.content }}</div>
+                  
+                  <div style="font-size: 11px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;" [style.color]="msg.senderRole === 'client' ? '#94a3b8' : 'rgba(255,255,255,0.7)'">
+                    <span>{{ msg.createdAt | date:'shortTime' }}</span>
+                    @if (msg.senderRole !== 'client') {
+                      <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;" [style.color]="msg.seen ? '#34d399' : 'rgba(255,255,255,0.6)'">done_all</span>
+                    }
+                  </div>
                 </div>
               </div>
             }
             @if (chatMessages().length === 0) {
-              <div style="text-align: center; color: #94a3b8; font-size: 13px; margin-top: 20px;">No messages yet. Start the conversation!</div>
+              <div style="display: flex; justify-content: center; align-items: center; height: 100%; flex-direction: column; gap: 12px; opacity: 0.8;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+                  <span class="material-symbols-outlined" style="font-size: 28px;">chat</span>
+                </div>
+                <div style="text-align: center; color: #64748b; font-size: 14px; font-weight: 500;">No messages yet.<br>Start the conversation!</div>
+              </div>
             }
           }
         </div>
-        <div style="padding: 16px; border-top: 1px solid #e2e8f0; display: flex; gap: 8px;">
-          <input type="text" placeholder="Type a message..." class="form-control-input" style="flex: 1;" [(ngModel)]="newChatMessage" (keyup.enter)="sendChatMessage()">
-          <button class="btn-primary" (click)="sendChatMessage()">Send</button>
+        
+        <!-- Input Area -->
+        <div style="padding: 16px 20px; background: white; border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; display: flex; align-items: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 24px; padding: 4px 4px 4px 16px; transition: all 0.2s;">
+            <input type="text" placeholder="Write a message..." style="flex: 1; border: none; background: transparent; padding: 8px 0; font-family: inherit; font-size: 14.5px; outline: none; color: #1e293b;" [(ngModel)]="newChatMessage" (keyup.enter)="sendChatMessage()">
+            <button (click)="sendChatMessage()" [disabled]="!newChatMessage.trim()" style="width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s, opacity 0.2s; flex-shrink: 0;" [style.opacity]="newChatMessage.trim() ? '1' : '0.5'" onmouseover="if(this.style.opacity=='1') this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+              <span class="material-symbols-outlined" style="font-size: 18px; margin-left: 2px;">send</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

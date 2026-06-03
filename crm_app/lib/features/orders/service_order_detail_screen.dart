@@ -37,7 +37,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
       backgroundColor: AppTheme.backgroundLight,
       // ── Internal Chat FAB ────────────────────────────────────────────────
       floatingActionButton: order.status == ServiceStatus.active
-          ? FloatingActionButton.extended(
+          ? FloatingActionButton(
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -49,16 +49,7 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                 ),
               ),
               backgroundColor: AppTheme.deepTeal,
-              icon: const Icon(LucideIcons.messageSquare,
-                  color: Colors.white, size: 18),
-              label: const Text(
-                'Internal Chat',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                  fontSize: 13,
-                ),
-              ),
+              child: const Icon(LucideIcons.messageSquare, color: Colors.white),
             )
           : null,
       body: AnnotatedRegion<SystemUiOverlayStyle>(

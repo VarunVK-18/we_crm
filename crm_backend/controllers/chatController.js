@@ -7,7 +7,8 @@ exports.getMessages = async (req, res) => {
     // Fetch all messages for the order, sorted by creation date ascending (oldest first)
     const messages = await Message.find({ orderId })
       .populate('senderId', 'owner_name role') // Populate sender name and role
-      .sort({ createdAt: 1 });
+      .sort({ createdAt: 1 })
+      .lean();
       
     res.status(200).json({
       success: true,
@@ -46,6 +47,30 @@ exports.sendMessage = async (req, res) => {
     });
   } catch (error) {
     console.error('Error sending message:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.markAsSeen = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const { viewerRole } = req.body; // e.g., 'client' or 'staff'
+    
+    // We want to mark as seen all messages sent by someone OTHER than the viewer
+    // If client is viewing, mark staff/admin messages as seen.
+    // If staff is viewing, mark client messages as seen.
+    const query = { orderId, seen: false };
+    if (viewerRole === 'client') {
+      query.senderRole = { $in: ['staff', 'admin'] };
+    } else {
+      query.senderRole = 'client';
+    }
+
+    await Message.updateMany(query, { $set: { seen: true } });
+
+    res.status(200).json({ success: true, message: 'Messages marked as seen' });
+  } catch (error) {
+    console.error('Error marking messages as seen:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };

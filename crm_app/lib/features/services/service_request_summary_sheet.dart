@@ -2199,7 +2199,7 @@ class _EditableField extends StatelessWidget {
                           size: 18.0),
                     ),
               suffixIcon: (label.contains('Full Name') || label.contains('Email Address') || label.contains('Verification Phone Number'))
-                  ? Icon(LucideIcons.pencil, size: 18, color: AppTheme.corporateBlue)
+                  ? const Icon(LucideIcons.pencil, size: 18, color: AppTheme.corporateBlue)
                   : null,
               counterText: '',
               border: InputBorder.none,

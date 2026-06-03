@@ -64,8 +64,13 @@ export class Login implements OnInit {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
-        this.loggedInUser.set(JSON.parse(savedUser));
-        this.router.navigate(['/dashboard']).catch(() => {});
+        const parsed = JSON.parse(savedUser);
+        this.loggedInUser.set(parsed);
+        if (parsed.role === 'customer') {
+          this.router.navigate(['/client-dashboard']).catch(() => {});
+        } else {
+          this.router.navigate(['/dashboard']).catch(() => {});
+        }
       } catch (e) {
         localStorage.removeItem('user');
       }
@@ -139,18 +144,16 @@ export class Login implements OnInit {
       // Connect through type-safe Api service
       const data = await firstValueFrom(this.api.login(emailVal, passwordVal));
 
-      if (data.user && data.user.role === 'customer') {
-        throw new Error('Only staff and administrators are permitted to sign in to the management portal.');
-      }
-
       // Successful login
       localStorage.setItem('user', JSON.stringify(data.user));
       this.loggedInUser.set(data.user);
 
-      // Navigate immediately to dashboard
-      this.router.navigate(['/dashboard']).catch(() => {
-        console.log('Dashboard route not registered yet. Logged in successfully.');
-      });
+      // Navigate immediately based on role
+      if (data.user.role === 'customer') {
+        this.router.navigate(['/client-dashboard']).catch(() => {});
+      } else {
+        this.router.navigate(['/dashboard']).catch(() => {});
+      }
 
     } catch (err: any) {
       console.error('Authentication Error:', err);

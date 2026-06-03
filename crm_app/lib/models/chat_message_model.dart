@@ -6,6 +6,7 @@ class ChatMessage {
   final String senderRole;
   final String content;
   final DateTime timestamp;
+  final bool seen;
 
   ChatMessage({
     required this.id,
@@ -15,6 +16,7 @@ class ChatMessage {
     required this.senderRole,
     required this.content,
     required this.timestamp,
+    this.seen = false,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
@@ -27,8 +29,9 @@ class ChatMessage {
       senderRole: json['senderRole']?.toString() ?? 'client',
       content: json['content']?.toString() ?? '',
       timestamp: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt'].toString()) 
+          ? DateTime.parse(json['createdAt'].toString()).toLocal()
           : DateTime.now(),
+      seen: json['seen'] ?? false,
     );
   }
 }

@@ -54,10 +54,10 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider(widget.orderId));
 
-    // Listen for new messages to auto-scroll
     ref.listen(chatProvider(widget.orderId), (previous, next) {
-      if (previous != null && next.messages.length > previous.messages.length) {
-        Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
+      if (previous == null || next.messages.length > previous.messages.length) {
+        // Use a longer delay to ensure the ListView is fully built before scrolling
+        Future.delayed(const Duration(milliseconds: 300), _scrollToBottom);
       }
     });
 
@@ -129,14 +129,34 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                         itemCount: chatState.messages.length,
                         itemBuilder: (context, index) {
                           final message = chatState.messages[index];
-                          // Simple check: if role is client, it's sent by me (in this app context)
                           final isMe = message.senderRole == 'client';
                           
-                          return _buildMessageBubble(
+                          bool showDateDivider = false;
+                          if (index == 0) {
+                            showDateDivider = true;
+                          } else {
+                            final prevMsg = chatState.messages[index - 1];
+                            final currDate = DateTime(message.timestamp.year, message.timestamp.month, message.timestamp.day);
+                            final prevDate = DateTime(prevMsg.timestamp.year, prevMsg.timestamp.month, prevMsg.timestamp.day);
+                            if (currDate != prevDate) showDateDivider = true;
+                          }
+
+                          Widget bubble = _buildMessageBubble(
                             content: message.content,
                             isMe: isMe,
                             timestamp: message.timestamp,
+                            seen: message.seen,
                           );
+
+                          if (showDateDivider) {
+                            return Column(
+                              children: [
+                                _buildDateDivider(message.timestamp),
+                                bubble,
+                              ],
+                            );
+                          }
+                          return bubble;
                         },
                       ),
           ),
@@ -205,10 +225,44 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     );
   }
 
+  Widget _buildDateDivider(DateTime timestamp) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final msgDate = DateTime(timestamp.year, timestamp.month, timestamp.day);
+    
+    String dateText;
+    if (msgDate == today) {
+      dateText = 'Today';
+    } else if (msgDate == yesterday) {
+      dateText = 'Yesterday';
+    } else {
+      dateText = DateFormat('MMM dd, yyyy').format(timestamp);
+    }
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.corporateBlue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        dateText,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppTheme.corporateBlue,
+        ),
+      ),
+    );
+  }
+
   Widget _buildMessageBubble({
     required String content,
     required bool isMe,
     required DateTime timestamp,
+    required bool seen,
   }) {
     final timeStr = DateFormat('hh:mm a').format(timestamp);
     
@@ -248,13 +302,26 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    timeStr,
-                    style: TextStyle(
-                      color: isMe ? Colors.white.withOpacity(0.7) : Colors.grey.shade500,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        timeStr,
+                        style: TextStyle(
+                          color: isMe ? Colors.white.withOpacity(0.7) : Colors.grey.shade500,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      if (isMe) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          LucideIcons.checkCheck,
+                          size: 12,
+                          color: seen ? Colors.greenAccent : Colors.white.withOpacity(0.7),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

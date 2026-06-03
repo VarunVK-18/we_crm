@@ -68,7 +68,7 @@ export class RequestsComponent implements OnInit {
   // Deal closed amount per order { orderId: number }
   dealClosedAmountForOrder = signal<Record<string, number>>({});
 
-  constructor(public api: Api) {}
+  constructor(public api: Api) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -176,7 +176,7 @@ export class RequestsComponent implements OnInit {
     const rawVal = event.target.value.replace(/,/g, '');
     // Allow empty or partial inputs, but parse as number when possible
     const val = rawVal && !isNaN(Number(rawVal)) ? Number(rawVal) : 0;
-    
+
     this.dealClosedAmountForOrder.update(prev => ({ ...prev, [orderId]: val }));
 
     // Format the value in the input field while typing
@@ -205,7 +205,7 @@ export class RequestsComponent implements OnInit {
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
       next: (res: any) => {
         this.showToast(`Assigned to ${emp.name} successfully!`, 'success');
-        
+
         // Reset local selection & amount for this order
         this.selectedEmployeeForOrder.update(prev => {
           const next = { ...prev };
@@ -282,7 +282,12 @@ export class RequestsComponent implements OnInit {
     this.api.get<any>(`chat/${orderId}`).subscribe({
       next: (res: any) => {
         if (res && res.messages) {
+          const prevCount = this.chatMessages().length;
           this.chatMessages.set(res.messages);
+          if (res.messages.length > prevCount || showLoading) {
+            this.scrollToBottomChat();
+          }
+          this.markChatAsSeen(orderId);
         }
         if (showLoading) this.isLoadingChat.set(false);
       },
@@ -293,17 +298,32 @@ export class RequestsComponent implements OnInit {
     });
   }
 
+  markChatAsSeen(orderId: string) {
+    let userRole = this.user()?.role || 'admin';
+    if (userRole !== 'admin' && userRole !== 'client') {
+      userRole = 'staff';
+    }
+
+    this.api.put(`chat/${orderId}/seen`, { viewerRole: userRole }).subscribe({
+      next: () => { },
+      error: (err) => console.error('Failed to mark as seen', err)
+    });
+  }
+
   sendChatMessage() {
     if (!this.newChatMessage.trim()) return;
-    
+
     const orderId = this.selectedChatOrder()?._id;
     if (!orderId) return;
 
     const content = this.newChatMessage.trim();
     this.newChatMessage = ''; // Clear immediately
-    
-    // Check if the user role is admin or filling_staff or client_manager
-    const userRole = this.user()?.role || 'admin';
+
+    let userRole = this.user()?.role || 'admin';
+    // Map internal staff roles to 'staff' for the Chat Message schema
+    if (userRole !== 'admin' && userRole !== 'client') {
+      userRole = 'staff';
+    }
 
     this.api.post<any>(`chat/${orderId}`, {
       senderId: this.user()?._id || this.user()?.id,
@@ -314,6 +334,7 @@ export class RequestsComponent implements OnInit {
         if (res && res.message) {
           // Optimistically append the message
           this.chatMessages.update(prev => [...prev, res.message]);
+          this.scrollToBottomChat();
         }
       },
       error: (err: any) => {
@@ -321,5 +342,45 @@ export class RequestsComponent implements OnInit {
         this.showToast('Failed to send message', 'error');
       }
     });
+  }
+
+  showDateDivider(index: number): boolean {
+    if (index === 0) return true;
+    const currentMsg = this.chatMessages()[index];
+    const prevMsg = this.chatMessages()[index - 1];
+    if (!currentMsg || !prevMsg) return false;
+
+    const currDate = new Date(currentMsg.createdAt);
+    const prevDate = new Date(prevMsg.createdAt);
+
+    return currDate.toDateString() !== prevDate.toDateString();
+  }
+
+  getDateDividerText(timestamp: string): string {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  }
+
+  scrollToBottomChat() {
+    setTimeout(() => {
+      const containers = document.querySelectorAll('.chat-messages-container');
+      containers.forEach(container => {
+        // Use smooth scrolling for better UX, and a slightly longer timeout to ensure DOM is updated
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      });
+    }, 300);
   }
 }

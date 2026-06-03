@@ -1,0 +1,121 @@
+<div class="detail-layout">
+  <header class="detail-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="location.back()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Services
+      </button>
+      
+      @if (isLoading()) {
+        <div class="skeleton-title"></div>
+      } @else {
+        <div class="title-row">
+          <h1>{{ order()?.service_name }}</h1>
+          <span class="status-badge" [class]="order()?.derivedStatus">{{ order()?.derivedStatus | titlecase }}</span>
+        </div>
+        <p class="expert-label">
+          Assigned Expert: <strong>{{ order()?.assigned_to?.owner_name || 'Pending Assignment' }}</strong>
+        </p>
+      }
+    </div>
+  </header>
+
+  <div class="content-container">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <span class="material-symbols-outlined rotating">sync</span>
+        <p>Loading service details...</p>
+      </div>
+    } @else {
+      <div class="main-card">
+        <div class="tab-navigation">
+          <button class="tab-btn" [class.active]="activeTab() === 'checklist'" (click)="setTab('checklist')">
+            <span class="material-symbols-outlined">checklist</span> Checklist
+          </button>
+          
+          @if (order()?.derivedStatus === 'active') {
+            <button class="tab-btn" [class.active]="activeTab() === 'chat'" (click)="setTab('chat')">
+              <span class="material-symbols-outlined">forum</span> Internal Chat
+            </button>
+          }
+        </div>
+
+        <div class="tab-content">
+          <!-- Checklist Tab -->
+          @if (activeTab() === 'checklist') {
+            <div class="checklist-view">
+              <div class="progress-header">
+                <h3>Required Documents & Tasks</h3>
+                <span>{{ getCompletedList(order()?.items)?.length || 0 }} of {{ order()?.items?.length || 0 }} Completed</span>
+              </div>
+              
+              <div class="checklist-items">
+                @for (item of order()?.items; track item._id) {
+                  <div class="checklist-item" [class.completed]="item.isChecked" (click)="toggleChecklistItem(item, $event)">
+                    <div class="checkbox-wrapper">
+                      <div class="custom-checkbox">
+                        @if (item.isChecked) {
+                          <span class="material-symbols-outlined check-icon">check</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="item-content">
+                      <h4>{{ item.title || item.label }}</h4>
+                      @if (item.description || item.notes) {
+                        <p>{{ item.description || item.notes }}</p>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Chat Tab -->
+          @if (activeTab() === 'chat') {
+            <div class="chat-view">
+              <div class="chat-messages-container">
+                @for (msg of chatMessages(); track msg._id; let i = $index) {
+                  @if (showDateDivider(i)) {
+                    <div class="date-divider-row">
+                      <div class="date-badge">
+                        {{ getDateDividerText(msg.createdAt) }}
+                      </div>
+                    </div>
+                  }
+                  
+                  <div class="message-row" [class.is-client]="msg.senderRole === 'client'">
+                    <div class="message-bubble" [class.is-client]="msg.senderRole === 'client'">
+                      <p>{{ msg.content }}</p>
+                      <div class="message-meta">
+                        <span>{{ msg.createdAt | date:'shortTime' }}</span>
+                        @if (msg.senderRole === 'client') {
+                          <span class="material-symbols-outlined tick-icon" 
+                                [class.read]="msg.seen">done_all</span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+                
+                @if (chatMessages().length === 0) {
+                  <div class="empty-chat">
+                    <span class="material-symbols-outlined">chat</span>
+                    <p>Start the conversation with your assigned expert.</p>
+                  </div>
+                }
+              </div>
+              
+              <div class="chat-input-area">
+                <input type="text" placeholder="Write a message..." [(ngModel)]="newChatMessage" (keyup.enter)="sendChatMessage()">
+                <button [disabled]="!newChatMessage().trim()" (click)="sendChatMessage()">
+                  <span class="material-symbols-outlined">send</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

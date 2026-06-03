@@ -15,7 +15,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   @Output() onBack = new EventEmitter<void>();
   checklistId = input.required<string>();
   teams = input<any[]>([]);
-  
+
   user = signal<any>(null);
   checklist = signal<any>(null);
   pollInterval: any;
@@ -40,7 +40,14 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   finalDocsToUpload: { file: File, expiryDate: string }[] = [];
   isFinalDocUploading = false;
 
-  constructor(public api: Api) {}
+  // --- Chat Feature ---
+  isChatModalOpen = signal<boolean>(false);
+  chatMessages = signal<any[]>([]);
+  isLoadingChat = signal<boolean>(false);
+  newChatMessage: string = '';
+  chatPollingInterval: any;
+
+  constructor(public api: Api) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -48,7 +55,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       this.user.set(JSON.parse(savedUser));
     }
     this.fetchChecklist();
-    
+
     // Poll for changes
     this.pollInterval = setInterval(() => {
       this.fetchChecklist();
@@ -58,6 +65,9 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
+    }
+    if (this.chatPollingInterval) {
+      clearInterval(this.chatPollingInterval);
     }
   }
 
@@ -137,7 +147,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (!this.newChecklistItemTitle.trim()) return;
     const cl = this.checklist();
     if (!cl) return;
-    this.api.post<any>(`checklists/${cl._id}/items`, { 
+    this.api.post<any>(`checklists/${cl._id}/items`, {
       title: this.newChecklistItemTitle,
       description: this.newChecklistItemDesc
     }).subscribe({
@@ -172,7 +182,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   saveNotes() {
     const cl = this.checklist();
     if (!cl) return;
-    
+
     this.api.patch<any>(`checklists/${cl._id}`, { notes: this.editNotesText }).subscribe({
       next: (res) => {
         if (res && res.success) {
@@ -199,7 +209,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   getServiceSpecificDocuments(): any[] {
     const cl = this.checklist();
     if (!cl || !cl.client_id || !cl.client_id.onboarding_documents) return [];
-    
+
     // Filter documents to only include those related to this service
     return cl.client_id.onboarding_documents.filter((doc: any) => {
       return doc.name && doc.name.startsWith(cl.service_name);
@@ -225,7 +235,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       for (let i = 0; i < files.length; i++) {
         this.finalDocsToUpload.push({
           file: files[i],
-          expiryDate: '' 
+          expiryDate: ''
         });
       }
     }
@@ -298,9 +308,9 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       isUploaded: false
     });
 
-    this.api.patch(`checklists/${cl._id}`, { 
+    this.api.patch(`checklists/${cl._id}`, {
       requested_documents,
-      stage: 'documentRequested' 
+      stage: 'documentRequested'
     }).subscribe({
       next: (res: any) => {
         if (res && res.success) {
@@ -312,5 +322,163 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         this.checklistErrorMessage.set(err.error?.message || 'Error requesting document');
       }
     });
+  }
+
+  // --- Chat Feature Methods ---
+  orderIdForChat: string | null = null;
+
+  openChatModal() {
+    this.isChatModalOpen.set(true);
+    
+    const cl = this.checklist();
+    const companyId = this.user()?.companyId;
+    if (!cl || !companyId) {
+      this.orderIdForChat = cl?._id || null;
+      this.startChatDataFetch();
+      return;
+    }
+
+    this.isLoadingChat.set(true);
+    this.api.get<any>(`orders/company/${companyId}`).subscribe({
+      next: (res) => {
+        const clientId = cl.client_id?._id || cl.client_id;
+        const order = res.orders?.find((o: any) => 
+          o.clientUid === clientId && 
+          o.serviceType === cl.service_name
+        );
+        this.orderIdForChat = order ? order._id : cl._id;
+        this.startChatDataFetch();
+      },
+      error: () => {
+        this.orderIdForChat = cl._id;
+        this.startChatDataFetch();
+      }
+    });
+  }
+
+  startChatDataFetch() {
+    this.fetchChatMessages(true);
+    this.chatPollingInterval = setInterval(() => {
+      this.fetchChatMessages(false);
+    }, 5000);
+  }
+
+  closeChatModal() {
+    this.isChatModalOpen.set(false);
+    this.chatMessages.set([]);
+    this.newChatMessage = '';
+    if (this.chatPollingInterval) {
+      clearInterval(this.chatPollingInterval);
+    }
+  }
+
+  fetchChatMessages(showLoading = false) {
+    const chatId = this.orderIdForChat;
+    if (!chatId) return;
+
+    if (showLoading) this.isLoadingChat.set(true);
+    this.api.get<any>(`chat/${chatId}`).subscribe({
+      next: (res: any) => {
+        if (res && res.messages) {
+          const prevCount = this.chatMessages().length;
+          this.chatMessages.set(res.messages);
+          if (res.messages.length > prevCount || showLoading) {
+            this.scrollToBottomChat();
+          }
+          this.markChatAsSeen(chatId);
+        }
+        if (showLoading) this.isLoadingChat.set(false);
+      },
+      error: (err: any) => {
+        console.error('Error fetching chat messages:', err);
+        if (showLoading) this.isLoadingChat.set(false);
+      }
+    });
+  }
+
+  markChatAsSeen(chatId: string) {
+    let userRole = this.user()?.role || 'admin';
+    if (userRole !== 'admin' && userRole !== 'client') {
+      userRole = 'staff';
+    }
+    
+    this.api.put(`chat/${chatId}/seen`, { viewerRole: userRole }).subscribe({
+      next: () => {},
+      error: (err) => console.error('Failed to mark as seen', err)
+    });
+  }
+
+  sendChatMessage() {
+    if (!this.newChatMessage.trim()) return;
+
+    const chatId = this.orderIdForChat;
+    if (!chatId) return;
+
+    const content = this.newChatMessage.trim();
+    this.newChatMessage = ''; // Clear immediately
+
+    let userRole = this.user()?.role || 'admin';
+    // Map internal staff roles to 'staff' for the Chat Message schema
+    if (userRole !== 'admin' && userRole !== 'client') {
+      userRole = 'staff';
+    }
+
+    this.api.post<any>(`chat/${chatId}`, {
+      senderId: this.user()?._id || this.user()?.id,
+      senderRole: userRole,
+      content: content
+    }).subscribe({
+      next: (res: any) => {
+        if (res && res.message) {
+          // Optimistically append the message
+          this.chatMessages.update(prev => [...prev, res.message]);
+          this.scrollToBottomChat();
+        }
+      },
+      error: (err: any) => {
+        console.error('Error sending chat message:', err);
+        alert('Failed to send message');
+      }
+    });
+  }
+
+  showDateDivider(index: number): boolean {
+    if (index === 0) return true;
+    const currentMsg = this.chatMessages()[index];
+    const prevMsg = this.chatMessages()[index - 1];
+    if (!currentMsg || !prevMsg) return false;
+    
+    const currDate = new Date(currentMsg.createdAt);
+    const prevDate = new Date(prevMsg.createdAt);
+    
+    return currDate.toDateString() !== prevDate.toDateString();
+  }
+
+  getDateDividerText(timestamp: string): string {
+    const date = new Date(timestamp);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return 'Today';
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+  }
+
+  scrollToBottomChat() {
+    setTimeout(() => {
+      const containers = document.querySelectorAll('.chat-messages-container');
+      containers.forEach(container => {
+        // Use smooth scrolling for better UX, and a slightly longer timeout to ensure DOM is updated
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior: 'smooth'
+        });
+      });
+    }, 300);
   }
 }
