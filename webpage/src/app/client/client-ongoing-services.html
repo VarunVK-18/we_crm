@@ -1,0 +1,55 @@
+<div class="content-wrapper">
+  <div class="page-header">
+    <h1 class="page-title">Ongoing Services</h1>
+    <p class="page-subtitle">Here are all the services currently in progress for your account.</p>
+  </div>
+
+  <div class="service-list-container">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <span class="material-symbols-outlined rotating">sync</span>
+        <p>Loading ongoing services...</p>
+      </div>
+    } @else {
+      @if (activeOrders().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined">inbox</span>
+          <h3>No Ongoing Services</h3>
+          <p>You don't have any active services at the moment.</p>
+        </div>
+      } @else {
+        <div class="mobile-service-list">
+          @for (order of activeOrders(); track order._id) {
+            <div class="mobile-service-card" (click)="openServiceDetails(order)">
+              <div class="msc-icon">
+                <span class="material-symbols-outlined">work</span>
+              </div>
+              
+              <div class="msc-content">
+                <h3 class="msc-title">{{ order.service_name || order.checklist_name || 'Service Order' }}</h3>
+                <div class="msc-expert" [class.unassigned]="!order.assigned_to">
+                  <span class="material-symbols-outlined">person</span>
+                  <span>{{ order.assigned_to?.owner_name || order.assigned_to?.name || 'Unassigned' }}</span>
+                </div>
+                <div class="msc-progress">
+                  <div class="msc-progress-bar">
+                    <div class="msc-progress-fill" [style.width.%]="(order.items || []).length ? (getCompletedCount(order.items) / (order.items || []).length) * 100 : 0"></div>
+                  </div>
+                  <span class="msc-progress-text">{{ getCompletedCount(order.items) }}/{{ (order.items || []).length }}</span>
+                </div>
+              </div>
+
+              <div class="msc-actions">
+                <span class="ho-status-badge active">
+                  <span class="ho-status-dot"></span>
+                  Active
+                </span>
+                <span class="material-symbols-outlined msc-chevron">chevron_right</span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

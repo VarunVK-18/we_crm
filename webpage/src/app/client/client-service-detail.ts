@@ -21,8 +21,8 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   chatMessages = signal<any[]>([]);
   newChatMessage = signal('');
   
-  // Tabs
-  activeTab = signal<'checklist' | 'chat'>('checklist');
+  // UI State
+  isChatOpen = signal(true);
   isLoading = signal(true);
   
   pollingInterval: any;
@@ -46,7 +46,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
       
       this.pollingInterval = setInterval(() => {
         this.fetchOrderDetails(true);
-        if (this.activeTab() === 'chat') {
+        if (this.isChatOpen()) {
           this.fetchChatMessages(true);
         }
       }, 4000);
@@ -72,9 +72,9 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     }
   }
 
-  setTab(tab: 'checklist' | 'chat') {
-    this.activeTab.set(tab);
-    if (tab === 'chat') {
+  toggleChat() {
+    this.isChatOpen.set(!this.isChatOpen());
+    if (this.isChatOpen()) {
       this.fetchChatMessages();
     }
   }

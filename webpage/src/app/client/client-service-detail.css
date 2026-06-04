@@ -1,16 +1,26 @@
 :host {
-  display: block;
-  min-height: 100vh;
-  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  background-color: #FDFBF7;
+  overflow: hidden;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   color: #0f172a;
 }
 
 .detail-layout {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 100%;
+}
+
+.main-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+  min-width: 0;
 }
 
 .detail-header {
@@ -118,42 +128,59 @@
   overflow: hidden;
 }
 
-.tab-navigation {
+.chat-side-panel {
+  width: 380px;
+  flex-shrink: 0;
   display: flex;
-  border-bottom: 1px solid #e2e8f0;
-  background: #f8fafc;
-  padding: 0 16px;
-}
-
-.tab-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 24px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 15px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.tab-btn:hover {
-  color: #0f172a;
-}
-
-.tab-btn.active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
+  flex-direction: column;
   background: white;
+  border-left: 1px solid #e2e8f0;
+  height: 100%;
 }
 
-.tab-content {
+.checklist-main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: white;
+  flex-shrink: 0;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.panel-header .material-symbols-outlined {
+  color: #64748b;
+  font-size: 20px;
+}
+
+@media (max-width: 1024px) {
+  .detail-layout {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .main-column {
+    overflow-y: visible;
+  }
+  .chat-side-panel {
+    width: 100%;
+    height: 500px;
+    border-left: none;
+    border-top: 1px solid #e2e8f0;
+  }
 }
 
 /* Checklist View */
@@ -188,27 +215,39 @@
 .checklist-items {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  position: relative;
+  padding-left: 8px;
+}
+
+.checklist-items::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  bottom: 32px; /* don't extend past the last item */
+  left: 20px; /* middle of the checkbox (8px padding + 12px half-checkbox) */
+  width: 2px;
+  background: #e2e8f0;
+  z-index: 1;
 }
 
 .checklist-item {
   display: flex;
-  gap: 16px;
-  padding: 20px;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  gap: 24px;
+  padding: 16px 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
+  position: relative;
+  z-index: 2;
   transition: all 0.2s ease;
 }
 
 .checklist-item:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  background: transparent;
 }
 
 .checklist-item.completed {
-  background: #f8fafc;
-  border-color: #e2e8f0;
+  background: transparent;
 }
 
 .checklist-item.completed .item-content h4 {
@@ -217,14 +256,15 @@
 }
 
 .checkbox-wrapper {
-  padding-top: 2px;
+  padding-top: 0px;
+  background: white; /* cover the line underneath */
 }
 
 .custom-checkbox {
   width: 24px;
   height: 24px;
   border: 2px solid #cbd5e1;
-  border-radius: 6px;
+  border-radius: 50%; /* Make it round like a timeline node */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -233,8 +273,8 @@
 }
 
 .checklist-item.completed .custom-checkbox {
-  background: #10b981;
-  border-color: #10b981;
+  background: #2563eb;
+  border-color: #2563eb;
 }
 
 .check-icon {
@@ -324,7 +364,7 @@
   padding: 12px 16px;
   background: white;
   border: 1px solid #e2e8f0;
-  border-radius: 16px 16px 16px 4px;
+  border-radius: 16px;
   color: #1e293b;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
@@ -333,7 +373,7 @@
   background: #2563eb;
   color: white;
   border: none;
-  border-radius: 16px 16px 4px 16px;
+  border-radius: 16px;
 }
 
 .message-bubble p {
@@ -364,36 +404,111 @@
   color: #34d399; /* Green tick for seen messages */
 }
 
-.chat-input-area {
-  padding: 16px 24px;
+/* Chat Drawer Header */
+.chat-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px;
   background: white;
-  border-top: 1px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.chat-drawer-info {
   display: flex;
   gap: 12px;
+  align-items: flex-start;
 }
 
-.chat-input-area input {
-  flex: 1;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 24px;
-  padding: 12px 20px;
-  font-size: 15px;
-  outline: none;
-  transition: all 0.2s;
-}
-
-.chat-input-area input:focus {
-  background: white;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
-
-.chat-input-area button {
-  width: 46px;
-  height: 46px;
+.chat-drawer-avatar {
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chat-drawer-details h3 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.chat-drawer-service {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.chat-drawer-service .material-symbols-outlined {
+  font-size: 14px;
+}
+
+.chat-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.chat-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.chat-close-btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.chat-input-area {
+  padding: 16px 20px;
+  background: white;
+  border-top: none;
+  display: flex;
+}
+
+.chat-input-wrapper {
+  display: flex;
+  flex: 1;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 6px 6px 6px 16px;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-input-wrapper button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #81a8f8;
   color: white;
   border: none;
   display: flex;
@@ -403,13 +518,17 @@
   transition: all 0.2s;
 }
 
-.chat-input-area button:disabled {
+.chat-input-wrapper button .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.chat-input-wrapper button:disabled {
   background: #cbd5e1;
   cursor: not-allowed;
 }
 
-.chat-input-area button:not(:disabled):hover {
-  background: #1d4ed8;
+.chat-input-wrapper button:not(:disabled):hover {
+  background: #3b82f6;
   transform: scale(1.05);
 }
 

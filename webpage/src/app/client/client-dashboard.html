@@ -69,6 +69,65 @@
           </div>
         </div>
       </div>
+
+      <!-- Quick Actions Section -->
+      <div class="quick-actions-grid">
+        <!-- Column 1 -->
+        <div class="qa-column">
+          <div class="qa-header">
+            <h2 class="qa-title">Start with a Service</h2>
+            <div class="qa-line"></div>
+          </div>
+          <div class="qa-scroll-row">
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">domain</span></div>
+              <span class="qa-label">Incorporation</span>
+            </div>
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">work</span></div>
+              <span class="qa-label">Compliance</span>
+            </div>
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">description</span></div>
+              <span class="qa-label">IP</span>
+            </div>
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">functions</span></div>
+              <span class="qa-label">Tax</span>
+            </div>
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">gavel</span></div>
+              <span class="qa-label">Legal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2 -->
+        <div class="qa-column">
+          <div class="qa-header">
+            <h2 class="qa-title">Tools & Calculators</h2>
+            <div class="qa-line"></div>
+          </div>
+          <div class="qa-scroll-row">
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">pin</span></div>
+              <span class="qa-label">NIC Finder</span>
+            </div>
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">account_balance</span></div>
+              <span class="qa-label">TDS Interest</span>
+            </div>
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">calculate</span></div>
+              <span class="qa-label">GST Calc</span>
+            </div>
+            <div class="qa-item">
+              <div class="qa-icon"><span class="material-symbols-outlined">percent</span></div>
+              <span class="qa-label">GST Interest</span>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="tabs">
         <button class="tab-btn" [class.active]="activeTab() === 'active'" (click)="setTab('active')">
           Active ({{ activeOrders().length }})

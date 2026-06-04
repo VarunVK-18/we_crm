@@ -5,6 +5,7 @@ import { ClientLayoutComponent } from './client/layout/client-layout/client-layo
 import { ClientDashboard } from './client/client-dashboard';
 import { ClientServiceDetail } from './client/client-service-detail';
 import { ClientProfile } from './client/client-profile';
+import { ClientOngoingServices } from './client/client-ongoing-services';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -17,6 +18,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: ClientDashboard },
       { path: 'profile', component: ClientProfile },
       { path: 'service/:id', component: ClientServiceDetail },
+      { path: 'ongoing-services', component: ClientOngoingServices },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
