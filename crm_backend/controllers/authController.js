@@ -199,7 +199,7 @@ const loginUser = async (req, res) => {
 // @access  Public
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password').populate('company_id');
+    const user = await User.findById(req.params.id).select('-password').populate('company_id').populate('assigned_to');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

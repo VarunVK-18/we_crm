@@ -13,6 +13,7 @@ import { Api } from '../api';
 })
 export class ClientServiceDetail implements OnInit, OnDestroy {
   user = signal<any>(null);
+  clientManager = signal<any>(null);
   orderId = signal<string>('');
   order = signal<any>(null);
   
@@ -36,6 +37,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
+      this.fetchClientManager();
     }
     
     this.route.params.subscribe(params => {
@@ -48,6 +50,19 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
           this.fetchChatMessages(true);
         }
       }, 4000);
+    });
+  }
+
+  fetchClientManager() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    this.api.get<any>(`users/profile/${uid}`).subscribe({
+      next: (res) => {
+        if (res.user && res.user.assigned_to) {
+          this.clientManager.set(res.user.assigned_to);
+        }
+      },
+      error: (err) => console.error('Failed to fetch client manager:', err)
     });
   }
 

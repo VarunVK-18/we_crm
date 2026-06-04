@@ -70,19 +70,7 @@
       <div class="card-body">
         <h3 class="client-name">{{ order.entityName || order.companyName || 'Client Request' }}</h3>
 
-        <div class="info-row">
-          <span class="info-label">Status:</span>
-          <span class="status-chip" [class.chip-new]="['new','pending'].includes((order.status||'').toLowerCase())"
-            [class.chip-active]="(order.status||'').toLowerCase() === 'active'"
-            [class.chip-complete]="(order.status||'').toLowerCase() === 'complete'">
-            {{ order.status | titlecase }}
-          </span>
-        </div>
 
-        <div class="info-row">
-          <span class="info-label">Stage:</span>
-          <span class="stage-text">{{ order.stage || '—' }}</span>
-        </div>
 
         @if (order.phone || order.contactPhone) {
         <div class="info-row">
@@ -93,10 +81,10 @@
         }
 
         @if (order.details && objectKeys(order.details).length > 0) {
-        <div class="dynamic-details">
+        <div class="dynamic-details hover-container">
           <div class="details-divider"></div>
-          <span class="details-title">Application Details:</span>
-          <div class="details-grid">
+          <span class="details-title">Application Details: <span class="hover-text">Hover to view</span></span>
+          <div class="details-grid hover-content">
             @for (key of objectKeys(order.details); track key) {
             <div class="detail-item">
               <span class="detail-label">{{ formatKey(key) }}</span>
@@ -108,9 +96,9 @@
         }
 
         @if (order.documents && order.documents.length > 0) {
-        <div class="documents-section">
-          <span class="documents-title">Attached Documents:</span>
-          <div class="documents-list">
+        <div class="documents-section hover-container">
+          <span class="documents-title">Attached Documents: <span class="hover-text">Hover to view</span></span>
+          <div class="documents-list hover-content">
             @for (doc of order.documents; track doc._id || doc.fileUrl) {
             <div class="document-item">
               @if (isImage(doc.filename || doc.name)) {
@@ -166,18 +154,11 @@
         </div>
 
         @if (order.assignedExpert && order.assignedExpert !== 'To be assigned') {
-        <div class="assigned-alert" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="assigned-alert" style="display: flex; align-items: center;">
           <div>
             <hugeicons-icon [icon]="UserIcon" size="14"></hugeicons-icon>
             Currently: <strong>{{ order.assignedExpert }}</strong>
           </div>
-          <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;"
-            (click)="openChatModal(order)">Chat</button>
-        </div>
-        } @else {
-        <div style="margin-top: 12px; display: flex; justify-content: flex-end;">
-          <button class="btn-primary" style="padding: 4px 12px; font-size: 12px;"
-            (click)="openChatModal(order)">Chat</button>
         </div>
         }
       </div>

@@ -1,102 +1,74 @@
-<div class="client-layout">
-  <div class="sidebar-container">
-    <div class="branding-header">
-      <div class="logo-box">
-        <img src="/logo.jpg" alt="Wealth Empires Logo" class="actual-brand-logo" />
-      </div>
-      <div class="branding-text">
-        <span class="branding-title">Wealth Empires</span>
-        <span class="branding-subtitle">Client Portal</span>
-      </div>
-    </div>
-    
-    <div class="navigation-list">
-      <div class="group-items">
-        <div class="nav-item-wrapper selected">
-          <div class="nav-item-content">
-            <hugeicons-icon 
-              [icon]="DashboardSquareRemoveIcon" 
-              [size]="18" 
-              color="currentColor"
-              class="nav-item-icon"
-              [strokeWidth]="2.2">
-            </hugeicons-icon>
-            <span class="nav-item-label">Dashboard</span>
-          </div>
+<div class="content-wrapper">
+      <header class="ho-hero" style="margin-bottom: 24px; border-radius: 16px;">
+        <div class="ho-hero-content">
+          <h1 class="ho-hero-title">Welcome, <br/>{{ (user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
+          <p class="ho-hero-subtitle">Track the progress of your active services and requests from one place.</p>
         </div>
+        <!-- Abstract decorative elements -->
+        <div class="ho-hero-decorations">
+          <div class="ho-circle ho-circle-1"></div>
+          <div class="ho-circle ho-circle-2"></div>
+          <div class="ho-circle ho-circle-3"></div>
+        </div>
+      </header>
 
-        <div class="nav-item-wrapper" (click)="goToProfile()">
-          <div class="nav-item-content">
-            <hugeicons-icon 
-              [icon]="UserAccountIcon" 
-              [size]="18" 
-              color="currentColor"
-              class="nav-item-icon"
-              [strokeWidth]="2.2">
-            </hugeicons-icon>
-            <span class="nav-item-label">Profile</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    @if (user()) {
-      <div class="sidebar-footer">
-        <div class="avatar-box">
-          {{ (user()?.company_name || user()?.name || 'C')[0] | uppercase }}
-        </div>
-        <div class="user-info">
-          <div class="user-name">{{ user()?.company_name || user()?.name || 'Client' }}</div>
-          <div class="user-role">Client</div>
-        </div>
-        <button class="btn-logout" (click)="logout()" title="Sign Out">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-            <polyline points="16 17 21 12 16 7"></polyline>
-            <line x1="21" y1="12" x2="9" y2="12"></line>
-          </svg>
-        </button>
-      </div>
-    }
-  </div>
-
-  <div class="client-main">
-    <div class="premium-appbar">
-      <div class="appbar-title-section">
-        <h1 class="appbar-title">My Services</h1>
-        <span class="appbar-subtitle">Client Portal Dashboard</span>
-      </div>
-      
-      <div class="appbar-actions">
-        @if (user()) {
-          <div class="user-badge">
-            <div class="divider"></div>
-            <div class="user-badge-text">
-              <span class="badge-name">{{ user()?.company_name || user()?.name || 'Client' }}</span>
-              <span class="badge-status">Online • Prime</span>
+      <div class="client-metrics-grid" style="margin: 0 0 32px 0;">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon">
+              <span class="material-symbols-outlined">work_outline</span>
             </div>
-            <div class="badge-avatar">
-              {{ (user()?.company_name || user()?.name || 'C')[0] | uppercase }}
-            </div>
+            <span class="metric-badge badge-active">ACTIVE</span>
           </div>
-        }
-      </div>
-    </div>
+          <div class="metric-title">ACTIVE SERVICES</div>
+          <div class="metric-value">
+            <span class="number">{{ activeOrders().length }}</span>
+            <span class="trend positive">In progress</span>
+          </div>
+        </div>
 
-    <header class="ho-hero" style="margin: 32px 40px 0; border-radius: 16px;">
-      <div class="ho-hero-content">
-        <h1 class="ho-hero-title">Welcome, <br/>{{ user()?.company_name || user()?.name || 'Client' }}</h1>
-        <p class="ho-hero-subtitle">Track the progress of your active services and requests from one place.</p>
-      </div>
-      <!-- Abstract decorative elements -->
-      <div class="ho-hero-decorations">
-        <div class="ho-circle ho-circle-1"></div>
-        <div class="ho-circle ho-circle-2"></div>
-        <div class="ho-circle ho-circle-3"></div>
-      </div>
-    </header>
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon">
+              <span class="material-symbols-outlined">pending_actions</span>
+            </div>
+            <span class="metric-badge badge-verified">PENDING</span>
+          </div>
+          <div class="metric-title">NOT INITIALIZED</div>
+          <div class="metric-value">
+            <span class="number">{{ notInitializedOrders().length }}</span>
+            <span class="trend positive">Awaiting setup</span>
+          </div>
+        </div>
 
-    <div class="content-wrapper">
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon">
+              <span class="material-symbols-outlined">assignment</span>
+            </div>
+            <span class="metric-badge badge-tasks">TASKS</span>
+          </div>
+          <div class="metric-title">OPEN AUDIT TASKS</div>
+          <div class="metric-value">
+            <span class="number">{{ totalOpenTasks() }}</span>
+            <span class="trend positive">{{ totalOpenTasks() === 0 ? 'All caught up' : 'Needs completion' }}</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-header">
+            <div class="metric-icon">
+              <span class="material-symbols-outlined">task_alt</span>
+            </div>
+            <span class="metric-badge badge-bills">COMPLETED</span>
+          </div>
+          <div class="metric-title">COMPLETED SERVICES</div>
+          <div class="metric-value">
+            <span class="number">{{ completedOrders().length }}</span>
+            <span class="trend positive">All clear</span>
+          </div>
+        </div>
+      </div>
       <div class="tabs">
         <button class="tab-btn" [class.active]="activeTab() === 'active'" (click)="setTab('active')">
           Active ({{ activeOrders().length }})
@@ -109,89 +81,53 @@
         </button>
       </div>
 
-      <div class="ho-table-container">
+      <!-- Mobile-App-Like Service List -->
+      <div class="service-list-container">
         @if (isLoading()) {
           <div class="loading-state">
             <span class="material-symbols-outlined rotating">sync</span>
             <p>Loading your services...</p>
           </div>
         } @else {
-          @let currentList = activeTab() === 'active' ? activeOrders() : (activeTab() === 'completed' ? completedOrders() : notInitializedOrders());
-          
-          <table class="ho-table">
-            <thead>
-              <tr>
-                <th>Service Name</th>
-                <th>Assigned Expert</th>
-                <th>Status</th>
-                <th>Progress</th>
-              </tr>
-            </thead>
-            <tbody>
-              @if (currentList.length === 0) {
-                <tr>
-                  <td colspan="4" class="ho-table-empty">
-                    <div class="empty-state">
-                      <span class="material-symbols-outlined">inbox</span>
-                      <h3>No Services Found</h3>
-                      <p>You don't have any {{ activeTab() }} services at the moment.</p>
+          @if (currentList().length === 0) {
+            <div class="empty-state" style="background: white; border-radius: 16px; padding: 48px; border: 1px solid #e2e8f0; margin-top: 16px;">
+              <span class="material-symbols-outlined">inbox</span>
+              <h3>No Services Found</h3>
+              <p>You don't have any {{ activeTab() }} services at the moment.</p>
+            </div>
+          } @else {
+            <div class="mobile-service-list">
+              @for (order of currentList(); track order._id) {
+                <div class="mobile-service-card" (click)="openServiceDetails(order)">
+                  <div class="msc-icon">
+                    <span class="material-symbols-outlined">work</span>
+                  </div>
+                  
+                  <div class="msc-content">
+                    <h3 class="msc-title">{{ order.service_name || order.checklist_name || 'Service Order' }}</h3>
+                    <div class="msc-expert" [class.unassigned]="!order.assigned_to">
+                      <span class="material-symbols-outlined">person</span>
+                      <span>{{ order.assigned_to?.owner_name || order.assigned_to?.name || 'Unassigned' }}</span>
                     </div>
-                  </td>
-                </tr>
-              } @else {
-                @for (order of currentList; track order._id) {
-                  <tr class="ho-table-row" (click)="openServiceDetails(order)">
-                    <td>
-                      <div class="ho-table-cell-content">
-                        <div class="ho-icon-box">
-                          <span class="material-symbols-outlined">work</span>
-                        </div>
-                        <div>
-                          <p class="ho-font-semibold">{{ order.service_name }}</p>
-                        </div>
+                    <div class="msc-progress">
+                      <div class="msc-progress-bar">
+                        <div class="msc-progress-fill" [style.width.%]="(order.items || []).length ? (getCompletedCount(order.items) / (order.items || []).length) * 100 : 0"></div>
                       </div>
-                    </td>
-                    <td>
-                      @if (order.assigned_to) {
-                        <div class="expert-info">
-                          <span class="material-symbols-outlined" style="font-size: 16px; margin-right: 4px;">person</span>
-                          <span>{{ order.assigned_to.owner_name || 'Assigned Expert' }}</span>
-                        </div>
-                      } @else {
-                        <div class="expert-info unassigned">
-                          <span class="material-symbols-outlined" style="font-size: 16px; margin-right: 4px;">pending</span>
-                          <span>Pending Assignment</span>
-                        </div>
-                      }
-                    </td>
-                    <td>
-                      <span class="ho-status-badge" [class]="order.derivedStatus">
-                        <span class="ho-status-dot"></span>
-                        {{ order.derivedStatus | titlecase }}
-                      </span>
-                    </td>
-                    <td>
-                      <div class="progress-section" style="width: 120px;">
-                        <div class="progress-labels">
-                          <span>Tasks</span>
-                          <span>
-                            {{ getCompletedCount(order.items) }} / {{ (order.items || []).length }}
-                          </span>
-                        </div>
-                        <div class="progress-bar">
-                          <div class="progress-fill" 
-                               [style.width.%]="(order.items || []).length ? (getCompletedCount(order.items) / (order.items || []).length) * 100 : 0">
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                }
+                      <span class="msc-progress-text">{{ getCompletedCount(order.items) }}/{{ (order.items || []).length }}</span>
+                    </div>
+                  </div>
+
+                  <div class="msc-actions">
+                    <span class="ho-status-badge" [class]="order.derivedStatus">
+                      <span class="ho-status-dot"></span>
+                      {{ order.derivedStatus | titlecase }}
+                    </span>
+                    <span class="material-symbols-outlined msc-chevron">chevron_right</span>
+                  </div>
+                </div>
               }
-            </tbody>
-          </table>
+            </div>
+          }
         }
       </div>
     </div>
-  </div>
-</div>

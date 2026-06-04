@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  height: 100vh;
+  width: 100vw;
+  background-color: #f8fafc;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.client-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.client-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #f8fafc;
+}

@@ -1,0 +1,24 @@
+<div class="premium-appbar">
+  <div class="appbar-title-section">
+    <h1 class="appbar-title">{{ pageTitle() }}</h1>
+    <span class="appbar-subtitle">{{ pageSubtitle() }}</span>
+  </div>
+  
+  <div class="appbar-actions">
+    <button class="notification-btn" title="Notifications">
+      <hugeicons-icon [icon]="Notification01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+      <span class="notification-dot"></span>
+    </button>
+    @if (user()) {
+      <div class="user-badge">
+        <div class="divider"></div>
+        <div class="user-badge-text">
+          <span class="badge-name">{{ user()?.company_name || user()?.name || 'Client' }}</span>
+        </div>
+        <div class="badge-avatar">
+          {{ (user()?.company_name || user()?.name || 'C')[0] | uppercase }}
+        </div>
+      </div>
+    }
+  </div>
+</div>

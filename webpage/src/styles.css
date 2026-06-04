@@ -30,6 +30,46 @@
 
   --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
+  /* Manager CTA Card (Global) */
+.manager-cta-card {
+  margin-top: auto;
+  background: linear-gradient(135deg, #1f4a47 0%, #0d2b29 100%);
+  border-radius: 12px;
+  padding: 20px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 12px;
+}
+
+.manager-cta-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 8px);
+  z-index: 1;
+}
+
+.manager-cta-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+.manager-cta-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+.manager-cta-card p {
+  font-size: 12px;
+  opacity: 0.9;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
   /* Legacy mapper for existing stylesheets */
   --bg-primary: var(--background);
   --bg-secondary: var(--surface);

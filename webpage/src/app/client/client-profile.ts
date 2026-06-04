@@ -19,6 +19,7 @@ export class ClientProfile implements OnInit {
   readonly EyeIcon = EyeIcon;
 
   user = signal<any>(null);
+  clientManager = signal<any>(null);
   isLoading = signal(true);
   
   constructor(private router: Router, public api: Api) {}
@@ -46,6 +47,9 @@ export class ClientProfile implements OnInit {
       next: (res: any) => {
         if (res.user) {
           this.user.set(res.user);
+          if (res.user.assigned_to) {
+            this.clientManager.set(res.user.assigned_to);
+          }
           // Update local storage to keep data fresh
           localStorage.setItem('user', JSON.stringify(res.user));
         }
