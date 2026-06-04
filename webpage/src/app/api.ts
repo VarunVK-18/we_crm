@@ -9,6 +9,7 @@ export class Api {
   //  private readonly baseUrl = 'http://localhost:5001/api';
   private readonly baseUrl = 'https://we-crm.onrender.com/api';
 
+  
   get serverUrl(): string {
     return this.baseUrl.replace(/\/api$/, '') + '/';
   }
