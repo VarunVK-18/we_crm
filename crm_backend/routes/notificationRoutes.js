@@ -1,0 +1,12 @@
+const express = require('express');
+const router = express.Router();
+const notificationController = require('../controllers/notificationController');
+const { checkUser } = require('../middleware/rbac');
+
+// All notification routes require authentication
+router.use(checkUser);
+
+router.get('/', notificationController.getNotifications);
+router.put('/read', notificationController.markAsRead);
+
+module.exports = router;

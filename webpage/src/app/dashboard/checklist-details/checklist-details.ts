@@ -215,6 +215,36 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  getDirectorDocumentsGrouped(): { title: string, docs: any[] }[] {
+    const cl = this.checklist();
+    if (!cl || !cl.requested_documents) return [];
+
+    const groups: { [key: string]: any[] } = {};
+
+    cl.requested_documents.forEach((doc: any) => {
+      const match = doc.name.match(/^director_(\d+)_/i);
+      if (match) {
+        const title = `Director ${match[1]} Documents`;
+        if (!groups[title]) groups[title] = [];
+        groups[title].push(doc);
+      }
+    });
+
+    return Object.keys(groups).sort().map(title => ({
+      title,
+      docs: groups[title]
+    }));
+  }
+
+  getOtherRequestedDocuments(): any[] {
+    const cl = this.checklist();
+    if (!cl || !cl.requested_documents) return [];
+
+    return cl.requested_documents.filter((doc: any) => {
+      return !doc.name.match(/^director_(\d+)_/i);
+    });
+  }
+
   updateChecklistStage(stage: string) {
     const cl = this.checklist();
     if (!cl) return;

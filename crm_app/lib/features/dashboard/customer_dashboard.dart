@@ -175,13 +175,57 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 20.r),
               const _HorizontalServiceList(
                 items: [
-                  {'label': 'Services', 'icon': LucideIcons.briefcase},
-                  {'label': 'GST Mgmt', 'icon': HugeIcons.strokeRoundedFile02},
                   {
-                    'label': 'Documents',
-                    'icon': HugeIcons.strokeRoundedFolder02,
+                    'label': 'Incorporation',
+                    'icon': HugeIcons.strokeRoundedOffice,
+                    'subItems': [
+                      'Private Limited Incorporation',
+                      'LLP Incorporation',
+                      'OPC',
+                      'Proprietorship',
+                      'MSME'
+                    ],
                   },
-                  {'label': 'DSC', 'icon': LucideIcons.userCheck},
+                  {
+                    'label': 'Compliance',
+                    'icon': HugeIcons.strokeRoundedBriefcase01,
+                    'subItems': ['MCA Compliance', 'TDS', 'PF'],
+                  },
+                  {
+                    'label': 'IP',
+                    'icon': HugeIcons.strokeRoundedLicense,
+                    'subItems': ['Trade Mark', 'Copyright', 'Patent'],
+                  },
+                  {
+                    'label': 'Tax',
+                    'icon': HugeIcons.strokeRoundedCalculator,
+                    'subItems': [
+                      'GST Registration',
+                      'GST Compliance',
+                      'GST Cancelation',
+                      'GST filing',
+                      'ITR'
+                    ],
+                  },
+                  {
+                    'label': 'Licensing',
+                    'icon': HugeIcons
+                        .strokeRoundedStamp01, // using stamp or file icon
+                    'subItems': [
+                      'ISO',
+                      'DPIIT',
+                      'FSSAI',
+                      'IE code',
+                      'LEI',
+                      'BIS',
+                      'ROSH & CE'
+                    ],
+                  },
+                  {
+                    'label': 'Others',
+                    'icon': HugeIcons.strokeRoundedMoreHorizontal,
+                    'subItems': ['Individual DSC', 'Organization DSC'],
+                  },
                 ],
               ),
 
@@ -242,12 +286,12 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       if (!mounted) return;
       final activeOrders = ref.read(activeOrdersProvider);
       final totalCards = 2 + (activeOrders.isEmpty ? 1 : activeOrders.length);
-      
+
       int nextPage = _currentPage + 1;
       if (nextPage >= totalCards) {
         nextPage = 0;
       }
-      
+
       if (_pageController.hasClients) {
         _pageController.animateToPage(
           nextPage,
@@ -268,7 +312,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
   @override
   Widget build(BuildContext context) {
     final activeOrders = ref.watch(activeOrdersProvider);
-    
+
     final List<Widget> cards = [
       _buildGetStartedCard(context),
       if (activeOrders.isNotEmpty)
@@ -587,7 +631,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           value: progress,
                           minHeight: 6.r,
                           backgroundColor: Colors.grey.shade100,
-                          valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.accentCyan),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                              AppTheme.accentCyan),
                         ),
                       ),
                     ],
@@ -872,7 +917,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           ),
                         ),
                         SizedBox(width: 6.r),
-                        Icon(LucideIcons.share2, size: 14.ip, color: const Color(0xFF1E293B)),
+                        Icon(LucideIcons.share2,
+                            size: 14.ip, color: const Color(0xFF1E293B)),
                       ],
                     ),
                   ),
@@ -898,6 +944,7 @@ class _HorizontalServiceList extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: items.map((item) {
           final label = item['label'] as String;
           final icon = item['icon'];
@@ -905,6 +952,105 @@ class _HorizontalServiceList extends StatelessWidget {
             label: label,
             icon: icon,
             onTap: () {
+              if (item.containsKey('subItems')) {
+                final List<String> subItems =
+                    List<String>.from(item['subItems']);
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.white,
+                  isScrollControlled: true,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(24.r)),
+                  ),
+                  builder: (context) {
+                    return SafeArea(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(height: 16.r),
+                          Container(
+                            width: 40.r,
+                            height: 4.r,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(2.r),
+                            ),
+                          ),
+                          SizedBox(height: 16.r),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 24.r),
+                            child: Row(
+                              children: [
+                                if (icon is IconData)
+                                  Icon(icon, color: AppTheme.deepTeal)
+                                else
+                                  HugeIcon(
+                                      icon: icon,
+                                      color: AppTheme.deepTeal,
+                                      size: 24.r),
+                                SizedBox(width: 12.r),
+                                Text(
+                                  label,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        color: AppTheme.deepTeal,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 8.r),
+                          Flexible(
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: subItems.length,
+                              itemBuilder: (context, index) {
+                                final subItem = subItems[index];
+                                return ListTile(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 24.r, vertical: 4.r),
+                                  title: Text(
+                                    subItem,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyLarge
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey[800],
+                                        ),
+                                  ),
+                                  trailing: Icon(LucideIcons.chevronRight,
+                                      size: 20.r, color: Colors.grey[400]),
+                                  onTap: () {
+                                    Navigator.pop(
+                                        context); // Close bottom sheet
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            ServiceDetailScreen(
+                                                serviceName: subItem,
+                                                icon: icon),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: 16.r),
+                        ],
+                      ),
+                    );
+                  },
+                );
+                return;
+              }
+
               if (label == 'Services') {
                 Navigator.push(
                   context,
@@ -943,5 +1089,3 @@ class _HorizontalServiceList extends StatelessWidget {
     );
   }
 }
-
-

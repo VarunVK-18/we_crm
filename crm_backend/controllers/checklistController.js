@@ -223,22 +223,53 @@ const updateChecklist = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Checklist not found' });
     }
 
-    if (assigned_to !== undefined) checklist.assigned_to = assigned_to || null;
-    if (notes !== undefined) checklist.notes = notes;
-    if (stage !== undefined) checklist.stage = stage;
-    if (status !== undefined) checklist.status = status;
-    if (requested_documents !== undefined) checklist.requested_documents = requested_documents;
-    if (details !== undefined) checklist.details = details;
+    if (req.user.role === 'customer') {
+      if (checklist.client_id.toString() !== req.user._id.toString()) {
+        return res.status(403).json({ success: false, message: 'Not authorized to update this checklist' });
+      }
+      if (details !== undefined) checklist.details = details;
+    } else {
+      if (assigned_to !== undefined) checklist.assigned_to = assigned_to || null;
+      if (notes !== undefined) checklist.notes = notes;
+      if (stage !== undefined) checklist.stage = stage;
+      if (status !== undefined) checklist.status = status;
+      if (requested_documents !== undefined) {
+        const oldDocs = checklist.requested_documents || [];
+        const newDocs = requested_documents || [];
+        
+        // Find documents that are new and not uploaded
+        const newlyRequested = newDocs.filter(nd => !nd.isUploaded && !oldDocs.some(od => od.name === nd.name));
+        
+        checklist.requested_documents = requested_documents;
 
-    // Allow bulk item update (e.g. replacing all items)
-    if (items !== undefined) {
-      const raw = typeof items === 'string' ? JSON.parse(items) : items;
-      checklist.items = raw.map((item) => ({
-        title: item.title || item.label,
-        label: item.label || item.title,
-        description: item.description || '',
-        isChecked: item.isChecked || false
-      }));
+        if (newlyRequested.length > 0 && checklist.client_id) {
+          const Notification = require('../models/Notification');
+          const docNames = newlyRequested.map(d => d.name).join(', ');
+          await Notification.create({
+            client_id: checklist.client_id,
+            title: 'Action Required: Documents Requested',
+            message: `Your expert requested: ${docNames}. Please upload them.`,
+            type: 'document_request',
+            order_id: id
+          });
+        }
+      }
+      if (details !== undefined) checklist.details = details;
+
+      // Allow bulk item update (e.g. replacing all items)
+      if (items !== undefined) {
+        const raw = typeof items === 'string' ? JSON.parse(items) : items;
+        checklist.items = raw.map((item) => ({
+          title: item.title || item.label,
+          label: item.label || item.title,
+          description: item.description || '',
+          isChecked: item.isChecked || false
+        }));
+      }
+    }
+
+    if (details !== undefined) {
+      checklist.markModified('details');
     }
 
     await checklist.save();
@@ -265,7 +296,7 @@ const getMyChecklists = async (req, res) => {
     const checklists = await Checklist.find({ client_id: clientId })
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
-      .select('service_name company_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount')
+      .select('service_name company_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount advanceAmountPaid details')
       .sort({ updatedAt: -1 });
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items

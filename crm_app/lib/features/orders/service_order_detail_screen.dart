@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
@@ -379,6 +380,18 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                   ),
                 ],
 
+                if (order.serviceType == 'Private Limited Incorporation' && 
+                    order.details['directors'] != null && 
+                    order.details['directors'] != '[]' &&
+                    order.details['directors'] is String && 
+                    order.details['directors'] != 'submitted') ...[
+                  const SizedBox(height: 32),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: _DirectorDetailsSection(order: order),
+                  ),
+                ],
+
                 const SizedBox(height: 80), // space for FAB
               ]),
             ),
@@ -510,7 +523,7 @@ class _RequestedDocumentsSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        ...order.requestedDocuments.map((doc) {
+        ...order.requestedDocuments.where((doc) => !doc.name.startsWith('director_')).map((doc) {
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
@@ -1034,7 +1047,7 @@ class _FinalDeliverySection extends StatelessWidget {
         ),
 
         // Final Documents
-        ...order.finalDocuments.map((doc) {
+        ...order.finalDocuments.where((doc) => !doc.name.startsWith('director_')).map((doc) {
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
@@ -1101,6 +1114,120 @@ class _FinalDeliverySection extends StatelessWidget {
           );
         }),
       ],
+    );
+  }
+}
+
+class _DirectorDetailsSection extends StatelessWidget {
+  final ServiceOrder order;
+  const _DirectorDetailsSection({required this.order});
+
+  @override
+  Widget build(BuildContext context) {
+    List<dynamic> directors = [];
+    try {
+      if (order.details['directors'] is String) {
+        directors = jsonDecode(order.details['directors']);
+      } else {
+        directors = order.details['directors'] ?? [];
+      }
+    } catch (e) {
+      directors = [];
+    }
+
+    if (directors.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Director Details',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            color: AppTheme.deepTeal,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...directors.asMap().entries.map((entry) {
+          final index = entry.key;
+          final dir = entry.value;
+          final directorPrefix = 'director_${index + 1}_';
+          
+          final docs = order.requestedDocuments.where((d) => d.name.startsWith(directorPrefix)).toList();
+          
+          return Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: ExpansionTile(
+                title: Text(
+                  'Director ${index + 1}: ${dir['name'] ?? 'Unknown'}',
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.deepTeal),
+                ),
+                childrenPadding: const EdgeInsets.all(16),
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildDetailRow('Father\'s Name', dir['fathersName']),
+                  _buildDetailRow('Date of Birth', dir['dob']),
+                  _buildDetailRow('Place of Birth', dir['placeOfBirth']),
+                  _buildDetailRow('Educational Qual.', dir['educationalQualification']),
+                  _buildDetailRow('Occupation', dir['occupation']),
+                  const SizedBox(height: 16),
+                  const Text('Documents', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Colors.grey)),
+                  const SizedBox(height: 8),
+                  if (docs.isEmpty)
+                    const Text('No documents uploaded', style: TextStyle(fontSize: 12, color: Colors.grey))
+                  else
+                    ...docs.map((d) => Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Row(
+                            children: [
+                              Icon(d.isUploaded ? LucideIcons.checkCircle2 : LucideIcons.xCircle, 
+                                   color: d.isUploaded ? Colors.green : Colors.red, size: 14),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(d.name.replaceFirst(directorPrefix, ''), style: const TextStyle(fontSize: 12))),
+                            ],
+                          ),
+                        )),
+                ],
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildDetailRow(String label, String? value) {
+    if (value == null || value.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 120,
+            child: Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+          ),
+          Expanded(
+            child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          ),
+        ],
+      ),
     );
   }
 }

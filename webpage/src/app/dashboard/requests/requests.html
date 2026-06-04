@@ -152,9 +152,15 @@
 
         <div class="assign-field-group">
           <label class="assign-label">Deal Closed Amount (INR):</label>
+          <input type="text" class="form-control-input number-input" placeholder="Enter amount (e.g. 5,000)"
+            [value]="getFormattedAmount(order._id)" (input)="onAmountChange(order._id, $event)">
+        </div>
+
+        <div class="assign-field-group">
+          <label class="assign-label">Advance Amount Paid (INR):</label>
           <div class="amount-assign-row">
-            <input type="text" class="form-control-input number-input" placeholder="Enter amount (e.g. 5,000)"
-              [value]="getFormattedAmount(order._id)" (input)="onAmountChange(order._id, $event)">
+            <input type="text" class="form-control-input number-input" placeholder="Enter advance (e.g. 1,000)"
+              [value]="getFormattedAdvance(order._id)" (input)="onAdvanceChange(order._id, $event)">
             <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
           </div>
         </div>

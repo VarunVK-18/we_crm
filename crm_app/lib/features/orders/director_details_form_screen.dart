@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import '../../core/constants/port.dart';
@@ -86,9 +88,17 @@ class DirectorDetailsFormScreen extends ConsumerStatefulWidget {
 }
 
 class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormScreen> {
-  final List<DirectorFormData> _directors = [DirectorFormData()];
+  late final List<DirectorFormData> _directors;
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final numStr = widget.order.details['numberOfDirectors']?.toString() ?? '1';
+    final int count = int.tryParse(numStr) ?? 1;
+    _directors = List.generate(count, (_) => DirectorFormData());
+  }
 
   @override
   void dispose() {
@@ -104,6 +114,14 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
     );
     if (result != null && result.files.single.path != null) {
+      if (result.files.single.size > 2 * 1024 * 1024) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('File size is large. Max 2MB allowed.'),
+          backgroundColor: Colors.red,
+        ));
+        return;
+      }
       setState(() {
         final path = result.files.single.path!;
         switch (field) {
@@ -153,7 +171,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
       request.headers['x-user-id'] = uid;
 
       // First, we update the details JSON
-      final existingDetails = widget.order.details;
+      final existingDetails = Map<String, dynamic>.from(widget.order.details);
       final directorsList = _directors.map((d) => d.toJson()).toList();
       existingDetails['directors'] = jsonEncode(directorsList);
 
@@ -236,45 +254,46 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Person ${index + 1} Registration', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
-                              if (_directors.length > 1)
-                                IconButton(
-                                  icon: const Icon(LucideIcons.trash2, color: Colors.red),
-                                  onPressed: () => setState(() => _directors.removeAt(index)),
-                                ),
                             ],
                           ),
+                          const SizedBox(height: 8),
+                          const Text('Please provide the following information for registration (Later it can\'t be changed)', style: TextStyle(color: Colors.grey, fontSize: 13)),
                           const SizedBox(height: 24),
-                          _buildField('Full name', data.fullNameController, isRequired: true),
-                          _buildField('Father\'s name', data.fatherNameController, isRequired: true),
-                          _buildField('DOB (DD/MM/YYYY)', data.dobController, isRequired: true),
-                          _buildField('Place of birth', data.placeOfBirthController, isRequired: true),
-                          _buildField('Occupation', data.occupationController, isRequired: true),
-                          _buildField('Education', data.educationController, isRequired: true),
-                          _buildField('Email', data.emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                          _buildField('Phone number', data.phoneController, isRequired: true, keyboardType: TextInputType.phone),
-                          _buildField('Address', data.addressController, isRequired: true),
-                          _buildField('PAN', data.panController, isRequired: true),
-                          _buildField('Aadhaar Number', data.aadhaarController, isRequired: true),
-                          _buildField('DIN Number', data.dinController, isRequired: false),
-                          _buildField('Share holding percentage', data.shareholdingController, isRequired: true, keyboardType: TextInputType.number),
                           
-                          const SizedBox(height: 16),
-                          const Text('Role in the company', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
-                          DropdownButtonFormField<String>(
-                            value: data.role,
-                            items: ['Director', 'Shareholder', 'Director & Shareholder']
-                                .map((r) => DropdownMenuItem(value: r, child: Text(r))).toList(),
-                            onChanged: (v) => setState(() => data.role = v!),
-                          ),
-                          const SizedBox(height: 24),
+                          _buildField('Full name', 'Enter your complete name as it appears on your official documents. Include your first name, middle name (if any), and last name.', data.fullNameController, isRequired: true),
+                          _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
+                          _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format. This should match the date on your official documents.', data.dobController, isRequired: true),
+                          _buildField('Place of birth', 'Enter the city and state where you were born. This should match your birth certificate or other official documents.', data.placeOfBirthController, isRequired: true),
+                          
+                          _buildRadioGroup('Nationality', 'Select your nationality. Choose "Indian" if you are an Indian citizen, or "Others" if you are a foreign national or NRI.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
+                          
+                          _buildRadioGroup('Select the occupation that best describes your current professional status.', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
 
+                          _buildField('Education', '', data.educationController, isRequired: true),
+                          _buildField('Email', 'Enter your personal email address. This will be used for all communications related to your application.', data.emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
+                          _buildField('Phone number', 'Enter your mobile number. This should be a number that you can always be reached on.', data.phoneController, isRequired: true, keyboardType: TextInputType.phone),
+                          _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
+                          _buildField('PAN', 'Enter your 10-character PAN (Permanent Account Number) issued by the Income Tax Department.', data.panController, isRequired: true),
+                          _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number issued by UIDAI.', data.aadhaarController, isRequired: true),
+                          _buildField('DIN Number', 'Enter your 8-digit DIN (Director Identification Number) if you are already a director in another company. Leave blank if this is your first directorship.', data.dinController, isRequired: false),
+                          
+                          _buildRadioGroup('I need DSC', 'Select "Yes" if you need a Digital Signature Certificate (DSC) for signing documents electronically.', ['Yes', 'No', 'Maybe'], data.needDsc, (v) => setState(() => data.needDsc = v)),
+                          
+                          _buildRadioGroup('Select your role in the company. You can be a Director, Shareholder, or both Director and Shareholder.', '', ['Director', 'Shareholder', 'Director & Shareholder'], data.role, (v) => setState(() => data.role = v)),
+                          
+                          _buildField('Share holding percentage', 'Enter the percentage of shares you will hold in the company. This should be between 0 and 100.', data.shareholdingController, isRequired: true, keyboardType: TextInputType.number),
+                          
+                          _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory for the company\'s bank accounts and official documents. Yes, I want to be the authorized signatory', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
+                          
+                          const SizedBox(height: 24),
                           const Text('Document Uploads', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.deepTeal)),
                           const SizedBox(height: 16),
-                          _buildFileRow('Photo', data.photoPath, () => _pickFile(data, 'photo')),
-                          _buildFileRow('Signature', data.signaturePath, () => _pickFile(data, 'signature')),
-                          _buildFileRow('Address Proof', data.addressProofPath, () => _pickFile(data, 'addressProof')),
-                          _buildFileRow('Aadhaar', data.aadhaarPath, () => _pickFile(data, 'aadhaar')),
-                          _buildFileRow('PAN', data.panPath, () => _pickFile(data, 'pan')),
+                          
+                          _buildFileRow('Photo', 'Upload a recent passport-size photograph (3.5cm x 4.5cm) with a white background.', data.photoPath, () => _pickFile(data, 'photo')),
+                          _buildFileRow('Signature', 'Upload a clear image of your signature. This is required if you are an authorized signatory.', data.signaturePath, () => _pickFile(data, 'signature')),
+                          _buildFileRow('Residential address proof', 'Upload proof of your residential address (utility bill, bank statement, etc.). This proof should be on the name of the person and should not be older than two months', data.addressProofPath, () => _pickFile(data, 'addressProof')),
+                          _buildFileRow('Aadhaar Card', 'Upload Aadhaar card with front and back side pdf. The system will verify the document using OCR and cross-check with the details provided above.', data.aadhaarPath, () => _pickFile(data, 'aadhaar')),
+                          _buildFileRow('PAN Card', 'Upload PAN card. The system will verify the document using OCR and cross-check with the details provided above.', data.panPath, () => _pickFile(data, 'pan')),
                         ],
                       ),
                     );
@@ -305,31 +324,126 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
     );
   }
 
-  Widget _buildField(String label, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          labelText: label + (isRequired ? ' *' : ''),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-        validator: isRequired ? (v) => v == null || v.isEmpty ? 'Required' : null : null,
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 16,
+            children: options.map((opt) {
+              return Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Radio<String>(
+                    value: opt,
+                    groupValue: currentValue,
+                    onChanged: (v) {
+                      if (v != null) onChanged(v);
+                    },
+                    activeColor: AppTheme.corporateBlue,
+                  ),
+                  Text(opt, style: const TextStyle(fontSize: 14)),
+                ],
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildFileRow(String label, String? path, VoidCallback onPick) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text(label, style: const TextStyle(fontWeight: FontWeight.w600))),
-          if (path != null) const Icon(LucideIcons.checkCircle, color: Colors.green, size: 20),
-          TextButton(onPressed: onPick, child: Text(path == null ? 'Upload' : 'Change')),
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: [
+                if (isRequired)
+                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            validator: isRequired ? (v) => v == null || v.isEmpty ? 'This is a required question' : null : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                onPressed: onPick,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
+              ),
+            ],
+          ),
         ],
       ),
     );

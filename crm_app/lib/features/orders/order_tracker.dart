@@ -12,6 +12,8 @@ import 'order_chat_screen.dart';
 import 'service_order_detail_screen.dart';
 import '../../providers/orders_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/notification_provider.dart';
+import 'notification_sheet.dart';
 
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
@@ -42,6 +44,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
     final ordersAsync = ref.watch(serviceOrdersProvider);
     var orders = ordersAsync.value ?? [];
     final isLoading = ordersAsync.isLoading && orders.isEmpty;
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     final user = ref.watch(userProfileProvider).value;
 
@@ -100,23 +103,55 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      ref.invalidate(serviceOrdersProvider);
-                    },
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  Stack(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          // Clear notifications locally first for instant feedback
+                          ref.read(notificationProvider.notifier).markAllAsRead();
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (context) => const NotificationSheet(),
+                          );
+                        },
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          shadowColor: Colors.black.withValues(alpha: 0.04),
+                          elevation: 2,
+                        ),
+                        icon: const Icon(
+                          LucideIcons.bell,
+                          size: 18,
+                          color: AppTheme.deepTeal,
+                        ),
                       ),
-                      shadowColor: Colors.black.withValues(alpha: 0.04),
-                      elevation: 2,
-                    ),
-                    icon: const Icon(
-                      LucideIcons.refreshCw,
-                      size: 18,
-                      color: AppTheme.deepTeal,
-                    ),
+                      if (unreadCount > 0)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.orange,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              '$unreadCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                height: 1,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),

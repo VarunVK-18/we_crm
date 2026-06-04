@@ -67,6 +67,7 @@ export class RequestsComponent implements OnInit {
   selectedEmployeeForOrder = signal<Record<string, any>>({});
   // Deal closed amount per order { orderId: number }
   dealClosedAmountForOrder = signal<Record<string, number>>({});
+  advanceAmountPaidForOrder = signal<Record<string, number>>({});
 
   constructor(public api: Api) { }
 
@@ -183,24 +184,35 @@ export class RequestsComponent implements OnInit {
     event.target.value = val ? val.toLocaleString('en-IN') : '';
   }
 
+  getFormattedAdvance(orderId: string): string {
+    const val = this.advanceAmountPaidForOrder()[orderId];
+    return val ? val.toLocaleString('en-IN') : '';
+  }
+
+  onAdvanceChange(orderId: string, event: any) {
+    const rawVal = event.target.value.replace(/,/g, '');
+    const val = rawVal && !isNaN(Number(rawVal)) ? Number(rawVal) : 0;
+    this.advanceAmountPaidForOrder.update(prev => ({ ...prev, [orderId]: val }));
+    event.target.value = val ? val.toLocaleString('en-IN') : '';
+  }
+
   assignEmployee(orderId: string) {
     const emp = this.selectedEmployeeForOrder()[orderId];
-    if (!emp) {
-      this.showToast('Please select an employee first.', 'error');
+    const amount = this.dealClosedAmountForOrder()[orderId] || 0;
+    const advance = this.advanceAmountPaidForOrder()[orderId] || 0;
+
+    if (!emp || amount <= 0 || advance <= 0) {
+      this.showToast('Please fill all details (Assign Expert, Deal Closed Amount, and Advance Amount Paid).', 'error');
       return;
     }
-
-    const amount = this.dealClosedAmountForOrder()[orderId] || 0;
 
     const updateData: any = {
       assignedExpert: emp.name,
       expertPhone: emp.phone || '',
-      stage: 'workAssigned'
+      stage: 'workAssigned',
+      dealClosedAmount: amount,
+      advanceAmountPaid: advance
     };
-
-    if (amount > 0) {
-      updateData.dealClosedAmount = amount;
-    }
 
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
       next: (res: any) => {
@@ -213,6 +225,11 @@ export class RequestsComponent implements OnInit {
           return next;
         });
         this.dealClosedAmountForOrder.update(prev => {
+          const next = { ...prev };
+          delete next[orderId];
+          return next;
+        });
+        this.advanceAmountPaidForOrder.update(prev => {
           const next = { ...prev };
           delete next[orderId];
           return next;

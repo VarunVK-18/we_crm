@@ -85,7 +85,9 @@ exports.updateOrder = async (req, res) => {
             {
               $set: {
                 assigned_to: assignedEmployee._id,
-                stage: updateData.stage || 'workAssigned'
+                stage: updateData.stage || 'workAssigned',
+                dealClosedAmount: updateData.dealClosedAmount || 0,
+                advanceAmountPaid: updateData.advanceAmountPaid || 0
               }
             }
           );

@@ -90,6 +90,10 @@ const ChecklistSchema = new mongoose.Schema({
   dealClosedAmount: {
     type: Number,
     default: 0
+  },
+  advanceAmountPaid: {
+    type: Number,
+    default: 0
   }
 }, { timestamps: true });
 

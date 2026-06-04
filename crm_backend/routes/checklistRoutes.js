@@ -26,7 +26,7 @@ const upload = multer({
 router.post('/checklists', checkUser, permit('admin', 'client_manager'), createChecklist);
 router.get('/checklists', checkUser, getChecklists);
 router.get('/my-checklists', checkUser, getMyChecklists); // For Flutter customer app
-router.patch('/checklists/:id', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), updateChecklist);
+router.patch('/checklists/:id', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), updateChecklist);
 router.post('/checklists/:id/items', checkUser, permit('admin', 'client_manager'), addChecklistItem);
 router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
 router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadFinalDocuments);

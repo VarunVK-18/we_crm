@@ -30,6 +30,7 @@ const ServiceOrderSchema = new mongoose.Schema({
   assignedExpert: { type: String, default: 'To be assigned' },
   expertPhone: { type: String, default: '' },
   dealClosedAmount: { type: Number, default: 0 },
+  advanceAmountPaid: { type: Number, default: 0 },
   details: { type: mongoose.Schema.Types.Mixed, default: {} },
   documents: [{
     name: { type: String },

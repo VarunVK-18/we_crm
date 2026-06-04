@@ -1,4 +1,6 @@
 const Message = require('../models/Message');
+const Notification = require('../models/Notification');
+const Checklist = require('../models/Checklist');
 
 exports.getMessages = async (req, res) => {
   try {
@@ -40,6 +42,21 @@ exports.sendMessage = async (req, res) => {
     
     // Populate sender details before returning
     await newMessage.populate('senderId', 'owner_name role');
+
+    // Spawn a notification if sent by staff/admin
+    if (senderRole === 'staff' || senderRole === 'admin') {
+      const order = await Checklist.findById(orderId);
+      if (order && order.client_id) {
+        await Notification.create({
+          client_id: order.client_id,
+          title: 'New Message from Expert',
+          message: `Your expert sent you a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+          type: 'chat',
+          order_id: orderId,
+          related_data: { messageId: newMessage._id }
+        });
+      }
+    }
 
     res.status(201).json({
       success: true,
