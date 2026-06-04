@@ -99,8 +99,10 @@ export class SystemSettings implements OnInit {
   }
 
   onServiceChange() {
+    this.activeTemplateItems = [];
+    this.activeTemplateExtractEnabled = false;
+    
     if (!this.selectedService) {
-      this.activeTemplateItems = [];
       return;
     }
     this.api.get<any>('templates/checklists').subscribe({
