@@ -46,8 +46,10 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.jpg
+    - assets/logo.png
     - assets/google.png
     - assets/fonts/
+    - assets/client/
 
   fonts:
     - family: Outfit
