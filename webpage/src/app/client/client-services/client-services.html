@@ -16,7 +16,17 @@
                [class.active]="selectedCategory() === cat.id"
                (click)="selectCategory(cat.id)">
             <div class="cat-icon">
-              <hugeicons-icon [icon]="cat.icon" [size]="20" color="currentColor"></hugeicons-icon>
+              @if (cat.id === 'incorporation') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M14 22V8C14 5.17157 14 3.75736 13.1213 2.87868C12.2426 2 10.8284 2 8 2C5.17157 2 3.75736 2 2.87868 2.87868C2 3.75736 2 5.17157 2 8V16C2 18.8284 2 20.2426 2.87868 21.1213C3.75736 22 5.17157 22 8 22H14Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /><path d="M6.5 11H5.5M10.5 11H9.5M6.5 7H5.5M6.5 15H5.5M10.5 7H9.5M10.5 15H9.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /><path d="M18.5 15H17.5M18.5 11H17.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /><path d="M18 8H14V22H18C19.8856 22 20.8284 22 21.4142 21.4142C22 20.8284 22 19.8856 22 18V12C22 10.1144 22 9.17157 21.4142 8.58579C20.8284 8 19.8856 8 18 8Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /></svg>
+              } @else if (cat.id === 'compliance') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M2.00127 8.5L1.99911 13.997C1.99782 17.2979 1.99717 18.9484 3.02235 19.974C4.04754 20.9996 5.69801 20.9996 8.99895 20.9997L15 20.9998C18.2994 20.9999 19.949 21 20.9741 19.9751C21.9992 18.9502 21.9996 17.3005 22.0002 14.0012L22.0013 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M8.49857 6.5C8.49857 5.09554 8.49857 4.39331 8.83563 3.88886C8.98154 3.67048 9.16904 3.48298 9.38743 3.33706C9.89187 3 10.5941 3 11.9986 3C13.403 3 14.1053 3 14.6097 3.33706C14.8281 3.48298 15.0156 3.67048 15.1615 3.88886C15.4986 4.39331 15.4986 5.09554 15.4986 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M19.998 6.50016L3.99885 6.5C2.8944 6.50007 1.99876 7.39568 1.99866 8.50013C1.99876 10.7091 3.79005 12.5004 5.99901 12.5006H17.9978C20.2068 12.5005 21.998 10.7093 21.9981 8.5003C21.998 7.39582 21.1024 6.50023 19.998 6.50016Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M9.99857 12.5V13.5C9.99857 13.965 9.99857 14.1975 10.0497 14.3882C10.1884 14.9059 10.5927 15.3102 11.1103 15.4489C11.3011 15.5 11.5336 15.5 11.9986 15.5C12.4636 15.5 12.696 15.5 12.8868 15.4489C13.4044 15.3102 13.8088 14.9059 13.9475 14.3882C13.9986 14.1975 13.9986 13.965 13.9986 13.5V12.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
+              } @else if (cat.id === 'licensing') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M9 12.5C7.61929 12.5 6.5 11.3807 6.5 10C6.5 8.61929 7.61929 7.5 9 7.5C10.3807 7.5 11.5 8.61929 11.5 10C11.5 11.3807 10.3807 12.5 9 12.5ZM9 12.5C11.2091 12.5 13 14.2909 13 16.5M9 12.5C6.79086 12.5 5 14.2909 5 16.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M15 9H19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M15 12H19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
+              } @else if (cat.id === 'tax') {
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M5.5 3V8M8 5.5L3 5.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M8 16L6 18M6 18L4 20M6 18L8 20M6 18L4 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M20 6L16 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M20 18.5L16 18.5M20 15.5L16 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M22 12L2 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M12 22L12 2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="currentColor"><path d="M4 4H10V10H4V4Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M14 4H20V10H14V4Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M4 14H10V20H4V14Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M14 14H20V20H14V14Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
+              }
             </div>
             <span class="cat-label">{{ cat.label }}</span>
             <div class="cat-arrow">
@@ -29,7 +39,7 @@
 
     <!-- Column 2: Services (1/4) -->
     <div class="col-services">
-      <h3 class="col-title">Available Services</h3>
+      <h3 class="col-title">AVAILABLE SERVICES</h3>
       <div class="service-list">
         @if (currentServices().length === 0) {
           <div class="empty-state">
@@ -40,7 +50,13 @@
             <div class="service-item" 
                  [class.active]="selectedService()?.title === service.title"
                  (click)="selectService(service)">
-              <span class="service-label">{{ service.title }}</span>
+              <div class="service-content">
+                <span class="service-label">{{ service.title }}</span>
+                <span class="service-desc">{{ service.description }}</span>
+              </div>
+              @if (selectedService()?.title === service.title) {
+                <span class="badge-selected">SELECTED</span>
+              }
             </div>
           }
         }
@@ -49,32 +65,41 @@
 
     <!-- Column 3: Details & Request (2/4) -->
     <div class="col-details">
-      <h3 class="col-title">Service Details</h3>
-      
       @if (selectedService()) {
-        <div class="detail-card">
-          <div class="detail-header">
-            <h2>{{ selectedService().title }}</h2>
-            <p>{{ selectedService().description }}</p>
+        <div class="detail-card-top">
+          <div class="detail-header-row">
+            <div class="detail-titles">
+              <h2>{{ selectedService().title }}</h2>
+              <p>{{ selectedService().description }}</p>
+            </div>
+            <div class="badge-preferred">
+              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="14" color="white"></hugeicons-icon>
+              <span>Most Preferred</span>
+            </div>
           </div>
 
           <div class="features-list">
-            <h4>Included Features</h4>
+            <h4>INCLUDED FEATURES</h4>
             <ul>
               @for (feature of selectedService().features; track feature) {
                 <li>
-                  <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#10b981"></hugeicons-icon>
+                  <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#4c1d95"></hugeicons-icon>
                   <span>{{ feature }}</span>
                 </li>
               }
             </ul>
           </div>
+        </div>
 
+        <div class="detail-card-bottom">
           <div class="quote-section">
-            <h3>Request Quote</h3>
+            <div class="quote-header">
+              <h3>Request Quote</h3>
+              <p>Fill in the details below and our experts will reach out to you within 24 hours.</p>
+            </div>
             @if (formSuccess) {
               <div class="success-message">
-                <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="24" color="#10b981"></hugeicons-icon>
+                <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="24" color="#4c1d95"></hugeicons-icon>
                 <p>Your request has been submitted successfully! We will contact you soon.</p>
               </div>
             } @else {
@@ -97,11 +122,12 @@
 
                 <div class="form-group">
                   <label>Additional Requirements (Optional)</label>
-                  <textarea name="requirements" [(ngModel)]="quoteForm.requirements" rows="3" placeholder="Tell us more about your business..." class="form-input"></textarea>
+                  <textarea name="requirements" [(ngModel)]="quoteForm.requirements" rows="3" placeholder="Tell us more about your business needs..." class="form-input"></textarea>
                 </div>
 
                 <button type="submit" class="btn-submit" [disabled]="formSubmitting">
                   {{ formSubmitting ? 'Submitting...' : 'Request Quote' }}
+                  <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" color="white" style="margin-left: 8px;"></hugeicons-icon>
                 </button>
               </form>
             }
@@ -112,6 +138,25 @@
           <p>Select a service from the list to view details and request a quote.</p>
         </div>
       }
+    </div>
+  </div>
+
+  <div class="expert-banner">
+    <div class="expert-banner-content">
+      <div class="expert-banner-text">
+        <h2>Need Expert Assistance?</h2>
+        <p>Your client manager is available to assist you with any queries.</p>
+      </div>
+      <div class="expert-banner-contact">
+        <div class="contact-item">
+          <span class="contact-label">call</span>
+          <span class="contact-value">+91 98765 43210</span>
+        </div>
+        <div class="contact-item">
+          <span class="contact-label">mail</span>
+          <span class="contact-value">support@wealthempires.com</span>
+        </div>
+      </div>
     </div>
   </div>
 </div>

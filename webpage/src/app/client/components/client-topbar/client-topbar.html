@@ -5,10 +5,59 @@
   </div>
   
   <div class="appbar-actions">
-    <button class="notification-btn" title="Notifications">
-      <hugeicons-icon [icon]="Notification01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
-      <span class="notification-dot"></span>
-    </button>
+    <div class="notification-container">
+      <button class="notification-btn" title="Notifications" (click)="toggleNotifications()" [class.active]="isNotificationOpen()">
+        <hugeicons-icon [icon]="Notification01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+        @if (notifService.notifications().length > 0) {
+          <span class="notification-dot">{{ notifService.notifications().length }}</span>
+        }
+      </button>
+
+      @if (isNotificationOpen()) {
+        <div class="notification-dropdown-menu">
+          <div class="notif-header">
+            <h3>Recent Updates</h3>
+            <button class="clear-all-btn" (click)="notifService.clearAll()">Clear all</button>
+          </div>
+          
+          <div class="notif-list">
+            @if (notifService.notifications().length === 0) {
+              <div class="notif-empty">
+                <p>No recent updates</p>
+              </div>
+            } @else {
+              @for (notif of notifService.notifications(); track notif._id) {
+                <div class="notif-item" [class.unread]="!notif.isRead">
+                  <div class="notif-icon" [ngClass]="notif.type">
+                    @if (notif.type === 'chat') {
+                      <hugeicons-icon [icon]="Message02Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                    } @else {
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
+                        <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+                        <path d="M21 6.727a11.05 11.05 0 0 0 -2.794 -3.727" />
+                        <path d="M3 6.727a11.05 11.05 0 0 1 2.792 -3.727" />
+                      </svg>
+                    }
+                  </div>
+                  <div class="notif-content" (click)="handleNotificationClick(notif)">
+                    <div class="notif-title-row">
+                      <h4 class="notif-title">{{ notif.title }}</h4>
+                      <span class="notif-time">{{ formatTime(notif.timestamp) }}</span>
+                    </div>
+                    <p class="notif-msg">{{ notif.message }}</p>
+                  </div>
+                  <button class="notif-dismiss" (click)="notifService.clearNotification(notif._id || notif.id!)" title="Dismiss">
+                    <span class="material-symbols-outlined">close</span>
+                  </button>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
+    </div>
+    
     <div class="divider"></div>
     @if (user()) {
       <div class="user-dropdown-container">
