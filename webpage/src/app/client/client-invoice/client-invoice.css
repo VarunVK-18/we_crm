@@ -1,0 +1,408 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #f8fafc;
+  overflow-y: auto;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.invoice-page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* Top Nav */
+.invoice-top-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  background: white;
+  padding: 12px 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.nav-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--palette-dark);
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: var(--palette-dark);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: #f1f5f9;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--palette-dark);
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.icon-btn:hover {
+  background: #f1f5f9;
+}
+
+/* Invoice Paper */
+.invoice-paper {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  margin-bottom: 32px;
+}
+
+/* Header Section */
+.invoice-header {
+  background-color: var(--palette-dark);
+  padding: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.brand-logo {
+  height: 48px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.brand-text-fallback {
+  color: white;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.brand-tagline {
+  color: rgba(255,255,255,0.7);
+  font-size: 12px;
+  font-style: italic;
+}
+
+.header-right {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.invoice-title {
+  color: white;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  margin: 0 0 12px 0;
+}
+
+.paid-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  border: 1px solid #10b981;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* Metadata Ribbon */
+.metadata-ribbon {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px 32px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.meta-item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.meta-label {
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.meta-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--palette-dark);
+}
+
+/* Body */
+.invoice-body {
+  padding: 40px 32px;
+}
+
+/* Address Row */
+.address-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 48px;
+}
+
+.address-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+}
+
+.address-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--palette-dark);
+  margin-bottom: 6px;
+}
+
+.address-line {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+/* Table */
+.line-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 32px;
+  border: 1px solid #e2e8f0;
+}
+
+.line-items-table th, .line-items-table td {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.line-items-table th {
+  background: #f8fafc;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--palette-dark);
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.item-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--palette-dark);
+  margin-bottom: 4px;
+}
+
+.item-subtitle {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.col-desc { width: 50%; text-align: left; }
+.col-qty { width: 10%; }
+.col-rate { width: 20%; }
+.col-amount { width: 20%; }
+
+/* Totals */
+.totals-section {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 64px;
+}
+
+.totals-box {
+  width: 280px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.total-label {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.total-value {
+  font-weight: 700;
+  color: var(--palette-dark);
+}
+
+.total-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 16px 0;
+}
+
+.grand-total {
+  background: var(--palette-dark);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.grand-total .total-label {
+  color: white;
+  font-weight: 800;
+}
+
+.grand-total .total-value {
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+/* Footer */
+.invoice-footer {
+  text-align: center;
+}
+
+.footer-expert {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.footer-thanks {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--palette-dark);
+  margin-bottom: 6px;
+}
+
+.footer-disclaimer {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Download Button */
+.action-section {
+  display: flex;
+  justify-content: center;
+}
+
+.download-btn-large {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--palette-dark);
+  color: white;
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.download-btn-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  background: #1a1f33;
+}
+
+/* Loading & Empty States */
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+  color: #64748b;
+}
+
+.rotating {
+  animation: spin 1s linear infinite;
+  font-size: 32px;
+  margin-bottom: 16px;
+  color: #3b82f6;
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+.back-btn-simple {
+  margin-top: 16px;
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* --- PRINT MEDIA QUERY --- */
+@media print {
+  /* Hide the angular sidebar by globally hiding it inside the app component if needed, 
+     or just relying on the fact that we can hide it via global styles, but let's hide known classes */
+  body * {
+    visibility: hidden;
+  }
+  
+  #invoice-paper, #invoice-paper * {
+    visibility: visible;
+  }
+  
+  #invoice-paper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset body styling for print */
+  body, html {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Ensure colors print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}

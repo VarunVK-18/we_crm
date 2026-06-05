@@ -1,0 +1,174 @@
+<div class="page-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">Support Tickets</h1>
+      <p class="page-subtitle">Manage and track your service requests and inquiries.</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  @if (isLoading()) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p>Loading tickets...</p>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="state-container error">
+      <p>{{ errorMessage() }}</p>
+      <button class="primary-btn" (click)="fetchData()">Retry</button>
+    </div>
+  } @else {
+    <div class="board-layout">
+      
+      <!-- Column 1: Submit New Ticket -->
+      <div class="board-column">
+        <div class="column-header">
+          <h2>SUBMIT NEW TICKET</h2>
+          <span class="badge action-badge">Action</span>
+        </div>
+        
+        <div class="column-content">
+          <div class="action-card">
+            <div class="icon-circle">
+              <hugeicons-icon [icon]="PlusSignIcon" [size]="32" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+            </div>
+            <h3>Need Assistance?</h3>
+            <p>Submit a new request and our team will get back to you shortly.</p>
+            <button class="black-btn" (click)="openNewTicketModal()">Start New Ticket</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Column 2: Pending -->
+      <div class="board-column">
+        <div class="column-header">
+          <h2>PENDING</h2>
+          <span class="badge count-badge purple-badge">{{ activeTickets.length }}</span>
+        </div>
+        
+        <div class="column-content">
+          @if (activeTickets.length === 0) {
+            <div class="empty-column">No pending tickets</div>
+          } @else {
+            @for (ticket of activeTickets; track ticket._id) {
+              <div class="kanban-card">
+                <div class="card-top">
+                  <span class="ticket-id">{{ ticket.ticketId || 'TKT-0000' }}</span>
+                  <span class="status-badge pending-badge">PENDING</span>
+                </div>
+                <h4 class="ticket-subject">{{ ticket.subject || 'No Subject' }}</h4>
+                <div class="card-meta">
+                  <div class="meta-row">
+                    <hugeicons-icon [icon]="Briefcase02Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                    <span>{{ ticket.category || 'General Support' }}</span>
+                  </div>
+                  <div class="meta-row">
+                    <hugeicons-icon [icon]="Calendar01Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                    <span>{{ formatDate(ticket.createdAt) }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Column 3: Resolved -->
+      <div class="board-column">
+        <div class="column-header">
+          <h2>RESOLVED</h2>
+          <span class="badge count-badge">{{ previousTickets.length }}</span>
+        </div>
+        
+        <div class="column-content">
+          @if (previousTickets.length === 0) {
+            <div class="empty-column">No resolved tickets</div>
+          } @else {
+            @for (ticket of previousTickets; track ticket._id) {
+              <div class="kanban-card">
+                <div class="card-top">
+                  <span class="ticket-id">{{ ticket.ticketId || 'TKT-0000' }}</span>
+                  <span class="status-badge resolved-badge">RESOLVED</span>
+                </div>
+                <h4 class="ticket-subject">{{ ticket.subject || 'No Subject' }}</h4>
+                <div class="card-meta">
+                  <div class="meta-row">
+                    <hugeicons-icon [icon]="Briefcase02Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                    <span>{{ ticket.category || 'General Support' }}</span>
+                  </div>
+                  <div class="meta-row">
+                    <hugeicons-icon [icon]="Calendar01Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                    <span>{{ formatDate(ticket.createdAt) }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+    </div>
+  }
+
+  <!-- New Ticket Modal -->
+  @if (showNewTicketModal()) {
+    <div class="modal-overlay" (click)="closeNewTicketModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <div class="modal-icon">
+            <hugeicons-icon [icon]="MessageMultiple01Icon" [size]="24" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+          </div>
+          <div class="modal-titles">
+            <h2>Raise Support Ticket</h2>
+            <p>Fill out the details below</p>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Completed Service</label>
+            <div class="input-wrapper select-wrapper">
+              <hugeicons-icon [icon]="GridIcon" [size]="18" class="input-icon"></hugeicons-icon>
+              <select [(ngModel)]="newTicket.checklistId" class="form-control">
+                @for (service of completedServices(); track service._id) {
+                  <option [value]="service._id">{{ service.service_name || 'Service' }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Subject</label>
+            <div class="input-wrapper">
+              <hugeicons-icon [icon]="Tag01Icon" [size]="18" class="input-icon"></hugeicons-icon>
+              <input type="text" [(ngModel)]="newTicket.subject" class="form-control" placeholder="e.g., GST Registration Failure" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Description</label>
+            <div class="input-wrapper textarea-wrapper">
+              <hugeicons-icon [icon]="TextFontIcon" [size]="18" class="input-icon"></hugeicons-icon>
+              <textarea [(ngModel)]="newTicket.description" class="form-control" rows="4" placeholder="Describe your issue in detail..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="cancel-btn" (click)="closeNewTicketModal()" [disabled]="isSubmitting()">Cancel</button>
+          <button class="submit-btn" (click)="submitNewTicket()" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              <span class="spinner small"></span>
+            } @else {
+              <hugeicons-icon [icon]="SentIcon" [size]="16" color="currentColor"></hugeicons-icon>
+              <span>Submit</span>
+            }
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+</div>

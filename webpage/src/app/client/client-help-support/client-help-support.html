@@ -1,0 +1,93 @@
+<div class="page-container">
+  <div class="content-wrapper">
+    <!-- Left Column: Help & Actions -->
+    <div class="left-column">
+      <div class="hero-section">
+        <div class="hero-icon-wrapper">
+          <hugeicons-icon [icon]="CustomerSupportIcon" [size]="64" color="var(--palette-dark)" [strokeWidth]="1.5"></hugeicons-icon>
+        </div>
+        <h2 class="hero-title">How can we help you?</h2>
+        <p class="hero-subtitle">Our team is available Mon-Sat (9 AM - 7 PM) to assist you with your business needs.</p>
+      </div>
+
+      <div class="contact-actions">
+        <!-- WhatsApp Action -->
+        <div class="action-card" (click)="openWhatsApp()">
+          <div class="action-icon-wrapper whatsapp">
+            <hugeicons-icon [icon]="BubbleChatIcon" [size]="24" color="#25D366" [strokeWidth]="2"></hugeicons-icon>
+          </div>
+          <div class="action-content">
+            <h3>Chat on WhatsApp</h3>
+            <p>Connect with a support agent instantly</p>
+          </div>
+          <div class="action-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Call Action -->
+        <div class="action-card" (click)="callSupport()">
+          <div class="action-icon-wrapper call">
+            <hugeicons-icon [icon]="CallOutgoing01Icon" [size]="24" color="var(--palette-dark)" [strokeWidth]="2"></hugeicons-icon>
+          </div>
+          <div class="action-content">
+            <h3>Call Support</h3>
+            <p>Speak directly with our consultants</p>
+          </div>
+          <div class="action-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: FAQs -->
+    <div class="right-column">
+      <div class="faq-section">
+        <h2 class="faq-title">Frequently Asked Questions</h2>
+        
+        <div class="faq-list">
+          @for (faq of faqs; track faq.question; let i = $index) {
+            <div class="faq-item" [class.open]="faq.isOpen">
+              <div class="faq-header" (click)="toggleFaq(i)">
+                <h3>{{ faq.question }}</h3>
+                <div class="faq-icon">
+                  @if (faq.isOpen) {
+                    <hugeicons-icon [icon]="ArrowUp01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                  } @else {
+                    <hugeicons-icon [icon]="ArrowDown01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                  }
+                </div>
+              </div>
+              @if (faq.isOpen) {
+                <div class="faq-body">
+                  <p>{{ faq.answer }}</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Manager CTA Card -->
+      <div class="manager-cta-card" style="margin-top: 32px;">
+        <h3>Need Expert Assistance?</h3>
+        <p>Your client manager{{ clientManager() ? ', ' + (clientManager().owner_name || clientManager().name || 'Support Team') + ',' : '' }} is available to assist you with any queries.</p>
+        <div class="cta-contact-details">
+           <div class="cta-contact-item">
+             <hugeicons-icon [icon]="CallIcon" [size]="18" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
+             <span>{{ clientManager()?.phone || '+91 98765 43210' }}</span>
+           </div>
+           <div class="cta-contact-item">
+             <hugeicons-icon [icon]="Mail01Icon" [size]="18" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
+             <span>{{ clientManager()?.email || 'support@wealthempires.com' }}</span>
+           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

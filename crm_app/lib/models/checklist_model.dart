@@ -21,6 +21,7 @@ class ChecklistModel {
   final List<ChecklistItemModel> items;
   final String notes;
   final DateTime? updatedAt;
+  final double? dealClosedAmount;
 
   ChecklistModel({
     required this.id,
@@ -29,6 +30,7 @@ class ChecklistModel {
     required this.items,
     this.notes = '',
     this.updatedAt,
+    this.dealClosedAmount,
   });
 
   /// Progress as a value between 0.0 and 1.0
@@ -72,11 +74,12 @@ class ChecklistModel {
 
     return ChecklistModel(
       id: id,
-      serviceName: data['service_name']?.toString() ?? '',
+      serviceName: data['service_name']?.toString() ?? data['checklist_name']?.toString() ?? '',
       status: status,
       items: items,
       notes: data['notes']?.toString() ?? '',
       updatedAt: updatedAt,
+      dealClosedAmount: (data['dealClosedAmount'] as num?)?.toDouble(),
     );
   }
 }

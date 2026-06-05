@@ -1,0 +1,148 @@
+<div class="invoice-page-container">
+  <!-- Top Navigation (Hidden on Print) -->
+  <div class="invoice-top-nav no-print">
+    <button class="back-btn" (click)="goBack()">
+      <hugeicons-icon [icon]="ArrowLeft01Icon" [size]="20" color="currentColor"></hugeicons-icon>
+      <span>Back</span>
+    </button>
+    <div class="nav-title">Digital Invoice</div>
+    <button class="icon-btn" (click)="downloadPdf()">
+      <hugeicons-icon [icon]="Download01Icon" [size]="20" color="currentColor"></hugeicons-icon>
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state no-print">
+      <span class="material-symbols-outlined rotating">sync</span>
+      <p>Loading invoice details...</p>
+    </div>
+  } @else if (order()) {
+    <div class="invoice-paper" id="invoice-paper">
+      
+      <!-- Header Section -->
+      <div class="invoice-header">
+        <div class="header-left">
+          <div class="brand-logo-container">
+            <img src="/logo.jpg" alt="Wealth Empires" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <div class="brand-text-fallback" style="display:none;">WEALTH EMPIRES</div>
+          </div>
+          <div class="brand-tagline">Global Business Excellence</div>
+        </div>
+        
+        <div class="header-right">
+          <h1 class="invoice-title">INVOICE</h1>
+          <div class="paid-badge">PAID</div>
+        </div>
+      </div>
+
+      <!-- Metadata Ribbon -->
+      <div class="metadata-ribbon">
+        <div class="meta-item">
+          <span class="meta-label">Invoice No.</span>
+          <span class="meta-value">{{ invoiceNumber }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Date</span>
+          <span class="meta-value">{{ order().updatedAt | date:'dd MMM yyyy' }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Payment</span>
+          <span class="meta-value">Online / UPI</span>
+        </div>
+      </div>
+
+      <!-- Content Body -->
+      <div class="invoice-body">
+        
+        <!-- Address Blocks -->
+        <div class="address-row">
+          <div class="address-block">
+            <div class="address-label">FROM</div>
+            <div class="address-name">Wealth Empires</div>
+            <div class="address-line">60, A Velleeswarar koil st</div>
+            <div class="address-line">Srinivasa Nagar, Mangadu</div>
+            <div class="address-line">Chennai, TN 600122</div>
+            <div class="address-line">GST: 33AAACW1234F1Z5</div>
+          </div>
+          
+          <div class="address-block">
+            <div class="address-label">BILLED TO</div>
+            <div class="address-name">{{ user()?.company_name || user()?.name || 'Client' }}</div>
+            <div class="address-line">{{ user()?.email || '' }}</div>
+            <div class="address-line">{{ user()?.phone || '' }}</div>
+            <div class="address-line">India</div>
+          </div>
+        </div>
+
+        <!-- Line Items Table -->
+        <table class="line-items-table">
+          <thead>
+            <tr>
+              <th class="col-desc">Item Description</th>
+              <th class="col-qty text-center">Qty</th>
+              <th class="col-rate text-right">Rate</th>
+              <th class="col-amount text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="col-desc">
+                <div class="item-title">{{ order().service_name || order().checklist_name || 'Service Package' }}</div>
+                <div class="item-subtitle">Professional consultancy fee</div>
+              </td>
+              <td class="col-qty text-center">1</td>
+              <td class="col-rate text-right">{{ servicePrice | currency:'INR':'symbol':'1.2-2' }}</td>
+              <td class="col-amount text-right">{{ servicePrice | currency:'INR':'symbol':'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Totals Calculation -->
+        <div class="totals-section">
+          <div class="totals-box">
+            <div class="total-row">
+              <span class="total-label">Subtotal</span>
+              <span class="total-value">{{ servicePrice | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="total-row">
+              <span class="total-label">CGST (9%)</span>
+              <span class="total-value">{{ cgst | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="total-row">
+              <span class="total-label">SGST (9%)</span>
+              <span class="total-value">{{ sgst | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+            
+            <div class="total-divider"></div>
+            
+            <div class="total-row grand-total">
+              <span class="total-label">Total Paid</span>
+              <span class="total-value">{{ total | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="invoice-footer">
+          <div class="footer-expert">Verified & Handled by {{ order().assigned_to?.name || order().assigned_to?.owner_name || 'Support Team' }}</div>
+          <div class="footer-thanks">Thank you for choosing Wealth Empires!</div>
+          <div class="footer-disclaimer">System generated document. No signature required.</div>
+        </div>
+        
+      </div>
+    </div>
+    
+    <!-- Action Button -->
+    <div class="action-section no-print">
+      <button class="download-btn-large" (click)="downloadPdf()">
+        <hugeicons-icon [icon]="Download01Icon" [size]="20" color="currentColor"></hugeicons-icon>
+        <span>Download Official PDF</span>
+      </button>
+    </div>
+  } @else {
+    <div class="empty-state no-print">
+      <p>Invoice not found.</p>
+      <button (click)="goBack()" class="back-btn-simple">Go Back</button>
+    </div>
+  }
+</div>

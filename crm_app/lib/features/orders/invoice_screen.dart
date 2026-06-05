@@ -14,9 +14,9 @@ class InvoiceScreen extends StatelessWidget {
   final ServiceOrder order;
   const InvoiceScreen({super.key, required this.order});
 
-  // Mock invoice data — replace with real fields from backend later
+  // Generate invoice number from createdAt timestamp with #WE prefix
   String get _invoiceNumber =>
-      'INV-${order.id.replaceAll('ORD-', '').padLeft(4, '0')}';
+      '#WE${DateFormat('yyMMddHHmm').format(order.createdAt)}';
 
   // Fetch deal closed amount directly from the order
   double get _servicePrice =>

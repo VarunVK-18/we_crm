@@ -1,0 +1,72 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">My Subscriptions</h1>
+      <p class="page-subtitle">Manage your current plans and view your completed service history.</p>
+    </div>
+  </div>
+
+  <div class="content-wrapper">
+    <div class="section-title">Current Plan</div>
+    
+    <!-- Premium Plan Card (Static for now) -->
+    <div class="plan-card">
+      <div class="plan-card-bg"></div>
+      <div class="plan-card-content">
+        <div class="plan-card-header">
+          <span class="plan-badge">PREMIUM COMPLIANCE</span>
+          <hugeicons-icon [icon]="CrownIcon" [size]="28" color="#fbbf24" [strokeWidth]="2"></hugeicons-icon>
+        </div>
+        
+        <h2 class="plan-title">Wealth Empires<br>Gold Plan</h2>
+        
+        <div class="plan-details">
+          <div class="detail-block">
+            <span class="detail-label">STATUS</span>
+            <span class="detail-value">Active</span>
+          </div>
+          <div class="detail-block">
+            <span class="detail-label">EXPIRES</span>
+            <span class="detail-value">31 Mar 2025</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top: 48px;">Completed Services</div>
+    
+    <div class="history-list">
+      @if (isLoading()) {
+        <div class="loading-state">
+          <span class="material-symbols-outlined rotating">sync</span>
+          <p>Loading completed services...</p>
+        </div>
+      } @else if (completedServices().length === 0) {
+        <div class="empty-state">
+          <hugeicons-icon [icon]="CheckmarkBadge01Icon" [size]="48" color="#cbd5e1" [strokeWidth]="1.5"></hugeicons-icon>
+          <h3>No Completed Services</h3>
+          <p>You don't have any completed services yet.</p>
+        </div>
+      } @else {
+        @for (service of completedServices(); track service._id) {
+          <a [routerLink]="['/client/invoice', service._id || service.id]" class="history-item" style="text-decoration: none;">
+            <div class="hi-icon">
+              <hugeicons-icon [icon]="FileAttachmentIcon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+            </div>
+            <div class="hi-content">
+              <h3>{{ service.service_name || service.checklist_name || 'Service Package' }}</h3>
+              <p>
+                <span class="hi-id">{{ service._id?.slice(-6).toUpperCase() || 'INV-0000' }}</span>
+                <span class="hi-separator">•</span>
+                <span class="hi-date">{{ service.updatedAt | date:'dd MMM yyyy' }}</span>
+              </p>
+            </div>
+            <div class="hi-amount">
+              {{ service.dealClosedAmount ? (service.dealClosedAmount | currency:'INR':'symbol':'1.0-0') : 'Paid' }}
+            </div>
+          </a>
+        }
+      }
+    </div>
+  </div>
+</div>

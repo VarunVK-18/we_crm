@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
+import '../../providers/checklist_provider.dart';
+import '../../models/checklist_model.dart';
+import '../../models/order_model.dart';
+import '../orders/invoice_screen.dart';
 
-class SubscriptionsScreen extends StatelessWidget {
+class SubscriptionsScreen extends ConsumerWidget {
   const SubscriptionsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final checklistsAsync = ref.watch(myChecklistsProvider);
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -42,7 +50,7 @@ class SubscriptionsScreen extends StatelessWidget {
             _buildPlanCard(),
             const SizedBox(height: 48),
             const Text(
-              'Billing History',
+              'Completed Services',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
@@ -50,23 +58,83 @@ class SubscriptionsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildHistoryItem(
-              service: 'MCA Compliance Package',
-              id: 'INV-4521',
-              amount: '₹45,000',
-              date: '12 Mar 2024',
-            ),
-            _buildHistoryItem(
-              service: 'Private Limited Incorporation',
-              id: 'INV-4480',
-              amount: '₹12,500',
-              date: '10 Feb 2024',
-            ),
-            _buildHistoryItem(
-              service: 'Professional Tax Reg.',
-              id: 'INV-4412',
-              amount: '₹2,500',
-              date: '05 Jan 2024',
+            
+            checklistsAsync.when(
+              data: (checklists) {
+                final completed = checklists.where((c) => c.status == ChecklistStatus.completed).toList();
+                
+                if (completed.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(32),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(LucideIcons.checkCircle, size: 48, color: Colors.grey.shade300),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No completed services yet.',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: completed.map((c) {
+                    final dateStr = c.updatedAt != null
+                        ? DateFormat('dd MMM yyyy').format(c.updatedAt!)
+                        : 'Unknown Date';
+                        
+                    final amountStr = c.dealClosedAmount != null
+                        ? NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(c.dealClosedAmount)
+                        : 'Paid';
+
+                    return _buildHistoryItem(
+                      service: c.serviceName.isEmpty ? 'Service Package' : c.serviceName,
+                      id: c.id.length > 6 ? c.id.substring(c.id.length - 6).toUpperCase() : c.id,
+                      amount: amountStr,
+                      date: dateStr,
+                      onTap: () {
+                        // Pass mock ServiceOrder to InvoiceScreen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => InvoiceScreen(
+                              order: ServiceOrder(
+                                id: c.id,
+                                clientUid: '',
+                                entityName: 'Wealth Empires Client',
+                                serviceType: c.serviceName.isEmpty ? 'Service Package' : c.serviceName,
+                                companyName: 'Wealth Empires Client',
+                                status: ServiceStatus.complete,
+                                stage: OrderStage.completed,
+                                steps: const [],
+                                requestedDocuments: const [],
+                                finalDocuments: const [],
+                                assignedExpert: 'Support Team',
+                                expertPhone: '',
+                                createdAt: c.updatedAt ?? DateTime.now(),
+                                dealClosedAmount: c.dealClosedAmount ?? 0.0,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.deepTeal)),
+              error: (err, stack) => const Center(child: Text('Failed to load completed services')),
             ),
           ],
         ),
@@ -157,60 +225,88 @@ class SubscriptionsScreen extends StatelessWidget {
     required String id,
     required String amount,
     required String date,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
-            child: const Icon(LucideIcons.fileText, color: AppTheme.deepTeal, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(LucideIcons.fileText, color: AppTheme.deepTeal, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    service,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                  Text(
+                    '$id • $date',
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  service,
+                  amount,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
                     color: AppTheme.deepTeal,
                   ),
                 ),
-                Text(
-                  '$id • $date',
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      'Download',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.deepTeal.withOpacity(0.6),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      LucideIcons.download,
+                      size: 12,
+                      color: AppTheme.deepTeal.withOpacity(0.6),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Text(
-            amount,
-            style: const TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 15,
-              color: AppTheme.deepTeal,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
