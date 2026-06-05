@@ -67,7 +67,7 @@ class MyEntitiesScreen extends ConsumerWidget {
         serviceCount: activeCount,
         icon: type == 'LLP' ? LucideIcons.cpu : LucideIcons.building2,
         color:
-            type == 'LLP' ? const Color(0xFF10B981) : const Color(0xFF6366F1),
+            type == 'LLP' ? const Color(0xFF10B981) : const Color(0xFF8B5CF6), // Matches the violet from the screenshot
       );
     }).toList();
 
@@ -77,7 +77,7 @@ class MyEntitiesScreen extends ConsumerWidget {
       type: 'Portfolio',
       serviceCount: orders.where((o) => o.status == ServiceStatus.active).length,
       icon: LucideIcons.layoutGrid,
-      color: AppTheme.accentCyan,
+      color: const Color(0xFF06B6D4), // Bright cyan matching screenshot
     );
 
     final finalEntities = [allEntitiesCard, ...entities];
@@ -158,17 +158,14 @@ class _EntityCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(
-            color: isSelected ? AppTheme.accentCyan : Colors.transparent,
-            width: 2,
-          ),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? AppTheme.accentCyan.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+                  ? AppTheme.deepTeal.withValues(alpha: 0.1)
+                  : Colors.black.withValues(alpha: 0.05),
+              blurRadius: isSelected ? 24 : 16,
+              spreadRadius: 0,
+              offset: Offset(0, isSelected ? 12 : 8),
             ),
           ],
         ),
@@ -232,8 +229,15 @@ class _EntityCard extends ConsumerWidget {
               ),
             ),
             if (isSelected)
-              const Icon(LucideIcons.checkCircle2,
-                  color: AppTheme.accentCyan, size: 24)
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: entity.color.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(LucideIcons.check,
+                    color: entity.color, size: 20),
+              )
             else
               Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
           ],

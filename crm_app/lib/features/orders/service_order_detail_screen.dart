@@ -25,6 +25,7 @@ import 'msme_form_screen.dart';
 import 'gst_form_screen.dart';
 import 'iso_form_screen.dart';
 import 'fssai_form_screen.dart';
+import 'dsc_form_screen.dart';
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
@@ -1387,6 +1388,8 @@ void _routeToForm(BuildContext context, ServiceOrder order) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => IsoFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('fssai')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => FssaiFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('dsc') || order.serviceType.toLowerCase().contains('digital signature')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => DscFormScreen(order: order)));
   } else {
     // Fallback if we haven't mapped the form yet
     ScaffoldMessenger.of(context).showSnackBar(

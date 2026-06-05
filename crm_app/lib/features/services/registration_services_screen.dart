@@ -219,20 +219,12 @@ class _RegistrationServicesScreenState
 
     // --- Others ---
     {
-      'title': 'Individual DSC',
-      'description': 'Class 3 Digital Signature Certificate for individuals.',
+      'title': 'DSC',
+      'description': 'Digital Signature Certificate for individuals & organizations.',
       'icon': LucideIcons.usb,
       'color': const Color(0xFF8B5CF6),
       'category': 'Others',
-      'features': ['Application Processing', 'Video Verification', 'Email/Phone KYC', 'Token Procurement', '2-Year Validity'],
-    },
-    {
-      'title': 'Organization DSC',
-      'description': 'Class 3 Digital Signature Certificate for organizations.',
-      'icon': LucideIcons.building,
-      'color': const Color(0xFFEC4899),
-      'category': 'Others',
-      'features': ['Organization KYC', 'Authorized Signatory Check', 'Video Verification', 'Token Procurement', '2-Year Validity'],
+      'features': ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity'],
     }
   ];
 

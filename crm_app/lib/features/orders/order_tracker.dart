@@ -13,6 +13,7 @@ import 'service_order_detail_screen.dart';
 import '../../providers/orders_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/compliance_provider.dart';
 import 'notification_sheet.dart';
 
 // ─── Tab definition ───────────────────────────────────────────────────────────
@@ -37,7 +38,6 @@ class OrderTrackerScreen extends ConsumerStatefulWidget {
 
 class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
   _ServiceTab _selectedTab = _ServiceTab.active;
-  String? _selectedEntity;
   String _activeFilter = 'All';
   String _searchQuery = '';
 
@@ -49,14 +49,20 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
     final unreadCount = ref.watch(unreadNotificationCountProvider);
 
     final user = ref.watch(userProfileProvider).value;
+    final selectedEntity = ref.watch(selectedEntityProvider);
 
-    // Build entity list from database data
-    final entities = orders.map((o) => o.entityName).toSet().toList()..sort();
+    // Build entity list from database data using companyName
+    final entities = orders
+        .map((o) => o.companyName)
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList()
+        ..sort();
 
     // Filter by selected entity
-    final entityFiltered = _selectedEntity == null
+    final entityFiltered = selectedEntity == 'All Entities'
         ? orders
-        : orders.where((o) => o.entityName == _selectedEntity).toList();
+        : orders.where((o) => o.companyName == selectedEntity).toList();
 
     final fullActiveList =
         entityFiltered.where((o) => o.status == ServiceStatus.active).toList();
@@ -233,8 +239,8 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<String?>(
-                      initialValue: _selectedEntity,
+                    DropdownButtonFormField<String>(
+                      value: selectedEntity,
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFF4F6F9),
@@ -257,15 +263,15 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         color: Colors.grey,
                       ),
                       items: [
-                        const DropdownMenuItem<String?>(
-                          value: null,
+                        const DropdownMenuItem<String>(
+                          value: 'All Entities',
                           child: Text(
                             'All Entities',
                             style: TextStyle(fontSize: 14),
                           ),
                         ),
                         ...entities.map(
-                          (e) => DropdownMenuItem<String?>(
+                          (e) => DropdownMenuItem<String>(
                             value: e,
                             child: Text(
                               e,
@@ -274,7 +280,11 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           ),
                         ),
                       ],
-                      onChanged: (val) => setState(() => _selectedEntity = val),
+                      onChanged: (val) {
+                        if (val != null) {
+                          ref.read(selectedEntityProvider.notifier).state = val;
+                        }
+                      },
                     ),
                   ],
                 ),

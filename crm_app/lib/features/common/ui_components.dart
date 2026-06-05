@@ -217,15 +217,15 @@ class CircleServiceButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(right: 16.r),
+      padding: EdgeInsets.only(right: 10.r),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16.r),
         child: Column(
           children: [
             Container(
-              width: 48.r,
-              height: 48.r,
+              width: 56.r,
+              height: 56.r,
               decoration: BoxDecoration(
                 color: (color ?? AppTheme.corporateBlue).withOpacity(0.08),
                 shape: BoxShape.circle,
@@ -238,19 +238,19 @@ class CircleServiceButton extends StatelessWidget {
                     ? Icon(
                         icon as IconData,
                         color: color ?? AppTheme.corporateBlue,
-                        size: 18.ip,
+                        size: 22.ip,
                       )
                     : HugeIcon(
                         icon: icon,
                         color: color ?? AppTheme.corporateBlue,
-                        size: 18.ip,
+                        size: 22.ip,
                         strokeWidth: 1.5,
                       ),
               ),
             ),
             SizedBox(height: 8.r),
             SizedBox(
-              width: 82.r,
+              width: 90.r,
               child: Text(
                 label,
                 textAlign: TextAlign.center,

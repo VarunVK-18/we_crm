@@ -537,3 +537,62 @@ exports.submitFssaiForm = async (req, res) => {
   }
 };
 
+// Submit DSC Registration Form
+exports.submitDscForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.applicantPan) {
+      uploadedDocs.push({ name: "Applicant PAN Card", fileUrl: files.applicantPan[0].path });
+    }
+    if (files.applicantAadhaar) {
+      uploadedDocs.push({ name: "Applicant Aadhaar Card", fileUrl: files.applicantAadhaar[0].path });
+    }
+    if (files.applicantPhoto) {
+      uploadedDocs.push({ name: "Applicant Photo", fileUrl: files.applicantPhoto[0].path });
+    }
+    if (files.certificateOfIncorporation) {
+      uploadedDocs.push({ name: "Certificate of Incorporation", fileUrl: files.certificateOfIncorporation[0].path });
+    }
+    if (files.organizationPan) {
+      uploadedDocs.push({ name: "Organization PAN", fileUrl: files.organizationPan[0].path });
+    }
+    if (files.gstCertificate) {
+      uploadedDocs.push({ name: "GST Certificate", fileUrl: files.gstCertificate[0].path });
+    }
+    if (files.msmeCertificate) {
+      uploadedDocs.push({ name: "MSME Certificate", fileUrl: files.msmeCertificate[0].path });
+    }
+    if (files.otherDirectorPan) {
+      uploadedDocs.push({ name: "Other Director PAN", fileUrl: files.otherDirectorPan[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      dscForm: formData,
+      dscDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'DSC form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting DSC form:', error);
+    res.status(500).json({ message: 'Server error while submitting DSC form.', error: error.message });
+  }
+};

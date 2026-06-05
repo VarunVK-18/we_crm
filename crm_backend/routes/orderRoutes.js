@@ -162,4 +162,26 @@ router.post(
   orderController.submitFssaiForm
 );
 
+// Define fields for DSC Registration form
+const dscUploadFields = [
+  { name: 'applicantPan', maxCount: 1 },
+  { name: 'applicantAadhaar', maxCount: 1 },
+  { name: 'applicantPhoto', maxCount: 1 },
+  { name: 'certificateOfIncorporation', maxCount: 1 },
+  { name: 'organizationPan', maxCount: 1 },
+  { name: 'gstCertificate', maxCount: 1 },
+  { name: 'msmeCertificate', maxCount: 1 },
+  { name: 'otherDirectorPan', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-dsc-form
+// @desc    Submit DSC form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-dsc-form',
+  checkUser,
+  upload.fields(dscUploadFields),
+  orderController.submitDscForm
+);
+
 module.exports = router;

@@ -116,11 +116,23 @@ class ResponsiveLayout extends ConsumerWidget {
             child: Scaffold(
               appBar: null,
               extendBody: true,
-              body: mobileBody,
-              bottomNavigationBar: _ModernBottomNav(
-                currentIndex: currentIndex,
-                onTap: onIndexChanged,
-                navItems: navItems,
+              body: Stack(
+                children: [
+                  mobileBody,
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: SafeArea(
+                      top: false,
+                      child: _ModernBottomNav(
+                        currentIndex: currentIndex,
+                        onTap: onIndexChanged,
+                        navItems: navItems,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -494,9 +506,16 @@ class _ModernBottomNav extends StatelessWidget {
           borderRadius: BorderRadius.circular(40), // Pill shape
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: Colors.black.withValues(alpha: 0.35),
+              blurRadius: 24,
+              spreadRadius: 4,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 8,
+              spreadRadius: 0,
+              offset: const Offset(0, 4),
             ),
           ],
         ),

@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:ui';
+import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -56,7 +58,7 @@ class CustomerDashboard extends ConsumerWidget {
             scrolledUnderElevation: 0,
             stretch: false,
             toolbarHeight: 70.r,
-            backgroundColor: Colors.white,
+            backgroundColor: AppTheme.backgroundLight,
             centerTitle: true,
             title: Column(
               mainAxisSize: MainAxisSize.min,
@@ -337,7 +339,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
     return Column(
       children: [
         SizedBox(
-          height: 220.r,
+          height: 190.r,
           child: PageView.builder(
             controller: _pageController,
             onPageChanged: (index) {
@@ -406,43 +408,83 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFDCD2FF), // Very light pastel violet
+          color: const Color(0xFFF6D6E3), // Pink from the reference image
           borderRadius: BorderRadius.circular(20.r),
-          boxShadow: AppTheme.softShadow,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 16,
+              spreadRadius: 0,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20.r),
           child: Stack(
             children: [
+              // Background organic floating blobs
               Positioned(
-                right: -10.r,
-                top: -10.r,
-                child: HugeIcon(
-                  icon: HugeIcons.strokeRoundedStartUp02,
-                  size: 110.ip,
-                  color: Colors.black.withValues(
-                      alpha: 0.05), // Darker icon for contrast on violet
+                top: -40.r,
+                right: -30.r,
+                child: FloatingWidget(
+                  duration: const Duration(seconds: 4),
+                  offset: 15,
+                  child: Container(
+                    width: 140.r,
+                    height: 140.r,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -50.r,
+                left: 10.r,
+                child: FloatingWidget(
+                  duration: const Duration(seconds: 6),
+                  offset: 12,
+                  child: Container(
+                    width: 180.r,
+                    height: 180.r,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                ),
+              ),
+              // Glassmorphism Blur
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                  child: const SizedBox(),
                 ),
               ),
               Padding(
-                padding: EdgeInsets.all(20.r),
+                padding: EdgeInsets.all(16.r),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: EdgeInsets.all(10.r),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(
-                                alpha: 0.1), // Slightly dark for contrast
-                            borderRadius: BorderRadius.circular(10.r),
-                          ),
-                          child: HugeIcon(
-                            icon: HugeIcons.strokeRoundedStartUp02,
-                            size: 24.ip,
-                            color: Colors.black87, // Dark icon
+                        FloatingWidget(
+                          duration: const Duration(seconds: 2),
+                          offset: 4,
+                          child: Container(
+                            padding: EdgeInsets.all(10.r),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10.r),
+                            ),
+                            child: HugeIcon(
+                              icon: HugeIcons.strokeRoundedStartUp02,
+                              size: 24.ip,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                         SizedBox(width: 12.r),
@@ -552,23 +594,21 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFEBF3FC), // Light blue from reference image
           borderRadius: BorderRadius.circular(20.r),
-          boxShadow: AppTheme.softShadow,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
+              spreadRadius: 0,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Stack(
           children: [
-            Positioned(
-              right: -10.r,
-              top: -10.r,
-              child: HugeIcon(
-                icon: HugeIcons.strokeRoundedTask01,
-                size: 110.ip,
-                color: AppTheme.deepTeal.withValues(alpha: 0.03),
-              ),
-            ),
             Padding(
-              padding: EdgeInsets.all(20.r),
+              padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -652,7 +692,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           minHeight: 6.r,
                           backgroundColor: Colors.grey.shade100,
                           valueColor: const AlwaysStoppedAnimation<Color>(
-                              AppTheme.accentCyan),
+                              Color.fromARGB(255, 54, 126, 57)),
                         ),
                       ),
                     ],
@@ -707,23 +747,21 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFFCF1D1), // Pale yellow from reference image
           borderRadius: BorderRadius.circular(20.r),
-          boxShadow: AppTheme.softShadow,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 16,
+              spreadRadius: 0,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Stack(
           children: [
-            Positioned(
-              right: -10.r,
-              top: -10.r,
-              child: HugeIcon(
-                icon: HugeIcons.strokeRoundedTaskDone01,
-                size: 110.ip,
-                color: AppTheme.deepTeal.withValues(alpha: 0.03),
-              ),
-            ),
             Padding(
-              padding: EdgeInsets.all(20.r),
+              padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -832,22 +870,21 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
+          color: const Color(0xFF111625), // Dark navy from reference image
           borderRadius: BorderRadius.circular(20.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 16,
+              spreadRadius: 0,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Stack(
           children: [
-            Positioned(
-              right: -10.r,
-              top: -10.r,
-              child: Icon(
-                LucideIcons.gift,
-                size: 110.ip,
-                color: Colors.amber.withValues(alpha: 0.03),
-              ),
-            ),
             Padding(
-              padding: EdgeInsets.all(20.r),
+              padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1022,3 +1059,50 @@ class _HorizontalServiceList extends StatelessWidget {
     );
   }
 }
+
+class FloatingWidget extends StatefulWidget {
+  final Widget child;
+  final Duration duration;
+  final double offset;
+
+  const FloatingWidget({
+    super.key,
+    required this.child,
+    this.duration = const Duration(seconds: 3),
+    this.offset = 10.0,
+  });
+
+  @override
+  State<FloatingWidget> createState() => _FloatingWidgetState();
+}
+
+class _FloatingWidgetState extends State<FloatingWidget> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: widget.duration)
+      ..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, math.sin(_controller.value * math.pi) * widget.offset),
+          child: widget.child,
+        );
+      },
+    );
+  }
+}
+
