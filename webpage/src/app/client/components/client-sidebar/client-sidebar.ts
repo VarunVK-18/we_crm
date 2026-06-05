@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, UserAccountIcon, Briefcase01Icon, Message01Icon, Shield01Icon } from '@hugeicons/core-free-icons';
+import { Home07Icon, PackageIcon, Shield01Icon, UserIcon, CustomerSupportIcon, DashboardSquare01Icon } from '@hugeicons/core-free-icons';
 import { Api } from '../../../api';
 
 @Component({
@@ -13,11 +13,12 @@ import { Api } from '../../../api';
   styleUrl: './client-sidebar.css'
 })
 export class ClientSidebarComponent implements OnInit {
-  readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
-  readonly UserAccountIcon = UserAccountIcon;
-  readonly Briefcase01Icon = Briefcase01Icon;
-  readonly Message01Icon = Message01Icon;
+  readonly Home07Icon = Home07Icon;
+  readonly DashboardSquare01Icon = DashboardSquare01Icon;
+  readonly PackageIcon = PackageIcon;
   readonly Shield01Icon = Shield01Icon;
+  readonly UserIcon = UserIcon;
+  readonly CustomerSupportIcon = CustomerSupportIcon;
 
   user = signal<any>(null);
   clientManager = signal<any>(null);

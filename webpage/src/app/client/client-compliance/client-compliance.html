@@ -1,8 +1,12 @@
 <div class="compliance-page">
-  <div class="page-header">
-    <div class="header-text">
-      <span class="header-subtitle">COMPLIANCE CENTER</span>
-      <h1 class="header-title">{{ user()?.company_name || user()?.name || 'All Entities' }}</h1>
+  <div class="comp-hero">
+    <div class="comp-hero-bg"></div>
+    <div class="comp-hero-content">
+      <div class="comp-hero-text">
+        <span class="comp-hero-badge">COMPLIANCE CENTER</span>
+        <h1 class="comp-hero-title">{{ user()?.company_name || user()?.name || 'All Entities' }}</h1>
+        <p class="comp-hero-subtitle">Track, manage, and resolve your compliance requirements in real-time.</p>
+      </div>
     </div>
   </div>
 
@@ -32,7 +36,7 @@
         <!-- Pending Stats -->
         <div class="bento-card stat-card">
           <div class="stat-icon-wrapper">
-            <hugeicons-icon [icon]="Clock01Icon" [size]="22" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
+            <hugeicons-icon [icon]="Clock02Icon" [size]="22" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ pendingReminders().length | number:'2.0-0' }}</div>
@@ -48,7 +52,7 @@
           <p class="deadline-subtitle">{{ urgentReminder() ? urgentReminder()?.message : 'Up to date' }}</p>
         </div>
         <div class="deadline-date">
-          {{ urgentReminder() ? 'Due soon' : 'No upcoming deadlines' }}
+          {{ urgentReminder() ? urgentReminder()?.daysLeft + ' Days Left' : 'No upcoming deadlines' }}
         </div>
       </div>
 
@@ -81,4 +85,9 @@
       </div>
     </div>
   }
+
+  <!-- Floating Startup Doctor Button -->
+  <a href="https://aistartupdoctor.com/" target="_blank" class="floating-sd-btn" title="Check Your Realtime Health Score In Startup Doctor">
+    <img src="/assets/sdlogo%20(1).svg" alt="Startup Doctor Logo">
+  </a>
 </div>

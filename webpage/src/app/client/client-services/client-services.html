@@ -1,0 +1,117 @@
+<div class="services-container">
+  <div class="services-header">
+    <div class="header-titles">
+      <h1 class="page-title">Service Catalog</h1>
+      <p class="page-subtitle">Browse and request quotes for our professional services.</p>
+    </div>
+  </div>
+
+  <div class="catalog-grid">
+    <!-- Column 1: Categories (1/4) -->
+    <div class="col-categories">
+      <h3 class="col-title">Categories</h3>
+      <div class="category-list">
+        @for (cat of categories; track cat.id) {
+          <div class="category-item" 
+               [class.active]="selectedCategory() === cat.id"
+               (click)="selectCategory(cat.id)">
+            <div class="cat-icon">
+              <hugeicons-icon [icon]="cat.icon" [size]="20" color="currentColor"></hugeicons-icon>
+            </div>
+            <span class="cat-label">{{ cat.label }}</span>
+            <div class="cat-arrow">
+              <hugeicons-icon [icon]="ArrowRight01Icon" [size]="16" color="currentColor"></hugeicons-icon>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Column 2: Services (1/4) -->
+    <div class="col-services">
+      <h3 class="col-title">Available Services</h3>
+      <div class="service-list">
+        @if (currentServices().length === 0) {
+          <div class="empty-state">
+            <p>No services found in this category.</p>
+          </div>
+        } @else {
+          @for (service of currentServices(); track service.title) {
+            <div class="service-item" 
+                 [class.active]="selectedService()?.title === service.title"
+                 (click)="selectService(service)">
+              <span class="service-label">{{ service.title }}</span>
+            </div>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- Column 3: Details & Request (2/4) -->
+    <div class="col-details">
+      <h3 class="col-title">Service Details</h3>
+      
+      @if (selectedService()) {
+        <div class="detail-card">
+          <div class="detail-header">
+            <h2>{{ selectedService().title }}</h2>
+            <p>{{ selectedService().description }}</p>
+          </div>
+
+          <div class="features-list">
+            <h4>Included Features</h4>
+            <ul>
+              @for (feature of selectedService().features; track feature) {
+                <li>
+                  <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#10b981"></hugeicons-icon>
+                  <span>{{ feature }}</span>
+                </li>
+              }
+            </ul>
+          </div>
+
+          <div class="quote-section">
+            <h3>Request Quote</h3>
+            @if (formSuccess) {
+              <div class="success-message">
+                <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="24" color="#10b981"></hugeicons-icon>
+                <p>Your request has been submitted successfully! We will contact you soon.</p>
+              </div>
+            } @else {
+              <form class="quote-form" (ngSubmit)="submitQuote()">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" name="name" [(ngModel)]="quoteForm.name" required placeholder="John Doe" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="phone" [(ngModel)]="quoteForm.phone" required placeholder="+91 9876543210" class="form-input">
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label>Email Address</label>
+                  <input type="email" name="email" [(ngModel)]="quoteForm.email" required placeholder="john@example.com" class="form-input">
+                </div>
+
+                <div class="form-group">
+                  <label>Additional Requirements (Optional)</label>
+                  <textarea name="requirements" [(ngModel)]="quoteForm.requirements" rows="3" placeholder="Tell us more about your business..." class="form-input"></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit" [disabled]="formSubmitting">
+                  {{ formSubmitting ? 'Submitting...' : 'Request Quote' }}
+                </button>
+              </form>
+            }
+          </div>
+        </div>
+      } @else {
+        <div class="empty-detail">
+          <p>Select a service from the list to view details and request a quote.</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

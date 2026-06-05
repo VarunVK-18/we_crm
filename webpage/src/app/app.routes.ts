@@ -7,6 +7,7 @@ import { ClientServiceDetail } from './client/client-service-detail';
 import { ClientProfile } from './client/client-profile';
 import { ClientOngoingServices } from './client/client-ongoing-services';
 import { ClientCompliance } from './client/client-compliance/client-compliance';
+import { ClientServicesComponent } from './client/client-services/client-services';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -17,6 +18,7 @@ export const routes: Routes = [
     component: ClientLayoutComponent,
     children: [
       { path: 'dashboard', component: ClientDashboard },
+      { path: 'services', component: ClientServicesComponent },
       { path: 'profile', component: ClientProfile },
       { path: 'service/:id', component: ClientServiceDetail },
       { path: 'ongoing-services', component: ClientOngoingServices },

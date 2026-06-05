@@ -47,6 +47,10 @@ export class ClientTopbarComponent implements OnInit {
     } else if (url.includes('/service/')) {
       this.pageTitle.set('Service Details');
       this.pageSubtitle.set('Track your request progress');
+    } else if (url.includes('/compliance')) {
+      this.pageTitle.set('Compliance Center');
+      const usr = this.user();
+      this.pageSubtitle.set(usr?.company_name || usr?.name || 'Entity Compliance Management');
     } else {
       this.pageTitle.set('My Services');
       this.pageSubtitle.set('Client Portal Dashboard');
