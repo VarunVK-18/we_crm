@@ -18,6 +18,7 @@ class SupportTicketsScreen extends ConsumerStatefulWidget {
 
 class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   List<dynamic> _tickets = [];
+  List<dynamic> _completedServices = [];
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -54,8 +55,23 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        
+        // Fetch completed services
+        final servicesResponse = await http.get(
+          Uri.parse('$kBaseUrl/api/my-checklists'),
+          headers: {'x-user-id': user.id},
+        ).timeout(const Duration(seconds: 10));
+
+        List<dynamic> completedServices = [];
+        if (servicesResponse.statusCode == 200) {
+          final servicesData = jsonDecode(servicesResponse.body);
+          final checklists = servicesData['checklists'] as List<dynamic>? ?? [];
+          completedServices = checklists.where((c) => c['status'] == 'completed').toList();
+        }
+
         setState(() {
           _tickets = data['tickets'] ?? [];
+          _completedServices = completedServices;
           _isLoading = false;
         });
       } else {
@@ -73,23 +89,21 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   }
 
   Future<void> _createNewTicket(String subject, String description,
-      String category, String priority) async {
+      String checklistId) async {
     final user = ref.read(userProfileProvider).value;
     if (user == null) return;
 
     try {
       final response = await http
           .post(
-            Uri.parse('$kBaseUrl/api/tickets'),
-            headers: {'Content-Type': 'application/json'},
+            Uri.parse('$kBaseUrl/api/checklists/$checklistId/support-ticket'),
+            headers: {'Content-Type': 'application/json', 'x-user-id': user.id},
             body: jsonEncode({
               'userId': user.id,
               'userName': user.name,
               'userEmail': user.email,
               'subject': subject,
               'description': description,
-              'category': category,
-              'priority': priority,
             }),
           )
           .timeout(const Duration(seconds: 10));
@@ -120,11 +134,20 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   }
 
   void _showNewTicketDialog() {
+    if (_completedServices.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No completed services available to raise a ticket for.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final formKey = GlobalKey<FormState>();
     final subjectController = TextEditingController();
     final descriptionController = TextEditingController();
-    String selectedCategory = 'GST & Taxation';
-    String selectedPriority = 'Low';
+    String selectedCategory = _completedServices[0]['_id'] ?? '';
     bool isSubmitting = false;
 
     showDialog(
@@ -198,46 +221,20 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                             });
                           }
                         },
-                        items: const [
-                          DropdownMenuItem(
-                              value: 'GST & Taxation',
-                              child: Text('GST & Taxation',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400))),
-                          DropdownMenuItem(
-                              value: 'Company Audit',
-                              child: Text('Company Audit',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400))),
-                          DropdownMenuItem(
-                              value: 'Lead & CRM Setup',
-                              child: Text('Lead & CRM Setup',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400))),
-                          DropdownMenuItem(
-                              value: 'Billing & Subscription',
-                              child: Text('Billing & Subscription',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400))),
-                          DropdownMenuItem(
-                              value: 'Technical Support',
-                              child: Text('Technical Support',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400))),
-                          DropdownMenuItem(
-                              value: 'Other Inquiry',
-                              child: Text('Other Inquiry',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w400))),
-                        ],
+                        items: _completedServices.map((service) {
+                          return DropdownMenuItem<String>(
+                            value: service['_id'],
+                            child: Text(
+                              service['service_name'] ?? 'Service',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                         decoration: InputDecoration(
-                          labelText: 'Category',
+                          labelText: 'Select Completed Service',
                           prefixIcon: const Icon(LucideIcons.grid,
                               size: 20, color: AppTheme.deepTeal),
                           filled: true,
@@ -273,82 +270,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          'Priority Level',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: AppTheme.deepTeal.withOpacity(0.7),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: ['Low', 'Medium', 'High'].map((priority) {
-                          final isSelected = selectedPriority == priority;
-                          Color priorityColor;
-                          switch (priority) {
-                            case 'Low':
-                              priorityColor = Colors.green;
-                              break;
-                            case 'Medium':
-                              priorityColor = Colors.amber.shade700;
-                              break;
-                            case 'High':
-                              priorityColor = Colors.redAccent;
-                              break;
-                            default:
-                              priorityColor = Colors.grey;
-                          }
-
-                          return Expanded(
-                            child: GestureDetector(
-                              onTap: () {
-                                setDialogState(() {
-                                  selectedPriority = priority;
-                                });
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: isSelected
-                                      ? priorityColor.withOpacity(0.12)
-                                      : Colors.grey[50],
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? priorityColor
-                                        : Colors.grey.withOpacity(0.2),
-                                    width: isSelected ? 2 : 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    priority,
-                                    style: TextStyle(
-                                      color: isSelected
-                                          ? priorityColor
-                                          : Colors.grey[600],
-                                      fontWeight: isSelected
-                                          ? FontWeight.bold
-                                          : FontWeight.w500,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 20),
+                      // Priority level removed
                       TextFormField(
                         controller: descriptionController,
                         maxLines: 4,
@@ -402,7 +324,6 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                               subjectController.text.trim(),
                               descriptionController.text.trim(),
                               selectedCategory,
-                              selectedPriority,
                             );
                             if (dialogContext.mounted) {
                               Navigator.pop(dialogContext);
@@ -668,40 +589,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              // Priority badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: (priority == 'High'
-                          ? Colors.redAccent
-                          : (priority == 'Medium'
-                              ? Colors.amber
-                              : Colors.green))
-                      .withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: (priority == 'High'
-                            ? Colors.redAccent
-                            : (priority == 'Medium'
-                                ? Colors.amber
-                                : Colors.green))
-                        .withOpacity(0.4),
-                  ),
-                ),
-                child: Text(
-                  'Priority: $priority',
-                  style: TextStyle(
-                    color: priority == 'High'
-                        ? Colors.redAccent.shade100
-                        : (priority == 'Medium'
-                            ? Colors.amber.shade100
-                            : Colors.green.shade100),
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              // Priority badge removed
             ],
           ),
           const SizedBox(height: 12),
@@ -784,30 +672,14 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           TextStyle(color: Colors.grey.shade400, fontSize: 11),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      category,
-                      style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '•',
-                      style:
-                          TextStyle(color: Colors.grey.shade400, fontSize: 11),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      priority,
-                      style: TextStyle(
-                        color: priority == 'High'
-                            ? Colors.redAccent
-                            : (priority == 'Medium'
-                                ? Colors.amber.shade800
-                                : Colors.green.shade700),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        category,
+                        style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

@@ -43,18 +43,47 @@ exports.sendMessage = async (req, res) => {
     // Populate sender details before returning
     await newMessage.populate('senderId', 'owner_name role');
 
-    // Spawn a notification if sent by staff/admin
-    if (senderRole === 'staff' || senderRole === 'admin') {
-      const order = await Checklist.findById(orderId);
-      if (order && order.client_id) {
-        await Notification.create({
-          client_id: order.client_id,
-          title: 'New Message from Expert',
-          message: `Your expert sent you a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
-          type: 'chat',
-          order_id: orderId,
-          related_data: { messageId: newMessage._id }
-        });
+    // Handle notifications
+    const order = await Checklist.findById(orderId);
+    if (order) {
+      const isClientSender = (order.client_id && order.client_id.toString() === senderId.toString()) || senderRole === 'customer' || senderRole === 'client';
+
+      if (isClientSender) {
+        // Sent by client, notify assigned filing staff
+        if (order.assigned_to && order.assigned_to.toString() !== senderId.toString()) {
+          await Notification.create({
+            client_id: order.assigned_to,
+            title: 'New Message from Client',
+            message: `Client sent a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+            type: 'chat',
+            order_id: orderId,
+            related_data: { messageId: newMessage._id }
+          });
+        }
+        
+        // Notify client manager
+        if (order.created_by && order.assigned_to?.toString() !== order.created_by.toString() && order.created_by.toString() !== senderId.toString()) {
+          await Notification.create({
+            client_id: order.created_by,
+            title: 'New Message from Client',
+            message: `Client sent a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+            type: 'chat',
+            order_id: orderId,
+            related_data: { messageId: newMessage._id }
+          });
+        }
+      } else {
+        // Sent by staff/admin, notify client
+        if (order.client_id && order.client_id.toString() !== senderId.toString()) {
+          await Notification.create({
+            client_id: order.client_id,
+            title: 'New Message from Expert',
+            message: `Your expert sent you a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+            type: 'chat',
+            order_id: orderId,
+            related_data: { messageId: newMessage._id }
+          });
+        }
       }
     }
 

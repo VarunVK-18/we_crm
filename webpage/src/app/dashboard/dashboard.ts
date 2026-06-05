@@ -1,9 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Search01Icon } from '@hugeicons/core-free-icons';
+import { NotificationService } from '../client/services/notification.service';
+import { Notification01Icon, Search01Icon, Message02Icon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 import { FormsModule } from '@angular/forms';
 
@@ -43,7 +44,7 @@ import { ChecklistDetails } from './checklist-details/checklist-details';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnInit, OnDestroy {
   currentTab = signal<string>('dashboard');
   selectedClientId = signal<string | null>(null);
   selectedChecklistId = signal<string | null>(null);
@@ -52,11 +53,14 @@ export class Dashboard implements OnInit {
 
   // Icon assets
   readonly Search01Icon = Search01Icon;
+  readonly Notification01Icon = Notification01Icon;
+  readonly Message02Icon = Message02Icon;
 
   // Mobile sidebar navigation drawer state
   isMobileSidebarOpen = signal<boolean>(false);
+  isNotificationOpen = signal<boolean>(false);
 
-  constructor(private router: Router, private api: Api) {}
+  constructor(private router: Router, private api: Api, public notifService: NotificationService) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -73,14 +77,51 @@ export class Dashboard implements OnInit {
       }
       this.user.set(parsedUser);
       this.fetchTeams();
+      this.notifService.startPolling();
     } catch (e) {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
     }
   }
 
+  ngOnDestroy() {
+    this.notifService.stopPolling();
+  }
+
   toggleMobileSidebar() {
     this.isMobileSidebarOpen.update(val => !val);
+  }
+
+  toggleNotifications() {
+    this.isNotificationOpen.update(val => !val);
+    if (this.isNotificationOpen()) {
+      this.notifService.markAllAsRead();
+    }
+  }
+
+  formatTime(dateString: string): string {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (minutes < 60) return `${minutes}m ago`;
+    if (hours < 24) return `${hours}h ago`;
+    if (days === 1) return 'Yesterday';
+    return `${days}d ago`;
+  }
+
+  handleNotificationClick(notif: any) {
+    // Default action for notification click
+    if (notif.type === 'chat' && notif.order_id) {
+      this.viewChecklist(notif.order_id);
+    } else if (notif.order_id) {
+      this.viewChecklist(notif.order_id);
+    }
+    
+    this.isNotificationOpen.set(false);
   }
 
   fetchTeams() {

@@ -7,7 +7,8 @@ const {
   toggleChecklistItem,
   addChecklistItem,
   updateChecklist,
-  uploadFinalDocuments
+  uploadFinalDocuments,
+  createSupportTicketForChecklist
 } = require('../controllers/checklistController');
 
 const { checkUser, permit } = require('../middleware/rbac');
@@ -34,5 +35,8 @@ router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'clien
 // Document upload route for Flutter customers
 const { uploadRequestedDocuments } = require('../controllers/checklistController');
 router.post('/checklists/:id/upload-documents', checkUser, upload.any(), uploadRequestedDocuments);
+
+// Support ticket for a checklist
+router.post('/checklists/:id/support-ticket', checkUser, createSupportTicketForChecklist);
 
 module.exports = router;

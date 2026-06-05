@@ -152,6 +152,25 @@ const toggleChecklistItem = async (req, res) => {
     item.checkedAt = item.isChecked ? new Date() : null;
     item.checkedBy = item.isChecked ? req.user._id : null;
 
+    if (item.title && item.title.startsWith('[Support]')) {
+      const Ticket = require('../models/Ticket');
+      await Ticket.updateOne(
+        { userId: checklist.client_id.toString(), description: item.description },
+        { status: item.isChecked ? 'Resolved' : 'In Progress' }
+      );
+
+      if (item.isChecked && checklist.client_id) {
+        const Notification = require('../models/Notification');
+        await Notification.create({
+          client_id: checklist.client_id,
+          title: 'Support Ticket Resolved',
+          message: `Your support ticket "${item.title.replace('[Support] ', '')}" has been resolved!`,
+          type: 'status_update',
+          order_id: checklist._id
+        });
+      }
+    }
+
     await checklist.save();
 
     const populated = await Checklist.findById(id)
@@ -517,6 +536,90 @@ const uploadFinalDocuments = async (req, res) => {
   }
 };
 
+// @desc    Create a support ticket linked to a checklist
+// @route   POST /api/checklists/:id/support-ticket
+// @access  Private (Customer)
+const createSupportTicketForChecklist = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subject, description, userId, userName, userEmail } = req.body;
+
+    if (!subject || !description) {
+      return res.status(400).json({ success: false, message: 'Subject and description are required.' });
+    }
+
+    const checklist = await Checklist.findById(id);
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Service order not found.' });
+    }
+
+    // 1. Add as a checklist item
+    let newItemTitle = `[Support] ${subject}`;
+    if (newItemTitle.length > 30) {
+      newItemTitle = newItemTitle.substring(0, 27) + '...';
+    }
+    
+    checklist.items.push({
+      title: newItemTitle,
+      label: newItemTitle,
+      description: description,
+      isChecked: false
+    });
+    
+    // Changing the checklist status to in_progress
+    checklist.status = 'in_progress';
+    
+    await checklist.save();
+
+    // 2. Create standard Ticket for the "Support Tickets" screen
+    const Ticket = require('../models/Ticket');
+    const ticket = new Ticket({
+      userId: userId || req.user._id,
+      userName: userName || req.user.owner_name || 'Client',
+      userEmail: userEmail || req.user.email || 'client@example.com',
+      subject: subject,
+      description: description,
+      category: checklist.service_name,
+      priority: 'High' // Default to high since it's an escalated request on a completed service
+    });
+    await ticket.save();
+
+    // 3. Notify the assigned staff and client manager
+    const Notification = require('../models/Notification');
+    
+    // Notify Client Manager (ensure it's not the client themselves)
+    if (checklist.created_by && checklist.created_by.toString() !== checklist.client_id.toString()) {
+      await Notification.create({
+        client_id: checklist.created_by,
+        title: 'New Support Ticket',
+        message: `Client raised a support ticket for ${checklist.service_name}: ${subject}`,
+        type: 'status_update',
+        order_id: checklist._id
+      });
+    }
+
+    // Notify Filing Staff (ensure it's not the client and not the same as created_by)
+    if (
+      checklist.assigned_to && 
+      checklist.assigned_to.toString() !== checklist.client_id.toString() &&
+      (!checklist.created_by || checklist.assigned_to.toString() !== checklist.created_by.toString())
+    ) {
+      await Notification.create({
+        client_id: checklist.assigned_to,
+        title: 'New Support Ticket',
+        message: `Client raised a support ticket for ${checklist.service_name}: ${subject}`,
+        type: 'status_update',
+        order_id: checklist._id
+      });
+    }
+
+    res.status(201).json({ success: true, message: 'Support ticket created successfully', ticket, checklist });
+  } catch (error) {
+    console.error('Error creating support ticket:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createChecklist,
   getChecklists,
@@ -525,5 +628,6 @@ module.exports = {
   addChecklistItem,
   updateChecklist,
   uploadRequestedDocuments,
-  uploadFinalDocuments
+  uploadFinalDocuments,
+  createSupportTicketForChecklist
 };
