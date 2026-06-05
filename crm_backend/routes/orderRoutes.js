@@ -71,4 +71,27 @@ router.post(
   orderController.submitTrademarkForm
 );
 
+// Define fields for LLP form uploads (2 partners + company docs)
+const llpUploadFields = [
+  { name: 'officeProof', maxCount: 1 },
+  { name: 'paymentScreenshot', maxCount: 1 }
+];
+for (let i = 1; i <= 2; i++) {
+  llpUploadFields.push({ name: `person_${i}_photo`, maxCount: 1 });
+  llpUploadFields.push({ name: `person_${i}_signature`, maxCount: 1 });
+  llpUploadFields.push({ name: `person_${i}_addressProof`, maxCount: 1 });
+  llpUploadFields.push({ name: `person_${i}_aadhaar`, maxCount: 1 });
+  llpUploadFields.push({ name: `person_${i}_pan`, maxCount: 1 });
+}
+
+// @route   POST /api/orders/:id/submit-llp-form
+// @desc    Submit LLP Incorporation form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-llp-form',
+  checkUser,
+  upload.fields(llpUploadFields),
+  orderController.submitLlpForm
+);
+
 module.exports = router;

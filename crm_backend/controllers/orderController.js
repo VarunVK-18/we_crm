@@ -296,3 +296,64 @@ exports.submitTrademarkForm = async (req, res) => {
   }
 };
 
+// Submit LLP Incorporation Form
+exports.submitLlpForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.officeProof) {
+      uploadedDocs.push({ name: 'Registered Office Proof', fileUrl: files.officeProof[0].path });
+    }
+    if (files.paymentScreenshot) {
+      uploadedDocs.push({ name: 'Payment Screenshot', fileUrl: files.paymentScreenshot[0].path });
+    }
+
+    // Process up to 2 persons' files
+    for (let i = 1; i <= 2; i++) {
+      if (files[`person_${i}_photo`]) {
+        uploadedDocs.push({ name: `Person ${i} Photo`, fileUrl: files[`person_${i}_photo`][0].path });
+      }
+      if (files[`person_${i}_signature`]) {
+        uploadedDocs.push({ name: `Person ${i} Signature`, fileUrl: files[`person_${i}_signature`][0].path });
+      }
+      if (files[`person_${i}_addressProof`]) {
+        uploadedDocs.push({ name: `Person ${i} Address Proof`, fileUrl: files[`person_${i}_addressProof`][0].path });
+      }
+      if (files[`person_${i}_aadhaar`]) {
+        uploadedDocs.push({ name: `Person ${i} Aadhaar`, fileUrl: files[`person_${i}_aadhaar`][0].path });
+      }
+      if (files[`person_${i}_pan`]) {
+        uploadedDocs.push({ name: `Person ${i} PAN`, fileUrl: files[`person_${i}_pan`][0].path });
+      }
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      llpForm: formData,
+      llpDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'LLP form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting LLP form:', error);
+    res.status(500).json({ message: 'Server error while submitting LLP form.', error: error.message });
+  }
+};
+
