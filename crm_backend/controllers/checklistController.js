@@ -337,7 +337,8 @@ const getMyChecklists = async (req, res) => {
       'DPIIT',
       'Private Limited',
       'Trade mark',
-      'Trademark'
+      'Trademark',
+      'LLP'
     ];
 
     const enrichedChecklists = checklistsPlain.map(c => {
@@ -357,6 +358,8 @@ const getMyChecklists = async (req, res) => {
         } else if (serviceNameLower.includes('trademark') && c.details && c.details.trademarkForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('trade mark') && c.details && c.details.trademarkForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) {
             isFormFilled = true;
         }
 

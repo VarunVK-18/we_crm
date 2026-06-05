@@ -20,6 +20,7 @@ import 'order_chat_screen.dart';
 import 'incorp_form_screen.dart';
 import 'dpiit_form_screen.dart';
 import 'trademark_form_screen.dart';
+import 'llp_form_screen.dart';
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
@@ -1372,6 +1373,8 @@ void _routeToForm(BuildContext context, ServiceOrder order) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => IncorpFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('trademark') || order.serviceType.toLowerCase().contains('trade mark')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('llp')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => LlpFormScreen(order: order)));
   } else {
     // Fallback if we haven't mapped the form yet
     ScaffoldMessenger.of(context).showSnackBar(
