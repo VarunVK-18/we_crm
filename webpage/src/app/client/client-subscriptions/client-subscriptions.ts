@@ -5,7 +5,7 @@ import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import {
   CrownIcon,
-  Invoice01Icon,
+  Download01Icon,
   FileAttachmentIcon,
   CheckmarkBadge01Icon
 } from '@hugeicons/core-free-icons';
@@ -24,7 +24,7 @@ export class ClientSubscriptions implements OnInit {
 
   // Icons
   CrownIcon = CrownIcon;
-  Invoice01Icon = Invoice01Icon;
+  Download01Icon = Download01Icon;
   FileAttachmentIcon = FileAttachmentIcon;
   CheckmarkBadge01Icon = CheckmarkBadge01Icon;
 

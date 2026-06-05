@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { Api } from '../../api';
 import { 
   OfficeIcon, 
   Briefcase01Icon, 
@@ -114,6 +115,7 @@ export class ClientServicesComponent implements OnInit {
   selectedCategory = signal<string>('incorporation');
   selectedService = signal<any>(null);
   currentServices = signal<any[]>([]);
+  clientManager = signal<any>(null);
 
   // Form State
   quoteForm = {
@@ -125,8 +127,32 @@ export class ClientServicesComponent implements OnInit {
   formSubmitting = false;
   formSuccess = false;
 
+  constructor(private api: Api) {}
+
   ngOnInit() {
     this.selectCategory('incorporation');
+    this.fetchClientManager();
+  }
+
+  fetchClientManager() {
+    const savedUser = localStorage.getItem('user');
+    if (!savedUser) return;
+    try {
+      const user = JSON.parse(savedUser);
+      const uid = user?._id || user?.id;
+      if (!uid) return;
+
+      this.api.get<any>(`users/profile/${uid}`).subscribe({
+        next: (res) => {
+          if (res.user && res.user.assigned_to) {
+            this.clientManager.set(res.user.assigned_to);
+          }
+        },
+        error: (err) => console.error('Failed to fetch client manager:', err)
+      });
+    } catch (e) {
+      console.error('Failed to parse user data', e);
+    }
   }
 
   selectCategory(categoryId: string) {

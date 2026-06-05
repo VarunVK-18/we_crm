@@ -5,7 +5,8 @@ import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import {
   ArrowLeft01Icon,
-  Download01Icon
+  Download01Icon,
+  Share01Icon
 } from '@hugeicons/core-free-icons';
 
 @Component({
@@ -23,6 +24,7 @@ export class ClientInvoice implements OnInit {
   // Icons
   ArrowLeft01Icon = ArrowLeft01Icon;
   Download01Icon = Download01Icon;
+  Share01Icon = Share01Icon;
 
   constructor(
     private route: ActivatedRoute,
@@ -34,14 +36,31 @@ export class ClientInvoice implements OnInit {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
-      const invoiceId = this.route.snapshot.paramMap.get('id');
-      if (invoiceId) {
-        this.fetchInvoice(invoiceId);
-      } else {
-        this.router.navigate(['/client/subscriptions']);
-      }
+      this.route.paramMap.subscribe(params => {
+        const id = params.get('id');
+        if (id) {
+          this.fetchInvoice(id);
+        } else {
+          this.router.navigate(['/client/subscriptions']);
+        }
+      });
     } else {
       this.router.navigate(['/login']);
+    }
+  }
+
+  shareInvoice() {
+    const url = window.location.href;
+    if (navigator.share) {
+      navigator.share({
+        title: 'Wealth Empires Digital Invoice',
+        text: 'View my official digital invoice here:',
+        url: url
+      }).catch(err => console.error('Share failed:', err));
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Invoice link copied to clipboard!');
+      });
     }
   }
 
