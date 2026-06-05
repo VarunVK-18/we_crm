@@ -69,7 +69,7 @@
               <div class="client-details">
                 <h4 class="client-name">{{ cl.client_id?.owner_name || 'Unknown' }}</h4>
                 <p class="client-meta">
-                  {{ cl.client_id?.company_name || 'Individual' }} 
+                  {{ cl.details?.entityName || cl.client_id?.company_name || 'Individual' }} 
                   <span class="meta-dot"></span> 
                   Stage: {{ cl.stage || 'quotePending' }}
                 </p>

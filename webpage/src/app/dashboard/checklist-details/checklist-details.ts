@@ -228,18 +228,50 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     return docs;
   }
 
+  getParsedDirectors(): any[] {
+    const cl = this.checklist();
+    if (!cl || !cl.details || !cl.details.directors) return [];
+    try {
+      if (typeof cl.details.directors === 'string') {
+        return JSON.parse(cl.details.directors);
+      }
+      return cl.details.directors;
+    } catch (e) {
+      console.error('Error parsing directors:', e);
+      return [];
+    }
+  }
+
+  getGeneralDetails(): { key: string, value: any }[] {
+    const cl = this.checklist();
+    if (!cl || !cl.details) return [];
+    const entries = [];
+    console.log("Checking details in getGeneralDetails:", cl.details);
+    for (const key of Object.keys(cl.details)) {
+      if (key === 'directors' || key === 'dpiitForm' || key === 'dpiitDocs' || key === 'entityName') continue;
+      // Skip objects to avoid [object Object] rendering
+      if (typeof cl.details[key] === 'object' && cl.details[key] !== null) continue;
+      entries.push({ key, value: cl.details[key] });
+    }
+    return entries;
+  }
+
   getDirectorDocumentsGrouped(): { title: string, docs: any[] }[] {
     const cl = this.checklist();
     if (!cl || !cl.requested_documents) return [];
 
     const groups: { [key: string]: any[] } = {};
+    console.log("All requested documents:", cl.requested_documents);
 
     cl.requested_documents.forEach((doc: any) => {
+      if (!doc || !doc.name) return;
       const match = doc.name.match(/^director_(\d+)_/i);
       if (match) {
         const title = `Director ${match[1]} Documents`;
         if (!groups[title]) groups[title] = [];
-        groups[title].push(doc);
+        const niceName = doc.name.replace(new RegExp(`^director_${match[1]}_`, 'i'), '');
+        const formattedName = niceName.charAt(0).toUpperCase() + niceName.slice(1);
+        groups[title].push({ ...doc, niceName: formattedName });
       }
     });
 

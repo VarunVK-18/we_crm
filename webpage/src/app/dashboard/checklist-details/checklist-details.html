@@ -217,6 +217,56 @@
         }
       </section>
 
+      <!-- General Details Section -->
+      @if (getGeneralDetails().length > 0) {
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
+        <h3 class="section-title">Application Details</h3>
+        <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+            @for (field of getGeneralDetails(); track field.key) {
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
+                  {{ field.key }}
+                </span>
+                <span style="font-size: 15px; font-weight: 500; color: var(--text-primary);">
+                  {{ field.value }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+      }
+
+      <!-- Director Details Section -->
+      @if (getParsedDirectors().length > 0) {
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
+        <h3 class="section-title">Director Details</h3>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          @for (director of getParsedDirectors(); track $index) {
+          <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px;">
+            <h4 style="font-size: 16px; font-weight: 600; color: var(--accent-primary); margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+              <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
+              Director {{ $index + 1 }}: {{ director.fullName || 'Unnamed' }}
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+              @for (field of (director | keyvalue); track field.key) {
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
+                    {{ field.key }}
+                  </span>
+                  <span style="font-size: 14px; font-weight: 500; color: var(--text-primary); word-break: break-word;">
+                    {{ field.value }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+          }
+        </div>
+      </section>
+      }
+
       <!-- DPIIT Form Details Section -->
       @if (checklist().details?.dpiitForm) {
       <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
@@ -366,7 +416,7 @@
               <div style="flex: 1; min-width: 0;">
                 <p
                   style="font-size: 14px; line-height: 20px; font-weight: 600; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                  {{ doc.name }}</p>
+                  {{ doc.niceName || doc.name }}</p>
                 <p
                   style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--text-secondary); margin: 4px 0 0 0; text-transform: uppercase;">
                   {{ doc.isUploaded ? (doc.uploadedAt | date:'mediumDate') : 'Pending' }}</p>

@@ -496,7 +496,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                const RegistrationServicesScreen(),
+                                const RegistrationServicesScreen(initialCategory: 'All'),
                           ),
                         );
                       },
@@ -973,100 +973,13 @@ class _HorizontalServiceList extends StatelessWidget {
             icon: icon,
             onTap: () {
               if (item.containsKey('subItems')) {
-                final List<String> subItems =
-                    List<String>.from(item['subItems']);
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: Colors.white,
-                  isScrollControlled: true,
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(24.r)),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RegistrationServicesScreen(
+                      initialCategory: label,
+                    ),
                   ),
-                  builder: (context) {
-                    return SafeArea(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(height: 16.r),
-                          Container(
-                            width: 40.r,
-                            height: 4.r,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(2.r),
-                            ),
-                          ),
-                          SizedBox(height: 16.r),
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24.r),
-                            child: Row(
-                              children: [
-                                if (icon is IconData)
-                                  Icon(icon, color: AppTheme.deepTeal)
-                                else
-                                  HugeIcon(
-                                      icon: icon,
-                                      color: AppTheme.deepTeal,
-                                      size: 24.r),
-                                SizedBox(width: 12.r),
-                                Text(
-                                  label,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleLarge
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w800,
-                                        color: AppTheme.deepTeal,
-                                      ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 8.r),
-                          Flexible(
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              itemCount: subItems.length,
-                              itemBuilder: (context, index) {
-                                final subItem = subItems[index];
-                                return ListTile(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 24.r, vertical: 4.r),
-                                  title: Text(
-                                    subItem,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey[800],
-                                        ),
-                                  ),
-                                  trailing: Icon(LucideIcons.chevronRight,
-                                      size: 20.r, color: Colors.grey[400]),
-                                  onTap: () {
-                                    Navigator.pop(
-                                        context); // Close bottom sheet
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            ServiceDetailScreen(
-                                                serviceName: subItem,
-                                                icon: icon),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(height: 16.r),
-                        ],
-                      ),
-                    );
-                  },
                 );
                 return;
               }

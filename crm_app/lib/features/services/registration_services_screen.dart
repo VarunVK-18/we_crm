@@ -8,7 +8,8 @@ import '../../core/utils/responsive.dart';
 import 'service_detail_screen.dart';
 
 class RegistrationServicesScreen extends StatefulWidget {
-  const RegistrationServicesScreen({super.key});
+  final String initialCategory;
+  const RegistrationServicesScreen({super.key, this.initialCategory = 'All'});
 
   @override
   State<RegistrationServicesScreen> createState() =>
@@ -19,32 +20,16 @@ class _RegistrationServicesScreenState
     extends State<RegistrationServicesScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  String _selectedCategory = 'All'; // Default to All
+  late String _selectedCategory;
 
-  // Master list of packages with category mapping
   final List<Map<String, dynamic>> _allPackages = [
-    {
-      'title': 'Proprietorship Registration',
-      'description': 'Sole vendor formation with business identification.',
-      'icon': HugeIcons.strokeRoundedUser,
-      'color': const Color(0xFF3B82F6),
-      'category': 'Company Incorporation',
-      'features': ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support'],
-    },
-    {
-      'title': 'Partnership Firm Registration',
-      'description': 'Legal drafting and registration for business partners under Indian Partnership Act.',
-      'icon': HugeIcons.strokeRoundedUserGroup,
-      'color': const Color(0xFFEC4899),
-      'category': 'Company Incorporation',
-      'features': ['Drafting Partnership Deed', 'Deed Notarization', 'Firm Registration (ROF)', 'PAN & TAN Application', 'Trade License'],
-    },
+    // --- Incorporation ---
     {
       'title': 'Private Limited Incorporation',
       'description': 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.',
       'icon': HugeIcons.strokeRoundedOffice,
       'color': const Color(0xFF6366F1),
-      'category': 'Company Incorporation',
+      'category': 'Incorporation',
       'features': ['Name Reservation (RUN)', 'Digital Signature (DSC)', 'Director Identification (DIN)', 'MOA & AOA Drafting', 'Certificate of Incorporation'],
     },
     {
@@ -52,72 +37,202 @@ class _RegistrationServicesScreenState
       'description': 'Statutory compliance for Limited Liability Partnerships.',
       'icon': HugeIcons.strokeRoundedBriefcase01,
       'color': const Color(0xFFF59E0B),
-      'category': 'Company Incorporation',
+      'category': 'Incorporation',
       'features': ['Form 8 Statement of Account', 'Form 11 Annual Return', 'DIR-3 KYC of Partners', 'Income Tax Return Filing', 'LLP Agreement Maintenance'],
     },
     {
-      'title': 'DPIIT Startup India Certification',
-      'description': 'Startup India Certification for your startup! Please provide your details correctly.',
-      'icon': HugeIcons.strokeRoundedRocket,
+      'title': 'OPC',
+      'description': 'One Person Company registration for solo entrepreneurs.',
+      'icon': HugeIcons.strokeRoundedUser,
       'color': const Color(0xFF10B981),
-      'category': 'Compliance Services',
-      'features': ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track'],
+      'category': 'Incorporation',
+      'features': ['Name Reservation', 'DSC & DIN', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Bank Setup Support'],
     },
     {
-      'title': 'MSME Registration',
+      'title': 'Proprietorship',
+      'description': 'Sole vendor formation with business identification.',
+      'icon': HugeIcons.strokeRoundedUser,
+      'color': const Color(0xFF3B82F6),
+      'category': 'Incorporation',
+      'features': ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support'],
+    },
+    {
+      'title': 'MSME',
       'description': 'Official Udyam Registration for small and medium enterprises.',
       'icon': LucideIcons.medal,
       'color': const Color(0xFFF59E0B),
-      'category': 'Compliance Services',
+      'category': 'Incorporation',
       'features': ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'ISO Reimbursement Advisory'],
     },
+
+    // --- Compliance ---
     {
-      'title': 'ISO Certification',
-      'description': 'Quality management certification.',
-      'icon': LucideIcons.award,
+      'title': 'MCA Compliance',
+      'description': 'Annual return filings and MCA statutory compliance.',
+      'icon': HugeIcons.strokeRoundedTask01,
       'color': const Color(0xFF14B8A6),
-      'category': 'Compliance Services',
-      'features': ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training'],
+      'category': 'Compliance',
+      'features': ['AOC-4 & MGT-7 Filing', 'Director KYC', 'Statutory Audit Support', 'Minutes of Meeting', 'Event Based Filings'],
     },
     {
-      'title': 'DUNS Registration',
-      'description': 'Global business identification number.',
-      'icon': LucideIcons.globe,
-      'color': const Color(0xFF3B82F6),
-      'category': 'Compliance Services',
-      'features': ['DUNS Number Assignment', 'International Credit Credibility', 'Supply Chain Compliance', 'Verified Business Profile', 'Universal Business Language'],
-    },
-    {
-      'title': 'PAN, TAN & Bank Setup',
-      'description': 'Basic registrations for new businesses.',
-      'icon': LucideIcons.building,
+      'title': 'TDS',
+      'description': 'TDS return filing and certificate issuance.',
+      'icon': HugeIcons.strokeRoundedCalculator,
       'color': const Color(0xFF8B5CF6),
-      'category': 'Compliance Services',
-      'features': ['PAN Application', 'TAN Registration', 'Bank Account Opening', 'KYC Support', 'Initial Setup'],
+      'category': 'Compliance',
+      'features': ['TDS Computation', 'Quarterly Return Filing', 'Form 16/16A Generation', 'Challan Payment', 'Notice Reply'],
     },
     {
-      'title': 'FSSAI Registration',
-      'description': 'Registration for food business operators, manufacturers, and startups.',
-      'icon': LucideIcons.utensils,
-      'color': const Color(0xFF10B981),
-      'category': 'Business Licenses',
-      'features': ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping'],
+      'title': 'PF',
+      'description': 'Provident Fund registration and monthly compliance.',
+      'icon': HugeIcons.strokeRoundedDocumentValidation,
+      'color': const Color(0xFF3B82F6),
+      'category': 'Compliance',
+      'features': ['PF Registration', 'Monthly ECR Filing', 'Challan Generation', 'Employee Addition/Deletion', 'KYC Updates'],
     },
+
+    // --- IP ---
     {
-      'title': 'Trademark Registration',
-      'description': 'Brand protection and IP rights.',
+      'title': 'Trade Mark',
+      'description': 'Brand protection and intellectual property rights.',
       'icon': LucideIcons.tag,
       'color': const Color(0xFFEC4899),
-      'category': 'Business Licenses',
+      'category': 'IP',
       'features': ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate'],
     },
     {
-      'title': 'GST Onboarding',
+      'title': 'Copyright',
+      'description': 'Protection for original creative literary or artistic works.',
+      'icon': LucideIcons.copyright,
+      'color': const Color(0xFF6366F1),
+      'category': 'IP',
+      'features': ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate'],
+    },
+    {
+      'title': 'Patent',
+      'description': 'Exclusive rights for your inventions.',
+      'icon': LucideIcons.lightbulb,
+      'color': const Color(0xFFF59E0B),
+      'category': 'IP',
+      'features': ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant'],
+    },
+
+    // --- Tax ---
+    {
+      'title': 'GST Registration',
       'description': 'GST Registration for your business! Thank you for choosing Wealth Empires.',
       'icon': HugeIcons.strokeRoundedFile02,
       'color': const Color(0xFF10B981),
-      'category': 'Taxation Services',
+      'category': 'Tax',
       'features': ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate'],
+    },
+    {
+      'title': 'GST Compliance',
+      'description': 'Monthly/Quarterly GST returns and reconciliations.',
+      'icon': HugeIcons.strokeRoundedFile02,
+      'color': const Color(0xFF3B82F6),
+      'category': 'Tax',
+      'features': ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support'],
+    },
+    {
+      'title': 'GST Cancelation',
+      'description': 'Surrender and cancel your GST registration.',
+      'icon': LucideIcons.fileX,
+      'color': const Color(0xFFEF4444),
+      'category': 'Tax',
+      'features': ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order'],
+    },
+    {
+      'title': 'GST filing',
+      'description': 'Seamless filing of standard GST returns.',
+      'icon': HugeIcons.strokeRoundedTask01,
+      'color': const Color(0xFF10B981),
+      'category': 'Tax',
+      'features': ['Monthly Returns', 'Data Validation', 'Challan Payment', 'Error Correction', 'Filing Acknowledgment'],
+    },
+    {
+      'title': 'ITR',
+      'description': 'Income Tax Return filing for individuals and businesses.',
+      'icon': LucideIcons.landmark,
+      'color': const Color(0xFF8B5CF6),
+      'category': 'Tax',
+      'features': ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support'],
+    },
+
+    // --- Licensing ---
+    {
+      'title': 'ISO',
+      'description': 'Quality management certification (ISO 9001 and others).',
+      'icon': LucideIcons.award,
+      'color': const Color(0xFF14B8A6),
+      'category': 'Licensing',
+      'features': ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training'],
+    },
+    {
+      'title': 'DPIIT',
+      'description': 'Startup India Certification for your startup! Please provide your details correctly.',
+      'icon': HugeIcons.strokeRoundedRocket,
+      'color': const Color(0xFF10B981),
+      'category': 'Licensing',
+      'features': ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track'],
+    },
+    {
+      'title': 'FSSAI',
+      'description': 'Registration for food business operators, manufacturers, and startups.',
+      'icon': LucideIcons.utensils,
+      'color': const Color(0xFF10B981),
+      'category': 'Licensing',
+      'features': ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping'],
+    },
+    {
+      'title': 'IE code',
+      'description': 'Import Export Code registration for cross-border trade.',
+      'icon': LucideIcons.globe,
+      'color': const Color(0xFF3B82F6),
+      'category': 'Licensing',
+      'features': ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate'],
+    },
+    {
+      'title': 'LEI',
+      'description': 'Legal Entity Identifier registration for financial transactions.',
+      'icon': LucideIcons.barcode,
+      'color': const Color(0xFF6366F1),
+      'category': 'Licensing',
+      'features': ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation'],
+    },
+    {
+      'title': 'BIS',
+      'description': 'Bureau of Indian Standards product certification.',
+      'icon': LucideIcons.shieldCheck,
+      'color': const Color(0xFFF59E0B),
+      'category': 'Licensing',
+      'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
+    },
+    {
+      'title': 'ROSH & CE',
+      'description': 'European standard certifications for electronics and products.',
+      'icon': LucideIcons.checkCircle,
+      'color': const Color(0xFF14B8A6),
+      'category': 'Licensing',
+      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
+    },
+
+    // --- Others ---
+    {
+      'title': 'Individual DSC',
+      'description': 'Class 3 Digital Signature Certificate for individuals.',
+      'icon': LucideIcons.usb,
+      'color': const Color(0xFF8B5CF6),
+      'category': 'Others',
+      'features': ['Application Processing', 'Video Verification', 'Email/Phone KYC', 'Token Procurement', '2-Year Validity'],
+    },
+    {
+      'title': 'Organization DSC',
+      'description': 'Class 3 Digital Signature Certificate for organizations.',
+      'icon': LucideIcons.building,
+      'color': const Color(0xFFEC4899),
+      'category': 'Others',
+      'features': ['Organization KYC', 'Authorized Signatory Check', 'Video Verification', 'Token Procurement', '2-Year Validity'],
     }
   ];
 
@@ -138,6 +253,7 @@ class _RegistrationServicesScreenState
   @override
   void initState() {
     super.initState();
+    _selectedCategory = widget.initialCategory;
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text;
@@ -319,10 +435,12 @@ class _RegistrationServicesScreenState
                     children:
                         [
                           'All',
-                          'Company Incorporation',
-                          'Compliance Services',
-                          'Business Licenses',
-                          'Taxation Services',
+                          'Incorporation',
+                          'Compliance',
+                          'IP',
+                          'Tax',
+                          'Licensing',
+                          'Others',
                         ].map((label) {
                           return _ServiceChip(
                             label: label,

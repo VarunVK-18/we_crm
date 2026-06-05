@@ -34,9 +34,11 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
           final isAssignedToExpert = c['assigned_to'] != null &&
               c['assigned_to']['role'] != 'client_manager';
 
-          final String actualCompany = c['company_name']?.toString() ??
-              (c['client_id'] != null ? c['client_id']['company_name']?.toString() : null) ??
-              companyName;
+          final String actualCompany = (c['details'] != null && c['details']['entityName'] != null)
+              ? c['details']['entityName'].toString()
+              : (c['company_name']?.toString() ??
+                  (c['client_id'] != null ? c['client_id']['company_name']?.toString() : null) ??
+                  companyName);
 
           final mappedData = <String, dynamic>{
             'clientUid': uid,

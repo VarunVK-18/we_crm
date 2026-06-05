@@ -645,11 +645,16 @@ const subscribeService = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    // Save/update editable user details if provided in request body
-    if (req.body.owner_name) user.owner_name = req.body.owner_name;
-    if (req.body.email) user.email = req.body.email;
-    if (req.body.phone) user.phone = req.body.phone;
-    if (req.body.company_name) user.company_name = req.body.company_name;
+    // Save/update editable user details if provided in request body, but only if they are not already set
+    // This prevents renaming the user's primary company when they register a new entity.
+    if (req.body.owner_name && !user.owner_name) user.owner_name = req.body.owner_name;
+    // Do not blindly overwrite email
+    if (req.body.phone && !user.phone) user.phone = req.body.phone;
+    if (req.body.company_name && (!user.company_name || user.company_name.trim() === '')) {
+      user.company_name = req.body.company_name;
+    }
+    
+    const requestedEntityName = req.body.entity_name || req.body.company_name || user.company_name || user.owner_name || 'Client';
 
     if (dealClosedAmount) {
       user.revenue = (user.revenue || 0) + Number(dealClosedAmount);
@@ -694,6 +699,7 @@ const subscribeService = async (req, res) => {
     const existingChecklist = await Checklist.findOne({
       client_id: user._id,
       service_name: serviceName,
+      'details.entityName': requestedEntityName,
       status: { $ne: 'completed' }
     });
 
@@ -749,19 +755,6 @@ const subscribeService = async (req, res) => {
           }
         }
 
-        await Checklist.create({
-          company_id: user.company_id || '000000000000000000000000',
-          client_id: user._id,
-          service_name: serviceName,
-          assigned_to: assignedClientManager, // Routes to client manager first
-          created_by: user._id,
-          items: finalItems,
-          status: 'pending',
-          stage: 'quotePending',
-          notes: ''
-        });
-        console.log(`Automatically created checklist for ${serviceName}, assigned to client manager: ${assignedClientManager}`);
-
         // Parse details field if present
         let details = {};
         if (req.body.details) {
@@ -771,6 +764,21 @@ const subscribeService = async (req, res) => {
             console.error('Error parsing details JSON:', e);
           }
         }
+        details.entityName = requestedEntityName;
+
+        await Checklist.create({
+          company_id: user.company_id || '000000000000000000000000',
+          client_id: user._id,
+          service_name: serviceName,
+          assigned_to: assignedClientManager, // Routes to client manager first
+          created_by: user._id,
+          items: finalItems,
+          status: 'pending',
+          stage: 'quotePending',
+          notes: '',
+          details: details
+        });
+        console.log(`Automatically created checklist for ${serviceName}, assigned to client manager: ${assignedClientManager}`);
 
         let orderSteps = [];
         if (finalItems && finalItems.length > 0) {
@@ -791,7 +799,7 @@ const subscribeService = async (req, res) => {
         await ServiceOrder.create({
           clientUid: user._id.toString(),
           companyId: user.company_id,
-          entityName: user.company_name || user.owner_name || 'Client',
+          entityName: requestedEntityName,
           serviceType: serviceName,
           status: 'active',
           stage: 'reqReceived',

@@ -408,6 +408,7 @@ class _ServiceRequestSummarySheetState
       request.fields['phone'] = _phoneController.text;
       if (_companyNameController.text.isNotEmpty) {
         request.fields['company_name'] = _companyNameController.text;
+        request.fields['entity_name'] = _companyNameController.text;
       }
 
       // Collect package-specific details
