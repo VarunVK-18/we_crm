@@ -49,23 +49,21 @@
           <span class="nav-item-label">Ongoing Service</span>
         </div>
       </div>
-    </div>
-    
-    <!-- Client Manager CTA -->
-    <div class="manager-cta-card">
-      <h3>Need Expert Assistance?</h3>
-      <p>Your client manager{{ clientManager() ? ', ' + (clientManager().owner_name || clientManager().name || 'Support Team') + ',' : '' }} is available to assist you with any queries.</p>
-      <div style="margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; opacity: 0.95;">
-         <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500;">
-           <span class="material-symbols-outlined" style="font-size: 16px;">call</span>
-           <span>{{ clientManager()?.phone || '+91 98765 43210' }}</span>
-         </div>
-         <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500;">
-           <span class="material-symbols-outlined" style="font-size: 16px;">mail</span>
-           <span>{{ clientManager()?.email || 'support@wealthempires.com' }}</span>
-         </div>
+
+      <div class="nav-item-wrapper" routerLink="/client/compliance" routerLinkActive="selected">
+        <div class="nav-item-content">
+          <hugeicons-icon 
+            [icon]="Shield01Icon" 
+            [size]="18" 
+            color="currentColor"
+            class="nav-item-icon"
+            [strokeWidth]="2.2">
+          </hugeicons-icon>
+          <span class="nav-item-label">Compliance</span>
+        </div>
       </div>
     </div>
+    
   </div>
   
   @if (user()) {

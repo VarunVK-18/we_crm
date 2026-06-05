@@ -8,8 +8,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 40px;
-  background-color: white;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 
@@ -22,13 +22,13 @@
   font-family: 'Inter', sans-serif;
   font-size: 20px;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--palette-dark);
   margin: 0;
   letter-spacing: -0.5px;
 }
 
 .appbar-subtitle {
-  color: #64748b;
+  color: color-mix(in srgb, var(--palette-dark) 65%, transparent);
   font-size: 12px;
   font-weight: 500;
   margin-top: 2px;
@@ -43,7 +43,7 @@
 .notification-btn {
   background: none;
   border: none;
-  color: #64748b;
+  color: color-mix(in srgb, var(--palette-dark) 65%, transparent);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -53,13 +53,13 @@
   cursor: pointer;
   position: relative;
   transition: all 0.2s ease;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--background);
+  border: 1px solid var(--border);
 }
 
 .notification-btn:hover {
   background-color: #f1f5f9;
-  color: #0f172a;
+  color: var(--palette-dark);
 }
 
 .notification-dot {
@@ -73,46 +73,150 @@
   border: 2px solid #f8fafc;
 }
 
-.user-badge {
+/* Divider */
+.divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--border);
+}
+
+/* Pill Button */
+.user-dropdown-container {
+  position: relative;
+}
+
+.user-pill-btn {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 10px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px 4px 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--palette-dark);
 }
 
-.user-badge .divider {
-  width: 1px;
-  height: 20px;
-  background-color: #e2e8f0;
+.user-pill-btn:hover, .user-pill-btn.active {
+  border-color: color-mix(in srgb, var(--palette-dark) 20%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--palette-dark) 5%, transparent);
 }
 
-.user-badge-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.badge-name {
-  font-weight: 600;
-  font-size: 13px;
-  color: #0f172a;
-}
-
-.badge-status {
-  color: #10b981;
-  font-size: 10px;
-  font-weight: 600;
-  margin-top: 1px;
-}
-
-.badge-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  background-color: #2563eb;
+.pill-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--palette-dark);
+  color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.pill-name {
   font-size: 14px;
+  font-weight: 700;
+  color: var(--palette-dark);
+}
+
+.pill-chevron {
+  color: color-mix(in srgb, var(--palette-dark) 60%, transparent);
+}
+
+/* Dropdown Menu */
+.user-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 260px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px color-mix(in srgb, var(--palette-dark) 12%, transparent);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  z-index: 100;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dropdown-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--palette-dark);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.dropdown-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.d-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--palette-dark);
+}
+
+.d-role {
+  font-size: 13px;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--palette-dark) 60%, transparent);
+}
+
+.dropdown-items {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--palette-dark);
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: var(--background);
+}
+
+.dropdown-item.text-danger {
+  color: #ef4444;
+  margin-top: 8px;
+}
+.dropdown-item.text-danger:hover {
+  background-color: #fef2f2;
 }

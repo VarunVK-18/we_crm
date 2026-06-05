@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100%;
   width: 240px;
-  background-color: #fafbfc; /* Premium off-white sidebar background */
+  background-color: var(--surface); /* Premium off-white sidebar background */
   border-right: 1px solid var(--border-color);
   padding: 0;
   box-sizing: border-box;

@@ -9,15 +9,37 @@
       <hugeicons-icon [icon]="Notification01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
       <span class="notification-dot"></span>
     </button>
+    <div class="divider"></div>
     @if (user()) {
-      <div class="user-badge">
-        <div class="divider"></div>
-        <div class="user-badge-text">
-          <span class="badge-name">{{ user()?.company_name || user()?.name || 'Client' }}</span>
-        </div>
-        <div class="badge-avatar">
-          {{ (user()?.company_name || user()?.name || 'C')[0] | uppercase }}
-        </div>
+      <div class="user-dropdown-container">
+        <button class="user-pill-btn" (click)="toggleDropdown()" [class.active]="isDropdownOpen()">
+          <div class="pill-avatar">
+            {{ getInitials(user()?.company_name || user()?.name || 'Client') }}
+          </div>
+          <span class="pill-name">{{ user()?.company_name || user()?.name || 'Client Name' }}</span>
+          <hugeicons-icon [icon]="isDropdownOpen() ? ArrowUp01Icon : ArrowDown01Icon" [size]="16" color="currentColor" [strokeWidth]="2" class="pill-chevron"></hugeicons-icon>
+        </button>
+
+        @if (isDropdownOpen()) {
+          <div class="user-dropdown-menu">
+            <div class="dropdown-header">
+              <div class="dropdown-avatar">
+                {{ getInitials(user()?.company_name || user()?.name || 'Client') }}
+              </div>
+              <div class="dropdown-user-info">
+                <span class="d-name">{{ user()?.company_name || user()?.name || 'Client Name' }}</span>
+                <span class="d-role">{{ user()?.business_type || 'Client Account' }}</span>
+              </div>
+            </div>
+            
+            <div class="dropdown-items">
+              <button class="dropdown-item text-danger" (click)="logout()">
+                <hugeicons-icon [icon]="Logout01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        }
       </div>
     }
   </div>

@@ -4,12 +4,7 @@
           <h1 class="ho-hero-title">Welcome, <br/>{{ (user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
           <p class="ho-hero-subtitle">Track the progress of your active services and requests from one place.</p>
         </div>
-        <!-- Abstract decorative elements -->
-        <div class="ho-hero-decorations">
-          <div class="ho-circle ho-circle-1"></div>
-          <div class="ho-circle ho-circle-2"></div>
-          <div class="ho-circle ho-circle-3"></div>
-        </div>
+
       </header>
 
       <div class="client-metrics-grid" style="margin: 0 0 32px 0;">
@@ -149,7 +144,7 @@
           </div>
         } @else {
           @if (currentList().length === 0) {
-            <div class="empty-state" style="background: white; border-radius: 16px; padding: 48px; border: 1px solid #e2e8f0; margin-top: 16px;">
+            <div class="empty-state" style="background: var(--surface); border-radius: 16px; padding: 48px; border: 1px solid var(--border); margin-top: 16px;">
               <span class="material-symbols-outlined">inbox</span>
               <h3>No Services Found</h3>
               <p>You don't have any {{ activeTab() }} services at the moment.</p>

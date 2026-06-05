@@ -2,18 +2,24 @@
 
 :root {
   /* Premium Hanken Grotesk & Manrope Typography & Colors from the beautiful CRM dashboard */
-  --primary: #006a61;
-  --primary-hover: #005049;
-  --secondary: #006a61;
-  --success: #009668;
+  --primary: #0d101b;
+  --primary-hover: #0d101b;
+  --secondary: #0d101b;
+  --success: #10b981;
   --warning: #f59e0b;
   --danger: #ba1a1a;
 
-  --background: #f7f9fb;
+  /* User Custom Palette */
+  --palette-dark: #0d101b;
+  --palette-purple: #0d101b;
+  --palette-blue: #a0c6ff;
+  --palette-light: #f8f8f8;
+
+  --background: var(--palette-light);
   --surface: #ffffff;
   --surface-hover: #f2f4f6;
 
-  --text-primary: #191c1e;
+  --text-primary: var(--palette-dark);
   --text-secondary: #45464d;
   --text-muted: #76777d;
 
@@ -33,13 +39,13 @@
   /* Manager CTA Card (Global) */
 .manager-cta-card {
   margin-top: auto;
-  background: linear-gradient(135deg, #1f4a47 0%, #0d2b29 100%);
+  background: linear-gradient(135deg, var(--palette-dark) 0%, #1a1f33 100%);
   border-radius: 12px;
   padding: 20px;
-  color: white;
+  color: var(--palette-light);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(13, 16, 27, 0.15);
   margin-bottom: 12px;
 }
 

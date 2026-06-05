@@ -12,6 +12,7 @@ import { Api } from '../api';
 })
 export class ClientOngoingServices implements OnInit, OnDestroy {
   user = signal<any>(null);
+  clientManager = signal<any>(null);
   activeOrders = signal<any[]>([]);
   isLoading = signal(true);
   pollingInterval: any;
@@ -26,6 +27,7 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     }
     this.user.set(JSON.parse(savedUser));
     
+    this.fetchClientManager();
     this.fetchOrders();
     this.pollingInterval = setInterval(() => this.fetchOrders(), 4000);
   }
@@ -34,6 +36,20 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
     }
+  }
+
+  fetchClientManager() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    
+    this.api.get<any>(`users/${uid}`).subscribe({
+      next: (res) => {
+        if (res.user && res.user.assigned_to) {
+          this.clientManager.set(res.user.assigned_to);
+        }
+      },
+      error: (err) => console.error('Failed to fetch client manager', err)
+    });
   }
 
   fetchOrders() {

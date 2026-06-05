@@ -32,14 +32,14 @@
 /* 1. Hero Banner */
 .ho-hero {
   position: relative;
-  background-color: #006a61;
-  background-image: radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 40%),
-                    radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+  background-color: var(--palette-dark);
+  background-image: radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 40%),
+                    radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-blue) 10%, transparent) 0%, transparent 60%);
   border-radius: 2rem;
   padding: 48px;
-  color: #ffffff;
+  color: var(--palette-light);
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 106, 97, 0.15);
+  box-shadow: 0 12px 35px color-mix(in srgb, var(--palette-dark) 20%, transparent);
 }
 
 .ho-hero-content {
@@ -70,7 +70,7 @@
 }
 
 .ho-btn-primary {
-  background-color: #ffffff;
+  background-color: var(--surface);
   color: #006a61;
   border: none;
   padding: 14px 28px;
@@ -111,43 +111,54 @@
   transform: scale(0.97);
 }
 
-/* Decorative circles */
+/* Decorative waves */
 .ho-hero-decorations {
   position: absolute;
+  left: 0;
   right: 0;
   top: 0;
   bottom: 0;
-  width: 33.333%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0.15;
+  width: 100%;
+  overflow: hidden;
   pointer-events: none;
+  z-index: 1;
 }
 
-.ho-circle {
+.ho-wave {
   position: absolute;
-  border: 12px solid #ffffff;
   border-radius: 50%;
 }
 
-.ho-circle-1 {
-  width: 256px;
-  height: 256px;
-  border-width: 16px;
+.ho-wave-1 {
+  width: 1200px;
+  height: 1200px;
+  right: -200px;
+  top: -700px;
+  background-color: color-mix(in srgb, var(--palette-purple) 8%, transparent); /* light purple tint */
 }
 
-.ho-circle-2 {
-  width: 160px;
-  height: 160px;
-  border-width: 12px;
+.ho-wave-2 {
+  width: 1400px;
+  height: 1400px;
+  right: -300px;
+  top: -650px;
+  background-color: color-mix(in srgb, var(--palette-blue) 6%, transparent); /* light blue tint */
 }
 
-.ho-circle-3 {
-  width: 64px;
-  height: 64px;
-  background-color: #ffffff;
-  border: none;
+.ho-wave-3 {
+  width: 1600px;
+  height: 1600px;
+  right: -400px;
+  top: -600px;
+  background-color: color-mix(in srgb, var(--palette-purple) 4%, transparent);
+}
+
+.ho-wave-4 {
+  width: 1800px;
+  height: 1800px;
+  right: -500px;
+  top: -550px;
+  background-color: color-mix(in srgb, var(--palette-blue) 3%, transparent);
 }
 
 /* 2. KPI Cards Grid */
@@ -195,7 +206,7 @@
 .ho-stat-icon-wrapper {
   width: 48px;
   height: 48px;
-  background-color: var(--bg-color);
+  background-color: color-mix(in srgb, var(--secondary-color) 8%, transparent);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -204,7 +215,7 @@
 }
 
 .ho-stat-card:hover .ho-stat-icon-wrapper {
-  background-color: var(--secondary-container);
+  background-color: color-mix(in srgb, var(--secondary-color) 15%, transparent);
 }
 
 .ho-stat-icon {
@@ -222,18 +233,18 @@
 }
 
 .ho-stat-badge.bg-secondary {
-  color: var(--on-secondary-container);
-  background-color: rgba(134, 242, 228, 0.3);
+  color: var(--secondary-color);
+  background-color: color-mix(in srgb, var(--secondary-color) 15%, transparent);
 }
 
 .ho-stat-badge.bg-emerald-badge {
-  color: var(--on-secondary-container);
-  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--color-emerald);
+  background-color: color-mix(in srgb, var(--color-emerald) 15%, transparent);
 }
 
 .ho-stat-badge.bg-surface-badge {
-  color: var(--text-secondary);
-  background-color: rgba(224, 227, 229, 0.5);
+  color: var(--text-primary);
+  background-color: color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .ho-stat-label {
@@ -359,7 +370,7 @@
   border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   transition: all 0.3s ease;
@@ -454,7 +465,7 @@
   border-radius: 24px;
   border: 1px solid var(--border-color);
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
 }
 
 .ho-table {
@@ -600,7 +611,7 @@
   border-radius: 24px;
   border: 1px solid var(--border-color);
   padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
 }
 
 .ho-timeline {
@@ -686,12 +697,12 @@
 /* Small Banner Card inside Timeline Sidebar */
 .ho-small-banner {
   position: relative;
-  background: linear-gradient(135deg, #005F56 0%, #003631 100%);
+  background: linear-gradient(135deg, var(--palette-dark) 0%, #1a1f33 100%);
   border-radius: 24px;
   padding: 24px;
-  color: #ffffff;
+  color: var(--palette-light);
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0, 95, 86, 0.15);
+  box-shadow: 0 10px 25px color-mix(in srgb, var(--palette-dark) 15%, transparent);
   min-height: 140px;
   display: flex;
   align-items: center;
@@ -700,7 +711,7 @@
 
 .ho-small-banner:hover {
   transform: translateY(-2px);
-  box-shadow: 0 15px 35px rgba(0, 95, 86, 0.25);
+  box-shadow: 0 15px 35px color-mix(in srgb, var(--palette-dark) 25%, transparent);
 }
 
 .ho-small-banner-bg {
@@ -709,8 +720,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  opacity: 0.25;
-  background-image: linear-gradient(135deg, rgba(0, 95, 86, 0.2) 0%, rgba(0, 0, 0, 0.8) 100%),
+  opacity: 0.3;
+  background-image: linear-gradient(135deg, color-mix(in srgb, var(--palette-purple) 20%, transparent) 0%, color-mix(in srgb, var(--palette-dark) 80%, transparent) 100%),
                     url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
@@ -745,9 +756,9 @@
 }
 
 .ho-banner-card-btn {
-  background-color: #ffffff;
+  background-color: var(--palette-purple);
   border: none;
-  color: #005F56;
+  color: #ffffff;
   padding: 10px 20px;
   border-radius: 10px;
   font-weight: 700;
@@ -758,7 +769,7 @@
 }
 
 .ho-banner-card-btn:hover {
-  background-color: #f8fafc;
+  background-color: var(--background);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }

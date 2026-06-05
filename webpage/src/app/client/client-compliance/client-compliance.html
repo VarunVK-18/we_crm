@@ -1,0 +1,84 @@
+<div class="compliance-page">
+  <div class="page-header">
+    <div class="header-text">
+      <span class="header-subtitle">COMPLIANCE CENTER</span>
+      <h1 class="header-title">{{ user()?.company_name || user()?.name || 'All Entities' }}</h1>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+    <div class="compliance-content">
+      <div class="grid-row">
+        <!-- Health Card -->
+        <div class="bento-card health-card">
+          <div class="health-header">
+            <div class="health-info">
+              <span class="label">HEALTH SCORE</span>
+              <div class="score">{{ (healthScore() * 100) | number:'1.0-0' }}%</div>
+            </div>
+            <div class="status-badge" [class]="healthStatus() | lowercase">
+              {{ healthStatus() }}
+            </div>
+          </div>
+          <div class="health-footer">
+            {{ healthMessage() }}
+          </div>
+        </div>
+
+        <!-- Pending Stats -->
+        <div class="bento-card stat-card">
+          <div class="stat-icon-wrapper">
+            <hugeicons-icon [icon]="Clock01Icon" [size]="22" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">{{ pendingReminders().length | number:'2.0-0' }}</div>
+            <div class="stat-label">Pending</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Urgent Deadline -->
+      <div class="bento-card deadline-card" [class.urgent]="urgentReminder()?.status === 'urgent'">
+        <div class="deadline-content">
+          <h3 class="deadline-title">{{ urgentReminder() ? urgentReminder()?.serviceName : 'All Compliances Met' }}</h3>
+          <p class="deadline-subtitle">{{ urgentReminder() ? urgentReminder()?.message : 'Up to date' }}</p>
+        </div>
+        <div class="deadline-date">
+          {{ urgentReminder() ? 'Due soon' : 'No upcoming deadlines' }}
+        </div>
+      </div>
+
+      <!-- Startup Doctor Link -->
+      <a href="https://aistartupdoctor.com/" target="_blank" class="bento-card doctor-card">
+        <div class="doctor-icon">
+          <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="24" color="var(--palette-blue)" [strokeWidth]="2"></hugeicons-icon>
+        </div>
+        <div class="doctor-text">
+          Check Your Realtime Health Score In Startup Doctor
+        </div>
+        <hugeicons-icon [icon]="ArrowUpRight01Icon" [size]="20" color="var(--palette-blue)" [strokeWidth]="2"></hugeicons-icon>
+      </a>
+
+      <!-- Timeline -->
+      <div class="bento-card timeline-card">
+        <h3 class="timeline-header">Compliance Timeline</h3>
+        <div class="timeline-list">
+          @for (item of timelineItems(); track item.title) {
+            <div class="timeline-item">
+              <div class="timeline-dot" [class.urgent]="item.type === 'Urgent'"></div>
+              <div class="timeline-details">
+                <div class="item-title">{{ item.title }}</div>
+                <div class="item-status">{{ item.status }}</div>
+              </div>
+              <div class="item-type" [class.urgent]="item.type === 'Urgent'">{{ item.type }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>
