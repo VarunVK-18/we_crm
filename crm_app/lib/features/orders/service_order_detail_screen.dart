@@ -34,7 +34,8 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unreadCount = ref.watch(notificationProvider).where((n) => !n.isRead).length;
+    final unreadCount =
+        ref.watch(notificationProvider).where((n) => !n.isRead).length;
     final completedSteps = order.steps.where((s) => s.isCompleted).length;
     final totalSteps = order.steps.length;
     final progress = order.progressValue;
@@ -83,7 +84,8 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                           builder: (context) => const NotificationSheet(),
                         );
                       },
-                      icon: const Icon(LucideIcons.bell, color: Colors.white, size: 20),
+                      icon: const Icon(LucideIcons.bell,
+                          color: Colors.white, size: 20),
                     ),
                     if (unreadCount > 0)
                       Positioned(
@@ -219,10 +221,15 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                 _InfoRow(order: order),
 
                 const SizedBox(height: 24),
-                
-                if (order.status == ServiceStatus.active && 
-                    order.serviceType == 'Private Limited Incorporation' && 
-                    (order.details['directors'] == null || (order.details['directors'] is List && (order.details['directors'] as List).isEmpty) || (order.details['directors'] is String && (order.details['directors'] as String).isEmpty) || order.details['directors'] == '[]')) ...[
+
+                if (order.status == ServiceStatus.active &&
+                    order.serviceType == 'Private Limited Incorporation' &&
+                    (order.details['directors'] == null ||
+                        (order.details['directors'] is List &&
+                            (order.details['directors'] as List).isEmpty) ||
+                        (order.details['directors'] is String &&
+                            (order.details['directors'] as String).isEmpty) ||
+                        order.details['directors'] == '[]')) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Container(
@@ -237,74 +244,40 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                         children: [
                           const Row(
                             children: [
-                              Icon(LucideIcons.alertCircle, color: Colors.blue, size: 20),
+                              Icon(LucideIcons.alertCircle,
+                                  color: Colors.blue, size: 20),
                               SizedBox(width: 8),
-                              Text('Action Required', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                              Text('Action Required',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue)),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          const Text('Please complete the director details to proceed with the registration.', style: TextStyle(fontSize: 13, color: Colors.black87)),
+                          const Text(
+                              'Please complete the director details to proceed with the registration.',
+                              style: TextStyle(
+                                  fontSize: 13, color: Colors.black87)),
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => DirectorDetailsFormScreen(order: order)),
+                                MaterialPageRoute(
+                                    builder: (_) => DirectorDetailsFormScreen(
+                                        order: order)),
                               );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.corporateBlue,
                               minimumSize: const Size(double.infinity, 44),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text('Complete Director Details', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
-
-                // ── DPIIT Service Action Required ────────────────────────────────
-                if (order.status == ServiceStatus.active && 
-                    order.serviceType.contains('DPIIT') && 
-                    order.actionRequired) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(LucideIcons.alertTriangle, color: Colors.orange.shade700, size: 20),
-                              const SizedBox(width: 8),
-                              Text('Action Required', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange.shade700)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          const Text('Please provide the required details to start the DPIIT Registration process.', style: TextStyle(fontSize: 13, color: Colors.black87)),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => DpiitFormScreen(order: order)),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange.shade600,
-                              minimumSize: const Size(double.infinity, 44),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: const Text('Action required to start process', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            child: const Text('Complete Director Details',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -321,12 +294,14 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: Colors.amber.withOpacity(0.08),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                        border:
+                            Border.all(color: Colors.amber.withOpacity(0.3)),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(LucideIcons.info, color: Colors.amber, size: 20),
+                          const Icon(LucideIcons.info,
+                              color: Colors.amber, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -390,7 +365,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                 if (order.steps.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _StepTimeline(steps: order.steps),
+                    child: _StepTimeline(order: order, steps: order.steps),
                   )
                 else
                   const _EmptySteps(),
@@ -471,10 +446,10 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                   ),
                 ],
 
-                if (order.serviceType == 'Private Limited Incorporation' && 
-                    order.details['directors'] != null && 
+                if (order.serviceType == 'Private Limited Incorporation' &&
+                    order.details['directors'] != null &&
                     order.details['directors'] != '[]' &&
-                    order.details['directors'] is String && 
+                    order.details['directors'] is String &&
                     order.details['directors'] != 'submitted') ...[
                   const SizedBox(height: 32),
                   Padding(
@@ -515,7 +490,8 @@ class _RequestedDocumentsSection extends ConsumerWidget {
         if (fileSize > 2 * 1024 * 1024) {
           if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Warning: File is large. Max 2MB allowed')),
+            const SnackBar(
+                content: Text('Warning: File is large. Max 2MB allowed')),
           );
           return;
         }
@@ -524,16 +500,58 @@ class _RequestedDocumentsSection extends ConsumerWidget {
         final shouldUpload = await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Preview Document', style: TextStyle(color: AppTheme.deepTeal, fontWeight: FontWeight.bold)),
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(LucideIcons.fileSearch, color: Colors.blue.shade700, size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Text('Review Document',
+                    style: TextStyle(
+                        fontSize: 18,
+                        color: AppTheme.deepTeal, 
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3)),
+              ],
+            ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Selected: $fileName'),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  icon: const Icon(LucideIcons.eye, color: Colors.white, size: 18),
-                  label: const Text('View Document', style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.corporateBlue),
+                const Text('Selected File:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(LucideIcons.fileText, color: Colors.grey.shade600, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          fileName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                OutlinedButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -542,19 +560,38 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                       ),
                     );
                   },
+                  icon: const Icon(LucideIcons.eye, size: 16),
+                  label: const Text('Preview Content'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.corporateBlue,
+                    minimumSize: const Size(double.infinity, 44),
+                    side: const BorderSide(color: AppTheme.corporateBlue, width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                  ),
                 ),
               ],
             ),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.grey.shade700,
+                  textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                ),
+                child: const Text('Cancel'),
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.deepTeal),
+              FilledButton(
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Upload Safely', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppTheme.deepTeal,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                child: const Text('Upload Document'),
               ),
             ],
           ),
@@ -562,12 +599,11 @@ class _RequestedDocumentsSection extends ConsumerWidget {
 
         if (shouldUpload != true) return;
 
-        final uri = Uri.parse(
-            '$kBaseUrl/api/checklists/${order.id}/upload-documents');
+        final uri =
+            Uri.parse('$kBaseUrl/api/checklists/${order.id}/upload-documents');
 
         final request = http.MultipartRequest('POST', uri);
-        request.files
-            .add(await http.MultipartFile.fromPath(docName, filePath));
+        request.files.add(await http.MultipartFile.fromPath(docName, filePath));
 
         final uid = ref.read(authStateProvider).value?.uid;
         if (uid != null) {
@@ -614,7 +650,9 @@ class _RequestedDocumentsSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        ...order.requestedDocuments.where((doc) => !doc.name.startsWith('director_')).map((doc) {
+        ...order.requestedDocuments
+            .where((doc) => !doc.name.startsWith('director_'))
+            .map((doc) {
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
@@ -656,7 +694,7 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                       Text(
                         doc.isUploaded ? 'Uploaded' : 'Action Required',
                         style: TextStyle(
-                          color: doc.isUploaded ? Colors.green : Colors.red,
+                          color: doc.isUploaded ? Colors.green : const Color.fromARGB(255, 244, 67, 54),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -664,16 +702,19 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                       if (doc.notes != null && doc.notes!.isNotEmpty) ...[
                         const SizedBox(height: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.amber.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                            border: Border.all(
+                                color: Colors.amber.withOpacity(0.3)),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(LucideIcons.info, size: 12, color: Colors.amber),
+                              const Icon(LucideIcons.info,
+                                  size: 12, color: Colors.amber),
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
@@ -693,18 +734,24 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                   ),
                 ),
                 if (!doc.isUploaded)
-                  ElevatedButton.icon(
+                  FilledButton.icon(
                     onPressed: () => _uploadDocument(context, ref, doc.name),
-                    icon: const Icon(LucideIcons.upload,
-                        size: 14, color: Colors.white),
+                    icon: const Icon(LucideIcons.uploadCloud, size: 14),
                     label: const Text('Upload',
-                        style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade600,
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.w600)),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 247, 240, 241),
+                      foregroundColor: const Color.fromARGB(255, 244, 67, 54),
+                      elevation: 0,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                          borderRadius: BorderRadius.circular(8),
+                          side:
+                              BorderSide(color: Colors.red.shade200, width: 1)),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                          horizontal: 12, vertical: 0),
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
               ],
@@ -808,8 +855,9 @@ class _InfoTile extends StatelessWidget {
 // ─── Step Timeline ───────────────────────────────────────────────────────────
 
 class _StepTimeline extends StatelessWidget {
+  final ServiceOrder order;
   final List<ServiceStep> steps;
-  const _StepTimeline({required this.steps});
+  const _StepTimeline({required this.order, required this.steps});
 
   @override
   Widget build(BuildContext context) {
@@ -885,82 +933,116 @@ class _StepTimeline extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
-                  child: Container(
-                    padding: const EdgeInsets.all(18),
-                    decoration: BoxDecoration(
-                      color: isCompleted
-                          ? Colors.green.withOpacity(0.04)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
+                  child: InkWell(
+                    onTap: (step.isActionStep && !isCompleted)
+                        ? () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      DpiitFormScreen(order: order)),
+                            );
+                          }
+                        : null,
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
                         color: isCompleted
-                            ? Colors.green.withOpacity(0.2)
-                            : Colors.grey.withOpacity(0.08),
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
+                            ? Colors.green.withOpacity(0.04)
+                            : (step.isActionStep
+                                ? Colors.orange.withOpacity(0.08)
+                                : Colors.white),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: isCompleted
+                              ? Colors.green.withOpacity(0.2)
+                              : (step.isActionStep
+                                  ? Colors.orange.withOpacity(0.3)
+                                  : Colors.grey.withOpacity(0.08)),
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                step.title,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  color: isCompleted
-                                      ? Colors.green.shade700
-                                      : AppTheme.deepTeal,
-                                ),
-                              ),
-                            ),
-                            if (isCompleted && step.completedAt != null) ...[
-                              const SizedBox(width: 8),
-                              Text(
-                                DateFormat('dd MMM').format(step.completedAt!),
-                                style: const TextStyle(
-                                    fontSize: 10, color: Colors.grey),
-                              ),
-                            ],
-                          ],
-                        ),
-                        if (step.description.isNotEmpty) ...[
-                          const SizedBox(height: 6),
-                          Text(
-                            step.description,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                              height: 1.4,
-                            ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
                           ),
                         ],
-                        if (isCompleted) ...[
-                          const SizedBox(height: 8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Row(
                             children: [
-                              const Icon(LucideIcons.checkCircle2,
-                                  size: 12, color: Colors.green),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Completed',
-                                style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.green.shade600,
-                                    fontWeight: FontWeight.w700),
+                              Expanded(
+                                child: Text(
+                                  step.title,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: isCompleted
+                                        ? Colors.green.shade700
+                                        : AppTheme.deepTeal,
+                                  ),
+                                ),
                               ),
+                              if (isCompleted && step.completedAt != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  DateFormat('dd MMM')
+                                      .format(step.completedAt!),
+                                  style: const TextStyle(
+                                      fontSize: 10, color: Colors.grey),
+                                ),
+                              ],
                             ],
                           ),
+                          if (step.description.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              step.description,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                          if (isCompleted) ...[
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(LucideIcons.checkCircle2,
+                                    size: 12, color: Colors.green),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Completed',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.green.shade600,
+                                      fontWeight: FontWeight.w700),
+                                ),
+                              ],
+                            ),
+                          ] else if (step.isActionStep) ...[
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Icon(LucideIcons.mousePointerClick,
+                                    size: 14, color: Colors.orange.shade700),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Tap to complete form',
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: Colors.orange.shade700,
+                                      fontWeight: FontWeight.w800),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -1138,7 +1220,9 @@ class _FinalDeliverySection extends StatelessWidget {
         ),
 
         // Final Documents
-        ...order.finalDocuments.where((doc) => !doc.name.startsWith('director_')).map((doc) {
+        ...order.finalDocuments
+            .where((doc) => !doc.name.startsWith('director_'))
+            .map((doc) {
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
@@ -1245,9 +1329,11 @@ class _DirectorDetailsSection extends StatelessWidget {
           final index = entry.key;
           final dir = entry.value;
           final directorPrefix = 'director_${index + 1}_';
-          
-          final docs = order.requestedDocuments.where((d) => d.name.startsWith(directorPrefix)).toList();
-          
+
+          final docs = order.requestedDocuments
+              .where((d) => d.name.startsWith(directorPrefix))
+              .toList();
+
           return Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: Container(
@@ -1267,7 +1353,10 @@ class _DirectorDetailsSection extends StatelessWidget {
               child: ExpansionTile(
                 title: Text(
                   'Director ${index + 1}: ${dir['name'] ?? 'Unknown'}',
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.deepTeal),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: AppTheme.deepTeal),
                 ),
                 childrenPadding: const EdgeInsets.all(16),
                 expandedCrossAxisAlignment: CrossAxisAlignment.start,
@@ -1275,22 +1364,36 @@ class _DirectorDetailsSection extends StatelessWidget {
                   _buildDetailRow('Father\'s Name', dir['fathersName']),
                   _buildDetailRow('Date of Birth', dir['dob']),
                   _buildDetailRow('Place of Birth', dir['placeOfBirth']),
-                  _buildDetailRow('Educational Qual.', dir['educationalQualification']),
+                  _buildDetailRow(
+                      'Educational Qual.', dir['educationalQualification']),
                   _buildDetailRow('Occupation', dir['occupation']),
                   const SizedBox(height: 16),
-                  const Text('Documents', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Colors.grey)),
+                  const Text('Documents',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                          color: Colors.grey)),
                   const SizedBox(height: 8),
                   if (docs.isEmpty)
-                    const Text('No documents uploaded', style: TextStyle(fontSize: 12, color: Colors.grey))
+                    const Text('No documents uploaded',
+                        style: TextStyle(fontSize: 12, color: Colors.grey))
                   else
                     ...docs.map((d) => Padding(
                           padding: const EdgeInsets.only(bottom: 4),
                           child: Row(
                             children: [
-                              Icon(d.isUploaded ? LucideIcons.checkCircle2 : LucideIcons.xCircle, 
-                                   color: d.isUploaded ? Colors.green : Colors.red, size: 14),
+                              Icon(
+                                  d.isUploaded
+                                      ? LucideIcons.checkCircle2
+                                      : LucideIcons.xCircle,
+                                  color:
+                                      d.isUploaded ? Colors.green : Colors.red,
+                                  size: 14),
                               const SizedBox(width: 8),
-                              Expanded(child: Text(d.name.replaceFirst(directorPrefix, ''), style: const TextStyle(fontSize: 12))),
+                              Expanded(
+                                  child: Text(
+                                      d.name.replaceFirst(directorPrefix, ''),
+                                      style: const TextStyle(fontSize: 12))),
                             ],
                           ),
                         )),
@@ -1312,10 +1415,18 @@ class _DirectorDetailsSection extends StatelessWidget {
         children: [
           SizedBox(
             width: 120,
-            child: Text(label, style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.w500)),
+            child: Text(label,
+                style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500)),
           ),
           Expanded(
-            child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+            child: Text(value,
+                style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.deepTeal)),
           ),
         ],
       ),

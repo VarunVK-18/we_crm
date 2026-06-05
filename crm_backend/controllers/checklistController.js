@@ -334,8 +334,25 @@ const getMyChecklists = async (req, res) => {
     
     const enrichedChecklists = checklistsPlain.map(c => {
       const order = serviceOrders.find(o => o.serviceType === c.service_name);
+      const isDpiit = c.service_name && c.service_name.includes('DPIIT');
+      
+      let modifiedItems = c.items || [];
+      if (isDpiit && c.assigned_to) {
+        // Inject dynamic Step 1 for Action Required
+        modifiedItems = [
+          {
+            title: "Provide Additional Details",
+            description: "Please fill out the required form to begin the process.",
+            isChecked: !c.action_required, // Checked if action is completed
+            isActionStep: true
+          },
+          ...modifiedItems
+        ];
+      }
+
       return {
         ...c,
+        items: modifiedItems,
         dealClosedAmount: order?.dealClosedAmount || c.dealClosedAmount || 0
       };
     });

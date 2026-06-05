@@ -217,6 +217,27 @@
         }
       </section>
 
+      <!-- DPIIT Form Details Section -->
+      @if (checklist().details?.dpiitForm) {
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
+        <h3 class="section-title">DPIIT Application Details</h3>
+        <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+            @for (field of (checklist().details.dpiitForm | keyvalue); track field.key) {
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
+                  {{ field.key }}
+                </span>
+                <span style="font-size: 15px; font-weight: 500; color: var(--text-primary);">
+                  {{ field.value }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+      }
+
       <!-- Final Documents Section -->
       @if (checklist().items && checklist().items.length > 0 && checklist().items[checklist().items.length -
       1].isChecked) {

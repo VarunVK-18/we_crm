@@ -207,12 +207,25 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   getServiceSpecificDocuments(): any[] {
     const cl = this.checklist();
-    if (!cl || !cl.client_id || !cl.client_id.onboarding_documents) return [];
+    const docs = [];
 
-    // Filter documents to only include those related to this service
-    return cl.client_id.onboarding_documents.filter((doc: any) => {
-      return doc.name && doc.name.startsWith(cl.service_name);
-    });
+    if (cl && cl.client_id && cl.client_id.onboarding_documents) {
+      const filtered = cl.client_id.onboarding_documents.filter((doc: any) => {
+        return doc.name && doc.name.startsWith(cl.service_name);
+      });
+      docs.push(...filtered);
+    }
+
+    if (cl && cl.details && cl.details.dpiitDocs && Array.isArray(cl.details.dpiitDocs)) {
+      const formDocs = cl.details.dpiitDocs.map((d: any) => ({
+        name: d.name || 'DPIIT Document',
+        fileUrl: d.fileUrl,
+        uploadedAt: cl.updatedAt || new Date()
+      }));
+      docs.push(...formDocs);
+    }
+
+    return docs;
   }
 
   getDirectorDocumentsGrouped(): { title: string, docs: any[] }[] {
