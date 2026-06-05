@@ -21,12 +21,14 @@ class ServiceStep {
   final String title;
   final String description;
   final bool isCompleted;
+  final bool isActionStep;
   final DateTime? completedAt;
 
   const ServiceStep({
     required this.title,
     required this.description,
     required this.isCompleted,
+    this.isActionStep = false,
     this.completedAt,
   });
 
@@ -35,6 +37,7 @@ class ServiceStep {
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
       isCompleted: map['isCompleted'] == true,
+      isActionStep: map['isActionStep'] == true,
       completedAt: map['completedAt'] != null
           ? DateTime.tryParse(map['completedAt'].toString())
           : null,
@@ -45,6 +48,7 @@ class ServiceStep {
     'title': title,
     'description': description,
     'isCompleted': isCompleted,
+    'isActionStep': isActionStep,
     'completedAt': completedAt?.toIso8601String(),
   };
 }
