@@ -16,7 +16,7 @@
             <span class="status-badge" [class]="order()?.derivedStatus">{{ order()?.derivedStatus | titlecase }}</span>
             @if (order()?.derivedStatus === 'active' && !isChatOpen()) {
               <button class="open-chat-btn" (click)="toggleChat()">
-                <span class="material-symbols-outlined">forum</span> Open Chat
+                <hugeicons-icon [icon]="MessageMultiple01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon> Open Chat
               </button>
             }
           </div>
@@ -35,10 +35,6 @@
         </div>
       } @else {
         <div class="checklist-main-area main-card">
-          <div class="panel-header">
-            <span class="material-symbols-outlined">checklist</span>
-            <h3>Checklist</h3>
-          </div>
           <div class="checklist-view">
             <div class="progress-header">
               <h3>Required Documents & Tasks</h3>

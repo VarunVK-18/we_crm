@@ -102,16 +102,19 @@
           </div>
           <div class="manager-info">
             <h3 class="manager-name">{{ clientManager().owner_name || clientManager().name || 'Support Team' }}</h3>
-            <span class="manager-role">Your Client Manager</span>
+            <p class="manager-desc">
+              <span class="manager-role">Your Client Manager</span>
+              is available to assist you with any queries.
+            </p>
           </div>
           <div class="manager-contact-links">
             <a [href]="'tel:' + (clientManager().phone || '')" class="mc-link">
               <span class="material-symbols-outlined">call</span>
-              <span>Call</span>
+              <span>{{ clientManager().phone || '+918072286963' }}</span>
             </a>
             <a [href]="'mailto:' + (clientManager().email || '')" class="mc-link">
               <span class="material-symbols-outlined">mail</span>
-              <span>Email</span>
+              <span>{{ clientManager().email || 'varun@gmail.com' }}</span>
             </a>
           </div>
         </div>

@@ -3,15 +3,18 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { Api } from '../api';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { MessageMultiple01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-service-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
   templateUrl: './client-service-detail.html',
   styleUrl: './client-service-detail.css',
 })
 export class ClientServiceDetail implements OnInit, OnDestroy {
+  MessageMultiple01Icon = MessageMultiple01Icon;
   user = signal<any>(null);
   clientManager = signal<any>(null);
   orderId = signal<string>('');
@@ -22,7 +25,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   newChatMessage = signal('');
   
   // UI State
-  isChatOpen = signal(true);
+  isChatOpen = signal(false);
   isLoading = signal(true);
   
   pollingInterval: any;
