@@ -61,9 +61,14 @@
       [class.status-complete]="(order.status||'').toLowerCase() === 'complete'">
       <div class="card-header">
         <div class="service-badge">{{ order.serviceType }}</div>
-        <div class="date-badge">
-          <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
-          {{ formatDate(order.createdAt) }}
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button (click)="openChatModal(order)" style="background: none; border: none; cursor: pointer; color: #2563eb; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%;" title="Chat with Client" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='none'">
+            <span class="material-symbols-outlined" style="font-size: 18px;">chat</span>
+          </button>
+          <div class="date-badge">
+            <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
+            {{ formatDate(order.createdAt) }}
+          </div>
         </div>
       </div>
 
@@ -213,7 +218,9 @@
               }
               <div style="display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out;" [style.align-items]="msg.senderRole === 'client' ? 'flex-start' : 'flex-end'">
                 
-
+                @if (msg.senderId?.owner_name) {
+                  <span style="font-size: 11px; color: #64748b; margin-bottom: 2px; padding: 0 4px; font-weight: 500;">{{ msg.senderId.owner_name }}</span>
+                }
                 
                 <div style="max-width: 85%; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);" 
                      [style.background]="msg.senderRole === 'client' ? '#ffffff' : '#2563eb'" 

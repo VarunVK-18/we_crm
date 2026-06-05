@@ -446,6 +446,9 @@ class _ServiceRequestSummarySheetState
         details['msme_turnover'] = _msmeTurnoverController.text;
         details['msme_org_selection'] = _msmeOrgSelection;
         details['msme_activity'] = _msmeActivity;
+      } else if (widget.packageName == 'DPIIT Startup India Certification') {
+        details['Status'] = 'Pending Client Form Submission';
+        details['Next Step'] = 'Assign expert to unlock form for client';
       } else if (widget.packageName == 'DUNS Number Registration') {
         details['duns_trade_name'] = _dunsTradeNameController.text;
         details['duns_year'] = _dunsYearController.text;

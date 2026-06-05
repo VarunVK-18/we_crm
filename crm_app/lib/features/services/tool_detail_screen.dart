@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/constants/nic_codes.dart';
 
 class ToolDetailScreen extends StatefulWidget {
   final String toolName;
@@ -30,23 +31,12 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   double _secondaryResult = 0.0;
   String _detailMessage = '';
 
-  // NIC Mock Data
-  final List<Map<String, String>> _allNicCodes = [
-    {'code': '62011', 'desc': 'Software development services'},
-    {'code': '62020', 'desc': 'Computer consultancy and services'},
-    {'code': '47110', 'desc': 'Retail sale in non-specialized stores'},
-    {'code': '56101', 'desc': 'Restaurants and mobile food service'},
-    {'code': '70200', 'desc': 'Management consultancy activities'},
-    {'code': '45101', 'desc': 'Sale of motor vehicles'},
-    {'code': '10712', 'desc': 'Manufacture of bread and bakery products'},
-    {'code': '85101', 'desc': 'Primary education services'},
-  ];
-  List<Map<String, String>> _filteredNicCodes = [];
+  List<NicCode> _filteredNicCodes = [];
 
   @override
   void initState() {
     super.initState();
-    _filteredNicCodes = _allNicCodes;
+    _filteredNicCodes = allNicCodes;
     _initializeDefaults();
   }
 
@@ -86,10 +76,10 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
 
   void _searchNic(String query) {
     setState(() {
-      _filteredNicCodes = _allNicCodes
+      _filteredNicCodes = allNicCodes
           .where((item) =>
-              item['code']!.contains(query) ||
-              item['desc']!.toLowerCase().contains(query.toLowerCase()))
+              item.code.contains(query) ||
+              item.description.toLowerCase().contains(query.toLowerCase()))
           .toList();
     });
   }
@@ -282,40 +272,75 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           itemCount: _filteredNicCodes.length,
           itemBuilder: (context, index) {
             final item = _filteredNicCodes[index];
+            final isClass = item.type == 'Class';
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isClass ? Colors.blue.shade50 : Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[100]!),
+                border: Border.all(
+                    color: isClass ? Colors.blue.shade200 : Colors.grey[100]!),
+                boxShadow: [
+                  if (isClass)
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    )
+                ],
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.corporateBlue.withOpacity(0.1),
+                      color: isClass
+                          ? AppTheme.corporateBlue
+                          : AppTheme.corporateBlue.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      item['code']!,
+                      item.code,
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w900,
-                        color: AppTheme.corporateBlue,
+                        color: isClass
+                            ? Colors.white
+                            : AppTheme.corporateBlue,
                         fontSize: 12,
                       ),
                     ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
-                    child: Text(
-                      item['desc']!,
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        color: AppTheme.deepTeal,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.type.toUpperCase(),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 9,
+                            color: isClass
+                                ? AppTheme.corporateBlue
+                                : Colors.grey[500],
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.description,
+                          style: GoogleFonts.outfit(
+                            fontWeight: isClass
+                                ? FontWeight.w700
+                                : FontWeight.w600,
+                            fontSize: 14,
+                            color: AppTheme.deepTeal,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

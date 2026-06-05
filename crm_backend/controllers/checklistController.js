@@ -229,7 +229,12 @@ const updateChecklist = async (req, res) => {
       }
       if (details !== undefined) checklist.details = details;
     } else {
-      if (assigned_to !== undefined) checklist.assigned_to = assigned_to || null;
+      if (assigned_to !== undefined) {
+        checklist.assigned_to = assigned_to || null;
+        if (assigned_to && checklist.service_name.includes('DPIIT')) {
+          checklist.action_required = true;
+        }
+      }
       if (notes !== undefined) checklist.notes = notes;
       if (stage !== undefined) checklist.stage = stage;
       if (status !== undefined) checklist.status = status;
@@ -296,7 +301,7 @@ const getMyChecklists = async (req, res) => {
     const checklists = await Checklist.find({ client_id: clientId })
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
-      .select('service_name company_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount advanceAmountPaid details')
+      .select('service_name company_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount advanceAmountPaid details action_required')
       .sort({ updatedAt: -1 });
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items

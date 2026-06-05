@@ -134,6 +134,6 @@ class ChatNotifier extends StateNotifier<ChatState> {
   }
 }
 
-final chatProvider = StateNotifierProvider.family<ChatNotifier, ChatState, String>((ref, orderId) {
+final chatProvider = StateNotifierProvider.autoDispose.family<ChatNotifier, ChatState, String>((ref, orderId) {
   return ChatNotifier(orderId, ref);
 });

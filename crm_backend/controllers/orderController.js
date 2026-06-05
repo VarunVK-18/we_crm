@@ -128,3 +128,52 @@ exports.getCompanyOrders = async (req, res) => {
   }
 };
 
+// Submit DPIIT Form
+exports.submitDpiitForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+    
+    // Process uploaded files if any
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.incorpCert) {
+      uploadedDocs.push({ name: 'Incorporation Certificate', fileUrl: files.incorpCert[0].path });
+    }
+    if (files.pan) {
+      uploadedDocs.push({ name: 'Company PAN', fileUrl: files.pan[0].path });
+    }
+    if (files.logo) {
+      uploadedDocs.push({ name: 'Company Logo', fileUrl: files.logo[0].path });
+    }
+    if (files.pitchDeck) {
+      uploadedDocs.push({ name: 'Pitch Deck', fileUrl: files.pitchDeck[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      dpiitForm: formData,
+      dpiitDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'DPIIT form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting DPIIT form:', error);
+    res.status(500).json({ message: 'Server error while submitting DPIIT form.', error: error.message });
+  }
+};
+

@@ -33,76 +33,115 @@ class ServiceDetailScreen extends StatelessWidget {
         children: [
           // 1. Scrollable Content
           CustomScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             slivers: [
               // Header
               SliverAppBar(
-                expandedHeight: 240,
                 pinned: true,
                 elevation: 0,
-                systemOverlayStyle: SystemUiOverlayStyle.light,
-                backgroundColor: AppTheme.deepTeal,
+                backgroundColor: Colors.white,
+                surfaceTintColor: Colors.transparent,
                 leading: IconButton(
-                  icon: const Icon(LucideIcons.arrowLeft, color: Colors.white),
+                  icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
                   onPressed: () => Navigator.pop(context),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.deepTeal,
-                          AppTheme.corporateBlue.withValues(alpha: 0.8)
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const SizedBox(height: 40),
-                        // Themed Icon Container
-                        Container(
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(28),
-                            border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.2)),
-                          ),
-                          child: icon is IconData
-                              ? Icon(icon as IconData,
-                                  color: Colors.white, size: 48)
-                              : HugeIcon(
-                                  icon: icon, color: Colors.white, size: 48),
-                        ),
-                        const SizedBox(height: 16),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Text(
-                            serviceName,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
 
               // Content
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: const EdgeInsets.fromLTRB(24.0, 0, 24.0, 24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // The standalone blue card
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.deepTeal,
+                              AppTheme.corporateBlue.withValues(alpha: 0.8)
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: icon is IconData
+                                      ? Icon(icon as IconData,
+                                          color: Colors.white, size: 28)
+                                      : HugeIcon(
+                                          icon: icon, color: Colors.white, size: 28),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        serviceName,
+                                        style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white,
+                                          letterSpacing: -0.5,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Service Details & Documents',
+                                        style: TextStyle(
+                                          color: Colors.white.withValues(alpha: 0.8),
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(LucideIcons.clock, size: 14, color: Colors.white.withValues(alpha: 0.9)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Processing time: 5-7 business days',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 32),
+                      
                       // About Package
                       const Text(
                         'About Package',
@@ -230,7 +269,7 @@ class ServiceDetailScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.activeOrange,
+                  backgroundColor: AppTheme.corporateBlue,
                   foregroundColor: Colors.white,
                   minimumSize: const Size(double.infinity, 60),
                   elevation: 0,

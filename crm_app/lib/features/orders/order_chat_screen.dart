@@ -146,6 +146,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             isMe: isMe,
                             timestamp: message.timestamp,
                             seen: message.seen,
+                            senderName: message.senderName,
                           );
 
                           if (showDateDivider) {
@@ -263,6 +264,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     required bool isMe,
     required DateTime timestamp,
     required bool seen,
+    required String senderName,
   }) {
     final timeStr = DateFormat('hh:mm a').format(timestamp);
     
@@ -281,16 +283,32 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
             const SizedBox(width: 8),
           ],
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isMe ? AppTheme.deepTeal : Colors.white,
-                borderRadius: BorderRadius.circular(16).copyWith(
-                  bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
-                  bottomLeft: !isMe ? const Radius.circular(4) : const Radius.circular(16),
-                ),
-                border: isMe ? null : Border.all(color: Colors.grey.shade200),
-              ),
+            child: Column(
+              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              children: [
+                if (!isMe) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 4),
+                    child: Text(
+                      senderName,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ),
+                ],
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isMe ? AppTheme.deepTeal : Colors.white,
+                    borderRadius: BorderRadius.circular(16).copyWith(
+                      bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+                      bottomLeft: !isMe ? const Radius.circular(4) : const Radius.circular(16),
+                    ),
+                    border: isMe ? null : Border.all(color: Colors.grey.shade200),
+                  ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -326,7 +344,9 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                 ],
               ),
             ),
-          ),
+          ],
+        ),
+      ),
           if (isMe) const SizedBox(width: 20),
         ],
       ),

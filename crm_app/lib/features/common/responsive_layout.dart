@@ -485,113 +485,65 @@ class _ModernBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: Container(
-          height: 65,
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.95),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-            border: Border.all(color: Colors.grey.withOpacity(0.1), width: 1),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: navItems.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final isSelected = currentIndex == index;
+      padding: const EdgeInsets.fromLTRB(36, 0, 36, 24),
+      child: Container(
+        height: 64,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A), // Dark Navy/Black background
+          borderRadius: BorderRadius.circular(40), // Pill shape
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: navItems.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            final isSelected = currentIndex == index;
 
-              final iconData = item.icon;
-              final Widget iconWidget;
-              if (iconData is IconData) {
-                // Standard IconData (e.g. Lucide or Material icons)
-                iconWidget = Icon(
-                  iconData,
-                  size: isSelected ? 22 : 20,
-                  color: isSelected
-                      ? AppTheme.deepTeal.withOpacity(0.85)
-                      : Colors.grey[500],
-                );
-              } else if (iconData is List<List<dynamic>>) {
-                // HugeIcons constants (new JSON structure)
-                iconWidget = HugeIcon(
-                  icon: iconData,
-                  size: isSelected ? 22 : 20,
-                  color: isSelected
-                      ? AppTheme.deepTeal.withOpacity(0.85)
-                      : Colors.grey[500],
-                  strokeWidth: isSelected ? 2.0 : 1.8,
-                );
-              } else {
-                // Fallback for dynamic types
-                iconWidget = HugeIcon(
-                  icon: iconData,
-                  size: isSelected ? 22 : 20,
-                  color: isSelected
-                      ? AppTheme.deepTeal.withOpacity(0.85)
-                      : Colors.grey[500],
-                  strokeWidth: isSelected ? 2.0 : 1.8,
-                );
-              }
+            final iconData = item.icon;
+            final Widget iconWidget;
+            final iconColor = isSelected ? const Color(0xFF0F172A) : Colors.white70;
 
-              return InkWell(
-                onTap: () => onTap(index),
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent, // Removed the heavy background
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        child: iconWidget,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w500, // nav lable weight 500
-                          color: isSelected
-                              ? AppTheme.deepTeal.withOpacity(0.85)
-                              : Colors.grey[600],
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      // Smaller rounded active indicator
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.only(top: 4),
-                        height: 4,
-                        width: isSelected ? 16 : 0,
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.deepTeal : Colors.transparent,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            if (iconData is IconData) {
+              iconWidget = Icon(
+                iconData,
+                size: 22,
+                color: iconColor,
               );
-            }).toList(),
-          ),
+            } else {
+              iconWidget = HugeIcon(
+                icon: iconData,
+                size: 22,
+                color: iconColor,
+                strokeWidth: isSelected ? 2.0 : 1.8,
+              );
+            }
+
+            return GestureDetector(
+              onTap: () => onTap(index),
+              behavior: HitTestBehavior.opaque,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutQuart,
+                height: 46,
+                width: 46,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: iconWidget,
+                ),
+              ),
+            );
+          }).toList(),
         ),
       ),
     );

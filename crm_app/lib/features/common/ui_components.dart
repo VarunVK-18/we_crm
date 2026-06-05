@@ -224,8 +224,8 @@ class CircleServiceButton extends StatelessWidget {
         child: Column(
           children: [
             Container(
-              width: 56.r,
-              height: 56.r,
+              width: 48.r,
+              height: 48.r,
               decoration: BoxDecoration(
                 color: (color ?? AppTheme.corporateBlue).withOpacity(0.08),
                 shape: BoxShape.circle,
@@ -238,26 +238,28 @@ class CircleServiceButton extends StatelessWidget {
                     ? Icon(
                         icon as IconData,
                         color: color ?? AppTheme.corporateBlue,
-                        size: 22.ip,
+                        size: 18.ip,
                       )
                     : HugeIcon(
                         icon: icon,
                         color: color ?? AppTheme.corporateBlue,
-                        size: 22.ip,
+                        size: 18.ip,
                         strokeWidth: 1.5,
                       ),
               ),
             ),
-            SizedBox(height: 10.r),
+            SizedBox(height: 8.r),
             SizedBox(
-              width: 68.r,
+              width: 82.r,
               child: Text(
                 label,
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.visible,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppTheme.deepTeal,
-                  fontSize: 11.sp,
+                  fontSize: 10.sp,
                   height: 1.2,
                 ),
               ),

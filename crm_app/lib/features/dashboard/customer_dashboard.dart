@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,43 +23,26 @@ import '../../core/utils/responsive.dart';
 class CustomerDashboard extends ConsumerWidget {
   const CustomerDashboard({super.key});
 
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) {
-      return 'Good Morning';
-    } else if (hour >= 12 && hour < 17) {
-      return 'Good Afternoon';
-    } else if (hour >= 17 && hour < 21) {
-      return 'Good Evening';
-    } else {
-      return 'Good Night';
-    }
-  }
-
-  IconData _getGreetingIcon() {
-    final hour = DateTime.now().hour;
-    if (hour >= 5 && hour < 12) {
-      return LucideIcons.sun;
-    } else if (hour >= 12 && hour < 17) {
-      return LucideIcons.cloudSun;
-    } else if (hour >= 17 && hour < 21) {
-      return LucideIcons.cloudMoon;
-    } else {
-      return LucideIcons.moon;
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Responsive.init(context);
     final user = ref.watch(userProfileProvider).value;
-    final greeting = _getGreeting();
 
     // Capitalize first letter of name
     final rawName = user?.name.split(' ')[0] ?? 'Explorer';
     final name = rawName.isNotEmpty
         ? rawName[0].toUpperCase() + rawName.substring(1)
         : rawName;
+        
+    final hour = DateTime.now().hour;
+    String greeting;
+    if (hour < 12) {
+      greeting = 'Good Morning';
+    } else if (hour < 17) {
+      greeting = 'Good Afternoon';
+    } else {
+      greeting = 'Good Evening';
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -67,96 +51,101 @@ class CustomerDashboard extends ConsumerWidget {
         slivers: [
           // 1. Premium Immersive AppBar
           SliverAppBar(
-            expandedHeight: 120.r,
             pinned: true,
             elevation: 0,
+            scrolledUnderElevation: 0,
             stretch: false,
-            backgroundColor: AppTheme.deepTeal,
+            toolbarHeight: 70.r,
+            backgroundColor: Colors.white,
+            centerTitle: true,
+            title: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Hello, $name',
+                  style: GoogleFonts.poppins(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 18.sp,
+                  ),
+                ),
+                Text(
+                  greeting,
+                  style: GoogleFonts.poppins(
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12.sp,
+                  ),
+                ),
+              ],
+            ),
             systemOverlayStyle: const SystemUiOverlayStyle(
               statusBarColor: Colors.transparent,
-              statusBarIconBrightness: Brightness.light,
-              statusBarBrightness: Brightness.dark,
+              statusBarIconBrightness: Brightness.dark,
+              statusBarBrightness: Brightness.light,
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color(0xFF0F172A), // Premium Deep Slate
-                      AppTheme.deepTeal,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      right: -30.r,
-                      top: -30.r,
-                      child: Container(
-                        width: 140.r,
-                        height: 140.r,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.03),
+            leadingWidth: 70.r,
+            leading: Center(
+              child: Padding(
+                padding: EdgeInsets.only(left: 20.r),
+                child: GestureDetector(
+                  onTap: () {
+                    ref.read(navigationIndexProvider.notifier).state = 3;
+                  },
+                  child: Container(
+                    width: 44.r,
+                    height: 44.r,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: AppTheme.corporateBlue,
+                      border: Border.all(
+                        color: Colors.transparent,
+                        width: 0,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        name.isNotEmpty ? name[0] : 'U',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18.sp,
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              titlePadding: EdgeInsets.symmetric(
-                horizontal: 24.r,
-                vertical: 12.r,
-              ),
-              title: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'WEALTH EMPIRES',
-                    style: GoogleFonts.inter(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 10.sp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2.0,
-                    ),
-                  ),
-                  SizedBox(height: 4.r),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '$greeting, $name',
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 16.sp,
-                                  ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ),
             ),
             actions: [
-              IconButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const SearchScreen()),
-                ),
-                icon: HugeIcon(
-                  icon: HugeIcons.strokeRoundedSearch01,
-                  color: Colors.white,
-                  size: 22.ip,
+              Padding(
+                padding: EdgeInsets.only(right: 20.r),
+                child: Center(
+                  child: Container(
+                    width: 44.r,
+                    height: 44.r,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 1.0.r,
+                      ),
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SearchScreen()),
+                      ),
+                      icon: HugeIcon(
+                        icon: HugeIcons.strokeRoundedSearch01,
+                        color: Colors.black87,
+                        size: 22.ip,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              SizedBox(width: 12.r),
             ],
           ),
 
@@ -171,7 +160,7 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 32.r),
 
               // Section 1: Services
-              _buildSectionHeader('Start with a Service'),
+              _buildSectionHeader('Start with a Service', subtitle: 'Swipe to explore services'),
               SizedBox(height: 20.r),
               const _HorizontalServiceList(
                 items: [
@@ -209,8 +198,7 @@ class CustomerDashboard extends ConsumerWidget {
                   },
                   {
                     'label': 'Licensing',
-                    'icon': HugeIcons
-                        .strokeRoundedStamp01, // using stamp or file icon
+                    'icon': HugeIcons.strokeRoundedProfile02,
                     'subItems': [
                       'ISO',
                       'DPIIT',
@@ -232,7 +220,7 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 40.r),
 
               // Section 2: Tools
-              _buildSectionHeader('Tools & Calculators'),
+              _buildSectionHeader('Tools & Calculators', subtitle: 'Swipe to explore tools'),
               SizedBox(height: 18.r),
               const _HorizontalServiceList(
                 items: [
@@ -253,10 +241,32 @@ class CustomerDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, {String? subtitle}) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.r),
-      child: SectionHeader(title: title),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeader(title: title),
+          if (subtitle != null) ...[
+            SizedBox(height: 4.r),
+            Row(
+              children: [
+                Icon(LucideIcons.arrowRightLeft, size: 12.sp, color: Colors.grey.shade600),
+                SizedBox(width: 6.r),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.sp,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ]
+        ],
+      ),
     );
   }
 }
@@ -396,7 +406,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFFDCD2FF), // Very light pastel violet
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: AppTheme.softShadow,
         ),
@@ -410,7 +420,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                 child: HugeIcon(
                   icon: HugeIcons.strokeRoundedStartUp02,
                   size: 110.ip,
-                  color: AppTheme.deepTeal.withValues(alpha: 0.03),
+                  color: Colors.black.withValues(
+                      alpha: 0.05), // Darker icon for contrast on violet
                 ),
               ),
               Padding(
@@ -424,13 +435,14 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                         Container(
                           padding: EdgeInsets.all(10.r),
                           decoration: BoxDecoration(
-                            color: AppTheme.deepTeal.withValues(alpha: 0.08),
+                            color: Colors.black.withValues(
+                                alpha: 0.1), // Slightly dark for contrast
                             borderRadius: BorderRadius.circular(10.r),
                           ),
                           child: HugeIcon(
                             icon: HugeIcons.strokeRoundedStartUp02,
                             size: 24.ip,
-                            color: AppTheme.deepTeal,
+                            color: Colors.black87, // Dark icon
                           ),
                         ),
                         SizedBox(width: 12.r),
@@ -445,7 +457,9 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                     .labelLarge
                                     ?.copyWith(
                                       fontSize: 9.sp,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.black54, // Better contrast
+                                      letterSpacing: 1.0,
                                     ),
                               ),
                               Text(
@@ -454,8 +468,9 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                     .textTheme
                                     .titleMedium
                                     ?.copyWith(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 14.sp,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16.sp, // Slightly larger
+                                      color: Colors.black87,
                                     ),
                               ),
                             ],
@@ -468,6 +483,9 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             height: 1.4,
                             fontSize: 12.sp,
+                            color:
+                                Colors.black87, // Better readability on violet
+                            fontWeight: FontWeight.w500,
                           ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -483,11 +501,13 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.deepTeal,
+                        backgroundColor:
+                            Colors.black87, // Dark button for premium contrast
                         foregroundColor: Colors.white,
                         minimumSize: Size(double.infinity, 44.r),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10.r),
+                          borderRadius:
+                              BorderRadius.circular(12.r), // Softer corners
                         ),
                         elevation: 0,
                       ),

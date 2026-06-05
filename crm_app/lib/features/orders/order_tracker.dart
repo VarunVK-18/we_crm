@@ -472,25 +472,51 @@ class _ServiceCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeColors.bg,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    (order.serviceType == 'Private Limited Incorporation' && order.status == ServiceStatus.notInitialized) 
-                        ? 'Registration Under Review' 
-                        : (_stageLabels[order.stage] ?? ''),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: badgeColors.text,
-                    ),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (order.actionRequired)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.orange.shade300, width: 0.5),
+                        ),
+                        child: Text(
+                          'Action Required',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.orange.shade900,
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: badgeColors.bg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          (order.serviceType == 'Private Limited Incorporation' && order.status == ServiceStatus.notInitialized) 
+                              ? 'Registration Under Review' 
+                              : (_stageLabels[order.stage] ?? ''),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: badgeColors.text,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

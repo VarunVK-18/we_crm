@@ -87,6 +87,10 @@ const ChecklistSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {}
   },
+  action_required: {
+    type: Boolean,
+    default: false
+  },
   dealClosedAmount: {
     type: Number,
     default: 0

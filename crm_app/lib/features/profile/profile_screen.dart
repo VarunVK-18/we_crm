@@ -6,11 +6,8 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../common/ui_components.dart';
 import 'my_entities_screen.dart';
-import 'name_check_screen.dart';
 import 'support_tickets_screen.dart';
-import '../documents/pan_upload_screen.dart';
 import 'chat_support_screen.dart';
-import 'dsc_orders_screen.dart';
 import 'subscriptions_screen.dart';
 import '../../core/utils/responsive.dart';
 
@@ -45,6 +42,54 @@ class ProfileScreen extends ConsumerWidget {
                   ),
             ),
             centerTitle: false,
+            actions: [
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.r)),
+                        title: const Text('Sign Out',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.deepTeal)),
+                        content: const Text(
+                            'Are you sure you want to sign out of your account?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Cancel',
+                                style: TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.w600)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              ref.read(authRepositoryProvider).signOut();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.redAccent,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12.r)),
+                            ),
+                            child: const Text('Sign Out',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                icon: const Icon(LucideIcons.logOut, color: Colors.redAccent),
+                tooltip: 'Sign Out',
+              ),
+              SizedBox(width: 8.r),
+            ],
           ),
 
           SliverToBoxAdapter(
@@ -85,17 +130,6 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       ProfileTile(
-                        icon: HugeIcons.strokeRoundedDocumentValidation,
-                        title: 'Name Check',
-                        subtitle: 'Check company name availability',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const NameCheckScreen(),
-                          ),
-                        ),
-                      ),
-                      ProfileTile(
                         icon: HugeIcons.strokeRoundedMentoring,
                         title: 'Support Tickets',
                         subtitle: 'View and manage support tickets',
@@ -118,28 +152,6 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       ProfileTile(
-                        icon: LucideIcons.checkCircle,
-                        title: 'DSC Registration',
-                        subtitle: 'Manage Digital Signature Certificates',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const DSCOrdersScreen(),
-                          ),
-                        ),
-                      ),
-                      ProfileTile(
-                        icon: LucideIcons.scan,
-                        title: 'Auto-Detect PAN Card',
-                        subtitle: 'Upload and extract PAN details via AI',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const PanUploadScreen(),
-                          ),
-                        ),
-                      ),
-                      ProfileTile(
                         icon: HugeIcons.strokeRoundedPayment02,
                         title: 'Subscriptions',
                         subtitle: 'View and manage your subscriptions',
@@ -151,85 +163,6 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                     ],
-                  ),
-
-                  SizedBox(height: 16.r),
-
-                  // ── Account Management ────────────────────────────────────
-                  Text(
-                    'Account Management',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16.sp,
-                        ),
-                  ),
-                  SizedBox(height: 16.r),
-                  _SectionCard(
-                    tiles: [
-                      ProfileTile(
-                        icon: LucideIcons.trash2,
-                        title: 'Delete Account',
-                        subtitle: 'Permanently delete your account',
-                        color: const Color.fromARGB(255, 250, 118, 118),
-                        onTap: () {},
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 28.r),
-
-                  // ── Sign Out ─────────────────────────────────────────────
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56.r,
-                    child: ElevatedButton.icon(
-                      onPressed: () =>
-                          ref.read(authRepositoryProvider).signOut(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(
-                          255,
-                          221,
-                          121,
-                          114,
-                        ),
-                        foregroundColor: const Color.fromARGB(
-                          255,
-                          33,
-                          42,
-                          44,
-                        ),
-                        elevation: 0,
-                        shadowColor: const Color.fromARGB(
-                          255,
-                          255,
-                          253,
-                          253,
-                        ).withValues(alpha: 0.1),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.r),
-                          side: BorderSide(
-                            color: const Color.fromARGB(
-                              255,
-                              158,
-                              158,
-                              158,
-                            ).withValues(alpha: 0.1),
-                          ),
-                        ),
-                      ).copyWith(
-                        elevation: WidgetStateProperty.resolveWith<double>(
-                          (states) =>
-                              states.contains(WidgetState.pressed) ? 2 : 4,
-                        ),
-                      ),
-                      icon: Icon(LucideIcons.logOut, size: 20.ip),
-                      label: Text(
-                        'Sign Out',
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
-                    ),
                   ),
 
                   const SizedBox(height: 100),

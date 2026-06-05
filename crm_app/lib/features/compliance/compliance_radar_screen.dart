@@ -10,7 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/compliance_provider.dart';
 import '../services/service_request_summary_sheet.dart';
 import '../../core/utils/responsive.dart';
-
+import 'package:url_launcher/url_launcher.dart';
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
 
@@ -517,33 +517,65 @@ class ComplianceRadarScreen extends ConsumerWidget {
                           ),
                           SizedBox(height: 16.r),
 
-                          // Row 3: Tools (Grid Row)
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _BentoToolCard(
-                                  label: 'Name Check',
-                                  icon: LucideIcons.search,
-                                  color: AppTheme.corporateBlue,
-                                  onTap: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const NameCheckScreen(),
+                          // Startup Doctor Card
+                          Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 24,
+                                  offset: const Offset(0, 12),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(32.r),
+                              child: InkWell(
+                                onTap: () async {
+                                  final url = Uri.parse('https://aistartupdoctor.com/');
+                                  if (await canLaunchUrl(url)) {
+                                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                                  }
+                                },
+                                borderRadius: BorderRadius.circular(32.r),
+                                child: Container(
+                                  padding: EdgeInsets.all(26.r),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(32.r),
+                                    border: Border.all(
+                                      color: AppTheme.deepTeal.withOpacity(0.08),
+                                      width: 1.0.r,
                                     ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: EdgeInsets.all(12.r),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.corporateBlue.withOpacity(0.08),
+                                          borderRadius: BorderRadius.circular(16.r),
+                                        ),
+                                        child: Icon(LucideIcons.stethoscope, color: AppTheme.corporateBlue, size: 24.ip),
+                                      ),
+                                      SizedBox(width: 16.r),
+                                      Expanded(
+                                        child: Text(
+                                          'Check Your Realtime Health Score In Startup doctor',
+                                          style: TextStyle(
+                                            fontSize: 14.sp,
+                                            fontWeight: FontWeight.w800,
+                                            color: AppTheme.deepTeal,
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(LucideIcons.arrowUpRight, color: AppTheme.corporateBlue, size: 20.ip),
+                                    ],
                                   ),
                                 ),
                               ),
-                              SizedBox(width: 16.r),
-                              Expanded(
-                                child: _BentoToolCard(
-                                  label: 'GST Portal',
-                                  icon: LucideIcons.fileText,
-                                  color: AppTheme.activeOrange,
-                                  onTap: () {},
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                           SizedBox(height: 16.r),
 

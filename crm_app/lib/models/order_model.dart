@@ -119,6 +119,7 @@ class ServiceOrder {
   final double dealClosedAmount;
   final String notes;
   final Map<String, dynamic> details;
+  final bool actionRequired;
 
   const ServiceOrder({
     required this.id,
@@ -137,6 +138,7 @@ class ServiceOrder {
     this.dealClosedAmount = 0.0,
     this.notes = '',
     this.details = const {},
+    this.actionRequired = false,
   });
 
   factory ServiceOrder.fromMap(Map<String, dynamic> data, String id) {
@@ -173,6 +175,7 @@ class ServiceOrder {
       dealClosedAmount: double.tryParse(data['dealClosedAmount']?.toString() ?? '0.0') ?? 0.0,
       notes: data['notes']?.toString() ?? '',
       details: data['details'] is Map ? Map<String, dynamic>.from(data['details'] as Map) : {},
+      actionRequired: data['actionRequired'] == true || data['action_required'] == true,
     );
   }
 

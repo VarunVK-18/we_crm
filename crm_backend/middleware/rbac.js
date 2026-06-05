@@ -2,7 +2,7 @@ const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 
 const checkUser = async (req, res, next) => {
-  const userId = req.headers['x-user-id'] || req.body.user_id || req.query.user_id;
+  const userId = req.headers['x-user-id'] || (req.body && req.body.user_id) || (req.query && req.query.user_id);
   if (!userId) {
     return res.status(401).json({ message: 'Authentication required. Missing x-user-id header.' });
   }

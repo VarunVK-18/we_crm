@@ -12,12 +12,15 @@ import '../../core/widgets/local_document_viewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/orders_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/notification_provider.dart';
+import 'notification_sheet.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
 import 'director_details_form_screen.dart';
+import 'dpiit_form_screen.dart';
 
-class ServiceOrderDetailScreen extends StatelessWidget {
+class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
   const ServiceOrderDetailScreen({super.key, required this.order});
 
@@ -30,7 +33,8 @@ class ServiceOrderDetailScreen extends StatelessWidget {
   };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final unreadCount = ref.watch(notificationProvider).where((n) => !n.isRead).length;
     final completedSteps = order.steps.where((s) => s.isCompleted).length;
     final totalSteps = order.steps.length;
     final progress = order.progressValue;
@@ -65,7 +69,47 @@ class ServiceOrderDetailScreen extends StatelessWidget {
               pinned: true,
               stretch: true,
               elevation: 0,
-              actions: const [],
+              actions: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        ref.read(notificationProvider.notifier).markAllAsRead();
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (context) => const NotificationSheet(),
+                        );
+                      },
+                      icon: const Icon(LucideIcons.bell, color: Colors.white, size: 20),
+                    ),
+                    if (unreadCount > 0)
+                      Positioned(
+                        right: 8,
+                        top: 12,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.orange,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              height: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(width: 8),
+              ],
               backgroundColor: Colors.black,
               systemOverlayStyle: SystemUiOverlayStyle
                   .light, // Forces white status bar icons for this black header
@@ -214,6 +258,53 @@ class ServiceOrderDetailScreen extends StatelessWidget {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
                             child: const Text('Complete Director Details', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+
+                // ── DPIIT Service Action Required ────────────────────────────────
+                if (order.status == ServiceStatus.active && 
+                    order.serviceType.contains('DPIIT') && 
+                    order.actionRequired) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(LucideIcons.alertTriangle, color: Colors.orange.shade700, size: 20),
+                              const SizedBox(width: 8),
+                              Text('Action Required', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.orange.shade700)),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text('Please provide the required details to start the DPIIT Registration process.', style: TextStyle(fontSize: 13, color: Colors.black87)),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => DpiitFormScreen(order: order)),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange.shade600,
+                              minimumSize: const Size(double.infinity, 44),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            child: const Text('Action required to start process', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
