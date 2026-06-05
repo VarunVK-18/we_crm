@@ -138,8 +138,29 @@ class _ServiceRequestSummarySheetState
 
   // Helper to get all slots (required + general)
   List<String> get _allSlots {
+    if (!_isTwoStepForm) return [];
     final docs = kServiceRequiredDocuments[widget.packageName] ?? [];
     return [...docs, 'Other Documents'];
+  }
+
+  bool get _isTwoStepForm {
+    final servicesWithCustomForms = [
+      'LLP Incorporation',
+      'Private Limited Incorporation',
+      'Trade Mark',
+      'Trademark Registration',
+      'DPIIT',
+      'DPIIT Startup India Certification',
+      'MSME',
+      'MSME Certification',
+      'GST',
+      'GST Registration',
+      'ISO',
+      'ISO Registration',
+      'FSSAI',
+      'FSSAI Registration'
+    ];
+    return !servicesWithCustomForms.any((s) => widget.packageName.contains(s));
   }
 
   // Define required documents based on service
@@ -391,30 +412,9 @@ class _ServiceRequestSummarySheetState
 
       // Collect package-specific details
       final Map<String, String> details = {};
-      if (widget.packageName == 'Private Limited Incorporation') {
-        details['company_name'] = _companyNameController.text;
-        details['company_phone'] = _companyPhoneController.text;
-        details['business_activity'] = _businessActivityController.text;
-      } else if (widget.packageName == 'LLP Incorporation') {
-        details['business_activity'] = _businessActivityController.text;
-        details['owner_name'] = _ownerNameController.text;
-        details['company_email'] = _companyEmailController.text;
-        details['company_phone'] = _companyPhoneController.text;
-        details['paid_up_capital'] = _paidUpCapitalController.text;
-        details['value_per_share'] = _valuePerShareController.text;
-        details['no_of_shares'] = _noOfSharesController.text;
-        
-        final directorsList = _directors.map((d) => d.toJson()).toList();
-        details['directors'] = jsonEncode(directorsList);
-      } else if (widget.packageName == 'Trademark Registration') {
-        details['udyam_number'] = _udyamNumberController.text;
-        details['tm_applicant_name'] = _tmApplicantNameController.text;
-        details['tm_address'] = _tmAddressController.text;
-        details['partners_name'] = _partnersNameController.text;
-        details['business_desc'] = _businessDescController.text;
-        details['tm_trade_description'] = _tmTradeDescriptionController.text;
-        details['brand_usage_date'] = _brandUsageDateController.text;
-        details['is_brand_used'] = _isBrandUsed ? 'true' : 'false';
+      if (!_isTwoStepForm) {
+        details['Status'] = 'Pending Client Form Submission';
+        details['Next Step'] = 'Assign expert to unlock form for client';
       } else if (widget.packageName == 'FSSAI Food License') {
         details['fssai_business_type'] = _fssaiBusinessType;
         details['fssai_turnover'] = _fssaiTurnover;
@@ -431,32 +431,10 @@ class _ServiceRequestSummarySheetState
           details['fssai_corr_village'] = _fssaiCorrVillageController.text;
           details['fssai_corr_district'] = _fssaiCorrDistrictController.text;
         }
-      } else if (widget.packageName == 'MSME Certification') {
-        details['msme_address'] = _tmAddressController.text;
-        details['msme_units'] = _msmeUnitsController.text;
-        details['company_phone'] = _companyPhoneController.text;
-        details['company_email'] = _companyEmailController.text;
-        details['msme_male_employees'] = _msmeMaleEmployeesController.text;
-        details['msme_female_employees'] = _msmeFemaleEmployeesController.text;
-        details['msme_inc_date'] = _msmeIncDateController.text;
-        details['msme_commence_date'] = _msmeCommenceDateController.text;
-        details['msme_prev_udyam'] = _msmePrevUdyamController.text;
-        details['msme_gst_number'] = _msmeGstNumberController.text;
-        details['msme_investment'] = _msmeInvestmentController.text;
-        details['msme_turnover'] = _msmeTurnoverController.text;
-        details['msme_org_selection'] = _msmeOrgSelection;
-        details['msme_activity'] = _msmeActivity;
-      } else if (widget.packageName == 'DPIIT Startup India Certification') {
-        details['Status'] = 'Pending Client Form Submission';
-        details['Next Step'] = 'Assign expert to unlock form for client';
       } else if (widget.packageName == 'DUNS Number Registration') {
         details['duns_trade_name'] = _dunsTradeNameController.text;
         details['duns_year'] = _dunsYearController.text;
         details['duns_employees'] = _fssaiEmployeesController.text;
-      } else if (widget.packageName == 'LLP Incorporation') {
-        details['business_activity'] = _businessActivityController.text;
-        details['owner_name'] = _ownerNameController.text;
-        details['paid_up_capital'] = _paidUpCapitalController.text;
       }
 
       if (details.isNotEmpty) {
@@ -552,42 +530,44 @@ class _ServiceRequestSummarySheetState
             ),
             const SizedBox(height: 16),
             
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Step ${_currentPage + 1} of 2',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.corporateBlue,
+            if (_isTwoStepForm) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Step ${_currentPage + 1} of 2',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.corporateBlue,
+                    ),
                   ),
-                ),
-                Container(
-                  width: 60,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: _currentPage == 0 ? 1 : 2,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppTheme.corporateBlue,
-                            borderRadius: BorderRadius.circular(3),
+                  Container(
+                    width: 60,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: _currentPage == 0 ? 1 : 2,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppTheme.corporateBlue,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
                           ),
                         ),
-                      ),
-                      if (_currentPage == 0)
-                        const Expanded(flex: 1, child: SizedBox.shrink()),
-                    ],
+                        if (_currentPage == 0)
+                          const Expanded(flex: 1, child: SizedBox.shrink()),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
 
             Flexible(
               child: SingleChildScrollView(
@@ -722,7 +702,7 @@ class _ServiceRequestSummarySheetState
                     ),
                   ),
                 const SizedBox(width: 16),
-                if (_currentPage == 0)
+                if (_currentPage == 0 && _isTwoStepForm)
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
@@ -761,13 +741,22 @@ class _ServiceRequestSummarySheetState
                 else
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _isLoading || !_areAllRequiredDocsUploaded ? null : () async {
-                        setState(() => _isLoading = true);
-                        await _submitServiceRequest();
-                        if (mounted) {
-                          setState(() => _isLoading = false);
-                          Navigator.pop(context);
-                          _showSuccessDialog(context);
+                      onPressed: _isLoading || (!_isTwoStepForm ? false : !_areAllRequiredDocsUploaded) ? null : () async {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() => _isLoading = true);
+                          await _submitServiceRequest();
+                          if (mounted) {
+                            setState(() => _isLoading = false);
+                            Navigator.pop(context);
+                            _showSuccessDialog(context);
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please fill all required fields.'),
+                              backgroundColor: Colors.redAccent,
+                            ),
+                          );
                         }
                       },
                       style: ElevatedButton.styleFrom(

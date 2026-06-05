@@ -1,0 +1,412 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
+
+import '../../core/constants/port.dart';
+import '../../core/theme/app_theme.dart';
+import '../../models/order_model.dart';
+import '../../providers/auth_provider.dart';
+
+class IsoFormScreen extends ConsumerStatefulWidget {
+  final ServiceOrder order;
+  const IsoFormScreen({super.key, required this.order});
+
+  @override
+  ConsumerState<IsoFormScreen> createState() => _IsoFormScreenState();
+}
+
+class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  // Details
+  final _companyNameController = TextEditingController();
+  final _companyAddressController = TextEditingController();
+  final _applicantNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _whatsappController = TextEditingController();
+  final _courierAddressController = TextEditingController();
+
+  // ISO Selection
+  String _selectedIso = 'ISO 9001 - Quality Management System';
+  final _otherIsoController = TextEditingController();
+
+  // Document
+  String? _msmeCertPath;
+
+  // Verification
+  bool _isVerified = false;
+
+  final List<String> _isoOptions = [
+    'ISO 9001 - Quality Management System',
+    'ISO 27001 - Information Security Management System',
+    'ISO 14001 - Environment Management System',
+    'ISO 45001 - Occupational Health & Safety',
+    'ISO 20000 - Information Technology Service Management System',
+    'ISO 22000 - Food Safety Management System',
+    'ISO 13485 - Medical Device QMS',
+    'Other'
+  ];
+
+  @override
+  void dispose() {
+    _companyNameController.dispose();
+    _companyAddressController.dispose();
+    _applicantNameController.dispose();
+    _emailController.dispose();
+    _whatsappController.dispose();
+    _courierAddressController.dispose();
+    _otherIsoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickFile(Function(String) onPicked) async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+    );
+    if (result != null && result.files.single.path != null) {
+      if (result.files.single.size > 2 * 1024 * 1024) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('File size is large. Max 2MB allowed.'),
+          backgroundColor: Colors.red,
+        ));
+        return;
+      }
+      setState(() {
+        onPicked(result.files.single.path!);
+      });
+    }
+  }
+
+  Future<void> _submitDetails() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectedIso == 'Other' && _otherIsoController.text.trim().isEmpty) {
+      _showError("Please specify the Other ISO Certification.");
+      return;
+    }
+
+    if (_msmeCertPath == null) {
+      _showError("Please upload MSME Certificate.");
+      return;
+    }
+
+    if (!_isVerified) {
+      _showError("Please check the verification checkbox.");
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final uid = ref.read(authStateProvider).value?.uid;
+      if (uid == null) throw Exception('Not authenticated');
+
+      final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-iso-form');
+      var request = http.MultipartRequest('POST', uri);
+      request.headers['x-user-id'] = uid;
+
+      // Details
+      request.fields['companyLegalName'] = _companyNameController.text;
+      request.fields['companyAddress'] = _companyAddressController.text;
+      request.fields['applicantName'] = _applicantNameController.text;
+      request.fields['email'] = _emailController.text;
+      request.fields['whatsapp'] = _whatsappController.text;
+      request.fields['courierAddress'] = _courierAddressController.text;
+
+      // ISO
+      request.fields['preferredIso'] = _selectedIso == 'Other' ? 'Other: ${_otherIsoController.text}' : _selectedIso;
+
+      // Add files
+      request.files.add(await http.MultipartFile.fromPath('msmeCertificate', _msmeCertPath!));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        Navigator.pop(context, true); // Success
+      } else {
+        throw Exception('Failed to submit form: ${response.body}');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showError('Error: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('ISO Registration Form', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+      ),
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator()) 
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.corporateBlue)),
+                  const SizedBox(height: 16),
+                  
+                  // Company & Applicant Details
+                  _buildSectionContainer(
+                    title: 'Company & Applicant Details',
+                    children: [
+                      _buildField('Company Legal Name', '', _companyNameController, isRequired: true),
+                      _buildField('Company Address', '', _companyAddressController, isRequired: true, maxLines: 3),
+                      _buildField('Applicant name', '', _applicantNameController, isRequired: true),
+                      _buildField('Email ID', '', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
+                      _buildField('Whatsapp number', '', _whatsappController, isRequired: true, keyboardType: TextInputType.phone),
+                      _buildField('Address for couriering the ISO Certificate', 'Full Address with PIN code', _courierAddressController, isRequired: true, maxLines: 3),
+                    ],
+                  ),
+
+                  // ISO Certification
+                  _buildSectionContainer(
+                    title: 'Certification Details',
+                    children: [
+                      _buildRadioGroup('Preferred ISO Certification', '', _isoOptions, _selectedIso, (v) => setState(() => _selectedIso = v)),
+                      
+                      if (_selectedIso == 'Other')
+                         _buildField('Specify Other ISO', '', _otherIsoController, isRequired: true),
+                    ],
+                  ),
+
+                  // Documents
+                  _buildSectionContainer(
+                    title: 'Documents',
+                    children: [
+                      _buildFileRow('Upload MSME Certificate', 'Upload 1 supported file. Max 2 MB.', _msmeCertPath, () => _pickFile((path) => _msmeCertPath = path)),
+                    ],
+                  ),
+
+                  // Verification
+                  _buildSectionContainer(
+                    title: 'Verification',
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Checkbox(
+                            value: _isVerified,
+                            activeColor: AppTheme.corporateBlue,
+                            onChanged: (val) {
+                              setState(() {
+                                _isVerified = val ?? false;
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 12.0),
+                              child: RichText(
+                                text: const TextSpan(
+                                  text: 'I here verify that above mentioned facts are true and correct to best of my knowledge and belief',
+                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+                                  children: [
+                                    TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
+                                  ]
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+
+                  ElevatedButton(
+                    onPressed: _submitDetails,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.corporateBlue,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget _buildSectionContainer({required String title, required List<Widget> children}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
+          const SizedBox(height: 24),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 12),
+          ...options.map((opt) {
+            return InkWell(
+              onTap: () => onChanged(opt),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Radio<String>(
+                      value: opt,
+                      groupValue: currentValue,
+                      onChanged: (v) {
+                        if (v != null) onChanged(v);
+                      },
+                      activeColor: AppTheme.corporateBlue,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Text(opt, style: const TextStyle(fontSize: 14, height: 1.3)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: [
+                if (isRequired)
+                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                onPressed: onPick,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

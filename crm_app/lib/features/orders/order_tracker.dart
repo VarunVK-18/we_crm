@@ -38,6 +38,8 @@ class OrderTrackerScreen extends ConsumerStatefulWidget {
 class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
   _ServiceTab _selectedTab = _ServiceTab.active;
   String? _selectedEntity;
+  String _activeFilter = 'All';
+  String _searchQuery = '';
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +58,25 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
         ? orders
         : orders.where((o) => o.entityName == _selectedEntity).toList();
 
-    final activeList =
+    final fullActiveList =
         entityFiltered.where((o) => o.status == ServiceStatus.active).toList();
+        
+    var activeList = fullActiveList;
+    if (_activeFilter == 'Action Required') {
+      activeList = activeList.where((o) => o.actionRequired).toList();
+    } else if (_activeFilter == 'In Progress') {
+      activeList = activeList.where((o) => !o.actionRequired).toList();
+    }
+    
+    if (_searchQuery.isNotEmpty) {
+      final q = _searchQuery.toLowerCase();
+      activeList = activeList.where((o) => 
+        o.serviceType.toLowerCase().contains(q) || 
+        o.entityName.toLowerCase().contains(q) || 
+        o.companyName.toLowerCase().contains(q)
+      ).toList();
+    }
+
     final completeList = entityFiltered
         .where((o) => o.status == ServiceStatus.complete)
         .toList();
@@ -69,7 +88,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
         .toList();
 
     final counts = {
-      _ServiceTab.active: activeList.length,
+      _ServiceTab.active: fullActiveList.length,
       _ServiceTab.complete: completeList.length,
       _ServiceTab.notInitialized: notInitList.length,
       _ServiceTab.history: historyList.length,
@@ -312,6 +331,71 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                 }).toList(),
               ),
             ),
+
+            if (_selectedTab == _ServiceTab.active)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: TextField(
+                          onChanged: (val) => setState(() => _searchQuery = val),
+                          style: const TextStyle(fontSize: 13, color: AppTheme.deepTeal),
+                          decoration: const InputDecoration(
+                            hintText: 'Search services...',
+                            hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                            prefixIcon: Icon(LucideIcons.search, size: 16, color: Colors.grey),
+                            border: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade300),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _activeFilter,
+                          icon: const Icon(LucideIcons.chevronDown, size: 16, color: Colors.grey),
+                          style: const TextStyle(fontSize: 13, color: AppTheme.deepTeal, fontWeight: FontWeight.w700),
+                          items: const [
+                            DropdownMenuItem(value: 'All', child: Text('All Active')),
+                            DropdownMenuItem(value: 'Action Required', child: Text('Action Required')),
+                            DropdownMenuItem(value: 'In Progress', child: Text('In Progress')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setState(() => _activeFilter = val);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             const SizedBox(height: 16),
 

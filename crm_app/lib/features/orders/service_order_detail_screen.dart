@@ -21,6 +21,10 @@ import 'incorp_form_screen.dart';
 import 'dpiit_form_screen.dart';
 import 'trademark_form_screen.dart';
 import 'llp_form_screen.dart';
+import 'msme_form_screen.dart';
+import 'gst_form_screen.dart';
+import 'iso_form_screen.dart';
+import 'fssai_form_screen.dart';
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
@@ -1375,6 +1379,14 @@ void _routeToForm(BuildContext context, ServiceOrder order) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('llp')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => LlpFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('msme')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => MsmeFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('gst')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => GstFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('iso')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => IsoFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('fssai')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => FssaiFormScreen(order: order)));
   } else {
     // Fallback if we haven't mapped the form yet
     ScaffoldMessenger.of(context).showSnackBar(

@@ -93,7 +93,7 @@
             @for (key of objectKeys(order.details); track key) {
             <div class="detail-item">
               <span class="detail-label">{{ formatKey(key) }}</span>
-              <span class="detail-value">{{ order.details[key] }}</span>
+              <span class="detail-value">{{ formatDetailValue(order.details[key]) }}</span>
             </div>
             }
           </div>
