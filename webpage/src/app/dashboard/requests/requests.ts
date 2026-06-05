@@ -252,7 +252,42 @@ export class RequestsComponent implements OnInit {
 
   objectKeys(obj: any): string[] {
     if (!obj || typeof obj !== 'object') return [];
-    return Object.keys(obj);
+    return Object.keys(obj).filter(key => {
+      const val = obj[key];
+      // Hide null, undefined, empty string
+      if (val === null || val === undefined || val === '') return false;
+      
+      // Check if it's a stringified empty array or array with empty objects
+      if (typeof val === 'string' && val.trim().startsWith('[')) {
+        try {
+          const parsed = JSON.parse(val);
+          if (Array.isArray(parsed)) {
+            if (parsed.length === 0) return false;
+            // Check if all elements are objects with only empty strings
+            const hasData = parsed.some(item => {
+              if (typeof item === 'object' && item !== null) {
+                return Object.values(item).some(v => v !== null && v !== undefined && v !== '');
+              }
+              return true;
+            });
+            if (!hasData) return false;
+          }
+        } catch (e) {}
+      }
+      return true;
+    });
+  }
+
+  formatDetailValue(val: any): string {
+    if (typeof val === 'string' && val.trim().startsWith('[')) {
+      try {
+        const parsed = JSON.parse(val);
+        if (Array.isArray(parsed)) {
+          return 'Included in Client Form';
+        }
+      } catch (e) {}
+    }
+    return val;
   }
 
   formatKey(key: string): string {

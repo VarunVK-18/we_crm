@@ -357,3 +357,183 @@ exports.submitLlpForm = async (req, res) => {
   }
 };
 
+// Submit MSME Certification Form
+exports.submitMsmeForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.companyPan) {
+      uploadedDocs.push({ name: "Company's PAN Card", fileUrl: files.companyPan[0].path });
+    }
+    if (files.ownerAadhaar) {
+      uploadedDocs.push({ name: "Owner's Aadhaar Card", fileUrl: files.ownerAadhaar[0].path });
+    }
+    if (files.ownerPassbook) {
+      uploadedDocs.push({ name: "Owner's Bank Passbook", fileUrl: files.ownerPassbook[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      msmeForm: formData,
+      msmeDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'MSME form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting MSME form:', error);
+    res.status(500).json({ message: 'Server error while submitting MSME form.', error: error.message });
+  }
+};
+
+// Submit GST Registration Form
+exports.submitGstForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.photo) {
+      uploadedDocs.push({ name: "Applicant Photo", fileUrl: files.photo[0].path });
+    }
+    if (files.ebBill) {
+      uploadedDocs.push({ name: "Latest EB Bill", fileUrl: files.ebBill[0].path });
+    }
+    if (files.houseTaxReceipt) {
+      uploadedDocs.push({ name: "House Tax Receipt (Own)", fileUrl: files.houseTaxReceipt[0].path });
+    }
+    if (files.rentalAgreement) {
+      uploadedDocs.push({ name: "Rental Agreement (Rent)", fileUrl: files.rentalAgreement[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      gstForm: formData,
+      gstDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'GST form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting GST form:', error);
+    res.status(500).json({ message: 'Server error while submitting GST form.', error: error.message });
+  }
+};
+
+// Submit ISO Registration Form
+exports.submitIsoForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.msmeCertificate) {
+      uploadedDocs.push({ name: "MSME Certificate", fileUrl: files.msmeCertificate[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      isoForm: formData,
+      isoDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'ISO form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting ISO form:', error);
+    res.status(500).json({ message: 'Server error while submitting ISO form.', error: error.message });
+  }
+};
+
+// Submit FSSAI Registration Form
+exports.submitFssaiForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.aadhaarCard) {
+      uploadedDocs.push({ name: "Aadhaar Card", fileUrl: files.aadhaarCard[0].path });
+    }
+    if (files.panCard) {
+      uploadedDocs.push({ name: "PAN Card", fileUrl: files.panCard[0].path });
+    }
+    if (files.passportPhoto) {
+      uploadedDocs.push({ name: "Passport Size Photo", fileUrl: files.passportPhoto[0].path });
+    }
+    if (files.businessAddressProof) {
+      uploadedDocs.push({ name: "Business Address Proof", fileUrl: files.businessAddressProof[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      fssaiForm: formData,
+      fssaiDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'FSSAI form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting FSSAI form:', error);
+    res.status(500).json({ message: 'Server error while submitting FSSAI form.', error: error.message });
+  }
+};
+

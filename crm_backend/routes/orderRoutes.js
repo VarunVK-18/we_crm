@@ -94,4 +94,72 @@ router.post(
   orderController.submitLlpForm
 );
 
+// Define fields for MSME Certification form
+const msmeUploadFields = [
+  { name: 'companyPan', maxCount: 1 },
+  { name: 'ownerAadhaar', maxCount: 1 },
+  { name: 'ownerPassbook', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-msme-form
+// @desc    Submit MSME form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-msme-form',
+  checkUser,
+  upload.fields(msmeUploadFields),
+  orderController.submitMsmeForm
+);
+
+// Define fields for GST Registration form
+const gstUploadFields = [
+  { name: 'photo', maxCount: 1 },
+  { name: 'ebBill', maxCount: 1 },
+  { name: 'houseTaxReceipt', maxCount: 1 },
+  { name: 'rentalAgreement', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-gst-form
+// @desc    Submit GST form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-gst-form',
+  checkUser,
+  upload.fields(gstUploadFields),
+  orderController.submitGstForm
+);
+
+// Define fields for ISO Registration form
+const isoUploadFields = [
+  { name: 'msmeCertificate', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-iso-form
+// @desc    Submit ISO form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-iso-form',
+  checkUser,
+  upload.fields(isoUploadFields),
+  orderController.submitIsoForm
+);
+
+// Define fields for FSSAI Registration form
+const fssaiUploadFields = [
+  { name: 'aadhaarCard', maxCount: 1 },
+  { name: 'panCard', maxCount: 1 },
+  { name: 'passportPhoto', maxCount: 1 },
+  { name: 'businessAddressProof', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-fssai-form
+// @desc    Submit FSSAI form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-fssai-form',
+  checkUser,
+  upload.fields(fssaiUploadFields),
+  orderController.submitFssaiForm
+);
+
 module.exports = router;

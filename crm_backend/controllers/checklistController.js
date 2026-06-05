@@ -357,7 +357,15 @@ const getMyChecklists = async (req, res) => {
       'Private Limited',
       'Trade mark',
       'Trademark',
-      'LLP'
+      'LLP',
+      'MSME',
+      'MSME Certification',
+      'GST',
+      'GST Registration',
+      'ISO',
+      'ISO Registration',
+      'FSSAI',
+      'FSSAI Registration'
     ];
 
     const enrichedChecklists = checklistsPlain.map(c => {
@@ -379,6 +387,14 @@ const getMyChecklists = async (req, res) => {
         } else if (serviceNameLower.includes('trade mark') && c.details && c.details.trademarkForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('msme') && c.details && c.details.msmeForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('gst') && c.details && c.details.gstForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('iso') && c.details && c.details.isoForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) {
             isFormFilled = true;
         }
 
