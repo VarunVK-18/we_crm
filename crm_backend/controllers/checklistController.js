@@ -25,11 +25,11 @@ const createChecklist = async (req, res) => {
       const raw = typeof items === 'string' ? JSON.parse(items) : items;
       parsedItems = raw.map(item => {
         if (typeof item === 'string') return { title: item, label: item, isChecked: false };
-        return { 
+        return {
           title: item.title || item.label,
           label: item.label || item.title,
           description: item.description || '',
-          isChecked: false 
+          isChecked: false
         };
       });
     }
@@ -190,11 +190,11 @@ const addChecklistItem = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Checklist not found' });
     }
 
-    checklist.items.push({ 
-      title: title || label, 
+    checklist.items.push({
+      title: title || label,
       label: label || title, // Keep legacy populated
       description: description || '',
-      isChecked: false 
+      isChecked: false
     });
     await checklist.save();
 
@@ -241,10 +241,10 @@ const updateChecklist = async (req, res) => {
       if (requested_documents !== undefined) {
         const oldDocs = checklist.requested_documents || [];
         const newDocs = requested_documents || [];
-        
+
         // Find documents that are new and not uploaded
         const newlyRequested = newDocs.filter(nd => !nd.isUploaded && !oldDocs.some(od => od.name === nd.name));
-        
+
         checklist.requested_documents = requested_documents;
 
         if (newlyRequested.length > 0 && checklist.client_id) {
@@ -331,19 +331,44 @@ const getMyChecklists = async (req, res) => {
     // Fetch corresponding service orders to get dealClosedAmount if present
     const ServiceOrder = require('../models/ServiceOrder');
     const serviceOrders = await ServiceOrder.find({ clientUid: clientId }).lean();
-    
+
+    // Services that require a custom Flutter form screen before processing
+    const SERVICES_WITH_FORMS = [
+      'DPIIT',
+      'Private Limited',
+      'Trade mark',
+      'Trademark'
+    ];
+
     const enrichedChecklists = checklistsPlain.map(c => {
       const order = serviceOrders.find(o => o.serviceType === c.service_name);
-      const isDpiit = c.service_name && c.service_name.includes('DPIIT');
-      
+      const serviceNameLower = c.service_name ? c.service_name.toLowerCase() : '';
+      const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s.toLowerCase()));
+      let dynamicActionRequired = c.action_required;
       let modifiedItems = c.items || [];
-      if (isDpiit && c.assigned_to) {
-        // Inject dynamic Step 1 for Action Required
+
+      if (requiresForm && c.assigned_to) {
+        // Let's check if the form has been filled by looking at details
+        let isFormFilled = false;
+        if (serviceNameLower.includes('dpiit') && c.details && c.details.dpiitForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('private limited') && c.details && c.details.companyName) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('trademark') && c.details && c.details.trademarkForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('trade mark') && c.details && c.details.trademarkForm) {
+            isFormFilled = true;
+        }
+
+        // Override action_required if form is not filled
+        dynamicActionRequired = !isFormFilled;
+
+        // Dynamically inject the form step at the beginning
         modifiedItems = [
           {
             title: "Provide Additional Details",
             description: "Please fill out the required form to begin the process.",
-            isChecked: !c.action_required, // Checked if action is completed
+            isChecked: isFormFilled, // Check details instead of action_required
             isActionStep: true
           },
           ...modifiedItems
@@ -353,6 +378,7 @@ const getMyChecklists = async (req, res) => {
       return {
         ...c,
         items: modifiedItems,
+        action_required: dynamicActionRequired,
         dealClosedAmount: order?.dealClosedAmount || c.dealClosedAmount || 0
       };
     });
@@ -393,7 +419,7 @@ const uploadRequestedDocuments = async (req, res) => {
         // Otherwise, fallback to the old Flutter app behavior where the fieldname is the document name.
         const docName = (req.body && req.body.docName) ? req.body.docName : f.fieldname;
         const requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
-        
+
         const doc = await Document.create({
           filename: f.originalname,
           contentType: f.mimetype,
@@ -440,7 +466,7 @@ const uploadFinalDocuments = async (req, res) => {
   try {
     const { id } = req.params;
     let { expiry_dates } = req.body;
-    
+
     // Parse expiry_dates if it's sent as a JSON string
     if (typeof expiry_dates === 'string') {
       expiry_dates = JSON.parse(expiry_dates);
@@ -455,7 +481,7 @@ const uploadFinalDocuments = async (req, res) => {
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
         const expiryDate = expiry_dates && expiry_dates[i] ? new Date(expiry_dates[i]) : new Date();
-        
+
         // Save to Document collection
         const newDoc = await Document.create({
           filename: file.originalname,
@@ -471,7 +497,7 @@ const uploadFinalDocuments = async (req, res) => {
           uploadedAt: new Date()
         });
       }
-      
+
       await checklist.save();
     }
 

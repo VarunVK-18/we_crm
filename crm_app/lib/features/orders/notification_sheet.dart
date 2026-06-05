@@ -12,12 +12,27 @@ import 'order_chat_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 
-class NotificationSheet extends ConsumerWidget {
+class NotificationSheet extends ConsumerStatefulWidget {
   const NotificationSheet({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifications = ref.watch(notificationProvider);
+  ConsumerState<NotificationSheet> createState() => _NotificationSheetState();
+}
+
+class _NotificationSheetState extends ConsumerState<NotificationSheet> {
+  DateTime? _selectedDate;
+
+  @override
+  Widget build(BuildContext context) {
+    var notifications = ref.watch(notificationProvider);
+
+    if (_selectedDate != null) {
+      notifications = notifications.where((n) {
+        return n.timestamp.year == _selectedDate!.year &&
+               n.timestamp.month == _selectedDate!.month &&
+               n.timestamp.day == _selectedDate!.day;
+      }).toList();
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -26,14 +41,17 @@ class NotificationSheet extends ConsumerWidget {
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 12),
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2),
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -42,23 +60,82 @@ class NotificationSheet extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Recent Updates',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    color: AppTheme.deepTeal,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Recent Updates',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.deepTeal,
+                        ),
+                      ),
+                      if (_selectedDate != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              'Showing: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () => setState(() => _selectedDate = null),
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade200,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.close, size: 12, color: Colors.grey.shade700),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
                   ),
+                ),
+                IconButton(
+                  onPressed: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: _selectedDate ?? DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                      builder: (context, child) {
+                        return Theme(
+                          data: Theme.of(context).copyWith(
+                            colorScheme: const ColorScheme.light(
+                              primary: AppTheme.corporateBlue,
+                              onPrimary: Colors.white,
+                              onSurface: AppTheme.deepTeal,
+                            ),
+                          ),
+                          child: child!,
+                        );
+                      },
+                    );
+                    if (date != null) {
+                      setState(() {
+                        _selectedDate = date;
+                      });
+                    }
+                  },
+                  icon: const Icon(LucideIcons.calendar, color: AppTheme.corporateBlue),
                 ),
                 TextButton(
                   onPressed: () {
-                    ref.read(notificationProvider.notifier).markAllAsRead();
+                    ref.read(notificationProvider.notifier).clearAll();
                   },
                   child: const Text(
-                    'Mark all as read',
+                    'Clear all',
                     style: TextStyle(
-                      color: AppTheme.corporateBlue,
-                      fontWeight: FontWeight.w700,
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                     ),
                   ),
                 ),
@@ -78,13 +155,26 @@ class NotificationSheet extends ConsumerWidget {
                 : ListView.separated(
                     shrinkWrap: true,
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: notifications.length,
                     separatorBuilder: (context, index) =>
-                        const SizedBox(height: 16),
+                        const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
                     itemBuilder: (context, index) {
                       final notification = notifications[index];
-                      return _NotificationItem(notification: notification);
+                      return Dismissible(
+                        key: Key(notification.id),
+                        direction: DismissDirection.startToEnd,
+                        onDismissed: (direction) {
+                          ref.read(notificationProvider.notifier).clearNotification(notification.id);
+                        },
+                        background: Container(
+                          color: Colors.redAccent,
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 20),
+                          child: const Icon(LucideIcons.trash2, color: Colors.white, size: 24),
+                        ),
+                        child: _NotificationItem(notification: notification),
+                      );
                     },
                   ),
           ),
@@ -102,150 +192,89 @@ class _NotificationItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: notification.isRead
-            ? Colors.white
-            : AppTheme.corporateBlue.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: notification.isRead
-              ? Colors.grey[200]!
-              : AppTheme.corporateBlue.withOpacity(0.2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: notification.isRead
-                  ? Colors.grey[100]
-                  : AppTheme.corporateBlue.withOpacity(0.1),
-              shape: BoxShape.circle,
+    return InkWell(
+      onTap: () {
+        if (notification.type == 'chat' && notification.orderId != null) {
+          Navigator.pop(context);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OrderChatScreen(
+                orderId: notification.orderId!,
+                serviceName: notification.serviceName,
+                assignedExpert: 'Expert',
+              ),
             ),
-            child: HugeIcon(
-              icon: HugeIcons.strokeRoundedNotification03,
-              color: notification.isRead ? Colors.grey : AppTheme.corporateBlue,
-              size: 18,
+          );
+        } else if (notification.type == 'document_request' && notification.orderId != null) {
+          _uploadDocument(context, ref, notification.orderId!);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        color: Colors.white,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: notification.type == 'chat' 
+                  ? Colors.blue.shade50 
+                  : Colors.teal.shade50,
+              child: Icon(
+                notification.type == 'chat' ? LucideIcons.messageCircle : LucideIcons.bellRing,
+                color: notification.type == 'chat' ? Colors.blue.shade600 : Colors.teal.shade600,
+                size: 18,
+              ),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      notification.title,
-                      style: GoogleFonts.inter(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                        color: notification.isRead
-                            ? AppTheme.deepTeal.withOpacity(0.7)
-                            : AppTheme.deepTeal,
-                      ),
-                    ),
-                    Text(
-                      _formatTime(notification.timestamp),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  notification.message,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[600],
-                    height: 1.4,
-                  ),
-                ),
-                  const SizedBox(height: 8),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                      Expanded(
+                        child: Text(
+                          notification.title,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.w700,
+                            color: Colors.black87,
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.grey[100]!),
-                          ),
-                          child: Text(
-                            notification.serviceName,
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.grey[800],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const Spacer(),
-                      if (notification.type == 'chat' && notification.orderId != null)
-                        TextButton.icon(
-                          onPressed: () {
-                            Navigator.pop(context); // close sheet
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => OrderChatScreen(
-                                  orderId: notification.orderId!,
-                                  serviceName: notification.serviceName,
-                                  assignedExpert: 'Expert',
-                                ),
-                              ),
-                            );
-                          },
-                          icon: const Icon(LucideIcons.reply, size: 14),
-                          label: const Text('Reply', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          style: TextButton.styleFrom(
-                            foregroundColor: AppTheme.corporateBlue,
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatTime(notification.timestamp),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                          fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w500,
                         ),
-                      if (notification.type == 'document_request' && notification.orderId != null)
-                        ElevatedButton.icon(
-                          onPressed: () => _uploadDocument(context, ref, notification.orderId!),
-                          icon: const Icon(LucideIcons.upload, size: 12),
-                          label: const Text('Upload', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        ),
+                      ),
                     ],
                   ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                     notification.message,
+                     style: TextStyle(
+                       fontSize: 13,
+                       color: notification.isRead ? Colors.grey.shade600 : Colors.black87,
+                       fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w500,
+                     ),
+                     maxLines: 2,
+                     overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

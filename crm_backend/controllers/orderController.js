@@ -177,3 +177,122 @@ exports.submitDpiitForm = async (req, res) => {
   }
 };
 
+// Submit Private Limited Incorporation Form
+exports.submitIncorpForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body; // company fields + directors JSON string
+
+    // Process uploaded files if any
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    // Company files
+    if (files.officeProof) {
+      uploadedDocs.push({ name: 'Registered Office Proof', fileUrl: files.officeProof[0].path });
+    }
+
+    // Director files are dynamically named: director_1_photo, director_1_signature, etc.
+    Object.keys(files).forEach((fieldName) => {
+      if (fieldName.startsWith('director_')) {
+        const parts = fieldName.split('_'); // e.g. ["director", "1", "photo"]
+        const personIndex = parts[1];
+        const docType = parts.slice(2).join('_');
+        uploadedDocs.push({
+          name: `Person ${personIndex} - ${docType.toUpperCase()}`,
+          fileUrl: files[fieldName][0].path,
+        });
+      }
+    });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Parse the directors string back to JSON
+    let directorsParsed = [];
+    if (formData.directors) {
+      try {
+        directorsParsed = JSON.parse(formData.directors);
+      } catch (e) {
+        console.error('Error parsing directors JSON:', e);
+      }
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      companyName: formData.companyName,
+      businessActivity: formData.businessActivity,
+      officePreference: formData.officePreference,
+      ownerName: formData.ownerName,
+      companyEmail: formData.companyEmail,
+      companyPhone: formData.companyPhone,
+      paidUpCapital: formData.paidUpCapital,
+      valuePerShare: formData.valuePerShare,
+      numberOfShares: formData.numberOfShares,
+      directors: directorsParsed,
+      incorpDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'Incorporation form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting Incorp form:', error);
+    res.status(500).json({ message: 'Server error while submitting Incorp form.', error: error.message });
+  }
+};
+
+// Submit Trademark Registration Form
+exports.submitTrademarkForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body; 
+
+    // Process uploaded files if any
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.udyamCert) {
+      uploadedDocs.push({ name: 'UDYAM MSME Certificate', fileUrl: files.udyamCert[0].path });
+    }
+    if (files.trademarkLogo) {
+      uploadedDocs.push({ name: 'Trademark Logo', fileUrl: files.trademarkLogo[0].path });
+    }
+    if (files.signature) {
+      uploadedDocs.push({ name: 'Signature with Name', fileUrl: files.signature[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      trademarkForm: formData,
+      trademarkDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'Trademark form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting Trademark form:', error);
+    res.status(500).json({ message: 'Server error while submitting Trademark form.', error: error.message });
+  }
+};
+

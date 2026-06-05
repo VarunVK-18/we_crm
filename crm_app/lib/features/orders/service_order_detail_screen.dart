@@ -17,8 +17,9 @@ import 'notification_sheet.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
-import 'director_details_form_screen.dart';
+import 'incorp_form_screen.dart';
 import 'dpiit_form_screen.dart';
+import 'trademark_form_screen.dart';
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
@@ -221,70 +222,6 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                 _InfoRow(order: order),
 
                 const SizedBox(height: 24),
-
-                if (order.status == ServiceStatus.active &&
-                    order.serviceType == 'Private Limited Incorporation' &&
-                    (order.details['directors'] == null ||
-                        (order.details['directors'] is List &&
-                            (order.details['directors'] as List).isEmpty) ||
-                        (order.details['directors'] is String &&
-                            (order.details['directors'] as String).isEmpty) ||
-                        order.details['directors'] == '[]')) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.blue.withOpacity(0.3)),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Row(
-                            children: [
-                              Icon(LucideIcons.alertCircle,
-                                  color: Colors.blue, size: 20),
-                              SizedBox(width: 8),
-                              Text('Action Required',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue)),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                              'Please complete the director details to proceed with the registration.',
-                              style: TextStyle(
-                                  fontSize: 13, color: Colors.black87)),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => DirectorDetailsFormScreen(
-                                        order: order)),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.corporateBlue,
-                              minimumSize: const Size(double.infinity, 44),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
-                            ),
-                            child: const Text('Complete Director Details',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
 
                 if (order.notes.isNotEmpty) ...[
                   Padding(
@@ -603,7 +540,8 @@ class _RequestedDocumentsSection extends ConsumerWidget {
             Uri.parse('$kBaseUrl/api/checklists/${order.id}/upload-documents');
 
         final request = http.MultipartRequest('POST', uri);
-        request.files.add(await http.MultipartFile.fromPath(docName, filePath));
+        request.fields['docName'] = docName;
+        request.files.add(await http.MultipartFile.fromPath('file', filePath));
 
         final uid = ref.read(authStateProvider).value?.uid;
         if (uid != null) {
@@ -935,14 +873,7 @@ class _StepTimeline extends StatelessWidget {
                   padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
                   child: InkWell(
                     onTap: (step.isActionStep && !isCompleted)
-                        ? () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) =>
-                                      DpiitFormScreen(order: order)),
-                            );
-                          }
+                        ? () => _routeToForm(context, order)
                         : null,
                     borderRadius: BorderRadius.circular(18),
                     child: Container(
@@ -1430,6 +1361,21 @@ class _DirectorDetailsSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+void _routeToForm(BuildContext context, ServiceOrder order) {
+  if (order.serviceType.contains('DPIIT')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => DpiitFormScreen(order: order)));
+  } else if (order.serviceType.contains('Private Limited')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => IncorpFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('trademark') || order.serviceType.toLowerCase().contains('trade mark')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
+  } else {
+    // Fallback if we haven't mapped the form yet
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Form for ${order.serviceType} is not implemented yet.')),
     );
   }
 }

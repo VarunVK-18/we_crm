@@ -36,3 +36,30 @@ exports.markAsRead = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error' });
   }
 };
+
+// @desc    Clear all notifications for the logged-in client
+// @route   DELETE /api/notifications
+// @access  Private
+exports.clearAll = async (req, res) => {
+  try {
+    await Notification.deleteMany({ client_id: req.user._id });
+    res.status(200).json({ success: true, message: 'All notifications cleared' });
+  } catch (error) {
+    console.error('Error clearing notifications:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
+
+// @desc    Clear a specific notification
+// @route   DELETE /api/notifications/:id
+// @access  Private
+exports.clearNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Notification.findOneAndDelete({ _id: id, client_id: req.user._id });
+    res.status(200).json({ success: true, message: 'Notification cleared' });
+  } catch (error) {
+    console.error('Error clearing notification:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};

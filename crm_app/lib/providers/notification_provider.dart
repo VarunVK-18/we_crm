@@ -96,6 +96,38 @@ class NotificationNotifier extends StateNotifier<List<ServiceNotification>> {
     }
   }
 
+  Future<void> clearAll() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+
+    state = [];
+
+    try {
+      await http.delete(
+        Uri.parse('$kBaseUrl/api/notifications'),
+        headers: {'x-user-id': uid},
+      );
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  Future<void> clearNotification(String id) async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+
+    state = state.where((n) => n.id != id).toList();
+
+    try {
+      await http.delete(
+        Uri.parse('$kBaseUrl/api/notifications/$id'),
+        headers: {'x-user-id': uid},
+      );
+    } catch (e) {
+      // ignore
+    }
+  }
+
   void addNewNotification(ServiceNotification notification) {
     state = [notification, ...state];
   }

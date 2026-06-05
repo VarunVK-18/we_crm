@@ -6,7 +6,7 @@ const multer = require('multer');
 
 const upload = multer({
   dest: 'uploads/dpiit/',
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
 router.get('/user/:userId', orderController.getUserOrders);
@@ -14,15 +14,61 @@ router.get('/company/:companyId', checkUser, orderController.getCompanyOrders);
 router.post('/', orderController.createOrder);
 router.put('/:id', orderController.updateOrder);
 
+// Define fields for DPIIT form uploads
+const dpiitUploadFields = [
+  { name: 'incorpCert', maxCount: 1 },
+  { name: 'pan', maxCount: 1 },
+  { name: 'logo', maxCount: 1 },
+  { name: 'pitchDeck', maxCount: 1 }
+];
+
+// Define fields for Incorp form uploads (up to 10 directors)
+const incorpUploadFields = [
+  { name: 'officeProof', maxCount: 1 }
+];
+for (let i = 1; i <= 10; i++) {
+  incorpUploadFields.push({ name: `director_${i}_photo`, maxCount: 1 });
+  incorpUploadFields.push({ name: `director_${i}_signature`, maxCount: 1 });
+  incorpUploadFields.push({ name: `director_${i}_addressProof`, maxCount: 1 });
+  incorpUploadFields.push({ name: `director_${i}_aadhaar`, maxCount: 1 });
+  incorpUploadFields.push({ name: `director_${i}_pan`, maxCount: 1 });
+}
+
+// @route   POST /api/orders/:id/submit-dpiit-form
+// @desc    Submit DPIIT form details and docs
+// @access  Private (Client)
 router.post(
-  '/:id/dpiit-form',
-  upload.fields([
-    { name: 'incorpCert', maxCount: 1 },
-    { name: 'pan', maxCount: 1 },
-    { name: 'logo', maxCount: 1 },
-    { name: 'pitchDeck', maxCount: 1 },
-  ]),
+  '/:id/submit-dpiit-form',
+  checkUser,
+  upload.fields(dpiitUploadFields),
   orderController.submitDpiitForm
+);
+
+// @route   POST /api/orders/:id/submit-incorp-form
+// @desc    Submit Private Limited Incorp form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-incorp-form',
+  checkUser,
+  upload.fields(incorpUploadFields),
+  orderController.submitIncorpForm
+);
+
+// Define fields for Trademark form uploads
+const trademarkUploadFields = [
+  { name: 'udyamCert', maxCount: 1 },
+  { name: 'trademarkLogo', maxCount: 1 },
+  { name: 'signature', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-trademark-form
+// @desc    Submit Trademark form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-trademark-form',
+  checkUser,
+  upload.fields(trademarkUploadFields),
+  orderController.submitTrademarkForm
 );
 
 module.exports = router;
