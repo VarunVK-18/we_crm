@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket02Icon, GiftIcon, Briefcase02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, Search01Icon, BankIcon, PercentIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, HugeiconsIconComponent],
   templateUrl: './client-dashboard.html',
   styleUrl: './client-dashboard.css',
 })
@@ -16,6 +16,16 @@ export class ClientDashboard implements OnInit, OnDestroy {
   readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
   readonly UserAccountIcon = UserAccountIcon;
   readonly Notification01Icon = Notification01Icon;
+  readonly Rocket02Icon = Rocket02Icon;
+  readonly GiftIcon = GiftIcon;
+  readonly Briefcase02Icon = Briefcase02Icon;
+  readonly OfficeIcon = OfficeIcon;
+  readonly Briefcase01Icon = Briefcase01Icon;
+  readonly LicenseIcon = LicenseIcon;
+  readonly CalculatorIcon = CalculatorIcon;
+  readonly Search01Icon = Search01Icon;
+  readonly BankIcon = BankIcon;
+  readonly PercentIcon = PercentIcon;
   user = signal<any>(null);
   clientManager = signal<any>(null);
   
@@ -52,6 +62,13 @@ export class ClientDashboard implements OnInit, OnDestroy {
   
   pollingInterval: any;
 
+  // Carousel logic
+  currentSlideIndex = signal<number>(0);
+  sliderInterval: any;
+  totalSlides = computed(() => {
+    return 2 + (this.activeOrders().length === 0 ? 1 : this.activeOrders().length);
+  });
+
   constructor(private router: Router, private api: Api) {}
 
   ngOnInit() {
@@ -70,6 +87,19 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.fetchClientManager();
     this.fetchOrders();
     this.pollingInterval = setInterval(() => this.fetchOrders(), 4000);
+    this.startSlider();
+  }
+
+  startSlider() {
+    if (this.sliderInterval) clearInterval(this.sliderInterval);
+    this.sliderInterval = setInterval(() => {
+      this.currentSlideIndex.set((this.currentSlideIndex() + 1) % this.totalSlides());
+    }, 3500);
+  }
+
+  setSlide(index: number) {
+    this.currentSlideIndex.set(index);
+    this.startSlider(); // reset timer
   }
 
   fetchClientManager() {
@@ -88,6 +118,9 @@ export class ClientDashboard implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
+    }
+    if (this.sliderInterval) {
+      clearInterval(this.sliderInterval);
     }
   }
 

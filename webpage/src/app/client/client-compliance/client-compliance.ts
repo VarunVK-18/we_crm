@@ -2,7 +2,7 @@ import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Clock01Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
+import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-compliance',
@@ -12,7 +12,7 @@ import { Clock01Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon } f
   styleUrl: './client-compliance.css'
 })
 export class ClientCompliance implements OnInit {
-  readonly Clock01Icon = Clock01Icon;
+  readonly Clock02Icon = Clock02Icon;
   readonly Alert01Icon = Alert01Icon;
   readonly CheckmarkCircle01Icon = CheckmarkCircle01Icon;
   readonly ArrowUpRight01Icon = ArrowUpRight01Icon;
@@ -91,8 +91,8 @@ export class ClientCompliance implements OnInit {
            
            return {
              id: r._id,
-             serviceName: r.serviceName,
-             entityName: r.entityName,
+             serviceName: r.title || r.serviceName || 'Unknown Compliance',
+             entityName: r.entityName || (r.client_id ? r.client_id.company_name : ''),
              daysLeft: r.daysLeft,
              status,
              message
