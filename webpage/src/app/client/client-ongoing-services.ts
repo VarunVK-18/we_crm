@@ -42,7 +42,7 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) return;
     
-    this.api.get<any>(`users/${uid}`).subscribe({
+    this.api.get<any>(`users/profile/${uid}`).subscribe({
       next: (res) => {
         if (res.user && res.user.assigned_to) {
           this.clientManager.set(res.user.assigned_to);

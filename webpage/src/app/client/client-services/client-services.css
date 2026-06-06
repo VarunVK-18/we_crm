@@ -358,64 +358,91 @@
   font-weight: 500;
 }
 
-/* Expert Banner */
-.expert-banner {
-  background: linear-gradient(135deg, #1e1b4b, #312e81, #1e1b4b);
-  border-radius: 20px;
-  padding: 32px 48px;
-  color: white;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 10px 25px rgba(30, 27, 75, 0.2);
-}
-
-.expert-banner::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 12px);
-  z-index: 1;
-}
-
-.expert-banner-content {
-  position: relative;
-  z-index: 2;
+/* Expert Assistance Banner */
+.expert-assistance-banner {
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.03) 0px,
+    rgba(255, 255, 255, 0.03) 2px,
+    transparent 2px,
+    transparent 12px
+  ), linear-gradient(135deg, #1e1b4b, #312e81);
+  border-radius: 12px;
+  padding: 32px 40px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 20px rgba(49, 46, 129, 0.2);
+  color: white;
 }
 
-.expert-banner-text h2 {
-  font-size: 24px;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.expert-banner-text p {
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.expert-banner-contact {
-  display: flex;
-  gap: 32px;
-}
-
-.contact-item {
+.eab-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
-.contact-label {
-  font-size: 10px;
+.eab-title {
+  margin: 0;
+  font-size: 24px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.7;
+  color: white;
+  letter-spacing: -0.02em;
 }
 
-.contact-value {
+.eab-desc {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.eab-contact {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+}
+
+.eab-contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.eab-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+}
+
+.eab-value {
   font-size: 16px;
   font-weight: 600;
+  color: white;
+  text-decoration: none;
+  transition: opacity 0.2s ease, text-decoration 0.2s ease;
+}
+
+a.eab-value:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 1024px) {
+  .expert-assistance-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    padding: 24px;
+  }
+  
+  .eab-contact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
 }

@@ -59,6 +59,7 @@ export class Dashboard implements OnInit, OnDestroy {
   // Mobile sidebar navigation drawer state
   isMobileSidebarOpen = signal<boolean>(false);
   isNotificationOpen = signal<boolean>(false);
+  isProfileDropdownOpen = signal<boolean>(false);
 
   constructor(private router: Router, private api: Api, public notifService: NotificationService) {}
 
@@ -97,6 +98,10 @@ export class Dashboard implements OnInit, OnDestroy {
     if (this.isNotificationOpen()) {
       this.notifService.markAllAsRead();
     }
+  }
+
+  toggleProfileDropdown() {
+    this.isProfileDropdownOpen.update(val => !val);
   }
 
   formatTime(dateString: string): string {

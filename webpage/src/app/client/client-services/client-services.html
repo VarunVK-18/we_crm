@@ -141,22 +141,22 @@
     </div>
   </div>
 
-  <div class="expert-banner">
-    <div class="expert-banner-content">
-      <div class="expert-banner-text">
-        <h2>Need Expert Assistance?</h2>
-        <p>Your client manager is available to assist you with any queries.</p>
+  @if (clientManager()) {
+    <div class="expert-assistance-banner" style="margin-top: 32px;">
+      <div class="eab-content">
+        <h2 class="eab-title">Need Expert Assistance?</h2>
+        <p class="eab-desc">Your client manager <strong>{{ clientManager()?.owner_name || clientManager()?.name || 'Support Team' }}</strong> is available to assist you with any queries.</p>
       </div>
-      <div class="expert-banner-contact">
-        <div class="contact-item">
-          <span class="contact-label">call</span>
-          <span class="contact-value">+91 98765 43210</span>
+      <div class="eab-contact">
+        <div class="eab-contact-item">
+          <span class="eab-label">CALL</span>
+          <a [href]="'tel:' + (clientManager()?.phone || '+918072286963')" class="eab-value">{{ clientManager()?.phone || '+91 98765 43210' }}</a>
         </div>
-        <div class="contact-item">
-          <span class="contact-label">mail</span>
-          <span class="contact-value">support@wealthempires.com</span>
+        <div class="eab-contact-item">
+          <span class="eab-label">MAIL</span>
+          <a [href]="'mailto:' + (clientManager()?.email || 'varun@gmail.com')" class="eab-value">{{ clientManager()?.email || 'support@wealthempires.com' }}</a>
         </div>
       </div>
     </div>
-  </div>
+  }
 </div>

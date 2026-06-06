@@ -15,6 +15,9 @@
 
 /* Top Nav */
 .invoice-top-nav {
+  position: sticky;
+  top: 24px;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -310,31 +313,26 @@
   color: #94a3b8;
 }
 
-/* Download Button */
-.action-section {
-  display: flex;
-  justify-content: center;
-}
-
-.download-btn-large {
+/* Download Button Top */
+.download-btn-top {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   background: var(--palette-dark);
   color: white;
   border: none;
-  padding: 16px 32px;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.download-btn-large:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+.download-btn-top:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
   background: #1a1f33;
 }
 
@@ -369,8 +367,17 @@
 
 /* --- PRINT MEDIA QUERY --- */
 @media print {
-  /* Hide the angular sidebar by globally hiding it inside the app component if needed, 
-     or just relying on the fact that we can hide it via global styles, but let's hide known classes */
+  @page {
+    margin: 0; /* Removes browser headers, footers, URL, and dates */
+  }
+
+  /* Globally hide sidebar and topbar using ng-deep since they are outside this component */
+  ::ng-deep app-client-sidebar,
+  ::ng-deep .client-sidebar,
+  ::ng-deep app-client-topbar {
+    display: none !important;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -379,14 +386,29 @@
     visibility: visible;
   }
   
+  :host {
+    background-color: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .invoice-page-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: none !important;
+  }
+
   #invoice-paper {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
+    box-sizing: border-box !important;
     box-shadow: none !important;
     margin: 0 !important;
     border-radius: 0 !important;
+    padding: 40px !important;
+    background: white !important;
   }
   
   .no-print {

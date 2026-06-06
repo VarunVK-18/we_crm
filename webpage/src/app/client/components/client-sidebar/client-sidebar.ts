@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -25,6 +25,24 @@ export class ClientSidebarComponent implements OnInit {
   user = signal<any>(null);
   clientManager = signal<any>(null);
 
+  currentTrustedIndex = signal(0);
+  trustedCompanies = [
+    {
+      name: 'Softrate',
+      desc: 'Premium Web & Mobile Application Development to scale your digital presence.',
+      image: '/assets/Softrate Logo.png',
+      url: 'https://softrateglobal.com'
+    },
+    {
+      name: 'Startup Doctor',
+      desc: 'Expert mentorship and tailored strategies to accelerate your startup growth.',
+      image: '/assets/sdlogo (1).svg',
+      url: 'https://aistartupdoctor.com'
+    }
+  ];
+  
+  private slideInterval: any;
+
   constructor(private router: Router, private api: Api) {}
 
   ngOnInit() {
@@ -34,6 +52,19 @@ export class ClientSidebarComponent implements OnInit {
       this.user.set(parsed);
       this.fetchClientManager(parsed._id || parsed.id);
     }
+    this.startSlider();
+  }
+
+  ngOnDestroy() {
+    if (this.slideInterval) {
+      clearInterval(this.slideInterval);
+    }
+  }
+
+  startSlider() {
+    this.slideInterval = setInterval(() => {
+      this.currentTrustedIndex.update(i => (i + 1) % this.trustedCompanies.length);
+    }, 4000);
   }
 
   fetchClientManager(uid: string) {

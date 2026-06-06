@@ -47,53 +47,66 @@
       <p>{{ canCreate() ? 'Create a new checklist to get started.' : 'You have no checklists assigned to this view.' }}</p>
     </div>
   } @else {
-    <div class="cards-grid">
-      @for (cl of filteredChecklists(); track cl._id) {
-        <div class="checklist-card" (click)="viewDetails(cl._id)">
-          <div class="card-top-bar" [ngClass]="getChecklistStatusClass(cl.status)"></div>
-          <div class="card-content">
-            <div class="card-header-row">
-              <span class="service-badge">{{ cl.service_name }}</span>
-              <span class="status-pill" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
-            </div>
-            
-            <div class="card-main-info">
-              <div class="progress-container">
-                <svg class="progress-ring">
-                  <circle class="progress-bg" cx="32" cy="32" r="28"></circle>
-                  <circle class="progress-bar" [ngClass]="getChecklistStatusClass(cl.status)" cx="32" cy="32" r="28" [style.stroke-dashoffset]="2 * 3.14159 * 28 * (1 - getChecklistProgress(cl)/100)"></circle>
-                </svg>
-                <span class="progress-text">{{ getChecklistProgress(cl) }}%</span>
-              </div>
-              
-              <div class="client-details">
-                <h4 class="client-name">{{ cl.client_id?.owner_name || 'Unknown' }}</h4>
-                <p class="client-meta">
-                  {{ cl.details?.entityName || cl.client_id?.company_name || 'Individual' }} 
-                  <span class="meta-dot"></span> 
-                  Stage: {{ cl.stage || 'quotePending' }}
-                </p>
-              </div>
-            </div>
-            
-            <div class="card-footer">
-              <div class="assignee-info">
-                @if (cl.assigned_to?.owner_name) {
-                  <div class="assignee-avatar has-user">
-                    {{ cl.assigned_to.owner_name.charAt(0).toUpperCase() }}
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Service Name</th>
+            <th>Client</th>
+            <th>Stage</th>
+            <th>Progress</th>
+            <th>Assignee</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cl of filteredChecklists(); track cl._id) {
+            <tr (click)="viewDetails(cl._id)">
+              <td>
+                <span class="service-badge">{{ cl.service_name }}</span>
+              </td>
+              <td>
+                <div class="client-details-table">
+                  <span class="client-name-sm">{{ cl.client_id?.owner_name || 'Unknown' }}</span>
+                  <span class="client-meta-sm">{{ cl.details?.entityName || cl.client_id?.company_name || 'Individual' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="stage-text">{{ cl.stage || 'quotePending' }}</span>
+              </td>
+              <td>
+                <div class="progress-bar-container">
+                  <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" [ngClass]="getChecklistStatusClass(cl.status)" [style.width]="getChecklistProgress(cl) + '%'"></div>
                   </div>
-                } @else {
-                  <div class="assignee-avatar no-user">U</div>
-                }
-                <span class="assignee-name">{{ cl.assigned_to?.owner_name || 'Unassigned' }}</span>
-              </div>
-              <button class="action-btn">
-                <span class="material-symbols-outlined">arrow_forward</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      }
+                  <span class="progress-text-sm">{{ getChecklistProgress(cl) }}%</span>
+                </div>
+              </td>
+              <td>
+                <div class="assignee-info">
+                  @if (cl.assigned_to?.owner_name) {
+                    <div class="assignee-avatar has-user">
+                      {{ cl.assigned_to.owner_name.charAt(0).toUpperCase() }}
+                    </div>
+                  } @else {
+                    <div class="assignee-avatar no-user">U</div>
+                  }
+                  <span class="assignee-name">{{ cl.assigned_to?.owner_name || 'Unassigned' }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="status-pill" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
+              </td>
+              <td>
+                <button class="action-btn-sm" title="View Details">
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
     </div>
   }
 </div>

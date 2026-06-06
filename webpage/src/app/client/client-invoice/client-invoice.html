@@ -2,13 +2,19 @@
   <!-- Top Navigation (Hidden on Print) -->
   <div class="invoice-top-nav no-print">
     <button class="back-btn" (click)="goBack()">
-      <hugeicons-icon [icon]="ArrowLeft01Icon" [size]="20" color="currentColor"></hugeicons-icon>
+      <hugeicons-icon [icon]="ArrowLeft01Icon" [size]="20" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
       <span>Back</span>
     </button>
     <div class="nav-title">Digital Invoice</div>
-    <button class="icon-btn" (click)="downloadPdf()">
-      <hugeicons-icon [icon]="Download01Icon" [size]="20" color="currentColor"></hugeicons-icon>
-    </button>
+    <div class="nav-actions" style="display: flex; gap: 12px;">
+      <button class="icon-btn share-btn" (click)="shareInvoice()" title="Share Invoice">
+        <hugeicons-icon [icon]="Share01Icon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+      </button>
+      <button class="download-btn-top" (click)="downloadPdf()">
+        <hugeicons-icon [icon]="Download01Icon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+        <span>Download Official PDF</span>
+      </button>
+    </div>
   </div>
 
   @if (isLoading()) {
@@ -130,14 +136,6 @@
         </div>
         
       </div>
-    </div>
-    
-    <!-- Action Button -->
-    <div class="action-section no-print">
-      <button class="download-btn-large" (click)="downloadPdf()">
-        <hugeicons-icon [icon]="Download01Icon" [size]="20" color="currentColor"></hugeicons-icon>
-        <span>Download Official PDF</span>
-      </button>
     </div>
   } @else {
     <div class="empty-state no-print">

@@ -7,72 +7,118 @@
     </div>
   </div>
 
-  <div class="ongoing-layout-grid">
-    <div class="service-list-container">
-      @if (isLoading()) {
-        <div class="loading-state">
-          <span class="material-symbols-outlined rotating">sync</span>
-          <p>Loading ongoing services...</p>
-        </div>
-      } @else {
-        @if (activeOrders().length === 0) {
-          <div class="empty-state">
-            <span class="material-symbols-outlined">inbox</span>
-            <h3>No Ongoing Services</h3>
-            <p>You don't have any active services at the moment.</p>
+  <div class="dashboard-bottom-section">
+    <div class="service-list-wrapper">
+      <div class="service-list-container">
+        @if (isLoading()) {
+          <div class="loading-state">
+            <span class="material-symbols-outlined rotating">sync</span>
+            <p>Loading ongoing services...</p>
           </div>
         } @else {
-          <div class="mobile-service-list">
-            @for (order of activeOrders(); track order._id) {
-              <div class="mobile-service-card" (click)="openServiceDetails(order)">
-                <div class="msc-icon">
-                  <span class="material-symbols-outlined">work</span>
-                </div>
-                
-                <div class="msc-content">
-                  <h3 class="msc-title">{{ order.service_name || order.checklist_name || 'Service Order' }}</h3>
-                  <div class="msc-expert" [class.unassigned]="!order.assigned_to">
-                    <span class="material-symbols-outlined">person</span>
-                    <span>{{ order.assigned_to?.owner_name || order.assigned_to?.name || 'Unassigned' }}</span>
-                  </div>
-                  <div class="msc-progress">
-                    <div class="msc-progress-bar">
-                      <div class="msc-progress-fill" [style.width.%]="(order.items || []).length ? (getCompletedCount(order.items) / (order.items || []).length) * 100 : 0"></div>
-                    </div>
-                    <span class="msc-progress-text">{{ getCompletedCount(order.items) }}/{{ (order.items || []).length }}</span>
-                  </div>
-                </div>
-
-                <div class="msc-actions">
-                  <span class="ho-status-badge active">
-                    <span class="ho-status-dot"></span>
-                    Active
-                  </span>
-                  <span class="material-symbols-outlined msc-chevron">chevron_right</span>
-                </div>
-              </div>
-            }
-          </div>
+          @if (activeOrders().length === 0) {
+            <div class="empty-state">
+              <span class="material-symbols-outlined">inbox</span>
+              <h3>No Ongoing Services</h3>
+              <p>You don't have any active services at the moment.</p>
+            </div>
+          } @else {
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Expert</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (order of activeOrders(); track order._id) {
+                    <tr (click)="openServiceDetails(order)">
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                          <div class="msc-icon" style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px; background: rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; color: var(--palette-dark);">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">work</span>
+                          </div>
+                          <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="msc-expert" [class.unassigned]="!order.assigned_to" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
+                          <span class="material-symbols-outlined" style="font-size: 16px; opacity: 0.7;">person</span>
+                          <span>{{ order.assigned_to?.owner_name || order.assigned_to?.name || 'Unassigned' }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="progress-bar-container" style="display: flex; align-items: center; gap: 8px; min-width: 120px;">
+                          <div class="progress-bar-bg" style="flex: 1; height: 6px; background-color: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden;">
+                            <div class="progress-bar-fill" style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 3px; transition: width 0.3s ease;" [style.width.%]="(order.items || []).length ? (getCompletedCount(order.items) / (order.items || []).length) * 100 : 0"></div>
+                          </div>
+                          <span class="progress-text-sm" style="font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); min-width: 32px;">{{ getCompletedCount(order.items) }}/{{ (order.items || []).length }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="ho-status-badge active">
+                          <span class="ho-status-dot"></span>
+                          Active
+                        </span>
+                      </td>
+                      <td>
+                        <button class="action-btn-sm" title="View Details" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background-color: transparent; color: color-mix(in srgb, var(--palette-dark) 50%, transparent); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;">
+                          <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
         }
-      }
+      </div>
     </div>
 
-    <!-- Right Sidebar Area -->
-    <div class="sidebar-right">
-      <div class="manager-cta-card">
-        <h3>Need Expert Assistance?</h3>
-        <p>Your client manager{{ clientManager() ? ', ' + (clientManager().owner_name || clientManager().name || 'Support Team') + ',' : '' }} is available to assist you with any queries.</p>
-        <div class="cta-contact-details">
-           <div class="cta-contact-item">
-             <span class="material-symbols-outlined">call</span>
-             <span>{{ clientManager()?.phone || '+91 98765 43210' }}</span>
-           </div>
-           <div class="cta-contact-item">
-             <span class="material-symbols-outlined">mail</span>
-             <span>{{ clientManager()?.email || 'support@wealthempires.com' }}</span>
-           </div>
+    <div class="manager-details-wrapper">
+      <div class="note-card">
+        <div class="nc-header">
+          <span class="material-symbols-outlined">info</span>
+          <h3>Guidelines</h3>
         </div>
+        <ul class="nc-list">
+          <li>Please stay active on this page to make your process smooth.</li>
+          <li>Upload requested documents promptly to avoid delays.</li>
+          <li>Respond to manager queries in a timely manner.</li>
+        </ul>
       </div>
+
+      @if (clientManager()) {
+        <div class="manager-card">
+          <div class="manager-avatar">
+            <div class="avatar-circle">
+              <span class="material-symbols-outlined">person</span>
+            </div>
+          </div>
+          <div class="manager-info">
+            <h3 class="manager-name">{{ clientManager().owner_name || clientManager().name || 'Support Team' }}</h3>
+            <p class="manager-desc">
+              <span class="manager-role">Your Client Manager</span>
+              is available to assist you with any queries.
+            </p>
+          </div>
+          <div class="manager-contact-links">
+            <a [href]="'tel:' + (clientManager().phone || '')" class="mc-link">
+              <span class="material-symbols-outlined">call</span>
+              <span>{{ clientManager().phone || '+918072286963' }}</span>
+            </a>
+            <a [href]="'mailto:' + (clientManager().email || '')" class="mc-link">
+              <span class="material-symbols-outlined">mail</span>
+              <span>{{ clientManager().email || 'varun@gmail.com' }}</span>
+            </a>
+          </div>
+        </div>
+      }
     </div>
   </div>
 </div>
