@@ -29,6 +29,7 @@ dependencies:
   internet_connection_checker: ^3.0.1
   google_mlkit_text_recognition: ^0.15.1
   open_file: ^3.5.11
+  dropdown_button2: ^3.1.0
 
 dev_dependencies:
   flutter_test:

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../services/service_selection_screen.dart';
 import '../services/service_detail_screen.dart';
 import '../services/tool_detail_screen.dart';
+import '../services/registration_services_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -19,46 +21,114 @@ class _SearchScreenState extends State<SearchScreen> {
 
   // Master List of Searchable Items
   final List<Map<String, dynamic>> _masterItems = [
-    // Core Services
+    // Recommended Services (Registration Hub Tabs)
     {
-      'label': 'Services',
-      'icon': HugeIcons.strokeRoundedBriefcase01,
-      'category': 'Services',
-    },
-    {
-      'label': 'GST Management',
-      'icon': HugeIcons.strokeRoundedDocumentValidation,
-      'category': 'Services',
-    },
-    {
-      'label': 'Documents',
-      'icon': HugeIcons.strokeRoundedFolderOpen,
-      'category': 'Services',
-    },
-    {
-      'label': 'DSC (Digital Signature)',
-      'icon': HugeIcons.strokeRoundedUserCheck01,
-      'category': 'Services',
-    },
-    {
-      'label': 'Company Incorporation',
+      'label': 'Incorporation',
       'icon': HugeIcons.strokeRoundedOffice,
-      'category': 'Services',
+      'category': 'RegistrationTab',
     },
     {
-      'label': 'Trademark Registration',
-      'icon': HugeIcons.strokeRoundedLicense,
-      'category': 'Services',
+      'label': 'Compliance',
+      'icon': HugeIcons.strokeRoundedBriefcase01,
+      'category': 'RegistrationTab',
     },
     {
-      'label': 'Tax Filing (ITR)',
-      'icon': HugeIcons.strokeRoundedInvoice02,
-      'category': 'Services',
+      'label': 'Tax',
+      'icon': HugeIcons.strokeRoundedCalculator,
+      'category': 'RegistrationTab',
     },
     {
-      'label': 'Compliance Audit',
+      'label': 'All Services',
+      'icon': HugeIcons.strokeRoundedDashboardSquare01,
+      'category': 'RegistrationTab',
+    },
+    
+    // --- Incorporation ---
+    {
+      'label': 'Private Limited Incorporation',
+      'icon': HugeIcons.strokeRoundedOffice,
+      'category': 'Incorporation',
+    },
+    {
+      'label': 'LLP Incorporation',
+      'icon': HugeIcons.strokeRoundedBriefcase01,
+      'category': 'Incorporation',
+    },
+    {
+      'label': 'OPC',
+      'icon': HugeIcons.strokeRoundedUser,
+      'category': 'Incorporation',
+    },
+    {
+      'label': 'Proprietorship',
+      'icon': HugeIcons.strokeRoundedUser,
+      'category': 'Incorporation',
+    },
+    {
+      'label': 'MSME',
+      'icon': LucideIcons.medal,
+      'category': 'Incorporation',
+    },
+
+    // --- Compliance ---
+    {
+      'label': 'MCA Compliance',
       'icon': HugeIcons.strokeRoundedTask01,
-      'category': 'Services',
+      'category': 'Compliance',
+    },
+    {
+      'label': 'TDS',
+      'icon': HugeIcons.strokeRoundedCalculator,
+      'category': 'Compliance',
+    },
+    {
+      'label': 'PF',
+      'icon': HugeIcons.strokeRoundedDocumentValidation,
+      'category': 'Compliance',
+    },
+
+    // --- IP ---
+    {
+      'label': 'Trade Mark',
+      'icon': LucideIcons.tag,
+      'category': 'IP',
+    },
+    {
+      'label': 'Copyright',
+      'icon': LucideIcons.copyright,
+      'category': 'IP',
+    },
+    {
+      'label': 'Patent',
+      'icon': LucideIcons.lightbulb,
+      'category': 'IP',
+    },
+
+    // --- Tax ---
+    {
+      'label': 'GST Registration',
+      'icon': HugeIcons.strokeRoundedFile02,
+      'category': 'Tax',
+    },
+    {
+      'label': 'GST Compliance',
+      'icon': HugeIcons.strokeRoundedFile02,
+      'category': 'Tax',
+    },
+    {
+      'label': 'GST Cancelation',
+      'icon': LucideIcons.fileX,
+      'category': 'Tax',
+    },
+    {
+      'label': 'GST filing',
+      'icon': HugeIcons.strokeRoundedTask01,
+      'category': 'Tax',
+    },
+    {
+      'label': 'ITR',
+      'icon': HugeIcons.strokeRoundedInvoice02,
+      'category': 'Tax',
     },
 
     // Tools & Calculators
@@ -223,10 +293,9 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // 1. Discovery View (Initial state with grids)
   Widget _buildDiscoveryView() {
     final services = _masterItems
-        .where((i) => i['category'] == 'Services')
+        .where((i) => i['category'] == 'RegistrationTab')
         .take(4)
         .toList();
     final tools = _masterItems.where((i) => i['category'] == 'Tools').toList();
@@ -345,7 +414,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
             subtitle: Text(
-              item['category'] as String,
+              item['category'] == 'RegistrationTab' ? 'Services' : item['category'] as String,
               style: TextStyle(
                 fontSize: 11,
                 color: Colors.grey[500],
@@ -367,11 +436,17 @@ class _SearchScreenState extends State<SearchScreen> {
   void _handleItemTap(String label) {
     final item = _masterItems.firstWhere((i) => i['label'] == label);
     final isTool = item['category'] == 'Tools';
+    final isRegistrationTab = item['category'] == 'RegistrationTab';
 
-    if (label == 'Services') {
+    if (isRegistrationTab) {
+      final initialCat = label == 'All Services' ? 'All' : label;
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ServiceSelectionScreen()),
+        MaterialPageRoute(
+          builder: (context) => RegistrationServicesScreen(
+            initialCategory: initialCat,
+          ),
+        ),
       );
       return;
     }
@@ -411,7 +486,7 @@ class _SearchCategoryGrid extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 2.1,
+        childAspectRatio: 1.85,
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -444,7 +519,7 @@ class _SearchCategoryGrid extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: AppTheme.corporateBlue.withOpacity(0.05),
                       shape: BoxShape.circle,
@@ -453,20 +528,20 @@ class _SearchCategoryGrid extends StatelessWidget {
                         ? Icon(
                             item['icon'] as IconData,
                             color: AppTheme.corporateBlue,
-                            size: 16,
+                            size: 22,
                           )
                         : HugeIcon(
                             icon: item['icon'],
                             color: AppTheme.corporateBlue,
-                            size: 16,
+                            size: 22,
                           ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       label,
                       style: const TextStyle(
-                        fontSize: 12,
+                        fontSize: 14,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.deepTeal,
                         height: 1.1,

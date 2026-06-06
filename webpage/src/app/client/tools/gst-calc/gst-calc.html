@@ -1,0 +1,69 @@
+<div class="content-wrapper">
+  <div class="tool-header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Back to Dashboard
+    </button>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-icon-wrapper">
+      <span class="material-symbols-outlined" style="font-size: 48px; color: #0ea5e9;">calculate</span>
+    </div>
+    <h1 class="tool-title">GST Calculator</h1>
+    <p class="tool-subtitle">Calculate Goods and Services Tax quickly with custom rates.</p>
+
+    <div class="calc-card">
+      <div class="form-group">
+        <label>Amount (₹)</label>
+        <div class="input-wrapper">
+          <span class="material-symbols-outlined prefix-icon">currency_rupee</span>
+          <input type="number" placeholder="e.g. 10000" [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+        </div>
+      </div>
+
+      <div class="row-inputs">
+        <div class="form-group">
+          <label>GST Rate (%)</label>
+          <div class="select-wrapper">
+            <select [ngModel]="gstRate()" (ngModelChange)="gstRate.set($event)">
+              <option [ngValue]="0">0%</option>
+              <option [ngValue]="5">5%</option>
+              <option [ngValue]="12">12%</option>
+              <option [ngValue]="18">18%</option>
+              <option [ngValue]="28">28%</option>
+            </select>
+            <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tax Type</label>
+          <div class="select-wrapper">
+            <select [ngModel]="taxType()" (ngModelChange)="taxType.set($event)">
+              <option value="exclusive">Exclusive</option>
+              <option value="inclusive">Inclusive</option>
+            </select>
+            <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-box">
+        <div class="result-item">
+          <span class="result-val actual-val">₹{{ actualAmount() | number:'1.0-2' }}</span>
+          <span class="result-label">Actual Amount</span>
+        </div>
+        <div class="result-operator">+</div>
+        <div class="result-item">
+          <span class="result-val gst-val">₹{{ gstAmount() | number:'1.0-2' }}</span>
+          <span class="result-label">GST Amount</span>
+        </div>
+        <div class="result-operator">=</div>
+        <div class="result-item">
+          <span class="result-val total-val">₹{{ totalAmount() | number:'1.0-2' }}</span>
+          <span class="result-label">Total Amount</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

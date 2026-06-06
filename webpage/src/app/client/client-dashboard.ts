@@ -137,6 +137,14 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/client/profile']);
   }
 
+  goToGstCalc() {
+    this.router.navigate(['/client/tools/gst-calc']);
+  }
+
+  goToTdsCalc() {
+    this.router.navigate(['/client/tools/tds-calc']);
+  }
+
   fetchOrders() {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) return;

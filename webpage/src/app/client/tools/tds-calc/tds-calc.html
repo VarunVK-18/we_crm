@@ -1,0 +1,63 @@
+<div class="content-wrapper">
+  <div class="tool-header">
+    <button class="back-btn" (click)="goBack()">
+      <span class="material-symbols-outlined">arrow_back</span>
+      Back to Dashboard
+    </button>
+  </div>
+
+  <div class="tool-container">
+    <div class="tool-icon-wrapper">
+      <span class="material-symbols-outlined" style="font-size: 48px; color: #8b5cf6;">calculate</span>
+    </div>
+    <h1 class="tool-title">TDS Interest Calculator</h1>
+    <p class="tool-subtitle">Calculate interest for late TDS deposits or late deduction.</p>
+
+    <div class="calc-card">
+      <div class="form-group">
+        <label>Enter Amount Of Tax Deducted (₹)</label>
+        <div class="input-wrapper">
+          <span class="material-symbols-outlined prefix-icon">currency_rupee</span>
+          <input type="number" placeholder="e.g. 100000" [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Type Of Interest Calculation</label>
+        <div class="select-wrapper">
+          <select [ngModel]="calcType()" (ngModelChange)="calcType.set($event)">
+            <option value="deduction">Interest On Late Deduction</option>
+            <option value="payment">Interest On Late Payment</option>
+            <option value="filing">Interest On Late Filing</option>
+          </select>
+          <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+        </div>
+      </div>
+
+      <div class="row-inputs">
+        <div class="form-group">
+          <label>{{ date1Label() }}</label>
+          <div class="input-wrapper">
+            <span class="material-symbols-outlined prefix-icon" style="font-size: 18px;">calendar_today</span>
+            <input type="date" [ngModel]="date1()" (ngModelChange)="date1.set($event)" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>{{ date2Label() }}</label>
+          <div class="input-wrapper">
+            <span class="material-symbols-outlined prefix-icon" style="font-size: 18px;">calendar_today</span>
+            <input type="date" [ngModel]="date2()" (ngModelChange)="date2.set($event)" />
+          </div>
+        </div>
+      </div>
+
+      <div class="results-box">
+        <div class="result-item" style="width: 100%;">
+          <span class="result-label" style="font-size: 14px; margin-bottom: 8px;">Final Interest Amount</span>
+          <span class="result-val total-val" style="font-size: 48px; margin-bottom: 8px;">₹{{ calculatedInterest() | number:'1.0-2' }}</span>
+          <span class="result-label" style="text-align: center;">{{ detailMessage() }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

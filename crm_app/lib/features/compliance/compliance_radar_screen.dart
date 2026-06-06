@@ -612,6 +612,13 @@ class _BentoHealthCard extends StatelessWidget {
     required this.message,
   });
 
+  Color get _statusColor {
+    if (status == 'EXCELLENT') return Colors.greenAccent;
+    if (status == 'WARNING') return AppTheme.activeOrange;
+    if (status == 'CRITICAL') return Colors.redAccent;
+    return AppTheme.accentCyan;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -676,16 +683,16 @@ class _BentoHealthCard extends StatelessWidget {
                   vertical: 6.r,
                 ),
                 decoration: BoxDecoration(
-                  color: AppTheme.accentCyan.withOpacity(0.15),
+                  color: _statusColor.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(12.r),
                   border: Border.all(
-                    color: AppTheme.accentCyan.withOpacity(0.2),
+                    color: _statusColor.withOpacity(0.2),
                   ),
                 ),
                 child: Text(
                   status,
                   style: TextStyle(
-                    color: AppTheme.accentCyan,
+                    color: _statusColor,
                     fontSize: 9.sp,
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1,

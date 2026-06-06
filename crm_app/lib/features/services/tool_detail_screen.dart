@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/nic_codes.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class ToolDetailScreen extends StatefulWidget {
   final String toolName;
@@ -30,6 +31,18 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   double _primaryResult = 0.0;
   double _secondaryResult = 0.0;
   String _detailMessage = '';
+
+  // GST Calculator Variables
+  final ValueNotifier<String> _selectedGstRate = ValueNotifier<String>('18%');
+  final ValueNotifier<String> _selectedTaxType = ValueNotifier<String>('Exclusive');
+  double _actualAmount = 0.0;
+  double _gstAmount = 0.0;
+  double _totalAmount = 0.0;
+
+  // TDS Calculator Variables
+  final ValueNotifier<String> _selectedTdsCalcType = ValueNotifier<String>('Interest On Late Deduction');
+  DateTime? _tdsDate1;
+  DateTime? _tdsDate2;
 
   List<NicCode> _filteredNicCodes = [];
 
@@ -58,18 +71,52 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     final duration = double.tryParse(_durationController.text) ?? 0.0;
 
     setState(() {
-      if (widget.toolName == 'GST Calc') {
-        _secondaryResult = (amount * rate) / 100;
-        _primaryResult = amount + _secondaryResult;
-        _detailMessage = 'Base: ₹${amount.toStringAsFixed(0)} + GST: $rate%';
+      if (widget.toolName.contains('GST Calc')) {
+        final amount = double.tryParse(_amountController.text) ?? 0.0;
+        final rate = double.tryParse(_selectedGstRate.value.replaceAll('%', '')) ?? 0.0;
+        
+        if (_selectedTaxType.value == 'Exclusive') {
+          _actualAmount = amount;
+          _gstAmount = (amount * rate) / 100;
+          _totalAmount = _actualAmount + _gstAmount;
+        } else {
+          _totalAmount = amount;
+          _gstAmount = amount - (amount * (100 / (100 + rate)));
+          _actualAmount = amount - _gstAmount;
+        }
       } else if (widget.toolName == 'GST Interest') {
-        // GST Interest: 18% p.a. daily
         _primaryResult = (amount * (rate / 100) / 365) * duration;
         _detailMessage = 'Interest calculated at $rate% p.a. for ${duration.toStringAsFixed(0)} days';
       } else if (widget.toolName == 'TDS Interest') {
-        // TDS Interest: 1.5% p.m.
-        _primaryResult = amount * (rate / 100) * duration;
-        _detailMessage = 'Interest calculated at $rate% p.m. for ${duration.toStringAsFixed(0)} months';
+        final amount = double.tryParse(_amountController.text) ?? 0.0;
+        double calculatedInterest = 0.0;
+        int monthsDelay = 0;
+
+        if (_tdsDate1 != null && _tdsDate2 != null) {
+          int daysDelay = _tdsDate2!.difference(_tdsDate1!).inDays;
+          if (daysDelay > 0) {
+            monthsDelay = (daysDelay / 30).ceil();
+          }
+        }
+
+        if (_selectedTdsCalcType.value == 'Interest On Late Deduction') {
+          calculatedInterest = amount * 0.01 * monthsDelay;
+          _detailMessage = '1% p.m. from Date of Payment to Date of Deduction';
+        } else if (_selectedTdsCalcType.value == 'Interest On Late Payment') {
+          calculatedInterest = amount * 0.015 * monthsDelay;
+          _detailMessage = '1.5% p.m. from Date of Deduction to Date of Payment';
+        } else {
+          int daysDelay = 0;
+          if (_tdsDate1 != null && _tdsDate2 != null) {
+            daysDelay = _tdsDate2!.difference(_tdsDate1!).inDays;
+            if (daysDelay < 0) daysDelay = 0;
+          }
+          calculatedInterest = (200 * daysDelay).toDouble();
+          if (calculatedInterest > amount) calculatedInterest = amount; 
+          _detailMessage = '₹200 per day for $daysDelay days (Max: Tax Amount)';
+        }
+
+        _primaryResult = calculatedInterest;
       }
     });
   }
@@ -90,6 +137,8 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
@@ -116,7 +165,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             const SizedBox(height: 32),
             _buildToolContent(),
             const SizedBox(height: 40),
-            if (widget.toolName != 'NIC Finder') _buildResultCard(),
+            if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
           ],
         ),
       ),
@@ -157,6 +206,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
 
   String _getToolDescription() {
     switch (widget.toolName) {
+      case 'GST Calculator':
       case 'GST Calc':
         return 'Calculate Goods and Services Tax quickly with custom rates.';
       case 'GST Interest':
@@ -173,6 +223,12 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   Widget _buildToolContent() {
     if (widget.toolName == 'NIC Finder') {
       return _buildNICFinder();
+    }
+    if (widget.toolName.contains('GST Calc')) {
+      return _buildGstCalculator();
+    }
+    if (widget.toolName == 'TDS Interest') {
+      return _buildTdsCalculator();
     }
 
     return Column(
@@ -226,7 +282,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   Widget _buildTextField(TextEditingController controller, String hint, IconData icon) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey[200]!),
       ),
@@ -234,14 +290,140 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         controller: controller,
         keyboardType: TextInputType.number,
         onChanged: (_) => _calculate(),
-        style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+        style: GoogleFonts.outfit(
+          fontWeight: FontWeight.w600,
+          color: AppTheme.deepTeal,
+        ),
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: Icon(icon, size: 18, color: Colors.grey),
+          hintStyle: GoogleFonts.outfit(
+            color: Colors.grey[400],
+            fontWeight: FontWeight.w400,
+          ),
+          prefixIcon: Container(
+            margin: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.grey[600], size: 18),
+          ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
+    );
+  }
+
+  Widget _buildDatePicker(String label, DateTime? selectedDate, ValueChanged<DateTime> onDateSelected) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildInputLabel(label),
+        InkWell(
+          onTap: () async {
+            final date = await showDatePicker(
+              context: context,
+              initialDate: selectedDate ?? DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+            if (date != null) {
+              onDateSelected(date);
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  selectedDate != null
+                      ? '${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.year}'
+                      : 'mm/dd/yyyy',
+                  style: GoogleFonts.outfit(
+                    color: selectedDate != null ? AppTheme.deepTeal : Colors.grey[400],
+                    fontWeight: selectedDate != null ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: 15,
+                  ),
+                ),
+                Icon(LucideIcons.calendar, size: 20, color: Colors.grey[600]),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTdsCalculator() {
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedTdsCalcType,
+      builder: (context, calcType, _) {
+        String date1Label = 'Date Of Amount Payment';
+        String date2Label = 'Date Of Tax Deduction';
+        if (calcType == 'Interest On Late Payment') {
+          date1Label = 'Date Of Tax Deduction';
+          date2Label = 'Date Of Tax Payment';
+        } else if (calcType == 'Interest On Late Filing') {
+          date1Label = 'Due Date Of Filing';
+          date2Label = 'Actual Date Of Filing';
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildInputLabel('Enter Amount Of Tax Deducted'),
+              _buildTextField(_amountController, 'e.g. 100000', LucideIcons.indianRupee),
+              const SizedBox(height: 20),
+              _buildInputLabel('Type Of Interest Calculation'),
+              _buildDropdown(
+                valueListenable: _selectedTdsCalcType,
+                items: [
+                  'Interest On Late Deduction',
+                  'Interest On Late Payment',
+                  'Interest On Late Filing'
+                ],
+                onChanged: (val) {
+                  _selectedTdsCalcType.value = val!;
+                  _calculate();
+                },
+              ),
+              const SizedBox(height: 20),
+              _buildDatePicker(date1Label, _tdsDate1, (date) {
+                setState(() => _tdsDate1 = date);
+                _calculate();
+              }),
+              const SizedBox(height: 20),
+              _buildDatePicker(date2Label, _tdsDate2, (date) {
+                setState(() => _tdsDate2 = date);
+                _calculate();
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -250,7 +432,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
           ),
@@ -294,8 +476,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: isClass
                           ? AppTheme.corporateBlue
@@ -306,9 +487,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                       item.code,
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w900,
-                        color: isClass
-                            ? Colors.white
-                            : AppTheme.corporateBlue,
+                        color: isClass ? Colors.white : AppTheme.corporateBlue,
                         fontSize: 12,
                       ),
                     ),
@@ -323,9 +502,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.w800,
                             fontSize: 9,
-                            color: isClass
-                                ? AppTheme.corporateBlue
-                                : Colors.grey[500],
+                            color: isClass ? AppTheme.corporateBlue : Colors.grey[500],
                             letterSpacing: 1,
                           ),
                         ),
@@ -333,9 +510,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                         Text(
                           item.description,
                           style: GoogleFonts.outfit(
-                            fontWeight: isClass
-                                ? FontWeight.w700
-                                : FontWeight.w600,
+                            fontWeight: isClass ? FontWeight.w700 : FontWeight.w600,
                             fontSize: 14,
                             color: AppTheme.deepTeal,
                           ),
@@ -423,12 +598,176 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     );
   }
 
+  Widget _buildGstCalculator() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInputLabel('Amount'),
+          _buildTextField(_amountController, 'e.g. 10000', LucideIcons.indianRupee),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInputLabel('GST %'),
+                    _buildDropdown(
+                      valueListenable: _selectedGstRate,
+                      items: ['0%', '5%', '12%', '18%', '28%'],
+                      onChanged: (val) {
+                        _selectedGstRate.value = val!;
+                        _calculate();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInputLabel('Tax'),
+                    _buildDropdown(
+                      valueListenable: _selectedTaxType,
+                      items: ['Exclusive', 'Inclusive'],
+                      onChanged: (val) {
+                        _selectedTaxType.value = val!;
+                        _calculate();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildOutputColumn('₹${_actualAmount.toStringAsFixed(0)}', 'Actual Amount', Colors.blue.shade700),
+                Text('+', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
+                _buildOutputColumn('₹${_gstAmount.toStringAsFixed(0)}', 'GST Amount', Colors.green),
+                Text('=', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
+                _buildOutputColumn('₹${_totalAmount.toStringAsFixed(0)}', 'Total Amount', Colors.blue.shade700),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required ValueNotifier<String> valueListenable,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton2<String>(
+          valueListenable: valueListenable,
+          isExpanded: true,
+          buttonStyleData: const ButtonStyleData(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            height: 54,
+          ),
+          iconStyleData: const IconStyleData(
+            icon: Icon(LucideIcons.chevronDown, size: 20, color: Colors.grey),
+          ),
+          dropdownStyleData: DropdownStyleData(
+            elevation: 2,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white,
+            ),
+          ),
+          menuItemStyleData: const MenuItemStyleData(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+          ),
+          style: GoogleFonts.outfit(
+            color: AppTheme.deepTeal,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+          items: items.map((String item) {
+            return DropdownItem<String>(
+              value: item,
+              child: Text(item),
+            );
+          }).toList(),
+          onChanged: onChanged,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOutputColumn(String amount, String label, Color color) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            amount,
+            style: GoogleFonts.outfit(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal,
+              letterSpacing: -0.5,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: color,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _amountController.dispose();
     _rateController.dispose();
     _durationController.dispose();
     _searchController.dispose();
+    _selectedGstRate.dispose();
+    _selectedTaxType.dispose();
+    _selectedTdsCalcType.dispose();
     super.dispose();
   }
 }

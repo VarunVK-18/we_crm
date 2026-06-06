@@ -12,6 +12,8 @@ import { ClientSupportTickets } from './client/client-support-tickets/client-sup
 import { ClientHelpSupport } from './client/client-help-support/client-help-support';
 import { ClientSubscriptions } from './client/client-subscriptions/client-subscriptions';
 import { ClientInvoice } from './client/client-invoice/client-invoice';
+import { GstCalc } from './client/tools/gst-calc/gst-calc';
+import { TdsCalc } from './client/tools/tds-calc/tds-calc';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -31,6 +33,8 @@ export const routes: Routes = [
       { path: 'support', component: ClientHelpSupport },
       { path: 'subscriptions', component: ClientSubscriptions },
       { path: 'invoice/:id', component: ClientInvoice },
+      { path: 'tools/gst-calc', component: GstCalc },
+      { path: 'tools/tds-calc', component: TdsCalc },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
