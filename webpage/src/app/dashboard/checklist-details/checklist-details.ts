@@ -216,13 +216,20 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       docs.push(...filtered);
     }
 
-    if (cl && cl.details && cl.details.dpiitDocs && Array.isArray(cl.details.dpiitDocs)) {
-      const formDocs = cl.details.dpiitDocs.map((d: any) => ({
-        name: d.name || 'DPIIT Document',
-        fileUrl: d.fileUrl,
-        uploadedAt: cl.updatedAt || new Date()
-      }));
-      docs.push(...formDocs);
+    if (cl && cl.details) {
+      const docArrays = ['dpiitDocs', 'incorpDocs', 'trademarkDocs', 'llpDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs'];
+      for (const key of docArrays) {
+        if (cl.details[key] && Array.isArray(cl.details[key])) {
+          const formDocs = cl.details[key]
+            .filter((d: any) => !d.name.startsWith('Person ')) // Exclude person docs for grouped section
+            .map((d: any) => ({
+              name: d.name || 'Document',
+              fileUrl: d.fileUrl,
+              uploadedAt: cl.updatedAt || new Date()
+            }));
+          docs.push(...formDocs);
+        }
+      }
     }
 
     return docs;
@@ -246,9 +253,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const cl = this.checklist();
     if (!cl || !cl.details) return [];
     const entries = [];
-    console.log("Checking details in getGeneralDetails:", cl.details);
+    const ignoredKeys = [
+      'directors', 'dpiitForm', 'dpiitDocs', 'entityName',
+      'incorpDocs', 'llpDocs', 'trademarkDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs'
+    ];
     for (const key of Object.keys(cl.details)) {
-      if (key === 'directors' || key === 'dpiitForm' || key === 'dpiitDocs' || key === 'entityName') continue;
+      if (ignoredKeys.includes(key)) continue;
       // Skip objects to avoid [object Object] rendering
       if (typeof cl.details[key] === 'object' && cl.details[key] !== null) continue;
       entries.push({ key, value: cl.details[key] });
@@ -258,22 +268,45 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   getDirectorDocumentsGrouped(): { title: string, docs: any[] }[] {
     const cl = this.checklist();
-    if (!cl || !cl.requested_documents) return [];
+    if (!cl) return [];
 
     const groups: { [key: string]: any[] } = {};
-    console.log("All requested documents:", cl.requested_documents);
 
-    cl.requested_documents.forEach((doc: any) => {
-      if (!doc || !doc.name) return;
-      const match = doc.name.match(/^director_(\d+)_/i);
-      if (match) {
-        const title = `Director ${match[1]} Documents`;
-        if (!groups[title]) groups[title] = [];
-        const niceName = doc.name.replace(new RegExp(`^director_${match[1]}_`, 'i'), '');
-        const formattedName = niceName.charAt(0).toUpperCase() + niceName.slice(1);
-        groups[title].push({ ...doc, niceName: formattedName });
+    if (cl.requested_documents) {
+      cl.requested_documents.forEach((doc: any) => {
+        if (!doc || !doc.name) return;
+        const match = doc.name.match(/^director_(\d+)_/i);
+        if (match) {
+          const title = `Director ${match[1]} Documents`;
+          if (!groups[title]) groups[title] = [];
+          const niceName = doc.name.replace(new RegExp(`^director_${match[1]}_`, 'i'), '');
+          const formattedName = niceName.charAt(0).toUpperCase() + niceName.slice(1);
+          groups[title].push({ ...doc, niceName: formattedName });
+        }
+      });
+    }
+
+    if (cl.details) {
+      const docArrays = ['incorpDocs', 'llpDocs'];
+      for (const key of docArrays) {
+        if (cl.details[key] && Array.isArray(cl.details[key])) {
+          cl.details[key].forEach((doc: any) => {
+            const match = doc.name.match(/^Person (\d+) - (.*)/i);
+            if (match) {
+              const title = `Director ${match[1]} Documents`;
+              if (!groups[title]) groups[title] = [];
+              groups[title].push({
+                name: doc.name,
+                niceName: match[2],
+                fileUrl: doc.fileUrl,
+                isUploaded: true,
+                uploadedAt: cl.updatedAt || new Date()
+              });
+            }
+          });
+        }
       }
-    });
+    }
 
     return Object.keys(groups).sort().map(title => ({
       title,

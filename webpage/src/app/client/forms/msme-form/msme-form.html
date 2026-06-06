@@ -1,0 +1,212 @@
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1 class="pf-title">MSME Certification Form</h1>
+        <p class="pf-subtitle">Provide details for your MSME registration</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="submitForm()" #msmeForm="ngForm" class="incorp-form">
+      
+      <!-- Enterprise Details -->
+      <section class="form-section">
+        <h3 class="section-title">Enterprise / Business Details</h3>
+        <div class="form-grid">
+          
+          <div class="form-group full-width">
+            <label>Name of the Enterprise / Business *</label>
+            <input type="text" [(ngModel)]="enterpriseName" name="enterpriseName" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Type of organization *</label>
+              <select [(ngModel)]="orgType" name="orgType">
+                <option value="Proprietorship">Proprietorship</option>
+                <option value="Partnership">Partnership</option>
+                <option value="LLP">LLP</option>
+                <option value="Private Limited">Private Limited</option>
+                <option value="OPC">OPC</option>
+                <option value="Trust">Trust</option>
+                <option value="Society">Society</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Major activity *</label>
+              <select [(ngModel)]="majorActivity" name="majorActivity">
+                <option value="Service">Service</option>
+                <option value="Manufacturing">Manufacturing</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Official Address of the enterprise *</label>
+            <textarea [(ngModel)]="address" name="address" required rows="3" placeholder="Full address"></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Name of Unit(s) / Plant (s) *</label>
+            <span class="file-hint">Note: If no separate unit/plant, enter your office address</span>
+            <input type="text" [(ngModel)]="unitName" name="unitName" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Official Mobile Number *</label>
+              <input type="tel" [(ngModel)]="mobile" name="mobile" required>
+            </div>
+            <div class="form-group">
+              <label>Official Mail ID *</label>
+              <input type="email" [(ngModel)]="email" name="email" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>No of Male Employees *</label>
+              <input type="number" [(ngModel)]="maleEmployees" name="maleEmployees" required>
+            </div>
+            <div class="form-group">
+              <label>No of Female Employees *</label>
+              <input type="number" [(ngModel)]="femaleEmployees" name="femaleEmployees" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Date of Incorporation / Registration *</label>
+              <input type="date" [(ngModel)]="incDate" name="incDate" required>
+            </div>
+            <div class="form-group">
+              <label>Date of Commencement of Business *</label>
+              <input type="date" [(ngModel)]="commenceDate" name="commenceDate" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Previous MSME / Udyog Aadhaar</label>
+              <span class="file-hint">if any</span>
+              <input type="text" [(ngModel)]="prevMsme" name="prevMsme">
+            </div>
+            <div class="form-group">
+              <label>GST number *</label>
+              <span class="file-hint">if available</span>
+              <input type="text" [(ngModel)]="gst" name="gst" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Total Investment in Plant / Machinery *</label>
+              <span class="file-hint">Example: Rs.10,000</span>
+              <input type="number" [(ngModel)]="investment" name="investment" required>
+            </div>
+            <div class="form-group">
+              <label>Total Annual Turnover *</label>
+              <span class="file-hint">Example: Rs.1,00,000</span>
+              <input type="number" [(ngModel)]="turnover" name="turnover" required>
+            </div>
+          </div>
+
+          <div class="form-group file-upload-group full-width">
+            <label>Upload Your Company's PAN Card *</label>
+            <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
+            <input type="file" (change)="onFileSelected($event, 'companyPan')" accept=".jpg,.jpeg,.png,.pdf" required>
+          </div>
+        </div>
+      </section>
+
+      <!-- Business Owner Details -->
+      <section class="form-section">
+        <h3 class="section-title">Business owner details</h3>
+        <div class="form-grid">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full name *</label>
+              <input type="text" [(ngModel)]="ownerName" name="ownerName" required>
+            </div>
+            <div class="form-group">
+              <label>Gender *</label>
+              <select [(ngModel)]="gender" name="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Personal WhatsApp number *</label>
+              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required>
+            </div>
+            <div class="form-group">
+              <label>Personal Mail ID *</label>
+              <input type="email" [(ngModel)]="personalEmail" name="personalEmail" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Are you physically Handicapped? *</label>
+              <select [(ngModel)]="physicallyHandicapped" name="physicallyHandicapped">
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Social Category *</label>
+              <select [(ngModel)]="socialCategory" name="socialCategory">
+                <option value="General">General</option>
+                <option value="SC">SC</option>
+                <option value="ST">ST</option>
+                <option value="OBC">OBC</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group file-upload-group">
+            <label>Upload Your Aadhar Card *</label>
+            <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
+            <input type="file" (change)="onFileSelected($event, 'ownerAadhaar')" accept=".jpg,.jpeg,.png,.pdf" required>
+          </div>
+
+          <div class="form-group file-upload-group">
+            <label>Upload Your Bank Passbook *</label>
+            <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
+            <input type="file" (change)="onFileSelected($event, 'ownerPassbook')" accept=".jpg,.jpeg,.png,.pdf" required>
+          </div>
+          
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !msmeForm.valid">
+          @if (isSubmitting()) {
+            <span class="material-symbols-outlined rotating">sync</span> Submitting...
+          } @else {
+            Submit Application
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -912,22 +912,31 @@
   background-color: #10b981;
 }
 
-.ho-status-badge.active {
-  background-color: rgba(59, 130, 246, 0.15);
-  color: var(--palette-purple);
+.ho-status-badge.active,
+.ho-status-badge.in-progress {
+  background: color-mix(in srgb, var(--palette-dark) 15%, transparent);
+  color: var(--palette-dark);
 }
-
-.ho-status-badge.active .ho-status-dot {
-  background-color: #3b82f6;
+.ho-status-badge.active .ho-status-dot,
+.ho-status-badge.in-progress .ho-status-dot {
+  background: var(--palette-dark);
   animation: pulse 2s infinite;
 }
 
-.ho-status-badge.not-initialized {
+.ho-status-badge.action-required {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.ho-status-badge.action-required .ho-status-dot {
+  background: #ef4444;
+}
+
+.ho-status-badge.pending-request {
   background-color: rgba(148, 163, 184, 0.15);
   color: #475569;
 }
 
-.ho-status-badge.not-initialized .ho-status-dot {
+.ho-status-badge.pending-request .ho-status-dot {
   background-color: #94a3b8;
 }
 

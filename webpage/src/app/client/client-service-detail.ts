@@ -1,7 +1,7 @@
 import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { MessageMultiple01Icon } from '@hugeicons/core-free-icons';
@@ -32,6 +32,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute, 
+    private router: Router,
     public location: Location,
     private api: Api
   ) {}
@@ -82,6 +83,38 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     }
   }
 
+  goToIncorpForm() {
+    this.router.navigate(['/client/forms/incorp', this.order()?._id || this.order()?.id]);
+  }
+
+  goToLlpForm() {
+    this.router.navigate(['/client/forms/llp', this.order()?._id || this.order()?.id]);
+  }
+
+  goToMsmeForm() {
+    this.router.navigate(['/client/forms/msme', this.order()?._id || this.order()?.id]);
+  }
+
+  goToFssaiForm() {
+    this.router.navigate(['/client/forms/fssai', this.order()?._id || this.order()?.id]);
+  }
+
+  goToTrademarkForm() {
+    this.router.navigate(['/client/forms/trademark', this.order()?._id || this.order()?.id]);
+  }
+
+  goToGstForm() {
+    this.router.navigate(['/client/forms/gst', this.order()?._id || this.order()?.id]);
+  }
+
+  goToIsoForm() {
+    this.router.navigate(['/client/forms/iso', this.order()?._id || this.order()?.id]);
+  }
+
+  goToDscForm() {
+    this.router.navigate(['/client/forms/dsc', this.order()?._id || this.order()?.id]);
+  }
+
   fetchOrderDetails(silent = false) {
     if (!silent) this.isLoading.set(true);
     
@@ -94,7 +127,23 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         const found = checklists.find((c: any) => c._id === this.orderId());
         if (found) {
           const isAssigned = found.assigned_to && found.assigned_to.role !== 'client_manager';
-          found.derivedStatus = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'active');
+          let status = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'in-progress');
+          
+          if (status === 'in-progress') {
+            const isPrivateLimited = found.service_name === 'Private Limited Incorporation';
+            const isLLP = found.service_name === 'LLP Incorporation';
+            const isFSSAI = found.service_name === 'FSSAI Food License';
+            
+            if (isPrivateLimited && (!found.details || !found.details.companyName)) {
+              status = 'action-required';
+            } else if (isLLP && (!found.details || !found.details.llpName)) {
+              status = 'action-required';
+            } else if (isFSSAI && (!found.details || !found.details.fssai_business_type)) {
+              status = 'action-required';
+            }
+          }
+          
+          found.derivedStatus = status;
           this.order.set(found);
         }
         if (!silent) this.isLoading.set(false);

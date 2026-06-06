@@ -84,7 +84,7 @@
   font-weight: 600;
 }
 
-.status-badge.active {
+.status-badge.active, .status-badge.in-progress {
   background: #eff6ff;
   color: var(--palette-purple);
 }
@@ -97,6 +97,11 @@
 .status-badge.not-initialized {
   background: var(--background);
   color: color-mix(in srgb, var(--palette-dark) 65%, transparent);
+}
+
+.status-badge.action-required {
+  background: #ffe4e6;
+  color: #e11d48;
 }
 
 .expert-label {
@@ -137,6 +142,76 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.status-summary-card {
+  background-color: white;
+  border-radius: 20px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+}
+
+.action-required-banner {
+  background: linear-gradient(to right, #fef2f2, #fff1f2);
+  border: 1px solid #fecdd3;
+  border-radius: 20px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(225, 29, 72, 0.08);
+}
+
+.action-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.action-icon {
+  background: #ffe4e6;
+  color: #e11d48;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-text h3 {
+  margin: 0 0 4px 0;
+  color: #9f1239;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.action-text p {
+  margin: 0;
+  color: #be123c;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.action-btn {
+  background: #e11d48;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  background: #be123c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
 }
 
 .main-card {
@@ -403,6 +478,30 @@
 
 .message-row.is-client {
   align-items: flex-end;
+}
+
+.sender-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  padding-left: 4px;
+}
+
+.sender-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--palette-dark);
+}
+
+.sender-role {
+  font-size: 11px;
+  font-weight: 600;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 8px;
+  text-transform: capitalize;
 }
 
 .message-bubble {

@@ -16,11 +16,24 @@
             <p>Loading ongoing services...</p>
           </div>
         } @else {
-          @if (activeOrders().length === 0) {
+          <div class="filter-controls">
+            <div class="tabs-container">
+              <button class="tab-btn" [class.active]="activeTab() === 'All'" (click)="setTab('All')">All</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'Action Required'" (click)="setTab('Action Required')">Action Required</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')">In Progress</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'Completed'" (click)="setTab('Completed')">Completed</button>
+            </div>
+            <div class="search-container">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input type="text" placeholder="Search service name..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
+            </div>
+          </div>
+
+          @if (getFilteredOrders().length === 0) {
             <div class="empty-state">
               <span class="material-symbols-outlined">inbox</span>
-              <h3>No Ongoing Services</h3>
-              <p>You don't have any active services at the moment.</p>
+              <h3>No Services Found</h3>
+              <p>Try adjusting your filters or search query.</p>
             </div>
           } @else {
             <div class="table-container">
@@ -28,6 +41,7 @@
                 <thead>
                   <tr>
                     <th>Service Name</th>
+                    <th>Application Date</th>
                     <th>Expert</th>
                     <th>Progress</th>
                     <th>Status</th>
@@ -35,7 +49,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (order of activeOrders(); track order._id) {
+                  @for (order of getFilteredOrders(); track order._id) {
                     <tr (click)="openServiceDetails(order)">
                       <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
@@ -44,6 +58,11 @@
                           </div>
                           <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
                         </div>
+                      </td>
+                      <td>
+                        <span style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
+                          {{ order.createdAt | date:'mediumDate' }}
+                        </span>
                       </td>
                       <td>
                         <div class="msc-expert" [class.unassigned]="!order.assigned_to" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
@@ -60,9 +79,9 @@
                         </div>
                       </td>
                       <td>
-                        <span class="ho-status-badge active">
+                        <span class="ho-status-badge" [ngClass]="order.derivedStatus">
                           <span class="ho-status-dot"></span>
-                          Active
+                          {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'in-progress' ? 'In Progress' : (order.derivedStatus | titlecase)) }}
                         </span>
                       </td>
                       <td>

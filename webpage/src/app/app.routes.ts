@@ -14,6 +14,15 @@ import { ClientSubscriptions } from './client/client-subscriptions/client-subscr
 import { ClientInvoice } from './client/client-invoice/client-invoice';
 import { GstCalc } from './client/tools/gst-calc/gst-calc';
 import { TdsCalc } from './client/tools/tds-calc/tds-calc';
+import { NicFinder } from './client/tools/nic-finder/nic-finder';
+import { IncorpForm } from './client/forms/incorp-form/incorp-form';
+import { LlpForm } from './client/forms/llp-form/llp-form';
+import { MsmeForm } from './client/forms/msme-form/msme-form';
+import { FssaiForm } from './client/forms/fssai-form/fssai-form';
+import { TrademarkForm } from './client/forms/trademark-form/trademark-form';
+import { GstForm } from './client/forms/gst-form/gst-form';
+import { IsoForm } from './client/forms/iso-form/iso-form';
+import { DscForm } from './client/forms/dsc-form/dsc-form';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -26,6 +35,14 @@ export const routes: Routes = [
       { path: 'dashboard', component: ClientDashboard },
       { path: 'services', component: ClientServicesComponent },
       { path: 'profile', component: ClientProfile },
+      { path: 'forms/incorp/:id', component: IncorpForm },
+      { path: 'forms/llp/:id', component: LlpForm },
+      { path: 'forms/msme/:id', component: MsmeForm },
+      { path: 'forms/fssai/:id', component: FssaiForm },
+      { path: 'forms/trademark/:id', component: TrademarkForm },
+      { path: 'forms/gst/:id', component: GstForm },
+      { path: 'forms/iso/:id', component: IsoForm },
+      { path: 'forms/dsc/:id', component: DscForm },
       { path: 'service/:id', component: ClientServiceDetail },
       { path: 'ongoing-services', component: ClientOngoingServices },
       { path: 'compliance', component: ClientCompliance },
@@ -35,6 +52,7 @@ export const routes: Routes = [
       { path: 'invoice/:id', component: ClientInvoice },
       { path: 'tools/gst-calc', component: GstCalc },
       { path: 'tools/tds-calc', component: TdsCalc },
+      { path: 'tools/nic-finder', component: NicFinder },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

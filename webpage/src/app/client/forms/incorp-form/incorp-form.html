@@ -1,0 +1,222 @@
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1>Private Limited Incorporation Form</h1>
+      </div>
+      <p class="subtitle">Please provide the company and director details below to begin incorporation.</p>
+    </div>
+  </div>
+
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="submitForm()" #incorpForm="ngForm" class="incorp-form">
+      
+      <!-- Company Details -->
+      <section class="form-section">
+        <h2>Company Details</h2>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Proposed Company Name *</label>
+            <input type="text" [(ngModel)]="companyName" name="companyName" required placeholder="e.g. Softrate India Private Limited">
+          </div>
+          <div class="form-group full-width">
+            <label>Main Business Activity *</label>
+            <textarea [(ngModel)]="businessActivity" name="businessActivity" required rows="3" placeholder="Describe the main products or services..."></textarea>
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Registered Office Address Preference</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="officePreference" value="Already have address" [(ngModel)]="officePreference">
+                <span>Already have an address</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="officePreference" value="Need virtual office" [(ngModel)]="officePreference">
+                <span>Need a virtual office</span>
+              </label>
+            </div>
+          </div>
+
+          @if (officePreference === 'Already have address') {
+            <div class="form-group">
+              <label>Owner Name *</label>
+              <input type="text" [(ngModel)]="ownerName" name="ownerName" placeholder="Name of the property owner">
+            </div>
+            <div class="form-group file-group">
+              <label>Office Address Proof (EB Bill / Property Tax) *</label>
+              <input type="file" (change)="onFileSelected($event, 'officeProof')" accept=".pdf,.jpg,.jpeg,.png">
+              <small>Max 10MB (PDF/JPG/PNG)</small>
+            </div>
+          }
+
+          <div class="form-group">
+            <label>Company Email</label>
+            <input type="email" [(ngModel)]="companyEmail" name="companyEmail" placeholder="info@company.com">
+          </div>
+          <div class="form-group">
+            <label>Company Phone</label>
+            <input type="tel" [(ngModel)]="companyPhone" name="companyPhone" placeholder="+91">
+          </div>
+        </div>
+      </section>
+
+      <!-- Capital Details -->
+      <section class="form-section">
+        <h2>Capital & Shareholding Details</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Paid Up Capital (₹) *</label>
+            <input type="number" [(ngModel)]="paidUpCapital" name="paidUpCapital" required min="10000" placeholder="Minimum 10000">
+          </div>
+          <div class="form-group">
+            <label>Face Value Per Share (₹) *</label>
+            <input type="number" [(ngModel)]="valuePerShare" name="valuePerShare" required placeholder="e.g. 10">
+          </div>
+          <div class="form-group">
+            <label>Total Number of Shares *</label>
+            <input type="number" [(ngModel)]="numberOfShares" name="numberOfShares" required placeholder="e.g. 10000">
+          </div>
+        </div>
+      </section>
+
+      <!-- Directors Details -->
+      <section class="form-section directors-section">
+        <div class="section-header-row">
+          <h2>Directors & Shareholders Details</h2>
+          <button type="button" class="btn-secondary" (click)="addDirector()">
+            <span class="material-symbols-outlined">add</span> Add Person
+          </button>
+        </div>
+        <p class="section-help">Private Limited Company requires minimum 2 directors.</p>
+
+        <div class="directors-list">
+          @for (d of directors; track $index) {
+            <div class="director-card">
+              <div class="director-card-header">
+                <h3>Person {{ $index + 1 }} Details</h3>
+                @if (directors.length > 2) {
+                  <button type="button" class="btn-icon danger" (click)="removeDirector($index)" title="Remove Person">
+                    <span class="material-symbols-outlined">delete</span>
+                  </button>
+                }
+              </div>
+
+              <div class="form-grid">
+                <!-- Personal Details -->
+                <div class="form-group">
+                  <label>Full Name *</label>
+                  <input type="text" [(ngModel)]="d.fullName" name="d_fullName_{{$index}}" required>
+                </div>
+                <div class="form-group">
+                  <label>Father's Name *</label>
+                  <input type="text" [(ngModel)]="d.fatherName" name="d_fatherName_{{$index}}" required>
+                </div>
+                <div class="form-group">
+                  <label>Date of Birth *</label>
+                  <input type="date" [(ngModel)]="d.dob" name="d_dob_{{$index}}" required>
+                </div>
+                <div class="form-group">
+                  <label>Place of Birth *</label>
+                  <input type="text" [(ngModel)]="d.placeOfBirth" name="d_placeOfBirth_{{$index}}" required>
+                </div>
+                
+                <div class="form-group">
+                  <label>Occupation *</label>
+                  <input type="text" [(ngModel)]="d.occupation" name="d_occupation_{{$index}}" required placeholder="e.g. Business, Professional">
+                </div>
+                <div class="form-group">
+                  <label>Educational Qualification *</label>
+                  <input type="text" [(ngModel)]="d.education" name="d_education_{{$index}}" required placeholder="e.g. B.Tech, MBA">
+                </div>
+
+                <div class="form-group">
+                  <label>Email ID *</label>
+                  <input type="email" [(ngModel)]="d.email" name="d_email_{{$index}}" required>
+                </div>
+                <div class="form-group">
+                  <label>Phone Number *</label>
+                  <input type="tel" [(ngModel)]="d.phone" name="d_phone_{{$index}}" required>
+                </div>
+
+                <div class="form-group full-width">
+                  <label>Present Address *</label>
+                  <textarea [(ngModel)]="d.address" name="d_address_{{$index}}" required rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label>PAN Number *</label>
+                  <input type="text" [(ngModel)]="d.pan" name="d_pan_{{$index}}" required style="text-transform: uppercase;">
+                </div>
+                <div class="form-group">
+                  <label>Aadhaar Number *</label>
+                  <input type="text" [(ngModel)]="d.aadhaar" name="d_aadhaar_{{$index}}" required>
+                </div>
+                
+                <div class="form-group">
+                  <label>DIN (If already available)</label>
+                  <input type="text" [(ngModel)]="d.din" name="d_din_{{$index}}" placeholder="Leave blank if not available">
+                </div>
+                <div class="form-group">
+                  <label>Proposed Shareholding (%) *</label>
+                  <input type="number" [(ngModel)]="d.shareholding" name="d_shareholding_{{$index}}" required placeholder="e.g. 50">
+                </div>
+
+                <!-- Document Uploads -->
+                <div class="form-group full-width">
+                  <h4 class="sub-heading">Documents Required for Person {{ $index + 1 }}</h4>
+                </div>
+
+                <div class="form-group file-group">
+                  <label>Passport Size Photo *</label>
+                  <input type="file" (change)="onFileSelected($event, 'photoFile', $index)" accept=".jpg,.jpeg,.png">
+                </div>
+                <div class="form-group file-group">
+                  <label>Specimen Signature *</label>
+                  <input type="file" (change)="onFileSelected($event, 'signatureFile', $index)" accept=".jpg,.jpeg,.png">
+                  <small>Sign on blank paper with blue pen</small>
+                </div>
+                <div class="form-group file-group">
+                  <label>Address Proof *</label>
+                  <input type="file" (change)="onFileSelected($event, 'addressProofFile', $index)" accept=".pdf,.jpg,.jpeg,.png">
+                  <small>Bank Statement/Utility Bill (latest 2 months)</small>
+                </div>
+                <div class="form-group file-group">
+                  <label>Aadhaar Card *</label>
+                  <input type="file" (change)="onFileSelected($event, 'aadhaarFile', $index)" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+                <div class="form-group file-group">
+                  <label>PAN Card *</label>
+                  <input type="file" (change)="onFileSelected($event, 'panFile', $index)" accept=".pdf,.jpg,.jpeg,.png">
+                </div>
+
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !incorpForm.valid">
+          @if (isSubmitting()) {
+            <span class="material-symbols-outlined rotating">sync</span> Submitting...
+          } @else {
+            Submit Incorporation Details
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -33,7 +33,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
   allOrders = signal<any[]>([]);
   activeOrders = signal<any[]>([]);
   completedOrders = signal<any[]>([]);
-  notInitializedOrders = signal<any[]>([]);
+  pendingOrders = signal<any[]>([]);
   
   // Computed stats
   totalOpenTasks = computed(() => {
@@ -47,7 +47,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
   });
   
   // UI State
-  activeTab = signal<'active' | 'completed' | 'not-initialized'>('active');
+  activeTab = signal<'active' | 'completed' | 'pending-request'>('active');
   isLoading = signal(true);
   
   // Computed list for the current tab
@@ -55,7 +55,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
     switch (this.activeTab()) {
       case 'active': return this.activeOrders();
       case 'completed': return this.completedOrders();
-      case 'not-initialized': return this.notInitializedOrders();
+      case 'pending-request': return this.pendingOrders();
       default: return [];
     }
   });
@@ -129,7 +129,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
-  setTab(tab: 'active' | 'completed' | 'not-initialized') {
+  setTab(tab: 'active' | 'completed' | 'pending-request') {
     this.activeTab.set(tab);
   }
 
@@ -141,8 +141,16 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/client/tools/gst-calc']);
   }
 
+  goToNicFinder() {
+    this.router.navigate(['/client/tools/nic-finder']);
+  }
+
   goToTdsCalc() {
     this.router.navigate(['/client/tools/tds-calc']);
+  }
+
+  goToServiceCategory(categoryId: string) {
+    this.router.navigate(['/client/services'], { queryParams: { category: categoryId } });
   }
 
   fetchOrders() {
@@ -159,23 +167,35 @@ export class ClientDashboard implements OnInit, OnDestroy {
         
         for (const c of checklists) {
           const isAssigned = c.assigned_to && c.assigned_to.role !== 'client_manager';
-          let status = 'active';
+          let status = 'in-progress';
           if (c.status === 'completed') {
             status = 'completed';
           } else if (!isAssigned) {
-            status = 'not-initialized';
+            status = 'pending-request';
+          } else {
+            const isPrivateLimited = c.service_name === 'Private Limited Incorporation';
+            const isLLP = c.service_name === 'LLP Incorporation';
+            const isFSSAI = c.service_name === 'FSSAI Food License';
+            
+            if (isPrivateLimited && (!c.details || !c.details.companyName)) {
+              status = 'action-required';
+            } else if (isLLP && (!c.details || !c.details.llpName)) {
+              status = 'action-required';
+            } else if (isFSSAI && (!c.details || !c.details.fssai_business_type)) {
+              status = 'action-required';
+            }
           }
           
           c.derivedStatus = status;
           
-          if (status === 'active') active.push(c);
+          if (status === 'action-required' || status === 'in-progress' || status === 'active') active.push(c);
           else if (status === 'completed') completed.push(c);
           else notInit.push(c);
         }
         
         this.activeOrders.set(active);
         this.completedOrders.set(completed);
-        this.notInitializedOrders.set(notInit);
+        this.pendingOrders.set(notInit);
         this.isLoading.set(false);
       },
       error: (err) => {

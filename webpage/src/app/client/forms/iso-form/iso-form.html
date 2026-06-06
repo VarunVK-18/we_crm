@@ -1,0 +1,123 @@
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1 class="pf-title">ISO Registration Form</h1>
+        <p class="pf-subtitle">Provide details for your ISO registration</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="submitForm()" #isoForm="ngForm" class="incorp-form">
+      
+      <section class="form-section">
+        <h3 class="section-title">Company & Applicant Details</h3>
+        <div class="form-grid">
+          
+          <div class="form-group full-width">
+            <label>Company Legal Name *</label>
+            <input type="text" [(ngModel)]="companyLegalName" name="companyLegalName" required>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Company Address *</label>
+            <textarea [(ngModel)]="companyAddress" name="companyAddress" required rows="3"></textarea>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Applicant name *</label>
+            <input type="text" [(ngModel)]="applicantName" name="applicantName" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Email ID *</label>
+              <input type="email" [(ngModel)]="email" name="email" required>
+            </div>
+            <div class="form-group">
+              <label>Whatsapp number *</label>
+              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Address for couriering the ISO Certificate *</label>
+            <span class="file-hint">Full Address with PIN code</span>
+            <textarea [(ngModel)]="courierAddress" name="courierAddress" required rows="3"></textarea>
+          </div>
+
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3 class="section-title">Certification Details</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Preferred ISO Certification *</label>
+            <div class="radio-group vertical">
+              @for (opt of isoOptions; track opt) {
+                <label class="radio-label">
+                  <input type="radio" name="selectedIso" [value]="opt" [(ngModel)]="selectedIso">
+                  <span>{{ opt }}</span>
+                </label>
+              }
+            </div>
+          </div>
+
+          @if (selectedIso === 'Other') {
+            <div class="form-group full-width">
+              <label>Specify Other ISO *</label>
+              <input type="text" [(ngModel)]="otherIso" name="otherIso" required>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3 class="section-title">Documents</h3>
+        <div class="form-grid">
+          <div class="form-group file-upload-group full-width">
+            <label>Upload MSME Certificate *</label>
+            <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            <input type="file" (change)="onFileSelected($event, 'msmeCertificate')" accept=".jpg,.jpeg,.png,.pdf" required>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3 class="section-title">Verification</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="isVerified" name="isVerified" required>
+              <span>I here verify that above mentioned facts are true and correct to best of my knowledge and belief.</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !isoForm.valid">
+          @if (isSubmitting()) {
+            <span class="material-symbols-outlined rotating">sync</span> Submitting...
+          } @else {
+            Submit Application
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

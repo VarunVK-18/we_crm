@@ -1,0 +1,211 @@
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1 class="pf-title">GST Registration Form</h1>
+        <p class="pf-subtitle">Provide details for your GST registration</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="submitForm()" #gstForm="ngForm" class="incorp-form">
+      
+      <section class="form-section">
+        <h3 class="section-title">Trade Details</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Trade Name *</label>
+            <input type="text" [(ngModel)]="tradeName" name="tradeName" required>
+          </div>
+          <div class="form-group full-width">
+            <label>Date of commencement of Business *</label>
+            <span class="file-hint">MM/DD/YYYY</span>
+            <input type="date" [(ngModel)]="commenceDate" name="commenceDate" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Business Email ID *</label>
+              <span class="file-hint">All GST communications will be shared in this mail</span>
+              <input type="email" [(ngModel)]="businessEmail" name="businessEmail" required>
+            </div>
+            <div class="form-group">
+              <label>Business Phone *</label>
+              <span class="file-hint">All GST communications will be shared in this number</span>
+              <input type="tel" [(ngModel)]="businessPhone" name="businessPhone" required>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3 class="section-title">Personal Information</h3>
+        <div class="form-grid">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" [(ngModel)]="fullName" name="fullName" required>
+            </div>
+            <div class="form-group">
+              <label>Father name *</label>
+              <input type="text" [(ngModel)]="fatherName" name="fatherName" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label>DOB *</label>
+              <input type="date" [(ngModel)]="dob" name="dob" required>
+            </div>
+            <div class="form-group">
+              <label>Phone number *</label>
+              <input type="tel" [(ngModel)]="personalPhone" name="personalPhone" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mail ID *</label>
+              <input type="email" [(ngModel)]="personalEmail" name="personalEmail" required>
+            </div>
+            <div class="form-group">
+              <label>Gender *</label>
+              <select [(ngModel)]="gender" name="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Others">Others</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>DIN</label>
+              <span class="file-hint">Director Identification Number</span>
+              <input type="text" [(ngModel)]="din" name="din">
+            </div>
+            <div class="form-group">
+              <label>PAN number *</label>
+              <input type="text" [(ngModel)]="pan" name="pan" required>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Enter Full Residential Address *</label>
+            <textarea [(ngModel)]="residentialAddress" name="residentialAddress" required rows="3"></textarea>
+          </div>
+
+          <div class="form-group file-upload-group full-width">
+            <label>Upload Photo *</label>
+            <span class="file-hint">Upload 1 supported file: image. Max 2 MB.</span>
+            <input type="file" (change)="onFileSelected($event, 'photo')" accept=".jpg,.jpeg,.png" required>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3 class="section-title">Business Details</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Full Address with PIN code *</label>
+            <span class="file-hint">Enter your business details correctly</span>
+            <textarea [(ngModel)]="businessAddress" name="businessAddress" required rows="3"></textarea>
+          </div>
+          
+          <div class="form-group full-width">
+            <label>District *</label>
+            <input type="text" [(ngModel)]="district" name="district" required>
+          </div>
+
+          <div class="form-group full-width">
+            <label>Premises Type *</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="premisesType" value="Own" [(ngModel)]="premisesType">
+                <span>Own</span>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="premisesType" value="Rent" [(ngModel)]="premisesType">
+                <span>Rent</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group file-upload-group full-width">
+            <label>Upload Latest EB Bill *</label>
+            <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            <input type="file" (change)="onFileSelected($event, 'ebBill')" accept=".jpg,.jpeg,.png,.pdf" required>
+          </div>
+
+          @if (premisesType === 'Own') {
+            <div class="form-group file-upload-group full-width">
+              <label>For Own House (Upload House Tax Receipt) *</label>
+              <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+              <input type="file" (change)="onFileSelected($event, 'houseTaxReceipt')" accept=".jpg,.jpeg,.png,.pdf" required>
+            </div>
+          } @else if (premisesType === 'Rent') {
+            <div class="form-group file-upload-group full-width">
+              <label>For Rented Office (Upload Rental Agreement) *</label>
+              <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+              <input type="file" (change)="onFileSelected($event, 'rentalAgreement')" accept=".jpg,.jpeg,.png,.pdf" required>
+            </div>
+          }
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3 class="section-title">Bank Account Details</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Account Number *</label>
+            <input type="number" [(ngModel)]="accountNumber" name="accountNumber" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>IFSC Code *</label>
+              <input type="text" [(ngModel)]="ifscCode" name="ifscCode" required>
+            </div>
+            <div class="form-group">
+              <label>Branch *</label>
+              <input type="text" [(ngModel)]="branch" name="branch" required>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h3 class="section-title">Declaration</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="isDeclared" name="isDeclared" required>
+              <span>I hereby declare that all information provided is true and correct to the best of my knowledge.</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !gstForm.valid">
+          @if (isSubmitting()) {
+            <span class="material-symbols-outlined rotating">sync</span> Submitting...
+          } @else {
+            Submit Application
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

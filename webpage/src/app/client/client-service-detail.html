@@ -13,8 +13,10 @@
         } @else {
           <div class="title-row">
             <h1>{{ order()?.service_name }}</h1>
-            <span class="status-badge" [class]="order()?.derivedStatus">{{ order()?.derivedStatus | titlecase }}</span>
-            @if (order()?.derivedStatus === 'active' && !isChatOpen()) {
+            <span class="status-badge" [class]="order()?.derivedStatus">
+              {{ order()?.derivedStatus === 'action-required' ? 'Action Required' : (order()?.derivedStatus === 'in-progress' ? 'In Progress' : (order()?.derivedStatus | titlecase)) }}
+            </span>
+            @if ((order()?.derivedStatus === 'in-progress' || order()?.derivedStatus === 'completed') && !isChatOpen()) {
               <button class="open-chat-btn" (click)="toggleChat()">
                 <hugeicons-icon [icon]="MessageMultiple01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon> Open Chat
               </button>
@@ -43,7 +45,7 @@
             
             <div class="checklist-items">
               @for (item of order()?.items; track item._id) {
-                <div class="checklist-item" [class.completed]="item.isChecked" (click)="toggleChecklistItem(item, $event)">
+                <div class="checklist-item" [class.completed]="item.isChecked" (click)="!item.isActionStep && toggleChecklistItem(item, $event)">
                   <div class="checkbox-wrapper">
                     <div class="custom-checkbox">
                       @if (item.isChecked) {
@@ -53,8 +55,56 @@
                   </div>
                   <div class="item-content">
                     <h4>{{ item.title || item.label }}</h4>
-                    @if (item.description || item.notes) {
-                      <p>{{ item.description || item.notes }}</p>
+                    @if (item.isActionStep) {
+                      @if (!item.isChecked) {
+                        <p>{{ item.description || item.notes }}</p>
+                        @if (order()?.service_name === 'Private Limited Incorporation') {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToIncorpForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                        @if (order()?.service_name === 'LLP Incorporation') {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToLlpForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                        @if (order()?.service_name === 'MSME Registration' || order()?.service_name === 'MSME Certification' || order()?.service_name === 'MSME') {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToMsmeForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                        @if (order()?.service_name === 'FSSAI Registration' || order()?.service_name === 'FSSAI') {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToFssaiForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                        @if (order()?.service_name === 'Trademark Registration' || order()?.service_name === 'Trademark' || order()?.service_name === 'Trade mark') {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToTrademarkForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                        @if (order()?.service_name === 'GST Registration' || order()?.service_name === 'GST') {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToGstForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                        @if (order()?.service_name === 'ISO Registration' || order()?.service_name === 'ISO' || order()?.service_name === 'ISO Certification') {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToIsoForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                        @if (order()?.service_name?.includes('DSC')) {
+                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToDscForm(); $event.stopPropagation()">
+                            Fill Form
+                          </button>
+                        }
+                      } @else {
+                        <p>Form submitted successfully.</p>
+                      }
+                    } @else {
+                      @if (item.description || item.notes) {
+                        <p>{{ item.description || item.notes }}</p>
+                      }
                     }
                   </div>
                 </div>
@@ -67,7 +117,7 @@
   </div>
 
   <!-- Chat Side Drawer (Right) -->
-  @if (!isLoading() && order()?.derivedStatus === 'active' && isChatOpen()) {
+  @if (!isLoading() && (order()?.derivedStatus === 'in-progress' || order()?.derivedStatus === 'completed') && isChatOpen()) {
     <div class="chat-side-panel">
       <div class="chat-drawer-header">
         <div class="chat-drawer-info">
@@ -97,6 +147,12 @@
             }
             
             <div class="message-row" [class.is-client]="msg.senderRole === 'client'">
+              @if (msg.senderRole !== 'client') {
+                <div class="sender-info">
+                  <span class="sender-name">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</span>
+                  <span class="sender-role">{{ msg.senderRole === 'admin' ? 'Manager' : (msg.senderRole === 'staff' ? 'Filing Staff' : msg.senderRole) }}</span>
+                </div>
+              }
               <div class="message-bubble" [class.is-client]="msg.senderRole === 'client'">
                 <p>{{ msg.content }}</p>
                 <div class="message-meta">

@@ -147,6 +147,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             timestamp: message.timestamp,
                             seen: message.seen,
                             senderName: message.senderName,
+                            senderRole: message.senderRole,
                           );
 
                           if (showDateDivider) {
@@ -265,6 +266,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     required DateTime timestamp,
     required bool seen,
     required String senderName,
+    required String senderRole,
   }) {
     final timeStr = DateFormat('hh:mm a').format(timestamp);
     
@@ -289,13 +291,34 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                 if (!isMe) ...[
                   Padding(
                     padding: const EdgeInsets.only(left: 4, bottom: 4),
-                    child: Text(
-                      senderName,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade600,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          senderName,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.deepTeal,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            senderRole == 'admin' ? 'Manager' : (senderRole == 'staff' ? 'Filing Staff' : senderRole[0].toUpperCase() + senderRole.substring(1)),
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

@@ -1,0 +1,55 @@
+<div class="tool-layout">
+  <div class="tool-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Dashboard
+      </button>
+      <div class="title-row">
+        <h1 class="tool-title">NIC Code Finder</h1>
+        <p class="tool-subtitle">Search and find the correct National Industrial Classification (NIC) Code for your business.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-container">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search by description or code (e.g. 'Software' or '6201')">
+    </div>
+
+    <div class="results-container">
+      <table class="nic-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (code of filteredCodes(); track code.code) {
+            <tr>
+              <td class="code-cell">
+                <span class="code-badge">{{ code.code }}</span>
+              </td>
+              <td>
+                <span class="type-badge" [class.class-type]="code.type === 'Class'" [class.subclass-type]="code.type === 'Sub-class'">
+                  {{ code.type }}
+                </span>
+              </td>
+              <td class="desc-cell">{{ code.description }}</td>
+            </tr>
+          }
+          @if (filteredCodes().length === 0) {
+            <tr>
+              <td colspan="3" class="empty-state">
+                No NIC codes found matching your search.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

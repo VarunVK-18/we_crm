@@ -1,12 +1,13 @@
 import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Api } from '../api';
 
 @Component({
   selector: 'app-client-ongoing-services',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './client-ongoing-services.html',
   styleUrl: './client-ongoing-services.css',
 })
@@ -14,6 +15,8 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
   user = signal<any>(null);
   clientManager = signal<any>(null);
   activeOrders = signal<any[]>([]);
+  activeTab = signal<string>('All');
+  searchQuery = signal<string>('');
   isLoading = signal(true);
   pollingInterval: any;
 
@@ -63,8 +66,24 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
         
         for (const c of checklists) {
           const isAssigned = c.assigned_to && c.assigned_to.role !== 'client_manager';
-          if (c.status !== 'completed' && isAssigned) {
-            c.derivedStatus = 'active';
+          if (isAssigned) {
+            let status = c.status === 'completed' ? 'completed' : 'in-progress';
+            
+            if (status === 'in-progress') {
+              const isPrivateLimited = c.service_name === 'Private Limited Incorporation';
+              const isLLP = c.service_name === 'LLP Incorporation';
+              const isFSSAI = c.service_name === 'FSSAI Food License';
+              
+              if (isPrivateLimited && (!c.details || !c.details.companyName)) {
+                status = 'action-required';
+              } else if (isLLP && (!c.details || !c.details.llpName)) {
+                status = 'action-required';
+              } else if (isFSSAI && (!c.details || !c.details.fssai_business_type)) {
+                status = 'action-required';
+              }
+            }
+            
+            c.derivedStatus = status;
             active.push(c);
           }
         }
@@ -82,6 +101,30 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
   getCompletedCount(items: any[]): number {
     if (!items) return 0;
     return items.filter(i => i.isChecked).length;
+  }
+
+  setTab(tab: string) {
+    this.activeTab.set(tab);
+  }
+
+  getFilteredOrders() {
+    let orders = this.activeOrders();
+    const tab = this.activeTab();
+    
+    if (tab === 'Action Required') {
+      orders = orders.filter(o => o.derivedStatus === 'action-required');
+    } else if (tab === 'In Progress') {
+      orders = orders.filter(o => o.derivedStatus === 'in-progress' || o.derivedStatus === 'active');
+    } else if (tab === 'Completed') {
+      orders = orders.filter(o => o.derivedStatus === 'completed');
+    }
+    
+    const query = this.searchQuery().toLowerCase().trim();
+    if (query) {
+      orders = orders.filter(o => (o.service_name || o.checklist_name || '').toLowerCase().includes(query));
+    }
+    
+    return orders;
   }
 
   openServiceDetails(order: any) {

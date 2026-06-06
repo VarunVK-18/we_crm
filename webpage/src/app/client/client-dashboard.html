@@ -137,7 +137,7 @@
           </div>
           <div class="metric-title">NOT INITIALIZED</div>
           <div class="metric-value">
-            <span class="number">{{ notInitializedOrders().length }}</span>
+            <span class="number">{{ pendingOrders().length }}</span>
             <span class="trend positive">Awaiting setup</span>
           </div>
         </div>
@@ -180,37 +180,37 @@
             <div class="qa-line"></div>
           </div>
           <div class="qa-scroll-row">
-            <div class="qa-item">
+            <div class="qa-item" (click)="goToServiceCategory('incorporation')" style="cursor: pointer;">
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M14 22V8C14 5.17157 14 3.75736 13.1213 2.87868C12.2426 2 10.8284 2 8 2C5.17157 2 3.75736 2 2.87868 2.87868C2 3.75736 2 5.17157 2 8V16C2 18.8284 2 20.2426 2.87868 21.1213C3.75736 22 5.17157 22 8 22H14Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /><path d="M6.5 11H5.5M10.5 11H9.5M6.5 7H5.5M6.5 15H5.5M10.5 7H9.5M10.5 15H9.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /><path d="M18.5 15H17.5M18.5 11H17.5" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /><path d="M18 8H14V22H18C19.8856 22 20.8284 22 21.4142 21.4142C22 20.8284 22 19.8856 22 18V12C22 10.1144 22 9.17157 21.4142 8.58579C20.8284 8 19.8856 8 18 8Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.5" /></svg>
               </div>
               <span class="qa-label">Incorporation</span>
             </div>
-            <div class="qa-item">
+            <div class="qa-item" (click)="goToServiceCategory('compliance')" style="cursor: pointer;">
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M2.00127 8.5L1.99911 13.997C1.99782 17.2979 1.99717 18.9484 3.02235 19.974C4.04754 20.9996 5.69801 20.9996 8.99895 20.9997L15 20.9998C18.2994 20.9999 19.949 21 20.9741 19.9751C21.9992 18.9502 21.9996 17.3005 22.0002 14.0012L22.0013 8.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M8.49857 6.5C8.49857 5.09554 8.49857 4.39331 8.83563 3.88886C8.98154 3.67048 9.16904 3.48298 9.38743 3.33706C9.89187 3 10.5941 3 11.9986 3C13.403 3 14.1053 3 14.6097 3.33706C14.8281 3.48298 15.0156 3.67048 15.1615 3.88886C15.4986 4.39331 15.4986 5.09554 15.4986 6.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M19.998 6.50016L3.99885 6.5C2.8944 6.50007 1.99876 7.39568 1.99866 8.50013C1.99876 10.7091 3.79005 12.5004 5.99901 12.5006H17.9978C20.2068 12.5005 21.998 10.7093 21.9981 8.5003C21.998 7.39582 21.1024 6.50023 19.998 6.50016Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M9.99857 12.5V13.5C9.99857 13.965 9.99857 14.1975 10.0497 14.3882C10.1884 14.9059 10.5927 15.3102 11.1103 15.4489C11.3011 15.5 11.5336 15.5 11.9986 15.5C12.4636 15.5 12.696 15.5 12.8868 15.4489C13.4044 15.3102 13.8088 14.9059 13.9475 14.3882C13.9986 14.1975 13.9986 13.965 13.9986 13.5V12.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
               </div>
               <span class="qa-label">Compliance</span>
             </div>
-            <div class="qa-item">
+            <div class="qa-item" (click)="goToServiceCategory('ip')" style="cursor: pointer;">
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M20.4999 14V10C20.4999 6.22876 20.4999 4.34315 19.3284 3.17157C18.1568 2 16.2712 2 12.4999 2H11.5C7.72883 2 5.84323 2 4.67166 3.17156C3.50008 4.34312 3.50007 6.22872 3.50004 9.99993L3.5 13.9999C3.49997 17.7712 3.49995 19.6568 4.67153 20.8284C5.8431 22 7.72873 22 11.5 22H12.4999C16.2712 22 18.1568 22 19.3284 20.8284C20.4999 19.6569 20.4999 17.7712 20.4999 14Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M8 7H16M8 12H16M8 17L12 17" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
               </div>
               <span class="qa-label">IP</span>
             </div>
-            <div class="qa-item">
+            <div class="qa-item" (click)="goToServiceCategory('tax')" style="cursor: pointer;">
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M5.5 3V8M8 5.5L3 5.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M8 16L6 18M6 18L4 20M6 18L8 20M6 18L4 16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M20 6L16 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M20 18.5L16 18.5M20 15.5L16 15.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M22 12L2 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M12 22L12 2" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
               </div>
               <span class="qa-label">Tax</span>
             </div>
-            <div class="qa-item">
+            <div class="qa-item" (click)="goToServiceCategory('licensing')" style="cursor: pointer;">
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M2 12C2 8.22876 2 6.34315 3.17157 5.17157C4.34315 4 6.22876 4 10 4H14C17.7712 4 19.6569 4 20.8284 5.17157C22 6.34315 22 8.22876 22 12C22 15.7712 22 17.6569 20.8284 18.8284C19.6569 20 17.7712 20 14 20H10C6.22876 20 4.34315 20 3.17157 18.8284C2 17.6569 2 15.7712 2 12Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M9 12.5C7.61929 12.5 6.5 11.3807 6.5 10C6.5 8.61929 7.61929 7.5 9 7.5C10.3807 7.5 11.5 8.61929 11.5 10C11.5 11.3807 10.3807 12.5 9 12.5ZM9 12.5C11.2091 12.5 13 14.2909 13 16.5M9 12.5C6.79086 12.5 5 14.2909 5 16.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M15 9H19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M15 12H19" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
               </div>
               <span class="qa-label">Licensing</span>
             </div>
-            <div class="qa-item">
+            <div class="qa-item" (click)="goToServiceCategory('other')" style="cursor: pointer;">
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M4 4H10V10H4V4Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M14 4H20V10H14V4Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M4 14H10V20H4V14Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M14 14H20V20H14V14Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
               </div>
@@ -226,7 +226,7 @@
             <div class="qa-line"></div>
           </div>
           <div class="qa-scroll-row">
-            <div class="qa-item">
+            <div class="qa-item" (click)="goToNicFinder()" style="cursor: pointer;">
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M17 17L21 21" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /><path d="M19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19C15.4183 19 19 15.4183 19 11Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" /></svg>
               </div>
@@ -279,8 +279,8 @@
         <button class="tab-btn" [class.active]="activeTab() === 'completed'" (click)="setTab('completed')">
           Completed ({{ completedOrders().length }})
         </button>
-        <button class="tab-btn" [class.active]="activeTab() === 'not-initialized'" (click)="setTab('not-initialized')">
-          Not Initialized ({{ notInitializedOrders().length }})
+        <button class="tab-btn" [class.active]="activeTab() === 'pending-request'" (click)="setTab('pending-request')">
+          Pending Request ({{ pendingOrders().length }})
         </button>
       </div>
 
@@ -304,6 +304,7 @@
                     <thead>
                       <tr>
                         <th>Service Name</th>
+                        <th>Application Date</th>
                         <th>Expert</th>
                         <th>Progress</th>
                         <th>Status</th>
@@ -322,6 +323,11 @@
                             </div>
                           </td>
                           <td>
+                            <div style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 80%, transparent); font-weight: 500;">
+                              {{ (order.createdAt | date:'mediumDate') || '-' }}
+                            </div>
+                          </td>
+                          <td>
                             <div class="msc-expert" [class.unassigned]="!order.assigned_to" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
                               <span class="material-symbols-outlined" style="font-size: 16px; opacity: 0.7;">person</span>
                               <span>{{ order.assigned_to?.owner_name || order.assigned_to?.name || 'Unassigned' }}</span>
@@ -336,9 +342,9 @@
                             </div>
                           </td>
                           <td>
-                            <span class="ho-status-badge" [class]="order.derivedStatus">
+                            <span class="ho-status-badge" [ngClass]="order.derivedStatus">
                               <span class="ho-status-dot"></span>
-                              {{ order.derivedStatus | titlecase }}
+                              {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'in-progress' ? 'In Progress' : (order.derivedStatus === 'pending-request' ? 'Pending Request' : (order.derivedStatus | titlecase))) }}
                             </span>
                           </td>
                           <td>

@@ -352,7 +352,7 @@ class _RegistrationServicesScreenState
                       ),
                       SizedBox(height: 6.r),
                       Text(
-                        'Launch and scale your business with official registration tools.',
+                        'Launch and scale your business By Registering With Us..',
                         style: GoogleFonts.inter(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 13.sp,
