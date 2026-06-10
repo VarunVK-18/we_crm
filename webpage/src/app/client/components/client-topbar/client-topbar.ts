@@ -32,7 +32,7 @@ export class ClientTopbarComponent implements OnInit {
     private router: Router, 
     private eRef: ElementRef, 
     public notifService: NotificationService,
-    private api: Api
+    public api: Api
   ) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -44,7 +44,22 @@ export class ClientTopbarComponent implements OnInit {
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      this.user.set(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      this.user.set(parsedUser);
+      
+      // Fetch latest profile to keep topbar and local storage in sync with mobile updates
+      const uid = parsedUser._id || parsedUser.id;
+      if (uid) {
+        this.api.get<any>(`users/profile/${uid}`).subscribe({
+          next: (res: any) => {
+            if (res.user) {
+              this.user.set(res.user);
+              localStorage.setItem('user', JSON.stringify(res.user));
+            }
+          },
+          error: (err) => console.error('Failed to sync profile', err)
+        });
+      }
     }
     this.updateTitle(this.router.url);
     this.notifService.startPolling();

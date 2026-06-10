@@ -591,7 +591,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                     },
                                   ],
                           ),
-                          SizedBox(height: 32.r),
+                          SizedBox(height: 120.r), // Added extra padding for bottom nav bar
                         ],
                       ),
                     ),

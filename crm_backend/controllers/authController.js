@@ -203,8 +203,43 @@ const getUserProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    const userObj = user.toObject();
+
+    // Explicitly find the Client Manager for this user
+    let clientManager = null;
+
+    if (user.created_by) {
+      const creator = await User.findById(user.created_by).select('-password');
+      if (creator && creator.role === 'client_manager') {
+        clientManager = creator.toObject();
+      }
+    }
+
+    if (!clientManager && user.company_id) {
+      const companyId = userObj.company_id._id || userObj.company_id;
+      const fallbackManager = await User.findOne({
+        company_id: companyId,
+        role: 'client_manager'
+      }).select('-password');
+      
+      if (fallbackManager) {
+        clientManager = fallbackManager.toObject();
+      }
+    }
+
+    // Global fallback for testing if no company matched
+    if (!clientManager) {
+      const globalFallback = await User.findOne({ role: 'client_manager' }).select('-password');
+      if (globalFallback) {
+        clientManager = globalFallback.toObject();
+      }
+    }
+
+    userObj.client_manager = clientManager;
+
     res.json({
-      user: user
+      user: userObj
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -895,6 +930,49 @@ const migrateChecklistAssignments = async (req, res) => {
   }
 };
 
+
+
+const uploadProfileImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const User = require('../models/User');
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!req.file) return res.status(400).json({ message: 'No image file uploaded' });
+
+    const Document = require('../models/Document');
+    const doc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      uploadedBy: user._id
+    });
+
+    user.profile_image = `api/documents/${doc._id}`;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Profile image uploaded successfully', profile_image: user.profile_image });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const removeProfileImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const User = require('../models/User');
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    user.profile_image = '';
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Profile image removed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -911,5 +989,7 @@ module.exports = {
   getAuditLogs,
   subscribeService,
   savePanDetails,
-  migrateChecklistAssignments
+  migrateChecklistAssignments,
+  uploadProfileImage,
+  removeProfileImage
 };

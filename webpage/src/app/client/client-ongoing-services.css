@@ -216,14 +216,32 @@
   font-weight: 600;
 }
 
-.ho-status-badge.active, .ho-status-badge.in-progress {
+.ho-status-badge.active {
   background: color-mix(in srgb, var(--palette-purple) 15%, transparent);
   color: var(--palette-purple);
+}
+
+.ho-status-badge.in-progress {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+  color: #c2410c !important;
+}
+.ho-status-badge.in-progress .ho-status-dot {
+  background-color: #f97316 !important;
+  animation: pulse 2s infinite;
 }
 
 .ho-status-badge.action-required {
   background: #ffe4e6;
   color: #e11d48;
+}
+
+.ho-status-badge.completed {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #065f46 !important;
+}
+
+.ho-status-badge.completed .ho-status-dot {
+  background-color: #10b981 !important;
 }
 
 .ho-status-dot {

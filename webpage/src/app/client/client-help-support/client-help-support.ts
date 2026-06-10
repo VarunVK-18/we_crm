@@ -11,7 +11,9 @@ import {
   ArrowDown01Icon,
   ArrowUp01Icon,
   CallIcon,
-  Mail01Icon
+  Mail01Icon,
+  Call02Icon,
+  MailOpenIcon
 } from '@hugeicons/core-free-icons';
 
 @Component({
@@ -58,6 +60,8 @@ export class ClientHelpSupport implements OnInit {
   ArrowUp01Icon = ArrowUp01Icon;
   CallIcon = CallIcon;
   Mail01Icon = Mail01Icon;
+  Call02Icon = Call02Icon;
+  MailOpenIcon = MailOpenIcon;
 
   faqs = [
     {

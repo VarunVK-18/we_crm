@@ -14,6 +14,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   @Output() onBack = new EventEmitter<void>();
   checklistId = input.required<string>();
   teams = input<any[]>([]);
+  autoOpenChat = input<boolean>(false);
+  private _chatOpenedLocally = false;
 
   user = signal<any>(null);
   checklist = signal<any>(null);
@@ -104,6 +106,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
           const found = res.checklists.find((c: any) => c._id === this.checklistId());
           if (found) {
             this.checklist.set(found);
+            if (this.autoOpenChat() && !this.isChatModalOpen() && !this._chatOpenedLocally) {
+              this._chatOpenedLocally = true;
+              this.openChatModal();
+            }
           }
         }
       },
@@ -166,6 +172,24 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.api.patch<any>(`checklists/${cl._id}`, { assigned_to: staffId || null }).subscribe({
       next: () => this.fetchChecklist(),
       error: (err) => alert(err.error?.message || 'Failed to assign checklist.')
+    });
+  }
+
+  assignDirectorCount(countStr: string) {
+    const count = parseInt(countStr, 10);
+    if (isNaN(count) || count < 1) {
+      alert('Invalid count');
+      return;
+    }
+    const cl = this.checklist();
+    if (!cl) return;
+    
+    const newDetails = { ...cl.details };
+    newDetails['assignedNumberOfDirectors'] = count;
+    
+    this.api.patch<any>(`checklists/${cl._id}`, { details: newDetails }).subscribe({
+      next: () => this.fetchChecklist(),
+      error: (err) => alert(err.error?.message || 'Failed to assign director count.')
     });
   }
 

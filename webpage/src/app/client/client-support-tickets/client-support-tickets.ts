@@ -13,7 +13,8 @@ import {
   SentIcon,
   MessageMultiple01Icon,
   Calendar01Icon,
-  Briefcase02Icon
+  Briefcase02Icon,
+  MentoringIcon
 } from '@hugeicons/core-free-icons';
 
 @Component({
@@ -35,6 +36,7 @@ export class ClientSupportTickets implements OnInit {
   readonly MessageMultiple01Icon = MessageMultiple01Icon;
   readonly Calendar01Icon = Calendar01Icon;
   readonly Briefcase02Icon = Briefcase02Icon;
+  readonly MentoringIcon = MentoringIcon;
 
   // State
   tickets = signal<any[]>([]);

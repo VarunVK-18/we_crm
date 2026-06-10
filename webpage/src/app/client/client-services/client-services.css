@@ -57,11 +57,10 @@
 }
 
 .col-title {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #475569;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--palette-dark);
   margin: 0 0 16px 0;
 }
 
@@ -156,7 +155,8 @@
 }
 
 .service-label {
-  font-weight: 700;
+  font-family: var(--font-body);
+  font-weight: 600;
   font-size: 14px;
   color: var(--palette-dark);
 }
@@ -200,8 +200,9 @@
 }
 
 .detail-titles h2 {
+  font-family: var(--font-body);
   font-size: 22px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--palette-dark);
   margin-bottom: 8px;
 }
@@ -223,6 +224,7 @@
   font-weight: 600;
   padding: 8px 12px;
   border-radius: 20px;
+  white-space: nowrap;
 }
 
 .features-list h4 {
@@ -245,7 +247,7 @@
 
 .features-list li {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
   font-size: 13px;
   color: #1e293b;
@@ -257,8 +259,9 @@
 }
 
 .quote-header h3 {
+  font-family: var(--font-body);
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--palette-dark);
   margin-bottom: 6px;
 }
@@ -405,17 +408,22 @@
 }
 
 .eab-contact-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
 }
 
 .eab-label {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
   color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
+  line-height: 1;
 }
 
 .eab-value {
@@ -424,6 +432,8 @@
   color: white;
   text-decoration: none;
   transition: opacity 0.2s ease, text-decoration 0.2s ease;
+  line-height: 1;
+  display: inline-flex !important;
 }
 
 a.eab-value:hover {
@@ -441,8 +451,9 @@ a.eab-value:hover {
   }
   
   .eab-contact {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 20px;
   }
 }

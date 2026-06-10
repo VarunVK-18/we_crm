@@ -65,8 +65,26 @@ export class LlpForm implements OnInit {
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
-      this.addPerson();
-      this.addPerson();
+      this.fetchOrderDetails();
+    });
+  }
+
+  fetchOrderDetails() {
+    this.api.get<any>('my-checklists').subscribe({
+      next: (res) => {
+        const order = res.checklists?.find((o: any) => o._id === this.orderId());
+        const countStr = order?.details?.assignedNumberOfDirectors || order?.details?.numberOfDirectors || '2';
+        const count = parseInt(countStr) || 2;
+        
+        for (let i = 0; i < count; i++) {
+          this.addPerson();
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching order details:', err);
+        this.addPerson();
+        this.addPerson();
+      }
     });
   }
 
@@ -76,14 +94,6 @@ export class LlpForm implements OnInit {
       education: '', email: '', phone: '', address: '', pan: '', aadhaar: '',
       din: '', capital: '', profitRatio: '', nationality: 'Indian', needDsc: 'Yes', designation: 'Designated Partner', isAuthorized: 'Yes'
     });
-  }
-
-  removePerson(index: number) {
-    if (this.persons.length > 2) {
-      this.persons.splice(index, 1);
-    } else {
-      alert('An LLP requires a minimum of 2 partners.');
-    }
   }
 
   onFileSelected(event: any, fieldName: string, personIndex?: number) {
@@ -147,7 +157,7 @@ export class LlpForm implements OnInit {
     formData.append('paymentScreenshot', this.paymentScreenshotFile as File);
 
     // Append person fields dynamically matching the flutter app exactly
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < this.persons.length; i++) {
       const p = this.persons[i];
       const prefix = `person_${i + 1}_`;
       

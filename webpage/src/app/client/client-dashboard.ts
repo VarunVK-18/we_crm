@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket02Icon, GiftIcon, Briefcase02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, Search01Icon, BankIcon, PercentIcon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket02Icon, GiftIcon, Briefcase02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, Search01Icon, BankIcon, PercentIcon, Call02Icon, MailOpenIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -14,6 +14,8 @@ import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket0
 })
 export class ClientDashboard implements OnInit, OnDestroy {
   readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
+  readonly Call02Icon = Call02Icon;
+  readonly MailOpenIcon = MailOpenIcon;
   readonly UserAccountIcon = UserAccountIcon;
   readonly Notification01Icon = Notification01Icon;
   readonly Rocket02Icon = Rocket02Icon;
@@ -107,7 +109,9 @@ export class ClientDashboard implements OnInit, OnDestroy {
     if (!uid) return;
     this.api.get<any>(`users/profile/${uid}`).subscribe({
       next: (res) => {
-        if (res.user && res.user.assigned_to) {
+        if (res.user && res.user.client_manager) {
+          this.clientManager.set(res.user.client_manager);
+        } else if (res.user && res.user.assigned_to) {
           this.clientManager.set(res.user.assigned_to);
         }
       },

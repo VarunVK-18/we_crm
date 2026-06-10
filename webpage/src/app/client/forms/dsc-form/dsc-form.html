@@ -20,7 +20,7 @@
       </div>
     }
 
-    <form (ngSubmit)="submitForm()" #dscForm="ngForm" class="incorp-form">
+    <form (ngSubmit)="submitForm()" ngNativeValidate #dscForm="ngForm" class="incorp-form">
       
       <section class="form-section">
         <h3 class="section-title">Application Information</h3>
@@ -148,7 +148,7 @@
       </section>
 
       <div class="form-actions">
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !dscForm.valid">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <span class="material-symbols-outlined rotating">sync</span> Submitting...
           } @else {

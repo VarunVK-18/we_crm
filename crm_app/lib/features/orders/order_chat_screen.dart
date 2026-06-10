@@ -84,7 +84,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.assignedExpert,
+                    'Client Support',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -180,17 +180,25 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(24),
-                      ),
                       child: TextField(
                         controller: _messageController,
                         decoration: InputDecoration(
                           hintText: 'Type a message...',
                           hintStyle: TextStyle(color: Colors.grey.shade500),
-                          border: InputBorder.none,
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: const BorderSide(color: Colors.black, width: 1),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: const BorderSide(color: Colors.black, width: 1),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 20,
                             vertical: 14,
@@ -201,7 +209,6 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                         maxLines: 4,
                       ),
                     ),
-                  ),
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: _sendMessage,
@@ -310,7 +317,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            senderRole == 'admin' ? 'Manager' : (senderRole == 'staff' ? 'Filing Staff' : senderRole[0].toUpperCase() + senderRole.substring(1)),
+                            senderRole == 'admin' ? 'Manager' : (senderRole == 'staff' ? 'Client Support' : senderRole[0].toUpperCase() + senderRole.substring(1)),
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
@@ -323,7 +330,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                   ),
                 ],
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: isMe ? AppTheme.deepTeal : Colors.white,
                     borderRadius: BorderRadius.circular(16).copyWith(
@@ -332,39 +339,45 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                     ),
                     border: isMe ? null : Border.all(color: Colors.grey.shade200),
                   ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    content,
-                    style: TextStyle(
-                      color: isMe ? Colors.white : Colors.black87,
-                      fontSize: 14,
-                    ),
+              child: RichText(
+                text: TextSpan(
+                  text: content,
+                  style: TextStyle(
+                    color: isMe ? Colors.white : Colors.black87,
+                    fontSize: 14,
+                    decoration: TextDecoration.none,
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        timeStr,
-                        style: TextStyle(
-                          color: isMe ? Colors.white.withOpacity(0.7) : Colors.grey.shade500,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
+                  children: [
+                    const WidgetSpan(child: SizedBox(width: 12)),
+                    WidgetSpan(
+                      alignment: PlaceholderAlignment.bottom,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 4, bottom: 0),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              timeStr,
+                              style: TextStyle(
+                                color: isMe ? Colors.white.withOpacity(0.7) : Colors.grey.shade500,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (isMe) ...[
+                              const SizedBox(width: 4),
+                              Icon(
+                                LucideIcons.checkCheck,
+                                size: 12,
+                                color: seen ? Colors.greenAccent : Colors.white.withOpacity(0.7),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
-                      if (isMe) ...[
-                        const SizedBox(width: 4),
-                        Icon(
-                          LucideIcons.checkCheck,
-                          size: 12,
-                          color: seen ? Colors.greenAccent : Colors.white.withOpacity(0.7),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

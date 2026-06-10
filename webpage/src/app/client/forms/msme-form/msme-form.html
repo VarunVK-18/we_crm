@@ -20,7 +20,7 @@
       </div>
     }
 
-    <form (ngSubmit)="submitForm()" #msmeForm="ngForm" class="incorp-form">
+    <form (ngSubmit)="submitForm()" ngNativeValidate #msmeForm="ngForm" class="incorp-form">
       
       <!-- Enterprise Details -->
       <section class="form-section">
@@ -198,7 +198,7 @@
       </section>
 
       <div class="form-actions">
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !msmeForm.valid">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <span class="material-symbols-outlined rotating">sync</span> Submitting...
           } @else {

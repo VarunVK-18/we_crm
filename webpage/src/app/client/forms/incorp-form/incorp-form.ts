@@ -67,9 +67,26 @@ export class IncorpForm implements OnInit {
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
-      // Add two default directors for Private Limited
-      this.addDirector();
-      this.addDirector();
+      this.fetchOrderDetails();
+    });
+  }
+
+  fetchOrderDetails() {
+    this.api.get<any>('my-checklists').subscribe({
+      next: (res) => {
+        const order = res.checklists?.find((o: any) => o._id === this.orderId());
+        const countStr = order?.details?.assignedNumberOfDirectors || order?.details?.numberOfDirectors || '2';
+        const count = parseInt(countStr) || 2;
+        
+        for (let i = 0; i < count; i++) {
+          this.addDirector();
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching order details:', err);
+        this.addDirector();
+        this.addDirector();
+      }
     });
   }
 
@@ -81,20 +98,12 @@ export class IncorpForm implements OnInit {
     });
   }
 
-  removeDirector(index: number) {
-    if (this.directors.length > 2) {
-      this.directors.splice(index, 1);
-    } else {
-      alert('A Private Limited Company requires a minimum of 2 directors.');
-    }
-  }
-
   onFileSelected(event: any, fieldName: string, directorIndex?: number) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('File size is large. Max 10MB allowed.');
+    if (file.size > 2 * 1024 * 1024) {
+      alert('File size is large. Max 2MB allowed.');
       return;
     }
 

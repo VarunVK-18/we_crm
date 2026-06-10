@@ -133,7 +133,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     // Tools & Calculators
     {
-      'label': 'NIC Code Finder',
+      'label': 'NIC Finder',
       'icon': HugeIcons.strokeRoundedSourceCode,
       'category': 'Tools',
     },
@@ -196,7 +196,8 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF8FAFC),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         toolbarHeight: 90,
         automaticallyImplyLeading: false,

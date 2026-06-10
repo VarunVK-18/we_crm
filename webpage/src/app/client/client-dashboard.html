@@ -3,7 +3,7 @@
         <!-- Main Welcome Banner (2.5/4 width) -->
         <header class="ho-hero">
           <div class="ho-hero-content">
-            <h1 class="ho-hero-title">Welcome, <br/>{{ (user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
+            <h1 class="ho-hero-title">Welcome, <br/>{{ (user()?.owner_name || user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
             <p class="ho-hero-subtitle">Track the progress of your active services and requests from one place.</p>
           </div>
         </header>
@@ -261,11 +261,11 @@
           </div>
           <div class="eab-contact">
             <div class="eab-contact-item">
-              <span class="eab-label">CALL</span>
+              <span class="eab-label"><hugeicons-icon [icon]="Call02Icon" [size]="20" color="rgba(255,255,255,0.7)" [strokeWidth]="2"></hugeicons-icon></span>
               <a [href]="'tel:' + (clientManager().phone || '+918072286963')" class="eab-value">{{ clientManager().phone || '+91 98765 43210' }}</a>
             </div>
             <div class="eab-contact-item">
-              <span class="eab-label">MAIL</span>
+              <span class="eab-label"><hugeicons-icon [icon]="MailOpenIcon" [size]="20" color="rgba(255,255,255,0.7)" [strokeWidth]="2"></hugeicons-icon></span>
               <a [href]="'mailto:' + (clientManager().email || 'varun@gmail.com')" class="eab-value">{{ clientManager().email || 'support@wealthempires.com' }}</a>
             </div>
           </div>
@@ -316,10 +316,7 @@
                         <tr (click)="openServiceDetails(order)">
                           <td>
                             <div style="display: flex; align-items: center; gap: 12px;">
-                              <div class="msc-icon" style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px; background: rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; color: var(--palette-dark);">
-                                <span class="material-symbols-outlined" style="font-size: 18px;">work</span>
-                              </div>
-                              <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
+                              <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark); white-space: nowrap;">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
                             </div>
                           </td>
                           <td>
@@ -342,9 +339,9 @@
                             </div>
                           </td>
                           <td>
-                            <span class="ho-status-badge" [ngClass]="order.derivedStatus">
+                            <span class="ho-status-badge" [ngClass]="order.derivedStatus" style="white-space: nowrap;">
                               <span class="ho-status-dot"></span>
-                              {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'in-progress' ? 'In Progress' : (order.derivedStatus === 'pending-request' ? 'Pending Request' : (order.derivedStatus | titlecase))) }}
+                              {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'in-progress' ? 'In Progress' : (order.derivedStatus === 'pending-request' ? 'To be assigned' : (order.derivedStatus | titlecase))) }}
                             </span>
                           </td>
                           <td>

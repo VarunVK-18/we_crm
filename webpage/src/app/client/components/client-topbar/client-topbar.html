@@ -62,21 +62,29 @@
     @if (user()) {
       <div class="user-dropdown-container">
         <button class="user-pill-btn" (click)="toggleDropdown()" [class.active]="isDropdownOpen()">
-          <div class="pill-avatar">
-            {{ getInitials(user()?.company_name || user()?.name || 'Client') }}
-          </div>
-          <span class="pill-name">{{ user()?.company_name || user()?.name || 'Client Name' }}</span>
+          @if (user()?.profile_image) {
+            <img [src]="api.getFileUrl(user().profile_image)" class="pill-avatar-img" alt="Profile" />
+          } @else {
+            <div class="pill-avatar">
+              {{ getInitials(user()?.owner_name || user()?.company_name || user()?.name || 'Client') }}
+            </div>
+          }
+          <span class="pill-name">{{ user()?.owner_name || user()?.company_name || user()?.name || 'Client Name' }}</span>
           <hugeicons-icon [icon]="isDropdownOpen() ? ArrowUp01Icon : ArrowDown01Icon" [size]="16" color="currentColor" [strokeWidth]="2" class="pill-chevron"></hugeicons-icon>
         </button>
 
         @if (isDropdownOpen()) {
           <div class="user-dropdown-menu">
             <div class="dropdown-header">
-              <div class="dropdown-avatar">
-                {{ getInitials(user()?.company_name || user()?.name || 'Client') }}
-              </div>
+              @if (user()?.profile_image) {
+                <img [src]="api.getFileUrl(user().profile_image)" class="dropdown-avatar-img" alt="Profile" />
+              } @else {
+                <div class="dropdown-avatar">
+                  {{ getInitials(user()?.owner_name || user()?.company_name || user()?.name || 'Client') }}
+                </div>
+              }
               <div class="dropdown-user-info">
-                <span class="d-name">{{ user()?.company_name || user()?.name || 'Client Name' }}</span>
+                <span class="d-name">{{ user()?.owner_name || user()?.company_name || user()?.name || 'Client Name' }}</span>
                 <span class="d-role">{{ user()?.business_type || 'Client Account' }}</span>
               </div>
             </div>

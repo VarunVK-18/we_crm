@@ -67,7 +67,7 @@ class MyEntitiesScreen extends ConsumerWidget {
         serviceCount: activeCount,
         icon: type == 'LLP' ? LucideIcons.cpu : LucideIcons.building2,
         color:
-            type == 'LLP' ? const Color(0xFF10B981) : const Color(0xFF8B5CF6), // Matches the violet from the screenshot
+            type == 'LLP' ? AppTheme.corporateBlue : const Color.fromARGB(255, 141, 107, 234),
       );
     }).toList();
 
@@ -77,7 +77,7 @@ class MyEntitiesScreen extends ConsumerWidget {
       type: 'Portfolio',
       serviceCount: orders.where((o) => o.status == ServiceStatus.active).length,
       icon: LucideIcons.layoutGrid,
-      color: const Color(0xFF06B6D4), // Bright cyan matching screenshot
+      color: const Color.fromARGB(255, 0, 0, 4),
     );
 
     final finalEntities = [allEntitiesCard, ...entities];

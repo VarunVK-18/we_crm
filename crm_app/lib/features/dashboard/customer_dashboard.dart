@@ -8,11 +8,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/orders_provider.dart';
 import '../../models/order_model.dart';
+import '../../models/user_model.dart';
 
 import '../common/ui_components.dart';
 import '../services/service_selection_screen.dart';
@@ -21,6 +23,7 @@ import '../services/tool_detail_screen.dart';
 import '../search/search_screen.dart';
 import '../services/registration_services_screen.dart';
 import '../../core/utils/responsive.dart';
+import '../../core/constants/port.dart';
 
 class CustomerDashboard extends ConsumerWidget {
   const CustomerDashboard({super.key});
@@ -48,9 +51,16 @@ class CustomerDashboard extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(serviceOrdersProvider);
+          await Future.delayed(const Duration(milliseconds: 800));
+        },
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
           // 1. Premium Immersive AppBar
           SliverAppBar(
             pinned: true,
@@ -104,17 +114,25 @@ class CustomerDashboard extends ConsumerWidget {
                         color: Colors.transparent,
                         width: 0,
                       ),
+                      image: (user?.profileImage != null && user!.profileImage.isNotEmpty)
+                          ? DecorationImage(
+                              image: NetworkImage('$kBaseUrl/${user.profileImage}'),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                    child: Center(
-                      child: Text(
-                        name.isNotEmpty ? name[0] : 'U',
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18.sp,
-                        ),
-                      ),
-                    ),
+                    child: (user?.profileImage == null || user!.profileImage.isEmpty)
+                        ? Center(
+                            child: Text(
+                              name.isNotEmpty ? name[0] : 'U',
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18.sp,
+                              ),
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),
@@ -162,7 +180,7 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 32.r),
 
               // Section 1: Services
-              _buildSectionHeader('Start with a Service', subtitle: 'Swipe to explore services'),
+              _buildSectionHeader(context, 'Start with a Service', subtitle: 'Swipe to explore services'),
               SizedBox(height: 20.r),
               const _HorizontalServiceList(
                 items: [
@@ -222,7 +240,7 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 40.r),
 
               // Section 2: Tools
-              _buildSectionHeader('Tools & Calculators', subtitle: 'Swipe to explore tools'),
+              _buildSectionHeader(context, 'Tools & Calculators', subtitle: 'Swipe to explore tools'),
               SizedBox(height: 18.r),
               const _HorizontalServiceList(
                 items: [
@@ -233,6 +251,9 @@ class CustomerDashboard extends ConsumerWidget {
                 ],
               ),
 
+              SizedBox(height: 32.r),
+              _buildAssistanceCard(context, user),
+
               SizedBox(
                   height: 130
                       .r), // Increased bottom padding to clear the floating bottom navigation bar (extendBody: true)
@@ -240,22 +261,197 @@ class CustomerDashboard extends ConsumerWidget {
           ),
         ],
       ),
+      ),
     );
   }
 
-  Widget _buildSectionHeader(String title, {String? subtitle}) {
+  Widget _buildAssistanceCard(BuildContext context, UserModel? user) {
+    final managerName = user?.manager?['name']?.toString() ?? 'Support Team';
+    final managerEmail = user?.manager?['email']?.toString() ?? 'support@example.com';
+    final managerPhone = user?.manager?['phone']?.toString() ?? '+918000000000';
+    final hasManager = user?.manager != null;
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 24.r),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeader(title: title),
-          if (subtitle != null) ...[
-            SizedBox(height: 4.r),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2B2E63), Color(0xFF1B1D43)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF1B1D43).withOpacity(0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        padding: EdgeInsets.all(20.r),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Row(
               children: [
+                Container(
+                  padding: EdgeInsets.all(10.r),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: HugeIcon(
+                    icon: HugeIcons.strokeRoundedCustomerService01,
+                    color: Colors.white,
+                    size: 22.ip,
+                  ),
+                ),
+                SizedBox(width: 14.r),
+                Expanded(
+                  child: Text(
+                    'Need Expert Assistance?',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16.sp,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.r),
+            RichText(
+              text: TextSpan(
+                style: GoogleFonts.inter(
+                  color: Colors.white.withOpacity(0.85),
+                  fontSize: 12.sp,
+                  height: 1.5,
+                ),
+                children: [
+                  TextSpan(text: hasManager ? 'Your client manager ' : 'Our dedicated '),
+                  TextSpan(
+                    text: managerName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const TextSpan(text: ' is available to assist you with any queries.'),
+                ],
+              ),
+            ),
+            SizedBox(height: 20.r),
+            Container(height: 1.r, color: Colors.white.withOpacity(0.1)),
+            SizedBox(height: 12.r),
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      final Uri telUrl = Uri.parse('tel:$managerPhone');
+                      if (await canLaunchUrl(telUrl)) {
+                        await launchUrl(telUrl);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.r),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.phone, color: Colors.white, size: 16.sp),
+                          SizedBox(width: 8.r),
+                          Flexible(
+                            child: Text(
+                              managerPhone,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12.sp,
+                                height: 1.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 1.r,
+                  height: 24.r,
+                  color: Colors.white.withOpacity(0.2),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () async {
+                      final Uri emailUrl = Uri.parse('mailto:$managerEmail');
+                      if (await canLaunchUrl(emailUrl)) {
+                        await launchUrl(emailUrl);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(8.r),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8.r),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Icon(LucideIcons.mail, color: Colors.white, size: 16.sp),
+                          SizedBox(width: 8.r),
+                          Flexible(
+                            child: Text(
+                              managerEmail,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12.sp,
+                                height: 1.2,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(BuildContext context, String title, {String? subtitle}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24.r),
+      child: Row(
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppTheme.deepTeal,
+              fontSize: 15.sp,
+              letterSpacing: -0.2,
+            ),
+          ),
+          SizedBox(width: 16.r),
+          Expanded(
+            child: Container(height: 1.r, color: Colors.grey.withOpacity(0.1)),
+          ),
+          if (subtitle != null) ...[
+            SizedBox(width: 12.r),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 Icon(LucideIcons.arrowRightLeft, size: 12.sp, color: Colors.grey.shade600),
-                SizedBox(width: 6.r),
+                SizedBox(width: 4.r),
                 Text(
                   subtitle,
                   style: GoogleFonts.inter(
@@ -296,8 +492,10 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 3500), (timer) {
       if (!mounted) return;
-      final activeOrders = ref.read(activeOrdersProvider);
-      final totalCards = 2 + (activeOrders.isEmpty ? 1 : activeOrders.length);
+      final activeOrdersRaw = ref.read(activeOrdersProvider);
+      final notInitRaw = ref.read(notInitializedOrdersProvider);
+      final combinedOrders = [...activeOrdersRaw, ...notInitRaw];
+      final totalCards = 2 + (combinedOrders.isEmpty ? 1 : combinedOrders.length);
 
       int nextPage = _currentPage + 1;
       if (nextPage >= totalCards) {
@@ -321,14 +519,17 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
     super.dispose();
   }
 
-  @override
   Widget build(BuildContext context) {
-    final activeOrders = ref.watch(activeOrdersProvider);
+    final activeOrdersRaw = ref.watch(activeOrdersProvider);
+    final notInitRaw = ref.watch(notInitializedOrdersProvider);
+    final combinedOrders = [...activeOrdersRaw, ...notInitRaw]
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
 
     final List<Widget> cards = [
       _buildGetStartedCard(context),
-      if (activeOrders.isNotEmpty)
-        ...activeOrders.map((order) => _buildActiveOrderCard(context, order))
+      if (combinedOrders.isNotEmpty)
+        ...combinedOrders.map((order) => _buildActiveOrderCard(context, order))
       else
         _buildNoActiveTasksCard(context),
       _buildReferAndEarnCard(context),
@@ -408,7 +609,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFF6D6E3), // Pink from the reference image
+          color: const Color(0xFFB3A0FF),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
@@ -594,7 +795,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFEBF3FC), // Light blue from reference image
+          color: const Color(0xFFA0C6FF),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
@@ -633,12 +834,12 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'ACTIVE SERVICE TRACKER',
+                              order.actionRequired ? 'ACTION REQUIRED' : (order.stage == OrderStage.reqReceived ? 'TO BE ASSIGNED' : 'ACTIVE SERVICE TRACKER'),
                               style: Theme.of(context)
                                   .textTheme
                                   .labelLarge
                                   ?.copyWith(
-                                    color: Colors.blue,
+                                    color: order.actionRequired ? Colors.red : (order.stage == OrderStage.reqReceived ? Colors.orange : Colors.blue),
                                     fontSize: 9.sp,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -667,7 +868,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Stage: ${order.stage == OrderStage.workInProgress ? 'Work in Progress' : order.stage == OrderStage.reqReceived ? 'Request Received' : 'Active'}',
+                            'Stage: ${order.stage == OrderStage.workInProgress ? 'Work in Progress' : order.stage == OrderStage.reqReceived ? 'To be assigned' : 'Active'}',
                             style: TextStyle(
                               fontSize: 11.sp,
                               fontWeight: FontWeight.w600,

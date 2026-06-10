@@ -136,7 +136,13 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
   }
 
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please fill all required fields.'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
 
     if (!_isVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -382,7 +388,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
               fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppTheme.corporateBlue)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.all(16),
             ),
             validator: (value) {

@@ -20,7 +20,7 @@
       </div>
     }
 
-    <form (ngSubmit)="submitForm()" #trademarkForm="ngForm" class="incorp-form">
+    <form (ngSubmit)="submitForm()" ngNativeValidate #trademarkForm="ngForm" class="incorp-form">
       
       <section class="form-section">
         <h3 class="section-title">Complete Details</h3>
@@ -160,7 +160,7 @@
       </section>
 
       <div class="form-actions">
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !trademarkForm.valid">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <span class="material-symbols-outlined rotating">sync</span> Submitting...
           } @else {

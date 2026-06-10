@@ -217,7 +217,7 @@ class CircleServiceButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(right: 10.r),
+      padding: EdgeInsets.only(right: 12.r),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16.r),
@@ -250,7 +250,7 @@ class CircleServiceButton extends StatelessWidget {
             ),
             SizedBox(height: 8.r),
             SizedBox(
-              width: 90.r,
+              width: 74.r,
               child: Text(
                 label,
                 textAlign: TextAlign.center,

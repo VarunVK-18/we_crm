@@ -154,6 +154,7 @@
         <app-checklist-details 
           [checklistId]="selectedChecklistId()!"
           [teams]="teams()"
+          [autoOpenChat]="openChatOnLoad()"
           (onBack)="handleTabChanged('checklists')">
         </app-checklist-details>
       }

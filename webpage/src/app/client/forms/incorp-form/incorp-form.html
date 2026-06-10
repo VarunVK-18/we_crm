@@ -20,7 +20,7 @@
       </div>
     }
 
-    <form (ngSubmit)="submitForm()" #incorpForm="ngForm" class="incorp-form">
+    <form (ngSubmit)="submitForm()" ngNativeValidate #incorpForm="ngForm" class="incorp-form">
       
       <!-- Company Details -->
       <section class="form-section">
@@ -95,22 +95,14 @@
       <section class="form-section directors-section">
         <div class="section-header-row">
           <h2>Directors & Shareholders Details</h2>
-          <button type="button" class="btn-secondary" (click)="addDirector()">
-            <span class="material-symbols-outlined">add</span> Add Person
-          </button>
         </div>
-        <p class="section-help">Private Limited Company requires minimum 2 directors.</p>
+        <p class="section-help">Please provide details for the assigned directors/shareholders.</p>
 
         <div class="directors-list">
           @for (d of directors; track $index) {
             <div class="director-card">
               <div class="director-card-header">
                 <h3>Person {{ $index + 1 }} Details</h3>
-                @if (directors.length > 2) {
-                  <button type="button" class="btn-icon danger" (click)="removeDirector($index)" title="Remove Person">
-                    <span class="material-symbols-outlined">delete</span>
-                  </button>
-                }
               </div>
 
               <div class="form-grid">
@@ -208,7 +200,7 @@
       </section>
 
       <div class="form-actions">
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting() || !incorpForm.valid">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <span class="material-symbols-outlined rotating">sync</span> Submitting...
           } @else {

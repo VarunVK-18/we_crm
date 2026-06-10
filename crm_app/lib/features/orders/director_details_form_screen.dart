@@ -95,7 +95,8 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
   @override
   void initState() {
     super.initState();
-    final numStr = widget.order.details['numberOfDirectors']?.toString() ?? '1';
+    final assignedNumStr = widget.order.details['assignedNumberOfDirectors']?.toString();
+    final numStr = assignedNumStr ?? widget.order.details['numberOfDirectors']?.toString() ?? '1';
     final int count = int.tryParse(numStr) ?? 1;
     _directors = List.generate(count, (_) => DirectorFormData());
   }
@@ -117,7 +118,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
       if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('File size is large. Max 2MB allowed.'),
+          content: Text('The file is large. Max 2MB allowed.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -146,7 +147,13 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
   }
 
   Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please fill all required fields.'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
     
     // Check if required files are uploaded for all directors
     for (int i = 0; i < _directors.length; i++) {
@@ -203,6 +210,20 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Success'),
+            content: const Text('Form submitted successfully!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
         if (!mounted) return;
         Navigator.pop(context, true); // Success
       } else {
@@ -299,16 +320,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
                     );
                   }),
                   
-                  OutlinedButton.icon(
-                    onPressed: () => setState(() => _directors.add(DirectorFormData())),
-                    icon: const Icon(LucideIcons.plus, size: 18),
-                    label: const Text('Add Person'),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      side: const BorderSide(color: AppTheme.corporateBlue),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
+
                   ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
@@ -394,6 +406,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
             keyboardType: keyboardType,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             validator: isRequired ? (v) => v == null || v.isEmpty ? 'This is a required question' : null : null,

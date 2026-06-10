@@ -73,7 +73,7 @@
           
           <div class="address-block">
             <div class="address-label">BILLED TO</div>
-            <div class="address-name">{{ user()?.company_name || user()?.name || 'Client' }}</div>
+            <div class="address-name">{{ user()?.owner_name || user()?.company_name || user()?.name || 'Client' }}</div>
             <div class="address-line">{{ user()?.email || '' }}</div>
             <div class="address-line">{{ user()?.phone || '' }}</div>
             <div class="address-line">India</div>

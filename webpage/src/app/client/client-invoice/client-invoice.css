@@ -15,9 +15,6 @@
 
 /* Top Nav */
 .invoice-top-nav {
-  position: sticky;
-  top: 24px;
-  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;

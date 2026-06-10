@@ -239,18 +239,18 @@
 .premium-plan-card {
   position: relative;
   background: linear-gradient(135deg, var(--palette-dark) 0%, #1a1f33 100%);
-  border-radius: 24px;
-  padding: 32px;
+  border-radius: 16px;
+  padding: 24px;
   color: white;
   overflow: hidden;
-  box-shadow: 0 12px 35px color-mix(in srgb, var(--palette-dark) 20%, transparent);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 12px 30px color-mix(in srgb, var(--palette-dark) 20%, transparent);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .premium-plan-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 45px color-mix(in srgb, var(--palette-dark) 30%, transparent),
-              0 0 20px color-mix(in srgb, var(--palette-purple) 20%, transparent);
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--palette-dark) 30%, transparent);
 }
 
 .ppc-glow {
@@ -270,11 +270,7 @@
 }
 
 .ppc-bg-pattern {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-  opacity: 0.1;
-  pointer-events: none;
+  display: none;
 }
 
 .ppc-content {
@@ -286,21 +282,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .ppc-badge {
-  font-size: 11px;
-  font-weight: 900;
-  letter-spacing: 2px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
   color: rgba(255, 255, 255, 0.9);
 }
 
 .ppc-icon {
   background: rgba(255, 255, 255, 0.1);
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,36 +304,35 @@
 }
 
 .ppc-title {
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1.15;
-  margin: 0 0 40px 0;
-  background: linear-gradient(to right, #ffffff, #e2e8f0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0 0 24px 0;
+  color: white;
 }
 
 .ppc-details {
   display: flex;
-  gap: 32px;
+  gap: 24px;
 }
 
 .ppc-detail-block {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .ppc-label {
-  font-size: 10px;
-  font-weight: 800;
+  font-size: 9px;
+  font-weight: 700;
   letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
 }
 
 .ppc-value {
-  font-size: 15px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   color: white;
 }
 

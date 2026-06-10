@@ -54,9 +54,6 @@
                 <span class="service-label">{{ service.title }}</span>
                 <span class="service-desc">{{ service.description }}</span>
               </div>
-              @if (selectedService()?.title === service.title) {
-                <span class="badge-selected">SELECTED</span>
-              }
             </div>
           }
         }
@@ -73,17 +70,17 @@
               <p>{{ selectedService().description }}</p>
             </div>
             <div class="badge-preferred">
-              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="14" color="white"></hugeicons-icon>
-              <span>Most Preferred</span>
+              <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
+              <span>{{ getProcessingTime(selectedService().features) }}</span>
             </div>
           </div>
 
           <div class="features-list">
             <h4>INCLUDED FEATURES</h4>
             <ul>
-              @for (feature of selectedService().features; track feature) {
+              @for (feature of getRegularFeatures(selectedService().features); track feature) {
                 <li>
-                  <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#4c1d95"></hugeicons-icon>
+                  <span class="material-symbols-outlined" style="font-size: 14px; color: #4c1d95; font-variation-settings: 'FILL' 1;">star</span>
                   <span>{{ feature }}</span>
                 </li>
               }
@@ -103,29 +100,36 @@
                 <p>Your request has been submitted successfully! We will contact you soon.</p>
               </div>
             } @else {
-              <form class="quote-form" (ngSubmit)="submitQuote()">
+              <form class="quote-form" (ngSubmit)="submitQuote()" #quoteFormRef="ngForm">
                 <div class="form-row">
                   <div class="form-group">
                     <label>Your Name</label>
-                    <input type="text" name="name" [(ngModel)]="quoteForm.name" required placeholder="John Doe" class="form-input">
+                    <input type="text" name="name" [(ngModel)]="quoteForm.name" required class="form-input">
                   </div>
                   <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" name="phone" [(ngModel)]="quoteForm.phone" required placeholder="+91 9876543210" class="form-input">
+                    <input type="tel" name="phone" [(ngModel)]="quoteForm.phone" required class="form-input">
                   </div>
                 </div>
                 
                 <div class="form-group">
                   <label>Email Address</label>
-                  <input type="email" name="email" [(ngModel)]="quoteForm.email" required placeholder="john@example.com" class="form-input">
+                  <input type="email" name="email" [(ngModel)]="quoteForm.email" required class="form-input">
                 </div>
+
+                @if (showDirectorCount()) {
+                  <div class="form-group">
+                    <label>How many directors/partners in your company?</label>
+                    <input type="number" name="numberOfDirectors" [(ngModel)]="quoteForm.numberOfDirectors" required class="form-input" min="1">
+                  </div>
+                }
 
                 <div class="form-group">
                   <label>Additional Requirements (Optional)</label>
-                  <textarea name="requirements" [(ngModel)]="quoteForm.requirements" rows="3" placeholder="Tell us more about your business needs..." class="form-input"></textarea>
+                  <textarea name="requirements" [(ngModel)]="quoteForm.requirements" rows="3" class="form-input" style="resize: none;"></textarea>
                 </div>
 
-                <button type="submit" class="btn-submit" [disabled]="formSubmitting()">
+                <button type="submit" class="btn-submit" [disabled]="formSubmitting() || !quoteFormRef.valid">
                   {{ formSubmitting() ? 'Submitting...' : 'Request Quote' }}
                   <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" color="white" style="margin-left: 8px;"></hugeicons-icon>
                 </button>
@@ -149,11 +153,11 @@
       </div>
       <div class="eab-contact">
         <div class="eab-contact-item">
-          <span class="eab-label">CALL</span>
+          <span class="eab-label"><hugeicons-icon [icon]="Call02Icon" [size]="20" color="rgba(255,255,255,0.7)" [strokeWidth]="2"></hugeicons-icon></span>
           <a [href]="'tel:' + (clientManager()?.phone || '+918072286963')" class="eab-value">{{ clientManager()?.phone || '+91 98765 43210' }}</a>
         </div>
         <div class="eab-contact-item">
-          <span class="eab-label">MAIL</span>
+          <span class="eab-label"><hugeicons-icon [icon]="MailOpenIcon" [size]="20" color="rgba(255,255,255,0.7)" [strokeWidth]="2"></hugeicons-icon></span>
           <a [href]="'mailto:' + (clientManager()?.email || 'varun@gmail.com')" class="eab-value">{{ clientManager()?.email || 'support@wealthempires.com' }}</a>
         </div>
       </div>

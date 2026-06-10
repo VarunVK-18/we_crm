@@ -7,30 +7,29 @@
   </div>
 
   <div class="tool-container">
-    <div class="tool-icon-wrapper">
-      <span class="material-symbols-outlined" style="font-size: 48px; color: #8b5cf6;">calculate</span>
-    </div>
     <h1 class="tool-title">TDS Interest Calculator</h1>
     <p class="tool-subtitle">Calculate interest for late TDS deposits or late deduction.</p>
 
     <div class="calc-card">
-      <div class="form-group">
-        <label>Enter Amount Of Tax Deducted (₹)</label>
-        <div class="input-wrapper">
-          <span class="material-symbols-outlined prefix-icon">currency_rupee</span>
-          <input type="number" placeholder="e.g. 100000" [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+      <div class="row-inputs">
+        <div class="form-group">
+          <label>Amount (₹)</label>
+          <div class="input-wrapper">
+            <span class="material-symbols-outlined prefix-icon">currency_rupee</span>
+            <input type="number" placeholder="e.g. 100000" [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label>Type Of Interest Calculation</label>
-        <div class="select-wrapper">
-          <select [ngModel]="calcType()" (ngModelChange)="calcType.set($event)">
-            <option value="deduction">Interest On Late Deduction</option>
-            <option value="payment">Interest On Late Payment</option>
-            <option value="filing">Interest On Late Filing</option>
-          </select>
-          <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+        <div class="form-group">
+          <label>Calculation Type</label>
+          <div class="select-wrapper">
+            <select [ngModel]="calcType()" (ngModelChange)="calcType.set($event)">
+              <option value="deduction">Late Deduction</option>
+              <option value="payment">Late Payment</option>
+              <option value="filing">Late Filing</option>
+            </select>
+            <span class="material-symbols-outlined dropdown-icon">expand_more</span>
+          </div>
         </div>
       </div>
 

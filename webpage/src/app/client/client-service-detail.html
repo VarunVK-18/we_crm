@@ -58,45 +58,47 @@
                     @if (item.isActionStep) {
                       @if (!item.isChecked) {
                         <p>{{ item.description || item.notes }}</p>
-                        @if (order()?.service_name === 'Private Limited Incorporation') {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToIncorpForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
-                        }
-                        @if (order()?.service_name === 'LLP Incorporation') {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToLlpForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
-                        }
-                        @if (order()?.service_name === 'MSME Registration' || order()?.service_name === 'MSME Certification' || order()?.service_name === 'MSME') {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToMsmeForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
-                        }
-                        @if (order()?.service_name === 'FSSAI Registration' || order()?.service_name === 'FSSAI') {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToFssaiForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
-                        }
-                        @if (order()?.service_name === 'Trademark Registration' || order()?.service_name === 'Trademark' || order()?.service_name === 'Trade mark') {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToTrademarkForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
-                        }
-                        @if (order()?.service_name === 'GST Registration' || order()?.service_name === 'GST') {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToGstForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
-                        }
-                        @if (order()?.service_name === 'ISO Registration' || order()?.service_name === 'ISO' || order()?.service_name === 'ISO Certification') {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToIsoForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
-                        }
-                        @if (order()?.service_name?.includes('DSC')) {
-                          <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToDscForm(); $event.stopPropagation()">
-                            Fill Form
-                          </button>
+                        @if (order()?.derivedStatus !== 'not-initialized') {
+                          @if (order()?.service_name === 'Private Limited Incorporation') {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToIncorpForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
+                          @if (order()?.service_name === 'LLP Incorporation') {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToLlpForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
+                          @if (order()?.service_name === 'MSME Registration' || order()?.service_name === 'MSME Certification' || order()?.service_name === 'MSME') {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToMsmeForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
+                          @if (order()?.service_name === 'FSSAI Registration' || order()?.service_name === 'FSSAI') {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToFssaiForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
+                          @if (order()?.service_name === 'Trademark Registration' || order()?.service_name === 'Trademark' || order()?.service_name === 'Trade mark') {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToTrademarkForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
+                          @if (order()?.service_name === 'GST Registration' || order()?.service_name === 'GST') {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToGstForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
+                          @if (order()?.service_name === 'ISO Registration' || order()?.service_name === 'ISO' || order()?.service_name === 'ISO Certification') {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToIsoForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
+                          @if (order()?.service_name?.includes('DSC')) {
+                            <button class="action-btn" style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="goToDscForm(); $event.stopPropagation()">
+                              Fill Form
+                            </button>
+                          }
                         }
                       } @else {
                         <p>Form submitted successfully.</p>
@@ -112,6 +114,50 @@
             </div>
           </div>
         </div>
+
+        @if (order()?.derivedStatus === 'completed' || filterFinalDocs(order()?.final_documents).length > 0) {
+          <div class="final-deliverables-area main-card" style="margin-top: 24px;">
+            <div class="progress-header">
+              <h3>Final Deliverables</h3>
+            </div>
+            
+            <div class="deliverables-list">
+              <!-- Invoice Button -->
+              <div class="deliverable-item" (click)="goToInvoice()">
+                <div class="deliverable-icon invoice-icon">
+                  <span class="material-symbols-outlined">receipt_long</span>
+                </div>
+                <div class="deliverable-content">
+                  <h4>Official Invoice</h4>
+                  <p>Click to view and download</p>
+                </div>
+                <div class="deliverable-action">
+                  <span class="material-symbols-outlined">download</span>
+                </div>
+              </div>
+
+              <!-- Final Documents -->
+              @for (doc of filterFinalDocs(order()?.final_documents); track doc.document_id) {
+                <div class="deliverable-item" (click)="downloadDocument(doc)">
+                  <div class="deliverable-icon doc-icon">
+                    <span class="material-symbols-outlined">description</span>
+                  </div>
+                  <div class="deliverable-content">
+                    <h4>{{ doc.name }}</h4>
+                    @if (doc.expiry_date) {
+                      <p class="expiry-text">Expires: {{ doc.expiry_date | date:'dd MMM yyyy' }}</p>
+                    } @else {
+                      <p>Final Document</p>
+                    }
+                  </div>
+                  <div class="deliverable-action">
+                    <span class="material-symbols-outlined">download</span>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
       }
     </div>
   </div>
@@ -122,10 +168,10 @@
       <div class="chat-drawer-header">
         <div class="chat-drawer-info">
           <div class="chat-drawer-avatar">
-            {{ order()?.assigned_to?.owner_name?.charAt(0) || 'D' }}
+            C
           </div>
           <div class="chat-drawer-details">
-            <h3>{{ order()?.assigned_to?.owner_name || 'demo user' }}</h3>
+            <h3>Client Support</h3>
             <span class="chat-drawer-service">
               {{ order()?.service_name }}
             </span>
@@ -150,7 +196,7 @@
               @if (msg.senderRole !== 'client') {
                 <div class="sender-info">
                   <span class="sender-name">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</span>
-                  <span class="sender-role">{{ msg.senderRole === 'admin' ? 'Manager' : (msg.senderRole === 'staff' ? 'Filing Staff' : msg.senderRole) }}</span>
+                  <span class="sender-role">{{ msg.senderRole === 'admin' ? 'Manager' : (msg.senderRole === 'staff' ? 'Client Support' : msg.senderRole) }}</span>
                 </div>
               }
               <div class="message-bubble" [class.is-client]="msg.senderRole === 'client'">

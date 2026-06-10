@@ -54,6 +54,7 @@ exports.getUserComplianceReminders = async (req, res) => {
       dueDate: new Date(Date.now() + rem.daysLeft * 24 * 60 * 60 * 1000),
       daysLeft: rem.daysLeft,
       status: rem.status,
+      entityName: rem.entityName,
       client_id: {
         owner_name: client ? client.owner_name : 'Client',
         company_name: client ? client.company_name : 'Individual'
@@ -147,6 +148,7 @@ exports.getCompanyComplianceReminders = async (req, res) => {
         dueDate: new Date(Date.now() + rem.daysLeft * 24 * 60 * 60 * 1000),
         daysLeft: rem.daysLeft,
         status: rem.status,
+        entityName: rem.entityName,
         client_id: {
           owner_name: client.owner_name,
           company_name: client.company_name

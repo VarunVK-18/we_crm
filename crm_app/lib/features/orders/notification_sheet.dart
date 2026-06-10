@@ -9,6 +9,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import '../../core/constants/port.dart';
 import 'order_chat_screen.dart';
+import 'service_order_detail_screen.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 
@@ -29,8 +30,8 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
     if (_selectedDate != null) {
       notifications = notifications.where((n) {
         return n.timestamp.year == _selectedDate!.year &&
-               n.timestamp.month == _selectedDate!.month &&
-               n.timestamp.day == _selectedDate!.day;
+            n.timestamp.month == _selectedDate!.month &&
+            n.timestamp.day == _selectedDate!.day;
       }).toList();
     }
 
@@ -60,12 +61,14 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const SizedBox(width: 48),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Text(
                         'Recent Updates',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w900,
@@ -75,10 +78,14 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
                       if (_selectedDate != null) ...[
                         const SizedBox(height: 4),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               'Showing: ${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-                              style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                  fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(width: 8),
                             InkWell(
@@ -89,7 +96,8 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
                                   color: Colors.grey.shade200,
                                   shape: BoxShape.circle,
                                 ),
-                                child: Icon(Icons.close, size: 12, color: Colors.grey.shade700),
+                                child: Icon(Icons.close,
+                                    size: 12, color: Colors.grey.shade700),
                               ),
                             ),
                           ],
@@ -100,43 +108,50 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    final date = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDate ?? DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2100),
-                      builder: (context, child) {
-                        return Theme(
-                          data: Theme.of(context).copyWith(
-                            colorScheme: const ColorScheme.light(
-                              primary: AppTheme.corporateBlue,
-                              onPrimary: Colors.white,
-                              onSurface: AppTheme.deepTeal,
+                    if (notifications.isEmpty) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Nothing to clear'),
+                          content: const Text('There are no recent updates to clear.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
                             ),
+                          ],
+                        ),
+                      );
+                      return;
+                    }
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Clear Notifications'),
+                        content: const Text(
+                            'Are you sure you want to clear all notifications?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
                           ),
-                          child: child!,
-                        );
-                      },
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text('OK',
+                                style: TextStyle(
+                                    color: Color.fromARGB(255, 6, 6, 6))),
+                          ),
+                        ],
+                      ),
                     );
-                    if (date != null) {
-                      setState(() {
-                        _selectedDate = date;
-                      });
+                    if (confirm == true) {
+                      ref.read(notificationProvider.notifier).clearAll();
                     }
                   },
-                  icon: const Icon(LucideIcons.calendar, color: AppTheme.corporateBlue),
-                ),
-                TextButton(
-                  onPressed: () {
-                    ref.read(notificationProvider.notifier).clearAll();
-                  },
-                  child: const Text(
-                    'Clear all',
-                    style: TextStyle(
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                  icon: const HugeIcon(
+                    icon: HugeIcons.strokeRoundedDelete02,
+                    color: Colors.redAccent,
+                    size: 24.0,
                   ),
                 ),
               ],
@@ -157,21 +172,24 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: notifications.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+                    separatorBuilder: (context, index) => const Divider(
+                        height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
                     itemBuilder: (context, index) {
                       final notification = notifications[index];
                       return Dismissible(
                         key: Key(notification.id),
                         direction: DismissDirection.startToEnd,
                         onDismissed: (direction) {
-                          ref.read(notificationProvider.notifier).clearNotification(notification.id);
+                          ref
+                              .read(notificationProvider.notifier)
+                              .clearNotification(notification.id);
                         },
                         background: Container(
                           color: Colors.redAccent,
                           alignment: Alignment.centerLeft,
                           padding: const EdgeInsets.only(left: 20),
-                          child: const Icon(LucideIcons.trash2, color: Colors.white, size: 24),
+                          child: const Icon(LucideIcons.trash2,
+                              color: Colors.white, size: 24),
                         ),
                         child: _NotificationItem(notification: notification),
                       );
@@ -192,6 +210,27 @@ class _NotificationItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    Widget iconWidget;
+    if (notification.type == 'chat') {
+      iconWidget = Icon(
+        LucideIcons.messageCircle,
+        color: Colors.blue.shade600,
+        size: 18,
+      );
+    } else if (notification.type == 'document_request') {
+      iconWidget = HugeIcon(
+        icon: HugeIcons.strokeRoundedTaskAdd02,
+        color: Colors.teal.shade600,
+        size: 18.0,
+      );
+    } else {
+      iconWidget = Icon(
+        LucideIcons.bellRing,
+        color: Colors.teal.shade600,
+        size: 18,
+      );
+    }
+
     return InkWell(
       onTap: () {
         if (notification.type == 'chat' && notification.orderId != null) {
@@ -206,8 +245,25 @@ class _NotificationItem extends ConsumerWidget {
               ),
             ),
           );
-        } else if (notification.type == 'document_request' && notification.orderId != null) {
-          _uploadDocument(context, ref, notification.orderId!);
+        } else if (notification.type == 'document_request' &&
+            notification.orderId != null) {
+          final ordersState = ref.read(serviceOrdersProvider);
+          final orders = ordersState.value ?? [];
+          final targetOrder = orders.where((o) => o.id == notification.orderId).firstOrNull;
+
+          if (targetOrder != null) {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ServiceOrderDetailScreen(order: targetOrder),
+              ),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Order details not found.')),
+            );
+          }
         }
       },
       child: Container(
@@ -218,14 +274,10 @@ class _NotificationItem extends ConsumerWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: notification.type == 'chat' 
-                  ? Colors.blue.shade50 
+              backgroundColor: notification.type == 'chat'
+                  ? Colors.blue.shade50
                   : Colors.teal.shade50,
-              child: Icon(
-                notification.type == 'chat' ? LucideIcons.messageCircle : LucideIcons.bellRing,
-                color: notification.type == 'chat' ? Colors.blue.shade600 : Colors.teal.shade600,
-                size: 18,
-              ),
+              child: iconWidget,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -241,7 +293,9 @@ class _NotificationItem extends ConsumerWidget {
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 14,
-                            fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.w700,
+                            fontWeight: notification.isRead
+                                ? FontWeight.w500
+                                : FontWeight.w700,
                             color: Colors.black87,
                           ),
                           maxLines: 1,
@@ -254,21 +308,27 @@ class _NotificationItem extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey.shade500,
-                          fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w500,
+                          fontWeight: notification.isRead
+                              ? FontWeight.w400
+                              : FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 2),
                   Text(
-                     notification.message,
-                     style: TextStyle(
-                       fontSize: 13,
-                       color: notification.isRead ? Colors.grey.shade600 : Colors.black87,
-                       fontWeight: notification.isRead ? FontWeight.w400 : FontWeight.w500,
-                     ),
-                     maxLines: 2,
-                     overflow: TextOverflow.ellipsis,
+                    notification.message,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: notification.isRead
+                          ? Colors.grey.shade600
+                          : Colors.black87,
+                      fontWeight: notification.isRead
+                          ? FontWeight.w400
+                          : FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -279,53 +339,7 @@ class _NotificationItem extends ConsumerWidget {
     );
   }
 
-  Future<void> _uploadDocument(BuildContext context, WidgetRef ref, String orderId) async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-      );
 
-      if (result != null && result.files.single.path != null) {
-        final filePath = result.files.single.path!;
-        final uri = Uri.parse('$kBaseUrl/api/checklists/$orderId/upload-documents');
-        final request = http.MultipartRequest('POST', uri);
-        
-        // We might not know the exact document name, so we use a generic name or ask user
-        // For simplicity, we just use the filename here, though backend might expect specific keys.
-        // If it expects specific keys, we might need a generic upload endpoint or parse it.
-        request.files.add(await http.MultipartFile.fromPath('document', filePath));
-
-        final uid = ref.read(authStateProvider).value?.uid;
-        if (uid != null) {
-          request.headers['x-user-id'] = uid;
-        }
-
-        if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Uploading...')));
-
-        final response = await request.send();
-        
-        if (!context.mounted) return;
-        if (response.statusCode == 200 || response.statusCode == 201) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Document uploaded successfully')),
-          );
-          ref.invalidate(serviceOrdersProvider);
-          Navigator.pop(context); // close sheet
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Upload failed. Try again.')),
-          );
-        }
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
-  }
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();

@@ -11,6 +11,8 @@ class UserModel {
   final String companyName;
   final List<String> services;
   final DateTime? createdAt;
+  final String profileImage;
+  final Map<String, dynamic>? manager;
 
   UserModel({
     required this.id,
@@ -21,6 +23,8 @@ class UserModel {
     this.companyName = '',
     this.services = const [],
     this.createdAt,
+    this.profileImage = '',
+    this.manager,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, [String? id]) {
@@ -46,6 +50,21 @@ class UserModel {
       }
     }
 
+    Map<String, dynamic>? extractedManager;
+    if (data['client_manager'] != null && data['client_manager'] is Map) {
+      extractedManager = {
+        'name': data['client_manager']['owner_name']?.toString() ?? data['client_manager']['name']?.toString() ?? 'Support Team',
+        'email': data['client_manager']['email']?.toString() ?? 'support@example.com',
+        'phone': data['client_manager']['phone']?.toString() ?? '+918000000000',
+      };
+    } else if (data['assigned_to'] != null && data['assigned_to'] is Map) {
+      extractedManager = {
+        'name': data['assigned_to']['owner_name']?.toString() ?? data['assigned_to']['name']?.toString() ?? 'Support Team',
+        'email': data['assigned_to']['email']?.toString() ?? 'support@example.com',
+        'phone': data['assigned_to']['phone']?.toString() ?? '+918000000000',
+      };
+    }
+
     return UserModel(
       id: extractedId,
       name: data['owner_name']?.toString() ?? data['name']?.toString() ?? 'User',
@@ -58,6 +77,8 @@ class UserModel {
         orElse: () => UserRole.customer,
       ),
       createdAt: extractedDate,
+      profileImage: data['profile_image']?.toString() ?? '',
+      manager: extractedManager,
     );
   }
 

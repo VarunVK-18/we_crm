@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class Api {
    private readonly baseUrl = 'http://localhost:5001/api';
-  // private readonly baseUrl = 'https://we-crm.onrender.com/api';
+  // private readonly baseUrl = 'https://we-crm.onrender.com/api'; 
 
 
   get serverUrl(): string {
@@ -139,5 +139,13 @@ export class Api {
   delete<T>(endpoint: string): Observable<T> {
     const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
     return this.http.delete<T>(url, { headers: this.getHeaders() });
+  }
+
+  /**
+   * Fetch a file as a Blob
+   */
+  getBlob(endpoint: string): Observable<Blob> {
+    const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    return this.http.get(url, { headers: this.getHeaders(), responseType: 'blob' });
   }
 }

@@ -124,6 +124,15 @@
   letter-spacing: 0.5px;
 }
 
+.pill-avatar-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--blue-100);
+}
+
 .pill-name {
   font-size: 14px;
   font-weight: 700;
@@ -174,6 +183,15 @@
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 1px;
+}
+
+.dropdown-avatar-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
 }
 
 .dropdown-user-info {

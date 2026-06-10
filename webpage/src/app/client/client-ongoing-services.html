@@ -53,10 +53,7 @@
                     <tr (click)="openServiceDetails(order)">
                       <td>
                         <div style="display: flex; align-items: center; gap: 12px;">
-                          <div class="msc-icon" style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 8px; background: rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; color: var(--palette-dark);">
-                            <span class="material-symbols-outlined" style="font-size: 18px;">work</span>
-                          </div>
-                          <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
+                          <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark); white-space: nowrap;">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
                         </div>
                       </td>
                       <td>
@@ -79,7 +76,7 @@
                         </div>
                       </td>
                       <td>
-                        <span class="ho-status-badge" [ngClass]="order.derivedStatus">
+                        <span class="ho-status-badge" [ngClass]="order.derivedStatus" style="white-space: nowrap;">
                           <span class="ho-status-dot"></span>
                           {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'in-progress' ? 'In Progress' : (order.derivedStatus | titlecase)) }}
                         </span>

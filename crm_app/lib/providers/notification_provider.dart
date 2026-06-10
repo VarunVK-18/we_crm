@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,9 +42,19 @@ class ServiceNotification {
 
 class NotificationNotifier extends StateNotifier<List<ServiceNotification>> {
   final Ref ref;
+  Timer? _pollingTimer;
 
   NotificationNotifier(this.ref) : super([]) {
     fetchNotifications();
+    _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      fetchNotifications();
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> fetchNotifications() async {

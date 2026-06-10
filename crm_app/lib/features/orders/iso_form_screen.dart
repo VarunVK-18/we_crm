@@ -72,7 +72,7 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
       if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('File size is large. Max 2MB allowed.'),
+          content: Text('The file is large. Max 2MB allowed.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -84,7 +84,13 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
   }
 
   Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please fill all required fields.'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
 
     if (_selectedIso == 'Other' && _otherIsoController.text.trim().isEmpty) {
       _showError("Please specify the Other ISO Certification.");
@@ -129,6 +135,20 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Success'),
+            content: const Text('Form submitted successfully!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
         if (!mounted) return;
         Navigator.pop(context, true); // Success
       } else {
@@ -355,6 +375,7 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
             maxLines: maxLines,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,

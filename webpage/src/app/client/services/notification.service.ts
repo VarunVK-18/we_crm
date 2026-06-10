@@ -29,7 +29,7 @@ export class NotificationService {
     if (!this.fetchInterval) {
       this.fetchInterval = setInterval(() => {
         this.fetchNotifications();
-      }, 30000); // 30 seconds
+      }, 5000); // 5 seconds
     }
   }
 

@@ -221,4 +221,57 @@ class AuthRepository {
       );
     }
   }
+
+  // Upload Profile Image
+  Future<String> uploadProfileImage(String uid, String filePath) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$kBaseUrl/api/users/profile/$uid/upload-image'),
+      );
+      
+      request.files.add(await http.MultipartFile.fromPath('profileImage', filePath));
+      
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['profile_image'];
+      } else {
+        String errorMessage = 'Failed to upload image (Status: ${response.statusCode})';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+        } catch (_) {
+          // If body is HTML (like from an Express MulterError limit), just use the status code message
+          if (response.statusCode == 413) {
+            errorMessage = 'Image file is too large. Please select a smaller image.';
+          } else if (response.body.isNotEmpty && !response.body.contains('<!DOCTYPE')) {
+             errorMessage = response.body.length > 100 ? response.body.substring(0, 100) : response.body;
+          }
+        }
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Remove Profile Image
+  Future<void> removeProfileImage(String uid) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse('$kBaseUrl/api/users/profile/$uid/remove-image'),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to remove image (Status: ${response.statusCode})');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

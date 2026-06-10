@@ -48,6 +48,7 @@ export class Dashboard implements OnInit, OnDestroy {
   currentTab = signal<string>('dashboard');
   selectedClientId = signal<string | null>(null);
   selectedChecklistId = signal<string | null>(null);
+  openChatOnLoad = signal<boolean>(false);
   user = signal<any>(null);
   teams = signal<any[]>([]);
 
@@ -120,10 +121,10 @@ export class Dashboard implements OnInit, OnDestroy {
 
   handleNotificationClick(notif: any) {
     // Default action for notification click
-    if (notif.type === 'chat' && notif.order_id) {
-      this.viewChecklist(notif.order_id);
-    } else if (notif.order_id) {
-      this.viewChecklist(notif.order_id);
+    if (notif.type === 'chat' && notif.orderId) {
+      this.viewChecklist(notif.orderId, true);
+    } else if (notif.orderId) {
+      this.viewChecklist(notif.orderId, false);
     }
     
     this.isNotificationOpen.set(false);
@@ -190,8 +191,9 @@ export class Dashboard implements OnInit, OnDestroy {
     this.currentTab.set('client-dashboard');
   }
 
-  viewChecklist(checklistId: string) {
+  viewChecklist(checklistId: string, openChat: boolean = false) {
     this.selectedChecklistId.set(checklistId);
+    this.openChatOnLoad.set(openChat);
     this.currentTab.set('checklist-details');
   }
 

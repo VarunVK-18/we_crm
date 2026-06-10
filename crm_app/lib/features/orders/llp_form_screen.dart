@@ -79,7 +79,16 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
 
   bool _isVerified = false;
 
-  final List<PersonDetails> _persons = [PersonDetails(), PersonDetails()];
+  late final List<PersonDetails> _persons;
+
+  @override
+  void initState() {
+    super.initState();
+    final assignedNumStr = widget.order.details['assignedNumberOfDirectors']?.toString();
+    final numStr = assignedNumStr ?? widget.order.details['numberOfDirectors']?.toString() ?? '2';
+    final int count = int.tryParse(numStr) ?? 2;
+    _persons = List.generate(count, (_) => PersonDetails());
+  }
 
   @override
   void dispose() {
@@ -103,7 +112,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
       if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('File size is large. Max 2MB allowed.'),
+          content: Text('The file is large. Max 2MB allowed.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -115,7 +124,13 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
   }
 
   Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please fill all required fields.'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
 
     if (_officeProofPath == null) {
       _showError('Please upload Registered office proof.');
@@ -127,7 +142,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
       return;
     }
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < _persons.length; i++) {
       if (_persons[i].photoPath == null ||
           _persons[i].signaturePath == null ||
           _persons[i].addressProofPath == null ||
@@ -161,7 +176,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
       request.fields['registeredOfficePreference'] = _registeredOfficePreference;
 
       // Add person fields
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < _persons.length; i++) {
         final p = _persons[i];
         final prefix = 'person_${i + 1}_';
         
@@ -190,7 +205,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
       request.files.add(await http.MultipartFile.fromPath('officeProof', _officeProofPath!));
       request.files.add(await http.MultipartFile.fromPath('paymentScreenshot', _paymentScreenshotPath!));
 
-      for (int i = 0; i < 2; i++) {
+      for (int i = 0; i < _persons.length; i++) {
         final p = _persons[i];
         request.files.add(await http.MultipartFile.fromPath('person_${i + 1}_photo', p.photoPath!));
         request.files.add(await http.MultipartFile.fromPath('person_${i + 1}_signature', p.signaturePath!));
@@ -203,6 +218,20 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Success'),
+            content: const Text('Form submitted successfully!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
         if (!mounted) return;
         Navigator.pop(context, true); // Success
       } else {
@@ -260,7 +289,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
                   ),
 
                   // Persons Details
-                  for (int i = 0; i < 2; i++)
+                  for (int i = 0; i < _persons.length; i++)
                     _buildPersonSection(i),
 
                   // Payment & Consent
@@ -465,6 +494,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
             keyboardType: keyboardType,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
             validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,

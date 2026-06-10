@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
@@ -413,12 +414,19 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
 
 // ─── Requested Documents Section ──────────────────────────────────────────────
 
-class _RequestedDocumentsSection extends ConsumerWidget {
+class _RequestedDocumentsSection extends ConsumerStatefulWidget {
   final ServiceOrder order;
   const _RequestedDocumentsSection({required this.order});
 
-  Future<void> _uploadDocument(
-      BuildContext context, WidgetRef ref, String docName) async {
+  @override
+  ConsumerState<_RequestedDocumentsSection> createState() => _RequestedDocumentsSectionState();
+}
+
+class _RequestedDocumentsSectionState extends ConsumerState<_RequestedDocumentsSection> {
+  final Set<String> _uploadingDocs = {};
+  final Set<String> _uploadedDocs = {};
+
+  Future<void> _uploadDocument(String docName) async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -542,8 +550,12 @@ class _RequestedDocumentsSection extends ConsumerWidget {
 
         if (shouldUpload != true) return;
 
+        setState(() {
+          _uploadingDocs.add(docName);
+        });
+
         final uri =
-            Uri.parse('$kBaseUrl/api/checklists/${order.id}/upload-documents');
+            Uri.parse('$kBaseUrl/api/checklists/${widget.order.id}/upload-documents');
 
         final request = http.MultipartRequest('POST', uri);
         request.fields['docName'] = docName;
@@ -560,11 +572,42 @@ class _RequestedDocumentsSection extends ConsumerWidget {
         if (!context.mounted) return;
 
         if (response.statusCode == 200) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Document uploaded successfully')),
+          setState(() {
+            _uploadingDocs.remove(docName);
+            _uploadedDocs.add(docName);
+          });
+          
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Row(
+                children: [
+                  Icon(LucideIcons.checkCircle2, color: Colors.green),
+                  SizedBox(width: 10),
+                  Text('Success'),
+                ],
+              ),
+              content: const Text('Successfully uploaded document.'),
+              actions: [
+                FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppTheme.deepTeal,
+                  ),
+                  child: const Text('OK'),
+                )
+              ]
+            )
           );
           ref.invalidate(serviceOrdersProvider);
         } else {
+          setState(() {
+            _uploadingDocs.remove(docName);
+          });
           debugPrint("Upload failed: ${response.statusCode} - $respStr");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Failed: $respStr')),
@@ -572,7 +615,10 @@ class _RequestedDocumentsSection extends ConsumerWidget {
         }
       }
     } catch (e) {
-      if (!context.mounted) return;
+      if (!mounted) return;
+      setState(() {
+        _uploadingDocs.remove(docName);
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
       );
@@ -580,7 +626,7 @@ class _RequestedDocumentsSection extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -594,9 +640,12 @@ class _RequestedDocumentsSection extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-        ...order.requestedDocuments
+        ...widget.order.requestedDocuments
             .where((doc) => !doc.name.startsWith('director_'))
             .map((doc) {
+          final isLocallyUploaded = doc.isUploaded || _uploadedDocs.contains(doc.name);
+          final isUploading = _uploadingDocs.contains(doc.name);
+
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(16),
@@ -604,7 +653,7 @@ class _RequestedDocumentsSection extends ConsumerWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                  color: doc.isUploaded
+                  color: isLocallyUploaded
                       ? Colors.green.withValues(alpha: 0.3)
                       : Colors.red.withValues(alpha: 0.3)),
               boxShadow: [
@@ -617,12 +666,12 @@ class _RequestedDocumentsSection extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  doc.isUploaded
-                      ? LucideIcons.fileCheck
-                      : LucideIcons.fileWarning,
-                  color: doc.isUploaded ? Colors.green : Colors.red,
-                  size: 24,
+                HugeIcon(
+                  icon: isLocallyUploaded
+                      ? HugeIcons.strokeRoundedTaskDone02
+                      : HugeIcons.strokeRoundedTaskAdd02,
+                  color: isLocallyUploaded ? Colors.green : const Color.fromARGB(255, 10, 2, 2),
+                  size: 24.0,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -636,9 +685,9 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        doc.isUploaded ? 'Uploaded' : 'Action Required',
+                        isLocallyUploaded ? 'Uploaded' : 'Action Required',
                         style: TextStyle(
-                          color: doc.isUploaded ? Colors.green : const Color.fromARGB(255, 244, 67, 54),
+                          color: isLocallyUploaded ? Colors.green : const Color.fromARGB(255, 244, 67, 54),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
@@ -677,27 +726,33 @@ class _RequestedDocumentsSection extends ConsumerWidget {
                     ],
                   ),
                 ),
-                if (!doc.isUploaded)
-                  FilledButton.icon(
-                    onPressed: () => _uploadDocument(context, ref, doc.name),
-                    icon: const Icon(LucideIcons.uploadCloud, size: 14),
-                    label: const Text('Upload',
-                        style: TextStyle(
-                            fontSize: 12, fontWeight: FontWeight.w600)),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 247, 240, 241),
-                      foregroundColor: const Color.fromARGB(255, 244, 67, 54),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side:
-                              BorderSide(color: Colors.red.shade200, width: 1)),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 0),
-                      minimumSize: const Size(0, 32),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
+                if (!isLocallyUploaded)
+                  isUploading
+                      ? const SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: CircularProgressIndicator(strokeWidth: 3),
+                        )
+                      : FilledButton.icon(
+                          onPressed: () => _uploadDocument(doc.name),
+                          icon: const Icon(LucideIcons.uploadCloud, size: 14,color: Colors.white,),
+                          label: const Text('Upload',
+                              style: TextStyle(
+                                  fontSize: 12, fontWeight: FontWeight.w600,color: Colors.white)),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color.fromARGB(255, 11, 6, 7),
+                            foregroundColor: const Color.fromARGB(255, 0, 0, 0),
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(
+                                    color: const Color.fromARGB(255, 158, 157, 157), width: 1)),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 0),
+                            minimumSize: const Size(0, 32),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
               ],
             ),
           );
@@ -728,14 +783,7 @@ class _InfoRow extends StatelessWidget {
               value: order.assignedExpert,
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _InfoTile(
-              icon: LucideIcons.building2,
-              label: 'Entity',
-              value: order.entityName,
-            ),
-          ),
+
           const SizedBox(width: 12),
           Expanded(
             child: _InfoTile(
@@ -961,7 +1009,7 @@ class _StepTimeline extends StatelessWidget {
                                 ),
                               ],
                             ),
-                          ] else if (step.isActionStep) ...[
+                          ] else if (step.isActionStep && order.stage != OrderStage.reqReceived) ...[
                             const SizedBox(height: 12),
                             Row(
                               children: [

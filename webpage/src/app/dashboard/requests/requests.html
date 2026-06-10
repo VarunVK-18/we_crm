@@ -143,6 +143,14 @@
           </select>
         </div>
 
+        @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company'].includes(order.serviceType || order.service_name || '')) {
+        <div class="assign-field-group">
+          <label class="assign-label">Number of Directors/Partners:</label>
+          <input type="number" class="form-control-input number-input" placeholder="Enter count"
+            [value]="getFormattedDirectors(order._id, order.details?.numberOfDirectors)" (input)="onDirectorsChange(order._id, $event)">
+        </div>
+        }
+
         <div class="assign-field-group">
           <label class="assign-label">Deal Closed Amount (INR):</label>
           <input type="text" class="form-control-input number-input" placeholder="Enter amount (e.g. 5,000)"

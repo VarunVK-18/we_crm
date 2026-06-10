@@ -124,13 +124,11 @@ class _ServiceRequestSummarySheetState
   bool _isPhoneValid = false;
   bool _isCompanyPhoneValid = false;
   String _consent = 'Agree';
-  
+
   final _formKey = GlobalKey<FormState>();
   int _currentPage = 0;
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
-
-  final List<DirectorFormData> _directors = [DirectorFormData()];
 
   // Map to store files per document slot
   // Key is the document name from kServiceRequiredDocuments or 'Other Documents'
@@ -381,10 +379,6 @@ class _ServiceRequestSummarySheetState
 
     _dunsTradeNameController.dispose();
     _dunsYearController.dispose();
-
-    for (var director in _directors) {
-      director.dispose();
-    }
     _scrollController.dispose();
 
     super.dispose();
@@ -423,10 +417,12 @@ class _ServiceRequestSummarySheetState
         details['fssai_nature_of_business'] = _selectedFssaiNatures.join(', ');
         details['fssai_start_date'] = _fssaiStartDateController.text;
         details['fssai_employees'] = _fssaiEmployeesController.text;
-        details['fssai_premises_address'] = _fssaiPremisesAddressController.text;
+        details['fssai_premises_address'] =
+            _fssaiPremisesAddressController.text;
         details['fssai_village'] = _fssaiVillageController.text;
         details['fssai_district'] = _fssaiDistrictController.text;
-        details['is_correspondence_same'] = _isCorrespondenceSame ? 'true' : 'false';
+        details['is_correspondence_same'] =
+            _isCorrespondenceSame ? 'true' : 'false';
         if (!_isCorrespondenceSame) {
           details['fssai_corr_address'] = _fssaiCorrAddressController.text;
           details['fssai_corr_village'] = _fssaiCorrVillageController.text;
@@ -453,30 +449,6 @@ class _ServiceRequestSummarySheetState
                 file.path!,
               ),
             );
-          }
-        }
-      }
-
-      // Add person files for LLP
-      if (widget.packageName == 'LLP Incorporation') {
-        for (int i = 0; i < _directors.length; i++) {
-          final director = _directors[i];
-          final prefix = 'director_${i + 1}_';
-          
-          if (director.photoPath != null) {
-            request.files.add(await http.MultipartFile.fromPath('${prefix}photo', director.photoPath!));
-          }
-          if (director.signaturePath != null) {
-            request.files.add(await http.MultipartFile.fromPath('${prefix}signature', director.signaturePath!));
-          }
-          if (director.addressProofPath != null) {
-            request.files.add(await http.MultipartFile.fromPath('${prefix}addressProof', director.addressProofPath!));
-          }
-          if (director.aadhaarPath != null) {
-            request.files.add(await http.MultipartFile.fromPath('${prefix}aadhaar', director.aadhaarPath!));
-          }
-          if (director.panPath != null) {
-            request.files.add(await http.MultipartFile.fromPath('${prefix}pan', director.panPath!));
           }
         }
       }
@@ -530,7 +502,7 @@ class _ServiceRequestSummarySheetState
               ),
             ),
             const SizedBox(height: 16),
-            
+
             if (_isTwoStepForm) ...[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -587,7 +559,6 @@ class _ServiceRequestSummarySheetState
                         ),
                       ),
                       const SizedBox(height: 32),
-        
                       _EditableField(
                         label: 'Full Name',
                         controller: _nameController,
@@ -596,7 +567,6 @@ class _ServiceRequestSummarySheetState
                         isRequired: true,
                       ),
                       const SizedBox(height: 20),
-        
                       _EditableField(
                         label: 'Email Address',
                         controller: _emailController,
@@ -606,7 +576,6 @@ class _ServiceRequestSummarySheetState
                         isRequired: true,
                       ),
                       const SizedBox(height: 20),
-        
                       _EditableField(
                         label: 'Verification Phone Number',
                         controller: _phoneController,
@@ -614,29 +583,34 @@ class _ServiceRequestSummarySheetState
                         hint: 'Enter 10 digit number',
                         keyboardType: TextInputType.phone,
                         maxLength: 10,
-                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
                         isPhoneField: true,
                         isPhoneValid: _isPhoneValid,
                         isRequired: true,
                       ),
                       const SizedBox(height: 24),
-        
                       _DetailRow(label: 'Package:', value: widget.packageName),
-        
                       ..._buildServiceSpecificForms(),
                     ] else ...[
-                      if (widget.packageName == 'LLP Incorporation') ...[
-                        ..._buildPrivateLimitedPersons(),
-                      ],
-                      if (widget.packageName == 'LLP Incorporation' || widget.packageName == 'Private Limited Incorporation') ...[
+                      if (widget.packageName == 'LLP Incorporation' ||
+                          widget.packageName ==
+                              'Private Limited Incorporation') ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildSectionHeader('Consent: By submitting this form, I agree to the collection and use of my personal and professional information by Wealth Empires for consultation, compliance assessment, and service-related communication'),
-                              _buildModernRadio('Agree', 'Agree', _consent, (val) => setState(() => _consent = val!)),
-                              _buildModernRadio('Not Agree', 'Not Agree', _consent, (val) => setState(() => _consent = val!)),
+                              _buildSectionHeader(
+                                  'Consent: By submitting this form, I agree to the collection and use of my personal and professional information by Wealth Empires for consultation, compliance assessment, and service-related communication'),
+                              _buildModernRadio('Agree', 'Agree', _consent,
+                                  (val) => setState(() => _consent = val!)),
+                              _buildModernRadio(
+                                  'Not Agree',
+                                  'Not Agree',
+                                  _consent,
+                                  (val) => setState(() => _consent = val!)),
                               const SizedBox(height: 24),
                             ],
                           ),
@@ -683,7 +657,9 @@ class _ServiceRequestSummarySheetState
                         setState(() {
                           _currentPage = 0;
                         });
-                        _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                        _scrollController.animateTo(0,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut);
                       },
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size(0, 56),
@@ -711,7 +687,9 @@ class _ServiceRequestSummarySheetState
                           setState(() {
                             _currentPage = 1;
                           });
-                          _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                          _scrollController.animateTo(0,
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut);
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -742,24 +720,30 @@ class _ServiceRequestSummarySheetState
                 else
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _isLoading || (!_isTwoStepForm ? false : !_areAllRequiredDocsUploaded) ? null : () async {
-                        if (_formKey.currentState!.validate()) {
-                          setState(() => _isLoading = true);
-                          await _submitServiceRequest();
-                          if (mounted) {
-                            setState(() => _isLoading = false);
-                            Navigator.pop(context);
-                            _showSuccessDialog(context);
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Please fill all required fields.'),
-                              backgroundColor: Colors.redAccent,
-                            ),
-                          );
-                        }
-                      },
+                      onPressed: _isLoading ||
+                              (!_isTwoStepForm
+                                  ? false
+                                  : !_areAllRequiredDocsUploaded)
+                          ? null
+                          : () async {
+                              if (_formKey.currentState!.validate()) {
+                                setState(() => _isLoading = true);
+                                await _submitServiceRequest();
+                                if (mounted) {
+                                  setState(() => _isLoading = false);
+                                  Navigator.pop(context);
+                                  _showSuccessDialog(context);
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Please fill all required fields.'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.corporateBlue,
                         minimumSize: const Size(0, 56),
@@ -849,8 +833,6 @@ class _ServiceRequestSummarySheetState
       ),
     );
   }
-
-
 
   Widget _buildServiceHeader() {
     return Container(
@@ -1519,7 +1501,9 @@ class _ServiceRequestSummarySheetState
           ),
           const Text(' *',
               style: TextStyle(
-                  color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
+                  color: Colors.red,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800)),
         ],
       ),
     );
@@ -1701,270 +1685,6 @@ class _ServiceRequestSummarySheetState
       ),
     );
   }
-
-  Future<void> _pickDirectorFile(DirectorFormData director, String fieldName, {List<String> allowedExtensions = const ['pdf', 'jpg', 'jpeg', 'png']}) async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: allowedExtensions,
-        allowMultiple: false,
-      );
-
-      if (result != null && result.files.isNotEmpty) {
-        final file = result.files.first;
-        if (file.size <= 2 * 1024 * 1024) {
-          setState(() {
-            switch (fieldName) {
-              case 'photo': director.photoPath = file.path; break;
-              case 'signature': director.signaturePath = file.path; break;
-              case 'addressProof': director.addressProofPath = file.path; break;
-              case 'aadhaar': director.aadhaarPath = file.path; break;
-              case 'pan': director.panPath = file.path; break;
-            }
-          });
-        } else {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Warning: File is large. Max 2MB allowed')));
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint('Error picking file: $e');
-    }
-  }
-
-  Widget _buildDirectorFileUpload(DirectorFormData director, String label, String hint, String fieldName) {
-    String? currentPath;
-    switch (fieldName) {
-      case 'photo': currentPath = director.photoPath; break;
-      case 'signature': currentPath = director.signaturePath; break;
-      case 'addressProof': currentPath = director.addressProofPath; break;
-      case 'aadhaar': currentPath = director.aadhaarPath; break;
-      case 'pan': currentPath = director.panPath; break;
-    }
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(label, style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w800, color: AppTheme.deepTeal.withValues(alpha: 0.6))),
-            const Text(' *', style: TextStyle(color: Colors.red, fontSize: 13, fontWeight: FontWeight.w800)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(hint, style: TextStyle(color: Colors.grey[500], fontSize: 11)),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: currentPath == null ? () => _pickDirectorFile(director, fieldName) : null,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              border: Border.all(color: currentPath != null ? AppTheme.corporateBlue : Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(12),
-              color: currentPath != null ? AppTheme.corporateBlue.withValues(alpha: 0.05) : Colors.transparent,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  currentPath != null ? LucideIcons.fileCheck2 : LucideIcons.uploadCloud,
-                  size: 20,
-                  color: currentPath != null ? AppTheme.corporateBlue : Colors.grey[500],
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    currentPath != null ? currentPath.split('/').last.split('\\\\').last : 'Upload 1 supported file. Max 2 MB.',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: currentPath != null ? AppTheme.corporateBlue : Colors.grey[500]!,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-                if (currentPath != null) ...[
-                  const SizedBox(width: 8),
-                  // View icon
-                  IconButton(
-                    iconSize: 20,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      if (currentPath != null) {
-                        OpenFile.open(currentPath);
-                      }
-                    },
-                    icon: const Icon(
-                      LucideIcons.eye,
-                      color: AppTheme.corporateBlue,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Delete icon
-                  IconButton(
-                    iconSize: 20,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      setState(() {
-                        switch (fieldName) {
-                          case 'photo':
-                            director.photoPath = null;
-                            break;
-                          case 'signature':
-                            director.signaturePath = null;
-                            break;
-                          case 'addressProof':
-                            director.addressProofPath = null;
-                            break;
-                          case 'aadhaar':
-                            director.aadhaarPath = null;
-                            break;
-                          case 'pan':
-                            director.panPath = null;
-                            break;
-                        }
-                      });
-                    },
-                    icon: Icon(
-                      LucideIcons.trash2,
-                      color: Colors.red[400],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-      ],
-    );
-  }
-
-  List<Widget> _buildPrivateLimitedPersons() {
-    return [
-      const SizedBox(height: 24),
-      ..._directors.asMap().entries.map((entry) {
-        int index = entry.key;
-        DirectorFormData data = entry.value;
-        return Container(
-          margin: const EdgeInsets.only(bottom: 24),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Person ${index + 1} Registration', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w800, color: AppTheme.deepTeal)),
-                  if (_directors.length > 1)
-                    IconButton(
-                      icon: const Icon(LucideIcons.trash2, color: Colors.red),
-                      onPressed: () => setState(() => _directors.removeAt(index)),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text('Please provide the following information for registration (Later it can\'t be changed)',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13)),
-              const SizedBox(height: 24),
-
-              _EditableField(label: 'Full name', controller: data.fullNameController, icon: LucideIcons.user, hint: 'First name, middle name (if any), and last name.', isRequired: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'Father\'s name', controller: data.fatherNameController, icon: LucideIcons.user, hint: 'As it appears on official documents.', isRequired: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'DOB', controller: data.dobController, icon: LucideIcons.calendar, hint: 'DD/MM/YYYY', isRequired: true, isDatePicker: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'Place of birth', controller: data.placeOfBirthController, icon: LucideIcons.mapPin, hint: 'City and state', isRequired: true),
-              const SizedBox(height: 24),
-              _buildSectionHeader('Nationality'),
-              _buildModernRadio('Indian', 'Indian', data.nationality, (val) => setState(() => data.nationality = val!)),
-              _buildModernRadio('Others', 'Others', data.nationality, (val) => setState(() => data.nationality = val!)),
-              const SizedBox(height: 24),
-              _EditableField(label: 'Occupation', controller: data.occupationController, icon: LucideIcons.briefcase, hint: 'Business, Employment, etc.', isRequired: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'Education', controller: data.educationController, icon: LucideIcons.graduationCap, hint: 'Enter education', isRequired: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'Email', controller: data.emailController, icon: LucideIcons.mail, hint: 'Personal email address', keyboardType: TextInputType.emailAddress, isRequired: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'Phone number', controller: data.phoneController, icon: LucideIcons.phone, hint: 'Mobile number', keyboardType: TextInputType.phone, isRequired: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'Address', controller: data.addressController, icon: LucideIcons.map, hint: 'Residential address with Pin code', isRequired: true, maxLines: 3),
-              const SizedBox(height: 20),
-              _EditableField(label: 'PAN', controller: data.panController, icon: LucideIcons.creditCard, hint: '10-character PAN', isRequired: true, isPanField: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'Aadhaar Number', controller: data.aadhaarController, icon: HugeIcons.strokeRoundedUserIdVerification, hint: '12-digit Aadhaar number', isRequired: true),
-              const SizedBox(height: 20),
-              _EditableField(label: 'DIN Number', controller: data.dinController, icon: LucideIcons.hash, hint: '8-digit DIN (Leave blank if first directorship)'),
-              const SizedBox(height: 24),
-
-              _buildSectionHeader('I need DSC'),
-              _buildModernRadio('Yes', 'Yes', data.needDsc, (val) => setState(() => data.needDsc = val!)),
-              _buildModernRadio('No', 'No', data.needDsc, (val) => setState(() => data.needDsc = val!)),
-              _buildModernRadio('Maybe', 'Maybe', data.needDsc, (val) => setState(() => data.needDsc = val!)),
-              const SizedBox(height: 24),
-
-              _buildSectionHeader('Role in the company'),
-              if (widget.packageName == 'LLP Incorporation') ...[
-                _buildModernRadio('Designated Partner', 'Designated Partner', data.role, (val) => setState(() => data.role = val!)),
-                _buildModernRadio('Partner', 'Partner', data.role, (val) => setState(() => data.role = val!)),
-              ] else ...[
-                _buildModernRadio('Director', 'Director', data.role, (val) => setState(() => data.role = val!)),
-                _buildModernRadio('Shareholder', 'Shareholder', data.role, (val) => setState(() => data.role = val!)),
-                _buildModernRadio('Director & Shareholder', 'Director & Shareholder', data.role, (val) => setState(() => data.role = val!)),
-              ],
-              const SizedBox(height: 20),
-              
-              if (widget.packageName == 'LLP Incorporation') ...[
-                _EditableField(label: 'Fixed Capital Contribution', controller: data.fixedCapitalController, icon: LucideIcons.indianRupee, hint: 'Fixed capital amount', keyboardType: TextInputType.number, isRequired: true),
-                const SizedBox(height: 20),
-                _EditableField(label: 'Profit sharing ratio (%)', controller: data.profitSharingController, icon: LucideIcons.percent, hint: 'Profit sharing percentage', keyboardType: TextInputType.number, isRequired: true),
-              ] else ...[
-                _EditableField(label: 'Share holding percentage', controller: data.shareholdingController, icon: LucideIcons.percent, hint: '0 to 100', keyboardType: TextInputType.number, isRequired: true),
-              ],
-              const SizedBox(height: 24),
-
-              _buildSectionHeader('I\'m Authorized signatory (Select "Yes" if you will be an authorized signatory for the company\'s bank accounts and official documents. Yes, I want to be the authorized signatory)'),
-              _buildModernRadio('Yes', 'Yes', data.isAuthSignatory, (val) => setState(() => data.isAuthSignatory = val!)),
-              _buildModernRadio('No', 'No', data.isAuthSignatory, (val) => setState(() => data.isAuthSignatory = val!)),
-              const SizedBox(height: 24),
-
-              _buildDirectorFileUpload(data, 'Photo', 'Upload a recent passport-size photograph (3.5cm x 4.5cm) with a white background.', 'photo'),
-              _buildDirectorFileUpload(data, 'Signature', 'Upload a clear image of your signature. This is required if you are an authorized signatory.', 'signature'),
-              _buildDirectorFileUpload(data, 'Residential address proof', 'Upload proof of your residential address (utility bill, bank statement, etc.). This proof should be on the name of the person and should not be older than two months', 'addressProof'),
-              _buildDirectorFileUpload(data, 'Aadhaar Card', 'Upload Aadhaar card with front and back side pdf. The system will verify the document using OCR and cross-check with the details provided above.', 'aadhaar'),
-              _buildDirectorFileUpload(data, 'PAN Card', 'Upload PAN card. The system will verify the document using OCR and cross-check with the details provided above.', 'pan'),
-            ],
-          ),
-        );
-      }),
-      OutlinedButton.icon(
-        onPressed: () {
-          setState(() {
-            _directors.add(DirectorFormData());
-          });
-        },
-        icon: const Icon(LucideIcons.plus, size: 18),
-        label: const Text('Add Person', style: TextStyle(fontWeight: FontWeight.bold)),
-        style: OutlinedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 50),
-          side: const BorderSide(color: AppTheme.corporateBlue),
-          foregroundColor: AppTheme.corporateBlue,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      ),
-      const SizedBox(height: 24),
-    ];
-  }
 }
 
 class _DetailRow extends StatelessWidget {
@@ -2044,157 +1764,190 @@ class _EditableField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-              label,
-              style: GoogleFonts.outfit(
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-                color: isPhoneField
-                    ? AppTheme.corporateBlue
-                    : AppTheme.deepTeal.withValues(alpha: 0.6),
-                letterSpacing: 0.5,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                  color: isPhoneField
+                      ? AppTheme.corporateBlue
+                      : AppTheme.deepTeal.withValues(alpha: 0.6),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              if (isRequired)
+                const Text(' *',
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: (isPhoneField && !isPhoneValid)
+                    ? Colors.red.withValues(alpha: 0.2)
+                    : Colors.transparent,
               ),
             ),
-            if (isRequired)
-              const Text(' *',
-                  style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: (isPhoneField && !isPhoneValid)
-                  ? Colors.red.withValues(alpha: 0.2)
-                  : Colors.transparent,
-            ),
-          ),
-          child: TextFormField(
-            controller: controller,
-            onChanged: onChanged,
-            validator: validator ?? (isRequired ? (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'This field is required';
-              }
-              if (isPhoneField && value.length < 10) {
-                return 'Enter valid 10-digit number';
-              }
-              return null;
-            } : null),
-            keyboardType: keyboardType,
-            maxLength: maxLength,
-            maxLines: maxLines,
-            readOnly: isDatePicker,
-            onTap: isDatePicker
-                ? () async {
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime(2100),
-                    );
-                    if (pickedDate != null) {
-                      String formattedDate =
-                          "${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.year}";
-                      controller.text = formattedDate;
-                      if (onChanged != null) {
-                        onChanged!(formattedDate);
+            child: TextFormField(
+              controller: controller,
+              onChanged: onChanged,
+              validator: validator ??
+                  (isRequired
+                      ? (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'This field is required';
+                          }
+                          if (isPhoneField && value.length < 10) {
+                            return 'Enter valid 10-digit number';
+                          }
+                          return null;
+                        }
+                      : null),
+              keyboardType: keyboardType,
+              maxLength: maxLength,
+              maxLines: maxLines,
+              readOnly: isDatePicker,
+              onTap: isDatePicker
+                  ? () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null) {
+                        String formattedDate =
+                            "${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.year}";
+                        controller.text = formattedDate;
+                        if (onChanged != null) {
+                          onChanged!(formattedDate);
+                        }
                       }
                     }
-                  }
-                : null,
-            inputFormatters: inputFormatters,
-            style: TextStyle(
-              fontWeight: FontWeight.w800,
-              color: AppTheme.deepTeal,
-              fontSize: 15,
-              letterSpacing: isPhoneField ? 1.5 : 0.2,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: Colors.grey[400],
-                fontSize: 14,
-                letterSpacing: 0,
-              ),
-              prefixIcon: icon is IconData
-                  ? Icon(icon, size: icon == HugeIcons.strokeRoundedUserIdVerification ? 16 : 18)
-                  : Transform.scale(
-                      scale: 0.65,
-                      child: HugeIcon(
-                          icon: icon,
-                          color: Colors.grey[600] ?? Colors.grey,
-                          size: 18.0),
-                    ),
-              suffixIcon: (label.contains('Full Name') || label.contains('Email Address') || label.contains('Verification Phone Number'))
-                  ? const Icon(LucideIcons.pencil, size: 18, color: AppTheme.corporateBlue)
                   : null,
-              counterText: '',
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 16),
+              inputFormatters: inputFormatters,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: AppTheme.deepTeal,
+                fontSize: 15,
+                letterSpacing: isPhoneField ? 1.5 : 0.2,
+              ),
+              decoration: InputDecoration(
+                hintText: hint,
+                hintStyle: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 14,
+                  letterSpacing: 0,
+                ),
+                prefixIcon: icon is IconData
+                    ? Icon(icon,
+                        size: icon == HugeIcons.strokeRoundedUserIdVerification
+                            ? 16
+                            : 18)
+                    : Transform.scale(
+                        scale: 0.65,
+                        child: HugeIcon(
+                            icon: icon,
+                            color: Colors.grey[600] ?? Colors.grey,
+                            size: 18.0),
+                      ),
+                suffixIcon: (label.contains('Full Name') ||
+                        label.contains('Email Address') ||
+                        label.contains('Verification Phone Number'))
+                    ? const Icon(LucideIcons.pencil,
+                        size: 18, color: AppTheme.corporateBlue)
+                    : null,
+                counterText: '',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+              ),
             ),
           ),
-        ),
-        if (isPanField)
-          Consumer(
-            builder: (context, ref, child) {
-              final savedPans = ref.watch(panProvider);
-              if (savedPans.isEmpty) return const SizedBox.shrink();
-              return Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Saved PAN Details (Tap to auto-fill):', style: TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    ...savedPans.map((pan) {
-                      return InkWell(
-                        onTap: () {
-                          controller.text = pan.panNumber;
-                          if (onChanged != null) onChanged!(pan.panNumber);
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 4),
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppTheme.corporateBlue.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AppTheme.corporateBlue.withValues(alpha: 0.2)),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(LucideIcons.creditCard, size: 16, color: AppTheme.corporateBlue),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '${pan.panNumber} - ${pan.name}',
-                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppTheme.deepTeal),
-                                  overflow: TextOverflow.ellipsis,
+          if (isPanField)
+            Consumer(
+              builder: (context, ref, child) {
+                final savedPans = ref.watch(panProvider);
+                if (savedPans.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Saved PAN Details (Tap to auto-fill):',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      ...savedPans.map((pan) {
+                        return InkWell(
+                          onTap: () {
+                            controller.text = pan.panNumber;
+                            if (onChanged != null) onChanged!(pan.panNumber);
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 4),
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppTheme.corporateBlue
+                                  .withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: AppTheme.corporateBlue
+                                      .withValues(alpha: 0.2)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(LucideIcons.creditCard,
+                                    size: 16, color: AppTheme.corporateBlue),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '${pan.panNumber} - ${pan.name}',
+                                    style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.deepTeal),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              );
-            },
-          ),
-      ],
-    ),
+                        );
+                      }),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 }

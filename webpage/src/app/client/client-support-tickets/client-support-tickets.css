@@ -113,10 +113,9 @@
 
 /* Board Layout */
 .board-layout {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  align-items: start;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
 }
 
 .board-column {
@@ -125,16 +124,14 @@
   gap: 16px;
 }
 
-/* Sticky column headers */
+/* Section headers */
 .column-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 4px;
-  position: sticky;
-  top: 0;
-  background-color: #f8fafc;
-  z-index: 10;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 16px;
 }
 
 .column-header h2 {
@@ -176,19 +173,17 @@
 
 /* No custom scrollbar needed anymore — page scrolls */
 
-/* Action Card */
+/* Action Card (Row Style) */
 .action-card {
   background-color: white;
   border: 2px dashed #cbd5e1;
   border-radius: 16px;
-  padding: 32px 24px;
+  padding: 24px 32px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  text-align: center;
+  justify-content: space-between;
   transition: all 0.2s;
-  position: sticky;
-  top: 64px;
 }
 
 .action-card:hover {
@@ -196,30 +191,46 @@
   background-color: #f8fafc;
 }
 
+.action-card-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
 .icon-circle {
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   background-color: #f1f5f9;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #475569;
-  margin-bottom: 16px;
 }
 
-.action-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 16px;
+.action-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.action-card-text h3 {
+  margin: 0;
+  font-size: 18px;
   font-weight: 700;
   color: var(--palette-dark);
 }
 
-.action-card p {
-  margin: 0 0 24px 0;
-  font-size: 13px;
+.action-card-text p {
+  margin: 0;
+  font-size: 14px;
   color: #64748b;
   line-height: 1.5;
+}
+
+.action-card-btn {
+  width: auto;
+  white-space: nowrap;
 }
 
 .black-btn {
@@ -231,7 +242,6 @@
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  width: 100%;
   transition: all 0.2s;
 }
 
@@ -240,29 +250,38 @@
   transform: translateY(-1px);
 }
 
-/* Kanban Card */
-.kanban-card {
+/* Ticket Row Card */
+.ticket-row-card {
   background-color: white;
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.02);
   transition: all 0.2s;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.kanban-card:hover {
-  box-shadow: 0 12px 24px rgba(0,0,0,0.06);
+.ticket-row-card:hover {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.04);
   transform: translateY(-2px);
   border-color: #cbd5e1;
 }
 
-.card-top {
+.ticket-main {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.ticket-meta-group {
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  gap: 40px;
 }
 
 .ticket-id {
@@ -303,9 +322,9 @@
 
 .card-meta {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: 4px;
+  flex-direction: row;
+  align-items: center;
+  gap: 24px;
 }
 
 .meta-row {

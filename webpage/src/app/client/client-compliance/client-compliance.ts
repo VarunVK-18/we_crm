@@ -1,8 +1,9 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons';
+import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-compliance',
@@ -16,18 +17,45 @@ export class ClientCompliance implements OnInit {
   readonly Alert01Icon = Alert01Icon;
   readonly CheckmarkCircle01Icon = CheckmarkCircle01Icon;
   readonly ArrowUpRight01Icon = ArrowUpRight01Icon;
+  readonly ArrowLeftRightIcon = ArrowLeftRightIcon;
+  readonly AiSecurity01Icon = AiSecurity01Icon;
 
   reminders = signal<any[]>([]);
+  checklists = signal<any[]>([]);
   isLoading = signal(true);
   user = signal<any>(null);
+  isPendingModalOpen = signal(false);
+  isEntityModalOpen = signal(false);
+  currentEntity = signal<string>('All Entities');
 
   // Computed Values
-  pendingReminders = computed(() => this.reminders().filter(r => r.status !== 'expired'));
+  availableEntities = computed(() => {
+    const unique = new Set<string>();
+    
+    this.reminders().forEach(r => {
+      if (r.entityName) unique.add(r.entityName);
+    });
+
+    this.checklists().forEach(c => {
+      const entityName = c.details?.entityName || c.client_id?.company_name;
+      if (entityName) unique.add(entityName);
+    });
+
+    return Array.from(unique).sort();
+  });
+
+  filteredReminders = computed(() => {
+    const entity = this.currentEntity();
+    if (entity === 'All Entities') return this.reminders();
+    return this.reminders().filter(r => r.entityName === entity);
+  });
+
+  pendingReminders = computed(() => this.filteredReminders().filter(r => r.status !== 'expired'));
   
   healthScore = computed(() => {
-    const total = this.reminders().length;
+    const total = this.filteredReminders().length;
     if (total === 0) return 1.0;
-    const expired = this.reminders().filter(r => r.status === 'expired').length;
+    const expired = this.filteredReminders().filter(r => r.status === 'expired').length;
     return (total - expired) / total;
   });
 
@@ -60,14 +88,24 @@ export class ClientCompliance implements OnInit {
     }));
   });
 
-  constructor(private api: Api) {}
+  constructor(private api: Api, private router: Router) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
       this.fetchReminders();
+      this.fetchChecklists();
     }
+  }
+
+  fetchChecklists() {
+    this.api.get<any>('my-checklists').subscribe({
+      next: (res) => {
+        this.checklists.set(res.checklists || []);
+      },
+      error: (err) => console.error('Failed to fetch checklists for entities:', err)
+    });
   }
 
   fetchReminders() {
@@ -106,5 +144,19 @@ export class ClientCompliance implements OnInit {
         this.isLoading.set(false);
       }
     });
+  }
+
+  renewService(serviceName: string) {
+    // Navigate to the services catalog, where client-services component will
+    // automatically find the correct category and auto-select the service.
+    this.isPendingModalOpen.set(false);
+    this.router.navigate(['/client/services'], {
+      queryParams: { serviceName: serviceName }
+    });
+  }
+
+  switchEntity(entity: string) {
+    this.currentEntity.set(entity);
+    this.isEntityModalOpen.set(false);
   }
 }

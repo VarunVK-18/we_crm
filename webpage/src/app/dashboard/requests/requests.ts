@@ -68,6 +68,7 @@ export class RequestsComponent implements OnInit {
   // Deal closed amount per order { orderId: number }
   dealClosedAmountForOrder = signal<Record<string, number>>({});
   advanceAmountPaidForOrder = signal<Record<string, number>>({});
+  numberOfDirectorsForOrder = signal<Record<string, number>>({});
 
   constructor(public api: Api) { }
 
@@ -196,6 +197,17 @@ export class RequestsComponent implements OnInit {
     event.target.value = val ? val.toLocaleString('en-IN') : '';
   }
 
+  getFormattedDirectors(orderId: string, defaultVal: any): string {
+    const val = this.numberOfDirectorsForOrder()[orderId];
+    if (val) return val.toString();
+    return defaultVal ? defaultVal.toString() : '';
+  }
+
+  onDirectorsChange(orderId: string, event: any) {
+    const val = parseInt(event.target.value) || 0;
+    this.numberOfDirectorsForOrder.update(prev => ({ ...prev, [orderId]: val }));
+  }
+
   assignEmployee(orderId: string) {
     const emp = this.selectedEmployeeForOrder()[orderId];
     const amount = this.dealClosedAmountForOrder()[orderId] || 0;
@@ -206,6 +218,18 @@ export class RequestsComponent implements OnInit {
       return;
     }
 
+    const order = this.orders().find(o => o._id === orderId);
+    const needsDirectors = ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company'].includes(order?.serviceType || order?.serviceName || '');
+    let directors = this.numberOfDirectorsForOrder()[orderId];
+    if (needsDirectors && !directors) {
+      if (order?.details?.numberOfDirectors) {
+        directors = Number(order.details.numberOfDirectors);
+      } else {
+        this.showToast('Please enter the Number of Directors/Partners.', 'error');
+        return;
+      }
+    }
+
     const updateData: any = {
       assignedExpert: emp.name,
       expertPhone: emp.phone || '',
@@ -213,6 +237,10 @@ export class RequestsComponent implements OnInit {
       dealClosedAmount: amount,
       advanceAmountPaid: advance
     };
+
+    if (needsDirectors && directors) {
+      updateData.assignedNumberOfDirectors = directors;
+    }
 
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
       next: (res: any) => {
@@ -230,6 +258,11 @@ export class RequestsComponent implements OnInit {
           return next;
         });
         this.advanceAmountPaidForOrder.update(prev => {
+          const next = { ...prev };
+          delete next[orderId];
+          return next;
+        });
+        this.numberOfDirectorsForOrder.update(prev => {
           const next = { ...prev };
           delete next[orderId];
           return next;

@@ -127,7 +127,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             child: PageView(
               controller: _pageController,
               onPageChanged: (index) => ref.read(navigationIndexProvider.notifier).state = index,
-              physics: const ClampingScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               children: navItems.asMap().entries.map((entry) {
                 final index = entry.key;
                 final item = entry.value;

@@ -506,35 +506,46 @@
 
 .message-bubble {
   max-width: 80%;
-  padding: 12px 16px;
+  padding: 6px 10px 8px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px;
   color: var(--text-primary);
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
+.message-bubble::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
 .message-bubble.is-client {
-  background: var(--palette-purple);
+  background: var(--palette-dark); /* Made it darker like screenshot */
   color: white;
   border: none;
-  border-radius: 16px;
 }
 
 .message-bubble p {
-  margin: 0 0 6px 0;
+  margin: 0;
   font-size: 14.5px;
-  line-height: 1.5;
+  line-height: 1.4;
   word-break: break-word;
+  white-space: pre-wrap;
+  display: inline;
 }
 
 .message-meta {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: flex-end;
   gap: 4px;
   font-size: 11px;
   color: #94a3b8;
+  float: right;
+  margin-left: 12px;
+  margin-top: 6px;
+  margin-bottom: -4px;
+  line-height: 1;
 }
 
 .message-bubble.is-client .message-meta {
@@ -546,7 +557,7 @@
 }
 
 .tick-icon.read {
-  color: #34d399; /* Green tick for seen messages */
+  color: #38bdf8; /* Brighter blue for visibility on dark background */
 }
 
 /* Chat Drawer Header */
@@ -698,5 +709,92 @@
 
 @keyframes spin {
   from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+}
+
+/* Final Deliverables Area */
+.deliverables-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0 32px 32px 32px;
+}
+
+.deliverable-item {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.deliverable-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.deliverable-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.invoice-icon {
+  background: rgba(37, 99, 235, 0.1);
+  color: #2563eb;
+}
+
+.doc-icon {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.deliverable-icon .material-symbols-outlined {
+  font-size: 24px;
+}
+
+.deliverable-content {
+  flex: 1;
+}
+
+.deliverable-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--palette-dark);
+}
+
+.deliverable-content p {
+  margin: 0;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--palette-dark) 65%, transparent);
+}
+
+.deliverable-content p.expiry-text {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.deliverable-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: color-mix(in srgb, var(--palette-dark) 65%, transparent);
+  transition: all 0.2s ease;
+}
+
+.deliverable-item:hover .deliverable-action {
+  background: #f1f5f9;
+  color: var(--palette-dark);
 }

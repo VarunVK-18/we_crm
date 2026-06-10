@@ -6,6 +6,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
 import 'order_chat_screen.dart';
@@ -46,7 +47,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
     final ordersAsync = ref.watch(serviceOrdersProvider);
     var orders = ordersAsync.value ?? [];
     final isLoading = ordersAsync.isLoading && orders.isEmpty;
-    final unreadCount = ref.watch(unreadNotificationCountProvider);
+    final totalNotificationsCount = ref.watch(notificationProvider).length;
 
     final user = ref.watch(userProfileProvider).value;
     final selectedEntity = ref.watch(selectedEntityProvider);
@@ -60,9 +61,12 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
         ..sort();
 
     // Filter by selected entity
-    final entityFiltered = selectedEntity == 'All Entities'
+    final entityFilteredRaw = selectedEntity == 'All Entities'
         ? orders
         : orders.where((o) => o.companyName == selectedEntity).toList();
+        
+    final entityFiltered = List<ServiceOrder>.from(entityFilteredRaw)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     final fullActiveList =
         entityFiltered.where((o) => o.status == ServiceStatus.active).toList();
@@ -155,7 +159,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           color: AppTheme.deepTeal,
                         ),
                       ),
-                      if (unreadCount > 0)
+                      if (totalNotificationsCount > 0)
                         Positioned(
                           right: 4,
                           top: 4,
@@ -166,7 +170,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: Text(
-                              '$unreadCount',
+                              '$totalNotificationsCount',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 10,
@@ -239,16 +243,20 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       ],
                     ),
                     const SizedBox(height: 10),
-                    DropdownButtonFormField<String>(
-                      value: selectedEntity,
+                    DropdownButtonFormField2<String>(
+                      isExpanded: true,
+                      valueListenable: ValueNotifier(selectedEntity),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: const Color(0xFFF4F6F9),
                         contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
                           vertical: 12,
                         ),
                         border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
                         ),
@@ -257,13 +265,23 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         'All Entities',
                         style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
-                      icon: const Icon(
-                        LucideIcons.chevronDown,
-                        size: 18,
-                        color: Colors.grey,
+                      iconStyleData: const IconStyleData(
+                        icon: Icon(
+                          LucideIcons.chevronDown,
+                          size: 18,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      dropdownStyleData: DropdownStyleData(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      menuItemStyleData: const MenuItemStyleData(
+                        padding: EdgeInsets.symmetric(horizontal: 14),
                       ),
                       items: [
-                        const DropdownMenuItem<String>(
+                        const DropdownItem<String>(
                           value: 'All Entities',
                           child: Text(
                             'All Entities',
@@ -271,7 +289,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           ),
                         ),
                         ...entities.map(
-                          (e) => DropdownMenuItem<String>(
+                          (e) => DropdownItem<String>(
                             value: e,
                             child: Text(
                               e,
@@ -569,7 +587,7 @@ class _ServiceCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    if (order.actionRequired)
+                    if (order.actionRequired && isActive)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,

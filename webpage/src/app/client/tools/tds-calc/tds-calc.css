@@ -5,6 +5,7 @@
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  font-family: inherit;
 }
 
 :host::-webkit-scrollbar {
@@ -35,6 +36,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
 .back-btn:hover {
@@ -101,15 +103,20 @@
 .input-wrapper input, .select-wrapper select {
   width: 100%;
   padding: 16px 16px 16px 48px;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  font-size: 16px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #0f172a;
-  background: #ffffff;
-  transition: all 0.2s;
+  background: #f8fafc;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
   appearance: none;
+  font-family: inherit;
+}
+
+.input-wrapper input:hover, .select-wrapper select:hover {
+  background: #f1f5f9;
 }
 
 .select-wrapper select {
@@ -117,8 +124,27 @@
 }
 
 .input-wrapper input:focus, .select-wrapper select:focus {
-  border-color: #0ea5e9;
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Modern Calendar Picker Style */
+input[type="date"] {
+  position: relative;
+  cursor: pointer;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .prefix-icon {
@@ -165,11 +191,11 @@
 }
 
 .actual-val, .total-val {
-  color: #1d4ed8;
+  color: #0f172a;
 }
 
 .gst-val {
-  color: #15803d;
+  color: #0f172a;
 }
 
 .result-label {

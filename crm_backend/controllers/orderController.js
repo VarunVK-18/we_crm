@@ -56,6 +56,15 @@ exports.updateOrder = async (req, res) => {
       return res.status(404).json({ message: 'Order not found.' });
     }
 
+    if (updateData.assignedNumberOfDirectors) {
+      order.details = {
+        ...(order.details || {}),
+        assignedNumberOfDirectors: updateData.assignedNumberOfDirectors
+      };
+      order.markModified('details');
+      await order.save();
+    }
+
     if (updateData.dealClosedAmount) {
       const clientUser = await User.findById(order.clientUid);
       if (clientUser) {
@@ -312,24 +321,18 @@ exports.submitLlpForm = async (req, res) => {
       uploadedDocs.push({ name: 'Payment Screenshot', fileUrl: files.paymentScreenshot[0].path });
     }
 
-    // Process up to 2 persons' files
-    for (let i = 1; i <= 2; i++) {
-      if (files[`person_${i}_photo`]) {
-        uploadedDocs.push({ name: `Person ${i} Photo`, fileUrl: files[`person_${i}_photo`][0].path });
+    // Process all dynamically named person files
+    Object.keys(files).forEach((fieldName) => {
+      if (fieldName.startsWith('person_')) {
+        const parts = fieldName.split('_'); // e.g. ["person", "1", "photo"]
+        const personIndex = parts[1];
+        const docType = parts.slice(2).join('_');
+        uploadedDocs.push({
+          name: `Person ${personIndex} - ${docType.toUpperCase()}`,
+          fileUrl: files[fieldName][0].path,
+        });
       }
-      if (files[`person_${i}_signature`]) {
-        uploadedDocs.push({ name: `Person ${i} Signature`, fileUrl: files[`person_${i}_signature`][0].path });
-      }
-      if (files[`person_${i}_addressProof`]) {
-        uploadedDocs.push({ name: `Person ${i} Address Proof`, fileUrl: files[`person_${i}_addressProof`][0].path });
-      }
-      if (files[`person_${i}_aadhaar`]) {
-        uploadedDocs.push({ name: `Person ${i} Aadhaar`, fileUrl: files[`person_${i}_aadhaar`][0].path });
-      }
-      if (files[`person_${i}_pan`]) {
-        uploadedDocs.push({ name: `Person ${i} PAN`, fileUrl: files[`person_${i}_pan`][0].path });
-      }
-    }
+    });
 
     const Checklist = require('../models/Checklist');
     const order = await Checklist.findById(id);

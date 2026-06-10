@@ -45,11 +45,13 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   DateTime? _tdsDate2;
 
   List<NicCode> _filteredNicCodes = [];
+  Map<NicCode, List<NicCode>> _groupedNicCodes = {};
 
   @override
   void initState() {
     super.initState();
     _filteredNicCodes = allNicCodes;
+    _groupNicCodes();
     _initializeDefaults();
   }
 
@@ -121,6 +123,22 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     });
   }
 
+  void _groupNicCodes() {
+    _groupedNicCodes.clear();
+    for (var item in _filteredNicCodes) {
+      if (item.type == 'Class') {
+        _groupedNicCodes.putIfAbsent(item, () => []);
+      } else {
+        String parentCode = item.code.length >= 4 ? item.code.substring(0, 4) : item.code;
+        var parentClass = allNicCodes.firstWhere(
+            (n) => n.code == parentCode && n.type == 'Class', 
+            orElse: () => NicCode(code: parentCode, description: 'Class $parentCode', type: 'Class')
+        );
+        _groupedNicCodes.putIfAbsent(parentClass, () => []).add(item);
+      }
+    }
+  }
+
   void _searchNic(String query) {
     setState(() {
       _filteredNicCodes = allNicCodes
@@ -128,6 +146,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
               item.code.contains(query) ||
               item.description.toLowerCase().contains(query.toLowerCase()))
           .toList();
+      _groupNicCodes();
     });
   }
 
@@ -432,18 +451,23 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       children: [
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.grey[50],
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
+            border: Border.all(color: Colors.grey[200]!),
           ),
           child: TextField(
             controller: _searchController,
             onChanged: _searchNic,
-            decoration: const InputDecoration(
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.w500,
+              color: AppTheme.deepTeal,
+            ),
+            decoration: InputDecoration(
               hintText: 'Search by industry or code...',
-              prefixIcon: Icon(LucideIcons.search, size: 20),
+              hintStyle: GoogleFonts.outfit(color: Colors.grey[400]),
+              prefixIcon: Icon(LucideIcons.search, size: 20, color: Colors.grey[400]),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
           ),
         ),
@@ -451,74 +475,151 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: _filteredNicCodes.length,
+          itemCount: _groupedNicCodes.length,
           itemBuilder: (context, index) {
-            final item = _filteredNicCodes[index];
-            final isClass = item.type == 'Class';
+            final parentClass = _groupedNicCodes.keys.elementAt(index);
+            final subClasses = _groupedNicCodes[parentClass]!;
+            
             return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 16),
               decoration: BoxDecoration(
-                color: isClass ? Colors.blue.shade50 : Colors.white,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                    color: isClass ? Colors.blue.shade200 : Colors.grey[100]!),
+                border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
                 boxShadow: [
-                  if (isClass)
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    )
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
                 ],
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: isClass
-                          ? AppTheme.corporateBlue
-                          : AppTheme.corporateBlue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      item.code,
-                      style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w900,
-                        color: isClass ? Colors.white : AppTheme.corporateBlue,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    iconColor: AppTheme.corporateBlue,
+                    collapsedIconColor: Colors.grey[400],
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    title: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.type.toUpperCase(),
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 9,
-                            color: isClass ? AppTheme.corporateBlue : Colors.grey[500],
-                            letterSpacing: 1,
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: AppTheme.corporateBlue,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            parentClass.code,
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.description,
-                          style: GoogleFonts.outfit(
-                            fontWeight: isClass ? FontWeight.w700 : FontWeight.w600,
-                            fontSize: 14,
-                            color: AppTheme.deepTeal,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'CLASS',
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 10,
+                                  color: AppTheme.corporateBlue.withOpacity(0.8),
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                parentClass.description,
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15,
+                                  color: AppTheme.deepTeal,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
+                    children: subClasses.isEmpty
+                        ? [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
+                              child: Row(
+                                children: [
+                                  Icon(LucideIcons.info, size: 16, color: Colors.grey[400]),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'No specific sub-classes matched or available.',
+                                      style: GoogleFonts.outfit(color: Colors.grey[500], fontSize: 13),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          ]
+                        : [
+                            const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                            ...subClasses.asMap().entries.map((entry) {
+                              final isLast = entry.key == subClasses.length - 1;
+                              final item = entry.value;
+                              return Column(
+                                children: [
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                    color: entry.key.isEven ? Colors.grey[50] : Colors.white,
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.corporateBlue.withOpacity(0.08),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            item.code,
+                                            style: GoogleFonts.outfit(
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.corporateBlue,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            item.description,
+                                            style: GoogleFonts.outfit(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 14,
+                                              color: Colors.grey[800],
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  if (!isLast)
+                                    const Divider(height: 1, color: Color(0xFFF0F0F0)),
+                                ],
+                              );
+                            }).toList(),
+                          ],
                   ),
-                ],
+                ),
               ),
             );
           },

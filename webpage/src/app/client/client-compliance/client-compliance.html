@@ -4,7 +4,13 @@
     <div class="comp-hero-content">
       <div class="comp-hero-text">
         <span class="comp-hero-badge">COMPLIANCE CENTER</span>
-        <h1 class="comp-hero-title">{{ user()?.company_name || user()?.name || 'All Entities' }}</h1>
+        <div class="entity-header">
+          <h1 class="comp-hero-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;" [title]="currentEntity()">{{ currentEntity() }}</h1>
+          <div class="entity-switch-btn" (click)="isEntityModalOpen.set(true)">
+            <hugeicons-icon [icon]="ArrowLeftRightIcon" [size]="12" color="var(--palette-dark)" [strokeWidth]="2.5"></hugeicons-icon>
+            <span>SWITCH</span>
+          </div>
+        </div>
         <p class="comp-hero-subtitle">Track, manage, and resolve your compliance requirements in real-time.</p>
       </div>
     </div>
@@ -34,9 +40,9 @@
         </div>
 
         <!-- Pending Stats -->
-        <div class="bento-card stat-card">
+        <div class="bento-card stat-card" (click)="isPendingModalOpen.set(true)">
           <div class="stat-icon-wrapper">
-            <hugeicons-icon [icon]="Clock02Icon" [size]="22" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
+            <hugeicons-icon [icon]="Clock02Icon" [size]="22" color="#F97316" [strokeWidth]="2"></hugeicons-icon>
           </div>
           <div class="stat-content">
             <div class="stat-value">{{ pendingReminders().length | number:'2.0-0' }}</div>
@@ -59,12 +65,12 @@
       <!-- Startup Doctor Link -->
       <a href="https://aistartupdoctor.com/" target="_blank" class="bento-card doctor-card">
         <div class="doctor-icon">
-          <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="24" color="var(--palette-blue)" [strokeWidth]="2"></hugeicons-icon>
+          <hugeicons-icon [icon]="AiSecurity01Icon" [size]="24" color="#2563EB" [strokeWidth]="2"></hugeicons-icon>
         </div>
         <div class="doctor-text">
           Check Your Realtime Health Score In Startup Doctor
         </div>
-        <hugeicons-icon [icon]="ArrowUpRight01Icon" [size]="20" color="var(--palette-blue)" [strokeWidth]="2"></hugeicons-icon>
+        <hugeicons-icon [icon]="ArrowUpRight01Icon" [size]="20" color="#2563EB" [strokeWidth]="2"></hugeicons-icon>
       </a>
 
       <!-- Timeline -->
@@ -86,8 +92,77 @@
     </div>
   }
 
-  <!-- Floating Startup Doctor Button -->
   <a href="https://aistartupdoctor.com/" target="_blank" class="floating-sd-btn" title="Check Your Realtime Health Score In Startup Doctor">
     <img src="/assets/sdlogo%20(1).svg" alt="Startup Doctor Logo">
   </a>
+
+  <!-- Pending Modal -->
+  @if (isPendingModalOpen()) {
+    <div class="modal-overlay" (click)="isPendingModalOpen.set(false)">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <div>
+            <h2>Pending Compliances</h2>
+            <p>Upcoming filings & actions required</p>
+          </div>
+          <button class="close-btn" (click)="isPendingModalOpen.set(false)">
+            &times;
+          </button>
+        </div>
+        
+        <div class="pending-list">
+          @for (reminder of pendingReminders(); track reminder.id) {
+            <div class="pending-item">
+              <div class="pending-item-info">
+                <h4>{{ reminder.serviceName }}</h4>
+                <p>{{ reminder.message }}</p>
+              </div>
+              <button class="renew-btn" (click)="renewService(reminder.serviceName)">Renew</button>
+            </div>
+          } @empty {
+            <div style="text-align: center; color: #64748b; padding: 40px 0;">
+              <p style="font-weight: 600;">No pending compliances for this entity.</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Entity Switcher Modal -->
+  @if (isEntityModalOpen()) {
+    <div class="modal-overlay" (click)="isEntityModalOpen.set(false)">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <div>
+            <h2>Select Entity</h2>
+            <p>Filter your compliance dashboard</p>
+          </div>
+          <button class="close-btn" (click)="isEntityModalOpen.set(false)">
+            &times;
+          </button>
+        </div>
+        
+        <div class="entity-list">
+          <div class="entity-option" [class.active]="currentEntity() === 'All Entities'" (click)="switchEntity('All Entities')">
+            <span class="entity-option-name">All Entities</span>
+            @if (currentEntity() === 'All Entities') {
+              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="20" color="var(--palette-dark)" [strokeWidth]="2"></hugeicons-icon>
+            }
+          </div>
+          
+          @for (entity of availableEntities(); track entity) {
+            <div class="entity-option" [class.active]="currentEntity() === entity" (click)="switchEntity(entity)">
+              <span class="entity-option-name">{{ entity }}</span>
+              @if (currentEntity() === entity) {
+                <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="20" color="var(--palette-dark)" [strokeWidth]="2"></hugeicons-icon>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>

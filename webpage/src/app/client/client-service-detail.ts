@@ -261,4 +261,33 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (!items) return [];
     return items.filter(i => i.isChecked);
   }
+
+  goToInvoice() {
+    this.router.navigate(['/client/invoice', this.orderId()]);
+  }
+
+  downloadDocument(doc: any) {
+    if (!doc.document_id) return;
+    this.api.getBlob(`documents/${doc.document_id}`).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = doc.name || 'document';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+      },
+      error: (err) => {
+        console.error('Failed to download document:', err);
+        alert('Failed to load document');
+      }
+    });
+  }
+
+  filterFinalDocs(docs: any[]) {
+    if (!docs) return [];
+    return docs.filter(d => !d?.name?.startsWith('director_'));
+  }
 }

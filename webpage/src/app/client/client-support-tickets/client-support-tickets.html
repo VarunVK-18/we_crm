@@ -21,21 +21,24 @@
   } @else {
     <div class="board-layout">
       
-      <!-- Column 1: Submit New Ticket -->
+      <!-- Section 1: Submit New Ticket -->
       <div class="board-column">
         <div class="column-header">
           <h2>SUBMIT NEW TICKET</h2>
-          <span class="badge action-badge">Action</span>
         </div>
         
         <div class="column-content">
           <div class="action-card">
-            <div class="icon-circle">
-              <hugeicons-icon [icon]="PlusSignIcon" [size]="32" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+            <div class="action-card-left">
+              <div class="icon-circle">
+                <hugeicons-icon [icon]="MentoringIcon" [size]="28" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+              </div>
+              <div class="action-card-text">
+                <h3>Need Assistance?</h3>
+                <p>Submit a new request and our team will get back to you shortly.</p>
+              </div>
             </div>
-            <h3>Need Assistance?</h3>
-            <p>Submit a new request and our team will get back to you shortly.</p>
-            <button class="black-btn" (click)="openNewTicketModal()">Start New Ticket</button>
+            <button class="black-btn action-card-btn" (click)="openNewTicketModal()">Start New Ticket</button>
           </div>
         </div>
       </div>
@@ -52,20 +55,24 @@
             <div class="empty-column">No pending tickets</div>
           } @else {
             @for (ticket of activeTickets; track ticket._id) {
-              <div class="kanban-card">
-                <div class="card-top">
+              <div class="ticket-row-card">
+                <div class="ticket-main">
                   <span class="ticket-id">{{ ticket.ticketId || 'TKT-0000' }}</span>
-                  <span class="status-badge pending-badge">PENDING</span>
+                  <h4 class="ticket-subject">{{ ticket.subject || 'No Subject' }}</h4>
                 </div>
-                <h4 class="ticket-subject">{{ ticket.subject || 'No Subject' }}</h4>
-                <div class="card-meta">
-                  <div class="meta-row">
-                    <hugeicons-icon [icon]="Briefcase02Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
-                    <span>{{ ticket.category || 'General Support' }}</span>
+                <div class="ticket-meta-group">
+                  <div class="card-meta">
+                    <div class="meta-row">
+                      <hugeicons-icon [icon]="Briefcase02Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                      <span>{{ ticket.category || 'General Support' }}</span>
+                    </div>
+                    <div class="meta-row">
+                      <hugeicons-icon [icon]="Calendar01Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                      <span>{{ formatDate(ticket.createdAt) }}</span>
+                    </div>
                   </div>
-                  <div class="meta-row">
-                    <hugeicons-icon [icon]="Calendar01Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
-                    <span>{{ formatDate(ticket.createdAt) }}</span>
+                  <div class="ticket-status-col">
+                    <span class="status-badge pending-badge">PENDING</span>
                   </div>
                 </div>
               </div>
@@ -86,20 +93,24 @@
             <div class="empty-column">No resolved tickets</div>
           } @else {
             @for (ticket of previousTickets; track ticket._id) {
-              <div class="kanban-card">
-                <div class="card-top">
+              <div class="ticket-row-card">
+                <div class="ticket-main">
                   <span class="ticket-id">{{ ticket.ticketId || 'TKT-0000' }}</span>
-                  <span class="status-badge resolved-badge">RESOLVED</span>
+                  <h4 class="ticket-subject">{{ ticket.subject || 'No Subject' }}</h4>
                 </div>
-                <h4 class="ticket-subject">{{ ticket.subject || 'No Subject' }}</h4>
-                <div class="card-meta">
-                  <div class="meta-row">
-                    <hugeicons-icon [icon]="Briefcase02Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
-                    <span>{{ ticket.category || 'General Support' }}</span>
+                <div class="ticket-meta-group">
+                  <div class="card-meta">
+                    <div class="meta-row">
+                      <hugeicons-icon [icon]="Briefcase02Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                      <span>{{ ticket.category || 'General Support' }}</span>
+                    </div>
+                    <div class="meta-row">
+                      <hugeicons-icon [icon]="Calendar01Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+                      <span>{{ formatDate(ticket.createdAt) }}</span>
+                    </div>
                   </div>
-                  <div class="meta-row">
-                    <hugeicons-icon [icon]="Calendar01Icon" [size]="14" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
-                    <span>{{ formatDate(ticket.createdAt) }}</span>
+                  <div class="ticket-status-col">
+                    <span class="status-badge resolved-badge">RESOLVED</span>
                   </div>
                 </div>
               </div>

@@ -106,6 +106,39 @@
         </div>
       </section>
 
+      <!-- Director Assignment Section (Manager Only) -->
+      @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company'].includes(checklist().service_name)) {
+        <section class="info-card" style="margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0;">Director/Partner Count</h4>
+              <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
+                Requested by client: <strong style="color: var(--text-primary);">{{ checklist().details?.numberOfDirectors || 'Not specified' }}</strong>
+              </p>
+            </div>
+            
+            @if (canManage()) {
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Approved Count:</label>
+                <input type="number" [ngModel]="checklist().details?.assignedNumberOfDirectors || checklist().details?.numberOfDirectors || 1" 
+                  #directorCountInput
+                  min="1"
+                  style="width: 80px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px;">
+                <button (click)="assignDirectorCount(directorCountInput.value)" 
+                  style="padding: 8px 16px; background-color: var(--accent-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                  Save
+                </button>
+              </div>
+            } @else {
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);">Approved Count:</span>
+                <span style="font-size: 16px; font-weight: 700; color: var(--accent-primary);">{{ checklist().details?.assignedNumberOfDirectors || checklist().details?.numberOfDirectors || 1 }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
       <!-- Checklist Items Section -->
       <section style="display: flex; flex-direction: column; gap: 16px;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
