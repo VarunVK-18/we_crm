@@ -4,6 +4,12 @@
       <h1 style="font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0 0 8px 0; letter-spacing: -0.3px;">Staff Compliance Radar</h1>
       <p style="color: #64748b; font-size: 15px; margin: 0;">Master list of all pending compliances across all clients.</p>
     </div>
+    <div style="position: relative; width: 300px;">
+      <input type="text" placeholder="Search entity name..." [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)" style="width: 100%; padding: 12px 16px 12px 40px; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05); font-size: 14px; outline: none; background: white; transition: all 0.2s;">
+      <div style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none; z-index: 10;">
+        <hugeicons-icon [icon]="Search01Icon" size="18" color="#64748b" [strokeWidth]="2"></hugeicons-icon>
+      </div>
+    </div>
   </div>
 
   @if (isLoading()) {
@@ -13,49 +19,54 @@
   } @else {
     <div>
       @for (group of groupedTasks(); track group.key) {
-        <div style="background: white; border-radius: 16px; border: 1px solid var(--border-light); padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-          <div style="display: flex; align-items: center; margin-bottom: 20px;">
-            <div style="width: 4px; height: 20px; background-color: var(--accent-orange, #f97316); border-radius: 2px; margin-right: 12px;"></div>
-            <h2 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">{{ group.key }}</h2>
+        <div style="background: white; border-radius: 16px; border: 1px solid #cbd5e1; padding: 24px; margin-bottom: 24px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06); cursor: pointer; transition: all 0.2s;" (click)="toggleEntity(group.key)">
+          <div style="display: flex; align-items: center; justify-content: space-between;" [style.margin-bottom]="expandedEntities().has(group.key) ? '20px' : '0'">
+            <div style="display: flex; align-items: center;">
+              <div style="width: 4px; height: 20px; background-color: var(--accent-orange, #f97316); border-radius: 2px; margin-right: 12px;"></div>
+              <h2 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">{{ group.key }} ({{ group.items.length }})</h2>
+            </div>
+            <hugeicons-icon [icon]="expandedEntities().has(group.key) ? ArrowUp01Icon : ArrowDown01Icon" [size]="20" color="#64748b"></hugeicons-icon>
           </div>
           
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            @for (task of group.items; track task.id) {
-              <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0;">
-                <div style="display: flex; align-items: center; gap: 16px;">
-                  <div style="padding: 12px; border-radius: 12px;" [ngStyle]="{'background': task.status === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)'}">
-                    <hugeicons-icon 
-                      [icon]="task.status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
-                      [size]="24"
-                      [color]="task.status === 'Completed' ? '#10b981' : '#3b82f6'"
-                      [strokeWidth]="2">
-                    </hugeicons-icon>
+          @if (expandedEntities().has(group.key)) {
+            <div style="display: flex; flex-direction: column; gap: 12px;" (click)="$event.stopPropagation()">
+              @for (task of group.items; track task.id) {
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: 12px; background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: transform 0.2s;">
+                  <div style="display: flex; align-items: center; gap: 16px;">
+                    <div style="padding: 12px; border-radius: 12px; background: transparent;">
+                      <hugeicons-icon 
+                        [icon]="task.status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
+                        [size]="24"
+                        [color]="task.status === 'Completed' ? '#10b981' : '#3b82f6'"
+                        [strokeWidth]="2">
+                      </hugeicons-icon>
+                    </div>
+                    <div>
+                      <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: var(--text-dark);">{{ task.title }}</h4>
+                      <p style="margin: 0; font-size: 13px; font-weight: 600; color: #64748b;">
+                        <span [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#ef4444' : '#64748b'}">
+                          {{ task.message }}
+                        </span> 
+                        &bull; Status: <strong style="font-weight: 600; color: var(--text-dark);">{{ task.status }}</strong>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: var(--text-dark);">{{ task.title }}</h4>
-                    <p style="margin: 0; font-size: 13px; font-weight: 600; color: #64748b;">
-                      <span [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#ef4444' : '#64748b'}">
-                        {{ task.message }}
-                      </span> 
-                      &bull; Status: <strong style="font-weight: 600; color: var(--text-dark);">{{ task.status }}</strong>
-                    </p>
-                  </div>
+                  
+                  @if (task.status !== 'Completed') {
+                    <button 
+                      (click)="openCompleteModal(task)"
+                      style="padding: 8px 16px; background: var(--accent-primary, #0f172a); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+                      Complete Task
+                    </button>
+                  } @else {
+                    <div style="padding: 8px 16px; background: #ecfdf5; color: #059669; border-radius: 6px; font-weight: 600; font-size: 12px;">
+                      COMPLETED
+                    </div>
+                  }
                 </div>
-                
-                @if (task.status !== 'Completed') {
-                  <button 
-                    (click)="openCompleteModal(task)"
-                    style="padding: 8px 16px; background: var(--accent-primary, #0f172a); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;">
-                    Complete Task
-                  </button>
-                } @else {
-                  <div style="padding: 8px 16px; background: #ecfdf5; color: #059669; border-radius: 6px; font-weight: 600; font-size: 12px;">
-                    COMPLETED
-                  </div>
-                }
-              </div>
-            }
-          </div>
+              }
+            </div>
+          }
         </div>
       } @empty {
         <div style="text-align: center; padding: 60px 0; background: white; border-radius: 16px; border: 1px solid var(--border-light);">

@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/ocr_service.dart';
 import '../../providers/pan_provider.dart';
 import '../../core/constants/service_documents.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/orders_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -59,6 +61,9 @@ class _ServiceRequestSummarySheetState
 
   bool _isBrandUsed = false;
   String _selectedEducation = '';
+
+  String? _selectedEntity;
+  late TextEditingController _customEntityController;
 
   late TextEditingController _fssaiEmployeesController;
   late TextEditingController _fssaiPremisesAddressController;
@@ -235,6 +240,7 @@ class _ServiceRequestSummarySheetState
     // Initialize DUNS Controllers
     _dunsTradeNameController = TextEditingController();
     _dunsYearController = TextEditingController();
+    _customEntityController = TextEditingController();
 
     _validatePhone(_phoneController.text);
     _validateCompanyPhone(_companyPhoneController.text);
@@ -379,6 +385,7 @@ class _ServiceRequestSummarySheetState
 
     _dunsTradeNameController.dispose();
     _dunsYearController.dispose();
+    _customEntityController.dispose();
     _scrollController.dispose();
 
     super.dispose();
@@ -401,8 +408,23 @@ class _ServiceRequestSummarySheetState
       request.fields['email'] = _emailController.text;
       request.fields['phone'] = _phoneController.text;
       if (_companyNameController.text.isNotEmpty) {
-        request.fields['company_name'] = _companyNameController.text;
-        request.fields['entity_name'] = _companyNameController.text;
+        if (widget.packageName.contains('Incorporation')) {
+          request.fields['company_name'] = _companyNameController.text;
+          request.fields['entity_name'] = _companyNameController.text;
+        } else if (widget.packageName == 'MSME Certification') {
+          // MSME uses _companyNameController for "Name of Enterprise"
+          request.fields['entity_name'] = _companyNameController.text;
+        }
+      }
+
+      if (!widget.packageName.contains('Incorporation') && widget.packageName != 'MSME Certification') {
+        String finalEntity = _selectedEntity == 'Add New Entity...' 
+            ? _customEntityController.text 
+            : (_selectedEntity ?? '');
+        
+        if (finalEntity.isNotEmpty) {
+          request.fields['entity_name'] = finalEntity;
+        }
       }
 
       // Collect package-specific details
@@ -410,6 +432,13 @@ class _ServiceRequestSummarySheetState
       if (!_isTwoStepForm) {
         details['Status'] = 'Pending Client Form Submission';
         details['Next Step'] = 'Assign expert to unlock form for client';
+      } else if (widget.packageName == 'Trademark Registration') {
+        details['brand_name'] = _companyNameController.text;
+        details['tm_address'] = _tmAddressController.text;
+        details['is_brand_used'] = _isBrandUsed ? 'Yes' : 'No';
+        if (_isBrandUsed) {
+          details['brand_usage_date'] = _brandUsageDateController.text;
+        }
       } else if (widget.packageName == 'FSSAI Food License') {
         details['fssai_business_type'] = _fssaiBusinessType;
         details['fssai_turnover'] = _fssaiTurnover;
@@ -470,6 +499,23 @@ class _ServiceRequestSummarySheetState
 
   @override
   Widget build(BuildContext context) {
+    final ordersState = ref.watch(serviceOrdersProvider);
+    final userProfile = ref.watch(userProfileProvider).value;
+    
+    final List<String> availableEntities = ordersState.value
+        ?.map((o) => o.entityName)
+        .where((name) => name.isNotEmpty && name.toLowerCase() != 'client')
+        .toSet()
+        .toList() ?? [];
+
+    if (userProfile?.companyName != null && userProfile!.companyName.isNotEmpty && !availableEntities.contains(userProfile.companyName)) {
+      availableEntities.insert(0, userProfile.companyName);
+    }
+    
+    if (_selectedEntity == null && availableEntities.isNotEmpty) {
+       _selectedEntity = availableEntities.first;
+    }
+
     return Container(
       padding: EdgeInsets.only(
         left: 24,
@@ -590,6 +636,75 @@ class _ServiceRequestSummarySheetState
                         isPhoneValid: _isPhoneValid,
                         isRequired: true,
                       ),
+                      if (!widget.packageName.contains('Incorporation') && 
+                          widget.packageName != 'OPC' && 
+                          widget.packageName != 'Proprietorship' && 
+                          !widget.packageName.contains('MSME')) ...[
+                        const SizedBox(height: 24),
+                        Text(
+                          'Select Entity for this Service',
+                          style: GoogleFonts.outfit(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.deepTeal,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField2<String>(
+                          valueListenable: ValueNotifier(availableEntities.contains(_selectedEntity) ? _selectedEntity : availableEntities.first),
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey[100],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          ),
+                          iconStyleData: const IconStyleData(
+                            icon: Icon(LucideIcons.chevronDown, color: AppTheme.corporateBlue),
+                          ),
+                          dropdownStyleData: DropdownStyleData(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              color: Colors.white,
+                            ),
+                            offset: const Offset(0, -4),
+                          ),
+                          menuItemStyleData: const MenuItemStyleData(
+                            padding: EdgeInsets.symmetric(horizontal: 16),
+                          ),
+                          items: availableEntities.map((entity) {
+                            return DropdownItem<String>(
+                              value: entity,
+                              child: Text(
+                                entity,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.deepTeal,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedEntity = val;
+                            });
+                          },
+                        ),
+                        if (_selectedEntity == 'Add New Entity...') ...[
+                          const SizedBox(height: 12),
+                          _EditableField(
+                            label: 'New Entity Name',
+                            controller: _customEntityController,
+                            icon: LucideIcons.building,
+                            hint: 'Enter entity name',
+                            isRequired: true,
+                          ),
+                        ],
+                      ],
                       const SizedBox(height: 24),
                       _DetailRow(label: 'Package:', value: widget.packageName),
                       ..._buildServiceSpecificForms(),

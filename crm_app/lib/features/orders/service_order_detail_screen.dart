@@ -926,7 +926,7 @@ class _StepTimeline extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
                   child: InkWell(
-                    onTap: (step.isActionStep && !isCompleted)
+                    onTap: (step.isActionStep && !isCompleted && order.stage != OrderStage.reqReceived)
                         ? () => _routeToForm(context, order)
                         : null,
                     borderRadius: BorderRadius.circular(18),

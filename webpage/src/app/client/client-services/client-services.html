@@ -129,6 +129,24 @@
                   <textarea name="requirements" [(ngModel)]="quoteForm.requirements" rows="3" class="form-input" style="resize: none;"></textarea>
                 </div>
 
+                @if (showEntityDropdown()) {
+                  <div class="form-group">
+                    <label>Select Entity for this Service</label>
+                    <select name="selectedEntity" [(ngModel)]="quoteForm.selectedEntity" required class="form-input" style="height: 48px;">
+                      @for (entity of availableEntities(); track entity) {
+                        <option [value]="entity">{{ entity }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  @if (quoteForm.selectedEntity === 'Add New Entity...') {
+                    <div class="form-group">
+                      <label>New Entity Name</label>
+                      <input type="text" name="customEntity" [(ngModel)]="quoteForm.customEntity" required class="form-input">
+                    </div>
+                  }
+                }
+
                 <button type="submit" class="btn-submit" [disabled]="formSubmitting() || !quoteFormRef.valid">
                   {{ formSubmitting() ? 'Submitting...' : 'Request Quote' }}
                   <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" color="white" style="margin-left: 8px;"></hugeicons-icon>

@@ -206,6 +206,7 @@ export class ClientServicesComponent implements OnInit {
   selectedService = signal<any>(null);
   currentServices = signal<any[]>([]);
   clientManager = signal<any>(null);
+  availableEntities = signal<string[]>([]);
 
   // Form State
   quoteForm = {
@@ -213,7 +214,9 @@ export class ClientServicesComponent implements OnInit {
     phone: '',
     email: '',
     requirements: '',
-    numberOfDirectors: ''
+    numberOfDirectors: '',
+    selectedEntity: '',
+    customEntity: ''
   };
   formSubmitting = signal<boolean>(false);
   formSuccess = signal<boolean>(false);
@@ -257,6 +260,7 @@ export class ClientServicesComponent implements OnInit {
     }
 
     this.fetchClientManager();
+    this.fetchEntities();
   }
 
   fetchClientManager() {
@@ -274,6 +278,35 @@ export class ClientServicesComponent implements OnInit {
         }
       },
       error: (err) => console.error('Failed to fetch client manager:', err)
+    });
+  }
+
+  fetchEntities() {
+    this.api.get<any>('my-checklists').subscribe({
+      next: (res) => {
+        let entities = new Set<string>();
+        if (res.checklists) {
+          res.checklists.forEach((c: any) => {
+            if (c.details && c.details.entityName && c.details.entityName.toLowerCase() !== 'client') {
+              entities.add(c.details.entityName);
+            }
+          });
+        }
+        
+        const userVal = this.user();
+        if (userVal?.company_name) {
+          entities.add(userVal.company_name);
+        }
+
+        const entityArray = Array.from(entities);
+        entityArray.push('Add New Entity...');
+        
+        this.availableEntities.set(entityArray);
+        if (entityArray.length > 0) {
+          this.quoteForm.selectedEntity = entityArray[0];
+        }
+      },
+      error: (err) => console.error('Failed to fetch entities:', err)
     });
   }
 
@@ -297,6 +330,15 @@ export class ClientServicesComponent implements OnInit {
   showDirectorCount(): boolean {
     const title = this.selectedService()?.title;
     return title === 'Private Limited Incorporation' || title === 'LLP Incorporation';
+  }
+
+  showEntityDropdown(): boolean {
+    const title = this.selectedService()?.title;
+    if (!title) return false;
+    const lowerTitle = title.toLowerCase();
+    if (lowerTitle.includes('incorporation')) return false;
+    if (title === 'MSME Registration' || title === 'OPC' || title === 'Proprietorship Registration' || title === 'Partnership Firm Registration') return false;
+    return true;
   }
 
   getProcessingTime(features: string[]): string {
@@ -333,6 +375,15 @@ export class ClientServicesComponent implements OnInit {
     formData.append('phone', this.quoteForm.phone || this.user()?.phone || '');
     formData.append('email', this.quoteForm.email || this.user()?.email || '');
 
+    if (this.showEntityDropdown()) {
+      const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...' 
+        ? this.quoteForm.customEntity 
+        : this.quoteForm.selectedEntity;
+      if (finalEntity) {
+        formData.append('entity_name', finalEntity);
+      }
+    }
+
     const details: any = {
       Status: 'Pending Client Form Submission',
       'Next Step': 'Assign expert to unlock form for client',
@@ -353,7 +404,7 @@ export class ClientServicesComponent implements OnInit {
         if (res && res.success) {
           this.formSuccess.set(true);
           alert('Successfully submitted your application');
-          this.quoteForm = { name: '', phone: '', email: '', requirements: '', numberOfDirectors: '' };
+          this.quoteForm = { name: '', phone: '', email: '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '' };
         } else {
           alert('Failed to submit quote request.');
         }

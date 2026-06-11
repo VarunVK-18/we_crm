@@ -568,9 +568,6 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   markChatAsSeen(chatId: string) {
     let userRole = this.user()?.role || 'admin';
-    if (userRole !== 'admin' && userRole !== 'client') {
-      userRole = 'staff';
-    }
     
     this.api.put(`chat/${chatId}/seen`, { viewerRole: userRole }).subscribe({
       next: () => {},
@@ -588,10 +585,6 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.newChatMessage = ''; // Clear immediately
 
     let userRole = this.user()?.role || 'admin';
-    // Map internal staff roles to 'staff' for the Chat Message schema
-    if (userRole !== 'admin' && userRole !== 'client') {
-      userRole = 'staff';
-    }
 
     this.api.post<any>(`chat/${chatId}`, {
       senderId: this.user()?._id || this.user()?.id,
@@ -650,5 +643,14 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         });
       });
     }, 300);
+  }
+
+  formatRole(role: string): string {
+    if (!role) return '';
+    if (role === 'admin') return 'Manager';
+    if (role === 'client_manager') return 'Client Manager';
+    if (role === 'filing_staff') return 'Filing Staff';
+    if (role === 'staff') return 'Client Support';
+    return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 }

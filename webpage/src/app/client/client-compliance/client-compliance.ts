@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon } from '@hugeicons/core-free-icons';
+import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon, FilterIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-compliance',
@@ -19,6 +19,7 @@ export class ClientCompliance implements OnInit {
   readonly ArrowUpRight01Icon = ArrowUpRight01Icon;
   readonly ArrowLeftRightIcon = ArrowLeftRightIcon;
   readonly AiSecurity01Icon = AiSecurity01Icon;
+  readonly FilterIcon = FilterIcon;
 
   reminders = signal<any[]>([]);
   checklists = signal<any[]>([]);
@@ -27,6 +28,7 @@ export class ClientCompliance implements OnInit {
   isPendingModalOpen = signal(false);
   isEntityModalOpen = signal(false);
   currentEntity = signal<string>('All Entities');
+  taskFilter = signal<'pending' | 'completed' | 'all'>('pending');
 
   // Computed Values
   availableEntities = computed(() => {
@@ -52,8 +54,16 @@ export class ClientCompliance implements OnInit {
 
   pendingTasks = computed(() => this.filteredTasks().filter(r => r.status !== 'Completed'));
   
-  groupedPendingTasks = computed(() => {
-    const tasks = this.pendingTasks();
+  modalTasks = computed(() => {
+    const filter = this.taskFilter();
+    const tasks = this.filteredTasks();
+    if (filter === 'pending') return tasks.filter(r => r.status !== 'Completed');
+    if (filter === 'completed') return tasks.filter(r => r.status === 'Completed');
+    return tasks;
+  });
+
+  groupedModalTasks = computed(() => {
+    const tasks = this.modalTasks();
     const entity = this.currentEntity();
     const map = new Map<string, any[]>();
     
