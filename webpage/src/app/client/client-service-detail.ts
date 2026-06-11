@@ -262,6 +262,15 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     return items.filter(i => i.isChecked);
   }
 
+  formatRole(role: string): string {
+    if (!role) return '';
+    if (role === 'admin') return 'Manager';
+    if (role === 'client_manager') return 'Client Manager';
+    if (role === 'filing_staff') return 'Filing Staff';
+    if (role === 'staff') return 'Client Support';
+    return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  }
+
   goToInvoice() {
     this.router.navigate(['/client/invoice', this.orderId()]);
   }

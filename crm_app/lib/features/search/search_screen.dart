@@ -6,6 +6,13 @@ import '../services/service_selection_screen.dart';
 import '../services/service_detail_screen.dart';
 import '../services/tool_detail_screen.dart';
 import '../services/registration_services_screen.dart';
+import '../compliance/compliance_radar_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../core/constants/port.dart';
+import '../../providers/auth_provider.dart';
+import '../dashboard/customer_dashboard.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -148,8 +155,8 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Tools',
     },
     {
-      'label': 'GST Interest',
-      'icon': HugeIcons.strokeRoundedPercentCircle,
+      'label': 'Compliance Calendar',
+      'icon': HugeIcons.strokeRoundedCalendar01,
       'category': 'Tools',
     },
     {
@@ -453,6 +460,10 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     if (isTool) {
+      if (label == 'Compliance Calendar') {
+        _openComplianceCalendar(context);
+        return;
+      }
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -469,6 +480,57 @@ class _SearchScreenState extends State<SearchScreen> {
               ServiceDetailScreen(serviceName: label, icon: item['icon']),
         ),
       );
+    }
+  }
+
+  Future<void> _openComplianceCalendar(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final authState = ProviderScope.containerOf(context).read(authStateProvider).value;
+      final uid = authState?.uid ?? '';
+      
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/calendar/latest'),
+        headers: {'x-user-id': uid},
+      );
+
+      if (context.mounted) Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final docId = data['calendar']?['documentId']?['_id'];
+        
+        if (docId != null) {
+          final docUrl = '$kBaseUrl/api/documents/$docId';
+          
+          if (context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PdfViewerScreen(url: docUrl, uid: uid),
+              ),
+            );
+          }
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Calendar PDF not found')));
+          }
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Compliance Calendar for this year is not uploaded yet.')));
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
     }
   }
 }

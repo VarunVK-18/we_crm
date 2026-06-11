@@ -385,9 +385,6 @@ export class RequestsComponent implements OnInit {
 
   markChatAsSeen(orderId: string) {
     let userRole = this.user()?.role || 'admin';
-    if (userRole !== 'admin' && userRole !== 'client') {
-      userRole = 'staff';
-    }
 
     this.api.put(`chat/${orderId}/seen`, { viewerRole: userRole }).subscribe({
       next: () => { },
@@ -405,10 +402,6 @@ export class RequestsComponent implements OnInit {
     this.newChatMessage = ''; // Clear immediately
 
     let userRole = this.user()?.role || 'admin';
-    // Map internal staff roles to 'staff' for the Chat Message schema
-    if (userRole !== 'admin' && userRole !== 'client') {
-      userRole = 'staff';
-    }
 
     this.api.post<any>(`chat/${orderId}`, {
       senderId: this.user()?._id || this.user()?.id,
@@ -467,5 +460,14 @@ export class RequestsComponent implements OnInit {
         });
       });
     }, 300);
+  }
+
+  formatRole(role: string): string {
+    if (!role) return '';
+    if (role === 'admin') return 'Manager';
+    if (role === 'client_manager') return 'Client Manager';
+    if (role === 'filing_staff') return 'Filing Staff';
+    if (role === 'staff') return 'Client Support';
+    return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 }

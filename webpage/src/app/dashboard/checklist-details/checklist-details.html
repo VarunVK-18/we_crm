@@ -660,12 +660,16 @@
           [style.border-radius]="msg.senderRole === 'client' ? '18px 18px 18px 4px' : '18px 18px 4px 18px'"
           [style.border]="msg.senderRole === 'client' ? '1px solid #e2e8f0' : 'none'">
 
-          <div style="font-size: 14.5px; line-height: 1.5; margin-bottom: 4px; word-break: break-word;">{{ msg.content
-            }}</div>
+          <div style="font-size: 14.5px; line-height: 1.5; margin-bottom: 4px; word-break: break-word;">{{ msg.content }}</div>
 
           <div style="font-size: 11px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;"
             [style.color]="msg.senderRole === 'client' ? '#94a3b8' : 'rgba(255,255,255,0.7)'">
-            <span>{{ msg.createdAt | date:'shortTime' }}</span>
+            {{ msg.senderId?.owner_name || msg.senderId?.name || 'User' }}
+            @if (msg.senderRole !== 'client') {
+            <span
+              style="padding: 2px 6px; background: rgba(255,255,255,0.2); border-radius: 4px; font-size: 9px; font-weight: 600;">{{ formatRole(msg.senderRole) }}</span>
+            }
+            <span style="margin-left: 4px;">{{ msg.createdAt | date:'shortTime' }}</span>
             @if (msg.senderRole !== 'client') {
             <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;"
               [style.color]="msg.seen ? '#34d399' : 'rgba(255,255,255,0.6)'">done_all</span>

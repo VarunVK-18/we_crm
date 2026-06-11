@@ -114,18 +114,26 @@
     <div class="modal-overlay" (click)="isPendingModalOpen.set(false)">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-drag-handle"></div>
-        <div class="modal-header">
+        <div class="modal-header" style="align-items: center;">
           <div>
-            <h2>Pending Compliances</h2>
-            <p>Upcoming filings & actions required</p>
+            <h2>Compliances</h2>
+            <p>Filings & actions required</p>
           </div>
-          <button class="close-btn" (click)="isPendingModalOpen.set(false)">
-            &times;
-          </button>
+          <div style="display: flex; gap: 12px; align-items: center;">
+            <div style="position: relative; display: flex; align-items: center;">
+              <hugeicons-icon [icon]="FilterIcon" [size]="16" color="#64748b" style="position: absolute; left: 10px; pointer-events: none;"></hugeicons-icon>
+              <select (change)="taskFilter.set($any($event.target).value)" [value]="taskFilter()" style="padding: 8px 12px 8px 32px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; background: #f8fafc; color: var(--text-dark); appearance: none;">
+                <option value="pending">Pending Only</option>
+                <option value="completed">Completed</option>
+                <option value="all">All Tasks</option>
+              </select>
+            </div>
+            <button class="close-btn" (click)="isPendingModalOpen.set(false)">&times;</button>
+          </div>
         </div>
         
         <div class="pending-list">
-          @for (group of groupedPendingTasks(); track group.key) {
+          @for (group of groupedModalTasks(); track group.key) {
             <div class="compliance-group" style="margin-bottom: 24px;">
               <div style="display: flex; align-items: center; margin-bottom: 16px; margin-left: 4px;">
                 <div style="width: 4px; height: 16px; background-color: var(--accent-orange, #f97316); border-radius: 2px; margin-right: 8px;"></div>
@@ -137,13 +145,23 @@
                     <h4>{{ task.title }}</h4>
                     <p>{{ task.message }} - Status: <strong>{{ task.status }}</strong></p>
                   </div>
-                  <button class="renew-btn" (click)="openCompleteModal(task)">Complete</button>
+                  @if (task.status === 'Completed') {
+                    <div style="display: flex; align-items: center; gap: 6px; color: #10b981; font-weight: 600; font-size: 13px;">
+                      <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#10b981" [strokeWidth]="2.5"></hugeicons-icon>
+                      Completed
+                    </div>
+                  } @else {
+                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-weight: 600; font-size: 13px;">
+                      <hugeicons-icon [icon]="Clock02Icon" [size]="16" color="#64748b" [strokeWidth]="2.5"></hugeicons-icon>
+                      Pending
+                    </div>
+                  }
                 </div>
               }
             </div>
           } @empty {
             <div style="text-align: center; color: #64748b; padding: 40px 0;">
-              <p style="font-weight: 600;">No pending compliances for this entity.</p>
+              <p style="font-weight: 600;">No compliances found for the selected filter.</p>
             </div>
           }
         </div>

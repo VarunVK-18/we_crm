@@ -499,7 +499,7 @@ class _ModernBottomNav extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(36, 0, 36, 24),
       child: Container(
-        height: 64,
+        height: 56,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF0F172A), // Dark Navy/Black background
@@ -533,13 +533,13 @@ class _ModernBottomNav extends StatelessWidget {
             if (iconData is IconData) {
               iconWidget = Icon(
                 iconData,
-                size: 22,
+                size: 20,
                 color: iconColor,
               );
             } else {
               iconWidget = HugeIcon(
                 icon: iconData,
-                size: 22,
+                size: 20,
                 color: iconColor,
                 strokeWidth: isSelected ? 2.0 : 1.8,
               );
@@ -551,8 +551,8 @@ class _ModernBottomNav extends StatelessWidget {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutQuart,
-                height: 46,
-                width: 46,
+                height: 40,
+                width: 40,
                 decoration: BoxDecoration(
                   color: isSelected ? Colors.white : Colors.transparent,
                   shape: BoxShape.circle,

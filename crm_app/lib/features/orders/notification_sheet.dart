@@ -133,13 +133,19 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
+                            child: Text(
+                              'Cancel',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
                           ),
                           TextButton(
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('OK',
-                                style: TextStyle(
-                                    color: Color.fromARGB(255, 6, 6, 6))),
+                            child: Text(
+                              'OK',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: const Color.fromARGB(255, 6, 6, 6),
+                                  ),
+                            ),
                           ),
                         ],
                       ),
@@ -151,7 +157,7 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
                   icon: const HugeIcon(
                     icon: HugeIcons.strokeRoundedDelete02,
                     color: Colors.redAccent,
-                    size: 24.0,
+                    size: 20.0,
                   ),
                 ),
               ],

@@ -317,7 +317,11 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            senderRole == 'admin' ? 'Manager' : (senderRole == 'staff' ? 'Client Support' : senderRole[0].toUpperCase() + senderRole.substring(1)),
+                            senderRole == 'admin' ? 'Manager' : 
+                            (senderRole == 'client_manager' ? 'Client Manager' : 
+                            (senderRole == 'filing_staff' ? 'Filing Staff' : 
+                            (senderRole == 'staff' ? 'Client Support' : 
+                            senderRole.split('_').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : '').join(' ')))),
                             style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.w600,

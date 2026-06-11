@@ -802,13 +802,13 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.r),
         side: BorderSide(
-          color: AppTheme.deepTeal.withOpacity(0.08),
+          color: const Color(0xFF7B52A1).withOpacity(0.08),
           width: 1.r,
         ),
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFA0C6FF),
+          color: const Color(0xFFF0E6F7), // Light violet background
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
@@ -832,13 +832,13 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       Container(
                         padding: EdgeInsets.all(10.r),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.08),
+                          color: const Color(0xFF7B52A1).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: HugeIcon(
                           icon: HugeIcons.strokeRoundedTask01,
                           size: 24.ip,
-                          color: Colors.blue,
+                          color: const Color(0xFF7B52A1),
                         ),
                       ),
                       SizedBox(width: 12.r),
@@ -852,7 +852,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                   .textTheme
                                   .labelLarge
                                   ?.copyWith(
-                                    color: order.actionRequired ? Colors.red : (order.stage == OrderStage.reqReceived ? Colors.orange : Colors.blue),
+                                    color: order.actionRequired ? Colors.red : (order.stage == OrderStage.reqReceived ? Colors.orange : const Color(0xFF7B52A1)),
                                     fontSize: 9.sp,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -893,7 +893,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                             style: TextStyle(
                               fontSize: 11.sp,
                               fontWeight: FontWeight.bold,
-                              color: AppTheme.deepTeal,
+                              color: const Color(0xFF7B52A1),
                             ),
                           ),
                         ],
@@ -906,7 +906,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           minHeight: 6.r,
                           backgroundColor: Colors.grey.shade100,
                           valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color.fromARGB(255, 54, 126, 57)),
+                              Color(0xFF7B52A1)),
                         ),
                       ),
                     ],
@@ -916,7 +916,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       ref.read(navigationIndexProvider.notifier).state = 1;
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.deepTeal,
+                      backgroundColor: const Color(0xFF7B52A1),
                       foregroundColor: Colors.white,
                       minimumSize: Size(double.infinity, 44.r),
                       shape: RoundedRectangleBorder(
@@ -961,11 +961,15 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFFCF1D1), // Pale yellow from reference image
+          gradient: const LinearGradient(
+            colors: [Color(0xFF14532D), Color(0xFF064E3B)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 16,
               spreadRadius: 0,
               offset: const Offset(0, 6),
@@ -985,13 +989,13 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       Container(
                         padding: EdgeInsets.all(10.r),
                         decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.08),
+                          color: Colors.white.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: HugeIcon(
                           icon: HugeIcons.strokeRoundedTaskDone01,
                           size: 24.ip,
-                          color: Colors.grey,
+                          color: Colors.white,
                         ),
                       ),
                       SizedBox(width: 12.r),
@@ -1005,7 +1009,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                   .textTheme
                                   .labelLarge
                                   ?.copyWith(
-                                    color: Colors.grey,
+                                    color: Colors.white70,
                                     fontSize: 9.sp,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -1018,6 +1022,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14.sp,
+                                    color: Colors.white,
                                   ),
                             ),
                           ],
@@ -1030,6 +1035,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           height: 1.4,
                           fontSize: 12.sp,
+                          color: Colors.white.withOpacity(0.9),
                         ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1039,8 +1045,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       ref.read(navigationIndexProvider.notifier).state = 1;
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.deepTeal,
-                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.white,
+                      foregroundColor: const Color(0xFF064E3B),
                       minimumSize: Size(double.infinity, 44.r),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r),
@@ -1108,12 +1114,12 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       Container(
                         padding: EdgeInsets.all(10.r),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFCEAB61).withValues(alpha: 0.1),
+                          color: const Color(0xFFD2AB55).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(
                           LucideIcons.gift,
-                          color: const Color(0xFFCEAB61),
+                          color: const Color(0xFFD2AB55),
                           size: 24.ip,
                         ),
                       ),
@@ -1128,7 +1134,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                   .textTheme
                                   .labelLarge
                                   ?.copyWith(
-                                    color: const Color(0xFFCEAB61),
+                                    color: const Color(0xFFD2AB55),
                                     fontSize: 9.sp,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1.5,
@@ -1169,7 +1175,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFCEAB61),
+                      backgroundColor: const Color(0xFFD2AB55),
                       foregroundColor: const Color(0xFF121212),
                       minimumSize: Size(double.infinity, 44.r),
                       shape: RoundedRectangleBorder(
@@ -1238,7 +1244,7 @@ class _HorizontalServiceList extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => _PdfViewerScreen(url: docUrl, uid: uid),
+                builder: (context) => PdfViewerScreen(url: docUrl, uid: uid),
               ),
             );
           }
@@ -1401,17 +1407,17 @@ class _LinePatternPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _PdfViewerScreen extends StatefulWidget {
+class PdfViewerScreen extends StatefulWidget {
   final String url;
   final String uid;
 
-  const _PdfViewerScreen({required this.url, required this.uid});
+  const PdfViewerScreen({super.key, required this.url, required this.uid});
 
   @override
-  State<_PdfViewerScreen> createState() => _PdfViewerScreenState();
+  State<PdfViewerScreen> createState() => _PdfViewerScreenState();
 }
 
-class _PdfViewerScreenState extends State<_PdfViewerScreen> {
+class _PdfViewerScreenState extends State<PdfViewerScreen> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
 
   @override

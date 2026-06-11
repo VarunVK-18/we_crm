@@ -275,16 +275,8 @@ class SubscriptionsScreen extends ConsumerWidget {
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  amount,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                    color: AppTheme.deepTeal,
-                  ),
-                ),
-                const SizedBox(height: 4),
                 Row(
                   children: [
                     Text(

@@ -350,21 +350,13 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                                 AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(LucideIcons.send,
-                                size: 16, color: Colors.white),
-                            SizedBox(width: 8),
-                            Text(
-                              'Submit',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
+                      : const Text(
+                          'Submit',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                 ),
               ],

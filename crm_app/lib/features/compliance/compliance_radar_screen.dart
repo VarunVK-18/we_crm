@@ -11,6 +11,7 @@ import '../../providers/compliance_provider.dart';
 import '../services/service_request_summary_sheet.dart';
 import '../../core/utils/responsive.dart';
 import 'package:url_launcher/url_launcher.dart';
+
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
 
@@ -19,7 +20,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final reminders = ref.read(complianceRemindersProvider).value ?? [];
     final filteredReminders = reminders
         .where((r) =>
-            (selectedEntity == 'All Entities' || r.entityName == selectedEntity) &&
+            (selectedEntity == 'All Entities' ||
+                r.entityName == selectedEntity) &&
             r.daysLeft <= 3)
         .toList();
 
@@ -134,165 +136,239 @@ class ComplianceRadarScreen extends ConsumerWidget {
   void _showPendingCompliancesPanel(BuildContext context, WidgetRef ref) {
     final selectedEntity = ref.read(selectedEntityProvider);
     final reminders = ref.read(complianceRemindersProvider).value ?? [];
-    final pendingReminders = reminders
-        .where((r) =>
-            (selectedEntity == 'All Entities' ||
-                r.entityName == selectedEntity) &&
-            r.status != TaskStatus.completed)
-        .toList();
-
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
       isScrollControlled: true,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
       ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.fromLTRB(28, 12, 28, 40),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(36)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 24),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      builder: (context) {
+        String filterType = 'pending';
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final filteredReminders = reminders
+                .where((r) =>
+                    (selectedEntity == 'All Entities' ||
+                        r.entityName == selectedEntity) &&
+                    (filterType == 'all' ||
+                        (filterType == 'pending' &&
+                            r.status != TaskStatus.completed) ||
+                        (filterType == 'completed' &&
+                            r.status == TaskStatus.completed)))
+                .toList();
+
+            return Container(
+              padding: const EdgeInsets.fromLTRB(28, 12, 28, 40),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(36)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, -10),
+                  ),
+                ],
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Pending Compliances',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: AppTheme.deepTeal,
-                        letterSpacing: -0.5,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200],
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                    ),
-                    Text(
-                      'Upcoming filings & actions required',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      LucideIcons.x,
-                      color: Colors.grey,
-                      size: 16,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            Flexible(
-              child: SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ...(() {
-                      if (pendingReminders.isEmpty) {
-                        return [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 40),
-                            child: Center(
-                              child: Text(
-                                'No active alerts for this entity.',
-                                style: TextStyle(
-                                  color: Colors.grey[400],
-                                  fontWeight: FontWeight.w600,
-                                ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Compliances',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: AppTheme.deepTeal,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          Text(
+                            'Upcoming filings & actions required',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[500],
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: PopupMenuButton<String>(
+                              color: Colors.white,
+                              elevation: 6,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              offset: const Offset(0, 40),
+                              child: const Padding(
+                                padding: EdgeInsets.all(6),
+                                child: Icon(LucideIcons.listFilter,
+                                    color: Colors.grey, size: 16),
+                              ),
+                              tooltip: 'Filter Tasks',
+                              onSelected: (value) {
+                                setState(() => filterType = value);
+                              },
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                    value: 'pending',
+                                    child: Text('Pending',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey[500],
+                                            fontWeight: FontWeight.w500))),
+                                PopupMenuItem(
+                                    value: 'completed',
+                                    child: Text('Completed',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey[500],
+                                            fontWeight: FontWeight.w500))),
+                                PopupMenuItem(
+                                    value: 'all',
+                                    child: Text('All',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey[500],
+                                            fontWeight: FontWeight.w500))),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(context),
+                            icon: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                LucideIcons.x,
+                                color: Colors.grey,
+                                size: 16,
                               ),
                             ),
-                          )
-                        ];
-                      }
-                      
-                      final grouped = <String, List<dynamic>>{};
-                      for (final r in pendingReminders) {
-                        final key = selectedEntity == 'All Entities' 
-                            ? (r.entityName.isNotEmpty ? r.entityName : 'Other')
-                            : r.status.toString().split('.').last.toUpperCase();
-                        grouped.putIfAbsent(key, () => []).add(r);
-                      }
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          ...(() {
+                            if (filteredReminders.isEmpty) {
+                              return [
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 40),
+                                  child: Center(
+                                    child: Text(
+                                      'No compliances found for this filter.',
+                                      style: TextStyle(
+                                        color: Colors.grey[400],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              ];
+                            }
 
-                      return grouped.entries.map((entry) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(left: 4, bottom: 12),
-                                child: Row(
+                            final grouped = <String, List<dynamic>>{};
+                            for (final r in filteredReminders) {
+                              final key = selectedEntity == 'All Entities'
+                                  ? (r.entityName.isNotEmpty
+                                      ? r.entityName
+                                      : 'Other')
+                                  : r.status
+                                      .toString()
+                                      .split('.')
+                                      .last
+                                      .toUpperCase();
+                              grouped.putIfAbsent(key, () => []).add(r);
+                            }
+
+                            return grouped.entries.map((entry) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      width: 4,
-                                      height: 16,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.activeOrange,
-                                        borderRadius: BorderRadius.circular(2),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 4, bottom: 12),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 4,
+                                            height: 16,
+                                            decoration: BoxDecoration(
+                                              color: AppTheme.activeOrange,
+                                              borderRadius:
+                                                  BorderRadius.circular(2),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            entry.key,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                              color: AppTheme.deepTeal,
+                                              letterSpacing: -0.3,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      entry.key,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                        color: AppTheme.deepTeal,
-                                        letterSpacing: -0.3,
-                                      ),
-                                    ),
+                                    ...entry.value.map((reminder) =>
+                                        _ReminderItem(reminder: reminder)),
                                   ],
                                 ),
-                              ),
-                              ...entry.value.map((reminder) => _ReminderItem(reminder: reminder)),
-                            ],
-                          ),
-                        );
-                      }).toList();
-                    })(),
-                  ],
-                ),
+                              );
+                            }).toList();
+                          })(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -321,12 +397,15 @@ class ComplianceRadarScreen extends ConsumerWidget {
       minScore = 1.0;
     } else {
       for (final r in pendingReminders) {
-        if (r.status == TaskStatus.overdue) minScore = minScore > 0.25 ? 0.25 : minScore;
-        else if (r.status == TaskStatus.critical) minScore = minScore > 0.5 ? 0.5 : minScore;
-        else if (r.status == TaskStatus.dueSoon) minScore = minScore > 0.75 ? 0.75 : minScore;
+        if (r.status == TaskStatus.overdue)
+          minScore = minScore > 0.25 ? 0.25 : minScore;
+        else if (r.status == TaskStatus.critical)
+          minScore = minScore > 0.5 ? 0.5 : minScore;
+        else if (r.status == TaskStatus.dueSoon)
+          minScore = minScore > 0.75 ? 0.75 : minScore;
       }
     }
-    
+
     final score = minScore;
     final healthStatus = score >= 0.9
         ? 'EXCELLENT'
@@ -355,7 +434,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
                   ? '${r.title} (${r.entityName})'
                   : r.title,
               'status': r.message,
-              'type': (r.status == TaskStatus.critical || r.status == TaskStatus.overdue) ? 'Urgent' : 'Upcoming',
+              'type': (r.status == TaskStatus.critical ||
+                      r.status == TaskStatus.overdue)
+                  ? 'Urgent'
+                  : 'Upcoming',
             })
         .toList();
 
@@ -500,7 +582,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       .where((r) =>
                                           (currentEntity == 'All Entities' ||
                                               r.entityName == currentEntity) &&
-                                          (r.status == TaskStatus.critical || r.status == TaskStatus.overdue))
+                                          (r.status == TaskStatus.critical ||
+                                              r.status == TaskStatus.overdue))
                                       .isNotEmpty)
                                     Positioned(
                                       right: 12,
@@ -560,11 +643,15 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 ? 'Due soon'
                                 : 'No upcoming deadlines',
                             color: urgentReminder != null &&
-                                    (urgentReminder.status == TaskStatus.critical || urgentReminder.status == TaskStatus.overdue)
+                                    (urgentReminder.status ==
+                                            TaskStatus.critical ||
+                                        urgentReminder.status ==
+                                            TaskStatus.overdue)
                                 ? const Color.fromARGB(255, 223, 105, 75)
                                 : AppTheme.deepTeal,
-                            onTap: urgentReminder != null 
-                                ? () => _showPendingCompliancesPanel(context, ref) 
+                            onTap: urgentReminder != null
+                                ? () =>
+                                    _showPendingCompliancesPanel(context, ref)
                                 : null,
                           ),
                           SizedBox(height: 16.r),
@@ -586,9 +673,11 @@ class ComplianceRadarScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(32.r),
                               child: InkWell(
                                 onTap: () async {
-                                  final url = Uri.parse('https://aistartupdoctor.com/');
+                                  final url =
+                                      Uri.parse('https://aistartupdoctor.com/');
                                   if (await canLaunchUrl(url)) {
-                                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                                    await launchUrl(url,
+                                        mode: LaunchMode.externalApplication);
                                   }
                                 },
                                 borderRadius: BorderRadius.circular(32.r),
@@ -597,7 +686,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(32.r),
                                     border: Border.all(
-                                      color: AppTheme.deepTeal.withOpacity(0.08),
+                                      color:
+                                          AppTheme.deepTeal.withOpacity(0.08),
                                       width: 1.0.r,
                                     ),
                                   ),
@@ -606,10 +696,14 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       Container(
                                         padding: EdgeInsets.all(12.r),
                                         decoration: BoxDecoration(
-                                          color: AppTheme.corporateBlue.withOpacity(0.08),
-                                          borderRadius: BorderRadius.circular(16.r),
+                                          color: AppTheme.corporateBlue
+                                              .withOpacity(0.08),
+                                          borderRadius:
+                                              BorderRadius.circular(16.r),
                                         ),
-                                        child: Icon(LucideIcons.stethoscope, color: AppTheme.corporateBlue, size: 24.ip),
+                                        child: Icon(LucideIcons.stethoscope,
+                                            color: AppTheme.corporateBlue,
+                                            size: 24.ip),
                                       ),
                                       SizedBox(width: 16.r),
                                       Expanded(
@@ -622,7 +716,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                           ),
                                         ),
                                       ),
-                                      Icon(LucideIcons.arrowUpRight, color: AppTheme.corporateBlue, size: 20.ip),
+                                      Icon(LucideIcons.arrowUpRight,
+                                          color: AppTheme.corporateBlue,
+                                          size: 20.ip),
                                     ],
                                   ),
                                 ),
@@ -643,7 +739,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                     },
                                   ],
                           ),
-                          SizedBox(height: 120.r), // Added extra padding for bottom nav bar
+                          SizedBox(
+                              height: 120
+                                  .r), // Added extra padding for bottom nav bar
                         ],
                       ),
                     ),
@@ -897,91 +995,92 @@ class _BentoDeadlineCard extends StatelessWidget {
               ),
             ),
             child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            width: 64.r,
-            height: 64.r,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Center(
-              child: HugeIcon(
-                icon: HugeIcons.strokeRoundedCalendar02,
-                color: color,
-                size: 32.ip,
-              ),
-            ),
-          ),
-          SizedBox(width: 20.r),
-          Expanded(
-            flex: 3,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w900,
-                    color: AppTheme.deepTeal,
-                    letterSpacing: -0.5,
-                    height: 1.2,
+                Container(
+                  width: 64.r,
+                  height: 64.r,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(20.r),
+                  ),
+                  child: Center(
+                    child: HugeIcon(
+                      icon: HugeIcons.strokeRoundedCalendar02,
+                      color: color,
+                      size: 32.ip,
+                    ),
                   ),
                 ),
-                SizedBox(height: 4.r),
-                Text(
-                  date,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: Colors.grey[500],
-                    fontWeight: FontWeight.w700,
+                SizedBox(width: 20.r),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.deepTeal,
+                          letterSpacing: -0.5,
+                          height: 1.2,
+                        ),
+                      ),
+                      SizedBox(height: 4.r),
+                      Text(
+                        date,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: Colors.grey[500],
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 12.r),
+                Flexible(
+                  flex: 2,
+                  child: Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 12.r, vertical: 8.r),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withOpacity(0.25),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      timeLeft,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10.sp,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                        height: 1.2,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          SizedBox(width: 12.r),
-          Flexible(
-            flex: 2,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12.r, vertical: 8.r),
-              decoration: BoxDecoration(
-                color: color,
-                borderRadius: BorderRadius.circular(16.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withOpacity(0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Text(
-                timeLeft,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
-                  height: 1.2,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
+        ),
       ),
     );
   }
@@ -1193,7 +1292,8 @@ class _ReminderItem extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
-              reminder.status == TaskStatus.overdue || reminder.status == TaskStatus.critical
+              reminder.status == TaskStatus.overdue ||
+                      reminder.status == TaskStatus.critical
                   ? LucideIcons.alertTriangle
                   : LucideIcons.calendarClock,
               color: reminder.color,
@@ -1239,7 +1339,8 @@ class _ReminderItem extends ConsumerWidget {
                 if (reminder.daysLeft <= 3) ...[
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.red.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
@@ -1258,37 +1359,27 @@ class _ReminderItem extends ConsumerWidget {
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              Navigator.pop(context); // Close panel
-              // For now, mark as complete without files
-              // Ideally, this should open a bottom sheet to upload proof
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Please mark as complete from the Web Portal to upload proofs.')),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.deepTeal,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.deepTeal.withOpacity(0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Text(
-                'Complete',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  LucideIcons.clock,
+                  size: 14,
+                  color: Colors.grey[500],
                 ),
-              ),
+                const SizedBox(width: 4),
+                Text(
+                  'Pending',
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

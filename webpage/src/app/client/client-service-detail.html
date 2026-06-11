@@ -275,7 +275,7 @@
               @if (msg.senderRole !== 'client') {
                 <div class="sender-info">
                   <span class="sender-name">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</span>
-                  <span class="sender-role">{{ msg.senderRole === 'admin' ? 'Manager' : (msg.senderRole === 'staff' ? 'Client Support' : msg.senderRole) }}</span>
+                  <span class="sender-role">{{ formatRole(msg.senderRole) }}</span>
                 </div>
               }
               <div class="message-bubble" [class.is-client]="msg.senderRole === 'client'">
