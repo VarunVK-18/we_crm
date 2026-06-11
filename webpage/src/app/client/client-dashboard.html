@@ -64,7 +64,13 @@
             @if (activeOrders().length === 0) {
               <div class="ho-slide slide-dark">
                 <div class="slide-content row-layout">
-                  <div class="slide-icon-box"><hugeicons-icon [icon]="Briefcase02Icon" [size]="24" color="#fff"></hugeicons-icon></div>
+                  <div class="slide-icon-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                      <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                      <path d="M10 12l4 4m0 -4l-4 4" />
+                    </svg>
+                  </div>
                   <div class="slide-text">
                     <h3>No Active Tasks</h3>
                     <p>You're all caught up!</p>
@@ -248,7 +254,7 @@
               <div class="qa-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" color="#334155"><path d="M8 2V5M16 2V5M3.5 9.09H20.5M21 8.5V17C21 20 19.5 22 16 22H8C4.5 22 3 20 3 17V8.5C3 5.5 4.5 3.5 8 3.5H16C19.5 3.5 21 5.5 21 8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.9955 13.7H12.0045M8.29431 13.7H8.30329M8.29431 16.7H8.30329M11.9955 16.7H12.0045M15.6953 13.7H15.7043M15.6953 16.7H15.7043" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
-              <span class="qa-label">Compliance Calendar</span>
+              <span class="qa-label">Compliance Cal..</span>
             </div>
           </div>
         </div>
@@ -288,7 +294,7 @@
           <div class="service-list-container">
             @if (isLoading()) {
               <div class="loading-state">
-                <span class="material-symbols-outlined rotating">sync</span>
+                <div class="we-loader"></div>
                 <p>Loading your services...</p>
               </div>
             } @else {

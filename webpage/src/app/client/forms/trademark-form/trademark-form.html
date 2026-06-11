@@ -162,7 +162,7 @@
       <div class="form-actions">
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
-            <span class="material-symbols-outlined rotating">sync</span> Submitting...
+            <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
           } @else {
             Submit Application
           }

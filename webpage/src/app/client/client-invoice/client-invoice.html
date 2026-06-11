@@ -18,8 +18,8 @@
   </div>
 
   @if (isLoading()) {
-    <div class="loading-state no-print">
-      <span class="material-symbols-outlined rotating">sync</span>
+    <div class="loading-state">
+      <div class="we-loader"></div>
       <p>Loading invoice details...</p>
     </div>
   } @else if (order()) {

@@ -290,4 +290,19 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (!docs) return [];
     return docs.filter(d => !d?.name?.startsWith('director_'));
   }
+
+  filterRequestedDocs(docs: any[]) {
+    if (!docs) return [];
+    return docs.filter(d => !d?.name?.startsWith('director_'));
+  }
+
+  uploadRequestedDocument(doc: any, event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // In a real app we would use FormData to upload the file to the server.
+    // For now we just mark it as uploaded in the UI.
+    alert('File selected for upload: ' + file.name + '. Implementation pending backend endpoint.');
+    doc.isUploaded = true;
+  }
 }

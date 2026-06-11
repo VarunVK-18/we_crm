@@ -23,7 +23,7 @@
       <div class="history-list">
         @if (isLoading()) {
           <div class="loading-state">
-            <span class="material-symbols-outlined rotating">sync</span>
+            <div class="we-loader"></div>
             <p>Loading completed services...</p>
           </div>
         } @else if (completedServices().length === 0) {

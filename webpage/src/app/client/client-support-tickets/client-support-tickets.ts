@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -43,6 +43,18 @@ export class ClientSupportTickets implements OnInit {
   completedServices = signal<any[]>([]);
   isLoading = signal<boolean>(true);
   errorMessage = signal<string | null>(null);
+
+  // Tab State
+  activeTab = signal<'All' | 'Pending' | 'Resolved'>('All');
+
+  filteredTickets = computed(() => {
+    const tab = this.activeTab();
+    const all = this.tickets();
+    if (tab === 'All') return all;
+    if (tab === 'Pending') return all.filter(t => t.status === 'Pending' || t.status === 'In Progress');
+    if (tab === 'Resolved') return all.filter(t => t.status === 'Resolved');
+    return all;
+  });
 
   // New Ticket Modal State
   showNewTicketModal = signal<boolean>(false);
@@ -156,12 +168,8 @@ export class ClientSupportTickets implements OnInit {
     });
   }
 
-  get activeTickets() {
-    return this.tickets().filter(t => t.status === 'Pending' || t.status === 'In Progress');
-  }
-
-  get previousTickets() {
-    return this.tickets().filter(t => t.status === 'Resolved');
+  setTab(tab: 'All' | 'Pending' | 'Resolved') {
+    this.activeTab.set(tab);
   }
 
   formatDate(dateString: string): string {

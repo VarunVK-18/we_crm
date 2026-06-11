@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -33,6 +33,23 @@ export class ClientHelpSupport implements OnInit {
   user = signal<any>(null);
   clientManager = signal<any>(null);
 
+  // KPI State
+  tickets = signal<any[]>([]);
+  activeOrders = signal<any[]>([]);
+
+  // Computed KPIs
+  openTicketsCount = computed(() => this.tickets().filter(t => t.status === 'Pending' || t.status === 'In Progress').length);
+  resolvedTicketsCount = computed(() => this.tickets().filter(t => t.status === 'Resolved').length);
+  pendingDocsCount = computed(() => {
+    let count = 0;
+    for (const order of this.activeOrders()) {
+      if (order.items) {
+        count += order.items.filter((i: any) => !i.isChecked).length;
+      }
+    }
+    return count;
+  });
+
   constructor(private router: Router, private api: Api) {}
 
   ngOnInit() {
@@ -43,19 +60,53 @@ export class ClientHelpSupport implements OnInit {
     }
     this.user.set(JSON.parse(savedUser));
     this.fetchClientManager();
+    this.fetchTickets();
+    this.fetchOrders();
   }
 
   fetchClientManager() {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) return;
-    
-    this.api.get<any>(`users/${uid}`).subscribe({
+    this.api.get<any>(`users/profile/${uid}`).subscribe({
       next: (res) => {
-        if (res.user && res.user.assigned_to) {
+        if (res.user && res.user.client_manager) {
+          this.clientManager.set(res.user.client_manager);
+        } else if (res.user && res.user.assigned_to) {
           this.clientManager.set(res.user.assigned_to);
         }
       },
-      error: (err) => console.error('Failed to fetch client manager', err)
+      error: (err) => console.error('Failed to fetch client manager:', err)
+    });
+  }
+
+  fetchTickets() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    this.api.get<any>(`tickets/user/${uid}`).subscribe({
+      next: (res) => {
+        if (res && res.tickets) {
+          this.tickets.set(res.tickets);
+        }
+      },
+      error: (err) => console.error('Failed to fetch tickets:', err)
+    });
+  }
+
+  fetchOrders() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    this.api.get<any>('my-checklists').subscribe({
+      next: (res: any) => {
+        const checklists = res.checklists || [];
+        const active: any[] = [];
+        for (const c of checklists) {
+          if (c.status !== 'completed' && c.assigned_to && c.assigned_to.role !== 'client_manager') {
+            active.push(c);
+          }
+        }
+        this.activeOrders.set(active);
+      },
+      error: (err) => console.error('Failed to fetch orders:', err)
     });
   }
   // Icons
@@ -89,6 +140,26 @@ export class ClientHelpSupport implements OnInit {
     {
       question: 'What documents are needed for GST filing?',
       answer: 'You will generally need your PAN card, Aadhaar card, business registration proof, bank statements, and relevant sales/purchase invoices.',
+      isOpen: false
+    },
+    {
+      question: 'How do I upgrade my service plan?',
+      answer: 'You can upgrade your plan at any time from the Subscriptions page by selecting a new tier, and the prorated difference will be applied.',
+      isOpen: false
+    },
+    {
+      question: 'What payment methods do you accept?',
+      answer: 'We accept all major credit cards, UPI, net banking, and standard digital wallets for your convenience.',
+      isOpen: false
+    },
+    {
+      question: 'How can I track my application status?',
+      answer: 'You can monitor real-time progress for all your active applications in the "Ongoing Services" section of your dashboard.',
+      isOpen: false
+    },
+    {
+      question: 'How do I update my profile details?',
+      answer: 'Go to your Profile page to update your contact information, address, and business details at any time.',
       isOpen: false
     }
   ];
