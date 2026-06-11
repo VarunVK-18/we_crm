@@ -33,58 +33,87 @@ export class ClientCompliance implements OnInit {
     const unique = new Set<string>();
     
     this.reminders().forEach(r => {
-      if (r.entityName) unique.add(r.entityName);
+      if (r.entityName) unique.add(r.entityName.trim());
     });
 
     this.checklists().forEach(c => {
       const entityName = c.details?.entityName || c.client_id?.company_name;
-      if (entityName) unique.add(entityName);
+      if (entityName) unique.add(entityName.trim());
     });
 
     return Array.from(unique).sort();
   });
 
-  filteredReminders = computed(() => {
+  filteredTasks = computed(() => {
     const entity = this.currentEntity();
     if (entity === 'All Entities') return this.reminders();
-    return this.reminders().filter(r => r.entityName === entity);
+    return this.reminders().filter(r => r.entityName && r.entityName.trim() === entity);
   });
 
-  pendingReminders = computed(() => this.filteredReminders().filter(r => r.status !== 'expired'));
+  pendingTasks = computed(() => this.filteredTasks().filter(r => r.status !== 'Completed'));
   
+  groupedPendingTasks = computed(() => {
+    const tasks = this.pendingTasks();
+    const entity = this.currentEntity();
+    const map = new Map<string, any[]>();
+    
+    tasks.forEach(r => {
+      const key = entity === 'All Entities' ? (r.entityName || 'Other') : r.status;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(r);
+    });
+
+    return Array.from(map.entries()).map(([key, items]) => ({ key, items }));
+  });
   healthScore = computed(() => {
-    const total = this.filteredReminders().length;
-    if (total === 0) return 1.0;
-    const expired = this.filteredReminders().filter(r => r.status === 'expired').length;
-    return (total - expired) / total;
+    const pending = this.pendingTasks();
+    if (pending.length === 0) return 1.0;
+    
+    // 100% = No pending compliances
+    // 90% = Upcoming compliances only
+    // 75% = Due Soon compliances
+    // 50% = Critical compliances
+    // 0-25% = Overdue compliances
+    let minScore = 0.9;
+    for (const t of pending) {
+      if (t.status === 'Overdue') minScore = Math.min(minScore, 0.25);
+      else if (t.status === 'Critical') minScore = Math.min(minScore, 0.5);
+      else if (t.status === 'Due Soon') minScore = Math.min(minScore, 0.75);
+    }
+    return minScore;
   });
 
   healthStatus = computed(() => {
     const score = this.healthScore();
-    if (score >= 0.8) return 'EXCELLENT';
+    if (score >= 0.9) return 'EXCELLENT';
+    if (score >= 0.75) return 'GOOD';
     if (score >= 0.5) return 'WARNING';
     return 'CRITICAL';
   });
 
   healthMessage = computed(() => {
-    return this.healthScore() >= 0.8 
-      ? 'Your entity compliance health is safe.' 
-      : 'Action required: resolve expired/urgent items.';
+    const score = this.healthScore();
+    if (score >= 0.9) return 'Your compliance health is safe.';
+    if (score >= 0.75) return 'Some items are due soon.';
+    if (score >= 0.5) return 'Critical action required soon.';
+    return 'Action required: resolve overdue items.';
   });
 
   urgentReminder = computed(() => {
-    const pending = this.pendingReminders();
+    const pending = this.pendingTasks();
     if (pending.length === 0) return null;
     return pending.reduce((prev, curr) => (prev.daysLeft < curr.daysLeft ? prev : curr));
   });
 
   timelineItems = computed(() => {
-    const pending = this.pendingReminders();
-    if (pending.length === 0) return [{ title: 'No pending tasks', status: 'All clear', type: 'Compliance' }];
+    const pending = this.pendingTasks();
+    if (pending.length === 0) return [{ title: 'No pending tasks', status: 'All clear', type: 'Up To Date', daysLeft: 0 }];
+    
     return pending.map(r => ({
-      title: r.serviceName,
-      status: r.message,
-      type: r.status === 'urgent' ? 'Urgent' : 'Upcoming'
+      ...r,
+      title: r.title,
+      status: r.daysLeft <= 0 ? 'Overdue - Penalty Applicable' : `${r.daysLeft} Days Remaining`,
+      type: r.status // Upcoming, Due Soon, Critical, Overdue
     }));
   });
 
@@ -112,37 +141,63 @@ export class ClientCompliance implements OnInit {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) return;
     
-    this.api.get<any>(`compliance/user/${uid}`).subscribe({
+    this.api.get<any>(`compliance/tasks/user/${uid}`).subscribe({
       next: (res) => {
-        // Map backend reminders to model format
-        const fetched = res.reminders || [];
-        const mapped = fetched.map((r: any) => {
-           let status = 'expiringSoon';
-           let message = `Ends in ${r.daysLeft} days`;
-           if (r.daysLeft <= 0) {
-              status = 'expired';
-              message = 'Service Expired';
-           } else if (r.daysLeft <= 7) {
-              status = 'urgent';
-              message = `Ends in ${r.daysLeft} day${r.daysLeft > 1 ? 's' : ''}`;
-           }
-           
-           return {
+        const fetched = res.tasks || [];
+        const mapped = fetched.map((r: any) => ({
+             ...r,
              id: r._id,
-             serviceName: r.title || r.serviceName || 'Unknown Compliance',
-             entityName: r.entityName || (r.client_id ? r.client_id.company_name : ''),
-             daysLeft: r.daysLeft,
-             status,
-             message
-           };
-        });
+             entityName: r.entityName || (r.companyId ? r.companyId.company_name : 'Individual'),
+             message: r.daysLeft <= 0 ? 'Overdue - Penalty Applicable' : `Due in ${r.daysLeft} days`
+        }));
         this.reminders.set(mapped);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Failed to fetch compliance reminders:', err);
+        console.error('Failed to fetch compliance tasks:', err);
         this.isLoading.set(false);
       }
+    });
+  }
+
+  // File Upload State for Complete Task
+  selectedTask = signal<any>(null);
+  isCompleteModalOpen = signal(false);
+  proofDocument: File | null = null;
+  certificateDocument: File | null = null;
+  acknowledgementDocument: File | null = null;
+
+  openCompleteModal(task: any) {
+    this.selectedTask.set(task);
+    this.proofDocument = null;
+    this.certificateDocument = null;
+    this.acknowledgementDocument = null;
+    this.isPendingModalOpen.set(false);
+    this.isCompleteModalOpen.set(true);
+  }
+
+  onFileChange(event: any, type: string) {
+    const file = event.target.files[0];
+    if (file) {
+      if (type === 'proof') this.proofDocument = file;
+      if (type === 'cert') this.certificateDocument = file;
+      if (type === 'ack') this.acknowledgementDocument = file;
+    }
+  }
+
+  submitCompletion() {
+    if (!this.selectedTask()) return;
+    const formData = new FormData();
+    if (this.proofDocument) formData.append('proofDocument', this.proofDocument);
+    if (this.certificateDocument) formData.append('certificateDocument', this.certificateDocument);
+    if (this.acknowledgementDocument) formData.append('acknowledgementDocument', this.acknowledgementDocument);
+
+    this.api.post(`compliance/tasks/${this.selectedTask().id}/complete`, formData).subscribe({
+      next: () => {
+        this.isCompleteModalOpen.set(false);
+        this.fetchReminders();
+      },
+      error: (err) => console.error('Failed to complete task:', err)
     });
   }
 

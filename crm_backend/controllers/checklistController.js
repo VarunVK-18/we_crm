@@ -534,6 +534,23 @@ const uploadFinalDocuments = async (req, res) => {
           expiry_date: expiryDate,
           uploadedAt: new Date()
         });
+        // Trigger compliance generation if COI uploaded for Private Limited
+        if (checklist.service_name.includes('Private Limited') && file.originalname.includes('Certificate of Incorporation (COI)')) {
+          try {
+            const incDate = await complianceService.extractDateFromCOI(file.buffer);
+            const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
+            await complianceService.generateCompliancesForPrivateLimited(
+              checklist.client_id,
+              checklist.company_id,
+              checklist._id,
+              incDate,
+              entityName
+            );
+            console.log(`Generated compliances for ${entityName} with incDate ${incDate}`);
+          } catch (err) {
+            console.error('Error generating compliances', err);
+          }
+        }
       }
 
       await checklist.save();
@@ -548,6 +565,46 @@ const uploadFinalDocuments = async (req, res) => {
     res.status(200).json({ success: true, checklist: populated });
   } catch (error) {
     console.error('Final Documents Upload Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete a final document from a checklist
+// @route   DELETE /api/checklists/:id/final-documents/:docId
+// @access  Private (Admin, Client Manager, Staff)
+const deleteFinalDocument = async (req, res) => {
+  try {
+    const { id, docId } = req.params;
+
+    const checklist = await Checklist.findById(id);
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    // Find the document in the checklist's final_documents array
+    const docIndex = checklist.final_documents.findIndex(d => d.document_id && d.document_id.toString() === docId);
+    
+    if (docIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Document not found in this checklist' });
+    }
+
+    // Remove from array
+    checklist.final_documents.splice(docIndex, 1);
+    await checklist.save();
+
+    // Optionally delete from the Document collection as well
+    const Document = require('../models/Document');
+    await Document.findByIdAndDelete(docId);
+
+    const populated = await Checklist.findById(id)
+      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('assigned_to', 'owner_name email role')
+      .populate('created_by', 'owner_name email role')
+      .populate('items.checkedBy', 'owner_name');
+
+    res.status(200).json({ success: true, checklist: populated });
+  } catch (error) {
+    console.error('Final Documents Delete Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -645,5 +702,6 @@ module.exports = {
   updateChecklist,
   uploadRequestedDocuments,
   uploadFinalDocuments,
+  deleteFinalDocument,
   createSupportTicketForChecklist
 };

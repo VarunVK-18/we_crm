@@ -12,80 +12,56 @@ final selectedEntityProvider = StateProvider<String>((ref) {
   return 'All Entities'; // Default to all entities
 });
 
-/// Real-time stream of [ComplianceReminder] documents from the database.
+/// Real-time stream of [ComplianceTask] documents from the database.
 final complianceRemindersProvider =
-    StreamProvider<List<ComplianceReminder>>((ref) {
+    StreamProvider<List<ComplianceTask>>((ref) {
   final uid = ref.watch(authStateProvider).value?.uid;
   if (uid == null) return Stream.value([]);
 
-  final controller = StreamController<List<ComplianceReminder>>();
+  final controller = StreamController<List<ComplianceTask>>();
 
   Future<void> fetchReminders() async {
     try {
-      final List<ComplianceReminder> allReminders = [];
+      final List<ComplianceTask> allTasks = [];
 
-      // Only fetch Checklists API for Final Documents Expiry
       try {
-        final user = ref.read(userProfileProvider).value;
-        final companyName = user?.companyName ?? '';
-
-        final ordersResponse = await http.get(
-          Uri.parse('$kBaseUrl/api/my-checklists'),
+        final response = await http.get(
+          Uri.parse('$kBaseUrl/api/compliance/tasks/user/$uid'),
           headers: {'x-user-id': uid},
         ).timeout(const Duration(seconds: 5));
 
-        if (ordersResponse.statusCode == 200) {
-          final Map<String, dynamic> data = jsonDecode(ordersResponse.body);
-          final List<dynamic> checklistsJson = data['checklists'] ?? [];
+        if (response.statusCode == 200) {
+          final Map<String, dynamic> data = jsonDecode(response.body);
+          final List<dynamic> tasksJson = data['tasks'] ?? [];
 
-          for (final c in checklistsJson) {
-            final String actualCompany = c['company_name']?.toString() ??
-                (c['client_id'] != null
-                    ? c['client_id']['company_name']?.toString()
-                    : null) ??
-                companyName;
-            final String serviceName = c['service_name']?.toString() ?? '';
-            final String entityName =
-                actualCompany.isNotEmpty ? actualCompany : 'Default Entity';
-            final List<dynamic> finalDocs = c['final_documents'] ?? [];
+          for (final t in tasksJson) {
+            final String title = t['title']?.toString() ?? 'Task';
+            final String rawEntityName = t['entityName'] ?? (t['companyId'] != null ? t['companyId']['company_name'] : 'Individual');
+            final String entityName = rawEntityName.trim();
+            final int daysLeft = t['daysLeft'] ?? 0;
+            final String rawStatus = t['status']?.toString() ?? 'Upcoming';
+            
+            TaskStatus status = TaskStatus.upcoming;
+            if (rawStatus == 'Due Soon') status = TaskStatus.dueSoon;
+            else if (rawStatus == 'Critical') status = TaskStatus.critical;
+            else if (rawStatus == 'Overdue') status = TaskStatus.overdue;
+            else if (rawStatus == 'Completed') status = TaskStatus.completed;
 
-            for (final doc in finalDocs) {
-              if (doc['expiry_date'] != null) {
-                final expiryStr = doc['expiry_date'].toString();
-                final expiryDate = DateTime.tryParse(expiryStr);
-
-                if (expiryDate != null) {
-                  final now = DateTime.now();
-                  final daysLeft = expiryDate.difference(now).inDays;
-
-                  ReminderStatus status = ReminderStatus.expiringSoon;
-                  if (daysLeft < 0) {
-                    status = ReminderStatus.expired;
-                  } else if (daysLeft <= 7) {
-                    status = ReminderStatus.urgent;
-                  }
-
-                  final docName = doc['name']?.toString() ?? 'Document';
-
-                  allReminders.add(ComplianceReminder(
-                    id: doc['document_id']?.toString() ??
-                        DateTime.now().millisecondsSinceEpoch.toString(),
-                    serviceName: serviceName,
-                    entityName: entityName,
-                    daysLeft: daysLeft,
-                    status: status,
-                  ));
-                }
-              }
-            }
+            allTasks.add(ComplianceTask(
+              id: t['_id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+              title: title,
+              entityName: entityName,
+              daysLeft: daysLeft,
+              status: status,
+            ));
           }
         }
       } catch (e) {
-        debugPrint("Error fetching checklists API: $e");
+        debugPrint("Error fetching compliance tasks API: $e");
       }
 
       if (!controller.isClosed) {
-        controller.add(allReminders);
+        controller.add(allTasks);
       }
     } catch (e) {
       debugPrint("Error in fetchReminders: $e");

@@ -38,7 +38,8 @@ class MyEntitiesScreen extends ConsumerWidget {
     final Map<String, List<ServiceOrder>> grouped = {};
     for (final order in orders) {
       if (order.companyName.isEmpty) continue;
-      grouped.putIfAbsent(order.companyName, () => []).add(order);
+      final String compName = order.companyName.trim();
+      grouped.putIfAbsent(compName, () => []).add(order);
     }
 
     final entities = grouped.entries.map((entry) {

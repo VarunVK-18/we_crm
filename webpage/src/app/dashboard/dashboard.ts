@@ -20,6 +20,7 @@ import { SystemSettings } from './system-settings/system-settings';
 import { RequestsComponent } from './requests/requests';
 import { ClientDashboard } from './client-dashboard/client-dashboard';
 import { ChecklistDetails } from './checklist-details/checklist-details';
+import { StaffCompliance } from './staff-compliance/staff-compliance';
 
 @Component({
   selector: 'app-dashboard',
@@ -39,7 +40,8 @@ import { ChecklistDetails } from './checklist-details/checklist-details';
     SystemSettings,
     RequestsComponent,
     ClientDashboard,
-    ChecklistDetails
+    ChecklistDetails,
+    StaffCompliance
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -158,10 +160,7 @@ export class Dashboard implements OnInit, OnDestroy {
   getCompanyName(): string {
     const u = this.user();
     if (!u) return '';
-    if (u.company_id && typeof u.company_id === 'object' && u.company_id.company_name) {
-      return u.company_id.company_name;
-    }
-    return u.company_name || '';
+    return u.company_name || (u.company_id && typeof u.company_id === 'object' ? u.company_id.company_name : '');
   }
 
   /** Returns the company code */
@@ -210,6 +209,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'requests': return 'New Requests';
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';
+      case 'staff-compliance': return 'Staff Compliance Radar';
       default: return 'Dashboard';
     }
   }

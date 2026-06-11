@@ -94,10 +94,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   getCompanyName(): string {
     const u = this.user();
     if (!u) return '';
-    if (u.company_id && typeof u.company_id === 'object' && u.company_id.company_name) {
-      return u.company_id.company_name;
-    }
-    return u.company_name || '';
+    return u.company_name || (u.company_id && typeof u.company_id === 'object' ? u.company_id.company_name : '');
   }
 
   getCompanyCode(): string {

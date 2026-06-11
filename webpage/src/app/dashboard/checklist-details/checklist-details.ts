@@ -38,8 +38,20 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   editNotesText = '';
 
   // Final Documents Upload State
-  finalDocsToUpload: { file: File, expiryDate: string }[] = [];
+  finalDocsToUpload: { file: File, docType?: string }[] = [];
   isFinalDocUploading = false;
+
+  privateLimitedFinalDocs = [
+    'Certificate of Incorporation (COI)',
+    'PAN',
+    'TAN',
+    'e-MOA (INC-33)',
+    'e-AOA (INC-34)',
+    'SPICe+ (INC-32)',
+    'AGILE-PRO-S (INC-35)',
+    'DIN Allotment Details for Directors',
+    'Other'
+  ];
 
   // --- Chat Feature ---
   isChatModalOpen = signal<boolean>(false);
@@ -362,14 +374,27 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   onFinalFilesSelected(event: any) {
     const files = event.target.files;
+    const cl = this.checklist();
     if (files) {
       for (let i = 0; i < files.length; i++) {
         this.finalDocsToUpload.push({
           file: files[i],
-          expiryDate: ''
+          docType: 'Other'
         });
       }
     }
+    event.target.value = '';
+  }
+
+  onSpecificFinalFileSelected(event: any, docType: string) {
+    const file = event.target.files[0];
+    if (file) {
+      this.finalDocsToUpload.push({
+        file: file,
+        docType: docType
+      });
+    }
+    event.target.value = '';
   }
 
   removeFinalDocFile(index: number) {
@@ -377,25 +402,23 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   }
 
   submitFinalDocuments() {
-    for (const doc of this.finalDocsToUpload) {
-      if (!doc.expiryDate) {
-        alert('Please enter an expiry date for all selected documents.');
-        return;
-      }
-    }
+
 
     const cl = this.checklist();
     if (!cl) return;
 
     this.isFinalDocUploading = true;
     const formData = new FormData();
-    const expiryDates: string[] = [];
 
     for (const doc of this.finalDocsToUpload) {
-      formData.append('final_files', doc.file);
-      expiryDates.push(doc.expiryDate);
+      let finalName = doc.file.name;
+      if (doc.docType && doc.docType !== 'Other') {
+        const ext = doc.file.name.includes('.') ? doc.file.name.substring(doc.file.name.lastIndexOf('.')) : '';
+        finalName = `${doc.docType}${ext}`;
+      }
+      const newFile = new File([doc.file], finalName, { type: doc.file.type });
+      formData.append('final_files', newFile);
     }
-    formData.append('expiry_dates', JSON.stringify(expiryDates));
 
     this.api.post(`checklists/${cl._id}/final-documents`, formData).subscribe({
       next: (res: any) => {
@@ -413,6 +436,22 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  deleteUploadedFinalDoc(docId: string) {
+    if (!confirm('Are you sure you want to delete this final document?')) return;
+    const cl = this.checklist();
+    if (!cl) return;
+
+    this.api.delete(`checklists/${cl._id}/final-documents/${docId}`).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+        }
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to delete final document.');
+      }
+    });
+  }
   openRequestDocModal() {
     this.newDocRequestName = '';
     this.checklistErrorMessage.set('');

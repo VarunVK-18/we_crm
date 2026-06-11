@@ -44,7 +44,8 @@ export class Sidebar implements OnInit {
         items: [
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
-          { id: 'checklists', label: 'Compliance', color: '#06B6D4' },
+          { id: 'checklists', label: 'Checklists', color: '#06B6D4' },
+          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'History', color: '#10B981' }
         ]
       });
@@ -68,7 +69,8 @@ export class Sidebar implements OnInit {
         items: [
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
-          { id: 'checklists', label: 'Compliance', color: '#06B6D4' },
+          { id: 'checklists', label: 'Checklists', color: '#06B6D4' },
+          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'History', color: '#10B981' }
         ]
       });
@@ -83,7 +85,8 @@ export class Sidebar implements OnInit {
         header: 'Operations',
         items: [
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
-          { id: 'checklists', label: 'Compliance', color: '#06B6D4' },
+          { id: 'checklists', label: 'Checklists', color: '#06B6D4' },
+          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'History', color: '#10B981' }
         ]
       });

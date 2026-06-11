@@ -253,9 +253,13 @@
       <!-- General Details Section -->
       @if (getGeneralDetails().length > 0) {
       <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
-        <h3 class="section-title">Application Details</h3>
-        <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+        <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card">
+          <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 600; color: var(--text-primary); list-style: none; user-select: none;">
+            <span class="material-symbols-outlined" style="font-size: 24px; color: var(--accent-primary);">description</span>
+            Application Details
+            <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
+          </summary>
+          <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
             @for (field of getGeneralDetails(); track field.key) {
               <div style="display: flex; flex-direction: column; gap: 4px;">
                 <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
@@ -267,7 +271,7 @@
               </div>
             }
           </div>
-        </div>
+        </details>
       </section>
       }
 
@@ -277,12 +281,13 @@
         <h3 class="section-title">Director Details</h3>
         <div style="display: flex; flex-direction: column; gap: 16px;">
           @for (director of getParsedDirectors(); track $index) {
-          <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px;">
-            <h4 style="font-size: 16px; font-weight: 600; color: var(--accent-primary); margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+          <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card">
+            <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: var(--accent-primary); list-style: none; user-select: none;">
               <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
               Director {{ $index + 1 }}: {{ director.fullName || 'Unnamed' }}
-            </h4>
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+              <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
+            </summary>
+            <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
               @for (field of (director | keyvalue); track field.key) {
                 <div style="display: flex; flex-direction: column; gap: 4px;">
                   <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
@@ -294,7 +299,7 @@
                 </div>
               }
             </div>
-          </div>
+          </details>
           }
         </div>
       </section>
@@ -303,9 +308,13 @@
       <!-- DPIIT Form Details Section -->
       @if (checklist().details?.dpiitForm) {
       <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
-        <h3 class="section-title">DPIIT Application Details</h3>
-        <div style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+        <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card">
+          <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 600; color: var(--text-primary); list-style: none; user-select: none;">
+            <span class="material-symbols-outlined" style="font-size: 24px; color: var(--accent-primary);">account_balance</span>
+            DPIIT Application Details
+            <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
+          </summary>
+          <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
             @for (field of (checklist().details.dpiitForm | keyvalue); track field.key) {
               <div style="display: flex; flex-direction: column; gap: 4px;">
                 <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
@@ -317,7 +326,7 @@
               </div>
             }
           </div>
-        </div>
+        </details>
       </section>
       }
 
@@ -337,11 +346,15 @@
               style="font-size: 16px; font-weight: 500; color: var(--text-primary); display: block; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{
               fdoc.name }}</span>
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span
-                style="font-size: 12px; color: var(--color-danger); font-weight: 600; background: var(--color-danger-bg); padding: 4px 8px; border-radius: 4px;">
-                Expires: {{ fdoc.expiry_date | date:'mediumDate' }}
-              </span>
-              <span style="font-size: 12px; color: var(--color-success); font-weight: 600;">Uploaded</span>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 12px; color: var(--color-success); font-weight: 600;">Uploaded</span>
+                <a [href]="api.getFileUrl('api/documents/' + (fdoc.document_id?._id || fdoc.document_id))" target="_blank"
+                  style="color: var(--accent-primary); font-size: 12px; font-weight: 700; text-decoration: none;">View</a>
+                <button type="button" (click)="deleteUploadedFinalDoc(fdoc.document_id?._id || fdoc.document_id)"
+                  style="background: none; border: none; cursor: pointer; color: var(--color-danger); font-size: 12px; font-weight: 700; padding: 0;">
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
           }
@@ -350,10 +363,27 @@
 
         <div
           style="background: var(--bg-secondary); padding: 24px; border-radius: 8px; border: 1px dashed var(--accent-primary);">
+          
+          @if (checklist()?.service_name === 'Private Limited Incorporation') {
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
+              @for (type of privateLimitedFinalDocs; track type) {
+                @if (type !== 'Other') {
+                  <label class="custom-file-upload"
+                    style="display: inline-block; padding: 10px 16px; cursor: pointer; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px; font-weight: 600; text-align: center; transition: all 0.2s;">
+                    <input type="file" (change)="onSpecificFinalFileSelected($event, type)" style="display: none;" />
+                    + Upload {{ type }}
+                  </label>
+                }
+              }
+            </div>
+            
+            <div style="width: 100%; height: 1px; background: var(--border-color); margin-bottom: 24px;"></div>
+          }
+
           <label class="custom-file-upload"
             style="display: inline-block; padding: 12px 24px; cursor: pointer; background: var(--accent-primary); border-radius: 8px; color: white; font-size: 14px; font-weight: 600; text-align: center; margin-bottom: 16px;">
             <input type="file" multiple (change)="onFinalFilesSelected($event)" style="display: none;" />
-            + Select New Final Documents
+            + Select Other Final Documents
           </label>
 
           @if (finalDocsToUpload.length > 0) {
@@ -370,12 +400,19 @@
                 <button type="button" (click)="removeFinalDocFile($index)"
                   style="background: none; border: none; cursor: pointer; color: var(--color-danger); font-size: 14px; font-weight: 600;">Remove</button>
               </div>
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <label style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Expiry Date <span
-                    style="color: var(--color-danger);">*</span></label>
-                <input type="date" [(ngModel)]="doc.expiryDate" required
-                  style="flex: 1; padding: 8px 16px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);" />
-              </div>
+
+              @if (checklist()?.service_name === 'Private Limited Incorporation') {
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <label style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Document Type <span style="color: var(--color-danger);">*</span></label>
+                  <select [(ngModel)]="doc.docType" style="flex: 1; padding: 8px 16px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);">
+                    @for (type of privateLimitedFinalDocs; track type) {
+                      <option [value]="type">{{ type }}</option>
+                    }
+                  </select>
+                </div>
+              }
+
+
             </div>
             }
             <button (click)="submitFinalDocuments()" [disabled]="isFinalDocUploading"

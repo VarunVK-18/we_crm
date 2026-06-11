@@ -1,7 +1,8 @@
 const ComplianceReminder = require('../models/ComplianceReminder');
+const ComplianceTask = require('../models/ComplianceTask');
 const User = require('../models/User');
 const Checklist = require('../models/Checklist');
-
+const complianceService = require('../services/complianceService');
 // Helper function to extract dynamic reminders from completed checklists
 const getDynamicReminders = (checklists) => {
   const dynamicReminders = [];
@@ -12,7 +13,7 @@ const getDynamicReminders = (checklists) => {
         if (doc.expiry_date) {
           const daysLeft = Math.ceil((new Date(doc.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
           let status = 'expiringSoon';
-          if (daysLeft < 0) status = 'expired';
+          if (daysLeft <= 0) status = 'expired';
           else if (daysLeft <= 7) status = 'urgent';
 
           dynamicReminders.push({
@@ -48,18 +49,27 @@ exports.getUserComplianceReminders = async (req, res) => {
 
     // Fetch user details for the manual reminders to map client_id structure
     const client = await User.findById(userId).select('owner_name company_name').lean();
-    const manualRemindersMapped = manualReminders.map(rem => ({
-      _id: rem._id,
-      title: rem.serviceName,
-      dueDate: new Date(Date.now() + rem.daysLeft * 24 * 60 * 60 * 1000),
-      daysLeft: rem.daysLeft,
-      status: rem.status,
-      entityName: rem.entityName,
-      client_id: {
-        owner_name: client ? client.owner_name : 'Client',
-        company_name: client ? client.company_name : 'Individual'
-      }
-    }));
+    const manualRemindersMapped = manualReminders.map(rem => {
+      const dueDate = new Date(new Date(rem.createdAt).getTime() + rem.daysLeft * 24 * 60 * 60 * 1000);
+      const currentDaysLeft = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      
+      let status = 'expiringSoon';
+      if (currentDaysLeft <= 0) status = 'expired';
+      else if (currentDaysLeft <= 7) status = 'urgent';
+
+      return {
+        _id: rem._id,
+        title: rem.serviceName,
+        dueDate: dueDate,
+        daysLeft: currentDaysLeft,
+        status: status,
+        entityName: rem.entityName,
+        client_id: {
+          owner_name: client ? client.owner_name : 'Client',
+          company_name: client ? client.company_name : 'Individual'
+        }
+      };
+    });
 
     // 2. Fetch dynamic compliance reminders from checklists with final documents
     const completedChecklists = await Checklist.find({ client_id: userId, 'final_documents.0': { $exists: true } })
@@ -142,12 +152,19 @@ exports.getCompanyComplianceReminders = async (req, res) => {
     const manualReminders = await ComplianceReminder.find({ clientUid: { $in: clientIds } }).lean();
     const manualRemindersMapped = manualReminders.map(rem => {
       const client = clientMap[rem.clientUid] || { owner_name: 'Client', company_name: 'Individual' };
+      const dueDate = new Date(new Date(rem.createdAt).getTime() + rem.daysLeft * 24 * 60 * 60 * 1000);
+      const currentDaysLeft = Math.ceil((dueDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      
+      let status = 'expiringSoon';
+      if (currentDaysLeft <= 0) status = 'expired';
+      else if (currentDaysLeft <= 7) status = 'urgent';
+
       return {
         _id: rem._id,
         title: rem.serviceName,
-        dueDate: new Date(Date.now() + rem.daysLeft * 24 * 60 * 60 * 1000),
-        daysLeft: rem.daysLeft,
-        status: rem.status,
+        dueDate: dueDate,
+        daysLeft: currentDaysLeft,
+        status: status,
         entityName: rem.entityName,
         client_id: {
           owner_name: client.owner_name,
@@ -170,6 +187,176 @@ exports.getCompanyComplianceReminders = async (req, res) => {
   } catch (error) {
     console.error('Error fetching company compliance reminders:', error);
     res.status(500).json({ message: 'Server error while fetching company compliance reminders.', error: error.message });
+  }
+};
+
+// Get all compliance tasks globally (For Filing Staff / Admins)
+exports.getAllComplianceTasks = async (req, res) => {
+  try {
+    const tasks = await ComplianceTask.find({})
+      .populate('clientUid', 'owner_name company_name')
+      .populate('companyId', 'company_name')
+      .populate('checklistId', 'service_name details')
+      .populate('proofDocument')
+      .populate('certificateDocument')
+      .populate('acknowledgementDocument')
+      .sort({ dueDate: 1 })
+      .lean();
+
+    const today = new Date();
+    const mappedTasks = tasks.map(task => {
+      const daysLeft = Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24));
+      
+      let entityName = task.entityName;
+      if (!entityName && task.checklistId && task.checklistId.details) {
+         entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
+      }
+      if (!entityName && task.clientUid) {
+         entityName = task.clientUid.company_name || task.clientUid.owner_name;
+      }
+      if (!entityName) {
+         entityName = 'Individual';
+      }
+
+      return {
+        ...task,
+        entityName,
+        daysLeft
+      };
+    });
+
+    // Also fetch dynamic reminders from completed checklists across all clients
+    const completedChecklists = await Checklist.find({ 'final_documents.0': { $exists: true } })
+      .populate('company_id', 'company_name')
+      .populate('client_id', 'owner_name company_name');
+
+    const dynamicRemindersRaw = getDynamicReminders(completedChecklists);
+    
+    const mappedDynamic = dynamicRemindersRaw.map(r => {
+      let mappedStatus = 'Upcoming';
+      if (r.daysLeft <= 0) mappedStatus = 'Overdue';
+      else if (r.daysLeft <= 3) mappedStatus = 'Critical';
+      else if (r.daysLeft <= 10) mappedStatus = 'Due Soon';
+      
+      return {
+        _id: r._id,
+        title: r.title + ' Renewal',
+        entityName: r.entityName,
+        dueDate: r.dueDate,
+        daysLeft: r.daysLeft,
+        status: mappedStatus,
+        clientUid: r.client_id
+      };
+    });
+
+    const finalTasks = [...mappedTasks, ...mappedDynamic].sort((a, b) => a.daysLeft - b.daysLeft);
+
+    res.status(200).json({ success: true, tasks: finalTasks });
+  } catch (error) {
+    console.error('Error fetching all compliance tasks:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get compliance tasks for a user
+exports.getUserComplianceTasks = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    await complianceService.updateStatuses(userId);
+
+    const tasks = await ComplianceTask.find({ clientUid: userId })
+      .populate('companyId', 'company_name')
+      .populate('checklistId', 'service_name details')
+      .populate('proofDocument')
+      .populate('certificateDocument')
+      .populate('acknowledgementDocument')
+      .sort({ dueDate: 1 })
+      .lean();
+
+    const today = new Date();
+    const mappedTasks = tasks.map(task => {
+      const daysLeft = Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24));
+      
+      let entityName = task.entityName;
+      if (!entityName && task.checklistId && task.checklistId.details) {
+         entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
+      }
+      if (!entityName) {
+         entityName = 'Individual';
+      }
+
+      return {
+        ...task,
+        entityName,
+        daysLeft
+      };
+    });
+
+    // Fetch dynamic reminders (e.g. from Trademark/FSSAI document expiry dates)
+    const completedChecklists = await Checklist.find({ client_id: userId, 'final_documents.0': { $exists: true } })
+      .populate('company_id', 'company_name')
+      .populate('client_id', 'owner_name company_name');
+
+    const dynamicRemindersRaw = getDynamicReminders(completedChecklists);
+    
+    const mappedDynamic = dynamicRemindersRaw.map(r => {
+      let mappedStatus = 'Upcoming';
+      if (r.daysLeft < 0) mappedStatus = 'Overdue';
+      else if (r.daysLeft <= 3) mappedStatus = 'Critical';
+      else if (r.daysLeft <= 10) mappedStatus = 'Due Soon';
+      
+      return {
+        _id: r._id,
+        title: r.title + ' Renewal',
+        entityName: r.entityName,
+        dueDate: r.dueDate,
+        daysLeft: r.daysLeft,
+        status: mappedStatus
+      };
+    });
+
+    const finalTasks = [...mappedTasks, ...mappedDynamic].sort((a, b) => a.daysLeft - b.daysLeft);
+
+    res.status(200).json({ success: true, tasks: finalTasks });
+  } catch (error) {
+    console.error('Error fetching compliance tasks:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Complete a compliance task with proofs
+exports.completeComplianceTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await ComplianceTask.findById(id);
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
+    const Document = require('../models/Document');
+    
+    if (req.files && req.files.length > 0) {
+      for (const file of req.files) {
+        const newDoc = await Document.create({
+          filename: file.originalname,
+          contentType: file.mimetype,
+          data: file.buffer,
+          uploadedBy: req.user._id
+        });
+        
+        if (file.fieldname === 'proofDocument') task.proofDocument = newDoc._id;
+        if (file.fieldname === 'certificateDocument') task.certificateDocument = newDoc._id;
+        if (file.fieldname === 'acknowledgementDocument') task.acknowledgementDocument = newDoc._id;
+      }
+    }
+
+    task.status = 'Completed';
+    task.completedAt = new Date();
+    await task.save();
+
+    res.status(200).json({ success: true, task });
+  } catch (error) {
+    console.error('Error completing compliance task:', error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 

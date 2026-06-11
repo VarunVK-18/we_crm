@@ -23,11 +23,41 @@ import { TrademarkForm } from './client/forms/trademark-form/trademark-form';
 import { GstForm } from './client/forms/gst-form/gst-form';
 import { IsoForm } from './client/forms/iso-form/iso-form';
 import { DscForm } from './client/forms/dsc-form/dsc-form';
+import { HomeOverview } from './dashboard/home-overview/home-overview';
+import { ClientsDirectory } from './dashboard/clients-directory/clients-directory';
+import { RequestsComponent } from './dashboard/requests/requests';
+import { ServiceChecklists } from './dashboard/service-checklists/service-checklists';
+import { CompletedChecklists } from './dashboard/completed-checklists/completed-checklists';
+import { FilingTasks } from './dashboard/filing-tasks/filing-tasks';
+import { ChecklistDetails } from './dashboard/checklist-details/checklist-details';
+import { ClientDashboard as ManagerClientDashboard } from './dashboard/client-dashboard/client-dashboard';
+import { AuditLogs } from './dashboard/audit-logs/audit-logs';
+import { EmployeesTeam } from './dashboard/employees-team/employees-team';
+import { SystemSettings } from './dashboard/system-settings/system-settings';
+import { StaffCompliance } from './dashboard/staff-compliance/staff-compliance';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: Login },
-  { path: 'dashboard', component: Dashboard },
+  { 
+    path: 'dashboard', 
+    component: Dashboard,
+    children: [
+      { path: 'overview', component: HomeOverview },
+      { path: 'clients', component: ClientsDirectory },
+      { path: 'requests', component: RequestsComponent },
+      { path: 'service-checklists', component: ServiceChecklists },
+      { path: 'completed-checklists', component: CompletedChecklists },
+      { path: 'filing-tasks', component: FilingTasks },
+      { path: 'checklist-details/:id', component: ChecklistDetails },
+      { path: 'client/:id', component: ManagerClientDashboard },
+      { path: 'audit-logs', component: AuditLogs },
+      { path: 'employees', component: EmployeesTeam },
+      { path: 'settings', component: SystemSettings },
+      { path: 'staff-compliance', component: StaffCompliance },
+      { path: '', redirectTo: 'overview', pathMatch: 'full' }
+    ]
+  },
   {
     path: 'client',
     component: ClientLayoutComponent,

@@ -377,3 +377,17 @@
 .back-btn:hover {
   background-color: var(--bg-tertiary) !important;
 }
+
+/* Collapsible Director Details */
+details.collapsible-card > summary {
+  list-style: none;
+}
+details.collapsible-card > summary::-webkit-details-marker {
+  display: none;
+}
+details.collapsible-card[open] summary .material-symbols-outlined:last-child {
+  transform: rotate(180deg);
+}
+details.collapsible-card summary .material-symbols-outlined:last-child {
+  transition: transform 0.3s ease;
+}

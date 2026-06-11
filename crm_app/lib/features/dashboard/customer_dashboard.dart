@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
@@ -237,6 +240,9 @@ class CustomerDashboard extends ConsumerWidget {
                 ],
               ),
 
+              SizedBox(height: 32.r),
+              _buildAssistanceCard(context, user),
+
               SizedBox(height: 40.r),
 
               // Section 2: Tools
@@ -247,12 +253,9 @@ class CustomerDashboard extends ConsumerWidget {
                   {'label': 'NIC Finder', 'icon': LucideIcons.binary},
                   {'label': 'TDS Interest', 'icon': LucideIcons.landmark},
                   {'label': 'GST Calc', 'icon': LucideIcons.calculator},
-                  {'label': 'GST Interest', 'icon': LucideIcons.percent},
+                  {'label': 'Compliance Calendar', 'icon': LucideIcons.calendar},
                 ],
               ),
-
-              SizedBox(height: 32.r),
-              _buildAssistanceCard(context, user),
 
               SizedBox(
                   height: 130
@@ -276,7 +279,7 @@ class CustomerDashboard extends ConsumerWidget {
       child: Container(
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF2B2E63), Color(0xFF1B1D43)],
+            colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -289,9 +292,19 @@ class CustomerDashboard extends ConsumerWidget {
             ),
           ],
         ),
-        padding: EdgeInsets.all(20.r),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16.r),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: _LinePatternPainter(),
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.r, vertical: 16.r),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
@@ -320,7 +333,7 @@ class CustomerDashboard extends ConsumerWidget {
                 ),
               ],
             ),
-            SizedBox(height: 16.r),
+            SizedBox(height: 12.r),
             RichText(
               text: TextSpan(
                 style: GoogleFonts.inter(
@@ -341,9 +354,9 @@ class CustomerDashboard extends ConsumerWidget {
                 ],
               ),
             ),
-            SizedBox(height: 20.r),
+            SizedBox(height: 16.r),
             Container(height: 1.r, color: Colors.white.withOpacity(0.1)),
-            SizedBox(height: 12.r),
+            SizedBox(height: 10.r),
             Row(
               children: [
                 Expanded(
@@ -356,7 +369,7 @@ class CustomerDashboard extends ConsumerWidget {
                     },
                     borderRadius: BorderRadius.circular(8.r),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.r),
+                      padding: EdgeInsets.symmetric(vertical: 6.r),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -423,6 +436,10 @@ class CustomerDashboard extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    ],
+  ),
+),
       ),
     );
   }
@@ -609,7 +626,11 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFFB3A0FF),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
@@ -629,14 +650,14 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                 top: -40.r,
                 right: -30.r,
                 child: FloatingWidget(
-                  duration: const Duration(seconds: 4),
-                  offset: 15,
+                  duration: const Duration(seconds: 8),
+                  offset: 5,
                   child: Container(
-                    width: 140.r,
-                    height: 140.r,
+                    width: 80.r,
+                    height: 80.r,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: Colors.white.withValues(alpha: 0.08),
                     ),
                   ),
                 ),
@@ -645,25 +666,19 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                 bottom: -50.r,
                 left: 10.r,
                 child: FloatingWidget(
-                  duration: const Duration(seconds: 6),
-                  offset: 12,
+                  duration: const Duration(seconds: 10),
+                  offset: 4,
                   child: Container(
-                    width: 180.r,
-                    height: 180.r,
+                    width: 100.r,
+                    height: 100.r,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: Colors.white.withValues(alpha: 0.05),
                     ),
                   ),
                 ),
               ),
-              // Glassmorphism Blur
-              Positioned.fill(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-                  child: const SizedBox(),
-                ),
-              ),
+
               Padding(
                 padding: EdgeInsets.all(16.r),
                 child: Column(
@@ -678,13 +693,13 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           child: Container(
                             padding: EdgeInsets.all(10.r),
                             decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.1),
+                              color: Colors.white.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(10.r),
                             ),
                             child: HugeIcon(
                               icon: HugeIcons.strokeRoundedStartUp02,
                               size: 24.ip,
-                              color: Colors.black87,
+                              color: Colors.white,
                             ),
                           ),
                         ),
@@ -701,7 +716,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                     ?.copyWith(
                                       fontSize: 9.sp,
                                       fontWeight: FontWeight.w900,
-                                      color: Colors.black54, // Better contrast
+                                      color: Colors.white60, // Better contrast
                                       letterSpacing: 1.0,
                                     ),
                               ),
@@ -713,7 +728,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                     ?.copyWith(
                                       fontWeight: FontWeight.w900,
                                       fontSize: 16.sp, // Slightly larger
-                                      color: Colors.black87,
+                                      color: Colors.white,
                                     ),
                               ),
                             ],
@@ -726,8 +741,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             height: 1.4,
                             fontSize: 12.sp,
-                            color:
-                                Colors.black87, // Better readability on violet
+                            color: Colors.white70, // Better readability
                             fontWeight: FontWeight.w500,
                           ),
                       maxLines: 2,
@@ -744,9 +758,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Colors.black87, // Dark button for premium contrast
-                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.white, // White button for contrast against dark background
+                        foregroundColor: AppTheme.deepTeal,
                         minimumSize: Size(double.infinity, 44.r),
                         shape: RoundedRectangleBorder(
                           borderRadius:
@@ -1071,7 +1084,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF111625), // Dark navy from reference image
+          color: const Color(0xFF1E1E1E), // Dark charcoal from reference image
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
@@ -1095,12 +1108,12 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       Container(
                         padding: EdgeInsets.all(10.r),
                         decoration: BoxDecoration(
-                          color: Colors.amber.withValues(alpha: 0.1),
+                          color: const Color(0xFFCEAB61).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
                         child: Icon(
                           LucideIcons.gift,
-                          color: Colors.amber,
+                          color: const Color(0xFFCEAB61),
                           size: 24.ip,
                         ),
                       ),
@@ -1115,20 +1128,21 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                   .textTheme
                                   .labelLarge
                                   ?.copyWith(
-                                    color: Colors.amber,
+                                    color: const Color(0xFFCEAB61),
                                     fontSize: 9.sp,
                                     fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.5,
                                   ),
                             ),
                             Text(
                               'Earn up to ₹10,000',
                               style: Theme.of(context)
                                   .textTheme
-                                  .titleMedium
+                                  .titleLarge
                                   ?.copyWith(
                                     color: Colors.white,
                                     fontWeight: FontWeight.w800,
-                                    fontSize: 14.sp,
+                                    fontSize: 20.sp,
                                   ),
                             ),
                           ],
@@ -1137,9 +1151,9 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                     ],
                   ),
                   Text(
-                    'Share Wealth Empires with your network and get rewarded for every referral.',
+                    'Share your unique referral link with friends and colleagues to earn substantial rewards on their first investment.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.white.withOpacity(0.6),
                           height: 1.4,
                           fontSize: 12.sp,
                         ),
@@ -1155,8 +1169,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.amber,
-                      foregroundColor: Colors.black,
+                      backgroundColor: const Color(0xFFCEAB61),
+                      foregroundColor: const Color(0xFF121212),
                       minimumSize: Size(double.infinity, 44.r),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r),
@@ -1167,16 +1181,17 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Invite Friends Now',
+                          'INVITE FRIENDS NOW',
                           style: TextStyle(
-                            color: const Color(0xFF1E293B),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13.sp,
+                            color: const Color(0xFF121212),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12.sp,
+                            letterSpacing: 1.0,
                           ),
                         ),
-                        SizedBox(width: 6.r),
-                        Icon(LucideIcons.share2,
-                            size: 14.ip, color: const Color(0xFF1E293B)),
+                        SizedBox(width: 8.r),
+                        Icon(LucideIcons.arrowRight,
+                            size: 16.ip, color: const Color(0xFF121212)),
                       ],
                     ),
                   ),
@@ -1190,12 +1205,63 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
   }
 }
 
-class _HorizontalServiceList extends StatelessWidget {
+class _HorizontalServiceList extends ConsumerWidget {
   final List<Map<String, dynamic>> items;
   const _HorizontalServiceList({required this.items});
 
+  Future<void> _openComplianceCalendar(BuildContext context, WidgetRef ref) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final authState = ref.read(authStateProvider).value;
+      final uid = authState?.uid ?? '';
+      
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/calendar/latest'),
+        headers: {'x-user-id': uid},
+      );
+
+      if (context.mounted) Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final docId = data['calendar']?['documentId']?['_id'];
+        
+        if (docId != null) {
+          final docUrl = '$kBaseUrl/api/documents/$docId';
+          
+          if (context.mounted) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => _PdfViewerScreen(url: docUrl, uid: uid),
+              ),
+            );
+          }
+        } else {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Calendar PDF not found')));
+          }
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Compliance Calendar for this year is not uploaded yet.')));
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: EdgeInsets.symmetric(horizontal: 24.r),
@@ -1229,6 +1295,11 @@ class _HorizontalServiceList extends StatelessWidget {
                     builder: (context) => const ServiceSelectionScreen(),
                   ),
                 );
+                return;
+              }
+
+              if (label == 'Compliance Calendar') {
+                _openComplianceCalendar(context, ref);
                 return;
               }
 
@@ -1307,3 +1378,89 @@ class _FloatingWidgetState extends State<FloatingWidget> with SingleTickerProvid
   }
 }
 
+class _LinePatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.03)
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    final step = 20.0;
+    // Draw diagonal lines
+    for (double i = -size.height; i < size.width; i += step) {
+      canvas.drawLine(
+        Offset(i, 0),
+        Offset(i + size.height, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _PdfViewerScreen extends StatefulWidget {
+  final String url;
+  final String uid;
+
+  const _PdfViewerScreen({required this.url, required this.uid});
+
+  @override
+  State<_PdfViewerScreen> createState() => _PdfViewerScreenState();
+}
+
+class _PdfViewerScreenState extends State<_PdfViewerScreen> {
+  final PdfViewerController _pdfViewerController = PdfViewerController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Compliance Calendar',
+          style: GoogleFonts.outfit(
+            color: AppTheme.deepTeal,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+            letterSpacing: -0.5,
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(LucideIcons.zoomIn, color: AppTheme.deepTeal),
+            onPressed: () {
+              _pdfViewerController.zoomLevel = _pdfViewerController.zoomLevel + 0.5;
+            },
+          ),
+          IconButton(
+            icon: const Icon(LucideIcons.zoomOut, color: AppTheme.deepTeal),
+            onPressed: () {
+              if (_pdfViewerController.zoomLevel > 1) {
+                _pdfViewerController.zoomLevel = _pdfViewerController.zoomLevel - 0.5;
+              }
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: SfPdfViewer.network(
+        widget.url,
+        headers: {'x-user-id': widget.uid},
+        controller: _pdfViewerController,
+        canShowScrollHead: false,
+        canShowScrollStatus: false,
+      ),
+    );
+  }
+}

@@ -1,0 +1,103 @@
+<div style="padding: 32px; max-width: 1200px; margin: 0 auto; min-height: 100vh;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px;">
+    <div>
+      <h1 style="font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0 0 8px 0; letter-spacing: -0.3px;">Staff Compliance Radar</h1>
+      <p style="color: #64748b; font-size: 15px; margin: 0;">Master list of all pending compliances across all clients.</p>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div style="text-align: center; padding: 60px 0;">
+      <p style="color: #64748b; font-weight: 600;">Loading master compliance list...</p>
+    </div>
+  } @else {
+    <div>
+      @for (group of groupedTasks(); track group.key) {
+        <div style="background: white; border-radius: 16px; border: 1px solid var(--border-light); padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+          <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <div style="width: 4px; height: 20px; background-color: var(--accent-orange, #f97316); border-radius: 2px; margin-right: 12px;"></div>
+            <h2 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">{{ group.key }}</h2>
+          </div>
+          
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            @for (task of group.items; track task.id) {
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: 12px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <div style="padding: 12px; border-radius: 12px;" [ngStyle]="{'background': task.status === 'Completed' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)'}">
+                    <hugeicons-icon 
+                      [icon]="task.status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
+                      [size]="24"
+                      [color]="task.status === 'Completed' ? '#10b981' : '#3b82f6'"
+                      [strokeWidth]="2">
+                    </hugeicons-icon>
+                  </div>
+                  <div>
+                    <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: var(--text-dark);">{{ task.title }}</h4>
+                    <p style="margin: 0; font-size: 13px; font-weight: 600; color: #64748b;">
+                      <span [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#ef4444' : '#64748b'}">
+                        {{ task.message }}
+                      </span> 
+                      &bull; Status: <strong style="font-weight: 600; color: var(--text-dark);">{{ task.status }}</strong>
+                    </p>
+                  </div>
+                </div>
+                
+                @if (task.status !== 'Completed') {
+                  <button 
+                    (click)="openCompleteModal(task)"
+                    style="padding: 8px 16px; background: var(--accent-primary, #0f172a); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+                    Complete Task
+                  </button>
+                } @else {
+                  <div style="padding: 8px 16px; background: #ecfdf5; color: #059669; border-radius: 6px; font-weight: 600; font-size: 12px;">
+                    COMPLETED
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div style="text-align: center; padding: 60px 0; background: white; border-radius: 16px; border: 1px solid var(--border-light);">
+          <p style="font-weight: 600; color: #64748b;">No compliances found across any entities.</p>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Complete Task Modal -->
+  @if (isCompleteModalOpen()) {
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;" (click)="isCompleteModalOpen.set(false)">
+      <div style="background: white; border-radius: 24px; width: 100%; max-width: 500px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);" (click)="$event.stopPropagation()">
+        <div style="padding: 24px 24px 20px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: flex-start;">
+          <div>
+            <h2 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0 0 4px 0; letter-spacing: -0.3px;">Complete Compliance Task</h2>
+            <p style="margin: 0; font-size: 14px; font-weight: 600; color: #64748b;">{{ selectedTask()?.title }} - {{ selectedTask()?.entityName }}</p>
+          </div>
+          <button style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b;" (click)="isCompleteModalOpen.set(false)">
+            &times;
+          </button>
+        </div>
+        
+        <div style="padding: 24px; display: flex; flex-direction: column; gap: 20px;">
+          <div>
+            <label style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 8px; color: var(--text-dark);">Upload Proof Document</label>
+            <input type="file" (change)="onFileChange($event, 'proof')" style="width: 100%; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px; font-size: 14px;">
+          </div>
+          <div>
+            <label style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 8px; color: var(--text-dark);">Upload Certificate (Optional)</label>
+            <input type="file" (change)="onFileChange($event, 'cert')" style="width: 100%; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px; font-size: 14px;">
+          </div>
+          <div>
+            <label style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 8px; color: var(--text-dark);">Upload Filing Acknowledgement (Optional)</label>
+            <input type="file" (change)="onFileChange($event, 'ack')" style="width: 100%; border: 1px solid #e2e8f0; padding: 10px; border-radius: 10px; font-size: 14px;">
+          </div>
+          
+          <button style="margin-top: 8px; background: var(--accent-primary, #0f172a); color: white; padding: 12px; border-radius: 8px; border: none; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;" (click)="submitCompletion()">
+            Mark Task as Completed
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

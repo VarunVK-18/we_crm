@@ -19,7 +19,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final reminders = ref.read(complianceRemindersProvider).value ?? [];
     final filteredReminders = reminders
         .where((r) =>
-            selectedEntity == 'All Entities' || r.entityName == selectedEntity)
+            (selectedEntity == 'All Entities' || r.entityName == selectedEntity) &&
+            r.daysLeft <= 3)
         .toList();
 
     showModalBottomSheet(
@@ -137,7 +138,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
         .where((r) =>
             (selectedEntity == 'All Entities' ||
                 r.entityName == selectedEntity) &&
-            r.status != ReminderStatus.expired)
+            r.status != TaskStatus.completed)
         .toList();
 
     showModalBottomSheet(
@@ -222,22 +223,69 @@ class ComplianceRadarScreen extends ConsumerWidget {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    ...pendingReminders.map(
-                      (reminder) => _ReminderItem(reminder: reminder),
-                    ),
-                    if (pendingReminders.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
-                        child: Center(
-                          child: Text(
-                            'No pending compliances for this entity.',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontWeight: FontWeight.w600,
+                    ...(() {
+                      if (pendingReminders.isEmpty) {
+                        return [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: Center(
+                              child: Text(
+                                'No active alerts for this entity.',
+                                style: TextStyle(
+                                  color: Colors.grey[400],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
+                          )
+                        ];
+                      }
+                      
+                      final grouped = <String, List<dynamic>>{};
+                      for (final r in pendingReminders) {
+                        final key = selectedEntity == 'All Entities' 
+                            ? (r.entityName.isNotEmpty ? r.entityName : 'Other')
+                            : r.status.toString().split('.').last.toUpperCase();
+                        grouped.putIfAbsent(key, () => []).add(r);
+                      }
+
+                      return grouped.entries.map((entry) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left: 4, bottom: 12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 4,
+                                      height: 16,
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.activeOrange,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      entry.key,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppTheme.deepTeal,
+                                        letterSpacing: -0.3,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              ...entry.value.map((reminder) => _ReminderItem(reminder: reminder)),
+                            ],
                           ),
-                        ),
-                      ),
+                        );
+                      }).toList();
+                    })(),
                   ],
                 ),
               ),
@@ -263,32 +311,37 @@ class ComplianceRadarScreen extends ConsumerWidget {
         .where((r) =>
             (currentEntity == 'All Entities' ||
                 r.entityName == currentEntity) &&
-            r.status != ReminderStatus.expired)
+            r.status != TaskStatus.completed)
         .toList();
     final pendingCountStr = pendingReminders.length.toString().padLeft(2, '0');
 
-    // Calculate Health Score dynamically based on active/expired database reminders
-    final totalForEntity = reminders
-        .where((r) =>
-            currentEntity == 'All Entities' || r.entityName == currentEntity)
-        .length;
-    final expiredCount = reminders
-        .where((r) =>
-            (currentEntity == 'All Entities' ||
-                r.entityName == currentEntity) &&
-            r.status == ReminderStatus.expired)
-        .length;
-    final score = totalForEntity == 0
-        ? 1.0
-        : (totalForEntity - expiredCount) / totalForEntity;
-    final healthStatus = score >= 0.8
+    // Calculate Health Score dynamically based on active tasks
+    double minScore = 0.9;
+    if (pendingReminders.isEmpty) {
+      minScore = 1.0;
+    } else {
+      for (final r in pendingReminders) {
+        if (r.status == TaskStatus.overdue) minScore = minScore > 0.25 ? 0.25 : minScore;
+        else if (r.status == TaskStatus.critical) minScore = minScore > 0.5 ? 0.5 : minScore;
+        else if (r.status == TaskStatus.dueSoon) minScore = minScore > 0.75 ? 0.75 : minScore;
+      }
+    }
+    
+    final score = minScore;
+    final healthStatus = score >= 0.9
         ? 'EXCELLENT'
-        : score >= 0.5
-            ? 'WARNING'
-            : 'CRITICAL';
-    final healthMessage = score >= 0.8
+        : score >= 0.75
+            ? 'GOOD'
+            : score >= 0.5
+                ? 'WARNING'
+                : 'CRITICAL';
+    final healthMessage = score >= 0.9
         ? 'Your entity compliance health is safe.'
-        : 'Action required: resolve expired/urgent items.';
+        : score >= 0.75
+            ? 'Some items are due soon.'
+            : score >= 0.5
+                ? 'Critical action required soon.'
+                : 'Action required: resolve overdue items.';
 
     // Find the most urgent deadline dynamically
     final urgentReminder = pendingReminders.isEmpty
@@ -299,10 +352,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final timelineItems = pendingReminders
         .map((r) => {
               'title': currentEntity == 'All Entities'
-                  ? '${r.serviceName} (${r.entityName})'
-                  : r.serviceName,
+                  ? '${r.title} (${r.entityName})'
+                  : r.title,
               'status': r.message,
-              'type': r.status == ReminderStatus.urgent ? 'Urgent' : 'Upcoming',
+              'type': (r.status == TaskStatus.critical || r.status == TaskStatus.overdue) ? 'Urgent' : 'Upcoming',
             })
         .toList();
 
@@ -447,7 +500,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       .where((r) =>
                                           (currentEntity == 'All Entities' ||
                                               r.entityName == currentEntity) &&
-                                          r.status == ReminderStatus.urgent)
+                                          (r.status == TaskStatus.critical || r.status == TaskStatus.overdue))
                                       .isNotEmpty)
                                     Positioned(
                                       right: 12,
@@ -498,7 +551,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                           // Row 2: Urgent Deadline (Wide)
                           _BentoDeadlineCard(
                             title: urgentReminder != null
-                                ? urgentReminder.serviceName
+                                ? urgentReminder.title
                                 : 'All Compliances Met',
                             timeLeft: urgentReminder != null
                                 ? urgentReminder.message
@@ -507,8 +560,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 ? 'Due soon'
                                 : 'No upcoming deadlines',
                             color: urgentReminder != null &&
-                                    urgentReminder.status ==
-                                        ReminderStatus.urgent
+                                    (urgentReminder.status == TaskStatus.critical || urgentReminder.status == TaskStatus.overdue)
                                 ? const Color.fromARGB(255, 223, 105, 75)
                                 : AppTheme.deepTeal,
                             onTap: urgentReminder != null 
@@ -1116,7 +1168,7 @@ class _BentoTimelineCard extends StatelessWidget {
 }
 
 class _ReminderItem extends ConsumerWidget {
-  final ComplianceReminder reminder;
+  final ComplianceTask reminder;
 
   const _ReminderItem({required this.reminder});
 
@@ -1141,7 +1193,7 @@ class _ReminderItem extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
-              reminder.status == ReminderStatus.expired
+              reminder.status == TaskStatus.overdue || reminder.status == TaskStatus.critical
                   ? LucideIcons.alertTriangle
                   : LucideIcons.calendarClock,
               color: reminder.color,
@@ -1154,7 +1206,7 @@ class _ReminderItem extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  reminder.serviceName,
+                  reminder.title,
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
@@ -1184,24 +1236,39 @@ class _ReminderItem extends ConsumerWidget {
                     letterSpacing: 1.2,
                   ),
                 ),
+                if (reminder.daysLeft <= 3) ...[
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    ),
+                    child: const Text(
+                      'If not completed you Need To Pay Penalty',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
           GestureDetector(
             onTap: () {
               Navigator.pop(context); // Close panel
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useSafeArea: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => ServiceRequestSummarySheet(
-                  packageName: reminder.serviceName,
-                ),
+              // For now, mark as complete without files
+              // Ideally, this should open a bottom sheet to upload proof
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please mark as complete from the Web Portal to upload proofs.')),
               );
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: AppTheme.deepTeal,
                 borderRadius: BorderRadius.circular(12),
@@ -1214,11 +1281,12 @@ class _ReminderItem extends ConsumerWidget {
                 ],
               ),
               child: const Text(
-                'Renew',
+                'Complete',
                 style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w900,
                   color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),

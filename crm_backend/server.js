@@ -47,6 +47,7 @@ const documentRoutes = require('./routes/documentRoutes');
 const templateRoutes = require('./routes/templateRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const calendarRoutes = require('./routes/calendarRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
@@ -60,6 +61,7 @@ app.use('/api', documentRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/calendar', calendarRoutes);
 
 // Start Express Server
 app.listen(PORT, '0.0.0.0', () => {

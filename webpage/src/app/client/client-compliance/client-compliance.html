@@ -45,16 +45,16 @@
             <hugeicons-icon [icon]="Clock02Icon" [size]="22" color="#F97316" [strokeWidth]="2"></hugeicons-icon>
           </div>
           <div class="stat-content">
-            <div class="stat-value">{{ pendingReminders().length | number:'2.0-0' }}</div>
+            <div class="stat-value">{{ pendingTasks().length | number:'2.0-0' }}</div>
             <div class="stat-label">Pending</div>
           </div>
         </div>
       </div>
 
       <!-- Urgent Deadline -->
-      <div class="bento-card deadline-card" [class.urgent]="urgentReminder()?.status === 'urgent'">
+      <div class="bento-card deadline-card" [class.urgent]="urgentReminder()?.status === 'Critical' || urgentReminder()?.status === 'Overdue'">
         <div class="deadline-content">
-          <h3 class="deadline-title">{{ urgentReminder() ? urgentReminder()?.serviceName : 'All Compliances Met' }}</h3>
+          <h3 class="deadline-title">{{ urgentReminder() ? urgentReminder()?.title : 'All Compliances Met' }}</h3>
           <p class="deadline-subtitle">{{ urgentReminder() ? urgentReminder()?.message : 'Up to date' }}</p>
         </div>
         <div class="deadline-date">
@@ -78,13 +78,26 @@
         <h3 class="timeline-header">Compliance Timeline</h3>
         <div class="timeline-list">
           @for (item of timelineItems(); track item.title) {
-            <div class="timeline-item">
-              <div class="timeline-dot" [class.urgent]="item.type === 'Urgent'"></div>
-              <div class="timeline-details">
-                <div class="item-title">{{ item.title }}</div>
-                <div class="item-status">{{ item.status }}</div>
+            <div class="timeline-item" (click)="openCompleteModal(item)" style="cursor: pointer; flex-wrap: wrap;">
+              <div style="display: flex; width: 100%; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; flex: 1;">
+                  <div class="timeline-dot" [class.urgent]="item.type === 'Critical' || item.type === 'Overdue'"></div>
+                  <div class="timeline-details">
+                    <div class="item-title">{{ item.title }}</div>
+                    <div class="item-status">{{ item.status }}</div>
+                  </div>
+                </div>
+                <div class="item-type" [class.urgent]="item.type === 'Critical' || item.type === 'Overdue'">
+                  {{ item.type }}
+                </div>
               </div>
-              <div class="item-type" [class.urgent]="item.type === 'Urgent'">{{ item.type }}</div>
+              @if (item.daysLeft <= 3) {
+                <div style="width: 100%; margin-top: 8px; padding-left: 24px;">
+                  <div style="display: inline-block; padding: 4px 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #ef4444; font-size: 11px; font-weight: 800;">
+                    If not completed you Need To Pay Penalty
+                  </div>
+                </div>
+              }
             </div>
           }
         </div>
@@ -112,19 +125,64 @@
         </div>
         
         <div class="pending-list">
-          @for (reminder of pendingReminders(); track reminder.id) {
-            <div class="pending-item">
-              <div class="pending-item-info">
-                <h4>{{ reminder.serviceName }}</h4>
-                <p>{{ reminder.message }}</p>
+          @for (group of groupedPendingTasks(); track group.key) {
+            <div class="compliance-group" style="margin-bottom: 24px;">
+              <div style="display: flex; align-items: center; margin-bottom: 16px; margin-left: 4px;">
+                <div style="width: 4px; height: 16px; background-color: var(--accent-orange, #f97316); border-radius: 2px; margin-right: 8px;"></div>
+                <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">{{ group.key }}</h3>
               </div>
-              <button class="renew-btn" (click)="renewService(reminder.serviceName)">Renew</button>
+              @for (task of group.items; track task.id) {
+                <div class="pending-item" style="margin-bottom: 12px;">
+                  <div class="pending-item-info">
+                    <h4>{{ task.title }}</h4>
+                    <p>{{ task.message }} - Status: <strong>{{ task.status }}</strong></p>
+                  </div>
+                  <button class="renew-btn" (click)="openCompleteModal(task)">Complete</button>
+                </div>
+              }
             </div>
           } @empty {
             <div style="text-align: center; color: #64748b; padding: 40px 0;">
               <p style="font-weight: 600;">No pending compliances for this entity.</p>
             </div>
           }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Complete Task Modal -->
+  @if (isCompleteModalOpen()) {
+    <div class="modal-overlay" (click)="isCompleteModalOpen.set(false)">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-drag-handle"></div>
+        <div class="modal-header">
+          <div>
+            <h2>Complete Compliance Task</h2>
+            <p>{{ selectedTask()?.title }}</p>
+          </div>
+          <button class="close-btn" (click)="isCompleteModalOpen.set(false)">
+            &times;
+          </button>
+        </div>
+        
+        <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; font-weight: 500; margin-bottom: 8px;">Upload Proof Document</label>
+            <input type="file" (change)="onFileChange($event, 'proof')" style="width: 100%; border: 1px solid var(--border-light); padding: 8px; border-radius: 8px;">
+          </div>
+          <div>
+            <label style="display: block; font-weight: 500; margin-bottom: 8px;">Upload Certificate</label>
+            <input type="file" (change)="onFileChange($event, 'cert')" style="width: 100%; border: 1px solid var(--border-light); padding: 8px; border-radius: 8px;">
+          </div>
+          <div>
+            <label style="display: block; font-weight: 500; margin-bottom: 8px;">Upload Filing Acknowledgement</label>
+            <input type="file" (change)="onFileChange($event, 'ack')" style="width: 100%; border: 1px solid var(--border-light); padding: 8px; border-radius: 8px;">
+          </div>
+          
+          <button style="margin-top: 16px; background: var(--accent-primary); color: white; padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;" (click)="submitCompletion()">
+            Mark as Completed
+          </button>
         </div>
       </div>
     </div>

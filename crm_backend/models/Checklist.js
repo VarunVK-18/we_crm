@@ -76,7 +76,7 @@ const ChecklistSchema = new mongoose.Schema({
   final_documents: [{
     name: { type: String, required: true },
     document_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Document' },
-    expiry_date: { type: Date, required: true },
+    expiry_date: { type: Date, required: false },
     uploadedAt: { type: Date, default: Date.now }
   }],
   notes: {

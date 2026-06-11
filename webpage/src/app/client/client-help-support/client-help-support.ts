@@ -13,7 +13,13 @@ import {
   CallIcon,
   Mail01Icon,
   Call02Icon,
-  MailOpenIcon
+  MailOpenIcon,
+  Ticket01Icon,
+  Calendar02Icon,
+  Search01Icon,
+  File01Icon,
+  CheckmarkBadge01Icon,
+  Time01Icon
 } from '@hugeicons/core-free-icons';
 
 @Component({
@@ -62,6 +68,12 @@ export class ClientHelpSupport implements OnInit {
   Mail01Icon = Mail01Icon;
   Call02Icon = Call02Icon;
   MailOpenIcon = MailOpenIcon;
+  Ticket01Icon = Ticket01Icon;
+  Calendar02Icon = Calendar02Icon;
+  Search01Icon = Search01Icon;
+  File01Icon = File01Icon;
+  CheckmarkBadge01Icon = CheckmarkBadge01Icon;
+  Time01Icon = Time01Icon;
 
   faqs = [
     {

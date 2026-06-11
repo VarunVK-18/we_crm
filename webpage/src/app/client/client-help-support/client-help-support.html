@@ -1,93 +1,218 @@
-<div class="page-container">
-  <div class="content-wrapper">
-    <!-- Left Column: Help & Actions -->
-    <div class="left-column">
-      <div class="hero-section">
-        <div class="hero-icon-wrapper">
-          <hugeicons-icon [icon]="CustomerSupportIcon" [size]="64" color="var(--palette-dark)" [strokeWidth]="1.5"></hugeicons-icon>
-        </div>
-        <h2 class="hero-title">How can we help you?</h2>
-        <p class="hero-subtitle">Our team is available Mon-Sat (9 AM - 7 PM) to assist you with your business needs.</p>
+<div class="saas-support-container">
+  <!-- SECTION 1: Support Hero -->
+  <header class="support-hero">
+    <div class="hero-content">
+      <div class="hero-greeting">
+        <span class="greeting-badge">Help Center</span>
+        <h1>Welcome back, {{ (user()?.owner_name || user()?.name || 'Client') | titlecase }} 👋</h1>
+        <p>How can we help you today?</p>
       </div>
 
-      <div class="contact-actions">
-        <!-- WhatsApp Action -->
-        <div class="action-card" (click)="openWhatsApp()">
-          <div class="action-icon-wrapper whatsapp">
-            <hugeicons-icon [icon]="BubbleChatIcon" [size]="24" color="#25D366" [strokeWidth]="2"></hugeicons-icon>
-          </div>
-          <div class="action-content">
-            <h3>Chat on WhatsApp</h3>
-            <p>Connect with a support agent instantly</p>
-          </div>
-          <div class="action-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </div>
+      <div class="hero-search-container">
+        <div class="search-input-wrapper">
+          <hugeicons-icon [icon]="Search01Icon" [size]="20" color="#64748b" [strokeWidth]="2" class="search-icon"></hugeicons-icon>
+          <input type="text" placeholder="Search for articles, services, or FAQs..." class="support-search-input">
+          <div class="search-shortcut">⌘K</div>
         </div>
+      </div>
 
-        <!-- Call Action -->
-        <div class="action-card" (click)="callSupport()">
-          <div class="action-icon-wrapper call">
-            <hugeicons-icon [icon]="CallOutgoing01Icon" [size]="24" color="var(--palette-dark)" [strokeWidth]="2"></hugeicons-icon>
-          </div>
-          <div class="action-content">
-            <h3>Call Support</h3>
-            <p>Speak directly with our consultants</p>
-          </div>
-          <div class="action-arrow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </div>
-        </div>
+      <div class="hero-actions">
+        <button class="hero-btn primary" routerLink="/client/support-tickets">
+          <hugeicons-icon [icon]="Ticket01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+          Raise Ticket
+        </button>
+        <button class="hero-btn secondary" (click)="openWhatsApp()">
+          <hugeicons-icon [icon]="BubbleChatIcon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+          WhatsApp Support
+        </button>
+        <button class="hero-btn outline" (click)="callSupport()">
+          <hugeicons-icon [icon]="Calendar02Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+          Schedule Call
+        </button>
       </div>
     </div>
+  </header>
 
-    <!-- Right Column: FAQs -->
-    <div class="right-column">
-      <div class="faq-section">
-        <h2 class="faq-title">Frequently Asked Questions</h2>
+  <div class="support-main-content">
+    
+    <!-- LEFT COLUMN: Content -->
+    <div class="support-left-col">
+      
+      <!-- SECTION 2: Support Overview KPIs -->
+      <section class="kpi-section">
+        <h2 class="section-heading">Support Overview</h2>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon open"><hugeicons-icon [icon]="Ticket01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="kpi-data">
+              <span class="kpi-value">2</span>
+              <span class="kpi-label">Open Tickets</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon resolved"><hugeicons-icon [icon]="CheckmarkBadge01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="kpi-data">
+              <span class="kpi-value">14</span>
+              <span class="kpi-label">Resolved Tickets</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon pending"><hugeicons-icon [icon]="File01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="kpi-data">
+              <span class="kpi-value">1</span>
+              <span class="kpi-label">Pending Docs</span>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon time"><hugeicons-icon [icon]="Time01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="kpi-data">
+              <span class="kpi-value">< 5m</span>
+              <span class="kpi-label">Avg Response Time</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: Quick Support Actions -->
+      <section class="quick-actions-section">
+        <h2 class="section-heading">Quick Actions</h2>
+        <div class="actions-grid">
+          <div class="action-card" (click)="openWhatsApp()">
+            <div class="action-card-icon whatsapp"><hugeicons-icon [icon]="BubbleChatIcon" [size]="24" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="action-card-content">
+              <h3>WhatsApp Support</h3>
+              <p>Instant chat. Avg response < 5 mins.</p>
+            </div>
+          </div>
+          
+          <div class="action-card" routerLink="/client/support-tickets">
+            <div class="action-card-icon ticket"><hugeicons-icon [icon]="Ticket01Icon" [size]="24" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="action-card-content">
+              <h3>Raise Ticket</h3>
+              <p>Track issue status and updates.</p>
+            </div>
+          </div>
+          
+          <div class="action-card" (click)="callSupport()">
+            <div class="action-card-icon callback"><hugeicons-icon [icon]="Calendar02Icon" [size]="24" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="action-card-content">
+              <h3>Book Callback</h3>
+              <p>Select preferred time to speak.</p>
+            </div>
+          </div>
+          
+          <div class="action-card">
+            <div class="action-card-icon live"><hugeicons-icon [icon]="CustomerSupportIcon" [size]="24" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <div class="action-card-content">
+              <h3>Live Assistance</h3>
+              <p>Contact your account manager.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: Knowledge Base / FAQs -->
+      <section class="knowledge-base-section">
+        <div class="kb-header">
+          <h2 class="section-heading">Knowledge Base</h2>
+          <div class="kb-filters">
+            <button class="kb-filter active">All</button>
+            <button class="kb-filter">Services</button>
+            <button class="kb-filter">Billing</button>
+            <button class="kb-filter">Technical</button>
+          </div>
+        </div>
         
-        <div class="faq-list">
+        <div class="faq-accordion">
           @for (faq of faqs; track faq.question; let i = $index) {
-            <div class="faq-item" [class.open]="faq.isOpen">
-              <div class="faq-header" (click)="toggleFaq(i)">
-                <h3>{{ faq.question }}</h3>
-                <div class="faq-icon">
+            <div class="faq-card" [class.open]="faq.isOpen">
+              <button class="faq-card-header" (click)="toggleFaq(i)">
+                <span class="faq-question">{{ faq.question }}</span>
+                <span class="faq-toggle-icon">
                   @if (faq.isOpen) {
                     <hugeicons-icon [icon]="ArrowUp01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
                   } @else {
                     <hugeicons-icon [icon]="ArrowDown01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
                   }
-                </div>
-              </div>
-              @if (faq.isOpen) {
-                <div class="faq-body">
+                </span>
+              </button>
+              <div class="faq-card-body" [class.expanded]="faq.isOpen">
+                <div class="faq-answer-inner">
                   <p>{{ faq.answer }}</p>
                 </div>
-              }
+              </div>
             </div>
           }
         </div>
-      </div>
+      </section>
 
-      <!-- Manager CTA Card -->
-      <div class="manager-cta-card" style="margin-top: 32px;">
-        <h3>Need Expert Assistance?</h3>
-        <p>Your client manager{{ clientManager() ? ', ' + (clientManager().owner_name || clientManager().name || 'Support Team') + ',' : '' }} is available to assist you with any queries.</p>
-        <div class="cta-contact-details">
-           <div class="cta-contact-item">
-             <hugeicons-icon [icon]="CallIcon" [size]="18" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
-             <span>{{ clientManager()?.phone || '+91 98765 43210' }}</span>
-           </div>
-           <div class="cta-contact-item">
-             <hugeicons-icon [icon]="Mail01Icon" [size]="18" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
-             <span>{{ clientManager()?.email || 'support@wealthempires.com' }}</span>
-           </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Sidebar elements -->
+    <div class="support-right-col">
+      
+      <!-- SECTION 6: Client Success Manager -->
+      <div class="manager-premium-card">
+        <div class="mp-bg-pattern"></div>
+        <div class="mp-content">
+          <div class="mp-header">
+            <div class="mp-avatar">
+              <hugeicons-icon [icon]="CustomerSupportIcon" [size]="32" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+            </div>
+            <div class="mp-badge">Dedicated Manager</div>
+          </div>
+          <div class="mp-info">
+            <h3>{{ clientManager()?.owner_name || clientManager()?.name || 'Support Team' }}</h3>
+            <p>Client Success Manager</p>
+          </div>
+          <div class="mp-contact-list">
+            <a href="tel:{{ clientManager()?.phone || '+91 98765 43210' }}" class="mp-contact-item">
+              <div class="mp-contact-icon"><hugeicons-icon [icon]="CallIcon" [size]="16" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+              <span>{{ clientManager()?.phone || '+91 98765 43210' }}</span>
+            </a>
+            <a href="mailto:{{ clientManager()?.email || 'support@wealthempires.com' }}" class="mp-contact-item">
+              <div class="mp-contact-icon"><hugeicons-icon [icon]="Mail01Icon" [size]="16" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+              <span>{{ clientManager()?.email || 'support@wealthempires.com' }}</span>
+            </a>
+          </div>
+          <div class="mp-actions">
+            <button class="mp-btn primary" (click)="openWhatsApp()">WhatsApp Chat</button>
+            <button class="mp-btn secondary" (click)="callSupport()">Schedule Call</button>
+          </div>
         </div>
       </div>
+
+      <!-- SECTION 4: Popular Help Topics -->
+      <div class="popular-topics-card">
+        <h3 class="side-heading">Popular Topics</h3>
+        <div class="topics-grid">
+          <div class="topic-item">
+            <div class="topic-icon"><hugeicons-icon [icon]="File01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <span>GST Filing</span>
+          </div>
+          <div class="topic-item">
+            <div class="topic-icon"><hugeicons-icon [icon]="File01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <span>Company Reg</span>
+          </div>
+          <div class="topic-item">
+            <div class="topic-icon"><hugeicons-icon [icon]="CheckmarkBadge01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <span>Compliance</span>
+          </div>
+          <div class="topic-item">
+            <div class="topic-icon"><hugeicons-icon [icon]="Ticket01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <span>Trademark</span>
+          </div>
+          <div class="topic-item">
+            <div class="topic-icon"><hugeicons-icon [icon]="File01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <span>Tax Filing</span>
+          </div>
+          <div class="topic-item">
+            <div class="topic-icon"><hugeicons-icon [icon]="File01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon></div>
+            <span>Digital Signature</span>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

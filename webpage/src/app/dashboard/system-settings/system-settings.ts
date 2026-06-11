@@ -56,6 +56,10 @@ export class SystemSettings implements OnInit {
   newItemTitle = '';
   newItemDesc = '';
 
+  calendarYear = '2026-2027';
+  calendarFile: File | null = null;
+  isUploadingCalendar = false;
+
   constructor(private api: Api) {}
 
   ngOnInit() {
@@ -146,6 +150,33 @@ export class SystemSettings implements OnInit {
     }).subscribe({
       next: (res) => alert('Template saved successfully!'),
       error: (err) => alert(err.error?.message || 'Failed to save template.')
+    });
+  }
+
+  onCalendarFileSelected(event: any) {
+    if (event.target.files && event.target.files.length > 0) {
+      this.calendarFile = event.target.files[0];
+    }
+  }
+
+  uploadComplianceCalendar() {
+    if (!this.calendarFile || !this.calendarYear) return;
+    this.isUploadingCalendar = true;
+    
+    const formData = new FormData();
+    formData.append('year', this.calendarYear);
+    formData.append('file', this.calendarFile);
+
+    this.api.post<any>('calendar/upload', formData).subscribe({
+      next: (res) => {
+        this.isUploadingCalendar = false;
+        alert('Compliance Calendar uploaded successfully!');
+        this.calendarFile = null;
+      },
+      error: (err) => {
+        this.isUploadingCalendar = false;
+        alert(err.error?.message || 'Failed to upload calendar.');
+      }
     });
   }
 }
