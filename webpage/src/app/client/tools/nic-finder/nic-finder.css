@@ -23,9 +23,9 @@
 }
 
 .header-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 24px;
+  width: 100%;
+  padding: 0 40px;
+  box-sizing: border-box;
 }
 
 .back-btn {
@@ -61,9 +61,9 @@
 }
 
 .tool-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 24px 64px;
+  width: 100%;
+  padding: 0 40px 64px;
+  box-sizing: border-box;
 }
 
 .search-box {
@@ -159,6 +159,17 @@
   font-size: 12px;
   font-weight: 600;
   display: inline-block;
+  white-space: nowrap;
+}
+
+.division-type {
+  background-color: #fce7f3;
+  color: #9d174d;
+}
+
+.group-type {
+  background-color: #fef3c7;
+  color: #b45309;
 }
 
 .class-type {
@@ -182,4 +193,39 @@
   padding: 48px !important;
   color: var(--text-secondary);
   font-style: italic;
+}
+
+.fab-scroll-top {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #0f172a;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  
+  transform: scale(0.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fab-scroll-top.show {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fab-scroll-top:hover {
+  transform: scale(1) translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  background-color: #1e293b;
 }

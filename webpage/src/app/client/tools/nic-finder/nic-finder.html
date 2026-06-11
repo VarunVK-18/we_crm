@@ -24,6 +24,7 @@
           <tr>
             <th>Code</th>
             <th>Type</th>
+            <th>Section</th>
             <th>Description</th>
           </tr>
         </thead>
@@ -34,16 +35,23 @@
                 <span class="code-badge">{{ code.code }}</span>
               </td>
               <td>
-                <span class="type-badge" [class.class-type]="code.type === 'Class'" [class.subclass-type]="code.type === 'Sub-class'">
+                <span class="type-badge" 
+                      [class.division-type]="code.type === 'Division'"
+                      [class.group-type]="code.type === 'Group'"
+                      [class.class-type]="code.type === 'Class'" 
+                      [class.subclass-type]="code.type === 'Sub-class'">
                   {{ code.type }}
                 </span>
+              </td>
+              <td class="section-cell">
+                <strong>{{ code.section }}</strong> - {{ code.sectionTitle }}
               </td>
               <td class="desc-cell">{{ code.description }}</td>
             </tr>
           }
           @if (filteredCodes().length === 0) {
             <tr>
-              <td colspan="3" class="empty-state">
+              <td colspan="4" class="empty-state">
                 No NIC codes found matching your search.
               </td>
             </tr>
@@ -52,4 +60,8 @@
       </table>
     </div>
   </div>
+
+  <button class="fab-scroll-top" [class.show]="showScrollTop()" (click)="scrollToTop()" aria-label="Scroll to top">
+    <span class="material-symbols-outlined">arrow_upward</span>
+  </button>
 </div>

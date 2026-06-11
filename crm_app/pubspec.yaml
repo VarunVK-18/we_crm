@@ -52,6 +52,7 @@ flutter:
     - assets/google.png
     - assets/fonts/
     - assets/client/
+    - assets/json/
 
   fonts:
     - family: Outfit
