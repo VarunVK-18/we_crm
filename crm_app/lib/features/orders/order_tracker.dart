@@ -54,16 +54,22 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
     // Build entity list from database data using companyName
     final entities = orders
-        .map((o) => o.companyName)
+        .map((o) => o.companyName.trim())
         .where((c) => c.isNotEmpty)
         .toSet()
         .toList()
         ..sort();
 
+    // Prevent Dropdown assertion crash if selectedEntity is not yet in the list (e.g. while loading)
+    if (selectedEntity != 'All Entities' && !entities.contains(selectedEntity)) {
+      entities.add(selectedEntity);
+      entities.sort();
+    }
+
     // Filter by selected entity
     final entityFilteredRaw = selectedEntity == 'All Entities'
         ? orders
-        : orders.where((o) => o.companyName == selectedEntity).toList();
+        : orders.where((o) => o.companyName.trim() == selectedEntity).toList();
         
     final entityFiltered = List<ServiceOrder>.from(entityFilteredRaw)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));

@@ -230,6 +230,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
 
                 const SizedBox(height: 24),
 
+
                 if (order.notes.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -276,6 +277,171 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
+                ],
+
+                if (order.details['directors'] != null && order.details['directors'] is List && (order.details['directors'] as List).isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Director Details',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.deepTeal,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ...(order.details['directors'] as List).asMap().entries.map((entry) {
+                          final idx = entry.key + 1;
+                          final dir = entry.value is Map ? entry.value as Map : {};
+                          final name = dir['directorName']?.toString() ?? dir['name']?.toString() ?? dir['fullName']?.toString() ?? 'Name not specified';
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(12),
+                              onTap: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    bool showAll = false;
+                                    return StatefulBuilder(
+                                      builder: (context, setState) {
+                                        return AlertDialog(
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                          title: Text(
+                                            'Director $idx Details',
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppTheme.deepTeal,
+                                            ),
+                                          ),
+                                          content: SingleChildScrollView(
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.only(bottom: 12),
+                                                  child: Row(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      SizedBox(
+                                                        width: 80,
+                                                        child: Text(
+                                                          'NAME',
+                                                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        child: Text(
+                                                          name,
+                                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                ...dir.entries.map((e) {
+                                                  if (['directorName', 'name', 'fullName', '_id'].contains(e.key)) return const SizedBox.shrink();
+                                                  
+                                                  final isBasicField = ['email', 'phone', 'phonenumber', 'mobile'].contains(e.key.toLowerCase());
+                                                  if (!showAll && !isBasicField) return const SizedBox.shrink();
+                                                  
+                                                  final valStr = e.value?.toString() ?? '';
+                                                  if (valStr.isEmpty) return const SizedBox.shrink();
+                                                  
+                                                  // Format the key to be more readable
+                                                  String formattedKey = e.key.replaceAll(RegExp(r'([a-z])([A-Z])'), r'$1 $2').toUpperCase();
+                                                  
+                                                  return Padding(
+                                                    padding: const EdgeInsets.only(bottom: 12),
+                                                    child: Row(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      children: [
+                                                        SizedBox(
+                                                          width: 80,
+                                                          child: Text(
+                                                            formattedKey,
+                                                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
+                                                          ),
+                                                        ),
+                                                        Expanded(
+                                                          child: Text(
+                                                            valStr,
+                                                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  );
+                                                }),
+                                                if (!showAll && dir.keys.any((k) => !['directorName', 'name', 'fullName', '_id', 'email', 'phone', 'phonenumber', 'mobile'].contains(k.toLowerCase())))
+                                                  Padding(
+                                                    padding: const EdgeInsets.only(top: 8),
+                                                    child: Center(
+                                                      child: TextButton.icon(
+                                                        onPressed: () {
+                                                          setState(() {
+                                                            showAll = true;
+                                                          });
+                                                        },
+                                                        icon: const Icon(LucideIcons.chevronDown, size: 16, color: AppTheme.corporateBlue),
+                                                        label: const Text('View All Details', style: TextStyle(fontSize: 12, color: AppTheme.corporateBlue, fontWeight: FontWeight.w500, height: 1.4)),
+                                                      ),
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text('Close', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black)),
+                                            ),
+                                          ],
+                                        );
+                                      }
+                                    );
+                                  },
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(LucideIcons.user, size: 16, color: AppTheme.deepTeal),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        'Director $idx: $name',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppTheme.deepTeal,
+                                        ),
+                                      ),
+                                    ),
+                                    const Icon(LucideIcons.chevronRight, size: 16, color: Colors.grey),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
                 ],
 
                 // Section title
@@ -391,6 +557,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                 ],
 
                 if (order.serviceType == 'Private Limited Incorporation' &&
+                    order.status != ServiceStatus.notInitialized &&
                     order.details['directors'] != null &&
                     order.details['directors'] != '[]' &&
                     order.details['directors'] is String &&
@@ -926,7 +1093,10 @@ class _StepTimeline extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
                   child: InkWell(
-                    onTap: (step.isActionStep && !isCompleted && order.stage != OrderStage.reqReceived)
+                    onTap: (step.isActionStep && 
+                        !isCompleted && 
+                        order.stage != OrderStage.reqReceived && 
+                        order.status != ServiceStatus.notInitialized)
                         ? () => _routeToForm(context, order)
                         : null,
                     borderRadius: BorderRadius.circular(18),

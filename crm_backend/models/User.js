@@ -142,6 +142,56 @@ const UserSchema = new mongoose.Schema({
   permissions: {
     type: [String],
     default: []
+  },
+  client_entities: {
+    type: [{
+      entityName: String,
+      entityType: String,
+      cin: String,
+      pan: String,
+      tan: String,
+      gstin: String,
+      iso: String,
+      msme: String,
+      fssai: String,
+      // Incorporation
+      coi: String,
+      dsc: String,
+      // GST
+      gstUsername: String,
+      gstPassword: String,
+      gstArn: String,
+      // Income Tax
+      itrUsername: String,
+      itrPassword: String,
+      // DPIIT
+      dpiitRecognitionNumber: String,
+      dpiitApplicationId: String,
+      // Trademark
+      trademarkApplicationNumber: String,
+      trademarkStatus: String,
+      trademarkCertificate: String,
+      // Patent
+      patentApplicationNumber: String,
+      patentStatus: String,
+      patentNumber: String,
+      // Copyright
+      copyrightRegistrationNumber: String,
+      copyrightCertificate: String,
+      // TDS
+      tdsUsername: String,
+      tdsPassword: String,
+      // PF
+      pfEstablishmentId: String,
+      pfUsername: String,
+      pfPassword: String,
+      // FSSAI
+      fssaiTrackingId: String,
+      fssaiApplicationId: String,
+      // MSME
+      msmeCertificate: String
+    }],
+    default: []
   }
 }, { timestamps: true });
 

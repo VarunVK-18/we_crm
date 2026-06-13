@@ -12,6 +12,7 @@ import 'my_entities_screen.dart';
 import 'support_tickets_screen.dart';
 import 'chat_support_screen.dart';
 import 'subscriptions_screen.dart';
+import 'company_details_screen.dart';
 import '../../core/utils/responsive.dart';
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
@@ -191,6 +192,17 @@ class ProfileScreen extends ConsumerWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => const MyEntitiesScreen(),
+                          ),
+                        ),
+                      ),
+                      ProfileTile(
+                        icon: LucideIcons.building, // Or HugeIcons.strokeRoundedOffice
+                        title: 'Company Details',
+                        subtitle: 'View your company information',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CompanyDetailsScreen(),
                           ),
                         ),
                       ),

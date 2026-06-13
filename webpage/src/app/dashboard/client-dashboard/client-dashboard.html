@@ -74,6 +74,7 @@
       <main class="cd-main-content">
         <nav class="cd-tabs">
           <button [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">Overview</button>
+          <button [class.active]="activeTab() === 'entities'" (click)="setTab('entities')">Entities ({{ client().client_entities?.length || 0 }})</button>
           <button [class.active]="activeTab() === 'services'" (click)="setTab('services')">Active Services ({{ client().services?.length || 0 }})</button>
           <button [class.active]="activeTab() === 'tasks'" (click)="setTab('tasks')">Tasks & Checklists</button>
           <button [class.active]="activeTab() === 'documents'" (click)="setTab('documents')">Documents</button>
@@ -100,6 +101,152 @@
               <h3>Recent Activity</h3>
               <div class="empty-state">
                 <p>No recent activity found for this client.</p>
+              </div>
+            </div>
+          }
+
+          @if (activeTab() === 'entities') {
+            <div class="entities-tab">
+              <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Registered Entities</h3>
+                <button class="add-entity-btn" (click)="openEntityForm()" style="background: var(--accent-primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+                  + Add Entity
+                </button>
+              </div>
+
+              @if (isEntityFormOpen()) {
+                <div class="entity-form-card" style="background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+                  <h4>{{ editingEntityIndex() >= 0 ? 'Edit Entity' : 'New Entity' }}</h4>
+                  <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                    <div>
+                      <label>Entity Name *</label>
+                      <select [(ngModel)]="currentEntity.entityName" (change)="onEntityNameChange()" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;">
+                        <option value="">Select Entity Name</option>
+                        @for (name of getAvailableEntityNames(); track name) {
+                          <option [value]="name">{{ name }}</option>
+                        }
+                      </select>
+                      @if (getAvailableEntityNames().length === 0) {
+                        <small style="color: #64748b;">No completed services found to fetch entities.</small>
+                      }
+                    </div>
+                    <div>
+                      <label>Entity Type / Service</label>
+                      <select [(ngModel)]="currentEntity.entityType" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;" [disabled]="!currentEntity.entityName">
+                        <option value="">Select Type</option>
+                        @for (service of getServicesForEntity(currentEntity.entityName); track service) {
+                          <option [value]="service">{{ service }}</option>
+                        }
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Grouped Service Details -->
+                  <div style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                    <h5 style="margin-bottom: 12px; color: var(--accent-primary);">Incorporation & Basics</h5>
+                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                      <div><label>CIN</label><input type="text" [(ngModel)]="currentEntity.cin" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>PAN</label><input type="text" [(ngModel)]="currentEntity.pan" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>TAN</label><input type="text" [(ngModel)]="currentEntity.tan" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>COI</label><input type="text" [(ngModel)]="currentEntity.coi" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>DSC</label><input type="text" [(ngModel)]="currentEntity.dsc" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>ISO</label><input type="text" [(ngModel)]="currentEntity.iso" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                    </div>
+
+                    <h5 style="margin-top: 20px; margin-bottom: 12px; color: var(--accent-primary);">GST</h5>
+                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                      <div><label>GSTIN</label><input type="text" [(ngModel)]="currentEntity.gstin" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Username</label><input type="text" [(ngModel)]="currentEntity.gstUsername" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Password</label><input type="text" [(ngModel)]="currentEntity.gstPassword" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>ARN / App ID</label><input type="text" [(ngModel)]="currentEntity.gstArn" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                    </div>
+
+                    <h5 style="margin-top: 20px; margin-bottom: 12px; color: var(--accent-primary);">Income Tax & TDS</h5>
+                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                      <div><label>IT Username</label><input type="text" [(ngModel)]="currentEntity.itrUsername" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>IT Password</label><input type="text" [(ngModel)]="currentEntity.itrPassword" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>TDS Username</label><input type="text" [(ngModel)]="currentEntity.tdsUsername" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>TDS Password</label><input type="text" [(ngModel)]="currentEntity.tdsPassword" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                    </div>
+
+                    <h5 style="margin-top: 20px; margin-bottom: 12px; color: var(--accent-primary);">Intellectual Property</h5>
+                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                      <div><label>Trademark App No.</label><input type="text" [(ngModel)]="currentEntity.trademarkApplicationNumber" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Trademark Status</label><input type="text" [(ngModel)]="currentEntity.trademarkStatus" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Trademark Cert</label><input type="text" [(ngModel)]="currentEntity.trademarkCertificate" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Patent App No.</label><input type="text" [(ngModel)]="currentEntity.patentApplicationNumber" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Patent Status</label><input type="text" [(ngModel)]="currentEntity.patentStatus" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Patent No.</label><input type="text" [(ngModel)]="currentEntity.patentNumber" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Copyright Reg No.</label><input type="text" [(ngModel)]="currentEntity.copyrightRegistrationNumber" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Copyright Cert</label><input type="text" [(ngModel)]="currentEntity.copyrightCertificate" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                    </div>
+
+                    <h5 style="margin-top: 20px; margin-bottom: 12px; color: var(--accent-primary);">Other Registrations</h5>
+                    <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+                      <div><label>DPIIT Recog. No.</label><input type="text" [(ngModel)]="currentEntity.dpiitRecognitionNumber" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>DPIIT App ID</label><input type="text" [(ngModel)]="currentEntity.dpiitApplicationId" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>PF Est. ID</label><input type="text" [(ngModel)]="currentEntity.pfEstablishmentId" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>PF Username</label><input type="text" [(ngModel)]="currentEntity.pfUsername" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>PF Password</label><input type="text" [(ngModel)]="currentEntity.pfPassword" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>FSSAI License</label><input type="text" [(ngModel)]="currentEntity.fssai" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>FSSAI Tracking ID</label><input type="text" [(ngModel)]="currentEntity.fssaiTrackingId" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>FSSAI App ID</label><input type="text" [(ngModel)]="currentEntity.fssaiApplicationId" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>MSME Reg. No.</label><input type="text" [(ngModel)]="currentEntity.msme" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>MSME Certificate</label><input type="text" [(ngModel)]="currentEntity.msmeCertificate" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                    </div>
+                  </div>
+                  <div class="form-actions" style="margin-top: 20px; display: flex; gap: 12px; justify-content: flex-end;">
+                    <button (click)="closeEntityForm()" style="padding: 8px 16px; border: 1px solid #cbd5e1; background: white; border-radius: 6px; cursor: pointer;">Cancel</button>
+                    <button (click)="saveEntity()" style="padding: 8px 16px; border: none; background: var(--accent-primary); color: white; border-radius: 6px; cursor: pointer;" [disabled]="!currentEntity.entityName">Save Entity</button>
+                  </div>
+                </div>
+              }
+
+              <div class="entities-list" style="display: flex; flex-direction: column; gap: 16px;">
+                @if (client().client_entities && client().client_entities.length > 0) {
+                  @for (ent of client().client_entities; track ent._id || ent.entityName; let i = $index) {
+                    <div class="entity-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                      <div class="entity-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div>
+                          <h4 style="margin: 0; font-size: 18px; color: var(--text-main);">{{ ent.entityName }}</h4>
+                          <span style="font-size: 12px; color: #64748B; background: #f1f5f9; padding: 2px 8px; border-radius: 12px; display: inline-block; margin-top: 4px;">{{ ent.entityType || 'Unspecified Type' }}</span>
+                        </div>
+                        <div>
+                          <button (click)="editEntity(i)" style="background: none; border: none; color: #3b82f6; cursor: pointer; margin-right: 12px;">Edit</button>
+                          <button (click)="deleteEntity(i)" style="background: none; border: none; color: #ef4444; cursor: pointer;">Delete</button>
+                        </div>
+                      </div>
+                      
+                      <div class="entity-details-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+                        @if (ent.cin) { <div><small style="color: #64748b; display: block;">CIN</small><strong>{{ ent.cin }}</strong></div> }
+                        @if (ent.pan) { <div><small style="color: #64748b; display: block;">PAN</small><strong>{{ ent.pan }}</strong></div> }
+                        @if (ent.tan) { <div><small style="color: #64748b; display: block;">TAN</small><strong>{{ ent.tan }}</strong></div> }
+                        @if (ent.coi) { <div><small style="color: #64748b; display: block;">COI</small><strong>{{ ent.coi }}</strong></div> }
+                        @if (ent.dsc) { <div><small style="color: #64748b; display: block;">DSC</small><strong>{{ ent.dsc }}</strong></div> }
+                        @if (ent.gstin) { <div><small style="color: #64748b; display: block;">GSTIN</small><strong>{{ ent.gstin }}</strong></div> }
+                        @if (ent.gstUsername) { <div><small style="color: #64748b; display: block;">GST Username</small><strong>{{ ent.gstUsername }}</strong></div> }
+                        @if (ent.gstPassword) { <div><small style="color: #64748b; display: block;">GST Pwd</small><strong>{{ ent.gstPassword }}</strong></div> }
+                        @if (ent.gstArn) { <div><small style="color: #64748b; display: block;">GST ARN</small><strong>{{ ent.gstArn }}</strong></div> }
+                        @if (ent.itrUsername) { <div><small style="color: #64748b; display: block;">IT Username</small><strong>{{ ent.itrUsername }}</strong></div> }
+                        @if (ent.tdsUsername) { <div><small style="color: #64748b; display: block;">TDS Username</small><strong>{{ ent.tdsUsername }}</strong></div> }
+                        @if (ent.trademarkApplicationNumber) { <div><small style="color: #64748b; display: block;">TM App No.</small><strong>{{ ent.trademarkApplicationNumber }}</strong></div> }
+                        @if (ent.trademarkStatus) { <div><small style="color: #64748b; display: block;">TM Status</small><strong>{{ ent.trademarkStatus }}</strong></div> }
+                        @if (ent.patentApplicationNumber) { <div><small style="color: #64748b; display: block;">Patent App No.</small><strong>{{ ent.patentApplicationNumber }}</strong></div> }
+                        @if (ent.patentStatus) { <div><small style="color: #64748b; display: block;">Patent Status</small><strong>{{ ent.patentStatus }}</strong></div> }
+                        @if (ent.copyrightRegistrationNumber) { <div><small style="color: #64748b; display: block;">Copyright Reg.</small><strong>{{ ent.copyrightRegistrationNumber }}</strong></div> }
+                        @if (ent.dpiitRecognitionNumber) { <div><small style="color: #64748b; display: block;">DPIIT No.</small><strong>{{ ent.dpiitRecognitionNumber }}</strong></div> }
+                        @if (ent.pfEstablishmentId) { <div><small style="color: #64748b; display: block;">PF Est. ID</small><strong>{{ ent.pfEstablishmentId }}</strong></div> }
+                        @if (ent.iso) { <div><small style="color: #64748b; display: block;">ISO</small><strong>{{ ent.iso }}</strong></div> }
+                        @if (ent.msme) { <div><small style="color: #64748b; display: block;">MSME</small><strong>{{ ent.msme }}</strong></div> }
+                        @if (ent.fssai) { <div><small style="color: #64748b; display: block;">FSSAI</small><strong>{{ ent.fssai }}</strong></div> }
+                      </div>
+                    </div>
+                  }
+                } @else {
+                  <div class="empty-state" style="padding: 40px; text-align: center; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+                    <p style="color: #64748b;">No entities registered for this client yet.</p>
+                  </div>
+                }
               </div>
             </div>
           }

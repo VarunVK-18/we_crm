@@ -2,6 +2,74 @@ enum UserRole {
   customer,
 }
 
+class ClientEntity {
+  final String entityName;
+  final String entityType;
+  final String cin;
+  final String pan;
+  final String tan;
+  final String gstin;
+  final String iso;
+  final String msme;
+  final String fssai;
+  final String coi;
+  final String dsc;
+  final String trademarkApplicationNumber;
+  final String trademarkStatus;
+  final String trademarkCertificate;
+  final String patentApplicationNumber;
+  final String patentStatus;
+  final String patentNumber;
+  final String copyrightRegistrationNumber;
+  final String copyrightCertificate;
+
+  ClientEntity({
+    required this.entityName,
+    required this.entityType,
+    required this.cin,
+    required this.pan,
+    required this.tan,
+    required this.gstin,
+    required this.iso,
+    required this.msme,
+    required this.fssai,
+    required this.coi,
+    required this.dsc,
+    required this.trademarkApplicationNumber,
+    required this.trademarkStatus,
+    required this.trademarkCertificate,
+    required this.patentApplicationNumber,
+    required this.patentStatus,
+    required this.patentNumber,
+    required this.copyrightRegistrationNumber,
+    required this.copyrightCertificate,
+  });
+
+  factory ClientEntity.fromMap(Map<String, dynamic> data) {
+    return ClientEntity(
+      entityName: data['entityName']?.toString() ?? '',
+      entityType: data['entityType']?.toString() ?? '',
+      cin: data['cin']?.toString() ?? '',
+      pan: data['pan']?.toString() ?? '',
+      tan: data['tan']?.toString() ?? '',
+      gstin: data['gstin']?.toString() ?? '',
+      iso: data['iso']?.toString() ?? '',
+      msme: data['msme']?.toString() ?? '',
+      fssai: data['fssai']?.toString() ?? '',
+      coi: data['coi']?.toString() ?? '',
+      dsc: data['dsc']?.toString() ?? '',
+      trademarkApplicationNumber: data['trademarkApplicationNumber']?.toString() ?? '',
+      trademarkStatus: data['trademarkStatus']?.toString() ?? '',
+      trademarkCertificate: data['trademarkCertificate']?.toString() ?? '',
+      patentApplicationNumber: data['patentApplicationNumber']?.toString() ?? '',
+      patentStatus: data['patentStatus']?.toString() ?? '',
+      patentNumber: data['patentNumber']?.toString() ?? '',
+      copyrightRegistrationNumber: data['copyrightRegistrationNumber']?.toString() ?? '',
+      copyrightCertificate: data['copyrightCertificate']?.toString() ?? '',
+    );
+  }
+}
+
 class UserModel {
   final String id;
   final String name;
@@ -13,6 +81,7 @@ class UserModel {
   final DateTime? createdAt;
   final String profileImage;
   final Map<String, dynamic>? manager;
+  final List<ClientEntity> clientEntities;
 
   UserModel({
     required this.id,
@@ -25,6 +94,7 @@ class UserModel {
     this.createdAt,
     this.profileImage = '',
     this.manager,
+    this.clientEntities = const [],
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, [String? id]) {
@@ -65,6 +135,13 @@ class UserModel {
       };
     }
 
+    List<ClientEntity> extractedEntities = [];
+    if (data['client_entities'] != null && data['client_entities'] is List) {
+      extractedEntities = (data['client_entities'] as List)
+          .map((e) => ClientEntity.fromMap(e as Map<String, dynamic>))
+          .toList();
+    }
+
     return UserModel(
       id: extractedId,
       name: data['owner_name']?.toString() ?? data['name']?.toString() ?? 'User',
@@ -79,6 +156,7 @@ class UserModel {
       createdAt: extractedDate,
       profileImage: data['profile_image']?.toString() ?? '',
       manager: extractedManager,
+      clientEntities: extractedEntities,
     );
   }
 

@@ -462,12 +462,38 @@ export class RequestsComponent implements OnInit {
     }, 300);
   }
 
+  getParsedDirectors(): any[] {
+    const o = this.selectedChatOrder();
+    if (!o || !o.details || !o.details.directors) return [];
+    try {
+      if (typeof o.details.directors === 'string') {
+        return JSON.parse(o.details.directors);
+      }
+      return o.details.directors;
+    } catch (e) {
+      return [];
+    }
+  }
+
   formatRole(role: string): string {
     if (!role) return '';
     if (role === 'admin') return 'Manager';
     if (role === 'client_manager') return 'Client Manager';
     if (role === 'filing_staff') return 'Filing Staff';
     if (role === 'staff') return 'Client Support';
+    if (role.startsWith('director_')) {
+      const parts = role.split('_');
+      const idx = parseInt(parts[1], 10);
+      if (!isNaN(idx)) {
+        const directors = this.getParsedDirectors();
+        if (idx > 0 && idx <= directors.length) {
+          const dir = directors[idx - 1];
+          const name = dir.directorName || dir.name || dir.fullName || '';
+          return name ? `Dir ${idx}: ${name}` : `Director ${idx}`;
+        }
+      }
+      return `Director ${parts[1]}`;
+    }
     return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 }

@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/chat_provider.dart';
+import '../../providers/orders_provider.dart';
 
 class OrderChatScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -24,6 +26,7 @@ class OrderChatScreen extends ConsumerStatefulWidget {
 class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  String _selectedSenderRole = 'client';
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
@@ -43,7 +46,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     
     final success = await ref
         .read(chatProvider(widget.orderId).notifier)
-        .sendMessage(text);
+        .sendMessage(text, senderRole: _selectedSenderRole);
         
     if (success) {
       Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
@@ -53,6 +56,33 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider(widget.orderId));
+    
+    // Determine directors for role selection
+    final orders = ref.watch(serviceOrdersProvider).value ?? [];
+    final order = orders.where((o) => o.id == widget.orderId).firstOrNull;
+    
+    List<dynamic> directors = [];
+    if (order != null) {
+      try {
+        if (order.details['directors'] is String) {
+          directors = jsonDecode(order.details['directors']);
+        } else {
+          directors = order.details['directors'] ?? [];
+        }
+      } catch (_) {
+        directors = [];
+      }
+    }
+
+    final roleOptions = [
+      {'value': 'client', 'label': 'Chat as Client'},
+      for (int i = 0; i < directors.length; i++) ...() {
+        final dir = directors[i] is Map ? directors[i] as Map : {};
+        final name = dir['directorName']?.toString() ?? dir['name']?.toString() ?? dir['fullName']?.toString() ?? '';
+        final displayName = name.isNotEmpty ? '$name (Dir ${i + 1})' : 'Director ${i + 1}';
+        return [{'value': 'director_${i + 1}', 'label': 'Chat as $displayName'}];
+      }(),
+    ];
 
     ref.listen(chatProvider(widget.orderId), (previous, next) {
       if (previous == null || next.messages.length > previous.messages.length) {
@@ -129,7 +159,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                         itemCount: chatState.messages.length,
                         itemBuilder: (context, index) {
                           final message = chatState.messages[index];
-                          final isMe = message.senderRole == 'client';
+                          final isMe = message.senderRole == 'client' || message.senderRole.startsWith('director_');
                           
                           bool showDateDivider = false;
                           if (index == 0) {
@@ -148,6 +178,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             seen: message.seen,
                             senderName: message.senderName,
                             senderRole: message.senderRole,
+                            directors: directors,
                           );
 
                           if (showDateDivider) {
@@ -163,23 +194,82 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                       ),
           ),
           
-          // Chat Input Area
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
+            // Chat Input Area
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, -5),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    if (roleOptions.length > 1)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppTheme.corporateBlue.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value: _selectedSenderRole,
+                                isDense: true,
+                                icon: Padding(
+                                  padding: const EdgeInsets.only(left: 6.0),
+                                  child: Icon(LucideIcons.chevronDown, size: 14, color: AppTheme.corporateBlue.withOpacity(0.7)),
+                                ),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.corporateBlue,
+                                ),
+                                borderRadius: BorderRadius.circular(16),
+                                dropdownColor: Colors.white,
+                                elevation: 4,
+                                onChanged: (String? newValue) {
+                                  if (newValue != null) {
+                                    setState(() {
+                                      _selectedSenderRole = newValue;
+                                    });
+                                  }
+                                },
+                                items: roleOptions.map<DropdownMenuItem<String>>((option) {
+                                  return DropdownMenuItem<String>(
+                                    value: option['value']!,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          option['value'] == 'client' ? LucideIcons.user : LucideIcons.briefcase,
+                                          size: 12,
+                                          color: AppTheme.corporateBlue,
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(option['label']!),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    Row(
+                      children: [
+                        Expanded(
                       child: TextField(
                         controller: _messageController,
                         decoration: InputDecoration(
@@ -227,11 +317,13 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                   ),
                 ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
-    );
+    ],
+  ),
+);
   }
 
   Widget _buildDateDivider(DateTime timestamp) {
@@ -274,8 +366,30 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     required bool seen,
     required String senderName,
     required String senderRole,
+    required List<dynamic> directors,
   }) {
     final timeStr = DateFormat('hh:mm a').format(timestamp);
+    
+    String badgeText = '';
+    if (senderRole == 'admin') badgeText = 'Manager';
+    else if (senderRole == 'client_manager') badgeText = 'Client Manager';
+    else if (senderRole == 'filing_staff') badgeText = 'Filing Staff';
+    else if (senderRole == 'staff') badgeText = 'Client Support';
+    else if (senderRole.startsWith('director_')) {
+      final parts = senderRole.split('_');
+      if (parts.length > 1) {
+        final idx = int.tryParse(parts[1]) ?? 0;
+        if (idx > 0 && idx <= directors.length) {
+          final dir = directors[idx - 1] is Map ? directors[idx - 1] as Map : {};
+          final dName = dir['directorName']?.toString() ?? dir['name']?.toString() ?? dir['fullName']?.toString() ?? '';
+          badgeText = dName.isNotEmpty ? 'Dir $idx: $dName' : 'Director $idx';
+        } else {
+          badgeText = 'Director ${parts[1]}';
+        }
+      }
+    } else {
+      badgeText = senderRole.split('_').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : '').join(' ');
+    }
     
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -295,37 +409,39 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
             child: Column(
               crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                if (!isMe) ...[
+                if (!isMe || senderRole.startsWith('director_')) ...[
                   Padding(
-                    padding: const EdgeInsets.only(left: 4, bottom: 4),
+                    padding: EdgeInsets.only(
+                      left: isMe ? 0 : 4,
+                      right: isMe ? 4 : 0,
+                      bottom: 4,
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
                       children: [
-                        Text(
-                          senderName,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.deepTeal,
+                        if (!isMe)
+                          Text(
+                            senderName,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey.shade800,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 6),
+                        if (!isMe) const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(6),
+                            color: senderRole.startsWith('director_') ? Colors.orange.shade50 : Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            senderRole == 'admin' ? 'Manager' : 
-                            (senderRole == 'client_manager' ? 'Client Manager' : 
-                            (senderRole == 'filing_staff' ? 'Filing Staff' : 
-                            (senderRole == 'staff' ? 'Client Support' : 
-                            senderRole.split('_').map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}' : '').join(' ')))),
+                            badgeText,
                             style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.blue.shade700,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: senderRole.startsWith('director_') ? Colors.orange.shade700 : Colors.blue.shade700,
                             ),
                           ),
                         ),
@@ -371,9 +487,9 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             if (isMe) ...[
                               const SizedBox(width: 4),
                               Icon(
-                                LucideIcons.checkCheck,
-                                size: 12,
-                                color: seen ? Colors.greenAccent : Colors.white.withOpacity(0.7),
+                                seen ? LucideIcons.checkCheck : LucideIcons.check,
+                                size: 14,
+                                color: seen ? Colors.green : Colors.white.withOpacity(0.7),
                               ),
                             ],
                           ],

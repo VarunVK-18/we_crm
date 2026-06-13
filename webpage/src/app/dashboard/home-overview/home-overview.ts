@@ -184,7 +184,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       list.push({
         _id: c._id,
         title: c.service_name,
-        clientName: c.details?.companyName || c.client_id?.company_name || c.client_id?.owner_name || 'Client',
+        clientName: c.details?.entityName || c.details?.companyName || c.client_id?.company_name || c.client_id?.owner_name || 'Client',
         assignedTo: c.assigned_to?.owner_name || 'Unassigned',
         status: c.status === 'completed' ? 'Certified' : (c.status === 'in_progress' ? 'In Progress' : 'Pending'),
         isCompleted: c.status === 'completed',
@@ -198,7 +198,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       list.push({
         _id: t._id,
         title: t.title,
-        clientName: t.client_id?.company_name || t.client_id?.owner_name || 'Client',
+        clientName: t.details?.entityName || t.details?.companyName || t.client_id?.company_name || t.client_id?.owner_name || 'Client',
         assignedTo: t.assigned_to?.owner_name || 'Unassigned',
         status: t.status,
         isCompleted: t.status === 'Completed' || t.status === 'Approved',

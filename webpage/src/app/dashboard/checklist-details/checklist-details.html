@@ -219,7 +219,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <h3 class="section-title">Requested Documents</h3>
           <button (click)="openRequestDocModal()"
-            style="background-color: var(--text-primary); color: var(--bg-primary); border: none; font-weight: 600; padding: 8px 24px; border-radius: 8px; cursor: pointer; transition: opacity 0.2s;">
+            style="background-color: var(--text-primary); color: #ffffff; border: none; font-weight: 600; padding: 8px 24px; border-radius: 8px; cursor: pointer; transition: opacity 0.2s;">
             Request Doc
           </button>
         </div>
@@ -648,32 +648,38 @@
           </div>
         </div>
       }
-      <div style="display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out;"
-        [style.align-items]="msg.senderRole === 'client' ? 'flex-start' : 'flex-end'">
+      <div style="display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out; margin-bottom: 8px;"
+        [style.align-items]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? 'flex-start' : 'flex-end'">
         
-        @if (msg.senderId?.owner_name) {
-          <span style="font-size: 11px; color: #64748b; margin-bottom: 2px; padding: 0 4px; font-weight: 500;">{{ msg.senderId.owner_name }}</span>
-        }
-        <div style="max-width: 85%; padding: 12px 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);"
-          [style.background]="msg.senderRole === 'client' ? '#ffffff' : '#2563eb'"
-          [style.color]="msg.senderRole === 'client' ? '#1e293b' : '#ffffff'"
-          [style.border-radius]="msg.senderRole === 'client' ? '18px 18px 18px 4px' : '18px 18px 4px 18px'"
-          [style.border]="msg.senderRole === 'client' ? '1px solid #e2e8f0' : 'none'">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;" [style.flex-direction]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? 'row' : 'row-reverse'">
+          @if (msg.senderRole !== 'client') {
+            <span style="padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; white-space: nowrap;"
+                  [style.background]="msg.senderRole.startsWith('director_') ? '#ffedd5' : '#eff6ff'"
+                  [style.color]="msg.senderRole.startsWith('director_') ? '#ea580c' : '#1d4ed8'">
+              {{ formatRole(msg.senderRole) }}
+            </span>
+          }
+          @if (!msg.senderRole.startsWith('director_') || msg.senderRole === 'client') {
+            <span style="font-size: 11.5px; font-weight: 600; color: #334155;">{{ msg.senderId?.name || msg.senderId?.owner_name || (msg.senderRole === 'client' ? 'Client' : 'User') }}</span>
+          }
+        </div>
 
-          <div style="font-size: 14.5px; line-height: 1.5; margin-bottom: 4px; word-break: break-word;">{{ msg.content }}</div>
+        <div style="max-width: 85%; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+          [style.background]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#ffffff' : '#0f172a'"
+          [style.color]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#1e293b' : '#ffffff'"
+          [style.border-radius]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '16px 16px 16px 4px' : '16px 16px 4px 16px'"
+          [style.border]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '1px solid #e2e8f0' : 'none'">
 
-          <div style="font-size: 11px; display: flex; justify-content: flex-end; align-items: center; gap: 4px;"
-            [style.color]="msg.senderRole === 'client' ? '#94a3b8' : 'rgba(255,255,255,0.7)'">
-            {{ msg.senderId?.owner_name || msg.senderId?.name || 'User' }}
-            @if (msg.senderRole !== 'client') {
-            <span
-              style="padding: 2px 6px; background: rgba(255,255,255,0.2); border-radius: 4px; font-size: 9px; font-weight: 600;">{{ formatRole(msg.senderRole) }}</span>
-            }
-            <span style="margin-left: 4px;">{{ msg.createdAt | date:'shortTime' }}</span>
-            @if (msg.senderRole !== 'client') {
-            <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;"
-              [style.color]="msg.seen ? '#34d399' : 'rgba(255,255,255,0.6)'">done_all</span>
-            }
+          <div style="font-size: 14.5px; line-height: 1.5; word-break: break-word;">
+            {{ msg.content }}
+            <span style="display: inline-flex; align-items: center; gap: 4px; margin-left: 12px; font-size: 11px;"
+                  [style.color]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#94a3b8' : 'rgba(255,255,255,0.7)'">
+              {{ msg.createdAt | date:'shortTime' }}
+              @if (msg.senderRole !== 'client' && !msg.senderRole.startsWith('director_')) {
+                <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;"
+                  [style.color]="msg.seen ? '#10b981' : 'rgba(255,255,255,0.6)'">{{ msg.seen ? 'done_all' : 'check' }}</span>
+              }
+            </span>
           </div>
         </div>
       </div>

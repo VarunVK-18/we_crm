@@ -22,7 +22,8 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   
   // Chat
   chatMessages = signal<any[]>([]);
-  newChatMessage = signal('');
+  newChatMessage: string = '';
+  selectedSenderRole: string = 'client';
   
   // UI State
   isChatOpen = signal(false);
@@ -199,14 +200,14 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   }
 
   sendChatMessage() {
-    if (!this.newChatMessage().trim()) return;
+    if (!this.newChatMessage.trim()) return;
     
-    const content = this.newChatMessage().trim();
-    this.newChatMessage.set('');
+    const content = this.newChatMessage.trim();
+    this.newChatMessage = '';
     
     this.api.post<any>(`chat/${this.orderId()}`, {
       senderId: this.user()?._id || this.user()?.id,
-      senderRole: 'client',
+      senderRole: this.selectedSenderRole,
       content: content
     }).subscribe({
       next: (res: any) => {
@@ -262,12 +263,50 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     return items.filter(i => i.isChecked);
   }
 
+  getParsedDirectors(): any[] {
+    const o = this.order();
+    if (!o || !o.details || !o.details.directors) return [];
+    try {
+      if (typeof o.details.directors === 'string') {
+        return JSON.parse(o.details.directors);
+      }
+      return o.details.directors;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  getRoleOptions() {
+    const options = [{ value: 'client', label: 'Chat as Client' }];
+    const directors = this.getParsedDirectors();
+    for (let i = 0; i < directors.length; i++) {
+      const dir = directors[i];
+      const name = dir.directorName || dir.name || dir.fullName || '';
+      const displayName = name ? `${name} (Dir ${i + 1})` : `Director ${i + 1}`;
+      options.push({ value: `director_${i + 1}`, label: `Chat as ${displayName}` });
+    }
+    return options;
+  }
+
   formatRole(role: string): string {
     if (!role) return '';
     if (role === 'admin') return 'Manager';
     if (role === 'client_manager') return 'Client Manager';
     if (role === 'filing_staff') return 'Filing Staff';
     if (role === 'staff') return 'Client Support';
+    if (role.startsWith('director_')) {
+      const parts = role.split('_');
+      const idx = parseInt(parts[1], 10);
+      if (!isNaN(idx)) {
+        const directors = this.getParsedDirectors();
+        if (idx > 0 && idx <= directors.length) {
+          const dir = directors[idx - 1];
+          const name = dir.directorName || dir.name || dir.fullName || '';
+          return name ? `Dir ${idx}: ${name}` : `Director ${idx}`;
+        }
+      }
+      return `Director ${parts[1]}`;
+    }
     return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
   }
 

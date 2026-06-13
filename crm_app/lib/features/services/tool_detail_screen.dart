@@ -44,15 +44,29 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   DateTime? _tdsDate1;
   DateTime? _tdsDate2;
 
+  List<NicCode> _allNicCodes = [];
   List<NicCode> _filteredNicCodes = [];
   Map<NicCode, List<NicCode>> _groupedNicCodes = {};
+  bool _isLoadingNic = false;
 
   @override
   void initState() {
     super.initState();
-    _filteredNicCodes = allNicCodes;
-    _groupNicCodes();
     _initializeDefaults();
+    if (widget.toolName == 'NIC Finder') {
+      _loadNicData();
+    }
+  }
+
+  Future<void> _loadNicData() async {
+    setState(() => _isLoadingNic = true);
+    final codes = await NicCodeService.loadNicCodes();
+    setState(() {
+      _allNicCodes = codes;
+      _filteredNicCodes = codes;
+      _groupNicCodes();
+      _isLoadingNic = false;
+    });
   }
 
   void _initializeDefaults() {
@@ -125,27 +139,45 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
 
   void _groupNicCodes() {
     _groupedNicCodes.clear();
+    Set<NicCode> matchedClasses = {};
     for (var item in _filteredNicCodes) {
       if (item.type == 'Class') {
-        _groupedNicCodes.putIfAbsent(item, () => []);
-      } else {
+        matchedClasses.add(item);
+      } else if (item.type == 'Sub-class') {
         String parentCode = item.code.length >= 4 ? item.code.substring(0, 4) : item.code;
-        var parentClass = allNicCodes.firstWhere(
+        var parentClass = _allNicCodes.firstWhere(
             (n) => n.code == parentCode && n.type == 'Class', 
             orElse: () => NicCode(code: parentCode, description: 'Class $parentCode', type: 'Class')
         );
-        _groupedNicCodes.putIfAbsent(parentClass, () => []).add(item);
+        matchedClasses.add(parentClass);
+      } else {
+        matchedClasses.add(item);
+      }
+    }
+
+    var limitedClasses = matchedClasses.take(50).toList();
+
+    for (var cls in limitedClasses) {
+      if (cls.type == 'Class') {
+        var subs = _allNicCodes.where((n) => n.type == 'Sub-class' && n.code.startsWith(cls.code)).toList();
+        _groupedNicCodes[cls] = subs;
+      } else {
+        _groupedNicCodes[cls] = [];
       }
     }
   }
 
   void _searchNic(String query) {
     setState(() {
-      _filteredNicCodes = allNicCodes
-          .where((item) =>
-              item.code.contains(query) ||
-              item.description.toLowerCase().contains(query.toLowerCase()))
-          .toList();
+      if (query.isEmpty) {
+        _filteredNicCodes = _allNicCodes;
+      } else {
+        _filteredNicCodes = _allNicCodes
+            .where((item) =>
+                item.code.contains(query) ||
+                item.description.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
       _groupNicCodes();
     });
   }
@@ -447,6 +479,15 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   }
 
   Widget _buildNICFinder() {
+    if (_isLoadingNic) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: CircularProgressIndicator(color: AppTheme.corporateBlue),
+        ),
+      );
+    }
+
     return Column(
       children: [
         Container(

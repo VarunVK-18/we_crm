@@ -103,13 +103,19 @@ exports.markAsSeen = async (req, res) => {
     const { viewerRole } = req.body; // e.g., 'client' or 'staff'
     
     // We want to mark as seen all messages sent by someone OTHER than the viewer
-    // If client is viewing, mark staff/admin messages as seen.
-    // If staff is viewing, mark client messages as seen.
+    // If client/director is viewing, mark staff/admin messages as seen.
+    // If staff/admin is viewing, mark client/director messages as seen.
     const query = { orderId, seen: false };
-    if (viewerRole === 'client') {
-      query.senderRole = { $in: ['staff', 'admin'] };
+    
+    const isClientSide = viewerRole === 'client' || (viewerRole && viewerRole.startsWith('director_'));
+    
+    if (isClientSide) {
+      query.senderRole = { $nin: ['client', new RegExp('^director_')] };
     } else {
-      query.senderRole = 'client';
+      query.$or = [
+        { senderRole: 'client' },
+        { senderRole: { $regex: /^director_/ } }
+      ];
     }
 
     await Message.updateMany(query, { $set: { seen: true } });

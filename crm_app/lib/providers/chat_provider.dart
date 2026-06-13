@@ -88,7 +88,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
-  Future<bool> sendMessage(String content) async {
+  Future<bool> sendMessage(String content, {String senderRole = 'client'}) async {
     final user = ref.read(authStateProvider).value;
     if (user == null) return false;
 
@@ -98,7 +98,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'senderId': user.uid,
-          'senderRole': 'client', // Since this is the client app
+          'senderRole': senderRole,
           'content': content,
         }),
       );

@@ -973,6 +973,37 @@ const removeProfileImage = async (req, res) => {
   }
 };
 
+// @desc    Update client entities array
+// @route   PUT /api/users/profile/:id/entities
+// @access  Private
+const updateClientEntities = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { client_entities } = req.body;
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.client_entities = client_entities || [];
+    await user.save();
+
+    if (req.user) {
+      await logActivity(
+        req.user._id,
+        'client_entities_update',
+        `Updated entities list for client: ${user.owner_name} (${user.email}). Total entities: ${user.client_entities.length}`,
+        req.user.company_id
+      );
+    }
+
+    res.status(200).json({ success: true, message: 'Client entities updated successfully', client_entities: user.client_entities });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -991,5 +1022,6 @@ module.exports = {
   savePanDetails,
   migrateChecklistAssignments,
   uploadProfileImage,
-  removeProfileImage
+  removeProfileImage,
+  updateClientEntities
 };

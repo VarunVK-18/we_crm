@@ -47,6 +47,7 @@ router.post('/auth/register-company', registerCompany);
 router.get('/users/profile/:id', getUserProfile);
 router.post('/users/profile/:id/subscribe-service', upload.any(), subscribeService);
 router.post('/users/profile/:id/pan', upload.single('panFile'), savePanDetails);
+router.put('/users/profile/:id/entities', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), (req, res) => require('../controllers/authController').updateClientEntities(req, res));
 router.post('/users/profile/:id/upload-image', upload.single('profileImage'), uploadProfileImage);
 router.delete('/users/profile/:id/remove-image', removeProfileImage);
 

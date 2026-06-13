@@ -271,20 +271,26 @@
               </div>
             }
             
-            <div class="message-row" [class.is-client]="msg.senderRole === 'client'">
-              @if (msg.senderRole !== 'client') {
+            <div class="message-row" [class.is-client]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_')">
+              @if (msg.senderRole !== 'client' && !msg.senderRole.startsWith('director_')) {
                 <div class="sender-info">
                   <span class="sender-name">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</span>
                   <span class="sender-role">{{ formatRole(msg.senderRole) }}</span>
                 </div>
+              } @else {
+                @if (msg.senderRole.startsWith('director_')) {
+                  <div class="sender-info" style="justify-content: flex-end; margin-bottom: 4px;">
+                    <span class="sender-role" style="background: #ffedd5; color: #ea580c;">{{ formatRole(msg.senderRole) }}</span>
+                  </div>
+                }
               }
-              <div class="message-bubble" [class.is-client]="msg.senderRole === 'client'">
+              <div class="message-bubble" [class.is-client]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_')">
                 <p>{{ msg.content }}</p>
                 <div class="message-meta">
                   <span>{{ msg.createdAt | date:'shortTime' }}</span>
-                  @if (msg.senderRole === 'client') {
+                  @if (msg.senderRole === 'client' || msg.senderRole.startsWith('director_')) {
                     <span class="material-symbols-outlined tick-icon" 
-                          [class.read]="msg.seen">done_all</span>
+                          [class.read]="msg.seen">{{ msg.seen ? 'done_all' : 'check' }}</span>
                   }
                 </div>
               </div>
@@ -299,10 +305,17 @@
           }
         </div>
         
-        <div class="chat-input-area">
-          <div class="chat-input-wrapper">
+        <div class="chat-input-area" style="flex-direction: column; gap: 8px; padding-top: 12px; align-items: flex-start;">
+          @if (getRoleOptions().length > 1) {
+            <select [(ngModel)]="selectedSenderRole" style="padding: 6px 12px; border-radius: 20px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #2563eb; background: #eff6ff; outline: none; width: fit-content; cursor: pointer; align-self: flex-start; margin-left: 16px;">
+              @for (opt of getRoleOptions(); track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          }
+          <div class="chat-input-wrapper" style="width: 100%; margin: 0;">
             <input type="text" placeholder="Write a message..." [(ngModel)]="newChatMessage" (keyup.enter)="sendChatMessage()">
-            <button [disabled]="!newChatMessage().trim()" (click)="sendChatMessage()">
+            <button [disabled]="!newChatMessage.trim()" (click)="sendChatMessage()">
               <span class="material-symbols-outlined">send</span>
             </button>
           </div>
