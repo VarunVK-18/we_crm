@@ -135,6 +135,8 @@ export class ClientCompliance implements OnInit {
       this.user.set(JSON.parse(savedUser));
       this.fetchReminders();
       this.fetchChecklists();
+    } else {
+      this.isLoading.set(false);
     }
   }
 
@@ -149,7 +151,10 @@ export class ClientCompliance implements OnInit {
 
   fetchReminders() {
     const uid = this.user()?._id || this.user()?.id;
-    if (!uid) return;
+    if (!uid) {
+      this.isLoading.set(false);
+      return;
+    }
     
     this.api.get<any>(`compliance/tasks/user/${uid}`).subscribe({
       next: (res) => {

@@ -1,33 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
 
-class CompanyDetailsScreen extends ConsumerStatefulWidget {
-  const CompanyDetailsScreen({super.key});
+class _EntityExpandableCard extends StatefulWidget {
+  final ClientEntity entity;
+  const _EntityExpandableCard({required this.entity});
 
   @override
-  ConsumerState<CompanyDetailsScreen> createState() => _CompanyDetailsScreenState();
+  State<_EntityExpandableCard> createState() => _EntityExpandableCardState();
 }
 
-class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
-  ClientEntity? _selectedEntity;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final user = ref.read(userProfileProvider).value;
-      if (user != null && user.clientEntities.isNotEmpty) {
-        setState(() {
-          _selectedEntity = user.clientEntities.first;
-        });
-      }
-    });
-  }
+class _EntityExpandableCardState extends State<_EntityExpandableCard> {
+  bool _isExpanded = true;
+  int _selectedTabIndex = 0;
 
   void _copyToClipboard(BuildContext context, String label, String text) {
     if (text.isEmpty) return;
@@ -95,6 +85,198 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
     );
   }
 
+  Widget _buildIncorporationDetails(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDetailCard('CIN (Corporate Identification Number)', widget.entity.cin, context),
+        _buildDetailCard('Incorporation Date', widget.entity.incorporationDate != null ? DateFormat('dd MMM yyyy').format(widget.entity.incorporationDate!) : '', context),
+        _buildDetailCard('PAN (Permanent Account Number)', widget.entity.pan, context),
+        _buildDetailCard('TAN (Tax Deduction and Collection Account Number)', widget.entity.tan, context),
+        _buildDetailCard('Certificate of Incorporation (COI)', widget.entity.coi, context),
+        _buildDetailCard('Digital Signature Certificate (DSC)', widget.entity.dsc, context),
+        if (widget.entity.cin.isEmpty && widget.entity.pan.isEmpty && widget.entity.tan.isEmpty && widget.entity.coi.isEmpty && widget.entity.dsc.isEmpty && widget.entity.incorporationDate == null)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(40.0),
+              child: Text(
+                'No incorporation details available.',
+                style: GoogleFonts.outfit(color: Colors.grey[500]),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildApplicationTracker(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.entity.trademarkApplicationNumber.isNotEmpty || widget.entity.trademarkStatus.isNotEmpty) ...[
+          Text('Trademark', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 12),
+          _buildDetailCard('Application Number', widget.entity.trademarkApplicationNumber, context),
+          _buildDetailCard('Status', widget.entity.trademarkStatus, context),
+          _buildDetailCard('Certificate', widget.entity.trademarkCertificate, context),
+          const SizedBox(height: 24),
+        ],
+        
+        if (widget.entity.patentApplicationNumber.isNotEmpty || widget.entity.patentStatus.isNotEmpty) ...[
+          Text('Patent', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 12),
+          _buildDetailCard('Application Number', widget.entity.patentApplicationNumber, context),
+          _buildDetailCard('Status', widget.entity.patentStatus, context),
+          _buildDetailCard('Patent Number', widget.entity.patentNumber, context),
+          const SizedBox(height: 24),
+        ],
+        
+        if (widget.entity.copyrightRegistrationNumber.isNotEmpty) ...[
+          Text('Copyright', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 12),
+          _buildDetailCard('Registration Number', widget.entity.copyrightRegistrationNumber, context),
+          _buildDetailCard('Certificate', widget.entity.copyrightCertificate, context),
+          const SizedBox(height: 24),
+        ],
+        
+        if (widget.entity.trademarkApplicationNumber.isEmpty && 
+            widget.entity.patentApplicationNumber.isEmpty && 
+            widget.entity.copyrightRegistrationNumber.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(40.0),
+              child: Text(
+                'No tracked applications available.',
+                style: GoogleFonts.outfit(color: Colors.grey[500]),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      color: Colors.white,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header (Click to expand/collapse)
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.entity.entityName,
+                      style: GoogleFonts.outfit(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.deepTeal,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                    color: AppTheme.deepTeal,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          if (_isExpanded) ...[
+            // Tabs
+            Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedTabIndex = 0),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _selectedTabIndex == 0 ? AppTheme.deepTeal : Colors.grey.shade200,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Incorporation Details',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: _selectedTabIndex == 0 ? AppTheme.deepTeal : Colors.grey[500],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() => _selectedTabIndex = 1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _selectedTabIndex == 1 ? AppTheme.deepTeal : Colors.grey.shade200,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Application Tracker',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: _selectedTabIndex == 1 ? AppTheme.deepTeal : Colors.grey[500],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: _selectedTabIndex == 0 
+                  ? _buildIncorporationDetails(context) 
+                  : _buildApplicationTracker(context),
+            ),
+          ]
+        ],
+      ),
+    );
+  }
+}
+
+class CompanyDetailsScreen extends ConsumerStatefulWidget {
+  const CompanyDetailsScreen({super.key});
+
+  @override
+  ConsumerState<CompanyDetailsScreen> createState() => _CompanyDetailsScreenState();
+}
+
+class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProfileProvider);
@@ -143,161 +325,13 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
             );
           }
 
-          if (_selectedEntity == null) {
-            _selectedEntity = user.clientEntities.first;
-          }
-
-          return DefaultTabController(
-            length: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (user.clientEntities.length > 1)
-                  Padding(
-                    padding: const EdgeInsets.all(20).copyWith(bottom: 0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<ClientEntity>(
-                          value: _selectedEntity,
-                          isExpanded: true,
-                          icon: const Icon(Icons.arrow_drop_down, color: AppTheme.deepTeal),
-                          items: user.clientEntities.map((ent) {
-                            return DropdownMenuItem<ClientEntity>(
-                              value: ent,
-                              child: Text(
-                                ent.entityName,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.deepTeal,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() => _selectedEntity = val);
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.all(20).copyWith(bottom: 0),
-                    child: Text(
-                      _selectedEntity!.entityName,
-                      style: GoogleFonts.outfit(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.deepTeal,
-                      ),
-                    ),
-                  ),
-                
-                const SizedBox(height: 16),
-                Container(
-                  color: Colors.white,
-                  child: TabBar(
-                    labelColor: AppTheme.deepTeal,
-                    unselectedLabelColor: Colors.grey[500],
-                    indicatorColor: AppTheme.deepTeal,
-                    indicatorWeight: 3,
-                    labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 14),
-                    tabs: const [
-                      Tab(text: 'Incorporation Details'),
-                      Tab(text: 'Application Tracker'),
-                    ],
-                  ),
-                ),
-                
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      // Incorporation Details Tab
-                      SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildDetailCard('CIN (Corporate Identification Number)', _selectedEntity!.cin, context),
-                            _buildDetailCard('PAN (Permanent Account Number)', _selectedEntity!.pan, context),
-                            _buildDetailCard('TAN (Tax Deduction and Collection Account Number)', _selectedEntity!.tan, context),
-                            _buildDetailCard('Certificate of Incorporation (COI)', _selectedEntity!.coi, context),
-                            _buildDetailCard('Digital Signature Certificate (DSC)', _selectedEntity!.dsc, context),
-                            if (_selectedEntity!.cin.isEmpty && _selectedEntity!.pan.isEmpty && _selectedEntity!.tan.isEmpty && _selectedEntity!.coi.isEmpty && _selectedEntity!.dsc.isEmpty)
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(40.0),
-                                  child: Text(
-                                    'No incorporation details available.',
-                                    style: GoogleFonts.outfit(color: Colors.grey[500]),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      
-                      // Application Tracker Tab
-                      SingleChildScrollView(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (_selectedEntity!.trademarkApplicationNumber.isNotEmpty || _selectedEntity!.trademarkStatus.isNotEmpty) ...[
-                              Text('Trademark', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                              const SizedBox(height: 12),
-                              _buildDetailCard('Application Number', _selectedEntity!.trademarkApplicationNumber, context),
-                              _buildDetailCard('Status', _selectedEntity!.trademarkStatus, context),
-                              _buildDetailCard('Certificate', _selectedEntity!.trademarkCertificate, context),
-                              const SizedBox(height: 24),
-                            ],
-                            
-                            if (_selectedEntity!.patentApplicationNumber.isNotEmpty || _selectedEntity!.patentStatus.isNotEmpty) ...[
-                              Text('Patent', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                              const SizedBox(height: 12),
-                              _buildDetailCard('Application Number', _selectedEntity!.patentApplicationNumber, context),
-                              _buildDetailCard('Status', _selectedEntity!.patentStatus, context),
-                              _buildDetailCard('Patent Number', _selectedEntity!.patentNumber, context),
-                              const SizedBox(height: 24),
-                            ],
-                            
-                            if (_selectedEntity!.copyrightRegistrationNumber.isNotEmpty) ...[
-                              Text('Copyright', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                              const SizedBox(height: 12),
-                              _buildDetailCard('Registration Number', _selectedEntity!.copyrightRegistrationNumber, context),
-                              _buildDetailCard('Certificate', _selectedEntity!.copyrightCertificate, context),
-                              const SizedBox(height: 24),
-                            ],
-                            
-                            if (_selectedEntity!.trademarkApplicationNumber.isEmpty && 
-                                _selectedEntity!.patentApplicationNumber.isEmpty && 
-                                _selectedEntity!.copyrightRegistrationNumber.isEmpty)
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(40.0),
-                                  child: Text(
-                                    'No tracked applications available.',
-                                    style: GoogleFonts.outfit(color: Colors.grey[500]),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          return ListView.builder(
+            padding: const EdgeInsets.all(20),
+            itemCount: user.clientEntities.length,
+            itemBuilder: (context, index) {
+              final entity = user.clientEntities[index];
+              return _EntityExpandableCard(entity: entity);
+            },
           );
         },
         loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF312E81))),

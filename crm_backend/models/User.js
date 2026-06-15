@@ -154,6 +154,7 @@ const UserSchema = new mongoose.Schema({
       iso: String,
       msme: String,
       fssai: String,
+      incorporationDate: Date,
       // Incorporation
       coi: String,
       dsc: String,

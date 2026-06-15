@@ -124,6 +124,7 @@ export class ClientDashboard implements OnInit, OnChanges {
   isEntityFormOpen = signal<boolean>(false);
   editingEntityIndex = signal<number>(-1);
   currentEntity: any = {};
+  isUploadingDoc = signal<boolean>(false);
 
   openEntityForm() {
     this.editingEntityIndex.set(-1);
@@ -133,7 +134,7 @@ export class ClientDashboard implements OnInit, OnChanges {
       dpiitRecognitionNumber: '', dpiitApplicationId: '', trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
       patentApplicationNumber: '', patentStatus: '', patentNumber: '', copyrightRegistrationNumber: '', copyrightCertificate: '',
       tdsUsername: '', tdsPassword: '', pfEstablishmentId: '', pfUsername: '', pfPassword: '',
-      fssaiTrackingId: '', fssaiApplicationId: '', msmeCertificate: ''
+      fssaiTrackingId: '', fssaiApplicationId: '', msmeCertificate: '', incorporationDate: ''
     };
     this.isEntityFormOpen.set(true);
   }
@@ -152,6 +153,53 @@ export class ClientDashboard implements OnInit, OnChanges {
     const ent = this.client().client_entities[index];
     this.currentEntity = { ...ent };
     this.isEntityFormOpen.set(true);
+  }
+
+  onUploadCertificate(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      alert('Only PDF files are supported for auto-fill.');
+      return;
+    }
+
+    this.isUploadingDoc.set(true);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.api.post<any>('documents/extract-incorporation', formData).subscribe({
+      next: (res) => {
+        this.isUploadingDoc.set(false);
+        if (res.success && res.data) {
+          const { companyName, cin, tan, pan, incorporationDate } = res.data;
+          if (companyName && !this.currentEntity.entityName) this.currentEntity.entityName = companyName;
+          if (cin) this.currentEntity.cin = cin;
+          if (tan) this.currentEntity.tan = tan;
+          if (pan) this.currentEntity.pan = pan;
+          
+          if (incorporationDate) {
+            // Convert to YYYY-MM-DD for standard date inputs
+            const dateObj = new Date(incorporationDate);
+            if (!isNaN(dateObj.getTime())) {
+              this.currentEntity.incorporationDate = dateObj.toISOString().split('T')[0];
+            }
+          }
+
+          // Auto-save the entity details immediately
+          this.saveEntity();
+          alert('Document processed and details saved successfully!');
+        } else {
+          alert('Could not extract data from the document.');
+        }
+      },
+      error: (err) => {
+        this.isUploadingDoc.set(false);
+        console.error(err);
+        alert(err.error?.message || 'Failed to process document.');
+      }
+    });
   }
 
   deleteEntity(index: number) {

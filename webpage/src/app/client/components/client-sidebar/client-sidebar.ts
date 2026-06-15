@@ -21,6 +21,7 @@ export class ClientSidebarComponent implements OnInit {
   readonly CustomerSupportIcon = CustomerSupportIcon;
   readonly MentoringIcon = MentoringIcon;
   readonly CrownIcon = CrownIcon;
+  readonly Building04Icon = Building04Icon;
 
   user = signal<any>(null);
   clientManager = signal<any>(null);

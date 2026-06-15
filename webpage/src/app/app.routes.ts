@@ -6,6 +6,7 @@ import { ClientDashboard } from './client/client-dashboard';
 import { ClientServiceDetail } from './client/client-service-detail';
 import { ClientProfile } from './client/client-profile';
 import { ClientOngoingServices } from './client/client-ongoing-services';
+import { ClientCompanyDetails } from './client/client-company-details/client-company-details';
 import { ClientCompliance } from './client/client-compliance/client-compliance';
 import { ClientServicesComponent } from './client/client-services/client-services';
 import { ClientSupportTickets } from './client/client-support-tickets/client-support-tickets';
@@ -75,6 +76,7 @@ export const routes: Routes = [
       { path: 'forms/dsc/:id', component: DscForm },
       { path: 'service/:id', component: ClientServiceDetail },
       { path: 'ongoing-services', component: ClientOngoingServices },
+      { path: 'company-details', component: ClientCompanyDetails },
       { path: 'compliance', component: ClientCompliance },
       { path: 'support-tickets', component: ClientSupportTickets },
       { path: 'support', component: ClientHelpSupport },

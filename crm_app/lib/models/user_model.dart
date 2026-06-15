@@ -22,6 +22,7 @@ class ClientEntity {
   final String patentNumber;
   final String copyrightRegistrationNumber;
   final String copyrightCertificate;
+  final DateTime? incorporationDate;
 
   ClientEntity({
     required this.entityName,
@@ -43,6 +44,7 @@ class ClientEntity {
     required this.patentNumber,
     required this.copyrightRegistrationNumber,
     required this.copyrightCertificate,
+    this.incorporationDate,
   });
 
   factory ClientEntity.fromMap(Map<String, dynamic> data) {
@@ -66,6 +68,9 @@ class ClientEntity {
       patentNumber: data['patentNumber']?.toString() ?? '',
       copyrightRegistrationNumber: data['copyrightRegistrationNumber']?.toString() ?? '',
       copyrightCertificate: data['copyrightCertificate']?.toString() ?? '',
+      incorporationDate: data['incorporationDate'] != null 
+          ? DateTime.tryParse(data['incorporationDate'].toString()) 
+          : null,
     );
   }
 }
