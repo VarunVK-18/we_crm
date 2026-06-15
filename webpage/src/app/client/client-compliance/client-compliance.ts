@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon, FilterIcon } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-client-compliance',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent],
+  imports: [CommonModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './client-compliance.html',
   styleUrl: './client-compliance.css'
 })

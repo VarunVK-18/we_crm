@@ -2,7 +2,7 @@
   <div class="filter-action-bar" style="display: flex; justify-content: space-between; align-items: center;">
     <div style="display: flex; align-items: center; gap: 12px;">
       <h2 class="section-title-premium"
-        style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin: 0;">Checklist Details
+        style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin: 0;">Service Details
       </h2>
     </div>
 
@@ -29,8 +29,17 @@
             <span class="info-badge">{{ checklist().service_name }}</span>
             <h3 class="info-title">{{ checklist().client_id?.owner_name }}</h3>
             @if (checklist().client_id?.company_name) {
-            <p class="info-subtitle">
-              <span class="material-symbols-outlined" style="font-size: 18px;">apartment</span>
+            <p class="info-subtitle" style="display: flex; align-items: center; gap: 6px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 22H22" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M17 2H7C4 2 3 3.79 3 6V22H21V6C21 3.79 20 2 17 2Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path opacity="0.4" d="M7 16.5H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path opacity="0.4" d="M14 16.5H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path opacity="0.4" d="M7 12H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path opacity="0.4" d="M14 12H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path opacity="0.4" d="M7 7.5H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+                <path opacity="0.4" d="M14 7.5H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
               {{ checklist().client_id?.company_name }}
             </p>
             }
@@ -134,6 +143,56 @@
           </div>
         </section>
       }
+
+      <!-- Financial Details Section -->
+      <section class="info-card" style="margin-top: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0;">Financial Details</h4>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
+              View the payment status for this service.
+            </p>
+          </div>
+          
+          <div style="display: flex; align-items: flex-start; gap: 40px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Deal Closed Amount</span>
+              <span style="font-size: 18px; font-weight: 800; color: var(--text-primary);">₹{{ checklist().dealClosedAmount || 0 }}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end; min-width: 150px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Amount Paid</span>
+              
+              @if (!isAddingPayment()) {
+                <div style="display: flex; align-items: center; gap: 12px; height: 32px;">
+                  <span style="font-size: 18px; font-weight: 800; color: var(--accent-primary);">₹{{ checklist().advanceAmountPaid || 0 }}</span>
+                  @if (canManage()) {
+                    <button (click)="openAddPayment()" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; transition: all 0.2s;" onmouseover="this.style.background='var(--accent-primary)'; this.style.color='white'; this.style.borderColor='var(--accent-primary)'" onmouseout="this.style.background='var(--bg-secondary)'; this.style.color='var(--text-secondary)'; this.style.borderColor='var(--border-color)'" title="Add Payment">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div style="display: flex; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 4px; height: 34px; box-sizing: border-box;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-left: 8px; margin-right: 6px;">
+                    <span style="font-size: 15px; font-weight: 700; color: var(--text-secondary);">₹{{ checklist().advanceAmountPaid || 0 }}</span>
+                    <span style="font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-top: -1px;">+</span>
+                    <span style="font-size: 15px; font-weight: 700; color: var(--text-secondary);">₹</span>
+                  </div>
+                  <input type="number" [(ngModel)]="paymentAmountToAdd" style="width: 50px; padding: 0; border: none; background: transparent; font-size: 15px; font-weight: 700; color: var(--text-primary); outline: none; margin-right: 6px;" placeholder="0" (keyup.enter)="submitAddPayment()">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <button (click)="submitAddPayment()" style="background: var(--accent-primary); color: white; border: none; border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+                    </button>
+                    <button (click)="cancelAddPayment()" style="background: transparent; color: var(--text-secondary); border: none; cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0;">
+                       <span class="material-symbols-outlined" style="font-size: 16px;">close</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Checklist Items Section -->
       <section style="display: flex; flex-direction: column; gap: 16px;">

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { UserIcon, CheckmarkBadge01Icon, Time01Icon } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './requests.html',
   styleUrl: './requests.css'
 })
@@ -150,6 +151,17 @@ export class RequestsComponent implements OnInit {
       }
     });
     return flat;
+  }
+
+  getFillingStaff() {
+    return this.getFlatEmployees().filter(e => e.role === 'filling_staff');
+  }
+
+  getTaskCount(emp: any): number {
+    return this.orders().filter((o: any) => 
+      o.assignedExpert === emp.name && 
+      (o.status || '').toLowerCase() !== 'complete'
+    ).length;
   }
 
   onEmployeeSelectChange(orderId: string, event: any) {

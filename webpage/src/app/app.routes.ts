@@ -13,6 +13,7 @@ import { ClientSupportTickets } from './client/client-support-tickets/client-sup
 import { ClientHelpSupport } from './client/client-help-support/client-help-support';
 import { ClientSubscriptions } from './client/client-subscriptions/client-subscriptions';
 import { ClientInvoice } from './client/client-invoice/client-invoice';
+import { ClientDocumentHub } from './client/client-document-hub/client-document-hub';
 import { GstCalc } from './client/tools/gst-calc/gst-calc';
 import { TdsCalc } from './client/tools/tds-calc/tds-calc';
 import { NicFinder } from './client/tools/nic-finder/nic-finder';
@@ -81,6 +82,7 @@ export const routes: Routes = [
       { path: 'support-tickets', component: ClientSupportTickets },
       { path: 'support', component: ClientHelpSupport },
       { path: 'subscriptions', component: ClientSubscriptions },
+      { path: 'document-hub', component: ClientDocumentHub },
       { path: 'invoice/:id', component: ClientInvoice },
       { path: 'tools/gst-calc', component: GstCalc },
       { path: 'tools/tds-calc', component: TdsCalc },

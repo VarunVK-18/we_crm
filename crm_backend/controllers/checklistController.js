@@ -287,7 +287,7 @@ const addChecklistItem = async (req, res) => {
 const updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to, notes, stage, items, requested_documents, status, details } = req.body;
+    const { assigned_to, notes, stage, items, requested_documents, status, details, advanceAmountPaid } = req.body;
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -341,6 +341,10 @@ const updateChecklist = async (req, res) => {
           description: item.description || '',
           isChecked: item.isChecked || false
         }));
+      }
+      
+      if (advanceAmountPaid !== undefined) {
+        checklist.advanceAmountPaid = advanceAmountPaid;
       }
     }
 

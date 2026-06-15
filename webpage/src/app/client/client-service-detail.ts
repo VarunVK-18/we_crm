@@ -1,15 +1,16 @@
 import { Component, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { MessageMultiple01Icon } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-client-service-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, RouterModule, WeLoaderComponent],
   templateUrl: './client-service-detail.html',
   styleUrl: './client-service-detail.css',
 })
@@ -263,6 +264,19 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   getCompletedList(items: any[] | undefined): any[] {
     if (!items) return [];
     return items.filter(i => i.isChecked);
+  }
+
+  isPaymentPending(): boolean {
+    const o = this.order();
+    if (!o) return false;
+    const dealClosed = o.dealClosedAmount || 0;
+    const advancePaid = o.advanceAmountPaid || 0;
+    
+    // Check if the service is fully completed from the checklist perspective
+    const isCompleted = o.derivedStatus === 'completed' || 
+                        (o.items && this.getCompletedList(o.items).length === o.items.length && o.items.length > 0);
+                        
+    return isCompleted && (dealClosed > advancePaid);
   }
 
   getParsedDirectors(): any[] {

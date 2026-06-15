@@ -42,7 +42,7 @@
 
   @if (isLoading()) {
   <div class="loading-state">
-    <div class="spinner"></div>
+    <app-we-loader></app-we-loader>
     <p>Loading requests...</p>
   </div>
   } @else if (filteredOrders().length === 0) {
@@ -137,8 +137,8 @@
           <label class="assign-label">Assign Expert:</label>
           <select class="form-control-input select-input" (change)="onEmployeeSelectChange(order._id, $event)">
             <option value="">-- Select Employee --</option>
-            @for (emp of getFlatEmployees(); track emp.id) {
-            <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+            @for (emp of getFillingStaff(); track emp.id) {
+            <option [value]="emp.id">{{ emp.name }} ({{ getTaskCount(emp) }} Ongoing Tasks)</option>
             }
           </select>
         </div>

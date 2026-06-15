@@ -1,13 +1,15 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Alert01Icon, CheckmarkCircle01Icon, Calendar02Icon, Search01Icon, ArrowDown01Icon, ArrowUp01Icon } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-staff-compliance',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './staff-compliance.html',
   styleUrl: './staff-compliance.css'
 })

@@ -248,7 +248,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'tasks': return 'Custom Task';
       case 'checklists': return 'Compliance';
       case 'completed-checklists': return 'Completed Service';
-      case 'checklist-details': return 'Checklist Details';
+      case 'checklist-details': return 'Service Details';
       case 'requests': return 'New Requests';
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';

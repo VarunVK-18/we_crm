@@ -7,16 +7,18 @@ import {
   Cancel01Icon 
 } from '@hugeicons/core-free-icons';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-completed-checklists',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './completed-checklists.html',
   styleUrl: './completed-checklists.css'
 })
 export class CompletedChecklists implements OnInit, OnDestroy {
   @Output() onViewChecklist = new EventEmitter<string>();
+  isLoading = signal<boolean>(true);
   user = signal<any>(null);
   checklists = signal<any[]>([]);
   teams = input<any[]>([]);
@@ -114,9 +116,11 @@ export class CompletedChecklists implements OnInit, OnDestroy {
           // Only show completed checklists
           this.checklists.set(res.checklists.filter((c: any) => c.status === 'completed'));
         }
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to fetch checklists:', err);
+        this.isLoading.set(false);
       }
     });
   }

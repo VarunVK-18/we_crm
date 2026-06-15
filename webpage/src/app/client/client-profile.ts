@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-client-profile',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent],
+  imports: [CommonModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './client-profile.html',
   styleUrl: './client-profile.css',
 })

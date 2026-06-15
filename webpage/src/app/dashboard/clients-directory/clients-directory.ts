@@ -11,16 +11,18 @@ import {
   CheckmarkCircle02Icon
 } from '@hugeicons/core-free-icons';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-clients-directory',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './clients-directory.html',
   styleUrl: './clients-directory.css'
 })
 export class ClientsDirectory implements OnInit {
   @Output() onViewClient = new EventEmitter<string>();
+  isLoading = signal<boolean>(true);
   user = signal<any>(null);
   clients = signal<any[]>([]);
   teams = input<any[]>([]);
@@ -111,6 +113,11 @@ export class ClientsDirectory implements OnInit {
         if (res && res.clients) {
           this.clients.set(res.clients);
         }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to fetch clients:', err);
+        this.isLoading.set(false);
       }
     });
   }

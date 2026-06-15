@@ -1,0 +1,253 @@
+.hub-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: calc(100vh - 80px);
+  background-color: var(--background);
+}
+
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Search Section */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px 40px;
+  background-color: var(--surface);
+}
+
+.logo-wrapper {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo-text {
+  font-size: 80px;
+  font-weight: 800;
+  letter-spacing: -3px;
+  line-height: 1;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+}
+
+.logo-subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  display: block;
+}
+
+.search-bar-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 56px;
+  padding: 0 24px 0 56px;
+  font-size: 16px;
+  color: var(--text-primary);
+  background-color: #ffffff;
+  border: 1px solid #dfe1e5;
+  border-radius: 28px;
+  outline: none;
+  box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
+  transition: all 0.2s ease;
+}
+
+.search-input:hover {
+  box-shadow: 0 1px 8px rgba(32, 33, 36, 0.15);
+}
+
+.search-input:focus {
+  border-color: rgba(223, 225, 229, 0);
+  box-shadow: 0 1px 10px rgba(32, 33, 36, 0.2);
+}
+
+.trusted-banner {
+  position: sticky;
+  bottom: 0px;
+  align-self: center;
+  z-index: 100;
+  background-color: #f7ce76;
+  color: #1a1a1a;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  margin-top: auto;
+  max-width: 100%;
+  line-height: 1.5;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Documents Section */
+.documents-section {
+  flex: 1;
+  padding: 40px;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.documents-table-wrapper {
+  background: var(--surface);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.documents-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.documents-table th {
+  background: #f8fafc;
+  padding: 16px 24px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.documents-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+
+.documents-table tbody tr {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.documents-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.documents-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-doc-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.doc-icon-wrapper-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.doc-name-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.doc-service-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.doc-date-text {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.download-btn-small {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.documents-table tbody tr:hover .download-btn-small {
+  color: #0f172a;
+  background: #e2e8f0;
+}
+
+/* States */
+.loading-state, .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 64px;
+  color: #cbd5e1;
+  margin-bottom: 24px;
+}
+
+.empty-state h3 {
+  margin: 0 0 12px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text-secondary);
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+

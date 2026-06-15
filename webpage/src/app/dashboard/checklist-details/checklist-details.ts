@@ -41,6 +41,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   finalDocsToUpload: { file: File, docType?: string }[] = [];
   isFinalDocUploading = false;
 
+  // Add Payment State
+  isAddingPayment = signal<boolean>(false);
+  paymentAmountToAdd: number = 0;
+
   privateLimitedFinalDocs = [
     'Certificate of Incorporation (COI)',
     'PAN',
@@ -202,6 +206,37 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.api.patch<any>(`checklists/${cl._id}`, { details: newDetails }).subscribe({
       next: () => this.fetchChecklist(),
       error: (err) => alert(err.error?.message || 'Failed to assign director count.')
+    });
+  }
+
+  openAddPayment() {
+    this.paymentAmountToAdd = 0;
+    this.isAddingPayment.set(true);
+  }
+
+  cancelAddPayment() {
+    this.isAddingPayment.set(false);
+  }
+
+  submitAddPayment() {
+    if (!this.paymentAmountToAdd || this.paymentAmountToAdd <= 0) {
+       alert("Please enter a valid amount to add.");
+       return;
+    }
+    const cl = this.checklist();
+    if (!cl) return;
+
+    const currentAdvance = Number(cl.advanceAmountPaid) || 0;
+    const newAdvance = currentAdvance + Number(this.paymentAmountToAdd);
+
+    this.api.patch<any>(`checklists/${cl._id}`, { advanceAmountPaid: newAdvance }).subscribe({
+      next: () => {
+         this.isAddingPayment.set(false);
+         this.fetchChecklist();
+      },
+      error: (err) => {
+         alert(err.error?.message || 'Failed to add payment.');
+      }
     });
   }
 

@@ -8,11 +8,12 @@ import {
   Download01Icon,
   Share01Icon
 } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-client-invoice',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent, DatePipe, CurrencyPipe],
+  imports: [CommonModule, HugeiconsIconComponent, DatePipe, CurrencyPipe, WeLoaderComponent],
   templateUrl: './client-invoice.html',
   styleUrl: './client-invoice.css'
 })

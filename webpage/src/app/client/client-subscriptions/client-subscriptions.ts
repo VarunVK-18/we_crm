@@ -9,11 +9,12 @@ import {
   FileAttachmentIcon,
   CheckmarkBadge01Icon
 } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-client-subscriptions',
   standalone: true,
-  imports: [CommonModule, RouterModule, HugeiconsIconComponent, DatePipe, CurrencyPipe],
+  imports: [CommonModule, RouterModule, HugeiconsIconComponent, DatePipe, CurrencyPipe, WeLoaderComponent],
   templateUrl: './client-subscriptions.html',
   styleUrl: './client-subscriptions.css'
 })

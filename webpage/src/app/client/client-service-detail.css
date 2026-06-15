@@ -335,7 +335,7 @@
   max-width: 260px;
   position: relative;
   z-index: 2;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.2s ease;
 }
 

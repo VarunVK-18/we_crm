@@ -77,7 +77,13 @@
   </div>
 
   <!-- Client Cards Grid -->
-  <div class="cd-clients-grid">
+  @if (isLoading()) {
+    <div class="loading-state" style="text-align: center; padding: 60px 0;">
+      <app-we-loader></app-we-loader>
+      <p style="color: #64748b; font-weight: 600;">Loading clients...</p>
+    </div>
+  } @else {
+    <div class="cd-clients-grid">
     @for (client of getFilteredClients(); track client._id) {
       <div class="cd-client-card group">
         <div class="cd-card-top">
@@ -135,7 +141,7 @@
       </div>
     }
   </div>
-
+  }
 </div>
 
 <!-- Create Client Dialog Modal Overlay -->

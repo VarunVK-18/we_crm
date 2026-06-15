@@ -1,11 +1,12 @@
 import { Component, input, output, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-employee-profile',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, WeLoaderComponent],
   templateUrl: './employee-profile.html',
   styleUrl: './employee-profile.css'
 })

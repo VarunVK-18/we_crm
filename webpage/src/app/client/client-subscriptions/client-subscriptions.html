@@ -23,7 +23,7 @@
       <div class="history-list">
         @if (isLoading()) {
           <div class="loading-state">
-            <div class="we-loader"></div>
+            <app-we-loader></app-we-loader>
             <p>Loading completed services...</p>
           </div>
         } @else if (completedServices().length === 0) {
