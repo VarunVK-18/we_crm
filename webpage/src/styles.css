@@ -76,7 +76,8 @@
 }
 
   /* Legacy mapper for existing stylesheets */
-  --bg-primary: var(--background);
+  --background: var(--surface);
+  --bg-primary: var(--surface);
   --bg-secondary: var(--surface);
   --bg-active: var(--surface-hover);
   --accent-primary: var(--primary);

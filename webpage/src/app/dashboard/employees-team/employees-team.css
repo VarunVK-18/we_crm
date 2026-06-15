@@ -177,7 +177,7 @@
 .employee-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 4px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -388,7 +388,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 9999;
 }
 
 .modal-card-box {

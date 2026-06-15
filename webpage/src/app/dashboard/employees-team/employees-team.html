@@ -2,11 +2,7 @@
   <!-- Header Section -->
   <div class="team-header">
     <div>
-      <nav class="breadcrumbs">
-        <span>Organization</span>
-        <span class="material-symbols-outlined" style="font-size: 16px;">chevron_right</span>
-        <span class="breadcrumbs-current">Team Management</span>
-      </nav>
+
       <h2 class="page-title">Team Management & Access Control</h2>
       <p class="page-subtitle">{{ getFlatEmployees().length }} Active Members across Departments</p>
     </div>
@@ -43,7 +39,7 @@
         </thead>
         <tbody>
           @for (member of filteredEmployees(); track member.id || member._id) {
-            <tr class="table-row-hover">
+            <tr class="table-row-hover" (click)="viewEmployeeProfile(member)" style="cursor: pointer;">
               <td>
                 <div class="employee-cell">
                   <!-- Assign a consistent color class or random based on char if needed, using default for now or a method -->
@@ -67,10 +63,10 @@
               </td>
               <td>
                 <div class="action-buttons">
-                  <button class="btn-action" title="Edit Profile" (click)="openEditEmployeeModal(member)">
+                  <button class="btn-action" title="Edit Profile" (click)="openEditEmployeeModal(member); $event.stopPropagation()">
                     <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
                   </button>
-                  <button class="btn-action btn-action-danger" title="Remove" (click)="openDeleteEmployeeModal(member)">
+                  <button class="btn-action btn-action-danger" title="Remove" (click)="openDeleteEmployeeModal(member); $event.stopPropagation()">
                     <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
                   </button>
                 </div>

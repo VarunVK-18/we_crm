@@ -6,6 +6,7 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { NotificationService, Notification } from '../../services/notification.service';
 import { Api } from '../../../api';
+import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-client-topbar',
@@ -32,7 +33,8 @@ export class ClientTopbarComponent implements OnInit {
     private router: Router, 
     private eRef: ElementRef, 
     public notifService: NotificationService,
-    public api: Api
+    public api: Api,
+    private confirmDialog: ConfirmDialogService
   ) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -104,6 +106,33 @@ export class ClientTopbarComponent implements OnInit {
     this.isDropdownOpen.set(false);
     if (this.isNotificationOpen()) {
       this.notifService.markAllAsRead();
+    }
+  }
+
+  async confirmClearAll() {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Clear All Notifications',
+      message: 'Are you sure you want to clear all your notifications?',
+      confirmText: 'Clear All',
+      isDestructive: true
+    });
+    if (confirmed) {
+      this.notifService.clearAll();
+    }
+  }
+
+  async confirmClearNotification(id: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Clear Notification',
+      message: 'Are you sure you want to dismiss this notification?',
+      confirmText: 'Dismiss',
+      isDestructive: true
+    });
+    if (confirmed) {
+      this.notifService.clearNotification(id);
     }
   }
 

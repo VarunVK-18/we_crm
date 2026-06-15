@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, ViewChild, ElementRef, AfterViewInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, signal, computed, ViewChild, ElementRef, AfterViewInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Api } from '../../api';
 import Chart from 'chart.js/auto';
@@ -234,6 +234,52 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
   selectedPeriod = signal<string>('last6Months');
 
+  financialMonth = signal<string>(new Date().toISOString().slice(0, 7));
+
+  financialTotals = computed(() => {
+    const monthStr = this.financialMonth();
+    const ordersList = this.orders() || [];
+    let totalRev = 0;
+    let amtRecv = 0;
+
+    const revenueDetails: any[] = [];
+    const receivedDetails: any[] = [];
+    const pendingDetails: any[] = [];
+
+    ordersList.forEach(o => {
+      if (!o.createdAt) return;
+      const oMonthStr = new Date(o.createdAt).toISOString().slice(0, 7);
+      if (oMonthStr === monthStr) {
+        const rev = o.dealClosedAmount || 0;
+        const recv = o.advanceAmountPaid || 0;
+        const pend = rev - recv;
+
+        totalRev += rev;
+        amtRecv += recv;
+
+        const clientName = o.entityName || o.companyName || 'Unknown Client';
+        const serviceName = o.serviceType || 'Service';
+
+        if (rev > 0) revenueDetails.push({ clientName, serviceName, amount: rev });
+        if (recv > 0) receivedDetails.push({ clientName, serviceName, amount: recv });
+        if (pend > 0) pendingDetails.push({ clientName, serviceName, amount: pend });
+      }
+    });
+
+    return {
+      totalRevenue: totalRev,
+      amountReceived: amtRecv,
+      pendingAmount: totalRev - amtRecv,
+      revenueDetails,
+      receivedDetails,
+      pendingDetails
+    };
+  });
+
+  onFinancialMonthChange(event: any) {
+    this.financialMonth.set(event.target.value);
+  }
+
   getPeriodLabel(): string {
     const map: Record<string, string> = {
       thisMonth: 'This Month',
@@ -431,6 +477,26 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
     if (!ctxGrowth || !ctxRevenue || !ctxActivity) return;
 
+    const wGrowth = ctxGrowth.canvas.width || 600;
+    const gradientLine1 = ctxGrowth.createLinearGradient(0, 0, wGrowth, 0);
+    gradientLine1.addColorStop(0, '#1e1b4b');
+    gradientLine1.addColorStop(1, '#1e1b4b');
+
+    const hRevenue = ctxRevenue.canvas.height || 300;
+    const gradientBar = ctxRevenue.createLinearGradient(0, 0, 0, hRevenue);
+    gradientBar.addColorStop(0, '#312e81');
+    gradientBar.addColorStop(1, '#1e1b4b');
+
+    const wActivity = ctxActivity.canvas.width || 600;
+    const hActivity = ctxActivity.canvas.height || 300;
+    const gradientLine3 = ctxActivity.createLinearGradient(0, 0, wActivity, 0);
+    gradientLine3.addColorStop(0, '#1e1b4b');
+    gradientLine3.addColorStop(1, '#1e1b4b');
+
+    const gradientFill = ctxActivity.createLinearGradient(0, 0, 0, hActivity);
+    gradientFill.addColorStop(0, 'rgba(49, 46, 129, 0.3)');
+    gradientFill.addColorStop(1, 'rgba(30, 27, 75, 0.0)');
+
     const chartConfigDefaults = {
       responsive: true,
       maintainAspectRatio: false,
@@ -446,7 +512,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       data: {
         labels: chartLabels,
         datasets: [
-          { label: 'Total Tasks', data: line1Data, borderColor: '#006a61', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+          { label: 'Total Tasks', data: line1Data, borderColor: gradientLine1, borderWidth: 2, tension: 0.4, pointRadius: 0 },
           { label: 'Completed', data: line2Data, borderColor: '#000000', borderWidth: 2, tension: 0.4, pointRadius: 0, borderDash: [5, 5] }
         ]
       },
@@ -459,7 +525,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         labels: chartLabels,
         datasets: [{ 
           data: revenueDataPoints,
-          backgroundColor: '#006a61',
+          backgroundColor: gradientBar,
           borderRadius: 4
         }]
       },
@@ -471,7 +537,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       data: {
         labels: chartLabels,
         datasets: [
-          { label: 'Clients Onboarded', data: clientActivityPoints, fill: true, backgroundColor: 'rgba(0,106,97,0.05)', borderColor: '#006a61', borderWidth: 2, tension: 0.4, pointRadius: 0 }
+          { label: 'Clients Onboarded', data: clientActivityPoints, fill: true, backgroundColor: gradientFill, borderColor: gradientLine3, borderWidth: 2, tension: 0.4, pointRadius: 0 }
         ]
       },
       options: chartConfigDefaults

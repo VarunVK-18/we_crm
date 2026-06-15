@@ -21,6 +21,7 @@ import { RequestsComponent } from './requests/requests';
 import { ClientDashboard } from './client-dashboard/client-dashboard';
 import { ChecklistDetails } from './checklist-details/checklist-details';
 import { StaffCompliance } from './staff-compliance/staff-compliance';
+import { EmployeeProfile } from './employee-profile/employee-profile';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,7 +42,8 @@ import { StaffCompliance } from './staff-compliance/staff-compliance';
     RequestsComponent,
     ClientDashboard,
     ChecklistDetails,
-    StaffCompliance
+    StaffCompliance,
+    EmployeeProfile
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -50,9 +52,11 @@ export class Dashboard implements OnInit, OnDestroy {
   currentTab = signal<string>('dashboard');
   selectedClientId = signal<string | null>(null);
   selectedChecklistId = signal<string | null>(null);
+  selectedEmployeeObj = signal<any>(null);
   openChatOnLoad = signal<boolean>(false);
   user = signal<any>(null);
   teams = signal<any[]>([]);
+  navigationTrail = signal<{label: string, action: () => void}[]>([]);
 
   // Icon assets
   readonly Search01Icon = Search01Icon;
@@ -82,6 +86,8 @@ export class Dashboard implements OnInit, OnDestroy {
       this.user.set(parsedUser);
       this.fetchTeams();
       this.notifService.startPolling();
+      // Initialize breadcrumb for the first load
+      this.navigationTrail.set([{ label: this.getTabLabel('dashboard'), action: () => this.handleTabChanged('dashboard') }]);
     } catch (e) {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
@@ -178,33 +184,70 @@ export class Dashboard implements OnInit, OnDestroy {
     return nameStr.charAt(0).toUpperCase();
   }
 
-  handleTabChanged(tabId: string) {
-    if (tabId !== 'client-dashboard') {
-      this.selectedClientId.set(null);
-    }
-    this.currentTab.set(tabId);
+  handleTabChanged(tab: string) {
+    this.currentTab.set(tab);
+    if (tab === 'clients') this.selectedClientId.set(null);
+    if (tab === 'team') this.selectedEmployeeObj.set(null);
+    
+    // Reset breadcrumb trail for top-level navigation
+    this.navigationTrail.set([
+      { label: this.getTabLabel(tab), action: () => this.handleTabChanged(tab) }
+    ]);
   }
 
   viewClient(clientId: string) {
     this.selectedClientId.set(clientId);
     this.currentTab.set('client-dashboard');
+    this.navigationTrail.update(trail => [
+      ...trail,
+      { label: 'Client Profile Dashboard', action: () => this.viewClient(clientId) }
+    ]);
+  }
+
+  viewEmployee(employee: any) {
+    this.selectedEmployeeObj.set(employee);
+    this.currentTab.set('employee-profile');
+    this.navigationTrail.update(trail => [
+      ...trail,
+      { label: 'Employee Profile', action: () => this.viewEmployee(employee) }
+    ]);
   }
 
   viewChecklist(checklistId: string, openChat: boolean = false) {
     this.selectedChecklistId.set(checklistId);
     this.openChatOnLoad.set(openChat);
     this.currentTab.set('checklist-details');
+    this.navigationTrail.update(trail => [
+      ...trail,
+      { label: 'Checklist Details', action: () => this.viewChecklist(checklistId, openChat) }
+    ]);
   }
 
-  getTabLabel(): string {
-    switch (this.currentTab()) {
+  navigateToBreadcrumb(index: number) {
+    const trail = this.navigationTrail();
+    if (index >= 0 && index < trail.length) {
+      const target = trail[index];
+      // Slice the trail up to the clicked item (exclusive), 
+      // because executing the target action will push itself back onto the trail.
+      if (index === 0 && target.label === this.getTabLabel(this.currentTab())) {
+        // If clicking the top-level tab and it's already active, do nothing
+        if (trail.length === 1) return; 
+      }
+      this.navigationTrail.set(trail.slice(0, index));
+      target.action();
+    }
+  }
+
+  getTabLabel(tab: string = this.currentTab()): string {
+    switch (tab) {
       case 'dashboard': return 'Dashboard';
       case 'clients': return 'Clients Directory';
       case 'client-dashboard': return 'Client Profile Dashboard';
       case 'team': return 'Employees & Team';
+      case 'employee-profile': return 'Employee Profile';
       case 'tasks': return 'Custom Task';
       case 'checklists': return 'Compliance';
-      case 'completed-checklists': return 'History';
+      case 'completed-checklists': return 'Completed Service';
       case 'checklist-details': return 'Checklist Details';
       case 'requests': return 'New Requests';
       case 'logs': return 'System Audit Logs';

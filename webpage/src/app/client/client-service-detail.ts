@@ -63,7 +63,9 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (!uid) return;
     this.api.get<any>(`users/profile/${uid}`).subscribe({
       next: (res) => {
-        if (res.user && res.user.assigned_to) {
+        if (res.user && res.user.client_manager) {
+          this.clientManager.set(res.user.client_manager);
+        } else if (res.user && res.user.assigned_to) {
           this.clientManager.set(res.user.assigned_to);
         }
       },

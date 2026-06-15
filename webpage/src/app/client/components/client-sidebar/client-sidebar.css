@@ -21,7 +21,6 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border-bottom: 1px solid #e2e8f0;
 }
 
 .logo-box {

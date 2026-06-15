@@ -35,11 +35,26 @@
   background-color: var(--palette-dark);
   background-image: radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 40%),
                     radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-blue) 10%, transparent) 0%, transparent 60%);
-  border-radius: 2rem;
+  border-radius: 1.25rem;
   padding: 48px;
   color: var(--palette-light);
   overflow: hidden;
   box-shadow: 0 12px 35px color-mix(in srgb, var(--palette-dark) 20%, transparent);
+}
+
+.ho-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .ho-hero-content {
@@ -176,7 +191,7 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .ho-stat-card::after {
@@ -188,6 +203,8 @@
   height: 100%;
   background-color: transparent;
   transition: background-color 0.2s ease;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
 }
 
 
@@ -340,16 +357,16 @@
 }
 
 .ho-btn-dark {
-  background-color: var(--primary-color);
+  background-color: #333333;
   border: none;
   color: #ffffff;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -404,8 +421,7 @@
 .ho-chart-badge {
   font-size: 11px;
   font-weight: 700;
-  color: var(--color-emerald);
-  background-color: var(--color-emerald-bg);
+  color: #1e1b4b;
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -866,3 +882,200 @@
   color: var(--secondary-color);
 }
 
+
+/* Metric Cards from Client Dashboard */
+.client-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.metric-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4c1d95;
+}
+
+.metric-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.metric-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  margin-bottom: 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.number {
+  font-size: 26px;
+  font-weight: 600;
+  color: #0f172a;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.metric-value .trend {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.metric-value .trend.positive {
+  color: #6d28d9;
+}
+
+.metric-value .trend.negative {
+  color: #ef4444;
+}
+
+@media (max-width: 1200px) {
+  .client-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .financial-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .client-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .financial-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.financial-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Tooltip Styles for Stat Cards */
+.ho-stat-title-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.ho-info-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.ho-info-icon {
+  color: var(--text-secondary, #94a3b8);
+  transition: color 0.2s ease;
+}
+
+.ho-info-wrapper:hover .ho-info-icon {
+  color: var(--color-purple, #7c3aed);
+}
+
+.ho-tooltip-box {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--border-color, #e2e8f0);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  width: max-content;
+  max-width: none;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.ho-info-wrapper:hover .ho-tooltip-box {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.ho-tooltip-box.right-aligned {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.ho-tt-title {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--text-secondary, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ho-tt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ho-tt-table th, .ho-tt-table td {
+  padding: 6px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color, #f1f5f9);
+  color: var(--text-primary, #1e293b);
+  white-space: nowrap;
+}
+
+.ho-tt-table th {
+  color: var(--text-secondary, #64748b);
+  font-weight: 600;
+  font-size: 12px;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+}
+
+.ho-tt-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ho-tt-empty {
+  font-size: 13px;
+  color: var(--text-secondary, #94a3b8);
+  font-style: italic;
+  text-align: center;
+  padding: 8px;
+}

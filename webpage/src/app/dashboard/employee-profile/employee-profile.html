@@ -1,0 +1,88 @@
+<div class="ep-container fade-in">
+
+  <div class="ep-hero-card">
+    <div class="ep-hero-avatar">
+      {{ getInitials(employee().name || employee().owner_name) }}
+    </div>
+    <div class="ep-hero-info">
+      <h2 class="ep-name">{{ employee().name || employee().owner_name }}</h2>
+      <p class="ep-role">{{ getRoleLabel(employee().role) }}</p>
+      <div class="ep-meta">
+        <span class="ep-meta-item">
+          <span class="material-symbols-outlined" style="font-size: 16px;">mail</span>
+          {{ employee().email }}
+        </span>
+        @if (employee().phone) {
+          <span class="ep-meta-item">
+            <span class="material-symbols-outlined" style="font-size: 16px;">call</span>
+            {{ employee().phone }}
+          </span>
+        }
+        <span class="ep-meta-item">
+          <span class="material-symbols-outlined" style="font-size: 16px;">verified</span>
+          Active
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ep-content">
+    <div class="ep-section-header">
+      <h3>Assigned Clients</h3>
+      <span class="ep-badge">{{ assignedClients().length }}</span>
+    </div>
+
+    @if (isLoading()) {
+    <div class="loading-state">
+      <div class="we-loader"></div>
+      <p>Loading clients...</p>
+    </div>
+    } @else {
+    <div class="table-container">
+      <table class="directory-table">
+        <thead>
+          <tr>
+            <th>Client Name</th>
+            <th>Company</th>
+            <th>Email</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (client of assignedClients(); track client._id) {
+          <tr class="table-row-hover" (click)="viewClient.emit(client._id)" style="cursor: pointer;">
+            <td>
+              <div class="client-cell">
+                <div class="client-avatar">
+                  {{ getInitials(client.owner_name || client.name) }}
+                </div>
+                <span style="font-weight: 500; color: var(--text-primary);">{{ client.owner_name || client.name
+                  }}</span>
+              </div>
+            </td>
+            <td style="color: var(--text-secondary);">{{ client.company_name || 'N/A' }}</td>
+            <td style="color: var(--text-secondary);">{{ client.email }}</td>
+            <td>
+              <div class="status-active">
+                <div class="status-dot"></div>
+                <span class="status-text">Active</span>
+              </div>
+            </td>
+          </tr>
+          }
+          @if (assignedClients().length === 0) {
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined" style="font-size: 32px;">person_off</span>
+                <p style="margin: 0;">No clients assigned to this employee.</p>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    }
+  </div>
+</div>

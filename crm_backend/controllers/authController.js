@@ -344,7 +344,7 @@ const getTeamGroups = async (req, res) => {
       filter.company_id = company_id;
     }
 
-    const users = await User.find(filter).select('owner_name email role company_id');
+    const users = await User.find(filter).select('owner_name email role phone company_id');
     
     // Group users by role
     const groups = users.reduce((acc, user) => {
@@ -359,6 +359,7 @@ const getTeamGroups = async (req, res) => {
         id: user._id,
         name: user.owner_name,
         email: user.email,
+        phone: user.phone,
         role: user.role
       });
       return acc;

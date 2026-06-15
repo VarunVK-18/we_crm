@@ -14,6 +14,7 @@ export class EmployeesTeam implements OnInit {
   user = signal<any>(null);
   teams = input<any[]>([]);
   refreshTeams = output<void>();
+  viewEmployee = output<any>();
 
   // Directory State
   currentDirectoryTab = signal<string>('all');
@@ -125,6 +126,10 @@ export class EmployeesTeam implements OnInit {
 
   fetchTeams() {
     this.refreshTeams.emit();
+  }
+
+  viewEmployeeProfile(member: any) {
+    this.viewEmployee.emit(member);
   }
 
   openCreateEmployeeModal() {

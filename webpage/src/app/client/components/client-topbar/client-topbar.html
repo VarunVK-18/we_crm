@@ -17,7 +17,7 @@
         <div class="notification-dropdown-menu">
           <div class="notif-header">
             <h3>Recent Updates</h3>
-            <button class="clear-all-btn" (click)="notifService.clearAll()">Clear all</button>
+            <button class="clear-all-btn" (click)="confirmClearAll()">Clear all</button>
           </div>
           
           <div class="notif-list">
@@ -47,7 +47,7 @@
                     </div>
                     <p class="notif-msg">{{ notif.message }}</p>
                   </div>
-                  <button class="notif-dismiss" (click)="notifService.clearNotification(notif._id || notif.id!)" title="Dismiss">
+                  <button class="notif-dismiss" (click)="confirmClearNotification(notif._id || notif.id!, $event)" title="Dismiss">
                     <span class="material-symbols-outlined">close</span>
                   </button>
                 </div>
