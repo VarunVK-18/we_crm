@@ -596,6 +596,7 @@ class _ServiceRequestSummarySheetState
                   children: [
                     if (_currentPage == 0) ...[
                       _buildServiceHeader(),
+                      const SizedBox(height: 32),
                       Text(
                         'Service Request Details',
                         style: GoogleFonts.outfit(
@@ -1080,9 +1081,8 @@ class _ServiceRequestSummarySheetState
       _EditableField(
           label: 'Business Activities',
           controller: _businessActivityController,
-          icon: LucideIcons.briefcase,
           hint: 'Describe the main business activities',
-          maxLines: 4,
+          maxLines: 3,
           isRequired: true),
       const SizedBox(height: 24),
     ];
@@ -1603,7 +1603,7 @@ class _ServiceRequestSummarySheetState
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1611,14 +1611,14 @@ class _ServiceRequestSummarySheetState
             child: Text(title,
                 style: GoogleFonts.outfit(
                     fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.deepTeal.withValues(alpha: 0.6))),
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.deepTeal.withValues(alpha: 0.8))),
           ),
           const Text(' *',
               style: TextStyle(
                   color: Colors.red,
                   fontSize: 13,
-                  fontWeight: FontWeight.w800)),
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -1811,27 +1811,27 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 80,
+            width: 70,
             child: Text(
               label,
-              style: TextStyle(
-                color: Colors.grey[500],
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+              style: GoogleFonts.outfit(
+                color: AppTheme.deepTeal.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              style: GoogleFonts.outfit(
                 color: AppTheme.deepTeal,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 fontSize: 14,
               ),
             ),
@@ -1862,7 +1862,7 @@ class _EditableField extends StatelessWidget {
   const _EditableField({
     required this.label,
     required this.controller,
-    required this.icon,
+    this.icon,
     required this.hint,
     this.keyboardType = TextInputType.text,
     this.maxLength,
@@ -1880,7 +1880,7 @@ class _EditableField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1890,10 +1890,8 @@ class _EditableField extends StatelessWidget {
                 label,
                 style: GoogleFonts.outfit(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  color: isPhoneField
-                      ? AppTheme.corporateBlue
-                      : AppTheme.deepTeal.withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.deepTeal.withValues(alpha: 0.8),
                   letterSpacing: 0.5,
                 ),
               ),
@@ -1902,7 +1900,7 @@ class _EditableField extends StatelessWidget {
                     style: TextStyle(
                         color: Colors.red,
                         fontSize: 13,
-                        fontWeight: FontWeight.w800)),
+                        fontWeight: FontWeight.w700)),
             ],
           ),
           const SizedBox(height: 10),
@@ -1967,18 +1965,30 @@ class _EditableField extends StatelessWidget {
                   fontSize: 14,
                   letterSpacing: 0,
                 ),
-                prefixIcon: icon is IconData
-                    ? Icon(icon,
-                        size: icon == HugeIcons.strokeRoundedUserIdVerification
-                            ? 16
-                            : 18)
-                    : Transform.scale(
-                        scale: 0.65,
-                        child: HugeIcon(
-                            icon: icon,
-                            color: Colors.grey[600] ?? Colors.grey,
-                            size: 18.0),
-                      ),
+                prefixIcon: icon == null
+                    ? null
+                    : (maxLines > 1
+                        ? Container(
+                            padding: const EdgeInsets.only(top: 18),
+                            alignment: Alignment.topCenter,
+                            width: 48,
+                            child: icon is IconData
+                                ? Icon(icon,
+                                    size: icon == HugeIcons.strokeRoundedUserIdVerification ? 16 : 18)
+                                : Transform.scale(
+                                    scale: 0.65,
+                                    child: HugeIcon(
+                                        icon: icon, color: Colors.grey[600] ?? Colors.grey, size: 18.0),
+                                  ),
+                          )
+                        : (icon is IconData
+                            ? Icon(icon,
+                                size: icon == HugeIcons.strokeRoundedUserIdVerification ? 16 : 18)
+                            : Transform.scale(
+                                scale: 0.65,
+                                child: HugeIcon(
+                                    icon: icon, color: Colors.grey[600] ?? Colors.grey, size: 18.0),
+                              ))),
                 suffixIcon: (label.contains('Full Name') ||
                         label.contains('Email Address') ||
                         label.contains('Verification Phone Number'))
@@ -1987,18 +1997,19 @@ class _EditableField extends StatelessWidget {
                     : null,
                 counterText: '',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.black.withOpacity(0.15)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: Colors.black.withOpacity(0.15)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Colors.black, width: 1.5),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+                contentPadding: EdgeInsets.symmetric(
+                    vertical: 16, horizontal: icon == null ? 16 : 0),
               ),
             ),
           ),

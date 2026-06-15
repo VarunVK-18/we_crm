@@ -2,6 +2,58 @@ const Checklist = require('../models/Checklist');
 const User = require('../models/User');
 const { logActivity } = require('../middleware/rbac');
 const Document = require('../models/Document');
+const pdfParse = require('pdf-parse');
+const complianceService = require('../services/complianceService');
+
+function parseWrittenDate(dateStr) {
+  try {
+    const monthMatch = dateStr.match(/(January|February|March|April|May|June|July|August|September|October|November|December)/i);
+    if (!monthMatch) return null;
+    const month = monthMatch[1];
+    
+    let year = new Date().getFullYear();
+    const yrStr = dateStr.toLowerCase().replace(/\s+/g, ' ');
+    if (yrStr.includes('two thousand eighteen')) year = 2018;
+    else if (yrStr.includes('two thousand nineteen')) year = 2019;
+    else if (yrStr.includes('two thousand twenty one')) year = 2021;
+    else if (yrStr.includes('two thousand twenty two')) year = 2022;
+    else if (yrStr.includes('two thousand twenty three')) year = 2023;
+    else if (yrStr.includes('two thousand twenty four')) year = 2024;
+    else if (yrStr.includes('two thousand twenty five')) year = 2025;
+    else if (yrStr.includes('two thousand twenty')) year = 2020;
+    else {
+      const yrMatch = dateStr.match(/\b(20\d{2})\b/);
+      if (yrMatch) year = parseInt(yrMatch[1]);
+    }
+
+    let day = 1;
+    const digitDayMatch = yrStr.match(/\b(\d{1,2})(?:st|nd|rd|th)?\b/);
+    if (digitDayMatch) {
+      day = parseInt(digitDayMatch[1]);
+    } else {
+      const days = {
+        thirtieth: 30, 'thirty first': 31, 'thirty-first': 31,
+        'twenty ninth': 29, 'twenty-ninth': 29, 'twenty eighth': 28, 'twenty-eighth': 28,
+        'twenty seventh': 27, 'twenty-seventh': 27, 'twenty sixth': 26, 'twenty-sixth': 26,
+        'twenty fifth': 25, 'twenty-fifth': 25, 'twenty fourth': 24, 'twenty-fourth': 24,
+        'twenty third': 23, 'twenty-third': 23, 'twenty second': 22, 'twenty-second': 22,
+        'twenty first': 21, 'twenty-first': 21, twentieth: 20, nineteenth: 19,
+        eighteenth: 18, seventeenth: 17, sixteenth: 16, fifteenth: 15, fourteenth: 14,
+        thirteenth: 13, twelfth: 12, eleventh: 11, tenth: 10, ninth: 9, eighth: 8,
+        seventh: 7, sixth: 6, fifth: 5, fourth: 4, third: 3, second: 2, first: 1
+      };
+      for (const [key, val] of Object.entries(days)) {
+        if (yrStr.includes(key)) {
+          day = val;
+          break;
+        }
+      }
+    }
+    return new Date(Date.UTC(year, new Date(`${month} 1, 2000`).getMonth(), day));
+  } catch (e) {
+    return null;
+  }
+}
 
 // @desc    Create a new service checklist for a client
 // @route   POST /api/checklists
@@ -497,18 +549,12 @@ const uploadRequestedDocuments = async (req, res) => {
   }
 };
 
-// @desc    Upload final documents with expiry dates
+// @desc    Upload final documents
 // @route   POST /api/checklists/:id/final-documents
 // @access  Private (Admin, Client Manager, Staff)
 const uploadFinalDocuments = async (req, res) => {
   try {
     const { id } = req.params;
-    let { expiry_dates } = req.body;
-
-    // Parse expiry_dates if it's sent as a JSON string
-    if (typeof expiry_dates === 'string') {
-      expiry_dates = JSON.parse(expiry_dates);
-    }
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -518,7 +564,6 @@ const uploadFinalDocuments = async (req, res) => {
     if (req.files && req.files.length > 0) {
       for (let i = 0; i < req.files.length; i++) {
         const file = req.files[i];
-        const expiryDate = expiry_dates && expiry_dates[i] ? new Date(expiry_dates[i]) : new Date();
 
         // Save to Document collection
         const newDoc = await Document.create({
@@ -531,24 +576,116 @@ const uploadFinalDocuments = async (req, res) => {
         checklist.final_documents.push({
           name: file.originalname,
           document_id: newDoc._id,
-          expiry_date: expiryDate,
           uploadedAt: new Date()
         });
-        // Trigger compliance generation if COI uploaded for Private Limited
-        if (checklist.service_name.includes('Private Limited') && file.originalname.includes('Certificate of Incorporation (COI)')) {
+
+        // OCR extraction logic for Incorporation certificates
+        if (file.mimetype === 'application/pdf' && (file.originalname.toLowerCase().includes('incorporation') || file.originalname.toLowerCase().includes('coi'))) {
           try {
-            const incDate = await complianceService.extractDateFromCOI(file.buffer);
-            const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
-            await complianceService.generateCompliancesForPrivateLimited(
-              checklist.client_id,
-              checklist.company_id,
-              checklist._id,
-              incDate,
-              entityName
-            );
-            console.log(`Generated compliances for ${entityName} with incDate ${incDate}`);
+            const pdfData = await pdfParse(file.buffer);
+            const text = pdfData.text.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+
+            let extractedCompany = '';
+            let extractedCin = '';
+            let extractedTan = '';
+            let extractedPan = '';
+            let extractedDate = null;
+
+            const nameMatch = text.match(/I hereby certify that\s+([^]+?)\s+is incorporated/i);
+            if (nameMatch) extractedCompany = nameMatch[1].trim();
+
+            const cinMatch = text.match(/([L|U]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6})/);
+            if (cinMatch) extractedCin = cinMatch[1].trim();
+
+            const tanMatch = text.match(/\b([A-Z]{4}\d{5}[A-Z])\b/);
+            if (tanMatch) extractedTan = tanMatch[1].trim();
+
+            const panRegex = /\b([A-Z]{5}\d{4}[A-Z])\b/g;
+            let match;
+            while ((match = panRegex.exec(text)) !== null) {
+              if (!extractedCin.includes(match[1]) && match[1] !== extractedTan) {
+                extractedPan = match[1];
+                break;
+              }
+            }
+
+            let dateMatch = text.match(/this\s+(.+?)\s+under the Companies Act/i);
+            if (!dateMatch) {
+              dateMatch = text.match(/this\s+([^.]+?(?:two thousand[a-z\s]*|20\d{2}))/i);
+            }
+            if (!dateMatch) {
+              dateMatch = text.match(/(\d{1,2}(?:st|nd|rd|th)?\s+(?:day of\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*,?\s*(?:two thousand[a-z\s]*|20\d{2}))/i);
+            }
+            if (dateMatch) {
+              extractedDate = parseWrittenDate(dateMatch[1].trim());
+            }
+
+            // Update client profile and specific client entity
+            if (extractedCompany || extractedCin || extractedTan) {
+              const client = await User.findById(checklist.client_id);
+              if (client) {
+                if (extractedCompany) client.company_name = extractedCompany;
+                if (extractedCin) client.cin = extractedCin;
+                if (extractedTan) client.tan = extractedTan;
+                if (extractedDate) client.incorporation_date = extractedDate;
+
+                let foundEntity = false;
+
+                if (extractedCompany) {
+                  const entityMatch = client.client_entities.find(e => 
+                    e.entityName && (
+                      extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) || 
+                      e.entityName.toLowerCase().includes(extractedCompany.toLowerCase())
+                    )
+                  );
+                  if (entityMatch) {
+                    if (extractedCin) entityMatch.cin = extractedCin;
+                    if (extractedTan) entityMatch.tan = extractedTan;
+                    if (extractedPan) entityMatch.pan = extractedPan;
+                    if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                    foundEntity = true;
+                  }
+                }
+
+                if (!foundEntity) {
+                  if (client.client_entities.length === 1 && !client.client_entities[0].cin) {
+                     const entityMatch = client.client_entities[0];
+                     if (extractedCin) entityMatch.cin = extractedCin;
+                     if (extractedTan) entityMatch.tan = extractedTan;
+                     if (extractedPan) entityMatch.pan = extractedPan;
+                     if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                     foundEntity = true;
+                  } else if (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name) {
+                    client.client_entities.push({
+                      entityName: extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual',
+                      cin: extractedCin || '',
+                      tan: extractedTan || '',
+                      pan: extractedPan || '',
+                      incorporationDate: extractedDate
+                    });
+                  }
+                }
+
+                await client.save();
+                console.log(`[OCR] Updated client entities for checklist ${id} (Company: ${extractedCompany})`);
+              }
+            }
+            
+            // Trigger compliance generation for Private Limited
+            if (checklist.service_name.includes('Private Limited') && extractedDate) {
+              const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
+              await complianceService.generateCompliancesForPrivateLimited(
+                checklist.client_id,
+                checklist.company_id,
+                checklist._id,
+                extractedDate,
+                entityName
+              );
+              console.log(`Generated compliances for ${entityName} with incDate ${extractedDate}`);
+            }
+
           } catch (err) {
-            console.error('Error generating compliances', err);
+            console.error('OCR or Compliance Error:', err);
           }
         }
       }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -48,13 +49,16 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   List<NicCode> _filteredNicCodes = [];
   Map<NicCode, List<NicCode>> _groupedNicCodes = {};
   bool _isLoadingNic = false;
+  Timer? _debounce;
 
   @override
   void initState() {
     super.initState();
     _initializeDefaults();
     if (widget.toolName == 'NIC Finder') {
-      _loadNicData();
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) _loadNicData();
+      });
     }
   }
 
@@ -140,15 +144,21 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   void _groupNicCodes() {
     _groupedNicCodes.clear();
     Set<NicCode> matchedClasses = {};
+    
+    // Use a hash map for O(1) lookups instead of O(N) firstWhere inside a loop!
+    Map<String, NicCode> classMap = {};
+    for (var item in _allNicCodes) {
+      if (item.type == 'Class') {
+        classMap[item.code] = item;
+      }
+    }
+
     for (var item in _filteredNicCodes) {
       if (item.type == 'Class') {
         matchedClasses.add(item);
       } else if (item.type == 'Sub-class') {
         String parentCode = item.code.length >= 4 ? item.code.substring(0, 4) : item.code;
-        var parentClass = _allNicCodes.firstWhere(
-            (n) => n.code == parentCode && n.type == 'Class', 
-            orElse: () => NicCode(code: parentCode, description: 'Class $parentCode', type: 'Class')
-        );
+        var parentClass = classMap[parentCode] ?? NicCode(code: parentCode, description: 'Unknown Class', type: 'Class');
         matchedClasses.add(parentClass);
       } else {
         matchedClasses.add(item);
@@ -168,17 +178,21 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   }
 
   void _searchNic(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _filteredNicCodes = _allNicCodes;
-      } else {
-        _filteredNicCodes = _allNicCodes
-            .where((item) =>
-                item.code.contains(query) ||
-                item.description.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      }
-      _groupNicCodes();
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() {
+        if (query.isEmpty) {
+          _filteredNicCodes = _allNicCodes;
+        } else {
+          _filteredNicCodes = _allNicCodes
+              .where((item) =>
+                  item.code.contains(query) ||
+                  item.description.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+        }
+        _groupNicCodes();
+      });
     });
   }
 
@@ -206,24 +220,34 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      body: Center(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildHeaderWidget(),
-            const SizedBox(height: 32),
+            if (widget.toolName != 'NIC Finder' && 
+                widget.toolName != 'TDS Interest' && 
+                !widget.toolName.contains('GST')) ...[
+              _buildHeaderWidget(),
+              const SizedBox(height: 32),
+            ],
             _buildToolContent(),
             const SizedBox(height: 40),
             if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
           ],
         ),
       ),
+      ),
     );
   }
 
   Widget _buildHeaderWidget() {
+    if (widget.toolName == 'NIC Finder') {
+      return const SizedBox.shrink();
+    }
+    
     return Center(
       child: Column(
         children: [
@@ -334,7 +358,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: TextField(
@@ -384,12 +408,12 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
               onDateSelected(date);
             }
           },
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(8),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[200]!),
             ),
             child: Row(
@@ -432,7 +456,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
             boxShadow: [
               BoxShadow(
@@ -493,8 +517,8 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         Container(
           decoration: BoxDecoration(
             color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey[200]!),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
           ),
           child: TextField(
             controller: _searchController,
@@ -570,7 +594,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                               Text(
                                 'CLASS',
                                 style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   fontSize: 10,
                                   color: AppTheme.corporateBlue.withOpacity(0.8),
                                   letterSpacing: 1.2,
@@ -580,8 +604,8 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                               Text(
                                 parentClass.description,
                                 style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
                                   color: AppTheme.deepTeal,
                                   height: 1.3,
                                 ),
@@ -643,7 +667,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                                           child: Text(
                                             item.description,
                                             style: GoogleFonts.outfit(
-                                              fontWeight: FontWeight.w500,
+                                              fontWeight: FontWeight.w400,
                                               fontSize: 14,
                                               color: Colors.grey[800],
                                               height: 1.4,
@@ -678,7 +702,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: AppTheme.deepTeal.withOpacity(0.3),
@@ -745,7 +769,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
         boxShadow: [
           BoxShadow(
@@ -829,7 +853,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: DropdownButtonHideUnderline(
@@ -846,7 +870,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           dropdownStyleData: DropdownStyleData(
             elevation: 2,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(8),
               color: Colors.white,
             ),
           ),
@@ -903,6 +927,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _amountController.dispose();
     _rateController.dispose();
     _durationController.dispose();

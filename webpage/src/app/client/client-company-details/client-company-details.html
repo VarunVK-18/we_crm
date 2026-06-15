@@ -1,0 +1,203 @@
+<div class="page-container">
+  <!-- Top Header Area -->
+  <div class="tickets-top-bar">
+    <div class="tickets-header-left">
+      <h1 class="page-title">Company Details</h1>
+      <p class="page-subtitle">Manage your incorporated entities, official documents, and tracked applications.</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  @if (isLoading()) {
+    <div class="state-container">
+      <div class="spinner"></div>
+      <p>Loading company records...</p>
+    </div>
+  } @else if (!user()?.client_entities || user().client_entities.length === 0) {
+    <div class="state-container">
+      <p>No Entities Found</p>
+      <span class="page-subtitle" style="text-align: center;">Your filing staff hasn't uploaded any entity details yet.</span>
+    </div>
+  } @else {
+    <!-- Main Table Card -->
+    <div class="main-table-card">
+      <div class="table-card-header">
+        <div class="entity-selector-group" style="display: flex; align-items: center; gap: 16px; flex: 1; max-width: 500px;">
+          <label style="font-size: 13px; font-weight: 700; color: #334155; white-space: nowrap;">SELECT ENTITY:</label>
+          <div class="input-wrapper select-wrapper" style="width: 100%;">
+            <select class="form-control" [ngModel]="selectedEntityIndex()" (ngModelChange)="selectEntity($event)" style="font-weight: 600; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 4px; width: 100%; background-color: white; color: #0f172a; cursor: pointer;">
+              @for (ent of user().client_entities; track ent._id || $index; let i = $index) {
+                <option [value]="i">{{ ent.entityName || 'Unnamed Entity' }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="total-count">
+          @if (user().client_entities[selectedEntityIndex()]?.incorporationDate) {
+            <strong>INCORPORATED: {{ formatDate(user().client_entities[selectedEntityIndex()].incorporationDate) }}</strong>
+          }
+        </div>
+      </div>
+
+      <div class="table-container" *ngIf="user().client_entities[selectedEntityIndex()] as entity">
+        
+        <!-- Identifiers Table -->
+        <table class="tickets-table">
+          <thead>
+            <tr>
+              <th colspan="3">REGISTRATION IDENTIFIERS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (!entity.cin && !entity.pan && !entity.tan) {
+              <tr>
+                <td colspan="3" class="empty-state">No identifiers available</td>
+              </tr>
+            }
+            @if (entity.cin) {
+              <tr>
+                <td style="width: 200px; color: #475569;">CIN</td>
+                <td class="ticket-subject-cell"><strong>{{ entity.cin }}</strong></td>
+                <td style="text-align: right;">
+                  <button class="text-btn" (click)="copyToClipboard(entity.cin, 'CIN')">Copy</button>
+                </td>
+              </tr>
+            }
+            @if (entity.pan) {
+              <tr>
+                <td style="width: 200px; color: #475569;">PAN</td>
+                <td class="ticket-subject-cell"><strong>{{ entity.pan }}</strong></td>
+                <td style="text-align: right;">
+                  <button class="text-btn" (click)="copyToClipboard(entity.pan, 'PAN')">Copy</button>
+                </td>
+              </tr>
+            }
+            @if (entity.tan) {
+              <tr>
+                <td style="width: 200px; color: #475569;">TAN</td>
+                <td class="ticket-subject-cell"><strong>{{ entity.tan }}</strong></td>
+                <td style="text-align: right;">
+                  <button class="text-btn" (click)="copyToClipboard(entity.tan, 'TAN')">Copy</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Documents Table -->
+        @if (entity.coi || entity.dsc) {
+          <table class="tickets-table" style="border-top: 1px solid #e2e8f0;">
+            <thead>
+              <tr>
+                <th colspan="3">OFFICIAL DOCUMENTS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (entity.coi) {
+                <tr>
+                  <td style="width: 200px; color: #475569;">COI</td>
+                  <td class="ticket-subject-cell"><strong>{{ entity.coi }}</strong></td>
+                  <td style="text-align: right;"></td>
+                </tr>
+              }
+              @if (entity.dsc) {
+                <tr>
+                  <td style="width: 200px; color: #475569;">DSC</td>
+                  <td class="ticket-subject-cell"><strong>{{ entity.dsc }}</strong></td>
+                  <td style="text-align: right;"></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+
+        <!-- Application Tracker Table -->
+        <table class="tickets-table" style="border-top: 1px solid #e2e8f0;">
+          <thead>
+            <tr>
+              <th colspan="5">APPLICATION TRACKER</th>
+            </tr>
+            <tr>
+              <th>APPLICATION TYPE</th>
+              <th>APPLICATION NO.</th>
+              <th>STATUS</th>
+              <th>CERTIFICATE</th>
+              <th style="text-align: right;">ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (!entity.trademarkApplicationNumber && !entity.trademarkStatus && 
+                 !entity.patentApplicationNumber && !entity.patentStatus && 
+                 !entity.copyrightRegistrationNumber) {
+              <tr>
+                <td colspan="5" class="empty-state" style="padding: 32px !important;">No applications currently tracked</td>
+              </tr>
+            }
+            @else {
+              @if (entity.trademarkApplicationNumber || entity.trademarkStatus) {
+                <tr>
+                  <td style="color: #475569;">Trademark</td>
+                  <td class="ticket-id-cell">{{ entity.trademarkApplicationNumber || '-' }}</td>
+                  <td>
+                    @if (entity.trademarkStatus) {
+                      <span class="status-badge pending-badge">{{ entity.trademarkStatus }}</span>
+                    } @else {
+                      -
+                    }
+                  </td>
+                  <td>{{ entity.trademarkCertificate || '-' }}</td>
+                  <td style="text-align: right;">
+                    @if (entity.trademarkApplicationNumber) {
+                      <button class="text-btn" (click)="copyToClipboard(entity.trademarkApplicationNumber, 'Trademark App No')">Copy ID</button>
+                    }
+                  </td>
+                </tr>
+              }
+              
+              @if (entity.patentApplicationNumber || entity.patentStatus) {
+                <tr>
+                  <td style="color: #475569;">Patent</td>
+                  <td class="ticket-id-cell">{{ entity.patentApplicationNumber || '-' }}</td>
+                  <td>
+                    @if (entity.patentStatus) {
+                      <span class="status-badge pending-badge">{{ entity.patentStatus }}</span>
+                    } @else {
+                      -
+                    }
+                  </td>
+                  <td>{{ entity.patentNumber || '-' }}</td>
+                  <td style="text-align: right;">
+                    @if (entity.patentApplicationNumber) {
+                      <button class="text-btn" (click)="copyToClipboard(entity.patentApplicationNumber, 'Patent App No')">Copy ID</button>
+                    }
+                  </td>
+                </tr>
+              }
+
+              @if (entity.copyrightRegistrationNumber || entity.copyrightCertificate) {
+                <tr>
+                  <td style="color: #475569;">Copyright</td>
+                  <td class="ticket-id-cell">{{ entity.copyrightRegistrationNumber || '-' }}</td>
+                  <td>-</td>
+                  <td>{{ entity.copyrightCertificate || '-' }}</td>
+                  <td style="text-align: right;">
+                    @if (entity.copyrightRegistrationNumber) {
+                      <button class="text-btn" (click)="copyToClipboard(entity.copyrightRegistrationNumber, 'Copyright Reg No')">Copy ID</button>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="table-card-footer">
+        <div class="footer-left">
+          Details for {{ user().client_entities[selectedEntityIndex()]?.entityName }}
+        </div>
+      </div>
+    </div>
+  }
+</div>

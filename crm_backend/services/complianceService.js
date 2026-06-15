@@ -112,11 +112,21 @@ exports.calculateStatus = (dueDate, completedAt) => {
 
 exports.updateStatuses = async (clientUid) => {
     const tasks = await ComplianceTask.find({ clientUid, status: { $ne: 'Completed' } });
+    const bulkOps = [];
+    
     for (let task of tasks) {
         const newStatus = exports.calculateStatus(task.dueDate, null);
         if (task.status !== newStatus) {
-            task.status = newStatus;
-            await task.save();
+            bulkOps.push({
+                updateOne: {
+                    filter: { _id: task._id },
+                    update: { $set: { status: newStatus } }
+                }
+            });
         }
+    }
+    
+    if (bulkOps.length > 0) {
+        await ComplianceTask.bulkWrite(bulkOps);
     }
 };

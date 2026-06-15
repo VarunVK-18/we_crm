@@ -155,7 +155,7 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Tools',
     },
     {
-      'label': 'Compliance Calendar',
+      'label': 'Compliance Cal',
       'icon': HugeIcons.strokeRoundedCalendar01,
       'category': 'Tools',
     },
@@ -460,7 +460,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     if (isTool) {
-      if (label == 'Compliance Calendar') {
+      if (label == 'Compliance Cal') {
         _openComplianceCalendar(context);
         return;
       }

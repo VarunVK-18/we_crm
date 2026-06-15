@@ -133,11 +133,20 @@
 
                   <!-- Grouped Service Details -->
                   <div style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-                    <h5 style="margin-bottom: 12px; color: var(--accent-primary);">Incorporation & Basics</h5>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                      <h5 style="margin: 0; color: var(--accent-primary);">Incorporation & Basics</h5>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="auto-fill-upload" style="background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; border: 1px dashed #38bdf8;">
+                          {{ isUploadingDoc() ? 'Extracting...' : 'Upload Certificate (Auto-Fill)' }}
+                        </label>
+                        <input id="auto-fill-upload" type="file" accept=".pdf" style="display: none;" (change)="onUploadCertificate($event)" [disabled]="isUploadingDoc()">
+                      </div>
+                    </div>
                     <div class="form-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
                       <div><label>CIN</label><input type="text" [(ngModel)]="currentEntity.cin" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
                       <div><label>PAN</label><input type="text" [(ngModel)]="currentEntity.pan" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
                       <div><label>TAN</label><input type="text" [(ngModel)]="currentEntity.tan" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
+                      <div><label>Date of Incorporation</label><input type="date" [(ngModel)]="currentEntity.incorporationDate" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
                       <div><label>COI</label><input type="text" [(ngModel)]="currentEntity.coi" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
                       <div><label>DSC</label><input type="text" [(ngModel)]="currentEntity.dsc" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
                       <div><label>ISO</label><input type="text" [(ngModel)]="currentEntity.iso" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px;"></div>
@@ -211,6 +220,7 @@
                         @if (ent.cin) { <div><small style="color: #64748b; display: block;">CIN</small><strong>{{ ent.cin }}</strong></div> }
                         @if (ent.pan) { <div><small style="color: #64748b; display: block;">PAN</small><strong>{{ ent.pan }}</strong></div> }
                         @if (ent.tan) { <div><small style="color: #64748b; display: block;">TAN</small><strong>{{ ent.tan }}</strong></div> }
+                        @if (ent.incorporationDate) { <div><small style="color: #64748b; display: block;">Inc. Date</small><strong>{{ ent.incorporationDate | date:'mediumDate' }}</strong></div> }
                         @if (ent.coi) { <div><small style="color: #64748b; display: block;">COI</small><strong>{{ ent.coi }}</strong></div> }
                         @if (ent.dsc) { <div><small style="color: #64748b; display: block;">DSC</small><strong>{{ ent.dsc }}</strong></div> }
                         @if (ent.gstin) { <div><small style="color: #64748b; display: block;">GSTIN</small><strong>{{ ent.gstin }}</strong></div> }

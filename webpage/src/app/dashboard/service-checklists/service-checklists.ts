@@ -308,7 +308,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   }
 
   // Final Documents Upload State
-  finalDocsToUpload: { file: File, expiryDate: string }[] = [];
+  finalDocsToUpload: { file: File }[] = [];
   isFinalDocUploading = false;
 
   onFinalFilesSelected(event: any) {
@@ -316,8 +316,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     if (files) {
       for (let i = 0; i < files.length; i++) {
         this.finalDocsToUpload.push({
-          file: files[i],
-          expiryDate: '' // to be filled by user
+          file: files[i]
         });
       }
     }
@@ -328,23 +327,12 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   }
 
   submitFinalDocuments(checklistId: string) {
-    // Validate that all selected files have an expiry date
-    for (const doc of this.finalDocsToUpload) {
-      if (!doc.expiryDate) {
-        alert('Please enter an expiry date for all selected documents.');
-        return;
-      }
-    }
-
     this.isFinalDocUploading = true;
     const formData = new FormData();
-    const expiryDates: string[] = [];
 
     for (const doc of this.finalDocsToUpload) {
       formData.append('final_files', doc.file);
-      expiryDates.push(doc.expiryDate);
     }
-    formData.append('expiry_dates', JSON.stringify(expiryDates));
 
     this.api.post(`checklists/${checklistId}/final-documents`, formData).subscribe({
       next: (res: any) => {

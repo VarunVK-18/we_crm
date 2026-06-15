@@ -253,7 +253,7 @@ class CustomerDashboard extends ConsumerWidget {
                   {'label': 'NIC Finder', 'icon': LucideIcons.binary},
                   {'label': 'TDS Interest', 'icon': LucideIcons.landmark},
                   {'label': 'GST Calc', 'icon': LucideIcons.calculator},
-                  {'label': 'Compliance Calendar', 'icon': LucideIcons.calendar},
+                  {'label': 'Compliance Cal', 'icon': LucideIcons.calendar},
                 ],
               ),
 
@@ -1215,55 +1215,16 @@ class _HorizontalServiceList extends ConsumerWidget {
   final List<Map<String, dynamic>> items;
   const _HorizontalServiceList({required this.items});
 
-  Future<void> _openComplianceCalendar(BuildContext context, WidgetRef ref) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+  void _openComplianceCalendar(BuildContext context, WidgetRef ref) {
+    final authState = ref.read(authStateProvider).value;
+    final uid = authState?.uid ?? '';
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfViewerScreen(uid: uid),
+      ),
     );
-
-    try {
-      final authState = ref.read(authStateProvider).value;
-      final uid = authState?.uid ?? '';
-      
-      final response = await http.get(
-        Uri.parse('$kBaseUrl/api/calendar/latest'),
-        headers: {'x-user-id': uid},
-      );
-
-      if (context.mounted) Navigator.pop(context);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final docId = data['calendar']?['documentId']?['_id'];
-        
-        if (docId != null) {
-          final docUrl = '$kBaseUrl/api/documents/$docId';
-          
-          if (context.mounted) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PdfViewerScreen(url: docUrl, uid: uid),
-              ),
-            );
-          }
-        } else {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Calendar PDF not found')));
-          }
-        }
-      } else {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Compliance Calendar for this year is not uploaded yet.')));
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-      }
-    }
   }
 
   @override
@@ -1304,7 +1265,7 @@ class _HorizontalServiceList extends ConsumerWidget {
                 return;
               }
 
-              if (label == 'Compliance Calendar') {
+              if (label == 'Compliance Cal') {
                 _openComplianceCalendar(context, ref);
                 return;
               }
@@ -1408,10 +1369,10 @@ class _LinePatternPainter extends CustomPainter {
 }
 
 class PdfViewerScreen extends StatefulWidget {
-  final String url;
+  final String? url;
   final String uid;
 
-  const PdfViewerScreen({super.key, required this.url, required this.uid});
+  const PdfViewerScreen({super.key, this.url, required this.uid});
 
   @override
   State<PdfViewerScreen> createState() => _PdfViewerScreenState();
@@ -1419,6 +1380,54 @@ class PdfViewerScreen extends StatefulWidget {
 
 class _PdfViewerScreenState extends State<PdfViewerScreen> {
   final PdfViewerController _pdfViewerController = PdfViewerController();
+  String? _loadedUrl;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.url != null) {
+      _loadedUrl = widget.url;
+    } else {
+      _fetchUrl();
+    }
+  }
+
+  Future<void> _fetchUrl() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/calendar/latest'),
+        headers: {'x-user-id': widget.uid},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final docId = data['calendar']?['documentId']?['_id'];
+        if (docId != null) {
+          setState(() {
+            _loadedUrl = '$kBaseUrl/api/documents/$docId';
+            _isLoading = false;
+          });
+        } else {
+          setState(() {
+            _error = 'Calendar PDF not found';
+            _isLoading = false;
+          });
+        }
+      } else {
+        setState(() {
+          _error = 'Compliance Calendar for this year is not uploaded yet.';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Error: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1434,7 +1443,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Compliance Calendar',
+          'Compliance Cal',
           style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
             fontWeight: FontWeight.w600,
@@ -1460,13 +1469,22 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: SfPdfViewer.network(
-        widget.url,
-        headers: {'x-user-id': widget.uid},
-        controller: _pdfViewerController,
-        canShowScrollHead: false,
-        canShowScrollStatus: false,
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.corporateBlue))
+          : _error != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(_error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
+                  ),
+                )
+              : SfPdfViewer.network(
+                  _loadedUrl!,
+                  headers: {'x-user-id': widget.uid},
+                  controller: _pdfViewerController,
+                  canShowScrollHead: false,
+                  canShowScrollStatus: false,
+                ),
     );
   }
 }
