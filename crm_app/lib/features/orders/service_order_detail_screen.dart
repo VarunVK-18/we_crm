@@ -225,6 +225,97 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
               delegate: SliverChildListDelegate([
                 const SizedBox(height: 24),
 
+                if (order.isPaymentPending) ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.only(bottom: 24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFBEB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: const Border(
+                          top: BorderSide(color: Color(0xFFFEF3C7)),
+                          right: BorderSide(color: Color(0xFFFEF3C7)),
+                          bottom: BorderSide(color: Color(0xFFFEF3C7)),
+                          left: BorderSide(color: Color(0xFFF59E0B), width: 4),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(LucideIcons.alertTriangle, color: Color(0xFFD97706), size: 20),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Pending Payment Required',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFF92400E),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'The service has been completed successfully, but there is a pending payment of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please settle the balance to access your final documents.',
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFFB45309),
+                                        height: 1.4,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 32),
+                            child: FilledButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => InvoiceScreen(orderId: order.id),
+                                  ),
+                                );
+                              },
+                              icon: const Icon(LucideIcons.arrowRight, size: 16),
+                              label: const Text('View Invoice & Pay'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFFD97706),
+                                foregroundColor: Colors.white,
+                                textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+
                 // Info row
                 _InfoRow(order: order),
 
@@ -560,7 +651,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                     child: _RequestedDocumentsSection(order: order),
                   ),
 
-                if (order.status == ServiceStatus.complete) ...[
+                if (order.status == ServiceStatus.complete && !order.isPaymentPending) ...[
                   const SizedBox(height: 32),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),

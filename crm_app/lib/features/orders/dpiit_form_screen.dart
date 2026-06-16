@@ -221,8 +221,35 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Are You Sure To Exit ?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text('Any unsaved progress will be lost.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldPop ?? false;
+  }
+
+Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: Text(
@@ -351,7 +378,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
                 ),
               ),
             ),
-    );
+    ));
   }
 
   Widget _buildLabel(String text) {

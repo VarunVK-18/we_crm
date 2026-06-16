@@ -86,7 +86,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('The file is large. Max 2MB allowed.'),
+          content: Text('Upload a file less than 2 MB or equal to 2 MB.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -214,8 +214,35 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Are You Sure To Exit ?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text('Any unsaved progress will be lost.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldPop ?? false;
+  }
+
+Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('GST Registration Form', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
@@ -238,7 +265,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                     title: 'Trade Details',
                     children: [
                       _buildField('Trade Name', '', _tradeNameController, isRequired: true),
-                      _buildField('Date of commencement of Business', 'MM/DD/YYYY', _commenceDateController, isRequired: true),
+                      _buildField('Date of commencement of Business', 'MM/DD/YYYY', _commenceDateController, isRequired: true, isDate: true),
                       _buildField('Business Email ID', 'All GST communications will be shared in this mail', _businessEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                       _buildField('Business Phone', 'All GST communications will be shared in this number', _businessPhoneController, isRequired: true, keyboardType: TextInputType.phone),
                     ],
@@ -250,7 +277,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                     children: [
                       _buildField('Full Name', '', _fullNameController, isRequired: true),
                       _buildField('Father name', '', _fatherNameController, isRequired: true),
-                      _buildField('DOB', 'MM/DD/YYYY', _dobController, isRequired: true),
+                      _buildField('DOB', 'MM/DD/YYYY', _dobController, isRequired: true, isDate: true),
                       _buildField('Phone number', '', _personalPhoneController, isRequired: true, keyboardType: TextInputType.phone),
                       _buildField('Mail ID', '', _personalEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                       
@@ -343,7 +370,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                 ],
               ),
             ),
-    );
+    ));
   }
 
   Widget _buildSectionContainer({required String title, required List<Widget> children}) {
@@ -420,7 +447,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -444,11 +471,24 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
+            readOnly: isDate,
+            onTap: isDate ? () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(1900),
+                lastDate: DateTime(2100),
+              );
+              if (date != null) {
+                controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+              }
+            } : null,
             maxLines: maxLines,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
             validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,
           ),

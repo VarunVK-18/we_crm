@@ -83,7 +83,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
       if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('The file is large. Max 2MB allowed.'),
+          content: Text('Upload a file less than 2 MB or equal to 2 MB.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -200,8 +200,35 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Are You Sure To Exit ?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text('Any unsaved progress will be lost.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldPop ?? false;
+  }
+
+Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('MSME Certification Form', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
@@ -247,8 +274,8 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
                       _buildField('No of Male Employees in your Business', '', _maleEmployeesController, isRequired: true, keyboardType: TextInputType.number),
                       _buildField('No of Female Employees in your Business', '', _femaleEmployeesController, isRequired: true, keyboardType: TextInputType.number),
                       
-                      _buildField('Date of Incorporation/ Registration of Enterprise', 'DD/MM/YYYY', _incDateController, isRequired: true),
-                      _buildField('Date of Commencement of Business', 'DD/MM/YYYY', _commenceDateController, isRequired: true),
+                      _buildField('Date of Incorporation/ Registration of Enterprise', 'DD/MM/YYYY', _incDateController, isRequired: true, isDate: true),
+                      _buildField('Date of Commencement of Business', 'DD/MM/YYYY', _commenceDateController, isRequired: true, isDate: true),
                       
                       _buildField('Previous MSME / Udyog Aadhaar', 'if any', _prevMsmeController, isRequired: false),
                       _buildField('GST number', 'if available', _gstController, isRequired: true),
@@ -330,7 +357,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
                 ],
               ),
             ),
-    );
+    ));
   }
 
   Widget _buildSectionContainer({required String title, required List<Widget> children}) {
@@ -407,7 +434,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -431,11 +458,24 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
+            readOnly: isDate,
+            onTap: isDate ? () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(1900),
+                lastDate: DateTime(2100),
+              );
+              if (date != null) {
+                controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+              }
+            } : null,
             maxLines: maxLines,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
             validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,
           ),

@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../core/constants/port.dart';
+import '../../core/utils/responsive.dart';
 import '../../providers/auth_provider.dart';
 import '../dashboard/customer_dashboard.dart';
 
@@ -542,14 +543,15 @@ class _SearchCategoryGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Responsive.init(context);
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.85,
+        crossAxisSpacing: 12.r,
+        mainAxisSpacing: 12.r,
+        mainAxisExtent: 68.r, // Fixed responsive height
       ),
       itemCount: items.length,
       itemBuilder: (context, index) {
@@ -558,18 +560,18 @@ class _SearchCategoryGrid extends StatelessWidget {
 
         return Material(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           child: InkWell(
             onTap: () => onItemTap(label),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+              padding: EdgeInsets.symmetric(horizontal: 12.r),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
                   color: AppTheme.corporateBlue.withOpacity(0.1),
-                  width: 1.2,
+                  width: 1.2.r,
                 ),
                 boxShadow: [
                   BoxShadow(
@@ -582,7 +584,7 @@ class _SearchCategoryGrid extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: EdgeInsets.all(10.r),
                     decoration: BoxDecoration(
                       color: AppTheme.corporateBlue.withOpacity(0.05),
                       shape: BoxShape.circle,
@@ -591,20 +593,22 @@ class _SearchCategoryGrid extends StatelessWidget {
                         ? Icon(
                             item['icon'] as IconData,
                             color: AppTheme.corporateBlue,
-                            size: 22,
+                            size: 22.ip,
                           )
                         : HugeIcon(
                             icon: item['icon'],
                             color: AppTheme.corporateBlue,
-                            size: 22,
+                            size: 22.ip,
                           ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 8.r),
                   Expanded(
                     child: Text(
                       label,
-                      style: const TextStyle(
-                        fontSize: 14,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.sp,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.deepTeal,
                         height: 1.1,

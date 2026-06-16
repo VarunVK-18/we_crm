@@ -284,6 +284,7 @@ const uploadTaskDocument = async (req, res) => {
                 )
               );
               if (entityMatch) {
+                entityMatch.entityName = extractedCompany;
                 if (extractedCin) entityMatch.cin = extractedCin;
                 if (extractedTan) entityMatch.tan = extractedTan;
                 if (extractedPan) entityMatch.pan = extractedPan;
@@ -295,6 +296,7 @@ const uploadTaskDocument = async (req, res) => {
             if (!foundEntity) {
               if (client.client_entities.length === 1 && !client.client_entities[0].cin) {
                  const entityMatch = client.client_entities[0];
+                 entityMatch.entityName = extractedCompany;
                  if (extractedCin) entityMatch.cin = extractedCin;
                  if (extractedTan) entityMatch.tan = extractedTan;
                  if (extractedPan) entityMatch.pan = extractedPan;

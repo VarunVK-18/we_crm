@@ -379,14 +379,27 @@ class _RegistrationServicesScreenState
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.2),
+                    width: 1.0.r,
+                  ),
                   boxShadow: AppTheme.softShadow,
                 ),
                 child: TextField(
                   controller: _searchController,
+                  textAlignVertical: TextAlignVertical.center,
+                  onTap: () {
+                    if (_selectedCategory != 'All') {
+                      setState(() {
+                        _selectedCategory = 'All';
+                      });
+                    }
+                  },
                   decoration: InputDecoration(
                     hintText: 'Search for Startup India services...',
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
                     prefixIcon: Icon(LucideIcons.search, size: 20.ip),
+                    prefixIconConstraints: BoxConstraints(minWidth: 40.r, minHeight: 40.r),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                             icon: Icon(LucideIcons.x, size: 16.ip),
@@ -397,6 +410,8 @@ class _RegistrationServicesScreenState
                     enabledBorder: InputBorder.none,
                     focusedBorder: InputBorder.none,
                     filled: false,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(vertical: 12.r),
                   ),
                 ),
               ),

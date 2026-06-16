@@ -672,14 +672,32 @@ const uploadFinalDocuments = async (req, res) => {
                 }
 
                 if (!foundEntity) {
+                  // Fallback: If only 1 entity and it's not incorporated yet, just rename it
                   if (client.client_entities.length === 1 && !client.client_entities[0].cin) {
                      const entityMatch = client.client_entities[0];
+                     if (extractedCompany) entityMatch.entityName = extractedCompany;
                      if (extractedCin) entityMatch.cin = extractedCin;
                      if (extractedTan) entityMatch.tan = extractedTan;
                      if (extractedPan) entityMatch.pan = extractedPan;
                      if (extractedDate) entityMatch.incorporationDate = extractedDate;
                      foundEntity = true;
-                  } else if (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name) {
+                  } 
+                  // Another fallback: Find an entity with exactly the originalName
+                  else {
+                     const entityMatch = client.client_entities.find(e => 
+                       !e.cin && originalName && e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
+                     );
+                     if (entityMatch) {
+                       if (extractedCompany) entityMatch.entityName = extractedCompany;
+                       if (extractedCin) entityMatch.cin = extractedCin;
+                       if (extractedTan) entityMatch.tan = extractedTan;
+                       if (extractedPan) entityMatch.pan = extractedPan;
+                       if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                       foundEntity = true;
+                     }
+                  }
+
+                  if (!foundEntity && (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name)) {
                     client.client_entities.push({
                       entityName: extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual',
                       cin: extractedCin || '',
@@ -933,14 +951,32 @@ const reuploadFinalDocument = async (req, res) => {
             }
 
             if (!foundEntity) {
+              // Fallback: If only 1 entity and it's not incorporated yet, just rename it
               if (client.client_entities.length === 1 && !client.client_entities[0].cin) {
                   const entityMatch = client.client_entities[0];
+                  if (extractedCompany) entityMatch.entityName = extractedCompany;
                   if (extractedCin) entityMatch.cin = extractedCin;
                   if (extractedTan) entityMatch.tan = extractedTan;
                   if (extractedPan) entityMatch.pan = extractedPan;
                   if (extractedDate) entityMatch.incorporationDate = extractedDate;
                   foundEntity = true;
-              } else if (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name) {
+              } 
+              // Another fallback: Find an entity with exactly the originalName
+              else {
+                  const entityMatch = client.client_entities.find(e => 
+                    !e.cin && originalName && e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
+                  );
+                  if (entityMatch) {
+                    if (extractedCompany) entityMatch.entityName = extractedCompany;
+                    if (extractedCin) entityMatch.cin = extractedCin;
+                    if (extractedTan) entityMatch.tan = extractedTan;
+                    if (extractedPan) entityMatch.pan = extractedPan;
+                    if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                    foundEntity = true;
+                  }
+              }
+
+              if (!foundEntity && (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name)) {
                 client.client_entities.push({
                   entityName: extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual',
                   cin: extractedCin || '',

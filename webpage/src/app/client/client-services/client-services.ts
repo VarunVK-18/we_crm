@@ -253,7 +253,11 @@ export class ClientServicesComponent implements OnInit {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
-        this.user.set(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        this.user.set(parsedUser);
+        this.quoteForm.name = parsedUser.owner_name || parsedUser.name || '';
+        this.quoteForm.phone = parsedUser.phone || '';
+        this.quoteForm.email = parsedUser.email || '';
       } catch (e) {
         console.error('Failed to parse user', e);
       }
@@ -468,8 +472,7 @@ export class ClientServicesComponent implements OnInit {
         this.formSubmitting.set(false);
         if (res && res.success) {
           this.formSuccess.set(true);
-          alert('Successfully submitted your application');
-          this.quoteForm = { name: '', phone: '', email: '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '' };
+          this.quoteForm = { name: this.user()?.owner_name || '', phone: this.user()?.phone || '', email: this.user()?.email || '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '' };
         } else {
           alert('Failed to submit quote request.');
         }

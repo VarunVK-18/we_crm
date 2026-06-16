@@ -391,9 +391,9 @@ class _ServiceRequestSummarySheetState
     super.dispose();
   }
 
-  Future<void> _submitServiceRequest() async {
+  Future<bool> _submitServiceRequest() async {
     final userProfile = ref.read(userProfileProvider).value;
-    if (userProfile == null) return;
+    if (userProfile == null) return false;
 
     try {
       final uri = Uri.parse(
@@ -495,14 +495,17 @@ class _ServiceRequestSummarySheetState
           await request.send().timeout(const Duration(seconds: 25));
       final response = await http.Response.fromStream(streamedResponse);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint(
             'Successfully registered service and uploaded documents on backend: ${widget.packageName}');
+        return true;
       } else {
         debugPrint('Failed to register service on backend: ${response.body}');
+        return false;
       }
     } catch (e) {
       debugPrint('Error registering service: $e');
+      return false;
     }
   }
 
@@ -963,11 +966,20 @@ class _ServiceRequestSummarySheetState
                           : () async {
                               if (_formKey.currentState!.validate()) {
                                 setState(() => _isLoading = true);
-                                await _submitServiceRequest();
+                                final success = await _submitServiceRequest();
                                 if (mounted) {
                                   setState(() => _isLoading = false);
-                                  Navigator.pop(context);
-                                  _showSuccessDialog(context);
+                                  if (success) {
+                                    Navigator.pop(context);
+                                    _showSuccessDialog(context);
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Failed to submit request. Please try again.'),
+                                        backgroundColor: Colors.redAccent,
+                                      ),
+                                    );
+                                  }
                                 }
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(

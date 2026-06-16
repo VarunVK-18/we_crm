@@ -118,7 +118,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
       if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('The file is large. Max 2MB allowed.'),
+          content: Text('Upload a file less than 2 MB or equal to 2 MB.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -241,8 +241,35 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Are You Sure To Exit ?', style: TextStyle(fontWeight: FontWeight.bold)),
+          content: const Text('Any unsaved progress will be lost.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Yes', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+    return shouldPop ?? false;
+  }
+
+Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Complete Director Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
@@ -283,7 +310,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
                           
                           _buildField('Full name', 'Enter your complete name as it appears on your official documents. Include your first name, middle name (if any), and last name.', data.fullNameController, isRequired: true),
                           _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
-                          _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format. This should match the date on your official documents.', data.dobController, isRequired: true),
+                          _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format. This should match the date on your official documents.', data.dobController, isRequired: true, isDate: true),
                           _buildField('Place of birth', 'Enter the city and state where you were born. This should match your birth certificate or other official documents.', data.placeOfBirthController, isRequired: true),
                           
                           _buildRadioGroup('Nationality', 'Select your nationality. Choose "Indian" if you are an Indian citizen, or "Others" if you are a foreign national or NRI.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
@@ -333,7 +360,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
                 ],
               ),
             ),
-    );
+    ));
   }
 
   Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
@@ -380,7 +407,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -404,10 +431,23 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
+            readOnly: isDate,
+            onTap: isDate ? () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(1900),
+                lastDate: DateTime(2100),
+              );
+              if (date != null) {
+                controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+              }
+            } : null,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
             validator: isRequired ? (v) => v == null || v.isEmpty ? 'This is a required question' : null : null,
           ),

@@ -761,6 +761,16 @@ const subscribeService = async (req, res) => {
           }));
         }
 
+        // Enforce "Client Form Filling" as the first step for all checklists
+        if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
+          finalItems.unshift({
+            title: 'Client Form Filling',
+            description: 'Ensure the client has submitted all necessary initial forms and details.',
+            label: 'Client Form Filling',
+            isChecked: false
+          });
+        }
+
         // ── Correct Workflow: Route new service to Client Manager first ──────
         // Correct flow: Client → Client Manager → Filing Staff / Account Manager
         // We should NOT auto-assign to filing_staff. Find the client manager who

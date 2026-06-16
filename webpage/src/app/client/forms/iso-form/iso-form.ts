@@ -62,7 +62,7 @@ export class IsoForm implements OnInit {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert('File size is large. Max 2MB allowed.');
+      alert('Upload a file less than 2 MB or equal to 2 MB.');
       return;
     }
 

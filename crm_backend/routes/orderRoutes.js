@@ -6,7 +6,7 @@ const multer = require('multer');
 
 const upload = multer({
   dest: 'uploads/dpiit/',
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
 });
 
 router.get('/user/:userId', orderController.getUserOrders);

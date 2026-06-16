@@ -183,281 +183,276 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500), // Ensures desktop doesn't stretch
             child: SafeArea(
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(height: 10),
-                              Center(
-                                child: Image.asset(
-                                  'assets/logo.png',
-                                  height: 160,
-                                  width: 160,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                              // Center(
-                              //   child: Text(
-                              //     'Welcome Back',
-                              //     textAlign: TextAlign.center,
-                              //     style: GoogleFonts.inter(
-                              //       color: AppTheme.deepTeal, // Same color as before
-                              //       fontSize: 16,
-                              //       fontWeight: FontWeight.w800,
-                              //       height: 1.2,
-                              //       letterSpacing: -1.0,
-                              //     ),
-                              //   ),
-                              // ),
-                              // const SizedBox(height: 48),
-                              
-                              // Email Field
-                              Text(
-                                'E-mail',
-                                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                controller: _emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                autofillHints: const [AutofillHints.email],
-                                textInputAction: TextInputAction.next,
-                                decoration: InputDecoration(
-                                  hintText: 'hello@company.com',
-                                  hintStyle: TextStyle(color: Colors.grey[400]),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
-                                ),
-                                validator: (val) {
-                                  if (val == null || val.isEmpty) return 'Email is required';
-                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) return 'Enter a valid email address';
-                                  return null;
-                                },
-                              ),
-                              
-                              const SizedBox(height: 24),
-                              
-                              // Password Field
-                              Text(
-                                'Password',
-                                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
-                              ),
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: !_isPasswordVisible,
-                                autofillHints: const [AutofillHints.password],
-                                textInputAction: TextInputAction.done,
-                                onEditingComplete: () => TextInput.finishAutofillContext(),
-                                decoration: InputDecoration(
-                                  hintText: '••••••••',
-                                  hintStyle: TextStyle(color: Colors.grey[400]),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
-                                  suffixIcon: Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: IconButton(
-                                      icon: Icon(_isPasswordVisible ? LucideIcons.eye : LucideIcons.eyeOff, color: Colors.black),
-                                      onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 32),
+                              child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    const SizedBox(height: 10),
+                                    Center(
+                                      child: Image.asset(
+                                        'assets/logo.png',
+                                        height: 160,
+                                        width: 160,
+                                        fit: BoxFit.contain,
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                validator: (val) {
-                                  if (val == null || val.isEmpty) return 'Password is required';
-                                  if (val.length < 6) return 'Password must be at least 6 characters';
-                                  return null;
-                                },
-                              ),
-                              
-                              const SizedBox(height: 8),
-                              
-                              Align(
-                                alignment: Alignment.centerRight,
-                                child: TextButton(
-                                  onPressed: () {
-                                    _showAuthDialog(
-                                      title: 'Notice',
-                                      message: 'Contact Support To Reset Your Password.',
-                                      isError: false,
-                                    );
-                                  },
-                                  child: Text(
-                                    'Forgot password?',
-                                    style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                              ),
-                              
-                              const SizedBox(height: 16),
-                              
-                              SizedBox(
-                                height: 64,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.black,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                                    elevation: 0,
-                                  ),
-                                  onPressed: _isLoading ? null : _handleSignIn,
-                                  child: _isLoading
-                                      ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                      : Text('Log in', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold)),
-                                ),
-                              ),
-                              const SizedBox(height: 40),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  // Curved Carousel Section
-                  SizedBox(
-                    height: 220,
-                    child: AnimatedBuilder(
-                      animation: _pageController,
-                      builder: (context, child) {
-                        return PageView.builder(
-                          clipBehavior: Clip.none,
-                          controller: _pageController,
-                          itemBuilder: (context, index) {
-                            int actualIndex = index % _clients.length;
-                            double page = _currentIndex.toDouble();
-                            if (_pageController.position.haveDimensions) {
-                              page = _pageController.page ?? page;
-                            }
-                            
-                            // Calculate position relative to center (negative is left, positive is right)
-                            double position = index - page;
-                            double delta = position.abs();
-                            
-                            // Scale factor (center is 1.0, adjacent is smaller)
-                            double scale = (1 - (delta * 0.2)).clamp(0.4, 1.0);
-                            
-                            // Translation (center is lower (20), adjacent goes UP)
-                            double dy = 20 - (delta * 40); 
-                            
-                            // Rotation (left is clockwise (+), right is counter-clockwise (-))
-                            double angle = -position * 0.2;
-                            
-                            // Color saturation (center = 1.0 color, adjacent = 0.0 black & white)
-                            double saturation = (1 - delta).clamp(0.0, 1.0);
-                            double invSat = 1 - saturation;
-                            double r = 0.2126 * invSat;
-                            double g = 0.7152 * invSat;
-                            double b = 0.0722 * invSat;
-                            
-                            ColorFilter filter = ColorFilter.matrix(<double>[
-                              saturation + r, g, b, 0, 0,
-                              r, saturation + g, b, 0, 0,
-                              r, g, saturation + b, 0, 0,
-                              0, 0, 0, 1, 0,
-                            ]);
-
-                            return Center(
-                              child: Transform.translate(
-                                offset: Offset(0, dy),
-                                child: Transform.rotate(
-                                  angle: angle,
-                                  child: Transform.scale(
-                                    scale: scale,
-                                    child: SizedBox(
-                                      height: 140,
-                                      child: ColorFiltered(
-                                        colorFilter: filter,
-                                        child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(24),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 15,
-                                        offset: Offset(0, 10),
-                                      )
-                                    ],
-                                    image: DecorationImage(
-                                      image: AssetImage(_clients[actualIndex]['image']!),
-                                      fit: BoxFit.cover,
+                                    
+                                    // Email Field
+                                    Text(
+                                      'E-mail',
+                                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
                                     ),
-                                  ),
+                                    const SizedBox(height: 8),
+                                    TextFormField(
+                                      controller: _emailController,
+                                      keyboardType: TextInputType.emailAddress,
+                                      autofillHints: const [AutofillHints.email],
+                                      textInputAction: TextInputAction.next,
+                                      decoration: InputDecoration(
+                                        hintText: 'hello@company.com',
+                                        hintStyle: TextStyle(color: Colors.grey[400]),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
+                                      ),
+                                      validator: (val) {
+                                        if (val == null || val.isEmpty) return 'Email is required';
+                                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) return 'Enter a valid email address';
+                                        return null;
+                                      },
+                                    ),
+                                    
+                                    const SizedBox(height: 24),
+                                    
+                                    // Password Field
+                                    Text(
+                                      'Password',
+                                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    TextFormField(
+                                      controller: _passwordController,
+                                      obscureText: !_isPasswordVisible,
+                                      autofillHints: const [AutofillHints.password],
+                                      textInputAction: TextInputAction.done,
+                                      onEditingComplete: () => TextInput.finishAutofillContext(),
+                                      decoration: InputDecoration(
+                                        hintText: '••••••••',
+                                        hintStyle: TextStyle(color: Colors.grey[400]),
+                                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
+                                        suffixIcon: Padding(
+                                          padding: const EdgeInsets.only(right: 8),
+                                          child: IconButton(
+                                            icon: Icon(_isPasswordVisible ? LucideIcons.eye : LucideIcons.eyeOff, color: Colors.black),
+                                            onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                                          ),
+                                        ),
+                                      ),
+                                      validator: (val) {
+                                        if (val == null || val.isEmpty) return 'Password is required';
+                                        if (val.length < 6) return 'Password must be at least 6 characters';
+                                        return null;
+                                      },
+                                    ),
+                                    
+                                    const SizedBox(height: 8),
+                                    
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: TextButton(
+                                        onPressed: () {
+                                          _showAuthDialog(
+                                            title: 'Notice',
+                                            message: 'Contact Support To Reset Your Password.',
+                                            isError: false,
+                                          );
+                                        },
+                                        child: Text(
+                                          'Forgot password?',
+                                          style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
                                         ),
                                       ),
                                     ),
+                                    
+                                    const SizedBox(height: 16),
+                                    
+                                    SizedBox(
+                                      height: 64,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.black,
+                                          foregroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+                                          elevation: 0,
+                                        ),
+                                        onPressed: _isLoading ? null : _handleSignIn,
+                                        child: _isLoading
+                                            ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                            : Text('Log in', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold)),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 40),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            
+                            const Spacer(), // Pushes the rest to the bottom
+                            
+                            // Curved Carousel Section
+                            SizedBox(
+                              height: 220,
+                              child: AnimatedBuilder(
+                                animation: _pageController,
+                                builder: (context, child) {
+                                  return PageView.builder(
+                                    clipBehavior: Clip.none,
+                                    controller: _pageController,
+                                    itemBuilder: (context, index) {
+                                      int actualIndex = index % _clients.length;
+                                      double page = _currentIndex.toDouble();
+                                      if (_pageController.position.haveDimensions) {
+                                        page = _pageController.page ?? page;
+                                      }
+                                      
+                                      // Calculate position relative to center (negative is left, positive is right)
+                                      double position = index - page;
+                                      double delta = position.abs();
+                                      
+                                      // Scale factor (center is 1.0, adjacent is smaller)
+                                      double scale = (1 - (delta * 0.2)).clamp(0.4, 1.0);
+                                      
+                                      // Translation (center is lower (20), adjacent goes UP)
+                                      double dy = 20 - (delta * 40); 
+                                      
+                                      // Rotation (left is clockwise (+), right is counter-clockwise (-))
+                                      double angle = -position * 0.2;
+                                      
+                                      // Color saturation (center = 1.0 color, adjacent = 0.0 black & white)
+                                      double saturation = (1 - delta).clamp(0.0, 1.0);
+                                      double invSat = 1 - saturation;
+                                      double r = 0.2126 * invSat;
+                                      double g = 0.7152 * invSat;
+                                      double b = 0.0722 * invSat;
+                                      
+                                      ColorFilter filter = ColorFilter.matrix(<double>[
+                                        saturation + r, g, b, 0, 0,
+                                        r, saturation + g, b, 0, 0,
+                                        r, g, saturation + b, 0, 0,
+                                        0, 0, 0, 1, 0,
+                                      ]);
+
+                                      return Center(
+                                        child: Transform.translate(
+                                          offset: Offset(0, dy),
+                                          child: Transform.rotate(
+                                            angle: angle,
+                                            child: Transform.scale(
+                                              scale: scale,
+                                              child: SizedBox(
+                                                height: 140,
+                                                child: ColorFiltered(
+                                                  colorFilter: filter,
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      borderRadius: BorderRadius.circular(24),
+                                                      boxShadow: const [
+                                                        BoxShadow(
+                                                          color: Colors.black12,
+                                                          blurRadius: 15,
+                                                          offset: Offset(0, 10),
+                                                        )
+                                                      ],
+                                                      image: DecorationImage(
+                                                        image: AssetImage(_clients[actualIndex]['image']!),
+                                                        fit: BoxFit.cover,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                            
+                            const SizedBox(height: 16),
+                            
+                            // Testimonial
+                            SizedBox(
+                              height: 50,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 32),
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 300),
+                                  child: Text(
+                                    _clients[_currentIndex % _clients.length]['testimony']!,
+                                    key: ValueKey<int>(_currentIndex),
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
+                                      color: Colors.grey[800],
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 ),
                               ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Testimonial
-                  SizedBox(
-                    height: 50,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: Text(
-                          _clients[_currentIndex % _clients.length]['testimony']!,
-                          key: ValueKey<int>(_currentIndex),
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontStyle: FontStyle.italic,
-                            color: Colors.grey[800],
-                            fontWeight: FontWeight.w500,
-                          ),
+                            ),
+                            
+                            const SizedBox(height: 16),
+                            
+                            // Footer Sign Up Link
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'New to Wealth Empires? ',
+                                    style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14),
+                                  ),
+                                  GestureDetector(
+                                    onTap: _contactSupport,
+                                    child: Text(
+                                      'Sign up',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Footer Sign Up Link
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 24),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'New to Wealth Empires? ',
-                          style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14),
-                        ),
-                        GestureDetector(
-                          onTap: _contactSupport,
-                          child: Text(
-                            'Sign up',
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),

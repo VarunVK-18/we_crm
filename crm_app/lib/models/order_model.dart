@@ -121,6 +121,7 @@ class ServiceOrder {
   expertPhone; // WhatsApp-capable number with country code, e.g. 919876543210
   final DateTime createdAt;
   final double dealClosedAmount;
+  final double advanceAmountPaid;
   final String notes;
   final Map<String, dynamic> details;
   final bool actionRequired;
@@ -140,6 +141,7 @@ class ServiceOrder {
     required this.expertPhone,
     required this.createdAt,
     this.dealClosedAmount = 0.0,
+    this.advanceAmountPaid = 0.0,
     this.notes = '',
     this.details = const {},
     this.actionRequired = false,
@@ -177,6 +179,7 @@ class ServiceOrder {
           ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
       dealClosedAmount: double.tryParse(data['dealClosedAmount']?.toString() ?? '0.0') ?? 0.0,
+      advanceAmountPaid: double.tryParse(data['advanceAmountPaid']?.toString() ?? '0.0') ?? 0.0,
       notes: data['notes']?.toString() ?? '',
       details: data['details'] is Map ? Map<String, dynamic>.from(data['details'] as Map) : {},
       actionRequired: data['actionRequired'] == true || data['action_required'] == true,
@@ -187,6 +190,12 @@ class ServiceOrder {
     if (steps.isEmpty) return 0.0;
     final done = steps.where((s) => s.isCompleted).length;
     return done / steps.length;
+  }
+
+  bool get isPaymentPending {
+    final isCompleted = status == ServiceStatus.complete ||
+        (steps.isNotEmpty && steps.where((s) => s.isCompleted).length == steps.length);
+    return isCompleted && (dealClosedAmount > advanceAmountPaid);
   }
 }
 

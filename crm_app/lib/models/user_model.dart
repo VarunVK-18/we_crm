@@ -126,17 +126,36 @@ class UserModel {
     }
 
     Map<String, dynamic>? extractedManager;
+    
+    String getValidString(dynamic value, String fallback) {
+      if (value == null) return fallback;
+      final str = value.toString().trim();
+      return str.isEmpty ? fallback : str;
+    }
+
+    String companyPhone = '';
+    if (data['company_id'] != null && data['company_id'] is Map) {
+      companyPhone = getValidString(data['company_id']['phone'], '');
+    }
+    String fallbackPhone = companyPhone.isNotEmpty ? companyPhone : '+918000000000';
+
     if (data['client_manager'] != null && data['client_manager'] is Map) {
       extractedManager = {
-        'name': data['client_manager']['owner_name']?.toString() ?? data['client_manager']['name']?.toString() ?? 'Support Team',
-        'email': data['client_manager']['email']?.toString() ?? 'support@example.com',
-        'phone': data['client_manager']['phone']?.toString() ?? '+918000000000',
+        'name': getValidString(data['client_manager']['owner_name'] ?? data['client_manager']['name'], 'Support Team'),
+        'email': getValidString(data['client_manager']['email'], 'support@example.com'),
+        'phone': getValidString(data['client_manager']['phone'], fallbackPhone),
       };
     } else if (data['assigned_to'] != null && data['assigned_to'] is Map) {
       extractedManager = {
-        'name': data['assigned_to']['owner_name']?.toString() ?? data['assigned_to']['name']?.toString() ?? 'Support Team',
-        'email': data['assigned_to']['email']?.toString() ?? 'support@example.com',
-        'phone': data['assigned_to']['phone']?.toString() ?? '+918000000000',
+        'name': getValidString(data['assigned_to']['owner_name'] ?? data['assigned_to']['name'], 'Support Team'),
+        'email': getValidString(data['assigned_to']['email'], 'support@example.com'),
+        'phone': getValidString(data['assigned_to']['phone'], fallbackPhone),
+      };
+    } else {
+      extractedManager = {
+        'name': 'Support Team',
+        'email': 'support@example.com',
+        'phone': fallbackPhone,
       };
     }
 
