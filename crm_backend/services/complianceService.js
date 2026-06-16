@@ -102,6 +102,82 @@ exports.generateCompliancesForPrivateLimited = async (clientUid, companyId, chec
     }
 };
 
+exports.generateCompliancesForLLP = async (clientUid, companyId, checklistId, incDate, entityName = '') => {
+    // Delete any existing tasks for this checklist to prevent duplicates on reupload
+    await ComplianceTask.deleteMany({ checklistId });
+
+    // We need to fetch the User to check for GSTIN and TAN
+    const User = require('../models/User');
+    const user = await User.findById(clientUid);
+
+    const year = incDate.getFullYear();
+    const nextMay = new Date(year, 4, 30); // May 30
+    if (nextMay < incDate) nextMay.setFullYear(year + 1);
+
+    const nextOct = new Date(year, 9, 30); // Oct 30
+    if (nextOct < incDate) nextOct.setFullYear(year + 1);
+    
+    const nextJuly = new Date(year, 6, 31); // July 31
+    if (nextJuly < incDate) nextJuly.setFullYear(year + 1);
+
+    const compliances = [
+        {
+            title: 'LLP Agreement Filing (Form 3)',
+            description: 'Due within 30 days of incorporation',
+            dueDate: addDays(incDate, 30)
+        },
+        {
+            title: 'Form 11 (Annual Return)',
+            description: 'Due 30 May every year',
+            dueDate: nextMay
+        },
+        {
+            title: 'Form 8 (Statement of Accounts & Solvency)',
+            description: 'Due 30 October every year',
+            dueDate: nextOct
+        },
+        {
+            title: 'Income Tax Return (ITR)',
+            description: 'As per Income Tax rules',
+            dueDate: nextJuly
+        }
+    ];
+
+    if (user && user.gstin) {
+        // GST Returns due every month, e.g., 20th of next month
+        const nextGst = new Date(year, incDate.getMonth() + 1, 20);
+        compliances.push({
+            title: 'GST Returns',
+            description: 'Due 20th of every month',
+            dueDate: nextGst
+        });
+    }
+
+    if (user && user.tan) {
+        // TDS Returns due quarterly, e.g., end of next month of quarter
+        const nextTds = new Date(year, incDate.getMonth() + 3, 31);
+        compliances.push({
+            title: 'TDS Returns',
+            description: 'Quarterly return',
+            dueDate: nextTds
+        });
+    }
+
+    for (const c of compliances) {
+        await ComplianceTask.create({
+            clientUid,
+            companyId,
+            checklistId,
+            entityName,
+            title: c.title,
+            description: c.description,
+            dueDate: c.dueDate,
+            status: 'Upcoming'
+        });
+    }
+};
+
+
 exports.calculateStatus = (dueDate, completedAt) => {
     if (completedAt) return 'Completed';
     const today = new Date();

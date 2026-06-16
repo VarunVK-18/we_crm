@@ -340,10 +340,42 @@ exports.submitLlpForm = async (req, res) => {
       return res.status(404).json({ message: 'Order (Checklist) not found.' });
     }
 
+    // Parse person fields into a directors array
+    const directors = [];
+    for (let i = 1; i <= 20; i++) {
+      if (formData[`person_${i}_fullName`]) {
+        directors.push({
+          fullName: formData[`person_${i}_fullName`],
+          fatherName: formData[`person_${i}_fatherName`],
+          dob: formData[`person_${i}_dob`],
+          placeOfBirth: formData[`person_${i}_placeOfBirth`],
+          education: formData[`person_${i}_education`],
+          email: formData[`person_${i}_email`],
+          phone: formData[`person_${i}_phone`],
+          address: formData[`person_${i}_address`],
+          pan: formData[`person_${i}_pan`],
+          aadhaar: formData[`person_${i}_aadhaar`],
+          din: formData[`person_${i}_din`],
+          capital: formData[`person_${i}_capital`],
+          profitRatio: formData[`person_${i}_profitRatio`],
+          nationality: formData[`person_${i}_nationality`],
+          occupation: formData[`person_${i}_occupation`],
+          needDsc: formData[`person_${i}_needDsc`],
+          designation: formData[`person_${i}_designation`],
+          isAuthorized: formData[`person_${i}_isAuthorized`]
+        });
+      }
+    }
+
     // Merge form data into order details
     const updatedDetails = {
       ...order.details,
-      llpForm: formData,
+      companyName: formData.companyName,
+      businessActivity: formData.businessActivity,
+      ownerName: formData.ownerName,
+      totalCapital: formData.totalCapital,
+      registeredOfficePreference: formData.registeredOfficePreference,
+      directors: directors,
       llpDocs: uploadedDocs,
     };
 

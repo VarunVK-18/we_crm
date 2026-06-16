@@ -333,11 +333,6 @@ export class ClientServicesComponent implements OnInit {
   }
 
   showEntityDropdown(): boolean {
-    const title = this.selectedService()?.title;
-    if (!title) return false;
-    const lowerTitle = title.toLowerCase();
-    if (lowerTitle.includes('incorporation')) return false;
-    if (title === 'MSME Registration' || title === 'OPC' || title === 'Proprietorship Registration' || title === 'Partnership Firm Registration') return false;
     return true;
   }
 
@@ -385,6 +380,9 @@ export class ClientServicesComponent implements OnInit {
     }
 
     const details: any = {
+      'Applicant Name': this.quoteForm.name || this.user()?.owner_name || '',
+      'Applicant Email': this.quoteForm.email || this.user()?.email || '',
+      'Applicant Phone': this.quoteForm.phone || this.user()?.phone || '',
       Status: 'Pending Client Form Submission',
       'Next Step': 'Assign expert to unlock form for client',
       Requirements: this.quoteForm.requirements
