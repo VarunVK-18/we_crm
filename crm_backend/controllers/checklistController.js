@@ -131,12 +131,16 @@ const getChecklists = async (req, res) => {
       // See only checklists assigned to them
       filter.assigned_to = req.user._id;
     } else if (role === 'client_manager') {
-      // See checklists for clients they created OR that are assigned to them
-      // (auto-generated checklists have created_by = client._id, not the manager's)
-      const myClients = await User.find({ created_by: req.user._id, role: 'customer' }).select('_id');
+      // See checklists for authorized clients OR checklists directly assigned to them
+      const myClients = await User.find({
+        role: 'customer',
+        $or: [
+          { assigned_to: req.user._id },
+          { created_by: req.user._id, assigned_to: null }
+        ]
+      }).select('_id');
       const myClientIds = myClients.map(c => c._id);
       filter.$or = [
-        { created_by: req.user._id },
         { assigned_to: req.user._id },
         { client_id: { $in: myClientIds } }
       ];

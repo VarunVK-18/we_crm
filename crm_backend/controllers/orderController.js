@@ -122,14 +122,40 @@ exports.getCompanyOrders = async (req, res) => {
     if (!companyId) {
       return res.status(400).json({ message: 'Company ID is required.' });
     }
-    const clients = await User.find({ company_id: companyId, role: 'customer' }).select('_id');
+    let clientFilter = { company_id: companyId, role: 'customer' };
+    if (req.user && req.user.role === 'client_manager') {
+      clientFilter.$or = [
+        { assigned_to: req.user._id },
+        { created_by: req.user._id, assigned_to: null }
+      ];
+    } else if (req.user && (req.user.role === 'account_manager' || req.user.role === 'filling_staff')) {
+      clientFilter.assigned_to = req.user._id;
+    }
+
+    const clients = await User.find(clientFilter).select('_id');
     const clientIds = clients.map(client => client._id.toString());
-    const orders = await ServiceOrder.find({
-      $or: [
+    let orderQuery = {};
+    if (req.user && ['client_manager', 'account_manager', 'filling_staff'].includes(req.user.role)) {
+      // Scoped users ONLY see orders for their authorized clients
+      orderQuery.clientUid = { $in: clientIds };
+      
+      // If the order has an assigned expert, ONLY that expert should see it, 
+      // UNLESS it's unassigned, in which case the authorized client manager can see it.
+      orderQuery.$or = [
+        { assignedExpert: req.user.owner_name },
+        { assignedExpert: 'To be assigned' },
+        { assignedExpert: null },
+        { assignedExpert: { $exists: false } }
+      ];
+    } else {
+      // Admin users see all orders for the company OR clients
+      orderQuery.$or = [
         { clientUid: { $in: clientIds } },
         { companyId: companyId }
-      ]
-    }).sort({ createdAt: -1 });
+      ];
+    }
+
+    const orders = await ServiceOrder.find(orderQuery).sort({ createdAt: -1 });
     res.status(200).json({ orders });
   } catch (error) {
     console.error('Error fetching company orders:', error);

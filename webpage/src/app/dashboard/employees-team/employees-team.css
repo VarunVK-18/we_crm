@@ -504,3 +504,9 @@
   font-weight: 500;
   cursor: pointer;
 }
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}

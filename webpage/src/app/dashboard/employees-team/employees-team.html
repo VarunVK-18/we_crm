@@ -123,7 +123,7 @@
           </div>
           <div class="form-group-item">
             <label class="form-input-label">Email Address *</label>
-            <input type="email" name="emp_email" placeholder="akash@company.com" class="form-control-input" [(ngModel)]="newEmployee.email" required />
+            <input type="text" name="emp_email" placeholder="akash@company.com" class="form-control-input" [(ngModel)]="newEmployee.email" required autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
           <div class="form-row-grid">
             <div class="form-group-item">
@@ -135,14 +135,19 @@
               <select name="emp_role" class="form-control-input" [(ngModel)]="newEmployee.role" required>
                 <option value="client_manager">Client Manager</option>
                 <option value="filling_staff">Filing Staff</option>
-                <option value="account_manager">Account Manager</option>
               </select>
             </div>
           </div>
         </div>
         <div class="modal-footer-actions">
-          <button type="button" class="btn-cancel" (click)="closeCreateEmployeeModal()">Cancel</button>
-          <button type="submit" class="btn-submit">Add Employee</button>
+          <button type="button" class="btn-cancel" (click)="closeCreateEmployeeModal()" [disabled]="isSubmitting()">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting()" style="display: flex; align-items: center; gap: 8px;">
+            @if (isSubmitting()) {
+              <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 18px;">progress_activity</span> Adding...
+            } @else {
+              Add Employee
+            }
+          </button>
         </div>
       </form>
     </div>
@@ -177,14 +182,13 @@
           </div>
           <div class="form-group-item">
             <label class="form-input-label">Email Address *</label>
-            <input type="email" name="edit_emp_email" placeholder="akash@company.com" class="form-control-input" [(ngModel)]="editEmployee.email" required />
+            <input type="text" name="edit_emp_email" placeholder="akash@company.com" class="form-control-input" [(ngModel)]="editEmployee.email" required autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
           <div class="form-group-item">
             <label class="form-input-label">System Access Role *</label>
             <select name="edit_emp_role" class="form-control-input" [(ngModel)]="editEmployee.role" required>
               <option value="client_manager">Client Manager</option>
               <option value="filling_staff">Filing Staff</option>
-              <option value="account_manager">Account Manager</option>
             </select>
           </div>
         </div>
@@ -212,8 +216,14 @@
         <p style="color: var(--color-danger); font-size: 14px; margin: 0;">This action cannot be undone.</p>
       </div>
       <div class="modal-footer-actions">
-        <button class="btn-cancel" (click)="closeDeleteEmployeeModal()">Cancel</button>
-        <button class="btn-submit" style="background-color: var(--color-danger);" (click)="submitDeleteEmployee()">Remove</button>
+        <button class="btn-cancel" (click)="closeDeleteEmployeeModal()" [disabled]="isDeleting()">Cancel</button>
+        <button class="btn-submit" style="background-color: var(--color-danger); display: flex; align-items: center; gap: 8px;" (click)="submitDeleteEmployee()" [disabled]="isDeleting()">
+          @if (isDeleting()) {
+            <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 18px;">progress_activity</span> Removing...
+          } @else {
+            Remove
+          }
+        </button>
       </div>
     </div>
   </div>

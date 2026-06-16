@@ -140,7 +140,16 @@ exports.getCompanyComplianceReminders = async (req, res) => {
     }
 
     // 1. Get client IDs for this company
-    const clients = await User.find({ company_id: companyId, role: 'customer' }).select('_id owner_name company_name').lean();
+    let clientFilter = { company_id: companyId, role: 'customer' };
+    if (req.user && req.user.role === 'client_manager') {
+      clientFilter.$or = [
+        { assigned_to: req.user._id },
+        { created_by: req.user._id, assigned_to: null }
+      ];
+    } else if (req.user && (req.user.role === 'account_manager' || req.user.role === 'filling_staff')) {
+      clientFilter.assigned_to = req.user._id;
+    }
+    const clients = await User.find(clientFilter).select('_id owner_name company_name').lean();
     const clientIds = clients.map(client => client._id.toString());
 
     const clientMap = {};
@@ -174,7 +183,24 @@ exports.getCompanyComplianceReminders = async (req, res) => {
     });
 
     // 3. Fetch dynamic compliance reminders from checklists with final documents for this company
-    const completedChecklists = await Checklist.find({ company_id: companyId, 'final_documents.0': { $exists: true } })
+    let checklistFilter = { 
+      company_id: companyId, 
+      client_id: { $in: clientIds },
+      'final_documents.0': { $exists: true } 
+    };
+
+    if (req.user && ['client_manager', 'account_manager', 'filling_staff'].includes(req.user.role)) {
+      const Checklist = require('../models/Checklist');
+      const authorizedChecklists = await Checklist.find({
+          $or: [
+              { assigned_to: req.user._id },
+              { client_id: { $in: clientIds }, assigned_to: null }
+          ]
+      }).select('_id');
+      checklistFilter._id = { $in: authorizedChecklists.map(c => c._id) };
+    }
+
+    const completedChecklists = await Checklist.find(checklistFilter)
       .populate('company_id', 'company_name')
       .populate('client_id', 'owner_name company_name');
 
@@ -193,7 +219,49 @@ exports.getCompanyComplianceReminders = async (req, res) => {
 // Get all compliance tasks globally (For Filing Staff / Admins)
 exports.getAllComplianceTasks = async (req, res) => {
   try {
-    const tasks = await ComplianceTask.find({})
+    let taskFilter = {};
+    let checklistFilter = { 'final_documents.0': { $exists: true } };
+
+    if (req.user) {
+      if (req.user.company_id) {
+        taskFilter.companyId = req.user.company_id;
+        checklistFilter.company_id = req.user.company_id;
+      }
+
+      const role = req.user.role;
+      if (role === 'client_manager' || role === 'account_manager' || role === 'filling_staff') {
+        let clientFilter = { role: 'customer' };
+        if (role === 'client_manager') {
+          clientFilter.$or = [
+            { assigned_to: req.user._id },
+            { created_by: req.user._id, assigned_to: null }
+          ];
+        } else {
+          clientFilter.assigned_to = req.user._id;
+        }
+
+        const authorizedClients = await User.find(clientFilter).select('_id');
+        const authorizedClientIds = authorizedClients.map(c => c._id);
+
+        const Checklist = require('../models/Checklist');
+        const authorizedChecklists = await Checklist.find({
+            $or: [
+                { assigned_to: req.user._id },
+                { client_id: { $in: authorizedClientIds }, assigned_to: null }
+            ]
+        }).select('_id');
+        const authorizedChecklistIds = authorizedChecklists.map(c => c._id);
+
+        taskFilter.$or = [
+            { checklistId: { $in: authorizedChecklistIds } },
+            { clientUid: { $in: authorizedClientIds }, checklistId: { $exists: false } },
+            { clientUid: { $in: authorizedClientIds }, checklistId: null }
+        ];
+        checklistFilter._id = { $in: authorizedChecklistIds };
+      }
+    }
+
+    const tasks = await ComplianceTask.find(taskFilter)
       .populate('clientUid', 'owner_name company_name')
       .populate('companyId', 'company_name')
       .populate('checklistId', 'service_name details')
@@ -232,7 +300,7 @@ exports.getAllComplianceTasks = async (req, res) => {
     });
 
     // Also fetch dynamic reminders from completed checklists across all clients
-    const completedChecklists = await Checklist.find({ 'final_documents.0': { $exists: true } })
+    const completedChecklists = await Checklist.find(checklistFilter)
       .populate('company_id', 'company_name')
       .populate('client_id', 'owner_name company_name')
       .lean();

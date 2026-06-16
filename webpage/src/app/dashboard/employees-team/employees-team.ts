@@ -26,6 +26,8 @@ export class EmployeesTeam implements OnInit {
   isDeleteEmployeeModalOpen = signal<boolean>(false);
   employeeErrorMessage = signal<string>('');
   employeeSuccessMessage = signal<string>('');
+  isSubmitting = signal<boolean>(false);
+  isDeleting = signal<boolean>(false);
 
   newEmployee = {
     name: '',
@@ -167,6 +169,7 @@ export class EmployeesTeam implements OnInit {
       return;
     }
 
+    this.isSubmitting.set(true);
     const payload = {
       ...this.newEmployee,
       company_id: this.getCompanyId()
@@ -177,10 +180,12 @@ export class EmployeesTeam implements OnInit {
         this.employeeSuccessMessage.set('Employee created successfully!');
         this.fetchTeams();
         setTimeout(() => {
+          this.isSubmitting.set(false);
           this.closeCreateEmployeeModal();
         }, 1200);
       },
       error: (err) => {
+        this.isSubmitting.set(false);
         this.employeeErrorMessage.set(err.error?.message || 'Failed to register employee.');
       }
     });
@@ -236,12 +241,15 @@ export class EmployeesTeam implements OnInit {
   }
 
   submitDeleteEmployee() {
+    this.isDeleting.set(true);
     this.api.delete<any>(`delete_user/${this.selectedEmployee.id}`).subscribe({
       next: (res: any) => {
         this.fetchTeams();
+        this.isDeleting.set(false);
         this.closeDeleteEmployeeModal();
       },
       error: (err: any) => {
+        this.isDeleting.set(false);
         alert(err.error?.message || 'Failed to delete employee.');
       }
     });

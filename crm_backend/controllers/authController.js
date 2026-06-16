@@ -39,7 +39,7 @@ const registerUser = async (req, res) => {
     } = req.body;
 
     // Check if user already exists
-    const userExists = await User.findOne({ email: email.toLowerCase().trim() });
+    const userExists = await User.findOne({ email: email.trim() });
     if (userExists) {
       return res.status(400).json({ message: 'User already exists with this email address' });
     }
@@ -98,7 +98,7 @@ const registerUser = async (req, res) => {
     // Create user (password is automatically hashed via mongoose pre-save hook)
     const user = await User.create({
       company_id: finalCompanyId,
-      email: email.toLowerCase().trim(),
+      email: email.trim(),
       password: password || '',
       owner_name,
       phone: phone || '',
@@ -156,7 +156,7 @@ const loginUser = async (req, res) => {
     }
 
     // Find user by email, populate company details
-    const user = await User.findOne({ email: email.toLowerCase().trim() }).populate('company_id');
+    const user = await User.findOne({ email: email.trim() }).populate('company_id');
     if (!user) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -258,8 +258,11 @@ const getClients = async (req, res) => {
     if (req.user) {
       const role = req.user.role;
       if (role === 'client_manager') {
-        // Client Manager: view only clients they onboarded
-        filter.created_by = req.user._id;
+        // Client Manager: view assigned clients, or clients they created that are unassigned
+        filter.$or = [
+          { assigned_to: req.user._id },
+          { created_by: req.user._id, assigned_to: null }
+        ];
       } else if (role === 'account_manager') {
         // Account Manager: view assigned clients only
         filter.assigned_to = req.user._id;
@@ -299,7 +302,7 @@ const getClients = async (req, res) => {
 const registerDirect = async (req, res) => {
   try {
     const { name, email, password, role, company_id } = req.body;
-    let user = await User.findOne({ email: email.toLowerCase().trim() });
+    let user = await User.findOne({ email: email.trim() });
     if (user) {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
@@ -311,7 +314,7 @@ const registerDirect = async (req, res) => {
     const finalCompanyId = req.user ? req.user.company_id : (company_id || null);
     user = new User({ 
       owner_name: name, 
-      email: email.toLowerCase().trim(), 
+      email: email.trim(), 
       password: password || 'Default@123', 
       role: assignedRole,
       company_id: finalCompanyId
@@ -401,7 +404,7 @@ const editUser = async (req, res) => {
     const { name, email, role } = req.body;
     const user = await User.findByIdAndUpdate(id, { 
       owner_name: name, 
-      email: email.toLowerCase().trim(), 
+      email: email.trim(), 
       role 
     }, { new: true });
 
@@ -479,7 +482,7 @@ const registerCompany = async (req, res) => {
     }
 
     // Check if email already exists
-    const emailExists = await User.findOne({ email: email.toLowerCase().trim() });
+    const emailExists = await User.findOne({ email: email.trim() });
     if (emailExists) {
       return res.status(400).json({ message: 'User already exists with this email address' });
     }
@@ -501,7 +504,7 @@ const registerCompany = async (req, res) => {
       company_name,
       gstin: gstin || '',
       owner_name,
-      email: email.toLowerCase().trim(),
+      email: email.trim(),
       password,
       phone: phone || '',
       address: address || '',
