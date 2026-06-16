@@ -1,0 +1,236 @@
+.st-container {
+  width: 100%;
+  height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.st-header {
+  margin-bottom: 24px;
+}
+
+.st-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.st-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.st-board {
+  display: flex;
+  gap: 0;
+  overflow: hidden;
+  flex: 1;
+  padding-bottom: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(248, 250, 252, 0.3);
+}
+
+/* Ensure smooth scrolling */
+.st-board::-webkit-scrollbar {
+  height: 8px;
+}
+.st-board::-webkit-scrollbar-track {
+  background: rgba(0,0,0,0.03);
+  border-radius: 4px;
+}
+.st-board::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 4px;
+}
+
+.st-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: transparent;
+  border: none;
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+  padding: 16px 12px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.st-column:last-child {
+  border-right: none;
+}
+
+.st-column-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.st-column-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.st-column-count {
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.st-column-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.st-card {
+  border-bottom: 1px solid var(--border);
+  padding: 0 0 12px 0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.st-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+  border-color: rgba(0,0,0,0.1);
+}
+
+.st-card-header {
+  margin-bottom: 8px;
+}
+
+.st-card-client {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.st-card-service {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.st-card-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.st-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(0,0,0,0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.st-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.st-progress-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  min-width: 32px;
+}
+
+.st-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px dashed var(--border);
+  padding-top: 12px;
+}
+
+.st-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.1);
+  color: #475569;
+}
+
+.st-assignee {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #111827;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.st-assignee.unassigned {
+  background: #cbd5e1;
+  color: #475569;
+}
+
+.st-empty-card {
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+}
+
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.loading-state p {
+  margin-top: 16px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}

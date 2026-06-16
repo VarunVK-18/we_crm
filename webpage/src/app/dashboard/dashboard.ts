@@ -22,6 +22,7 @@ import { ClientDashboard } from './client-dashboard/client-dashboard';
 import { ChecklistDetails } from './checklist-details/checklist-details';
 import { StaffCompliance } from './staff-compliance/staff-compliance';
 import { EmployeeProfile } from './employee-profile/employee-profile';
+import { ServiceTrackComponent } from './service-track/service-track';
 
 @Component({
   selector: 'app-dashboard',
@@ -43,7 +44,8 @@ import { EmployeeProfile } from './employee-profile/employee-profile';
     ClientDashboard,
     ChecklistDetails,
     StaffCompliance,
-    EmployeeProfile
+    EmployeeProfile,
+    ServiceTrackComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -57,6 +59,7 @@ export class Dashboard implements OnInit, OnDestroy {
   user = signal<any>(null);
   teams = signal<any[]>([]);
   navigationTrail = signal<{label: string, action: () => void}[]>([]);
+  globalSearchQuery = signal<string>('');
 
   // Icon assets
   readonly Search01Icon = Search01Icon;

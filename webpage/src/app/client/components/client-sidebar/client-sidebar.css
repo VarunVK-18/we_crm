@@ -12,15 +12,87 @@
   border-right: 1px solid #e2e8f0;
   padding: 0;
   box-sizing: border-box;
-  z-index: 20;
+  position: relative;
+  z-index: 100;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Branding Header */
+.sidebar-container.collapsed {
+  width: 72px;
+}
+
 .branding-header {
   padding: 24px 20px 16px;
   display: flex;
   align-items: center;
+  height: 80px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.04);
+}
+
+.branding-content {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.sidebar-container.collapsed .branding-content {
+  justify-content: center;
+  gap: 0;
+}
+
+.collapse-toggle-btn {
+  position: absolute;
+  top: 80px;
+  transform: translateY(-50%);
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 110;
+  color: var(--text-primary);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.collapse-toggle-btn:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.collapse-toggle {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.collapse-toggle:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.sidebar-container.collapsed .branding-header {
+  padding: 24px 0 16px;
+  justify-content: center;
+}
+
+.sidebar-container.collapsed .logo-box {
+  /* Logo remains visible */
 }
 
 .logo-box {
@@ -47,6 +119,18 @@
 .branding-text {
   display: flex;
   flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 200px;
+  opacity: 1;
+  transition: max-width 0.3s ease, opacity 0.3s ease;
+}
+
+.sidebar-container.collapsed .branding-text {
+  max-width: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .branding-title {
@@ -77,6 +161,19 @@
 
 .navigation-list::-webkit-scrollbar {
   display: none;
+}
+
+.sidebar-container.collapsed .navigation-list {
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 200px;
+  padding-left: 8px;
+  margin-right: -200px;
+  pointer-events: none;
+}
+
+.sidebar-container.collapsed .nav-item-wrapper {
+  pointer-events: auto;
 }
 
 .group-items {
@@ -129,11 +226,29 @@
   gap: 12px;
 }
 
+.sidebar-container.collapsed .nav-item-content {
+  justify-content: center;
+  padding: 10px 0;
+  gap: 0;
+}
+
 .nav-item-label {
   font-family: var(--font-body, 'Inter');
   font-size: 14px;
+  color: inherit;
   font-weight: 500;
-  transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 200px;
+  opacity: 1;
+  transition: max-width 0.3s ease, opacity 0.3s ease, color var(--transition-fast);
+}
+
+.sidebar-container.collapsed .nav-item-label {
+  max-width: 0;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
 }
 
 .nav-item-icon {
@@ -151,6 +266,32 @@
 
 .nav-item-wrapper.selected .nav-item-label {
   font-weight: 600;
+}
+
+.nav-tooltip {
+  position: absolute;
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #6d28d9;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  z-index: 1000;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.nav-item-wrapper:hover .nav-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(4px);
 }
 
 /* Trusted Companies Slider */

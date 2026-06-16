@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -20,6 +20,13 @@ export class SystemSettings implements OnInit {
   });
 
   activeTab = signal<string>('system');
+  searchQuery = signal<string>('');
+
+  filteredServices = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.availableServices;
+    return this.availableServices.filter(s => s.toLowerCase().includes(q));
+  });
 
   availableServices = [
     '360° Compliance',

@@ -12,13 +12,30 @@
           <span class="btn-text">Company Settings</span>
         </button>
 
-        <p class="sidebar-section-title" style="margin-top: 16px;">Certification Templates</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; margin-bottom: 8px;">
+          <p class="sidebar-section-title" style="margin: 0;">Certification Templates</p>
+        </div>
+        
+        <div style="margin-bottom: 12px; position: relative;">
+          <span class="material-symbols-outlined" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--text-secondary);">search</span>
+          <input type="text" 
+                 placeholder="Search templates..." 
+                 [ngModel]="searchQuery()"
+                 (ngModelChange)="searchQuery.set($event)"
+                 style="width: 100%; padding: 8px 12px 8px 36px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: var(--text-primary); outline: none; box-sizing: border-box;" />
+        </div>
+
         <div class="nav-btn-list">
-          @for (svc of availableServices; track svc) {
+          @for (svc of filteredServices(); track svc) {
             <button class="nav-btn" [class.active]="activeTab() === svc" (click)="switchTab(svc)">
               <span class="material-symbols-outlined">description</span>
               <span class="btn-text">{{ svc }}</span>
             </button>
+          }
+          @if (filteredServices().length === 0) {
+            <div style="padding: 12px; text-align: center; color: var(--text-secondary); font-size: 13px;">
+              No templates found.
+            </div>
           }
         </div>
       </div>

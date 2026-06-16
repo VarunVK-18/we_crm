@@ -1,4 +1,4 @@
-import { Component, input, output, signal, OnInit } from '@angular/core';
+import { Component, input, output, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon } from '@hugeicons/core-free-icons';
@@ -11,6 +11,8 @@ import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileVa
   styleUrl: './sidebar.css',
 })
 export class Sidebar implements OnInit {
+  isCollapsed = signal<boolean>(false);
+  autoCollapsedForServiceTrack = false;
   currentTab = input<string>('dashboard');
   tabChanged = output<string>();
   logoutClicked = output<void>();
@@ -24,6 +26,23 @@ export class Sidebar implements OnInit {
   readonly HistoryIcon = WorkHistoryIcon;
 
   user = signal<any>(null);
+
+  constructor() {
+    effect(() => {
+      const tab = this.currentTab();
+      if (tab === 'service-track') {
+        if (!this.isCollapsed()) {
+          this.isCollapsed.set(true);
+          this.autoCollapsedForServiceTrack = true;
+        }
+      } else {
+        if (this.autoCollapsedForServiceTrack) {
+          this.isCollapsed.set(false);
+          this.autoCollapsedForServiceTrack = false;
+        }
+      }
+    }, { allowSignalWrites: true });
+  }
 
   getNavGroups() {
     const u = this.user();
@@ -45,6 +64,7 @@ export class Sidebar implements OnInit {
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
+          { id: 'service-track', label: 'Service Track', color: '#8B5CF6' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
         ]
@@ -104,6 +124,18 @@ export class Sidebar implements OnInit {
         console.error('Failed to parse user from local storage:', e);
       }
     }
+    
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState) {
+      this.isCollapsed.set(savedState === 'true');
+    }
+  }
+
+  toggleCollapse() {
+    const newState = !this.isCollapsed();
+    this.isCollapsed.set(newState);
+    this.autoCollapsedForServiceTrack = false;
+    localStorage.setItem('sidebarCollapsed', newState.toString());
   }
 
   getInitials(): string {

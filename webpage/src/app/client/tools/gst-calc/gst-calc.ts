@@ -8,7 +8,7 @@ import { CalculatorIcon } from '@hugeicons/core-free-icons';
 @Component({
   selector: 'app-gst-calc',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './gst-calc.html',
   styleUrl: './gst-calc.css',
 })

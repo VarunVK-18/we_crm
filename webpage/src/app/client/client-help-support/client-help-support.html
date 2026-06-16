@@ -21,16 +21,6 @@
         <div class="main-card">
           <h2 class="card-title">Quick Actions</h2>
           <div class="actions-grid">
-            <div class="action-card" (click)="openWhatsApp()">
-              <div class="action-icon-wrapper bg-emerald">
-                <hugeicons-icon [icon]="BubbleChatIcon" [size]="24" color="#10b981" [strokeWidth]="2"></hugeicons-icon>
-              </div>
-              <div class="action-details">
-                <h3>WhatsApp Support</h3>
-                <p>Instant chat. Response &lt; 5 mins.</p>
-              </div>
-            </div>
-            
             <div class="action-card" routerLink="/client/support-tickets">
               <div class="action-icon-wrapper bg-indigo">
                 <hugeicons-icon [icon]="Ticket01Icon" [size]="24" color="#6366f1" [strokeWidth]="2"></hugeicons-icon>
@@ -38,6 +28,16 @@
               <div class="action-details">
                 <h3>Raise Ticket</h3>
                 <p>Track issues and updates securely.</p>
+              </div>
+            </div>
+
+            <div class="action-card" (click)="openWhatsApp()">
+              <div class="action-icon-wrapper bg-emerald">
+                <hugeicons-icon [icon]="BubbleChatIcon" [size]="24" color="#10b981" [strokeWidth]="2"></hugeicons-icon>
+              </div>
+              <div class="action-details">
+                <h3>WhatsApp Support</h3>
+                <p>Instant chat. Response &lt; 5 mins.</p>
               </div>
             </div>
             

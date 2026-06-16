@@ -9,7 +9,7 @@ import { Building04Icon, ArrowDown01Icon, ArrowUp01Icon, Copy01Icon } from '@hug
 @Component({
   selector: 'app-client-company-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule],
   providers: [DatePipe],
   templateUrl: './client-company-details.html',
   styleUrl: './client-company-details.css'

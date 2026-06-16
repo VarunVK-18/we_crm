@@ -26,6 +26,7 @@ export class ClientSidebarComponent implements OnInit {
 
   user = signal<any>(null);
   clientManager = signal<any>(null);
+  isCollapsed = signal<boolean>(false);
 
   currentTrustedIndex = signal(0);
   trustedCompanies = [
@@ -54,7 +55,17 @@ export class ClientSidebarComponent implements OnInit {
       this.user.set(parsed);
       this.fetchClientManager(parsed._id || parsed.id);
     }
+    const savedState = localStorage.getItem('clientSidebarCollapsed');
+    if (savedState) {
+      this.isCollapsed.set(savedState === 'true');
+    }
     this.startSlider();
+  }
+
+  toggleCollapse() {
+    const newState = !this.isCollapsed();
+    this.isCollapsed.set(newState);
+    localStorage.setItem('clientSidebarCollapsed', newState.toString());
   }
 
   ngOnDestroy() {

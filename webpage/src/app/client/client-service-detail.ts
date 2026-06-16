@@ -10,7 +10,7 @@ import { WeLoaderComponent } from '../components/we-loader/we-loader';
 @Component({
   selector: 'app-client-service-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, RouterModule, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, RouterModule, WeLoaderComponent],
   templateUrl: './client-service-detail.html',
   styleUrl: './client-service-detail.css',
 })

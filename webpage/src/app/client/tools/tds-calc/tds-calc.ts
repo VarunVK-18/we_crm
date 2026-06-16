@@ -8,7 +8,7 @@ import { CalculatorIcon } from '@hugeicons/core-free-icons';
 @Component({
   selector: 'app-tds-calc',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './tds-calc.html',
   styleUrl: './tds-calc.css',
 })

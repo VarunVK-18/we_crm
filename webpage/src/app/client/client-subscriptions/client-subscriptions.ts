@@ -14,7 +14,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 @Component({
   selector: 'app-client-subscriptions',
   standalone: true,
-  imports: [CommonModule, RouterModule, HugeiconsIconComponent, DatePipe, CurrencyPipe, WeLoaderComponent],
+  imports: [CommonModule, RouterModule, HugeiconsIconComponent, DatePipe, WeLoaderComponent],
   templateUrl: './client-subscriptions.html',
   styleUrl: './client-subscriptions.css'
 })

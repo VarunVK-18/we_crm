@@ -529,6 +529,20 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     return cl.final_documents.some((d: any) => d.name && d.name.startsWith(docType));
   }
 
+  getSortedPrivateLimitedFinalDocs(): string[] {
+    const uploaded: string[] = [];
+    const pending: string[] = [];
+    for (const doc of this.privateLimitedFinalDocs) {
+      if (doc === 'Other') continue;
+      if (this.hasFinalDocUploaded(doc)) {
+        uploaded.push(doc);
+      } else {
+        pending.push(doc);
+      }
+    }
+    return [...pending, ...uploaded];
+  }
+
   openRequestDocModal() {
     this.newDocRequestName = '';
     this.checklistErrorMessage.set('');

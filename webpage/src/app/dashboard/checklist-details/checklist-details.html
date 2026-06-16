@@ -400,25 +400,24 @@
             <span
               style="font-size: 16px; font-weight: 500; color: var(--text-primary); display: block; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{
               fdoc.name }}</span>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="font-size: 12px; color: var(--color-success); font-weight: 600;">Uploaded</span>
-                <a [href]="api.getFileUrl('api/documents/' + (fdoc.document_id?._id || fdoc.document_id))" target="_blank"
-                  style="color: var(--accent-primary); font-size: 12px; font-weight: 700; text-decoration: none;">View</a>
-                
-                <label [style.opacity]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? '0.5' : '1'"
-                  style="color: #f59e0b; font-size: 12px; font-weight: 700; cursor: pointer; margin: 0; padding: 0;">
-                  {{ isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? 'Wait...' : 'Reupload' }}
-                  <input type="file" style="display: none;" 
-                    [disabled]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id]"
-                    (change)="reuploadFinalDoc($event, fdoc.document_id?._id || fdoc.document_id)" />
-                </label>
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; margin-top: 12px;">
+              <a [href]="api.getFileUrl('api/documents/' + (fdoc.document_id?._id || fdoc.document_id))" target="_blank"
+                style="flex: 1; text-align: center; color: var(--accent-primary); padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
+                View
+              </a>
+              
+              <label [style.opacity]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? '0.5' : '1'"
+                style="flex: 1; text-align: center; color: #f59e0b; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin: 0; transition: all 0.2s;">
+                {{ isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? 'Wait...' : 'Reupload' }}
+                <input type="file" style="display: none;" 
+                  [disabled]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id]"
+                  (change)="reuploadFinalDoc($event, fdoc.document_id?._id || fdoc.document_id)" />
+              </label>
 
-                <button type="button" (click)="deleteUploadedFinalDoc(fdoc.document_id?._id || fdoc.document_id)"
-                  style="background: none; border: none; cursor: pointer; color: var(--color-danger); font-size: 12px; font-weight: 700; padding: 0;">
-                  Delete
-                </button>
-              </div>
+              <button type="button" (click)="deleteUploadedFinalDoc(fdoc.document_id?._id || fdoc.document_id)"
+                style="flex: 1; text-align: center; background: rgba(255, 255, 255, 0.1); color: var(--color-danger); border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin: 0; transition: all 0.2s;">
+                Delete
+              </button>
             </div>
           </div>
           }
@@ -430,8 +429,7 @@
           
           @if (checklist()?.service_name === 'Private Limited Incorporation') {
             <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-              @for (type of privateLimitedFinalDocs; track type) {
-                @if (type !== 'Other') {
+              @for (type of getSortedPrivateLimitedFinalDocs(); track type) {
                   <label class="custom-file-upload"
                     [style.background]="hasFinalDocUploaded(type) ? 'var(--bg-secondary)' : 'var(--bg-primary)'"
                     [style.border-color]="hasFinalDocUploaded(type) ? 'var(--color-success)' : 'var(--border-color)'"
@@ -445,7 +443,6 @@
                     Upload {{ type }}
                   </label>
                 }
-              }
             </div>
             
             <div style="width: 100%; height: 1px; background: var(--border-color); margin-bottom: 24px;"></div>
@@ -735,7 +732,7 @@
           }
         </div>
 
-        <div style="max-width: 85%; padding: 10px 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+        <div style="max-width: 85%; padding: 10px 14px 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
           [style.background]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#ffffff' : '#0f172a'"
           [style.color]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#1e293b' : '#ffffff'"
           [style.border-radius]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '16px 16px 16px 4px' : '16px 16px 4px 16px'"

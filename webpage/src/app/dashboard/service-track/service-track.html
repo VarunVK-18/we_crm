@@ -1,0 +1,54 @@
+<div class="st-container fade-in">
+  <div class="st-header">
+    <h2 class="st-title">Service Track</h2>
+    <p class="st-subtitle">Kanban view of all ongoing services categorized by type.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <app-we-loader></app-we-loader>
+      <p>Loading ongoing services...</p>
+    </div>
+  } @else {
+    <div class="st-board">
+      @for (col of categoryOrder; track col.id) {
+        <div class="st-column">
+          <div class="st-column-header">
+            <h3 class="st-column-title">{{ col.label }}</h3>
+            <span class="st-column-count">{{ groupedServices()[col.id].length }}</span>
+          </div>
+          
+          <div class="st-column-content">
+            @for (service of groupedServices()[col.id]; track service._id) {
+              <div class="st-card" (click)="viewService(service._id)">
+                <div class="st-card-header">
+                  <span class="st-card-client">{{ service.client_id?.owner_name || service.client_id?.company_name || 'Unknown Client' }}</span>
+                </div>
+                <h4 class="st-card-service">{{ service.service_name || service.checklist_name }}</h4>
+                
+                <div class="st-card-progress">
+                  <div class="st-progress-bar">
+                    <div class="st-progress-fill" [style.width.%]="service.items?.length ? (getCompletedCount(service.items) / service.items.length) * 100 : 0"></div>
+                  </div>
+                  <span class="st-progress-text">{{ getCompletedCount(service.items) }}/{{ service.items?.length || 0 }}</span>
+                </div>
+                
+                <div class="st-card-footer">
+                  <span class="st-status-badge">{{ service.status | titlecase }}</span>
+                  <div class="st-assignee" [class.unassigned]="!service.assigned_to" [title]="service.assigned_to?.owner_name || service.assigned_to?.name || 'Unassigned'">
+                    {{ service.assigned_to ? ((service.assigned_to.owner_name || service.assigned_to.name)?.slice(0,2)?.toUpperCase()) : '?' }}
+                  </div>
+                </div>
+              </div>
+            }
+            @if (groupedServices()[col.id].length === 0) {
+              <div class="st-empty-card">
+                No active services
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

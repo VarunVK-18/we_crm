@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed, ViewChild, ElementRef, AfterViewInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, signal, computed, ViewChild, ElementRef, AfterViewInit, OnDestroy, Output, EventEmitter, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Api } from '../../api';
 import Chart from 'chart.js/auto';
@@ -12,6 +12,7 @@ import Chart from 'chart.js/auto';
 })
 export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   @Output() viewRequests = new EventEmitter<void>();
+  searchQuery = input<string>('');
 
   @ViewChild('growthChart') growthChartCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('revenueChart') revenueChartCanvas!: ElementRef<HTMLCanvasElement>;
@@ -28,6 +29,30 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   tasks = signal<any[]>([]);
   checklists = signal<any[]>([]);
   ongoingItems = signal<any[]>([]);
+
+  filteredOngoingItems = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.ongoingItems();
+    return this.ongoingItems().filter(i => 
+      (i.title && i.title.toLowerCase().includes(q)) ||
+      (i.clientName && i.clientName.toLowerCase().includes(q)) ||
+      (i.assignedTo && i.assignedTo.toLowerCase().includes(q))
+    );
+  });
+
+  filteredReminders = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.complianceReminders();
+    return this.complianceReminders().filter(r => 
+      (r.title && r.title.toLowerCase().includes(q)) ||
+      (r.client_id?.owner_name && r.client_id.owner_name.toLowerCase().includes(q)) ||
+      (r.client_id?.company_name && r.client_id.company_name.toLowerCase().includes(q))
+    );
+  });
+
+  isSearching = computed(() => {
+    return this.searchQuery().trim().length > 0;
+  });
 
   stats: any[] = [
     { title: 'Active Services', value: '0', detail: '+12% from last month', isTrendUp: true },
@@ -292,6 +317,120 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   filterPeriod(period: string) {
     this.selectedPeriod.set(period);
     this.initOrUpdateCharts();
+  }
+
+  isExportModalOpen = false;
+  exportStartDate = '';
+  exportEndDate = '';
+
+  openExportModal() {
+    this.isExportModalOpen = true;
+    const today = new Date();
+    const lastMonth = new Date();
+    lastMonth.setMonth(today.getMonth() - 1);
+    this.exportEndDate = today.toISOString().split('T')[0];
+    this.exportStartDate = lastMonth.toISOString().split('T')[0];
+  }
+
+  closeExportModal() {
+    this.isExportModalOpen = false;
+  }
+
+  confirmExport() {
+    if (!this.exportStartDate || !this.exportEndDate) return;
+
+    const start = new Date(this.exportStartDate);
+    start.setHours(0,0,0,0);
+    const end = new Date(this.exportEndDate);
+    end.setHours(23,59,59,999);
+
+    if (start > end) {
+      alert('Start date must be before end date.');
+      return;
+    }
+
+    const dates: Date[] = [];
+    const current = new Date(start);
+    while (current <= end) {
+      dates.push(new Date(current));
+      current.setDate(current.getDate() + 1);
+    }
+
+    const labels = dates.map(d => {
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const yyyy = d.getFullYear();
+      return `${dd}-${mm}-${yyyy}`;
+    });
+    const totalTasks = new Array(dates.length).fill(0);
+    const completedTasks = new Array(dates.length).fill(0);
+    const revenue = new Array(dates.length).fill(0);
+    const clients = new Array(dates.length).fill(0);
+
+    this.tasks().forEach(task => {
+      if (!task.createdAt) return;
+      const created = new Date(task.createdAt);
+      if (created >= start && created <= end) {
+        const diffDays = Math.floor((created.getTime() - start.getTime()) / (1000 * 3600 * 24));
+        if (diffDays >= 0 && diffDays < dates.length) {
+          totalTasks[diffDays]++;
+          if (task.status === 'Completed' || task.status === 'Approved') {
+            completedTasks[diffDays]++;
+          }
+        }
+      }
+    });
+
+    this.checklists().forEach(checklist => {
+      if (!checklist.createdAt) return;
+      const created = new Date(checklist.createdAt);
+      if (created >= start && created <= end) {
+        const diffDays = Math.floor((created.getTime() - start.getTime()) / (1000 * 3600 * 24));
+        if (diffDays >= 0 && diffDays < dates.length) {
+          totalTasks[diffDays]++;
+          if (checklist.status === 'completed') {
+            completedTasks[diffDays]++;
+          }
+        }
+      }
+    });
+
+    this.clients().forEach(client => {
+      if (!client.createdAt) return;
+      const created = new Date(client.createdAt);
+      if (created >= start && created <= end) {
+        const diffDays = Math.floor((created.getTime() - start.getTime()) / (1000 * 3600 * 24));
+        if (diffDays >= 0 && diffDays < dates.length) {
+          clients[diffDays]++;
+          revenue[diffDays] += client.revenue || 0;
+        }
+      }
+    });
+
+    let csvContent = 'Date,Total Tasks,Completed Tasks,Revenue,Clients Onboarded\n';
+    
+    for (let i = 0; i < labels.length; i++) {
+      const row = [
+        labels[i],
+        totalTasks[i],
+        completedTasks[i],
+        revenue[i],
+        clients[i]
+      ];
+      csvContent += row.join(',') + '\n';
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Custom_Export_${this.exportStartDate}_to_${this.exportEndDate}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    this.closeExportModal();
   }
 
   initOrUpdateCharts() {
