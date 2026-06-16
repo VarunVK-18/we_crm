@@ -208,7 +208,7 @@ export class ClientDashboard implements OnInit, OnChanges {
         this.isUploadingDoc.set(false);
         if (res.success && res.data) {
           const { companyName, cin, tan, pan, incorporationDate } = res.data;
-          if (companyName && !this.currentEntity.entityName) this.currentEntity.entityName = companyName;
+          if (companyName) this.currentEntity.entityName = companyName;
           if (cin) this.currentEntity.cin = cin;
           if (tan) this.currentEntity.tan = tan;
           if (pan) this.currentEntity.pan = pan;

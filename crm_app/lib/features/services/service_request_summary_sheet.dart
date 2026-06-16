@@ -525,6 +525,71 @@ class _ServiceRequestSummarySheetState
        _selectedEntity = availableEntities.first;
     }
 
+    final Map<String, String> entityTypesMap = {};
+    if (ordersState.value != null) {
+      for (final order in ordersState.value!) {
+        final name = order.entityName;
+        if (name.isNotEmpty && name.toLowerCase() != 'client') {
+          final sName = order.serviceType.toLowerCase();
+          if (sName.contains('private limited incorporation')) {
+            entityTypesMap[name] = 'Private Limited Company';
+          } else if (sName.contains('llp incorporation')) {
+            entityTypesMap[name] = 'LLP';
+          } else if (sName.contains('proprietorship')) {
+            entityTypesMap[name] = 'Proprietorship';
+          } else if (sName.contains('opc')) {
+            entityTypesMap[name] = 'OPC';
+          }
+        }
+      }
+    }
+
+    for (final name in availableEntities) {
+      if (!entityTypesMap.containsKey(name)) {
+        final lower = name.toLowerCase();
+        if (lower.endsWith('pvt ltd') || lower.endsWith('private limited')) {
+          entityTypesMap[name] = 'Private Limited Company';
+        } else if (lower.endsWith('llp')) {
+          entityTypesMap[name] = 'LLP';
+        } else {
+          entityTypesMap[name] = 'Unknown';
+        }
+      }
+    }
+
+    Map<String, String>? _getCompatibilityWarning() {
+      if (_selectedEntity == null || _selectedEntity == 'Add New Entity...') return null;
+      
+      final entityType = entityTypesMap[_selectedEntity] ?? 'Unknown';
+      final reqService = widget.packageName;
+
+      if (entityType == 'Private Limited Company') {
+        if (reqService == 'OPC' || reqService.contains('Proprietorship')) {
+          return {
+            'type': 'error',
+            'header': 'Service Not Applicable',
+            'message': 'This entity is already registered as a Private Limited Company.\n\nOPC Registration and Proprietorship Registration are alternative business structures and cannot be applied to this entity.'
+          };
+        }
+        if (reqService.contains('LLP Incorporation') || reqService.contains('LLP Registration')) {
+          return {
+            'type': 'warning',
+            'header': 'Entity Conversion Required',
+            'message': 'This entity is already registered as a Private Limited Company. To proceed with LLP, you must either:\n\n• Convert the company into an LLP\nOR\n• Register a separate LLP entity'
+          };
+        }
+      } else if (entityType == 'LLP') {
+        if (reqService.contains('Private Limited Incorporation')) {
+          return {
+            'type': 'warning',
+            'header': 'Entity Conversion Required',
+            'message': 'This entity is already registered as an LLP. To proceed with Private Limited Incorporation, you must either:\n\n• Convert the LLP into a Private Limited Company\nOR\n• Register a separate Private Limited entity'
+          };
+        }
+      }
+      return null;
+    }
+
     return Container(
       padding: EdgeInsets.only(
         left: 24,
@@ -702,6 +767,53 @@ class _ServiceRequestSummarySheetState
                             });
                           },
                         ),
+                        if (_getCompatibilityWarning() != null) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade50 : Colors.amber.shade50,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade200 : Colors.amber.shade200,
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  _getCompatibilityWarning()!['type'] == 'error' ? LucideIcons.alertCircle : LucideIcons.alertTriangle,
+                                  color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade600 : Colors.amber.shade700,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _getCompatibilityWarning()!['header']!,
+                                        style: GoogleFonts.outfit(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14,
+                                          color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade900 : Colors.amber.shade900,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _getCompatibilityWarning()!['message']!,
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 13,
+                                          color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade800 : Colors.amber.shade900,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                         if (_selectedEntity == 'Add New Entity...') ...[
                           const SizedBox(height: 12),
                           _EditableField(
