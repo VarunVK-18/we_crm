@@ -18,6 +18,8 @@ export class ClientDashboard implements OnInit, OnChanges {
   activeTab = signal<string>('overview');
   isLoading = signal<boolean>(true);
   errorMessage = signal<string>('');
+  entitySearchQuery = signal<string>('');
+  documentSearchQuery = signal<string>('');
 
   constructor(private api: Api) {}
 
@@ -141,6 +143,38 @@ export class ClientDashboard implements OnInit, OnChanges {
 
   closeEntityForm() {
     this.isEntityFormOpen.set(false);
+  }
+
+  getFilteredEntities() {
+    const query = this.entitySearchQuery().toLowerCase().trim();
+    let entities = this.client()?.client_entities || [];
+    if (!query) return entities;
+    return entities.filter((ent: any) => 
+      (ent.entityName && ent.entityName.toLowerCase().includes(query)) ||
+      (ent.entityType && ent.entityType.toLowerCase().includes(query)) ||
+      (ent.cin && ent.cin.toLowerCase().includes(query)) ||
+      (ent.pan && ent.pan.toLowerCase().includes(query)) ||
+      (ent.gstin && ent.gstin.toLowerCase().includes(query))
+    );
+  }
+
+  getFilteredDocuments() {
+    const query = this.documentSearchQuery().toLowerCase().trim();
+    let docs = this.client()?.onboarding_documents || [];
+    if (!query) return docs;
+    return docs.filter((doc: any) => 
+      (doc.name && doc.name.toLowerCase().includes(query))
+    );
+  }
+
+  editEntityByRef(entity: any) {
+    const index = this.client().client_entities.findIndex((e: any) => e === entity);
+    if (index >= 0) this.editEntity(index);
+  }
+
+  deleteEntityByRef(entity: any) {
+    const index = this.client().client_entities.findIndex((e: any) => e === entity);
+    if (index >= 0) this.deleteEntity(index);
   }
 
   onEntityNameChange() {

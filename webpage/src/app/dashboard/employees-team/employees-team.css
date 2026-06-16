@@ -56,6 +56,37 @@
   gap: 16px;
 }
 
+.search-box {
+  position: relative;
+}
+
+.search-box .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.search-box input {
+  padding: 8px 16px 8px 40px;
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 280px;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-box input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(0, 106, 97, 0.1);
+}
+
 .btn-filter {
   background-color: var(--bg-primary);
   border: 1px solid var(--border-color);

@@ -19,7 +19,8 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   pollInterval: any;
 
   // Directory State
-  currentDirectoryTab = signal<string>('all');
+  currentDirectoryTab = signal<string>('pending');
+  searchQuery = signal<string>('');
 
   // Checklist creation/edit State
   isCreateChecklistModalOpen = signal<boolean>(false);
@@ -138,10 +139,23 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   filteredChecklists() {
     const all = this.checklists();
     const tab = this.currentDirectoryTab();
-    if (tab === 'pending') return all.filter(c => c.status === 'pending');
-    if (tab === 'in_progress') return all.filter(c => c.status === 'in_progress');
-    if (tab === 'completed') return all.filter(c => c.status === 'completed');
-    return all;
+    const query = this.searchQuery().toLowerCase().trim();
+    
+    let filtered = all;
+    if (tab === 'pending') filtered = all.filter(c => c.status === 'pending');
+    else if (tab === 'in_progress') filtered = all.filter(c => c.status === 'in_progress');
+    else if (tab === 'completed') filtered = all.filter(c => c.status === 'completed');
+    
+    if (query) {
+      filtered = filtered.filter(c => {
+        const clientName = (c.client_id?.owner_name || '').toLowerCase();
+        const clientCompany = (c.client_id?.company_name || '').toLowerCase();
+        const serviceName = (c.service_name || '').toLowerCase();
+        return clientName.includes(query) || clientCompany.includes(query) || serviceName.includes(query);
+      });
+    }
+    
+    return filtered;
   }
 
   fetchClients() {

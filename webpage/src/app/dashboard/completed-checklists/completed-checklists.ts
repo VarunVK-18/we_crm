@@ -24,6 +24,7 @@ export class CompletedChecklists implements OnInit, OnDestroy {
   teams = input<any[]>([]);
   clients = signal<any[]>([]);
   pollInterval: any;
+  searchQuery = signal<string>('');
 
   // Icon assets
   readonly PlusSignIcon = PlusSignIcon;
@@ -125,6 +126,18 @@ export class CompletedChecklists implements OnInit, OnDestroy {
     });
   }
 
+  filteredChecklists() {
+    let list = this.checklists();
+    const query = this.searchQuery().toLowerCase().trim();
+    if (query) {
+      list = list.filter(c => 
+        (c.service_name && c.service_name.toLowerCase().includes(query)) ||
+        (c.client_id?.owner_name && c.client_id.owner_name.toLowerCase().includes(query)) ||
+        (c.client_id?.company_name && c.client_id.company_name.toLowerCase().includes(query))
+      );
+    }
+    return list;
+  }
 
   fetchClients() {
     this.api.get<any>('users/clients').subscribe({

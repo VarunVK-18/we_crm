@@ -29,11 +29,12 @@
   <!-- Navigation list with section headers -->
   <div class="navigation-list">
     @for (group of getNavGroups(); track group.header) {
-      @if (group.header) {
-        <div class="group-header">{{ group.header }}</div>
-      }
-      <div class="group-items">
-        @for (item of group.items; track item.id) {
+      <div class="nav-group">
+        @if (group.header) {
+          <div class="group-header">{{ group.header }}</div>
+        }
+        <div class="group-items">
+          @for (item of group.items; track item.id) {
           <div 
             class="nav-item-wrapper"
             [class.selected]="currentTab() === item.id"
@@ -138,8 +139,9 @@
           </div>
         }
       </div>
-    }
-  </div>
+    </div>
+  }
+</div>
 
 
 </div>

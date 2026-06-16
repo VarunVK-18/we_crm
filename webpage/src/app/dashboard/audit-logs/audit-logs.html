@@ -1,6 +1,19 @@
 <div class="tab-view fade-in">
-  <div class="filter-action-bar">
-    <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary);">Security & System Audit Log</h2>
+  <div class="filter-action-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+    <h2 class="section-title-premium" style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin: 0;">Security & System Audit Log</h2>
+    
+    <div style="display: flex; gap: 16px; align-items: center; flex-wrap: wrap;">
+      <div class="search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" placeholder="Search logs..." [(ngModel)]="searchQuery" />
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <input type="date" class="date-filter" [(ngModel)]="fromDate" />
+        <span style="color: var(--text-secondary); font-size: 14px; font-weight: 500;">to</span>
+        <input type="date" class="date-filter" [(ngModel)]="toDate" />
+      </div>
+    </div>
   </div>
 
   <div style="background-color: var(--bg-active); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-top: 16px;">
@@ -15,7 +28,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (log of logs(); track log._id) {
+          @for (log of filteredLogs(); track log._id) {
             <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-primary);">
               <td style="padding: 12px 16px; white-space: nowrap; color: var(--text-secondary);">{{ log.createdAt | date:'medium' }}</td>
               <td style="padding: 12px 16px; white-space: nowrap;">
@@ -30,7 +43,7 @@
               <td style="padding: 12px 16px; color: var(--text-secondary);">{{ log.details }}</td>
             </tr>
           }
-          @if (logs().length === 0) {
+          @if (filteredLogs().length === 0) {
             <tr>
               <td colspan="4" style="padding: 24px; text-align: center; color: var(--text-secondary);">
                 No system operations logged yet.

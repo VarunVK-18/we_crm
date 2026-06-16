@@ -98,7 +98,13 @@
           @if (activeTab() === 'entities') {
             <div class="entities-tab">
               <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h3>Registered Entities</h3>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  <h3 style="margin: 0;">Registered Entities</h3>
+                  <div class="search-box">
+                    <span class="material-symbols-outlined search-icon">search</span>
+                    <input type="text" placeholder="Search entities..." [(ngModel)]="entitySearchQuery" />
+                  </div>
+                </div>
                 <button class="add-entity-btn" (click)="openEntityForm()" style="background: var(--accent-primary); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
                   + Add Entity
                 </button>
@@ -202,8 +208,8 @@
               }
 
               <div class="entities-list" style="display: flex; flex-direction: column; gap: 16px;">
-                @if (client().client_entities && client().client_entities.length > 0) {
-                  @for (ent of client().client_entities; track ent._id || ent.entityName; let i = $index) {
+                @if (getFilteredEntities().length > 0) {
+                  @for (ent of getFilteredEntities(); track ent._id || ent.entityName; let i = $index) {
                     <div class="entity-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
                       <div class="entity-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                         <div>
@@ -211,8 +217,8 @@
                           <span style="font-size: 12px; color: #64748B; background: #f1f5f9; padding: 2px 8px; border-radius: 12px; display: inline-block; margin-top: 4px;">{{ ent.entityType || 'Unspecified Type' }}</span>
                         </div>
                         <div>
-                          <button (click)="editEntity(i)" style="background: none; border: none; color: #3b82f6; cursor: pointer; margin-right: 12px;">Edit</button>
-                          <button (click)="deleteEntity(i)" style="background: none; border: none; color: #ef4444; cursor: pointer;">Delete</button>
+                          <button (click)="editEntityByRef(ent)" style="background: none; border: none; color: #3b82f6; cursor: pointer; margin-right: 12px;">Edit</button>
+                          <button (click)="deleteEntityByRef(ent)" style="background: none; border: none; color: #ef4444; cursor: pointer;">Delete</button>
                         </div>
                       </div>
                       
@@ -281,9 +287,16 @@
           }
 
           @if (activeTab() === 'documents') {
+            <div class="tab-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+              <h3 style="margin: 0;">Documents</h3>
+              <div class="search-box">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" placeholder="Search documents..." [(ngModel)]="documentSearchQuery" />
+              </div>
+            </div>
             <div class="documents-grid">
-              @if (client().onboarding_documents && client().onboarding_documents.length > 0) {
-                @for (doc of client().onboarding_documents; track doc.url) {
+              @if (getFilteredDocuments().length > 0) {
+                @for (doc of getFilteredDocuments(); track doc.url) {
                   <a [href]="doc.url" target="_blank" class="document-card">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                     <span>{{ doc.name || 'Document' }}</span>

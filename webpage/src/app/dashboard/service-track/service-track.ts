@@ -35,6 +35,8 @@ export class ServiceTrackComponent implements OnInit {
     { id: 'other', label: 'Other' }
   ];
 
+  visibleCategories = signal<string[]>(this.categoryOrder.map(c => c.id));
+
   servicesDatabase: Record<string, string[]> = {
     'incorporation': ['Proprietorship Registration', 'Partnership Firm Registration', 'Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'MSME Registration', 'Company Incorporation'],
     'compliance': ['MCA Compliance', 'TDS', 'PF', 'DUNS Registration', 'PAN, TAN & Bank Setup', 'Compliance'],
@@ -103,5 +105,18 @@ export class ServiceTrackComponent implements OnInit {
 
   viewService(id: string) {
     this.onViewChecklist.emit(id);
+  }
+
+  toggleCategory(categoryId: string) {
+    const current = this.visibleCategories();
+    if (current.includes(categoryId)) {
+      this.visibleCategories.set(current.filter(id => id !== categoryId));
+    } else {
+      this.visibleCategories.set([...current, categoryId]);
+    }
+  }
+
+  selectAllCategories() {
+    this.visibleCategories.set(this.categoryOrder.map(c => c.id));
   }
 }

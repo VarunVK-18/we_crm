@@ -4,6 +4,12 @@
       <h2 class="page-title">Completed Service</h2>
       <p class="page-subtitle">Review your historical compliance and service records.</p>
     </div>
+    <div class="header-actions">
+      <div class="search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" placeholder="Search service or client..." [(ngModel)]="searchQuery" />
+      </div>
+    </div>
   </div>
 
   <!-- Checklist Cards Grid -->
@@ -33,7 +39,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (cl of checklists(); track cl._id) {
+          @for (cl of filteredChecklists(); track cl._id) {
             <tr (click)="viewDetails(cl._id)">
               <td>
                 <span class="service-badge">{{ cl.service_name }}</span>

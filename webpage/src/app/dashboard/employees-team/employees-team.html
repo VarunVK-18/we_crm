@@ -6,7 +6,11 @@
       <h2 class="page-title">Team Management & Access Control</h2>
       <p class="page-subtitle">{{ getFlatEmployees().length }} Active Members across Departments</p>
     </div>
-    <div class="header-actions">
+    <div class="header-actions" style="display: flex; gap: 16px; align-items: center;">
+      <div class="search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" placeholder="Search team members..." [(ngModel)]="searchQuery" />
+      </div>
       <button class="btn-add-user" (click)="openCreateEmployeeModal()">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
         Add New User

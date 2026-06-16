@@ -12,8 +12,14 @@
       <h2 class="page-title">Service Requests</h2>
       <p class="page-subtitle">Manage all incoming orders and assign experts</p>
     </div>
-    <div class="total-badge">
-      {{ orderCounts().all }} Total Requests
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <div class="search-box">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" placeholder="Search requests..." [(ngModel)]="searchQuery" />
+      </div>
+      <div class="total-badge">
+        {{ orderCounts().all }} Total Requests
+      </div>
     </div>
   </div>
 

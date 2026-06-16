@@ -28,6 +28,7 @@ export class RequestsComponent implements OnInit {
 
   // Filter state
   statusFilter = signal<string>('new');
+  searchQuery = signal<string>('');
 
   readonly NEW_STATUSES = ['new', 'pending'];
   readonly NEW_STAGES = ['reqreceived', 'quot pending', 'quotepending'];
@@ -47,11 +48,24 @@ export class RequestsComponent implements OnInit {
 
   filteredOrders = computed(() => {
     const filter = this.statusFilter();
+    const query = this.searchQuery().toLowerCase().trim();
     const all = this.orders();
-    if (filter === 'all') return all;
-    if (filter === 'new') return all.filter((o: any) => this.isNewOrder(o));
-    if (filter === 'active') return all.filter((o: any) => !this.isNewOrder(o) && (o.status || '').toLowerCase() === 'active');
-    return all.filter((o: any) => (o.status || '').toLowerCase() === filter);
+    
+    let filtered = all;
+    if (filter === 'new') filtered = all.filter((o: any) => this.isNewOrder(o));
+    else if (filter === 'active') filtered = all.filter((o: any) => !this.isNewOrder(o) && (o.status || '').toLowerCase() === 'active');
+    else if (filter !== 'all') filtered = all.filter((o: any) => (o.status || '').toLowerCase() === filter);
+    
+    if (query) {
+      filtered = filtered.filter((o: any) => {
+        const clientName = (o.user?.name || o.user?.owner_name || '').toLowerCase();
+        const clientCompany = (o.user?.company_name || '').toLowerCase();
+        const serviceName = (o.serviceName || '').toLowerCase();
+        const entityName = (o.entityName || '').toLowerCase();
+        return clientName.includes(query) || clientCompany.includes(query) || serviceName.includes(query) || entityName.includes(query);
+      });
+    }
+    return filtered;
   });
 
   orderCounts = computed(() => {

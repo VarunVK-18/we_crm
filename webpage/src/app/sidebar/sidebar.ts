@@ -62,9 +62,9 @@ export class Sidebar implements OnInit {
         header: 'Operations',
         items: [
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
-          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'service-track', label: 'Service Track', color: '#8B5CF6' },
+          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
         ]
@@ -88,8 +88,8 @@ export class Sidebar implements OnInit {
         header: 'Operations',
         items: [
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
-          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
+          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
         ]
@@ -104,8 +104,8 @@ export class Sidebar implements OnInit {
       groups.push({
         header: 'Operations',
         items: [
-          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
+          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
         ]

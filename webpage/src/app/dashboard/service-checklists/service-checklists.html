@@ -32,11 +32,17 @@
   </div>
 
   <!-- Filters -->
-  <div class="filter-pill-bar">
-    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists</button>
-    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending</button>
-    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress</button>
-    <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed</button>
+  <div class="filter-pill-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+    <div style="display: flex; gap: 8px;">
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed</button>
+    </div>
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" placeholder="Search services..." [(ngModel)]="searchQuery" />
+    </div>
   </div>
 
   <!-- Checklist Cards Grid -->

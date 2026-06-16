@@ -104,7 +104,8 @@
 .branding-title {
   font-family: var(--font-heading);
   color: var(--text-primary);
-  font-size: var(--text-lg); /* 14px */
+  font-size: var(--text-lg);
+  /* 14px */
   font-weight: 700;
   letter-spacing: -0.02em;
   line-height: 1.2;
@@ -124,9 +125,9 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 20px 14px;
-  gap: 20px;
-  
+  padding: 24px 16px;
+  gap: 24px;
+
   /* Hide scrollbar for IE, Edge and Firefox */
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -151,14 +152,20 @@
   pointer-events: auto;
 }
 
+.nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .group-header {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 0 12px;
-  margin-bottom: 6px;
+  padding: 0 14px;
+  margin-bottom: 4px;
   transition: all 0.2s ease;
 }
 
@@ -191,13 +198,14 @@
 .nav-item-wrapper::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: -1px;
   top: 50%;
   transform: translateY(-50%);
-  width: 3px;
-  height: 100%;
+  width: 4px;
+  height: 20px;
   border-radius: 0 4px 4px 0;
-  background-color: currentColor; /* Inherits the dynamic selected color */
+  background-color: currentColor;
+  /* Inherits the dynamic selected color */
   opacity: 0;
   transition: opacity var(--transition-fast);
 }
@@ -212,10 +220,12 @@
 }
 
 .nav-item-wrapper.selected {
-  background-color: rgba(15, 23, 42, 0.05); /* Slight dark background */
-  color: var(--text-primary); /* Dark bold black text */
-  font-weight: 700;
-  border-radius: 0px; /* Border radius for the active item */
+  background-color: rgba(15, 23, 42, 0.05);
+  /* Slight dark background */
+  color: var(--text-primary);
+  /* Dark bold black text */
+  font-weight: 500;
+  border-radius: 8px;
 }
 
 .nav-item-content {
@@ -232,7 +242,8 @@
 }
 
 .nav-item-label {
-  font-size: var(--text-base); /* 13px */
+  font-size: var(--text-base);
+  /* 13px */
   color: inherit;
   font-weight: 500;
   white-space: nowrap;
@@ -268,7 +279,7 @@
 }
 
 .nav-item-wrapper.selected .nav-item-label {
-  font-weight: 600;
+  /* removed font-weight override so it inherits the wrapper's 500 weight */
 }
 
 .nav-tooltip {
@@ -303,7 +314,8 @@
   padding: 12px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background-color: var(--bg-secondary); /* white */
+  background-color: var(--bg-secondary);
+  /* white */
   display: flex;
   align-items: center;
   gap: 12px;
@@ -333,7 +345,8 @@
 }
 
 .user-name {
-  font-size: var(--text-base); /* 13px */
+  font-size: var(--text-base);
+  /* 13px */
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -368,7 +381,7 @@
   cursor: pointer;
   z-index: 110;
   color: var(--text-primary);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
   padding: 0;
 }

@@ -18,6 +18,7 @@ export class EmployeesTeam implements OnInit {
 
   // Directory State
   currentDirectoryTab = signal<string>('all');
+  searchQuery = signal<string>('');
 
   // Modals state
   isCreateEmployeeModalOpen = signal<boolean>(false);
@@ -89,11 +90,21 @@ export class EmployeesTeam implements OnInit {
   filteredEmployees() {
     const all = this.getFlatEmployees();
     const tab = this.currentDirectoryTab();
-    if (tab === 'all') return all;
-    if (tab === 'admins') return all.filter(m => m.role === 'admin');
-    if (tab === 'filing') return all.filter(m => m.role === 'filling_staff');
-    if (tab === 'clients') return all.filter(m => m.role === 'client_manager');
-    return all;
+    const query = this.searchQuery().toLowerCase().trim();
+    
+    let filtered = all;
+    if (tab === 'admins') filtered = all.filter(m => m.role === 'admin');
+    else if (tab === 'filing') filtered = all.filter(m => m.role === 'filling_staff');
+    else if (tab === 'clients') filtered = all.filter(m => m.role === 'client_manager');
+    
+    if (query) {
+      filtered = filtered.filter(m => 
+        (m.name && m.name.toLowerCase().includes(query)) ||
+        (m.email && m.email.toLowerCase().includes(query)) ||
+        (m.role && this.getRoleLabel(m.role).toLowerCase().includes(query))
+      );
+    }
+    return filtered;
   }
 
   getDepartment(role: string): string {
