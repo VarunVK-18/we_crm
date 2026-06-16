@@ -425,7 +425,14 @@ const getMyChecklists = async (req, res) => {
       'ISO',
       'ISO Registration',
       'FSSAI',
-      'FSSAI Registration'
+      'FSSAI Registration',
+      'One Person Company',
+      'GST Compliance',
+      'LIE Registration',
+      'LIE',
+      'BIS Registration',
+      'BIS',
+      'MCA Compliance'
     ];
 
     const enrichedChecklists = checklistsPlain.map(c => {
@@ -455,6 +462,16 @@ const getMyChecklists = async (req, res) => {
         } else if (serviceNameLower.includes('iso') && c.details && c.details.isoForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('one person company') && c.details && c.details.incorpForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('gst compliance') && c.details && c.details.gstComplianceForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('lie') && c.details && c.details.lieForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('bis') && c.details && c.details.bisForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('mca') && c.details && c.details.mcaForm) {
             isFormFilled = true;
         }
 
@@ -752,6 +769,16 @@ const uploadFinalDocuments = async (req, res) => {
                 entityName
               );
               console.log(`Generated LLP compliances for ${entityName} with incDate ${extractedDate}`);
+            } else if (checklist.service_name.includes('One Person Company') && extractedDate) {
+              const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'OPC Entity';
+              await complianceService.generateCompliancesForOPC(
+                checklist.client_id,
+                checklist.company_id,
+                checklist._id,
+                extractedDate,
+                entityName
+              );
+              console.log(`Generated OPC compliances for ${entityName} with incDate ${extractedDate}`);
             }
 
           } catch (err) {
@@ -1022,6 +1049,15 @@ const reuploadFinalDocument = async (req, res) => {
         } else if (checklist.service_name.includes('LLP Incorporation') && extractedDate) {
           const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'LLP Entity';
           await complianceService.generateCompliancesForLLP(
+            checklist.client_id,
+            checklist.company_id,
+            checklist._id,
+            extractedDate,
+            entityName
+          );
+        } else if (checklist.service_name.includes('One Person Company') && extractedDate) {
+          const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'OPC Entity';
+          await complianceService.generateCompliancesForOPC(
             checklist.client_id,
             checklist.company_id,
             checklist._id,

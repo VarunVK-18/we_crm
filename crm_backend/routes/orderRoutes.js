@@ -144,6 +144,48 @@ router.post(
   orderController.submitIsoForm
 );
 
+// @route   POST /api/orders/:id/submit-lie-form
+router.post(
+  '/:id/submit-lie-form',
+  checkUser,
+  upload.fields(isoUploadFields),
+  orderController.submitLieForm
+);
+
+// @route   POST /api/orders/:id/submit-gst-compliance-form
+router.post(
+  '/:id/submit-gst-compliance-form',
+  checkUser,
+  upload.fields([
+    { name: 'bankStatement', maxCount: 1 }
+  ]),
+  orderController.submitGstComplianceForm
+);
+
+// @route   POST /api/orders/:id/submit-mca-form
+router.post(
+  '/:id/submit-mca-form',
+  checkUser,
+  upload.fields([
+    { name: 'coi', maxCount: 1 },
+    { name: 'pan', maxCount: 1 },
+    { name: 'moa', maxCount: 1 },
+    { name: 'aoa', maxCount: 1 },
+    { name: 'bankStatement', maxCount: 1 },
+    { name: 'salesInvoice', maxCount: 1 },
+    { name: 'purchaseBills', maxCount: 1 }
+  ]),
+  orderController.submitMcaForm
+);
+
+// @route   POST /api/orders/:id/submit-bis-form
+router.post(
+  '/:id/submit-bis-form',
+  checkUser,
+  upload.fields(isoUploadFields),
+  orderController.submitBisForm
+);
+
 // Define fields for FSSAI Registration form
 const fssaiUploadFields = [
   { name: 'aadhaarCard', maxCount: 1 },
@@ -182,6 +224,21 @@ router.post(
   checkUser,
   upload.fields(dscUploadFields),
   orderController.submitDscForm
+);
+
+// Define fields for GST Compliance form
+const gstComplianceUploadFields = [
+  { name: 'bankStatement', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-gst-compliance-form
+// @desc    Submit GST compliance details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-gst-compliance-form',
+  checkUser,
+  upload.fields(gstComplianceUploadFields),
+  orderController.submitGstComplianceForm
 );
 
 module.exports = router;

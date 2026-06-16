@@ -206,6 +206,8 @@ export class ClientDashboard implements OnInit, OnDestroy {
               status = 'action-required';
             } else if (isFSSAI && (!c.details || !c.details.fssai_business_type)) {
               status = 'action-required';
+            } else if (c.action_required) {
+              status = 'action-required';
             }
           }
           

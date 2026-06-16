@@ -550,6 +550,84 @@ exports.submitIsoForm = async (req, res) => {
   }
 };
 
+// Submit LIE Registration Form
+exports.submitLieForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.msmeCertificate) {
+      uploadedDocs.push({ name: "MSME Certificate", fileUrl: files.msmeCertificate[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      lieForm: formData,
+      lieDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'LIE form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting LIE form:', error);
+    res.status(500).json({ message: 'Server error while submitting LIE form.', error: error.message });
+  }
+};
+
+// Submit BIS Registration Form
+exports.submitBisForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.msmeCertificate) {
+      uploadedDocs.push({ name: "MSME Certificate", fileUrl: files.msmeCertificate[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      bisForm: formData,
+      bisDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'BIS form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting BIS form:', error);
+    res.status(500).json({ message: 'Server error while submitting BIS form.', error: error.message });
+  }
+};
+
 // Submit FSSAI Registration Form
 exports.submitFssaiForm = async (req, res) => {
   try {
@@ -655,5 +733,87 @@ exports.submitDscForm = async (req, res) => {
   } catch (error) {
     console.error('Error submitting DSC form:', error);
     res.status(500).json({ message: 'Server error while submitting DSC form.', error: error.message });
+  }
+};
+
+// Submit MCA Registration Form
+exports.submitMcaForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.coi) uploadedDocs.push({ name: "Certificate of Incorporation", fileUrl: files.coi[0].path });
+    if (files.pan) uploadedDocs.push({ name: "PAN Card of the Company", fileUrl: files.pan[0].path });
+    if (files.moa) uploadedDocs.push({ name: "Memorandum of Association (MOA)", fileUrl: files.moa[0].path });
+    if (files.aoa) uploadedDocs.push({ name: "Articles of Association (AOA)", fileUrl: files.aoa[0].path });
+    if (files.bankStatement) uploadedDocs.push({ name: "Last FY Bank statements", fileUrl: files.bankStatement[0].path });
+    if (files.salesInvoice) uploadedDocs.push({ name: "Sales Invoice copies of last FY", fileUrl: files.salesInvoice[0].path });
+    if (files.purchaseBills) uploadedDocs.push({ name: "Purchase bills of last FY", fileUrl: files.purchaseBills[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      mcaForm: formData,
+      mcaDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'MCA form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting MCA form:', error);
+    res.status(500).json({ message: 'Server error while submitting MCA form.', error: error.message });
+  }
+};
+
+// Submit GST Compliance Form
+exports.submitGstComplianceForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.bankStatement) {
+      uploadedDocs.push({ name: "Last 3 months Bank Statement (Current Account)", fileUrl: files.bankStatement[0].path });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      gstComplianceForm: formData,
+      gstComplianceDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'GST Compliance form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting GST Compliance form:', error);
+    res.status(500).json({ message: 'Server error while submitting GST Compliance form.', error: error.message });
   }
 };

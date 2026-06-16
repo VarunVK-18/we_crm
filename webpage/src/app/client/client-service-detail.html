@@ -169,6 +169,41 @@
                       Fill Form
                     </button>
                     }
+                    @if (order()?.service_name === 'One Person Company') {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToOpcForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name === 'GST Compliance') {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToGstComplianceForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name === 'LIE Registration' || order()?.service_name === 'LIE') {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToLieForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name === 'BIS Registration' || order()?.service_name === 'BIS') {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToBisForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name === 'MCA Compliance' || order()?.service_name === 'MCA') {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToMcaForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
                     }
                     } @else {
                     <p>Form submitted successfully.</p>

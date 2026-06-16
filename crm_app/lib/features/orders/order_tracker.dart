@@ -12,7 +12,6 @@ import '../../models/order_model.dart';
 import 'order_chat_screen.dart';
 import 'service_order_detail_screen.dart';
 import '../../providers/orders_provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/compliance_provider.dart';
 import 'notification_sheet.dart';
@@ -49,48 +48,58 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
     final isLoading = ordersAsync.isLoading && orders.isEmpty;
     final totalNotificationsCount = ref.watch(notificationProvider).length;
 
-    final user = ref.watch(userProfileProvider).value;
     final selectedEntity = ref.watch(selectedEntityProvider);
 
-    // Build entity list from database data using companyName
+    // Build entity list using entityName (canonical key matching selectedEntityProvider)
+    // Falls back to companyName if entityName is missing or equals 'Default'
     final entities = orders
-        .map((o) => o.companyName.trim())
+        .map((o) {
+          final en = o.entityName.trim();
+          return (en.isNotEmpty && en != 'Default') ? en : o.companyName.trim();
+        })
         .where((c) => c.isNotEmpty)
         .toSet()
         .toList()
         ..sort();
 
-    // Prevent Dropdown assertion crash if selectedEntity is not yet in the list (e.g. while loading)
+    // Prevent Dropdown assertion crash if selectedEntity is not yet in the list
     if (selectedEntity != 'All Entities' && !entities.contains(selectedEntity)) {
       entities.add(selectedEntity);
       entities.sort();
     }
 
-    // Filter by selected entity
+    // Filter by selected entity — compare against both entityName and companyName
+    // so we catch any mismatch in the data gracefully
     final entityFilteredRaw = selectedEntity == 'All Entities'
         ? orders
-        : orders.where((o) => o.companyName.trim() == selectedEntity).toList();
-        
+        : orders.where((o) {
+            final en = o.entityName.trim();
+            final cn = o.companyName.trim();
+            return en.toLowerCase() == selectedEntity.toLowerCase() ||
+                cn.toLowerCase() == selectedEntity.toLowerCase();
+          }).toList();
+
     final entityFiltered = List<ServiceOrder>.from(entityFilteredRaw)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     final fullActiveList =
         entityFiltered.where((o) => o.status == ServiceStatus.active).toList();
-        
+
     var activeList = fullActiveList;
     if (_activeFilter == 'Action Required') {
       activeList = activeList.where((o) => o.actionRequired).toList();
     } else if (_activeFilter == 'In Progress') {
       activeList = activeList.where((o) => !o.actionRequired).toList();
     }
-    
+
     if (_searchQuery.isNotEmpty) {
       final q = _searchQuery.toLowerCase();
-      activeList = activeList.where((o) => 
-        o.serviceType.toLowerCase().contains(q) || 
-        o.entityName.toLowerCase().contains(q) || 
-        o.companyName.toLowerCase().contains(q)
-      ).toList();
+      activeList = activeList
+          .where((o) =>
+              o.serviceType.toLowerCase().contains(q) ||
+              o.entityName.toLowerCase().contains(q) ||
+              o.companyName.toLowerCase().contains(q))
+          .toList();
     }
 
     final completeList = entityFiltered

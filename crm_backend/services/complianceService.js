@@ -177,6 +177,56 @@ exports.generateCompliancesForLLP = async (clientUid, companyId, checklistId, in
     }
 };
 
+exports.generateCompliancesForOPC = async (clientUid, companyId, checklistId, incDate, entityName = '') => {
+    // Delete any existing tasks for this checklist to prevent duplicates on reupload
+    await ComplianceTask.deleteMany({ checklistId });
+
+    // Indian FY logic: FY ends Mar 31 of (year + 1)
+    const year = incDate.getFullYear();
+    const fyEndDate = new Date(year + 1, 2, 31); // March 31
+
+    const compliances = [
+        {
+            title: 'ADT-1',
+            description: 'First Auditor Appointment (Due 30 days after inc)',
+            dueDate: addDays(incDate, 30)
+        },
+        {
+            title: 'Share Certificates',
+            description: 'Due 60 days after inc',
+            dueDate: addDays(incDate, 60)
+        },
+        {
+            title: 'INC-20A (Commencement of Business)',
+            description: 'Due 180 days after inc',
+            dueDate: addDays(incDate, 180)
+        },
+        {
+            title: 'AOC-4',
+            description: 'Due 180 days after close of Financial Year',
+            dueDate: addDays(fyEndDate, 180)
+        },
+        {
+            title: 'MGT-7A',
+            description: 'Due 60 days after 6 months from close of Financial Year',
+            dueDate: addDays(fyEndDate, 240)
+        }
+    ];
+
+    for (const c of compliances) {
+        await ComplianceTask.create({
+            clientUid,
+            companyId,
+            checklistId,
+            entityName,
+            title: c.title,
+            description: c.description,
+            dueDate: c.dueDate,
+            status: 'Upcoming'
+        });
+    }
+};
+
 
 exports.calculateStatus = (dueDate, completedAt) => {
     if (completedAt) return 'Completed';

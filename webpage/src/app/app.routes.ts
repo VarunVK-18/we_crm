@@ -25,6 +25,11 @@ import { TrademarkForm } from './client/forms/trademark-form/trademark-form';
 import { GstForm } from './client/forms/gst-form/gst-form';
 import { IsoForm } from './client/forms/iso-form/iso-form';
 import { DscForm } from './client/forms/dsc-form/dsc-form';
+import { OpcForm } from './client/forms/opc-form/opc-form';
+import { GstComplianceForm } from './client/forms/gst-compliance-form/gst-compliance-form';
+import { LieForm } from './client/forms/lie-form/lie-form';
+import { BisForm } from './client/forms/bis-form/bis-form';
+import { McaFormComponent } from './client/forms/mca-form/mca-form';
 import { HomeOverview } from './dashboard/home-overview/home-overview';
 import { ClientsDirectory } from './dashboard/clients-directory/clients-directory';
 import { RequestsComponent } from './dashboard/requests/requests';
@@ -75,6 +80,11 @@ export const routes: Routes = [
       { path: 'forms/gst/:id', component: GstForm },
       { path: 'forms/iso/:id', component: IsoForm },
       { path: 'forms/dsc/:id', component: DscForm },
+      { path: 'forms/opc/:id', component: OpcForm },
+      { path: 'forms/gst-compliance/:id', component: GstComplianceForm },
+      { path: 'forms/lie/:id', component: LieForm },
+      { path: 'forms/bis/:id', component: BisForm },
+      { path: 'forms/mca/:id', component: McaFormComponent },
       { path: 'service/:id', component: ClientServiceDetail },
       { path: 'ongoing-services', component: ClientOngoingServices },
       { path: 'company-details', component: ClientCompanyDetails },

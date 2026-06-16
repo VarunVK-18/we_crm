@@ -99,6 +99,10 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     this.router.navigate(['/client/forms/msme', this.order()?._id || this.order()?.id]);
   }
 
+  goToMcaForm() {
+    this.router.navigate(['/client/forms/mca', this.order()?._id || this.order()?.id]);
+  }
+
   goToFssaiForm() {
     this.router.navigate(['/client/forms/fssai', this.order()?._id || this.order()?.id]);
   }
@@ -117,6 +121,22 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   goToDscForm() {
     this.router.navigate(['/client/forms/dsc', this.order()?._id || this.order()?.id]);
+  }
+
+  goToOpcForm() {
+    this.router.navigate(['/client/forms/opc', this.order()?._id || this.order()?.id]);
+  }
+
+  goToGstComplianceForm() {
+    this.router.navigate(['/client/forms/gst-compliance', this.order()?._id || this.order()?.id]);
+  }
+
+  goToLieForm() {
+    this.router.navigate(['/client/forms/lie', this.order()?._id || this.order()?.id]);
+  }
+
+  goToBisForm() {
+    this.router.navigate(['/client/forms/bis', this.order()?._id || this.order()?.id]);
   }
 
   fetchOrderDetails(silent = false) {
@@ -143,6 +163,8 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
             } else if (isLLP && (!found.details || !found.details.llpName)) {
               status = 'action-required';
             } else if (isFSSAI && (!found.details || !found.details.fssai_business_type)) {
+              status = 'action-required';
+            } else if (found.action_required) {
               status = 'action-required';
             }
           }

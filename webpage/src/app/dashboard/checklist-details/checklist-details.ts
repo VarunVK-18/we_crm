@@ -57,6 +57,17 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     'Other'
   ];
 
+  opcFinalDocs = [
+    'Certificate of Incorporation',
+    'PAN',
+    'TAN',
+    'e-MOA',
+    'e-AOA',
+    'SPICe+',
+    'DIN Details',
+    'Other'
+  ];
+
   llpFinalDocs = [
     'LLP Certificate of Incorporation',
     'PAN Letter',
@@ -65,6 +76,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     'Form 3 Acknowledgement',
     'FiLLiP Form',
     'DPIN/DIN Details',
+    'Other'
+  ];
+
+  msmeFinalDocs = [
+    'Udyam Registration Certificate',
     'Other'
   ];
 
@@ -544,6 +560,34 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const uploaded: string[] = [];
     const pending: string[] = [];
     for (const doc of this.privateLimitedFinalDocs) {
+      if (doc === 'Other') continue;
+      if (this.hasFinalDocUploaded(doc)) {
+        uploaded.push(doc);
+      } else {
+        pending.push(doc);
+      }
+    }
+    return [...pending, ...uploaded];
+  }
+
+  getSortedOpcFinalDocs(): string[] {
+    const uploaded: string[] = [];
+    const pending: string[] = [];
+    for (const doc of this.opcFinalDocs) {
+      if (doc === 'Other') continue;
+      if (this.hasFinalDocUploaded(doc)) {
+        uploaded.push(doc);
+      } else {
+        pending.push(doc);
+      }
+    }
+    return [...pending, ...uploaded];
+  }
+
+  getSortedMsmeFinalDocs(): string[] {
+    const uploaded: string[] = [];
+    const pending: string[] = [];
+    for (const doc of this.msmeFinalDocs) {
       if (doc === 'Other') continue;
       if (this.hasFinalDocUploaded(doc)) {
         uploaded.push(doc);

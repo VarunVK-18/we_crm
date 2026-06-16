@@ -2,12 +2,25 @@ import 'package:flutter/material.dart';
 
 enum TaskStatus { upcoming, dueSoon, critical, overdue, completed }
 
+class ComplianceDocument {
+  final String id;
+  final String filename;
+  final String type; // 'proof', 'certificate', 'acknowledgement'
+
+  ComplianceDocument({
+    required this.id,
+    required this.filename,
+    required this.type,
+  });
+}
+
 class ComplianceTask {
   final String id;
   final String title;
   final String entityName;
   final int daysLeft;
   final TaskStatus status;
+  final List<ComplianceDocument> documents;
 
   ComplianceTask({
     required this.id,
@@ -15,6 +28,7 @@ class ComplianceTask {
     required this.entityName,
     required this.daysLeft,
     required this.status,
+    this.documents = const [],
   });
 
   String get message {

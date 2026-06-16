@@ -1,0 +1,118 @@
+<div class="form-container">
+    <div class="header-row">
+        <button class="back-btn" (click)="goBack()">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h2>MCA Compliance Form</h2>
+    </div>
+
+    @if (errorMessage()) {
+    <div class="error-alert">
+        <span class="material-symbols-outlined">error</span>
+        {{ errorMessage() }}
+    </div>
+    }
+
+    <form (ngSubmit)="submitDetails()">
+        <div class="form-section">
+            <h3 class="section-title">Credentials (Optional)</h3>
+
+            <div class="input-group">
+                <label>MCA Username</label>
+                <div class="hint-text">Enter username if available</div>
+                <input type="text" class="form-input" [(ngModel)]="username" name="username" placeholder="Username">
+            </div>
+
+            <div class="input-group">
+                <label>MCA Password</label>
+                <div class="hint-text">Enter password if available</div>
+                <input type="text" class="form-input" [(ngModel)]="password" name="password" placeholder="Password">
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3 class="section-title">Documents Required</h3>
+            
+            <div class="input-group">
+                <label>Certificate of Incorporation <span class="required">*</span></label>
+                <div class="file-upload-row">
+                    <span class="file-name" [class.selected]="coiFile">{{ coiFile ? coiFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <label class="upload-btn" [class.change]="coiFile">
+                        {{ coiFile ? 'Change' : 'Upload' }}
+                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'coi')" accept=".jpg,.jpeg,.png,.pdf">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>PAN Card of the Company <span class="required">*</span></label>
+                <div class="file-upload-row">
+                    <span class="file-name" [class.selected]="panFile">{{ panFile ? panFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <label class="upload-btn" [class.change]="panFile">
+                        {{ panFile ? 'Change' : 'Upload' }}
+                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'pan')" accept=".jpg,.jpeg,.png,.pdf">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Memorandum of Association (MOA) <span class="required">*</span></label>
+                <div class="file-upload-row">
+                    <span class="file-name" [class.selected]="moaFile">{{ moaFile ? moaFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <label class="upload-btn" [class.change]="moaFile">
+                        {{ moaFile ? 'Change' : 'Upload' }}
+                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'moa')" accept=".jpg,.jpeg,.png,.pdf">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Articles of Association (AOA) <span class="required">*</span></label>
+                <div class="file-upload-row">
+                    <span class="file-name" [class.selected]="aoaFile">{{ aoaFile ? aoaFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <label class="upload-btn" [class.change]="aoaFile">
+                        {{ aoaFile ? 'Change' : 'Upload' }}
+                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'aoa')" accept=".jpg,.jpeg,.png,.pdf">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Last FY Bank statements <span class="required">*</span></label>
+                <div class="file-upload-row">
+                    <span class="file-name" [class.selected]="bankStatementFile">{{ bankStatementFile ? bankStatementFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <label class="upload-btn" [class.change]="bankStatementFile">
+                        {{ bankStatementFile ? 'Change' : 'Upload' }}
+                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'bankStatement')" accept=".jpg,.jpeg,.png,.pdf">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Sales Invoice copies of last FY <span class="required">*</span></label>
+                <div class="file-upload-row">
+                    <span class="file-name" [class.selected]="salesInvoiceFile">{{ salesInvoiceFile ? salesInvoiceFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <label class="upload-btn" [class.change]="salesInvoiceFile">
+                        {{ salesInvoiceFile ? 'Change' : 'Upload' }}
+                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'salesInvoice')" accept=".jpg,.jpeg,.png,.pdf">
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Purchase bills of last FY <span class="required">*</span></label>
+                <div class="file-upload-row">
+                    <span class="file-name" [class.selected]="purchaseBillsFile">{{ purchaseBillsFile ? purchaseBillsFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <label class="upload-btn" [class.change]="purchaseBillsFile">
+                        {{ purchaseBillsFile ? 'Change' : 'Upload' }}
+                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'purchaseBills')" accept=".jpg,.jpeg,.png,.pdf">
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Submitting...' : 'Submit Details' }}
+        </button>
+    </form>
+</div>

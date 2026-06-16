@@ -2,86 +2,48 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/app_theme.dart';
+import '../../models/user_model.dart';
 import '../../models/order_model.dart';
 import '../../providers/compliance_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 import '../services/registration_services_screen.dart';
-
-class Entity {
-  final String name;
-  final String companyName;
-  final String type;
-  final int serviceCount;
-  final IconData icon;
-  final Color color;
-
-  const Entity({
-    required this.name,
-    required this.companyName,
-    required this.type,
-    required this.serviceCount,
-    required this.icon,
-    required this.color,
-  });
-}
 
 class MyEntitiesScreen extends ConsumerWidget {
   const MyEntitiesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userProfileProvider);
     final ordersAsync = ref.watch(serviceOrdersProvider);
     final orders = ordersAsync.value ?? [];
-    final isLoading = ordersAsync.isLoading && orders.isEmpty;
 
-    // Group orders by companyName to dynamically extract entities
-    final Map<String, List<ServiceOrder>> grouped = {};
-    for (final order in orders) {
-      if (order.companyName.isEmpty) continue;
-      final String compName = order.companyName.trim();
-      grouped.putIfAbsent(compName, () => []).add(order);
-    }
+    final isLoading =
+        userAsync.isLoading || (ordersAsync.isLoading && orders.isEmpty);
 
-    final entities = grouped.entries.map((entry) {
-      final compName = entry.key;
-      final compOrders = entry.value;
-      final firstOrder = compOrders.first;
+    // ── Real entities from the profile API (client_entities[]) ────────────
+    final clientEntities = userAsync.value?.clientEntities ?? [];
 
-      // Determine type
-      String type = 'Private Limited';
-      if (compName.toLowerCase().contains('llp')) {
-        type = 'LLP';
-      } else if (compName.toLowerCase().contains('partnership')) {
-        type = 'Partnership';
-      }
-
-      // Count active services
-      final activeCount =
-          compOrders.where((o) => o.status == ServiceStatus.active).length;
-
-      return Entity(
-        name: firstOrder.entityName.isNotEmpty
-            ? firstOrder.entityName
-            : compName.split(' ').first,
-        companyName: compName,
-        type: type,
+    // Enrich with active service count from checklists
+    final entityCards = clientEntities.map((e) {
+      final entityName = e.entityName.trim();
+      final activeCount = orders
+          .where((o) =>
+              o.status == ServiceStatus.active &&
+              (o.entityName.trim().toLowerCase() ==
+                      entityName.toLowerCase() ||
+                  o.companyName.trim().toLowerCase() ==
+                      entityName.toLowerCase()))
+          .length;
+      return _EntityCardData(
+        entity: e,
         serviceCount: activeCount,
-        icon: type == 'LLP' ? LucideIcons.cpu : LucideIcons.building2,
-        color:
-            type == 'LLP' ? AppTheme.corporateBlue : const Color.fromARGB(255, 141, 107, 234),
       );
     }).toList();
 
-    final allEntitiesCard = Entity(
-      name: 'All Entities',
-      companyName: 'All Entities',
-      type: 'Portfolio',
-      serviceCount: orders.where((o) => o.status == ServiceStatus.active).length,
-      icon: LucideIcons.layoutGrid,
-      color: const Color.fromARGB(255, 0, 0, 4),
-    );
-
-    final finalEntities = [allEntitiesCard, ...entities];
+    // Build the "All Entities" summary card
+    final totalActive =
+        orders.where((o) => o.status == ServiceStatus.active).length;
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -107,15 +69,21 @@ class MyEntitiesScreen extends ConsumerWidget {
                 valueColor: AlwaysStoppedAnimation<Color>(AppTheme.deepTeal),
               ),
             )
-          : entities.isEmpty
+          : entityCards.isEmpty
               ? const _EntitiesEmptyState()
-              : ListView.builder(
+              : ListView(
                   padding: const EdgeInsets.all(24),
-                  itemCount: finalEntities.length,
-                  itemBuilder: (context, index) =>
-                      _EntityCard(entity: finalEntities[index]),
+                  children: [
+                    // All Entities summary card
+                    _AllEntitiesCard(
+                      totalEntities: entityCards.length,
+                      totalActiveServices: totalActive,
+                    ),
+                    const SizedBox(height: 16),
+                    ...entityCards.map((c) => _EntityCard(data: c)),
+                  ],
                 ),
-      floatingActionButton: entities.isNotEmpty
+      floatingActionButton: entityCards.isNotEmpty
           ? FloatingActionButton.extended(
               onPressed: () => Navigator.push(
                 context,
@@ -138,35 +106,96 @@ class MyEntitiesScreen extends ConsumerWidget {
   }
 }
 
-class _EntityCard extends ConsumerWidget {
-  final Entity entity;
-  const _EntityCard({required this.entity});
+// ── Data holder ──────────────────────────────────────────────────────────────
+
+class _EntityCardData {
+  final ClientEntity entity;
+  final int serviceCount;
+
+  const _EntityCardData({required this.entity, required this.serviceCount});
+}
+
+// ── Helper: resolve icon and color from entityType ────────────────────────
+
+IconData _iconForType(String type) {
+  switch (type.toLowerCase()) {
+    case 'llp':
+      return LucideIcons.cpu;
+    case 'partnership':
+      return LucideIcons.users;
+    case 'proprietorship':
+    case 'sole proprietorship':
+      return LucideIcons.user;
+    case 'opc':
+    case 'one person company':
+      return LucideIcons.userCheck;
+    case 'ngo':
+    case 'section 8':
+      return LucideIcons.heart;
+    case 'trust':
+      return LucideIcons.shield;
+    default:
+      return LucideIcons.building2; // Private Limited, Public, etc.
+  }
+}
+
+Color _colorForType(String type) {
+  switch (type.toLowerCase()) {
+    case 'llp':
+      return AppTheme.corporateBlue;
+    case 'partnership':
+      return const Color(0xFF10B981);
+    case 'proprietorship':
+    case 'sole proprietorship':
+      return const Color(0xFFF59E0B);
+    case 'opc':
+    case 'one person company':
+      return const Color(0xFF8B5CF6);
+    case 'ngo':
+    case 'section 8':
+    case 'trust':
+      return const Color(0xFFEC4899);
+    default:
+      return const Color(0xFF6366F1); // Private Limited, Public
+  }
+}
+
+// ── All Entities summary card ─────────────────────────────────────────────
+
+class _AllEntitiesCard extends ConsumerWidget {
+  final int totalEntities;
+  final int totalActiveServices;
+
+  const _AllEntitiesCard({
+    required this.totalEntities,
+    required this.totalActiveServices,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedEntity = ref.watch(selectedEntityProvider);
-    final isSelected = selectedEntity == entity.companyName;
+    final isSelected = selectedEntity == 'All Entities';
 
-    return InkWell(
+    return GestureDetector(
       onTap: () {
-        ref.read(selectedEntityProvider.notifier).state = entity.companyName;
+        ref.read(selectedEntityProvider.notifier).state = 'All Entities';
         Navigator.pop(context);
       },
-      borderRadius: BorderRadius.circular(24),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          gradient: const LinearGradient(
+            colors: [AppTheme.deepTeal, Color(0xFF1E293B)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: isSelected
-                  ? AppTheme.deepTeal.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.05),
-              blurRadius: isSelected ? 24 : 16,
-              spreadRadius: 0,
-              offset: Offset(0, isSelected ? 12 : 8),
+              color: AppTheme.deepTeal.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
           ],
         ),
@@ -176,22 +205,26 @@ class _EntityCard extends ConsumerWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: entity.color.withOpacity(0.1),
+                color: Colors.white.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(entity.icon, color: entity.color, size: 28),
+              child: const Icon(
+                LucideIcons.layoutGrid,
+                color: Colors.white,
+                size: 28,
+              ),
             ),
             const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    entity.companyName,
-                    style: const TextStyle(
+                  const Text(
+                    'All Entities',
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
-                      color: AppTheme.deepTeal,
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -199,28 +232,26 @@ class _EntityCard extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
+                            horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: entity.color.withOpacity(0.1),
+                          color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
-                          entity.type,
+                        child: const Text(
+                          'Portfolio',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: entity.color,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        '${entity.serviceCount} Active Services',
+                        '$totalEntities Entities · $totalActiveServices Active',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade500,
+                          color: Colors.white.withOpacity(0.7),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -233,20 +264,209 @@ class _EntityCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: entity.color.withValues(alpha: 0.1),
+                  color: Colors.white.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(LucideIcons.check,
-                    color: entity.color, size: 20),
+                child:
+                    const Icon(LucideIcons.check, color: Colors.white, size: 20),
               )
             else
-              Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
+              Icon(LucideIcons.chevronRight,
+                  color: Colors.white.withOpacity(0.5)),
           ],
         ),
       ),
     );
   }
 }
+
+// ── Individual entity card ─────────────────────────────────────────────────
+
+class _EntityCard extends ConsumerWidget {
+  final _EntityCardData data;
+
+  const _EntityCard({required this.data});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entity = data.entity;
+    final entityName = entity.entityName.trim();
+    final entityType = entity.entityType.isNotEmpty ? entity.entityType : 'Company';
+    final color = _colorForType(entityType);
+    final icon = _iconForType(entityType);
+
+    // Selected state uses entityName (canonical key)
+    final selectedEntity = ref.watch(selectedEntityProvider);
+    final isSelected = selectedEntity == entityName;
+
+    return GestureDetector(
+      onTap: () {
+        // Store entityName as the canonical selector key
+        ref.read(selectedEntityProvider.notifier).state = entityName;
+        Navigator.pop(context);
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: isSelected
+              ? Border.all(color: color.withOpacity(0.5), width: 2)
+              : null,
+          boxShadow: [
+            BoxShadow(
+              color: isSelected
+                  ? color.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.05),
+              blurRadius: isSelected ? 24 : 16,
+              offset: Offset(0, isSelected ? 12 : 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Icon(icon, color: color, size: 28),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entityName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                          color: AppTheme.deepTeal,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              entityType,
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            '${data.serviceCount} Active Services',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade500,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(LucideIcons.check, color: color, size: 20),
+                  )
+                else
+                  Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
+              ],
+            ),
+            // ── Show key details if available ────────────────────────────
+            if (entity.cin.isNotEmpty ||
+                entity.pan.isNotEmpty ||
+                entity.gstin.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  if (entity.cin.isNotEmpty)
+                    _DetailChip(label: 'CIN', value: entity.cin),
+                  if (entity.pan.isNotEmpty)
+                    _DetailChip(label: 'PAN', value: entity.pan),
+                  if (entity.tan.isNotEmpty)
+                    _DetailChip(label: 'TAN', value: entity.tan),
+                  if (entity.gstin.isNotEmpty)
+                    _DetailChip(label: 'GSTIN', value: entity.gstin),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DetailChip extends StatelessWidget {
+  final String label;
+  final String value;
+
+  const _DetailChip({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF4F6F9),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: '$label: ',
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
+            ),
+            TextSpan(
+              text: value,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.deepTeal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Empty State ────────────────────────────────────────────────────────────
 
 class _EntitiesEmptyState extends StatelessWidget {
   const _EntitiesEmptyState();

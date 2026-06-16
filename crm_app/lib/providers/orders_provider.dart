@@ -69,6 +69,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
                 isAssignedToExpert ? (c['assigned_to']?['phone'] ?? '') : '',
             'createdAt': c['createdAt'],
             'dealClosedAmount': c['dealClosedAmount'] ?? 0,
+            'advanceAmountPaid': c['advanceAmountPaid'] ?? 0,
             'notes': c['notes'] ?? '',
             'details': c['details'] ?? {},
             'actionRequired': c['action_required'] ?? false,

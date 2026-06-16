@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'dart:ui';
+import 'package:url_launcher/url_launcher.dart';
+import '../../providers/auth_provider.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
@@ -27,6 +30,11 @@ import 'gst_form_screen.dart';
 import 'iso_form_screen.dart';
 import 'fssai_form_screen.dart';
 import 'dsc_form_screen.dart';
+import 'opc_form_screen.dart';
+import 'gst_compliance_form_screen.dart';
+import 'mca_compliance_form_screen.dart';
+import 'lie_form_screen.dart';
+import 'bis_form_screen.dart';
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
@@ -48,6 +56,15 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
     final totalSteps = order.steps.length;
     final progress = order.progressValue;
 
+    final user = ref.watch(userProfileProvider).value;
+    final userManager = user?.manager;
+    final clientManagerName = userManager?['name']?.toString() ?? 'Support Team';
+    final clientManagerPhone = userManager?['phone']?.toString() ?? '+918000000000';
+    
+    final bool isObjectId = order.assignedExpert.length == 24 && RegExp(r'^[0-9a-fA-F]+$').hasMatch(order.assignedExpert);
+    final expertName = (isObjectId || order.assignedExpert == 'To be assigned') ? clientManagerName : order.assignedExpert;
+    final expertPhone = (order.expertPhone.isEmpty || order.expertPhone == order.assignedExpert) ? clientManagerPhone : order.expertPhone;
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       // ── Internal Chat FAB ────────────────────────────────────────────────
@@ -59,7 +76,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                   builder: (_) => OrderChatScreen(
                     orderId: order.id,
                     serviceName: order.serviceType,
-                    assignedExpert: order.assignedExpert,
+                    assignedExpert: expertName,
                   ),
                 ),
               ),
@@ -234,12 +251,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFBEB),
                         borderRadius: BorderRadius.circular(12),
-                        border: const Border(
-                          top: BorderSide(color: Color(0xFFFEF3C7)),
-                          right: BorderSide(color: Color(0xFFFEF3C7)),
-                          bottom: BorderSide(color: Color(0xFFFEF3C7)),
-                          left: BorderSide(color: Color(0xFFF59E0B), width: 4),
-                        ),
+                        border: Border.all(color: const Color(0xFFFEF3C7), width: 1.5),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.02),
@@ -270,7 +282,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'The service has been completed successfully, but there is a pending payment of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please settle the balance to access your final documents.',
+                                      'The service has been completed successfully, but there is a pending payment of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please contact your manager to settle the balance and unlock the progress steps.',
                                       style: const TextStyle(
                                         fontSize: 13,
                                         color: Color(0xFFB45309),
@@ -286,16 +298,14 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(left: 32),
                             child: FilledButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => InvoiceScreen(order: order),
-                                  ),
-                                );
+                              onPressed: () async {
+                                final uri = Uri.parse('tel:$expertPhone');
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri);
+                                }
                               },
-                              icon: const Icon(LucideIcons.arrowRight, size: 16),
-                              label: const Text('View Invoice & Pay'),
+                              icon: const Icon(LucideIcons.phone, size: 16),
+                              label: Text('Contact Manager (₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)})'),
                               style: FilledButton.styleFrom(
                                 backgroundColor: const Color(0xFFD97706),
                                 foregroundColor: Colors.white,
@@ -317,7 +327,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                 ],
 
                 // Info row
-                _InfoRow(order: order),
+                _InfoRow(order: order, expertName: expertName),
 
                 const SizedBox(height: 24),
 
@@ -547,132 +557,145 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                   ),
                 ],
 
-                // Section title
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Row(
-                    children: [
-                      const Text(
-                        'Service Progress',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.deepTeal,
-                          letterSpacing: -0.3,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Container(
-                          height: 1,
-                          color: Colors.grey.withOpacity(0.1),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Step-by-step timeline
-                if (order.steps.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _StepTimeline(order: order, steps: order.steps),
-                  )
-                else
-                  const _EmptySteps(),
-
-                const SizedBox(height: 40),
-
-                // Current stage chip
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Row(
+                Builder(
+                  builder: (context) {
+                    final progressContent = Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppTheme.deepTeal.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(LucideIcons.clipboardList,
-                              color: AppTheme.deepTeal, size: 20),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        // Section title
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Row(
                             children: [
                               const Text(
-                                'Current Stage',
-                                style:
-                                    TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _stageLabels[order.stage] ?? order.stage.name,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w800,
+                                'Service Progress',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
                                   color: AppTheme.deepTeal,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: Colors.grey.withOpacity(0.1),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(LucideIcons.trendingUp,
-                            color: Color.fromARGB(255, 66, 126, 68), size: 20),
+                        const SizedBox(height: 20),
+                        // Step-by-step timeline
+                        if (order.steps.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: _StepTimeline(order: order, steps: order.steps),
+                          )
+                        else
+                          const _EmptySteps(),
+                        const SizedBox(height: 40),
+                        // Current stage chip
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 5),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.deepTeal.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: const Icon(LucideIcons.clipboardList,
+                                      color: AppTheme.deepTeal, size: 20),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Current Stage',
+                                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _stageLabels[order.stage] ?? order.stage.name,
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w800,
+                                          color: AppTheme.deepTeal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(LucideIcons.trendingUp,
+                                    color: Color.fromARGB(255, 66, 126, 68), size: 20),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        // Requested Documents
+                        if (order.requestedDocuments.isNotEmpty &&
+                            order.status != ServiceStatus.complete)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: _RequestedDocumentsSection(order: order),
+                          ),
+                        if (order.status == ServiceStatus.complete) ...[
+                          const SizedBox(height: 32),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: _FinalDeliverySection(order: order),
+                          ),
+                        ],
+                        if (order.serviceType == 'Private Limited Incorporation' &&
+                            order.status != ServiceStatus.notInitialized &&
+                            order.details['directors'] != null &&
+                            order.details['directors'] != '[]' &&
+                            order.details['directors'] is String &&
+                            order.details['directors'] != 'submitted') ...[
+                          const SizedBox(height: 32),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: _DirectorDetailsSection(order: order),
+                          ),
+                        ],
+                        const SizedBox(height: 80), // space for FAB
                       ],
-                    ),
-                  ),
+                    );
+
+                    if (order.isPaymentPending) {
+                      return IgnorePointer(
+                        child: ImageFiltered(
+                          imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: Opacity(
+                            opacity: 0.7,
+                            child: progressContent,
+                          ),
+                        ),
+                      );
+                    }
+
+                    return progressContent;
+                  },
                 ),
-
-                const SizedBox(height: 20),
-
-                // Requested Documents
-                if (order.requestedDocuments.isNotEmpty &&
-                    order.status != ServiceStatus.complete)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _RequestedDocumentsSection(order: order),
-                  ),
-
-                if (order.status == ServiceStatus.complete && !order.isPaymentPending) ...[
-                  const SizedBox(height: 32),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _FinalDeliverySection(order: order),
-                  ),
-                ],
-
-                if (order.serviceType == 'Private Limited Incorporation' &&
-                    order.status != ServiceStatus.notInitialized &&
-                    order.details['directors'] != null &&
-                    order.details['directors'] != '[]' &&
-                    order.details['directors'] is String &&
-                    order.details['directors'] != 'submitted') ...[
-                  const SizedBox(height: 32),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _DirectorDetailsSection(order: order),
-                  ),
-                ],
-
-                const SizedBox(height: 80), // space for FAB
               ]),
             ),
           ],
@@ -689,10 +712,10 @@ class _RequestedDocumentsSection extends ConsumerStatefulWidget {
   const _RequestedDocumentsSection({required this.order});
 
   @override
-  ConsumerState<_RequestedDocumentsSection> createState() => _RequestedDocumentsSectionState();
+  ConsumerState<_RequestedDocumentsSection> createState() => _RequestedDocumentsSectionSectionState();
 }
 
-class _RequestedDocumentsSectionState extends ConsumerState<_RequestedDocumentsSection> {
+class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDocumentsSection> {
   final Set<String> _uploadingDocs = {};
   final Set<String> _uploadedDocs = {};
 
@@ -1036,7 +1059,8 @@ class _RequestedDocumentsSectionState extends ConsumerState<_RequestedDocumentsS
 
 class _InfoRow extends StatelessWidget {
   final ServiceOrder order;
-  const _InfoRow({required this.order});
+  final String expertName;
+  const _InfoRow({required this.order, required this.expertName});
 
   @override
   Widget build(BuildContext context) {
@@ -1050,7 +1074,7 @@ class _InfoRow extends StatelessWidget {
             child: _InfoTile(
               icon: LucideIcons.user,
               label: 'Expert',
-              value: order.assignedExpert,
+              value: expertName,
             ),
           ),
 
@@ -1763,8 +1787,12 @@ class _DirectorDetailsSection extends StatelessWidget {
 }
 
 void _routeToForm(BuildContext context, ServiceOrder order) {
+  final WidgetRef? ref = null; // Note: In a real app, retrieve ref via context or ConsumerState
+
   if (order.serviceType.contains('DPIIT')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => DpiitFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('opc') || order.serviceType.toLowerCase().contains('one person company')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => OpcFormScreen(order: order)));
   } else if (order.serviceType.contains('Private Limited')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => IncorpFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('trademark') || order.serviceType.toLowerCase().contains('trade mark')) {
@@ -1773,10 +1801,18 @@ void _routeToForm(BuildContext context, ServiceOrder order) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => LlpFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('msme')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => MsmeFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('gst') && order.serviceType.toLowerCase().contains('compliance')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => GstComplianceFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('mca')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => McaComplianceFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('gst')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => GstFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('iso')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => IsoFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('lie')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => LieFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('bis')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => BisFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('fssai')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => FssaiFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('dsc') || order.serviceType.toLowerCase().contains('digital signature')) {

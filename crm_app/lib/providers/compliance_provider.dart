@@ -37,17 +37,42 @@ final complianceRemindersProvider =
           for (final t in tasksJson) {
             final String title = t['title']?.toString() ?? 'Task';
             
-            String rawEntityName = 'Individual';
-            if (t['entityName'] != null && t['entityName'].toString().isNotEmpty) {
-              rawEntityName = t['entityName'].toString();
-            } else if (t['companyId'] != null) {
-              if (t['companyId'] is Map) {
-                rawEntityName = t['companyId']['company_name']?.toString() ?? 'Individual';
-              } else {
-                rawEntityName = 'Company';
+            String rawEntityName = '';
+
+            // Priority 1: explicit entityName field on the task
+            if (t['entityName'] != null &&
+                t['entityName'].toString().trim().isNotEmpty) {
+              rawEntityName = t['entityName'].toString().trim();
+            }
+
+            // Priority 2: populated companyId.company_name
+            if (rawEntityName.isEmpty &&
+                t['companyId'] != null &&
+                t['companyId'] is Map) {
+              rawEntityName =
+                  t['companyId']['company_name']?.toString().trim() ?? '';
+            }
+
+            // Priority 3: populated checklistId.details.entityName / companyName
+            if (rawEntityName.isEmpty &&
+                t['checklistId'] != null &&
+                t['checklistId'] is Map) {
+              final details = t['checklistId']['details'];
+              if (details is Map) {
+                rawEntityName = (details['entityName'] ??
+                        details['companyName'] ??
+                        details['proposed_company_name'] ??
+                        details['businessName'] ??
+                        '')
+                    .toString()
+                    .trim();
               }
             }
-            final String entityName = rawEntityName.trim();
+
+            // Priority 4: fall back to 'Individual' only if nothing matched
+            final String entityName =
+                rawEntityName.isNotEmpty ? rawEntityName : 'Individual';
+
             final int daysLeft = (t['daysLeft'] as num?)?.toInt() ?? 0;
             final String rawStatus = t['status']?.toString() ?? 'Upcoming';
             
@@ -57,12 +82,29 @@ final complianceRemindersProvider =
             else if (rawStatus == 'Overdue') status = TaskStatus.overdue;
             else if (rawStatus == 'Completed') status = TaskStatus.completed;
 
+            final List<ComplianceDocument> docs = [];
+            
+            void addDoc(dynamic docObj, String typeStr) {
+              if (docObj != null && docObj['_id'] != null) {
+                docs.add(ComplianceDocument(
+                  id: docObj['_id'].toString(),
+                  filename: docObj['filename']?.toString() ?? 'Document',
+                  type: typeStr,
+                ));
+              }
+            }
+
+            addDoc(t['proofDocument'], 'Proof');
+            addDoc(t['certificateDocument'], 'Certificate');
+            addDoc(t['acknowledgementDocument'], 'Acknowledgement');
+
             allTasks.add(ComplianceTask(
               id: t['_id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
               title: title,
               entityName: entityName,
               daysLeft: daysLeft,
               status: status,
+              documents: docs,
             ));
           }
         }

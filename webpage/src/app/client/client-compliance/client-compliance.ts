@@ -34,24 +34,44 @@ export class ClientCompliance implements OnInit {
 
   // Computed Values
   availableEntities = computed(() => {
-    const unique = new Set<string>();
-    
+    // Use a canonical (lowercase) key map to avoid case-duplicate entries
+    const canonicalMap = new Map<string, string>();
+
     this.reminders().forEach(r => {
-      if (r.entityName) unique.add(r.entityName.trim());
+      const name = r.entityName?.trim();
+      if (name && name !== 'Individual') {
+        // First occurrence wins as the display name
+        if (!canonicalMap.has(name.toLowerCase())) {
+          canonicalMap.set(name.toLowerCase(), name);
+        }
+      }
     });
 
+    // Also add from checklists — only if not already present from reminders
     this.checklists().forEach(c => {
-      const entityName = c.details?.entityName || c.client_id?.company_name;
-      if (entityName) unique.add(entityName.trim());
+      // Priority: details.entityName > details.companyName > client_id.company_name
+      const entityName = (
+        c.details?.entityName ||
+        c.details?.companyName ||
+        c.details?.proposed_company_name ||
+        c.details?.businessName ||
+        c.client_id?.company_name
+      )?.trim();
+      if (entityName && !canonicalMap.has(entityName.toLowerCase())) {
+        canonicalMap.set(entityName.toLowerCase(), entityName);
+      }
     });
 
-    return Array.from(unique).sort();
+    return Array.from(canonicalMap.values()).sort();
   });
 
   filteredTasks = computed(() => {
     const entity = this.currentEntity();
     if (entity === 'All Entities') return this.reminders();
-    return this.reminders().filter(r => r.entityName && r.entityName.trim() === entity);
+    // Case-insensitive comparison to avoid mismatch
+    return this.reminders().filter(r =>
+      r.entityName && r.entityName.trim().toLowerCase() === entity.toLowerCase()
+    );
   });
 
   pendingTasks = computed(() => this.filteredTasks().filter(r => r.status !== 'Completed'));
@@ -167,23 +187,40 @@ export class ClientCompliance implements OnInit {
       this.isLoading.set(false);
       return;
     }
-    
+
     this.api.get<any>(`compliance/tasks/user/${uid}`).subscribe({
       next: (res) => {
         const fetched = res.tasks || [];
-        const mapped = fetched.map((r: any) => ({
-             ...r,
-             id: r._id,
-             entityName: r.entityName || (r.companyId ? r.companyId.company_name : 'Individual'),
-             message: r.daysLeft <= 0 ? 'Overdue - Penalty Applicable' : `Due in ${r.daysLeft} days`
-        }));
+        const mapped = fetched.map((r: any) => {
+          // Resolve entityName with priority order
+          const entityName =
+            r.entityName?.trim() ||
+            (r.companyId && typeof r.companyId === 'object'
+              ? r.companyId.company_name
+              : null) ||
+            r.checklistId?.details?.entityName ||
+            r.checklistId?.details?.companyName ||
+            r.checklistId?.details?.proposed_company_name ||
+            r.checklistId?.details?.businessName ||
+            'Individual';
+
+          return {
+            ...r,
+            id: r._id,
+            entityName: entityName.trim(),
+            message:
+              r.daysLeft <= 0
+                ? 'Overdue - Penalty Applicable'
+                : `Due in ${r.daysLeft} days`,
+          };
+        });
         this.reminders.set(mapped);
         this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to fetch compliance tasks:', err);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 

@@ -1,0 +1,87 @@
+<div class="main-content flex-grow-1 p-4 w-100">
+  <div class="header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn btn-light rounded-circle shadow-sm" (click)="goBack()">
+        <i class="bi bi-arrow-left"></i>
+      </button>
+      <div>
+        <h2 class="mb-1 text-primary">BIS Registration Form</h2>
+        <p class="text-muted mb-0">Please provide the required details to proceed with BIS Registration.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body p-4">
+      <h4 class="mb-4">Company Details</h4>
+      <div class="row g-4">
+        
+        <div class="col-md-6">
+          <label class="form-label">Company Legal Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="companyLegalName" placeholder="Enter full legal name">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Applicant Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" [(ngModel)]="applicantName" placeholder="Enter applicant name">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Email ID <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" [(ngModel)]="email" placeholder="Enter official email">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">WhatsApp Number <span class="text-danger">*</span></label>
+          <input type="tel" class="form-control" [(ngModel)]="whatsapp" placeholder="Enter WhatsApp number">
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Company Address <span class="text-danger">*</span></label>
+          <textarea class="form-control" rows="2" [(ngModel)]="companyAddress" placeholder="Enter full company address"></textarea>
+        </div>
+
+        <div class="col-md-12">
+          <label class="form-label">Courier Address (For Certificate) <span class="text-danger">*</span></label>
+          <textarea class="form-control" rows="2" [(ngModel)]="courierAddress" placeholder="Enter full courier address"></textarea>
+        </div>
+
+      </div>
+
+      <h4 class="mt-5 mb-4">Required Documents</h4>
+      <div class="row g-4">
+        
+        <div class="col-md-6">
+          <label class="form-label">MSME Certificate <span class="text-danger">*</span></label>
+          <input type="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'msmeCertificate')">
+          <small class="text-muted">Max size: 2MB (PDF/JPG/PNG)</small>
+        </div>
+
+      </div>
+
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="verification" [(ngModel)]="isVerified">
+            <label class="form-check-label text-muted" for="verification">
+              I hereby declare that the information provided above is true and correct to the best of my knowledge and belief.
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger mt-3" *ngIf="errorMessage()">
+        {{ errorMessage() }}
+      </div>
+
+      <div class="d-flex justify-content-end mt-4">
+        <button class="btn btn-light me-3 px-4" (click)="goBack()">Cancel</button>
+        <button class="btn btn-primary px-4" (click)="submitForm()" [disabled]="isSubmitting()">
+          <span *ngIf="!isSubmitting()">Submit</span>
+          <span *ngIf="isSubmitting()" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          <span *ngIf="isSubmitting()">Submitting...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
