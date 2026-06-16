@@ -139,6 +139,20 @@
                     </select>
                   </div>
 
+                  @if (getCompatibilityWarning(); as warning) {
+                    <div style="margin-bottom: 20px; padding: 16px; border-radius: 8px; font-size: 13.5px; line-height: 1.5; display: flex; gap: 12px; align-items: flex-start;"
+                         [ngStyle]="{'background-color': warning.type === 'error' ? '#fef2f2' : '#fffbeb', 'border': '1px solid ' + (warning.type === 'error' ? '#fecaca' : '#fef3c7'), 'color': warning.type === 'error' ? '#991b1b' : '#92400e'}">
+                      <span class="material-symbols-outlined" style="font-size: 20px; flex-shrink: 0;"
+                            [ngStyle]="{'color': warning.type === 'error' ? '#dc2626' : '#d97706'}">
+                        {{ warning.type === 'error' ? 'error' : 'warning' }}
+                      </span>
+                      <div>
+                        <strong style="display: block; margin-bottom: 4px; font-size: 14px;">{{ warning.header }}</strong>
+                        <div style="white-space: pre-wrap;">{{ warning.message }}</div>
+                      </div>
+                    </div>
+                  }
+
                   @if (quoteForm.selectedEntity === 'Add New Entity...') {
                     <div class="form-group">
                       <label>New Entity Name</label>
@@ -147,7 +161,7 @@
                   }
                 }
 
-                <button type="submit" class="btn-submit" [disabled]="formSubmitting() || !quoteFormRef.valid">
+                <button type="submit" class="btn-submit" [disabled]="formSubmitting() || !quoteFormRef.valid || getCompatibilityWarning()?.type === 'error'">
                   {{ formSubmitting() ? 'Submitting...' : 'Request Quote' }}
                   <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" color="white" style="margin-left: 8px;"></hugeicons-icon>
                 </button>

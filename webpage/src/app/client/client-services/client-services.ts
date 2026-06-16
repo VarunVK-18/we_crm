@@ -281,6 +281,8 @@ export class ClientServicesComponent implements OnInit {
     });
   }
 
+  entityTypesMap = new Map<string, string>();
+
   fetchEntities() {
     this.api.get<any>('my-checklists').subscribe({
       next: (res) => {
@@ -288,7 +290,21 @@ export class ClientServicesComponent implements OnInit {
         if (res.checklists) {
           res.checklists.forEach((c: any) => {
             if (c.details && c.details.entityName && c.details.entityName.toLowerCase() !== 'client') {
-              entities.add(c.details.entityName);
+              const name = c.details.entityName;
+              entities.add(name);
+              
+              if (c.service_name) {
+                const sName = c.service_name.toLowerCase();
+                if (sName.includes('private limited incorporation')) {
+                  this.entityTypesMap.set(name, 'Private Limited Company');
+                } else if (sName.includes('llp incorporation')) {
+                  this.entityTypesMap.set(name, 'LLP');
+                } else if (sName.includes('proprietorship')) {
+                  this.entityTypesMap.set(name, 'Proprietorship');
+                } else if (sName.includes('opc')) {
+                  this.entityTypesMap.set(name, 'OPC');
+                }
+              }
             }
           });
         }
@@ -299,6 +315,21 @@ export class ClientServicesComponent implements OnInit {
         }
 
         const entityArray = Array.from(entities);
+        
+        // Fallback inference for entities without known type
+        entityArray.forEach(name => {
+          if (!this.entityTypesMap.has(name)) {
+            const lower = name.toLowerCase();
+            if (lower.endsWith('pvt ltd') || lower.endsWith('private limited')) {
+              this.entityTypesMap.set(name, 'Private Limited Company');
+            } else if (lower.endsWith('llp')) {
+              this.entityTypesMap.set(name, 'LLP');
+            } else {
+              this.entityTypesMap.set(name, 'Unknown');
+            }
+          }
+        });
+
         entityArray.push('Add New Entity...');
         
         this.availableEntities.set(entityArray);
@@ -308,6 +339,42 @@ export class ClientServicesComponent implements OnInit {
       },
       error: (err) => console.error('Failed to fetch entities:', err)
     });
+  }
+
+  getCompatibilityWarning(): { message: string, type: string, header: string } | null {
+    if (this.quoteForm.selectedEntity === 'Add New Entity...') return null;
+    
+    const entityType = this.entityTypesMap.get(this.quoteForm.selectedEntity) || 'Unknown';
+    const reqService = this.selectedService()?.title;
+    
+    if (!reqService) return null;
+
+    if (entityType === 'Private Limited Company') {
+      if (reqService === 'OPC' || reqService === 'Proprietorship Registration') {
+        return {
+          type: 'error',
+          header: 'Service Not Applicable',
+          message: 'This entity is already registered as a Private Limited Company. OPC Registration and Proprietorship Registration are alternative business structures and cannot be applied to this entity.'
+        };
+      }
+      if (reqService === 'LLP Incorporation' || reqService === 'LLP Registration') {
+        return {
+          type: 'warning',
+          header: 'Entity Conversion Required',
+          message: 'This entity is already registered as a Private Limited Company. To proceed with LLP, you must either:\n• Convert the company into an LLP\nOR\n• Register a separate LLP entity'
+        };
+      }
+    } else if (entityType === 'LLP') {
+      if (reqService === 'Private Limited Incorporation') {
+        return {
+          type: 'warning',
+          header: 'Entity Conversion Required',
+          message: 'This entity is already registered as an LLP. To proceed with Private Limited Incorporation, you must either:\n• Convert the LLP into a Private Limited Company\nOR\n• Register a separate Private Limited entity'
+        };
+      }
+    }
+    
+    return null;
   }
 
   selectCategory(categoryId: string) {

@@ -634,8 +634,23 @@ const uploadFinalDocuments = async (req, res) => {
                 if (extractedDate) client.incorporation_date = extractedDate;
 
                 let foundEntity = false;
+                const originalName = checklist.details?.entityName || checklist.details?.entity_name || checklist.details?.companyName || checklist.details?.proposed_company_name;
 
-                if (extractedCompany) {
+                if (originalName) {
+                  const entityMatch = client.client_entities.find(e => 
+                    e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
+                  );
+                  if (entityMatch) {
+                    if (extractedCompany) entityMatch.entityName = extractedCompany;
+                    if (extractedCin) entityMatch.cin = extractedCin;
+                    if (extractedTan) entityMatch.tan = extractedTan;
+                    if (extractedPan) entityMatch.pan = extractedPan;
+                    if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                    foundEntity = true;
+                  }
+                }
+
+                if (!foundEntity && extractedCompany) {
                   const entityMatch = client.client_entities.find(e => 
                     e.entityName && (
                       extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) || 
@@ -643,6 +658,7 @@ const uploadFinalDocuments = async (req, res) => {
                     )
                   );
                   if (entityMatch) {
+                    entityMatch.entityName = extractedCompany;
                     if (extractedCin) entityMatch.cin = extractedCin;
                     if (extractedTan) entityMatch.tan = extractedTan;
                     if (extractedPan) entityMatch.pan = extractedPan;
@@ -672,6 +688,24 @@ const uploadFinalDocuments = async (req, res) => {
 
                 await client.save();
                 console.log(`[OCR] Updated client entities for checklist ${id} (Company: ${extractedCompany})`);
+
+                if (extractedCompany && originalName) {
+                  if (checklist.details) {
+                    checklist.details.entityName = extractedCompany;
+                    checklist.details.entity_name = extractedCompany;
+                    if (checklist.details.companyName) checklist.details.companyName = extractedCompany;
+                    checklist.markModified('details');
+                  }
+                  try {
+                    const ServiceOrder = require('../models/ServiceOrder');
+                    await ServiceOrder.updateMany(
+                      { clientUid: checklist.client_id, entityName: originalName },
+                      { $set: { entityName: extractedCompany } }
+                    );
+                  } catch (e) {
+                    console.error('Error updating order entity names:', e);
+                  }
+                }
               }
             }
             
@@ -861,8 +895,23 @@ const reuploadFinalDocument = async (req, res) => {
             if (extractedDate) client.incorporation_date = extractedDate;
 
             let foundEntity = false;
+            const originalName = checklist.details?.entityName || checklist.details?.entity_name || checklist.details?.companyName || checklist.details?.proposed_company_name;
 
-            if (extractedCompany) {
+            if (originalName) {
+              const entityMatch = client.client_entities.find(e => 
+                e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
+              );
+              if (entityMatch) {
+                if (extractedCompany) entityMatch.entityName = extractedCompany;
+                if (extractedCin) entityMatch.cin = extractedCin;
+                if (extractedTan) entityMatch.tan = extractedTan;
+                if (extractedPan) entityMatch.pan = extractedPan;
+                if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                foundEntity = true;
+              }
+            }
+
+            if (!foundEntity && extractedCompany) {
               const entityMatch = client.client_entities.find(e => 
                 e.entityName && (
                   extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) || 
@@ -870,6 +919,7 @@ const reuploadFinalDocument = async (req, res) => {
                 )
               );
               if (entityMatch) {
+                entityMatch.entityName = extractedCompany;
                 if (extractedCin) entityMatch.cin = extractedCin;
                 if (extractedTan) entityMatch.tan = extractedTan;
                 if (extractedPan) entityMatch.pan = extractedPan;
@@ -901,6 +951,24 @@ const reuploadFinalDocument = async (req, res) => {
           }
         }
         
+        if (extractedCompany && typeof originalName !== 'undefined' && originalName) {
+          if (checklist.details) {
+            checklist.details.entityName = extractedCompany;
+            checklist.details.entity_name = extractedCompany;
+            if (checklist.details.companyName) checklist.details.companyName = extractedCompany;
+            checklist.markModified('details');
+          }
+          try {
+            const ServiceOrder = require('../models/ServiceOrder');
+            await ServiceOrder.updateMany(
+              { clientUid: checklist.client_id, entityName: originalName },
+              { $set: { entityName: extractedCompany } }
+            );
+          } catch (e) {
+            console.error('Error updating order entity names:', e);
+          }
+        }
+
         // Trigger compliance generation
         if (checklist.service_name.includes('Private Limited') && extractedDate) {
           const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
