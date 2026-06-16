@@ -100,7 +100,7 @@ export class ServiceTrackComponent implements OnInit {
 
   getCompletedCount(items: any[]): number {
     if (!items || !items.length) return 0;
-    return items.filter(i => i.status === 'Completed' || i.status === 'Approved').length;
+    return items.filter(i => i.isChecked).length;
   }
 
   viewService(id: string) {
