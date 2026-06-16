@@ -290,7 +290,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => InvoiceScreen(orderId: order.id),
+                                    builder: (context) => InvoiceScreen(order: order),
                                   ),
                                 );
                               },

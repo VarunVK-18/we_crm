@@ -67,7 +67,8 @@
                   <div>
                     <label class="form-input-label">GST Percentage (%)</label>
                     <input type="number" 
-                           [(ngModel)]="settings().gst_percentage" 
+                           [ngModel]="settings().gst_percentage" 
+                           (ngModelChange)="onGstChange($event)"
                            name="gst_percentage" 
                            [disabled]="user()?.role !== 'admin'"
                            class="form-control-input" 

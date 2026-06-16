@@ -103,6 +103,16 @@ export class SystemSettings implements OnInit {
     });
   }
 
+  onGstChange(val: number) {
+    if (val !== undefined && val !== null) {
+      this.settings.update(s => ({
+        ...s,
+        gst_percentage: val,
+        cgst_percentage: val / 2
+      }));
+    }
+  }
+
   switchTab(tabName: string) {
     this.activeTab.set(tabName);
     if (tabName !== 'system') {

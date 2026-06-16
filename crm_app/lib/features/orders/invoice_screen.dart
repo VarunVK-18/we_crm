@@ -14,7 +14,7 @@ import '../../providers/settings_provider.dart';
 
 class InvoiceScreen extends ConsumerWidget {
   final ServiceOrder order;
-  const InvoiceScreen({super.key, required this.order});
+  InvoiceScreen({super.key, required this.order});
 
   // Generate invoice number from createdAt timestamp with #WE prefix
   String get _invoiceNumber =>
