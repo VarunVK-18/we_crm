@@ -21,6 +21,8 @@ export class ClientInvoice implements OnInit {
   user = signal<any>(null);
   order = signal<any>(null);
   isLoading = signal(true);
+  cgstRate = signal(9);  // default 9%
+  sgstRate = signal(9);  // default 9%
 
   // Icons
   ArrowLeft01Icon = ArrowLeft01Icon;
@@ -37,6 +39,17 @@ export class ClientInvoice implements OnInit {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
+      // Fetch company settings for tax rates
+      this.api.get<any>('settings').subscribe({
+        next: (res) => {
+          if (res?.success && res.settings) {
+            const cgst = res.settings.cgst_percentage ?? 9;
+            this.cgstRate.set(cgst);
+            this.sgstRate.set(cgst); // SGST = CGST
+          }
+        },
+        error: () => {} // Use defaults on error
+      });
       this.route.paramMap.subscribe(params => {
         const id = params.get('id');
         if (id) {
@@ -103,11 +116,11 @@ export class ClientInvoice implements OnInit {
   }
 
   get cgst(): number {
-    return this.servicePrice * 0.09;
+    return this.servicePrice * (this.cgstRate() / 100);
   }
 
   get sgst(): number {
-    return this.servicePrice * 0.09;
+    return this.servicePrice * (this.sgstRate() / 100);
   }
 
   get total(): number {

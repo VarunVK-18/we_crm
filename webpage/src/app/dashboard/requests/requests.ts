@@ -27,7 +27,6 @@ export class RequestsComponent implements OnInit {
   readonly Time01Icon = Time01Icon;
 
   // Filter state
-  statusFilter = signal<string>('new');
   searchQuery = signal<string>('');
 
   readonly NEW_STATUSES = ['new', 'pending'];
@@ -47,14 +46,8 @@ export class RequestsComponent implements OnInit {
   }
 
   filteredOrders = computed(() => {
-    const filter = this.statusFilter();
     const query = this.searchQuery().toLowerCase().trim();
-    const all = this.orders();
-    
-    let filtered = all;
-    if (filter === 'new') filtered = all.filter((o: any) => this.isNewOrder(o));
-    else if (filter === 'active') filtered = all.filter((o: any) => !this.isNewOrder(o) && (o.status || '').toLowerCase() === 'active');
-    else if (filter !== 'all') filtered = all.filter((o: any) => (o.status || '').toLowerCase() === filter);
+    let filtered = this.orders().filter((o: any) => this.isNewOrder(o));
     
     if (query) {
       filtered = filtered.filter((o: any) => {
@@ -68,15 +61,7 @@ export class RequestsComponent implements OnInit {
     return filtered;
   });
 
-  orderCounts = computed(() => {
-    const all = this.orders();
-    return {
-      all: all.length,
-      new: all.filter((o: any) => this.isNewOrder(o)).length,
-      active: all.filter((o: any) => !this.isNewOrder(o) && (o.status || '').toLowerCase() === 'active').length,
-      complete: all.filter((o: any) => (o.status || '').toLowerCase() === 'complete').length,
-    };
-  });
+
 
   // Selected employee per order { orderId: employeeData }
   selectedEmployeeForOrder = signal<Record<string, any>>({});
@@ -84,6 +69,7 @@ export class RequestsComponent implements OnInit {
   dealClosedAmountForOrder = signal<Record<string, number>>({});
   advanceAmountPaidForOrder = signal<Record<string, number>>({});
   numberOfDirectorsForOrder = signal<Record<string, number>>({});
+  isAssigningOrder = signal<Record<string, boolean>>({});
 
   constructor(public api: Api) { }
 
@@ -172,10 +158,7 @@ export class RequestsComponent implements OnInit {
   }
 
   getTaskCount(emp: any): number {
-    return this.orders().filter((o: any) => 
-      o.assignedExpert === emp.name && 
-      (o.status || '').toLowerCase() !== 'complete'
-    ).length;
+    return emp.ongoingTasksCount || 0;
   }
 
   onEmployeeSelectChange(orderId: string, event: any) {
@@ -268,8 +251,11 @@ export class RequestsComponent implements OnInit {
       updateData.assignedNumberOfDirectors = directors;
     }
 
+    this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: true }));
+
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
       next: (res: any) => {
+        this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: false }));
         this.showToast(`Assigned to ${emp.name} successfully!`, 'success');
 
         // Reset local selection & amount for this order
@@ -297,6 +283,7 @@ export class RequestsComponent implements OnInit {
         this.fetchOrders();
       },
       error: (err: any) => {
+        this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: false }));
         console.error('Error assigning employee', err);
         this.showToast('Failed to assign employee.', 'error');
       }
@@ -312,6 +299,9 @@ export class RequestsComponent implements OnInit {
   objectKeys(obj: any): string[] {
     if (!obj || typeof obj !== 'object') return [];
     return Object.keys(obj).filter(key => {
+      const lowerKey = key.toLowerCase();
+      if (lowerKey === 'status' || lowerKey === 'next step') return false;
+
       const val = obj[key];
       // Hide null, undefined, empty string
       if (val === null || val === undefined || val === '') return false;

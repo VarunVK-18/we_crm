@@ -61,7 +61,8 @@
           </button>
 
           @if (isNotificationOpen()) {
-            <div class="notification-dropdown-menu">
+            <div (click)="isNotificationOpen.set(false)" style="position: fixed; inset: 0; z-index: 998;"></div>
+            <div class="notification-dropdown-menu" style="z-index: 999; position: absolute;">
               <div class="notif-header">
                 <h3>Recent Updates</h3>
                 <button class="clear-all-btn" (click)="notifService.clearAll()">Clear all</button>

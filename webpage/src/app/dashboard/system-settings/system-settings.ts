@@ -14,6 +14,8 @@ export class SystemSettings implements OnInit {
   user = signal<any>(null);
   settings = signal<any>({
     default_filing_tax: 18,
+    gst_percentage: 18,
+    cgst_percentage: 9,
     allow_agent_registration: true,
     require_document_verification: true,
     enable_document_extraction: false

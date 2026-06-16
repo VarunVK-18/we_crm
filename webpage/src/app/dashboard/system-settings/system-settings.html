@@ -63,14 +63,31 @@
             
             <div class="form-grid">
               <div class="form-group-list">
-                <div>
-                  <label class="form-input-label">Standard Filing Tax Percentage (%)</label>
-                  <input type="number" 
-                         [(ngModel)]="settings().default_filing_tax" 
-                         name="default_filing_tax" 
-                         [disabled]="user()?.role !== 'admin'"
-                         class="form-control-input" 
-                         required />
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                  <div>
+                    <label class="form-input-label">GST Percentage (%)</label>
+                    <input type="number" 
+                           [(ngModel)]="settings().gst_percentage" 
+                           name="gst_percentage" 
+                           [disabled]="user()?.role !== 'admin'"
+                           class="form-control-input" 
+                           min="0" max="100"
+                           placeholder="e.g. 18"
+                           required />
+                    <small style="color: #64748b; font-size: 12px;">Total GST applied on invoice (e.g. 18%)</small>
+                  </div>
+                  <div>
+                    <label class="form-input-label">CGST Percentage (%)</label>
+                    <input type="number" 
+                           [(ngModel)]="settings().cgst_percentage" 
+                           name="cgst_percentage" 
+                           [disabled]="user()?.role !== 'admin'"
+                           class="form-control-input" 
+                           min="0" max="100"
+                           placeholder="e.g. 9"
+                           required />
+                    <small style="color: #64748b; font-size: 12px;">CGST portion (SGST will be same). E.g. 9% CGST + 9% SGST = 18% GST</small>
+                  </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
                   <input type="checkbox" id="allow_agent" [(ngModel)]="settings().allow_agent_registration" name="allow_agent_registration" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />

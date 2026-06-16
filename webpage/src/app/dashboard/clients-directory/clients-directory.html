@@ -126,7 +126,9 @@
               </svg>
             </a>
           </div>
-          <button class="cd-manage-btn" (click)="viewClientDashboard(client)">Manage Client</button>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="cd-manage-btn" (click)="viewClientDashboard(client)">Manage Client</button>
+          </div>
         </div>
       </div>
     }
@@ -400,6 +402,52 @@
         <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="isCreateTaskModalOpen.set(false)">Cancel</button>
           <button type="submit" class="btn-submit">Launch Filing Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Assign Manager Modal Overlay -->
+@if (isAssignManagerModalOpen()) {
+  <div class="modal-overlay" (click)="isAssignManagerModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Map Client to Manager</h3>
+        <button class="close-modal-btn" (click)="isAssignManagerModalOpen.set(false)">
+          <hugeicons-icon [icon]="Cancel01Icon" size="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <form (ngSubmit)="submitAssignManager()" class="modal-form">
+        <div class="modal-body">
+          @if (assignManagerErrorMessage()) {
+            <div class="modal-error-message">{{ assignManagerErrorMessage() }}</div>
+          }
+          @if (assignManagerSuccessMessage()) {
+            <div class="modal-success-message">{{ assignManagerSuccessMessage() }}</div>
+          }
+
+          <div class="form-group-item">
+            <label class="form-input-label">Select Client Manager</label>
+            <select name="assign_manager" class="form-control-input" [(ngModel)]="assignManagerSelectedEmployee">
+              <option value="">-- Unassigned (Creator Managed) --</option>
+              @for (emp of getFlatEmployees(); track emp.id) {
+                @if (emp.role === 'client_manager' || emp.role === 'account_manager') {
+                  <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+                }
+              }
+            </select>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 6px;">
+              Mapping this client will restrict their data strictly to the selected manager. 
+              Leave unassigned to keep them mapped to their original creator.
+            </p>
+          </div>
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="isAssignManagerModalOpen.set(false)">Cancel</button>
+          <button type="submit" class="btn-submit">Save Mapping</button>
         </div>
       </form>
     </div>

@@ -26,46 +26,58 @@
               <div style="width: 4px; height: 20px; background-color: var(--accent-orange, #f97316); border-radius: 2px; margin-right: 12px;"></div>
               <h2 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">{{ group.key }} ({{ group.items.length }})</h2>
             </div>
-            <hugeicons-icon [icon]="expandedEntities().has(group.key) ? ArrowUp01Icon : ArrowDown01Icon" [size]="20" color="#64748b"></hugeicons-icon>
+            <button style="display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 600; font-size: 13px; color: #475569; cursor: pointer;">
+              Show More
+              <hugeicons-icon [icon]="expandedEntities().has(group.key) ? ArrowUp01Icon : ArrowDown01Icon" [size]="16" color="#64748b" [strokeWidth]="2"></hugeicons-icon>
+            </button>
           </div>
           
           @if (expandedEntities().has(group.key)) {
-            <div style="display: flex; flex-direction: column; gap: 12px;" (click)="$event.stopPropagation()">
-              @for (task of group.items; track task.id) {
-                <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border-radius: 12px; background: #ffffff; border: 1px solid #cbd5e1; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: transform 0.2s;">
-                  <div style="display: flex; align-items: center; gap: 16px;">
-                    <div style="padding: 12px; border-radius: 12px; background: transparent;">
-                      <hugeicons-icon 
-                        [icon]="task.status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
-                        [size]="24"
-                        [color]="task.status === 'Completed' ? '#10b981' : '#3b82f6'"
-                        [strokeWidth]="2">
-                      </hugeicons-icon>
-                    </div>
-                    <div>
-                      <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: var(--text-dark);">{{ task.title }}</h4>
-                      <p style="margin: 0; font-size: 13px; font-weight: 600; color: #64748b;">
-                        <span [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#ef4444' : '#64748b'}">
-                          {{ task.message }}
-                        </span> 
-                        &bull; Status: <strong style="font-weight: 600; color: var(--text-dark);">{{ task.status }}</strong>
-                      </p>
-                    </div>
-                  </div>
-                  
-                  @if (task.status !== 'Completed') {
-                    <button 
-                      (click)="openCompleteModal(task)"
-                      style="padding: 8px 16px; background: var(--accent-primary, #0f172a); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;">
-                      Complete Task
-                    </button>
-                  } @else {
-                    <div style="padding: 8px 16px; background: #ecfdf5; color: #059669; border-radius: 6px; font-weight: 600; font-size: 12px;">
-                      COMPLETED
-                    </div>
+            <div style="margin-top: 16px; overflow-x: auto;" (click)="$event.stopPropagation()">
+              <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead>
+                  <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <th style="padding: 12px 16px; font-weight: 600; font-size: 13px; color: #64748b;">Task Name</th>
+                    <th style="padding: 12px 16px; font-weight: 600; font-size: 13px; color: #64748b;">Due Status</th>
+                    <th style="padding: 12px 16px; font-weight: 600; font-size: 13px; color: #64748b;">Task Status</th>
+                    <th style="padding: 12px 16px; font-weight: 600; font-size: 13px; color: #64748b; text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (task of group.items; track task.id) {
+                    <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                      <td style="padding: 16px; font-size: 14px; font-weight: 600; color: var(--text-dark);">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <hugeicons-icon 
+                            [icon]="task.status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
+                            [size]="18"
+                            [color]="task.status === 'Completed' ? '#10b981' : '#3b82f6'"
+                            [strokeWidth]="2">
+                          </hugeicons-icon>
+                          {{ task.title }}
+                        </div>
+                      </td>
+                      <td style="padding: 16px; font-size: 13px; font-weight: 600;" [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#ef4444' : '#64748b'}">
+                        {{ task.message }}
+                      </td>
+                      <td style="padding: 16px; font-size: 13px; font-weight: 600; color: var(--text-dark);">
+                        {{ task.status }}
+                      </td>
+                      <td style="padding: 16px; text-align: right;">
+                        @if (task.status !== 'Completed') {
+                          <button 
+                            (click)="openCompleteModal(task)"
+                            style="padding: 6px 14px; background: var(--accent-primary, #0f172a); color: white; border: none; border-radius: 6px; font-weight: 600; font-size: 12px; cursor: pointer; transition: all 0.2s;">
+                            Complete Task
+                          </button>
+                        } @else {
+                          <span style="padding: 6px 12px; background: #ecfdf5; color: #059669; border-radius: 6px; font-weight: 600; font-size: 12px;">COMPLETED</span>
+                        }
+                      </td>
+                    </tr>
                   }
-                </div>
-              }
+                </tbody>
+              </table>
             </div>
           }
         </div>

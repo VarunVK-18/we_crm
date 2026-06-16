@@ -36,12 +36,18 @@ export class ClientsDirectory implements OnInit {
   readonly Cancel01Icon = Cancel01Icon;
   readonly CheckmarkCircle02Icon = CheckmarkCircle02Icon;
 
-  // Create Client Modal State
   isCreateModalOpen = signal<boolean>(false);
   errorMessage = signal<string>('');
   successMessage = signal<string>('');
   selectedGstinFile: File | null = null;
   selectedPanFile: File | null = null;
+
+  // Assign Manager Modal State
+  isAssignManagerModalOpen = signal<boolean>(false);
+  assignManagerErrorMessage = signal<string>('');
+  assignManagerSuccessMessage = signal<string>('');
+  assignManagerSelectedClient = signal<any>(null);
+  assignManagerSelectedEmployee = signal<string>('');
 
   newClient = {
     owner_name: '',
@@ -286,12 +292,33 @@ export class ClientsDirectory implements OnInit {
     this.api.patch<any>(`users/clients/${clientId}/assign`, { employee_id: employeeId || null }).subscribe({
       next: (res) => {
         this.fetchClients();
-        alert('Client assigned successfully!');
+        this.assignManagerSuccessMessage.set('Client mapped to manager successfully!');
+        setTimeout(() => {
+          this.isAssignManagerModalOpen.set(false);
+          this.assignManagerSelectedClient.set(null);
+        }, 1200);
       },
       error: (err) => {
-        alert(err.error?.message || 'Failed to assign client.');
+        this.assignManagerErrorMessage.set(err.error?.message || 'Failed to assign client.');
       }
     });
+  }
+
+  openAssignManagerModal(client: any) {
+    this.assignManagerSelectedClient.set(client);
+    this.assignManagerSelectedEmployee.set(client.assigned_to?._id || client.assigned_to || '');
+    this.assignManagerErrorMessage.set('');
+    this.assignManagerSuccessMessage.set('');
+    this.isAssignManagerModalOpen.set(true);
+  }
+
+  submitAssignManager() {
+    this.assignManagerErrorMessage.set('');
+    this.assignManagerSuccessMessage.set('');
+    const client = this.assignManagerSelectedClient();
+    if (!client) return;
+
+    this.assignClientToEmployee(client._id, this.assignManagerSelectedEmployee());
   }
 
   updateOnboardingStatus(clientId: string, status: string) {

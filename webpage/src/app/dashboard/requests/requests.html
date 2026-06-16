@@ -18,33 +18,11 @@
         <input type="text" placeholder="Search requests..." [(ngModel)]="searchQuery" />
       </div>
       <div class="total-badge">
-        {{ orderCounts().all }} Total Requests
+        {{ filteredOrders().length }} New Requests
       </div>
     </div>
   </div>
 
-  <!-- Status Filter Tabs -->
-  <div class="filter-tabs">
-    <button class="filter-tab" [class.active]="statusFilter() === 'all'" (click)="statusFilter.set('all')">
-      All
-      <span class="count-pill">{{ orderCounts().all }}</span>
-    </button>
-    <button class="filter-tab new-tab" [class.active]="statusFilter() === 'new' || statusFilter() === 'pending'"
-      (click)="statusFilter.set('new')">
-      New
-      <span class="count-pill new">{{ orderCounts().new }}</span>
-    </button>
-    <button class="filter-tab active-tab" [class.active]="statusFilter() === 'active'"
-      (click)="statusFilter.set('active')">
-      Active
-      <span class="count-pill active-pill">{{ orderCounts().active }}</span>
-    </button>
-    <button class="filter-tab complete-tab" [class.active]="statusFilter() === 'complete'"
-      (click)="statusFilter.set('complete')">
-      Complete
-      <span class="count-pill complete">{{ orderCounts().complete }}</span>
-    </button>
-  </div>
 
   @if (isLoading()) {
   <div class="loading-state">
@@ -56,9 +34,8 @@
     <div class="placeholder-icon-circle">
       <hugeicons-icon [icon]="CheckmarkBadge01Icon" size="32" color="#94A3B8"></hugeicons-icon>
     </div>
-    <h3>No requests found</h3>
-    <p>{{ statusFilter() === 'all' ? 'No service orders found for your company.' : 'No ' + statusFilter() + ' requests
-      at the moment.' }}</p>
+    <h3>No incoming requests</h3>
+    <p>There are no new service orders at the moment.</p>
   </div>
   } @else {
   <div class="requests-grid">
@@ -168,7 +145,20 @@
           <div class="amount-assign-row">
             <input type="text" class="form-control-input number-input" placeholder="Enter advance (e.g. 1,000)"
               [value]="getFormattedAdvance(order._id)" (input)="onAdvanceChange(order._id, $event)">
-            <button class="btn-primary" (click)="assignEmployee(order._id)">Assign</button>
+            <button class="btn-primary" (click)="assignEmployee(order._id)" [disabled]="isAssigningOrder()[order._id]">
+              @if (isAssigningOrder()[order._id]) {
+                <div class="btn-loading-content">
+                  <div class="dot-spinner">
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                  </div>
+                  Assigning...
+                </div>
+              } @else {
+                Assign
+              }
+            </button>
           </div>
         </div>
 

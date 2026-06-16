@@ -347,10 +347,11 @@ const getTeamGroups = async (req, res) => {
       filter.company_id = company_id;
     }
 
+    const ServiceOrder = require('../models/ServiceOrder');
+
     const users = await User.find(filter).select('owner_name email role phone company_id');
     
-    // Group users by role
-    const groups = users.reduce((acc, user) => {
+    const groupsObj = users.reduce((acc, user) => {
       const role = user.role || 'agent';
       if (!acc[role]) {
         acc[role] = {
@@ -363,12 +364,24 @@ const getTeamGroups = async (req, res) => {
         name: user.owner_name,
         email: user.email,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        ongoingTasksCount: 0 // Default to 0, will update for filling_staff
       });
       return acc;
     }, {});
 
-    res.status(200).json(Object.values(groups));
+    // For filling_staff, accurately count their ongoing ServiceOrders from DB
+    if (groupsObj['filling_staff'] && groupsObj['filling_staff'].members) {
+      for (const member of groupsObj['filling_staff'].members) {
+        const count = await ServiceOrder.countDocuments({
+          assignedExpert: member.name,
+          status: { $ne: 'complete' }
+        });
+        member.ongoingTasksCount = count;
+      }
+    }
+
+    res.status(200).json(Object.values(groupsObj));
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

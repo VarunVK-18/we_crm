@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
@@ -7,10 +8,11 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
+import '../../providers/settings_provider.dart';
 
 // ─── Invoice Screen ───────────────────────────────────────────────────────────
 
-class InvoiceScreen extends StatelessWidget {
+class InvoiceScreen extends ConsumerWidget {
   final ServiceOrder order;
   const InvoiceScreen({super.key, required this.order});
 
@@ -22,11 +24,22 @@ class InvoiceScreen extends StatelessWidget {
   double get _servicePrice =>
       order.dealClosedAmount > 0 ? order.dealClosedAmount : 4999.00;
 
-  double get _gst => _servicePrice * 0.18;
-  double get _total => _servicePrice + _gst;
+  // Mutable tax rate storage set during build (needed by PDF generators)
+  double _cgstRate = 0.09;
+  double _sgstRate = 0.09;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final settingsAsync = ref.watch(companySettingsProvider);
+    final settings = settingsAsync.value ?? const CompanySettings();
+    final cgstRate = settings.cgstPercentage / 100;
+    final sgstRate = settings.sgstPercentage / 100;
+    // Store for PDF methods
+    _cgstRate = cgstRate;
+    _sgstRate = sgstRate;
+    final cgstAmount = _servicePrice * cgstRate;
+    final sgstAmount = _servicePrice * sgstRate;
+    final total = _servicePrice + cgstAmount + sgstAmount;
     final dateStr = DateFormat('dd MMM yyyy').format(order.createdAt);
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -241,13 +254,13 @@ class InvoiceScreen extends StatelessWidget {
                                     label: 'Subtotal', amount: _servicePrice),
                                 const SizedBox(height: 8),
                                 _TotalRow(
-                                    label: 'CGST (9%)',
-                                    amount: _servicePrice * 0.09,
+                                    label: 'CGST (${settings.cgstPercentage.toStringAsFixed(0)}%)',
+                                    amount: cgstAmount,
                                     isGst: true),
                                 const SizedBox(height: 8),
                                 _TotalRow(
-                                    label: 'SGST (9%)',
-                                    amount: _servicePrice * 0.09,
+                                    label: 'SGST (${settings.sgstPercentage.toStringAsFixed(0)}%)',
+                                    amount: sgstAmount,
                                     isGst: true),
                                 const SizedBox(height: 12),
                                 const Divider(),
@@ -267,7 +280,7 @@ class InvoiceScreen extends StatelessWidget {
                                           ),
                                     ),
                                     Text(
-                                      '₹${NumberFormat('#,##,##0.00').format(_total)}',
+                                      '₹${NumberFormat('#,##,##0.00').format(total)}',
                                       style: Theme.of(context)
                                           .textTheme
                                           .titleLarge
@@ -341,7 +354,8 @@ class InvoiceScreen extends StatelessWidget {
 
   // ── PDF Generation Logic ──────────────────────────────────────────────────
 
-  Future<pw.Document> _buildPdf() async {
+  Future<pw.Document> _buildPdf(
+      {double cgstRate = 0.09, double sgstRate = 0.09}) async {
     final pdf = pw.Document();
 
     // Load Unicode support fonts for Indian Rupee symbol
@@ -364,6 +378,9 @@ class InvoiceScreen extends StatelessWidget {
 
     final dateStr = DateFormat('dd MMM yyyy').format(order.createdAt);
     final fmt = NumberFormat('#,##,##0.00');
+    final cgstAmount = _servicePrice * cgstRate;
+    final sgstAmount = _servicePrice * sgstRate;
+    final total = _servicePrice + cgstAmount + sgstAmount;
 
     // Define Colors from UI
     final deepTeal = PdfColor.fromHex('#0D1B1E');
@@ -568,15 +585,15 @@ class InvoiceScreen extends StatelessWidget {
                         ),
                         pw.SizedBox(height: 6),
                         _pdfTotalRow(
-                          'CGST (9%)',
-                          _servicePrice * 0.09,
+                          'CGST (${(cgstRate * 100).toStringAsFixed(0)}%)',
+                          cgstAmount,
                           fmt,
                           secondaryGrey,
                         ),
                         pw.SizedBox(height: 6),
                         _pdfTotalRow(
-                          'SGST (9%)',
-                          _servicePrice * 0.09,
+                          'SGST (${(sgstRate * 100).toStringAsFixed(0)}%)',
+                          sgstAmount,
                           fmt,
                           secondaryGrey,
                         ),
@@ -602,7 +619,7 @@ class InvoiceScreen extends StatelessWidget {
                                 ),
                               ),
                               pw.Text(
-                                '₹${fmt.format(_total)}',
+                                '₹${fmt.format(total)}',
                                 style: pw.TextStyle(
                                   color: PdfColors.white,
                                   fontSize: 14,
@@ -807,7 +824,7 @@ class InvoiceScreen extends StatelessWidget {
   }
 
   Future<void> _downloadPdf(BuildContext context) async {
-    final pdf = await _buildPdf();
+    final pdf = await _buildPdf(cgstRate: _cgstRate, sgstRate: _sgstRate);
     await Printing.layoutPdf(
       onLayout: (_) async => pdf.save(),
       name: '$_invoiceNumber.pdf',
@@ -815,7 +832,7 @@ class InvoiceScreen extends StatelessWidget {
   }
 
   Future<void> _shareOrDownloadPdf(BuildContext context) async {
-    final pdf = await _buildPdf();
+    final pdf = await _buildPdf(cgstRate: _cgstRate, sgstRate: _sgstRate);
     await Printing.sharePdf(
       bytes: await pdf.save(),
       filename: '$_invoiceNumber.pdf',

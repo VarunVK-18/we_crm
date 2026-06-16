@@ -21,7 +21,7 @@ export class ClientDashboard implements OnInit, OnChanges {
   entitySearchQuery = signal<string>('');
   documentSearchQuery = signal<string>('');
 
-  constructor(private api: Api) {}
+  constructor(public api: Api) {}
 
   ngOnInit() {
     if (this.clientId) {
@@ -36,6 +36,7 @@ export class ClientDashboard implements OnInit, OnChanges {
   }
 
   clientOrders = signal<any[]>([]);
+  clientChecklists = signal<any[]>([]);
 
   fetchClientDetails() {
     this.isLoading.set(true);
@@ -56,10 +57,18 @@ export class ClientDashboard implements OnInit, OnChanges {
                 if (ordersRes && ordersRes.orders) {
                   this.clientOrders.set(ordersRes.orders || []);
                 }
-                this.isLoading.set(false);
+                // Fetch client's checklists for final delivery docs
+                this.api.get<any>(`checklists?client_id=${this.clientId}`).subscribe({
+                  next: (clRes) => {
+                    // API returns { success: true, checklists: [...] }
+                    const cls = clRes?.checklists || clRes || [];
+                    this.clientChecklists.set(Array.isArray(cls) ? cls : []);
+                    this.isLoading.set(false);
+                  },
+                  error: () => { this.isLoading.set(false); }
+                });
               },
               error: () => {
-                // If fetching orders fails, we still have the client data
                 this.isLoading.set(false);
               }
             });
@@ -160,11 +169,63 @@ export class ClientDashboard implements OnInit, OnChanges {
 
   getFilteredDocuments() {
     const query = this.documentSearchQuery().toLowerCase().trim();
-    let docs = this.client()?.onboarding_documents || [];
-    if (!query) return docs;
-    return docs.filter((doc: any) => 
-      (doc.name && doc.name.toLowerCase().includes(query))
-    );
+    
+    const docs: any[] = [];
+
+    // Add final delivery documents from all checklists
+    const checklists = this.clientChecklists() || [];
+    checklists.forEach((cl: any) => {
+      // 1. Final delivery documents uploaded by staff
+      if (cl.final_documents && Array.isArray(cl.final_documents)) {
+        cl.final_documents.forEach((fd: any) => {
+          docs.push({
+            name: fd.name,
+            url: `api/documents/${fd.document_id}`,
+            source: cl.service_name,
+            tag: 'Delivery'
+          });
+        });
+      }
+
+      // 2. Client-uploaded incorporation documents from details.incorpDocs
+      const incorpDocs = cl.details?.incorpDocs;
+      if (incorpDocs && Array.isArray(incorpDocs)) {
+        incorpDocs.forEach((d: any) => {
+          if (d.fileUrl) {
+            docs.push({
+              name: d.name || 'Document',
+              url: d.fileUrl,
+              source: cl.service_name,
+              tag: 'Client Upload'
+            });
+          }
+        });
+      }
+    });
+
+    // 3. Base onboarding documents from user profile
+    const profileDocs = this.client()?.onboarding_documents || [];
+    profileDocs.forEach((d: any) => {
+      if (d.fileUrl || d.url) {
+        docs.push({
+          name: d.filename || d.name || 'Document',
+          url: d.fileUrl || d.url,
+          source: 'Profile',
+          tag: 'Onboarding'
+        });
+      }
+    });
+
+    // Remove duplicates
+    const seen = new Set();
+    const unique = docs.filter(d => {
+      if (!d.url || seen.has(d.url)) return false;
+      seen.add(d.url);
+      return true;
+    });
+
+    if (!query) return unique;
+    return unique.filter(d => d.name.toLowerCase().includes(query));
   }
 
   editEntityByRef(entity: any) {
