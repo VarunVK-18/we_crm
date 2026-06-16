@@ -304,106 +304,118 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                             child: InkWell(
                               borderRadius: BorderRadius.circular(12),
                               onTap: () {
-                                showDialog(
+                                showModalBottomSheet(
                                   context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
                                   builder: (context) {
                                     bool showAll = false;
                                     return StatefulBuilder(
                                       builder: (context, setState) {
-                                        return AlertDialog(
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                          title: Text(
-                                            'Director $idx Details',
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w800,
-                                              color: AppTheme.deepTeal,
-                                            ),
+                                        return Container(
+                                          width: double.infinity,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                                           ),
-                                          content: SingleChildScrollView(
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(bottom: 12),
+                                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                                            children: [
+                                              Center(
+                                                child: Container(
+                                                  width: 40,
+                                                  height: 4,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey.shade300,
+                                                    borderRadius: BorderRadius.circular(2),
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 24),
+                                              Text(
+                                                'Director $idx Details',
+                                                textAlign: TextAlign.center,
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: AppTheme.deepTeal,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 32),
+                                              Padding(
+                                                padding: const EdgeInsets.only(bottom: 16),
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 100,
+                                                      child: Text(
+                                                        'NAME',
+                                                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
+                                                      ),
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        name,
+                                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              ...dir.entries.map((e) {
+                                                if (['directorName', 'name', 'fullName', '_id'].contains(e.key)) return const SizedBox.shrink();
+                                                
+                                                final isBasicField = ['email', 'phone', 'phonenumber', 'mobile'].contains(e.key.toLowerCase());
+                                                if (!showAll && !isBasicField) return const SizedBox.shrink();
+                                                
+                                                final valStr = e.value?.toString() ?? '';
+                                                if (valStr.isEmpty) return const SizedBox.shrink();
+                                                
+                                                String formattedKey = e.key.replaceAll(RegExp(r'([a-z])([A-Z])'), r'$1 $2').toUpperCase();
+                                                
+                                                return Padding(
+                                                  padding: const EdgeInsets.only(bottom: 16),
                                                   child: Row(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
                                                       SizedBox(
-                                                        width: 80,
+                                                        width: 100,
                                                         child: Text(
-                                                          'NAME',
+                                                          formattedKey,
                                                           style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
                                                         ),
                                                       ),
                                                       Expanded(
                                                         child: Text(
-                                                          name,
+                                                          valStr,
                                                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
                                                         ),
                                                       ),
                                                     ],
                                                   ),
-                                                ),
-                                                ...dir.entries.map((e) {
-                                                  if (['directorName', 'name', 'fullName', '_id'].contains(e.key)) return const SizedBox.shrink();
-                                                  
-                                                  final isBasicField = ['email', 'phone', 'phonenumber', 'mobile'].contains(e.key.toLowerCase());
-                                                  if (!showAll && !isBasicField) return const SizedBox.shrink();
-                                                  
-                                                  final valStr = e.value?.toString() ?? '';
-                                                  if (valStr.isEmpty) return const SizedBox.shrink();
-                                                  
-                                                  // Format the key to be more readable
-                                                  String formattedKey = e.key.replaceAll(RegExp(r'([a-z])([A-Z])'), r'$1 $2').toUpperCase();
-                                                  
-                                                  return Padding(
-                                                    padding: const EdgeInsets.only(bottom: 12),
-                                                    child: Row(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        SizedBox(
-                                                          width: 80,
-                                                          child: Text(
-                                                            formattedKey,
-                                                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
-                                                          ),
-                                                        ),
-                                                        Expanded(
-                                                          child: Text(
-                                                            valStr,
-                                                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  );
-                                                }),
-                                                if (!showAll && dir.keys.any((k) => !['directorName', 'name', 'fullName', '_id', 'email', 'phone', 'phonenumber', 'mobile'].contains(k.toLowerCase())))
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(top: 8),
-                                                    child: Center(
-                                                      child: TextButton.icon(
-                                                        onPressed: () {
-                                                          setState(() {
-                                                            showAll = true;
-                                                          });
-                                                        },
-                                                        icon: const Icon(LucideIcons.chevronDown, size: 16, color: AppTheme.corporateBlue),
-                                                        label: const Text('View All Details', style: TextStyle(fontSize: 12, color: AppTheme.corporateBlue, fontWeight: FontWeight.w500, height: 1.4)),
-                                                      ),
+                                                );
+                                              }),
+                                              if (!showAll && dir.keys.any((k) => !['directorName', 'name', 'fullName', '_id', 'email', 'phone', 'phonenumber', 'mobile'].contains(k.toLowerCase())))
+                                                Padding(
+                                                  padding: const EdgeInsets.only(top: 16),
+                                                  child: Center(
+                                                    child: TextButton.icon(
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          showAll = true;
+                                                        });
+                                                      },
+                                                      icon: const Icon(LucideIcons.chevronDown, size: 16, color: AppTheme.corporateBlue),
+                                                      label: const Text('View All Details', style: TextStyle(fontSize: 12, color: AppTheme.corporateBlue, fontWeight: FontWeight.w500, height: 1.4)),
                                                     ),
                                                   ),
-                                              ],
-                                            ),
+                                                ),
+                                              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+                                            ],
                                           ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: const Text('Close', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black)),
-                                            ),
-                                          ],
                                         );
                                       }
                                     );
@@ -1184,13 +1196,13 @@ class _StepTimeline extends StatelessWidget {
                             Row(
                               children: [
                                 Icon(LucideIcons.mousePointerClick,
-                                    size: 14, color: Colors.orange.shade700),
+                                    size: 14, color: AppTheme.corporateBlue),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Tap to complete form',
                                   style: TextStyle(
                                       fontSize: 11,
-                                      color: Colors.orange.shade700,
+                                      color: AppTheme.corporateBlue,
                                       fontWeight: FontWeight.w800),
                                 ),
                               ],
@@ -1489,75 +1501,145 @@ class _DirectorDetailsSection extends StatelessWidget {
               .where((d) => d.name.startsWith(directorPrefix))
               .toList();
 
-          return Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: ExpansionTile(
-                title: Text(
-                  'Director ${index + 1}: ${dir['name'] ?? 'Unknown'}',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                      color: AppTheme.deepTeal),
+          return Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
-                childrenPadding: const EdgeInsets.all(16),
-                expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildDetailRow('Father\'s Name', dir['fathersName']),
-                  _buildDetailRow('Date of Birth', dir['dob']),
-                  _buildDetailRow('Place of Birth', dir['placeOfBirth']),
-                  _buildDetailRow(
-                      'Educational Qual.', dir['educationalQualification']),
-                  _buildDetailRow('Occupation', dir['occupation']),
-                  const SizedBox(height: 16),
-                  const Text('Documents',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 12,
-                          color: Colors.grey)),
-                  const SizedBox(height: 8),
-                  if (docs.isEmpty)
-                    const Text('No documents uploaded',
-                        style: TextStyle(fontSize: 12, color: Colors.grey))
-                  else
-                    ...docs.map((d) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Row(
-                            children: [
-                              Icon(
-                                  d.isUploaded
-                                      ? LucideIcons.checkCircle2
-                                      : LucideIcons.xCircle,
-                                  color:
-                                      d.isUploaded ? Colors.green : Colors.red,
-                                  size: 14),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                  child: Text(
-                                      d.name.replaceFirst(directorPrefix, ''),
-                                      style: const TextStyle(fontSize: 12))),
-                            ],
-                          ),
-                        )),
-                ],
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  _showDirectorDetailsSheet(context, index, dir, docs, directorPrefix);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppTheme.corporateBlue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(LucideIcons.user, color: AppTheme.corporateBlue, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Director ${index + 1}',
+                              style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              dir['name'] ?? 'Unknown',
+                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.deepTeal),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(LucideIcons.chevronRight, color: Colors.grey, size: 20),
+                    ],
+                  ),
+                ),
               ),
             ),
           );
         }),
       ],
+    );
+  }
+
+  void _showDirectorDetailsSheet(BuildContext context, int index, dynamic dir, List<dynamic> docs, String directorPrefix) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Director ${index + 1}: ${dir['name'] ?? 'Unknown'}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: AppTheme.deepTeal,
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildDetailRow('Father\'s Name', dir['fathersName']),
+            _buildDetailRow('Date of Birth', dir['dob']),
+            _buildDetailRow('Place of Birth', dir['placeOfBirth']),
+            _buildDetailRow('Educational Qual.', dir['educationalQualification']),
+            _buildDetailRow('Occupation', dir['occupation']),
+            const SizedBox(height: 24),
+            const Text(
+              'Documents',
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                color: AppTheme.deepTeal,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (docs.isEmpty)
+              const Text('No documents uploaded', style: TextStyle(fontSize: 14, color: Colors.grey))
+            else
+              ...docs.map((d) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                            d.isUploaded
+                                ? LucideIcons.checkCircle2
+                                : LucideIcons.xCircle,
+                            color: d.isUploaded ? Colors.green : Colors.red,
+                            size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                            child: Text(
+                                d.name.replaceFirst(directorPrefix, ''),
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+                      ],
+                    ),
+                  )),
+            SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
+          ],
+        ),
+      ),
     );
   }
 

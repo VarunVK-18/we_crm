@@ -52,8 +52,14 @@
                   @for (order of getFilteredOrders(); track order._id) {
                     <tr (click)="openServiceDetails(order)">
                       <td>
-                        <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
                           <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark); white-space: nowrap;">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
+                          @if (order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name) {
+                            <span style="font-size: 12px; font-weight: 500; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); display: flex; align-items: center; gap: 4px;">
+                              <span class="material-symbols-outlined" style="font-size: 14px;">business</span>
+                              {{ order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name }}
+                            </span>
+                          }
                         </div>
                       </td>
                       <td>

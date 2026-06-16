@@ -429,9 +429,18 @@ class _ServiceRequestSummarySheetState
 
       // Collect package-specific details
       final Map<String, String> details = {};
+      
+      // Add common application details for hovering in manager dashboard
+      details['Applicant Name'] = _nameController.text;
+      details['Applicant Email'] = _emailController.text;
+      details['Applicant Phone'] = _phoneController.text;
+
       if (!_isTwoStepForm) {
         details['Status'] = 'Pending Client Form Submission';
         details['Next Step'] = 'Assign expert to unlock form for client';
+        if (widget.packageName.contains('Incorporation')) {
+           details['numberOfDirectors'] = _numberOfDirectorsController.text;
+        }
       } else if (widget.packageName == 'Trademark Registration') {
         details['brand_name'] = _companyNameController.text;
         details['tm_address'] = _tmAddressController.text;
@@ -637,10 +646,8 @@ class _ServiceRequestSummarySheetState
                         isPhoneValid: _isPhoneValid,
                         isRequired: true,
                       ),
-                      if (!widget.packageName.contains('Incorporation') && 
-                          widget.packageName != 'OPC' && 
-                          widget.packageName != 'Proprietorship' && 
-                          !widget.packageName.contains('MSME')) ...[
+                      // Always show the entity dropdown for all services
+                      if (true) ...[
                         const SizedBox(height: 24),
                         Text(
                           'Select Entity for this Service',
@@ -1387,6 +1394,14 @@ class _ServiceRequestSummarySheetState
           icon: LucideIcons.fileText,
           hint: 'Describe the main business activities...',
           maxLines: 3,
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Number of Partners',
+          controller: _numberOfDirectorsController,
+          icon: LucideIcons.users,
+          hint: 'Number of Partners/Directors',
+          keyboardType: TextInputType.number,
           isRequired: true),
       const SizedBox(height: 24),
       _buildSectionHeader('Registered Office Preference'),

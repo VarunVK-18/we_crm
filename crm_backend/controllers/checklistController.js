@@ -675,7 +675,7 @@ const uploadFinalDocuments = async (req, res) => {
               }
             }
             
-            // Trigger compliance generation for Private Limited
+            // Trigger compliance generation
             if (checklist.service_name.includes('Private Limited') && extractedDate) {
               const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
               await complianceService.generateCompliancesForPrivateLimited(
@@ -686,6 +686,16 @@ const uploadFinalDocuments = async (req, res) => {
                 entityName
               );
               console.log(`Generated compliances for ${entityName} with incDate ${extractedDate}`);
+            } else if (checklist.service_name.includes('LLP Incorporation') && extractedDate) {
+              const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'LLP Entity';
+              await complianceService.generateCompliancesForLLP(
+                checklist.client_id,
+                checklist.company_id,
+                checklist._id,
+                extractedDate,
+                entityName
+              );
+              console.log(`Generated LLP compliances for ${entityName} with incDate ${extractedDate}`);
             }
 
           } catch (err) {
@@ -891,10 +901,19 @@ const reuploadFinalDocument = async (req, res) => {
           }
         }
         
-        // Trigger compliance generation for Private Limited
+        // Trigger compliance generation
         if (checklist.service_name.includes('Private Limited') && extractedDate) {
           const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
           await complianceService.generateCompliancesForPrivateLimited(
+            checklist.client_id,
+            checklist.company_id,
+            checklist._id,
+            extractedDate,
+            entityName
+          );
+        } else if (checklist.service_name.includes('LLP Incorporation') && extractedDate) {
+          const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'LLP Entity';
+          await complianceService.generateCompliancesForLLP(
             checklist.client_id,
             checklist.company_id,
             checklist._id,

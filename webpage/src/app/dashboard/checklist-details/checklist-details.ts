@@ -57,6 +57,17 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     'Other'
   ];
 
+  llpFinalDocs = [
+    'LLP Certificate of Incorporation',
+    'PAN Letter',
+    'TAN Letter',
+    'LLP Agreement',
+    'Form 3 Acknowledgement',
+    'FiLLiP Form',
+    'DPIN/DIN Details',
+    'Other'
+  ];
+
   // --- Chat Feature ---
   isChatModalOpen = signal<boolean>(false);
   chatMessages = signal<any[]>([]);
