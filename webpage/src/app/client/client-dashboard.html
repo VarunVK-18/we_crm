@@ -331,7 +331,7 @@
                               <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark); white-space: nowrap;">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
                               @if (order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name) {
                                 <span style="font-size: 12px; font-weight: 500; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); display: flex; align-items: center; gap: 4px;">
-                                  <span class="material-symbols-outlined" style="font-size: 14px;">business</span>
+                                  <hugeicons-icon [icon]="ApartmentIcon" [size]="14" [strokeWidth]="2" color="currentColor" style="display: flex;"></hugeicons-icon>
                                   {{ order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name }}
                                 </span>
                               }

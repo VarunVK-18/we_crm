@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket02Icon, GiftIcon, Briefcase02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, Search01Icon, BankIcon, PercentIcon, Call02Icon, MailOpenIcon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket02Icon, GiftIcon, Briefcase02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, Search01Icon, BankIcon, PercentIcon, Call02Icon, MailOpenIcon, ApartmentIcon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
 
 @Component({
@@ -29,6 +29,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
   readonly Search01Icon = Search01Icon;
   readonly BankIcon = BankIcon;
   readonly PercentIcon = PercentIcon;
+  readonly ApartmentIcon = ApartmentIcon;
   user = signal<any>(null);
   clientManager = signal<any>(null);
   
