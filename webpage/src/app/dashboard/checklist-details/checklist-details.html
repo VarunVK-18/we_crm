@@ -405,6 +405,15 @@
                 <span style="font-size: 12px; color: var(--color-success); font-weight: 600;">Uploaded</span>
                 <a [href]="api.getFileUrl('api/documents/' + (fdoc.document_id?._id || fdoc.document_id))" target="_blank"
                   style="color: var(--accent-primary); font-size: 12px; font-weight: 700; text-decoration: none;">View</a>
+                
+                <label [style.opacity]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? '0.5' : '1'"
+                  style="color: #f59e0b; font-size: 12px; font-weight: 700; cursor: pointer; margin: 0; padding: 0;">
+                  {{ isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? 'Wait...' : 'Reupload' }}
+                  <input type="file" style="display: none;" 
+                    [disabled]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id]"
+                    (change)="reuploadFinalDoc($event, fdoc.document_id?._id || fdoc.document_id)" />
+                </label>
+
                 <button type="button" (click)="deleteUploadedFinalDoc(fdoc.document_id?._id || fdoc.document_id)"
                   style="background: none; border: none; cursor: pointer; color: var(--color-danger); font-size: 12px; font-weight: 700; padding: 0;">
                   Delete
@@ -424,9 +433,16 @@
               @for (type of privateLimitedFinalDocs; track type) {
                 @if (type !== 'Other') {
                   <label class="custom-file-upload"
-                    style="display: inline-block; padding: 10px 16px; cursor: pointer; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px; font-weight: 600; text-align: center; transition: all 0.2s;">
+                    [style.background]="hasFinalDocUploaded(type) ? 'var(--bg-secondary)' : 'var(--bg-primary)'"
+                    [style.border-color]="hasFinalDocUploaded(type) ? 'var(--color-success)' : 'var(--border-color)'"
+                    style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px; font-weight: 600; text-align: center; transition: all 0.2s;">
                     <input type="file" (change)="onSpecificFinalFileSelected($event, type)" style="display: none;" />
-                    + Upload {{ type }}
+                    @if (hasFinalDocUploaded(type)) {
+                      <span class="material-symbols-outlined" style="font-size: 16px; color: var(--color-success); font-weight: bold;">check_circle</span>
+                    } @else {
+                      <span>+</span>
+                    }
+                    Upload {{ type }}
                   </label>
                 }
               }

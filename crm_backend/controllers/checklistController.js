@@ -729,6 +729,13 @@ const deleteFinalDocument = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Document not found in this checklist' });
     }
 
+    const deletedDocName = checklist.final_documents[docIndex].name || '';
+    if (deletedDocName.toLowerCase().includes('incorporation') || deletedDocName.toLowerCase().includes('coi')) {
+      const ComplianceTask = require('../models/ComplianceTask');
+      await ComplianceTask.deleteMany({ checklistId: checklist._id });
+      console.log(`Deleted compliance tasks for checklist ${id} because COI was deleted.`);
+    }
+
     // Remove from array
     checklist.final_documents.splice(docIndex, 1);
     await checklist.save();
@@ -746,6 +753,179 @@ const deleteFinalDocument = async (req, res) => {
     res.status(200).json({ success: true, checklist: populated });
   } catch (error) {
     console.error('Final Documents Delete Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Re-upload/Replace a final document in a checklist
+// @route   PUT /api/checklists/:id/final-documents/:docId/reupload
+// @access  Private (Admin, Client Manager, Staff)
+const reuploadFinalDocument = async (req, res) => {
+  try {
+    const { id, docId } = req.params;
+
+    const checklist = await Checklist.findById(id);
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    if (!req.file && (!req.files || req.files.length === 0)) {
+      return res.status(400).json({ success: false, message: 'No file provided' });
+    }
+
+    const file = req.file || req.files[0];
+
+    // Find the document in the checklist's final_documents array
+    const docIndex = checklist.final_documents.findIndex(d => d.document_id && d.document_id.toString() === docId);
+    
+    if (docIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Document not found in this checklist' });
+    }
+
+    const Document = require('../models/Document');
+
+    // Create the new Document
+    const newDoc = await Document.create({
+      filename: file.originalname,
+      contentType: file.mimetype,
+      data: file.buffer,
+      uploadedBy: req.user._id
+    });
+
+    // Update the array item
+    checklist.final_documents[docIndex].document_id = newDoc._id;
+    checklist.final_documents[docIndex].uploadedAt = new Date();
+
+    // OCR extraction logic for Incorporation certificates
+    if (file.mimetype === 'application/pdf' && (file.originalname.toLowerCase().includes('incorporation') || file.originalname.toLowerCase().includes('coi'))) {
+      try {
+        const pdfParse = require('pdf-parse');
+        const User = require('../models/User');
+        const complianceService = require('../services/complianceService');
+        const pdfData = await pdfParse(file.buffer);
+        const text = pdfData.text.replace(/\n/g, ' ').replace(/\s+/g, ' ');
+
+        let extractedCompany = '';
+        let extractedCin = '';
+        let extractedTan = '';
+        let extractedPan = '';
+        let extractedDate = null;
+
+        const nameMatch = text.match(/I hereby certify that\s+([^]+?)\s+is incorporated/i);
+        if (nameMatch) extractedCompany = nameMatch[1].trim();
+
+        const cinMatch = text.match(/([L|U]\d{5}[A-Z]{2}\d{4}[A-Z]{3}\d{6})/);
+        if (cinMatch) extractedCin = cinMatch[1].trim();
+
+        const tanMatch = text.match(/\b([A-Z]{4}\d{5}[A-Z])\b/);
+        if (tanMatch) extractedTan = tanMatch[1].trim();
+
+        const panRegex = /\b([A-Z]{5}\d{4}[A-Z])\b/g;
+        let match;
+        while ((match = panRegex.exec(text)) !== null) {
+          if (!extractedCin.includes(match[1]) && match[1] !== extractedTan) {
+            extractedPan = match[1];
+            break;
+          }
+        }
+
+        let dateMatch = text.match(/this\s+(.+?)\s+under the Companies Act/i);
+        if (!dateMatch) {
+          dateMatch = text.match(/this\s+([^.]+?(?:two thousand[a-z\s]*|20\d{2}))/i);
+        }
+        if (!dateMatch) {
+          dateMatch = text.match(/(\d{1,2}(?:st|nd|rd|th)?\s+(?:day of\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*,?\s*(?:two thousand[a-z\s]*|20\d{2}))/i);
+        }
+        if (dateMatch) {
+          const { parseWrittenDate } = require('../utils/dateUtils');
+          extractedDate = parseWrittenDate(dateMatch[1].trim());
+        }
+
+        // Update client profile and specific client entity
+        if (extractedCompany || extractedCin || extractedTan) {
+          const client = await User.findById(checklist.client_id);
+          if (client) {
+            if (extractedCompany) client.company_name = extractedCompany;
+            if (extractedCin) client.cin = extractedCin;
+            if (extractedTan) client.tan = extractedTan;
+            if (extractedDate) client.incorporation_date = extractedDate;
+
+            let foundEntity = false;
+
+            if (extractedCompany) {
+              const entityMatch = client.client_entities.find(e => 
+                e.entityName && (
+                  extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) || 
+                  e.entityName.toLowerCase().includes(extractedCompany.toLowerCase())
+                )
+              );
+              if (entityMatch) {
+                if (extractedCin) entityMatch.cin = extractedCin;
+                if (extractedTan) entityMatch.tan = extractedTan;
+                if (extractedPan) entityMatch.pan = extractedPan;
+                if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                foundEntity = true;
+              }
+            }
+
+            if (!foundEntity) {
+              if (client.client_entities.length === 1 && !client.client_entities[0].cin) {
+                  const entityMatch = client.client_entities[0];
+                  if (extractedCin) entityMatch.cin = extractedCin;
+                  if (extractedTan) entityMatch.tan = extractedTan;
+                  if (extractedPan) entityMatch.pan = extractedPan;
+                  if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                  foundEntity = true;
+              } else if (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name) {
+                client.client_entities.push({
+                  entityName: extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual',
+                  cin: extractedCin || '',
+                  tan: extractedTan || '',
+                  pan: extractedPan || '',
+                  incorporationDate: extractedDate
+                });
+              }
+            }
+
+            await client.save();
+          }
+        }
+        
+        // Trigger compliance generation for Private Limited
+        if (checklist.service_name.includes('Private Limited') && extractedDate) {
+          const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
+          await complianceService.generateCompliancesForPrivateLimited(
+            checklist.client_id,
+            checklist.company_id,
+            checklist._id,
+            extractedDate,
+            entityName
+          );
+        }
+
+      } catch (err) {
+        console.error('OCR or Compliance Error during reupload:', err);
+      }
+    }
+
+    await checklist.save();
+
+    // Optionally delete the old document
+    try {
+      await Document.findByIdAndDelete(docId);
+    } catch (e) {
+      console.error('Error deleting old document:', e);
+    }
+
+    const populated = await Checklist.findById(id)
+      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('assigned_to', 'owner_name email role')
+      .populate('created_by', 'owner_name email role')
+      .populate('items.checkedBy', 'owner_name');
+
+    res.status(200).json({ success: true, checklist: populated });
+  } catch (error) {
+    console.error('Reupload Final Document Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -844,5 +1024,6 @@ module.exports = {
   uploadRequestedDocuments,
   uploadFinalDocuments,
   deleteFinalDocument,
+  reuploadFinalDocument,
   createSupportTicketForChecklist
 };

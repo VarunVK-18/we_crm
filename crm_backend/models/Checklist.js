@@ -32,12 +32,14 @@ const ChecklistSchema = new mongoose.Schema({
   company_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true
+    required: true,
+    index: true
   },
   client_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: true,
+    index: true
   },
   service_name: {
     type: String,

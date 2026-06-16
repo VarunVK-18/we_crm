@@ -74,32 +74,73 @@
       </a>
 
       <!-- Timeline -->
-      <div class="bento-card timeline-card">
-        <h3 class="timeline-header">Compliance Timeline</h3>
-        <div class="timeline-list">
-          @for (item of timelineItems(); track item.title) {
-            <div class="timeline-item" (click)="openCompleteModal(item)" style="cursor: pointer; flex-wrap: wrap;">
-              <div style="display: flex; width: 100%; align-items: center; justify-content: space-between;">
-                <div style="display: flex; align-items: center; flex: 1;">
-                  <div class="timeline-dot" [class.urgent]="item.type === 'Critical' || item.type === 'Overdue'"></div>
-                  <div class="timeline-details">
-                    <div class="item-title">{{ item.title }}</div>
-                    <div class="item-status">{{ item.status }}</div>
-                  </div>
-                </div>
-                <div class="item-type" [class.urgent]="item.type === 'Critical' || item.type === 'Overdue'">
-                  {{ item.type }}
-                </div>
-              </div>
-              @if (item.daysLeft <= 3) {
-                <div style="width: 100%; margin-top: 8px; padding-left: 24px;">
-                  <div style="display: inline-block; padding: 4px 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; color: #ef4444; font-size: 11px; font-weight: 800;">
-                    If not completed you Need To Pay Penalty
-                  </div>
-                </div>
-              }
+      <div class="main-table-card" style="margin-top: 16px;">
+        <div class="table-card-header">
+          <div class="header-left">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">Compliance Timeline</h3>
+          </div>
+          <div class="header-right" style="display: flex; align-items: center; gap: 16px;">
+            <div class="tabs-group">
+              <button class="tab-btn" [class.active]="timelineTab() === 'all'" (click)="timelineTab.set('all')">All</button>
+              <button class="tab-btn" [class.active]="timelineTab() === 'pending'" (click)="timelineTab.set('pending')">Pending</button>
+              <button class="tab-btn" [class.active]="timelineTab() === 'completed'" (click)="timelineTab.set('completed')">Completed</button>
             </div>
-          }
+            <div class="total-count" style="font-size: 14px; color: #334155; font-weight: 600;">
+              <strong>TOTAL: {{ timelineItems().length }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="tickets-table">
+            <thead>
+              <tr>
+                <th>TASK NAME</th>
+                <th>TYPE</th>
+                <th>DEADLINE</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (timelineItems().length === 0) {
+                <tr>
+                  <td colspan="4" class="empty-state" style="text-align: center; padding: 40px; color: #64748b;">No compliance tasks found</td>
+                </tr>
+              } @else {
+                @for (item of timelineItems(); track item.title) {
+                  <tr>
+                    <td class="ticket-subject-cell">
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <strong style="color: #0f172a; font-weight: 600;">{{ item.title }}</strong>
+                        @if (item.daysLeft <= 3) {
+                          <span style="font-size: 11px; color: #ef4444; font-weight: 600;">Penalty applicable if not completed</span>
+                        }
+                      </div>
+                    </td>
+                    <td style="color: #475569; font-size: 13px;">{{ item.type }}</td>
+                    <td style="font-size: 13px;">
+                      @if (item.daysLeft < 0) {
+                        <span style="color: #ef4444; font-weight: 600;">Overdue by {{ -item.daysLeft }} days</span>
+                      } @else if (item.daysLeft === 0) {
+                        <span style="color: #f97316; font-weight: 600;">Due Today</span>
+                      } @else {
+                        <span style="color: #64748b; font-weight: 500;">{{ item.daysLeft }} days left</span>
+                      }
+                    </td>
+                    <td>
+                      @if (item.type === 'Completed') {
+                        <span class="status-badge resolved-badge">COMPLETED</span>
+                      } @else if (item.type === 'Overdue' || item.daysLeft < 0) {
+                        <span class="status-badge" style="background: #fee2e2; color: #dc2626;">OVERDUE</span>
+                      } @else {
+                        <span class="status-badge pending-badge">PENDING</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -164,43 +205,6 @@
               <p style="font-weight: 600;">No compliances found for the selected filter.</p>
             </div>
           }
-        </div>
-      </div>
-    </div>
-  }
-
-  <!-- Complete Task Modal -->
-  @if (isCompleteModalOpen()) {
-    <div class="modal-overlay" (click)="isCompleteModalOpen.set(false)">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <div class="modal-drag-handle"></div>
-        <div class="modal-header">
-          <div>
-            <h2>Complete Compliance Task</h2>
-            <p>{{ selectedTask()?.title }}</p>
-          </div>
-          <button class="close-btn" (click)="isCompleteModalOpen.set(false)">
-            &times;
-          </button>
-        </div>
-        
-        <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
-          <div>
-            <label style="display: block; font-weight: 500; margin-bottom: 8px;">Upload Proof Document</label>
-            <input type="file" (change)="onFileChange($event, 'proof')" style="width: 100%; border: 1px solid var(--border-light); padding: 8px; border-radius: 8px;">
-          </div>
-          <div>
-            <label style="display: block; font-weight: 500; margin-bottom: 8px;">Upload Certificate</label>
-            <input type="file" (change)="onFileChange($event, 'cert')" style="width: 100%; border: 1px solid var(--border-light); padding: 8px; border-radius: 8px;">
-          </div>
-          <div>
-            <label style="display: block; font-weight: 500; margin-bottom: 8px;">Upload Filing Acknowledgement</label>
-            <input type="file" (change)="onFileChange($event, 'ack')" style="width: 100%; border: 1px solid var(--border-light); padding: 8px; border-radius: 8px;">
-          </div>
-          
-          <button style="margin-top: 16px; background: var(--accent-primary); color: white; padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer;" (click)="submitCompletion()">
-            Mark as Completed
-          </button>
         </div>
       </div>
     </div>

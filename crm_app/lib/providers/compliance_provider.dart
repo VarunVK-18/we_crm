@@ -28,7 +28,7 @@ final complianceRemindersProvider =
         final response = await http.get(
           Uri.parse('$kBaseUrl/api/compliance/tasks/user/$uid'),
           headers: {'x-user-id': uid},
-        ).timeout(const Duration(seconds: 5));
+        ).timeout(const Duration(seconds: 15));
 
         if (response.statusCode == 200) {
           final Map<String, dynamic> data = jsonDecode(response.body);
@@ -36,9 +36,19 @@ final complianceRemindersProvider =
 
           for (final t in tasksJson) {
             final String title = t['title']?.toString() ?? 'Task';
-            final String rawEntityName = t['entityName'] ?? (t['companyId'] != null ? t['companyId']['company_name'] : 'Individual');
+            
+            String rawEntityName = 'Individual';
+            if (t['entityName'] != null && t['entityName'].toString().isNotEmpty) {
+              rawEntityName = t['entityName'].toString();
+            } else if (t['companyId'] != null) {
+              if (t['companyId'] is Map) {
+                rawEntityName = t['companyId']['company_name']?.toString() ?? 'Individual';
+              } else {
+                rawEntityName = 'Company';
+              }
+            }
             final String entityName = rawEntityName.trim();
-            final int daysLeft = t['daysLeft'] ?? 0;
+            final int daysLeft = (t['daysLeft'] as num?)?.toInt() ?? 0;
             final String rawStatus = t['status']?.toString() ?? 'Upcoming';
             
             TaskStatus status = TaskStatus.upcoming;

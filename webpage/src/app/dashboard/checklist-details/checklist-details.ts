@@ -487,6 +487,48 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       }
     });
   }
+
+  isReuploadingMap: Record<string, boolean> = {};
+
+  reuploadFinalDoc(event: any, docId: string) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!confirm(`Are you sure you want to replace this document with "${file.name}"?`)) {
+      event.target.value = '';
+      return;
+    }
+
+    const cl = this.checklist();
+    if (!cl) return;
+
+    this.isReuploadingMap[docId] = true;
+    const formData = new FormData();
+    formData.append('final_file', file);
+
+    this.api.put(`checklists/${cl._id}/final-documents/${docId}/reupload`, formData).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+          alert('Document replaced successfully!');
+        }
+        this.isReuploadingMap[docId] = false;
+        event.target.value = '';
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to replace document.');
+        this.isReuploadingMap[docId] = false;
+        event.target.value = '';
+      }
+    });
+  }
+
+  hasFinalDocUploaded(docType: string): boolean {
+    const cl = this.checklist();
+    if (!cl || !cl.final_documents) return false;
+    return cl.final_documents.some((d: any) => d.name && d.name.startsWith(docType));
+  }
+
   openRequestDocModal() {
     this.newDocRequestName = '';
     this.checklistErrorMessage.set('');

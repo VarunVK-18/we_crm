@@ -428,8 +428,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
         : pendingReminders.reduce((a, b) => a.daysLeft < b.daysLeft ? a : b);
 
     // Map upcoming items dynamically to the timeline card
-    final timelineItems = pendingReminders
-        .map((r) => {
+    final List<Map<String, String>> timelineItems = pendingReminders
+        .map((r) => <String, String>{
               'title': currentEntity == 'All Entities'
                   ? '${r.title} (${r.entityName})'
                   : r.title,

@@ -207,6 +207,11 @@ exports.getAllComplianceTasks = async (req, res) => {
     const mappedTasks = tasks.map(task => {
       const daysLeft = Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24));
       
+      let computedStatus = task.status;
+      if (computedStatus !== 'Completed') {
+        computedStatus = complianceService.calculateStatus(task.dueDate, null);
+      }
+      
       let entityName = task.entityName;
       if (!entityName && task.checklistId && task.checklistId.details) {
          entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
@@ -221,14 +226,16 @@ exports.getAllComplianceTasks = async (req, res) => {
       return {
         ...task,
         entityName,
-        daysLeft
+        daysLeft,
+        status: computedStatus
       };
     });
 
     // Also fetch dynamic reminders from completed checklists across all clients
     const completedChecklists = await Checklist.find({ 'final_documents.0': { $exists: true } })
       .populate('company_id', 'company_name')
-      .populate('client_id', 'owner_name company_name');
+      .populate('client_id', 'owner_name company_name')
+      .lean();
 
     const dynamicRemindersRaw = getDynamicReminders(completedChecklists);
     
@@ -262,8 +269,6 @@ exports.getAllComplianceTasks = async (req, res) => {
 exports.getUserComplianceTasks = async (req, res) => {
   try {
     const { userId } = req.params;
-    
-    await complianceService.updateStatuses(userId);
 
     const tasks = await ComplianceTask.find({ clientUid: userId })
       .populate('companyId', 'company_name')
@@ -278,6 +283,11 @@ exports.getUserComplianceTasks = async (req, res) => {
     const mappedTasks = tasks.map(task => {
       const daysLeft = Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24));
       
+      let computedStatus = task.status;
+      if (computedStatus !== 'Completed') {
+        computedStatus = complianceService.calculateStatus(task.dueDate, null);
+      }
+      
       let entityName = task.entityName;
       if (!entityName && task.checklistId && task.checklistId.details) {
          entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
@@ -289,14 +299,16 @@ exports.getUserComplianceTasks = async (req, res) => {
       return {
         ...task,
         entityName,
-        daysLeft
+        daysLeft,
+        status: computedStatus
       };
     });
 
     // Fetch dynamic reminders (e.g. from Trademark/FSSAI document expiry dates)
     const completedChecklists = await Checklist.find({ client_id: userId, 'final_documents.0': { $exists: true } })
       .populate('company_id', 'company_name')
-      .populate('client_id', 'owner_name company_name');
+      .populate('client_id', 'owner_name company_name')
+      .lean();
 
     const dynamicRemindersRaw = getDynamicReminders(completedChecklists);
     

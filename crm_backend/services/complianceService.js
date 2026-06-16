@@ -44,6 +44,9 @@ const addDays = (date, days) => {
 };
 
 exports.generateCompliancesForPrivateLimited = async (clientUid, companyId, checklistId, incDate, entityName = '') => {
+    // Delete any existing tasks for this checklist to prevent duplicates on reupload
+    await ComplianceTask.deleteMany({ checklistId });
+
     const firstAgmDate = calculateFirstAGM(incDate);
 
     const compliances = [

@@ -30,6 +30,7 @@ export class ClientCompliance implements OnInit {
   isEntityModalOpen = signal(false);
   currentEntity = signal<string>('All Entities');
   taskFilter = signal<'pending' | 'completed' | 'all'>('pending');
+  timelineTab = signal<'all' | 'pending' | 'completed'>('all');
 
   // Computed Values
   availableEntities = computed(() => {
@@ -117,14 +118,24 @@ export class ClientCompliance implements OnInit {
   });
 
   timelineItems = computed(() => {
-    const pending = this.pendingTasks();
-    if (pending.length === 0) return [{ title: 'No pending tasks', status: 'All clear', type: 'Up To Date', daysLeft: 0 }];
+    let tasks = this.filteredTasks();
+    const tab = this.timelineTab();
     
-    return pending.map(r => ({
+    if (tab === 'pending') {
+      tasks = tasks.filter(r => r.status !== 'Completed');
+    } else if (tab === 'completed') {
+      tasks = tasks.filter(r => r.status === 'Completed');
+    }
+
+    if (tasks.length === 0) {
+      return [];
+    }
+    
+    return tasks.map(r => ({
       ...r,
       title: r.title,
-      status: r.daysLeft <= 0 ? 'Overdue - Penalty Applicable' : `${r.daysLeft} Days Remaining`,
-      type: r.status // Upcoming, Due Soon, Critical, Overdue
+      status: r.daysLeft < 0 ? 'Overdue - Penalty Applicable' : (r.daysLeft === 0 ? 'Due Today' : `${r.daysLeft} Days Remaining`),
+      type: r.status // Upcoming, Due Soon, Critical, Overdue, Completed
     }));
   });
 
@@ -176,46 +187,7 @@ export class ClientCompliance implements OnInit {
     });
   }
 
-  // File Upload State for Complete Task
-  selectedTask = signal<any>(null);
-  isCompleteModalOpen = signal(false);
-  proofDocument: File | null = null;
-  certificateDocument: File | null = null;
-  acknowledgementDocument: File | null = null;
-
-  openCompleteModal(task: any) {
-    this.selectedTask.set(task);
-    this.proofDocument = null;
-    this.certificateDocument = null;
-    this.acknowledgementDocument = null;
-    this.isPendingModalOpen.set(false);
-    this.isCompleteModalOpen.set(true);
-  }
-
-  onFileChange(event: any, type: string) {
-    const file = event.target.files[0];
-    if (file) {
-      if (type === 'proof') this.proofDocument = file;
-      if (type === 'cert') this.certificateDocument = file;
-      if (type === 'ack') this.acknowledgementDocument = file;
-    }
-  }
-
-  submitCompletion() {
-    if (!this.selectedTask()) return;
-    const formData = new FormData();
-    if (this.proofDocument) formData.append('proofDocument', this.proofDocument);
-    if (this.certificateDocument) formData.append('certificateDocument', this.certificateDocument);
-    if (this.acknowledgementDocument) formData.append('acknowledgementDocument', this.acknowledgementDocument);
-
-    this.api.post(`compliance/tasks/${this.selectedTask().id}/complete`, formData).subscribe({
-      next: () => {
-        this.isCompleteModalOpen.set(false);
-        this.fetchReminders();
-      },
-      error: (err) => console.error('Failed to complete task:', err)
-    });
-  }
+  // Removed file upload state since clients do not complete tasks
 
   renewService(serviceName: string) {
     // Navigate to the services catalog, where client-services component will

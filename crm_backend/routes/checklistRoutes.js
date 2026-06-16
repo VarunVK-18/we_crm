@@ -9,6 +9,7 @@ const {
   updateChecklist,
   uploadFinalDocuments,
   deleteFinalDocument,
+  reuploadFinalDocument,
   createSupportTicketForChecklist
 } = require('../controllers/checklistController');
 
@@ -33,6 +34,7 @@ router.post('/checklists/:id/items', checkUser, permit('admin', 'client_manager'
 router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
 router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadFinalDocuments);
 router.delete('/checklists/:id/final-documents/:docId', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), deleteFinalDocument);
+router.put('/checklists/:id/final-documents/:docId/reupload', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.single('final_file'), reuploadFinalDocument);
 
 // Document upload route for Flutter customers
 const { uploadRequestedDocuments } = require('../controllers/checklistController');

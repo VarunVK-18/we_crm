@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ComplianceTaskSchema = new mongoose.Schema({
-  clientUid: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  clientUid: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
   checklistId: { type: mongoose.Schema.Types.ObjectId, ref: 'Checklist' },
   entityName: { type: String },
