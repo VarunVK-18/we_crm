@@ -1,52 +1,62 @@
-<div class="main-content flex-grow-1 p-4 w-100">
-  <div class="header d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center gap-3">
-      <button class="btn btn-light rounded-circle shadow-sm" (click)="goBack()">
-        <i class="bi bi-arrow-left"></i>
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
       </button>
-      <div>
-        <h2 class="mb-1 text-primary">GST Compliance Form</h2>
-        <p class="text-muted mb-0">Please provide the required details to proceed with GST Compliance.</p>
+      <div class="title-row">
+        <h1>GST Compliance Form</h1>
       </div>
+      <p class="subtitle">Please provide the required details to proceed with GST Compliance.</p>
     </div>
   </div>
 
-  <div class="card shadow-sm border-0 mb-4">
-    <div class="card-body p-4">
-      <h4 class="mb-4">Required Documents</h4>
-      <div class="row g-4">
-        
-        <div class="col-md-12">
-          <label class="form-label">Last 3 months Bank Statement (Current Account) <span class="text-danger">*</span></label>
-          <input type="file" class="form-control" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'bankStatement')">
-          <small class="text-muted">Max size: 2MB (PDF/JPG/PNG)</small>
-        </div>
-
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
       </div>
+    }
 
-      <div class="row mt-4">
-        <div class="col-12">
-          <div class="form-check">
-            <input class="form-check-input" type="checkbox" id="declaration" [(ngModel)]="isDeclared">
-            <label class="form-check-label text-muted" for="declaration">
-              I hereby declare that the information provided above is true and correct to the best of my knowledge and belief.
-            </label>
+    <form (ngSubmit)="submitForm()" ngNativeValidate class="gst-compliance-form">
+      <section class="form-section">
+        <h2>Required Documents</h2>
+        
+        <div class="form-grid">
+          <div class="form-group file-group full-width">
+            <label>Last 3 months Bank Statement (Current Account) *</label>
+            <input type="file" required accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'bankStatement')">
+            <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="alert alert-danger mt-3" *ngIf="errorMessage()">
-        {{ errorMessage() }}
-      </div>
+      <section class="form-section">
+        <h2>Declaration</h2>
+        <div class="form-group full-width" style="margin-top: 8px;">
+          <label class="radio-label" style="align-items: flex-start;">
+            <input type="checkbox" [(ngModel)]="isDeclared" name="declaration" required style="margin-top: 4px;">
+            <span style="font-size: 14px; font-weight: normal; color: var(--text-secondary); line-height: 1.5;">
+              I hereby declare that the information provided above is true and correct to the best of my knowledge and belief.
+            </span>
+          </label>
+        </div>
+      </section>
 
-      <div class="d-flex justify-content-end mt-4">
-        <button class="btn btn-light me-3 px-4" (click)="goBack()">Cancel</button>
-        <button class="btn btn-primary px-4" (click)="submitForm()" [disabled]="isSubmitting()">
-          <span *ngIf="!isSubmitting()">Submit</span>
-          <span *ngIf="isSubmitting()" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-          <span *ngIf="isSubmitting()">Submitting...</span>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="goBack()" style="margin-right: 16px;">
+          Cancel
+        </button>
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
+          } @else {
+            Submit GST Compliance
+          }
         </button>
       </div>
-    </div>
+    </form>
   </div>
 </div>

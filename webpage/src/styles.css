@@ -265,3 +265,40 @@ textarea {
   font-weight: 600;
   font-size: 15px;
 }
+
+/* Professional File Upload Styling (Applies to all form Document Uploads) */
+.file-group {
+  transition: all 0.2s ease;
+}
+
+.file-group:hover, .file-upload-wrapper:hover {
+  border-color: var(--palette-dark);
+  background: #f1f5f9;
+}
+
+input[type="file"]::file-selector-button {
+  background: var(--palette-dark);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: color-mix(in srgb, var(--palette-dark) 80%, black);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+input[type="file"] {
+  font-family: var(--font-body);
+  color: #475569;
+  cursor: pointer;
+}

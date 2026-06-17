@@ -550,7 +550,6 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
         ...combinedOrders.map((order) => _buildActiveOrderCard(context, order))
       else
         _buildNoActiveTasksCard(context),
-      _buildReferAndEarnCard(context),
     ];
 
     final totalCards = cards.length;

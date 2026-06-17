@@ -241,4 +241,117 @@ router.post(
   orderController.submitGstComplianceForm
 );
 
+// Define fields for Proprietorship form
+const proprietorshipUploadFields = [
+  { name: 'panCard', maxCount: 1 },
+  { name: 'aadhaarCard', maxCount: 1 },
+  { name: 'passportPhoto', maxCount: 1 },
+  { name: 'addressProof', maxCount: 1 },
+  { name: 'businessAddressProof', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-proprietorship-form
+router.post(
+  '/:id/submit-proprietorship-form',
+  checkUser,
+  upload.fields(proprietorshipUploadFields),
+  orderController.submitProprietorshipForm
+);
+
+// Define fields for TDS form
+const tdsUploadFields = [
+  { name: 'panCard', maxCount: 1 },
+  { name: 'addressProof', maxCount: 1 },
+  { name: 'businessAddressProof', maxCount: 1 },
+  { name: 'incorpCert', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-tds-form
+router.post(
+  '/:id/submit-tds-form',
+  checkUser,
+  upload.fields(tdsUploadFields),
+  orderController.submitTdsForm
+);
+
+// Define fields for PF form
+const pfUploadFields = [
+  { name: 'panCard', maxCount: 1 },
+  { name: 'businessAddressProof', maxCount: 1 },
+  { name: 'incorpCert', maxCount: 1 },
+  { name: 'cancelledCheque', maxCount: 1 },
+  { name: 'authSignatoryProof', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-pf-form
+router.post(
+  '/:id/submit-pf-form',
+  checkUser,
+  upload.fields(pfUploadFields),
+  orderController.submitPfForm
+);
+
+// Define fields for Patent form
+const patentUploadFields = [
+  { name: 'identityProof', maxCount: 1 },
+  { name: 'addressProof', maxCount: 1 },
+  { name: 'inventionDescriptionDoc', maxCount: 1 },
+  { name: 'drawingsDiagrams', maxCount: 1 },
+  { name: 'authLetter', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-patent-form
+router.post(
+  '/:id/submit-patent-form',
+  checkUser,
+  upload.fields(patentUploadFields),
+  orderController.submitPatentForm
+);
+
+// Define fields for GST Cancellation form
+const gstCancellationUploadFields = [
+  { name: 'gstCert', maxCount: 1 },
+  { name: 'panCard', maxCount: 1 },
+  { name: 'supportDocs', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-gst-cancellation-form
+router.post(
+  '/:id/submit-gst-cancellation-form',
+  checkUser,
+  upload.fields(gstCancellationUploadFields),
+  orderController.submitGstCancellationForm
+);
+
+// Define fields for GST Filing form
+const gstFilingUploadFields = [
+  { name: 'salesReport', maxCount: 1 },
+  { name: 'purchaseReport', maxCount: 1 },
+  { name: 'gstInvoices', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-gst-filing-form
+router.post(
+  '/:id/submit-gst-filing-form',
+  checkUser,
+  upload.fields(gstFilingUploadFields),
+  orderController.submitGstFilingForm
+);
+
+// Define fields for IEC form
+const iecUploadFields = [
+  { name: 'panCard', maxCount: 1 },
+  { name: 'addressProof', maxCount: 1 },
+  { name: 'cancelledCheque', maxCount: 1 },
+  { name: 'incorpCert', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-iec-form
+router.post(
+  '/:id/submit-iec-form',
+  checkUser,
+  upload.fields(iecUploadFields),
+  orderController.submitIecForm
+);
+
 module.exports = router;

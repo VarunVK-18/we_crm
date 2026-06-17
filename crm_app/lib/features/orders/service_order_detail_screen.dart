@@ -244,7 +244,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
               delegate: SliverChildListDelegate([
                 const SizedBox(height: 24),
 
-                if (order.isPaymentPending) ...[
+                if (order.isPaymentPending && order.status != ServiceStatus.complete) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Container(
@@ -683,15 +683,84 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                       ],
                     );
 
-                    if (order.isPaymentPending) {
-                      return IgnorePointer(
-                        child: ImageFiltered(
-                          imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                          child: Opacity(
-                            opacity: 0.7,
-                            child: progressContent,
+                    if (order.isPaymentPending && order.status == ServiceStatus.complete) {
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          IgnorePointer(
+                            child: ImageFiltered(
+                              imageFilter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                              child: Opacity(
+                                opacity: 0.7,
+                                child: progressContent,
+                              ),
+                            ),
                           ),
-                        ),
+                          Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(LucideIcons.alertTriangle, color: Colors.orange, size: 32),
+                                ),
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Final Payment Required',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppTheme.deepTeal,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'The service has been completed successfully. Please clear your pending balance of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade700,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      // _showPaymentGateway(context); (Would be called if accessible here)
+                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please tap Contact Manager at the top.')));
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppTheme.corporateBlue,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                    child: const Text('Pay Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       );
                     }
 

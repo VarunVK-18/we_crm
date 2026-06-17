@@ -817,3 +817,291 @@ exports.submitGstComplianceForm = async (req, res) => {
     res.status(500).json({ message: 'Server error while submitting GST Compliance form.', error: error.message });
   }
 };
+
+// Submit Proprietorship Registration Form
+exports.submitProprietorshipForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.panCard) uploadedDocs.push({ name: "PAN Card", fileUrl: files.panCard[0].path });
+    if (files.aadhaarCard) uploadedDocs.push({ name: "Aadhaar Card", fileUrl: files.aadhaarCard[0].path });
+    if (files.passportPhoto) uploadedDocs.push({ name: "Passport Size Photo", fileUrl: files.passportPhoto[0].path });
+    if (files.addressProof) uploadedDocs.push({ name: "Address Proof", fileUrl: files.addressProof[0].path });
+    if (files.businessAddressProof) uploadedDocs.push({ name: "Business Address Proof", fileUrl: files.businessAddressProof[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      proprietorshipForm: formData,
+      proprietorshipDocs: uploadedDocs,
+      companyName: formData.businessName, // Ensure business name shows up in tracking
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'Proprietorship form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting Proprietorship form:', error);
+    res.status(500).json({ message: 'Server error while submitting Proprietorship form.', error: error.message });
+  }
+};
+
+// Submit TDS / TAN Registration Form
+exports.submitTdsForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.panCard) uploadedDocs.push({ name: "PAN Card", fileUrl: files.panCard[0].path });
+    if (files.addressProof) uploadedDocs.push({ name: "Address Proof", fileUrl: files.addressProof[0].path });
+    if (files.businessAddressProof) uploadedDocs.push({ name: "Business Address Proof", fileUrl: files.businessAddressProof[0].path });
+    if (files.incorpCert) uploadedDocs.push({ name: "Incorporation Certificate", fileUrl: files.incorpCert[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      tdsForm: formData,
+      tdsDocs: uploadedDocs,
+      companyName: formData.businessName, // Ensure business name shows up in tracking
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'TDS form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting TDS form:', error);
+    res.status(500).json({ message: 'Server error while submitting TDS form.', error: error.message });
+  }
+};
+
+// Submit PF Registration Form
+exports.submitPfForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.panCard) uploadedDocs.push({ name: "PAN Card", fileUrl: files.panCard[0].path });
+    if (files.businessAddressProof) uploadedDocs.push({ name: "Business Address Proof", fileUrl: files.businessAddressProof[0].path });
+    if (files.incorpCert) uploadedDocs.push({ name: "Incorporation Certificate", fileUrl: files.incorpCert[0].path });
+    if (files.cancelledCheque) uploadedDocs.push({ name: "Cancelled Cheque", fileUrl: files.cancelledCheque[0].path });
+    if (files.authSignatoryProof) uploadedDocs.push({ name: "Authorized Signatory ID Proof", fileUrl: files.authSignatoryProof[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      pfForm: formData,
+      pfDocs: uploadedDocs,
+      companyName: formData.businessName, // Ensure business name shows up in tracking
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'PF form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting PF form:', error);
+    res.status(500).json({ message: 'Server error while submitting PF form.', error: error.message });
+  }
+};
+
+// Submit Patent Registration Form
+exports.submitPatentForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.identityProof) uploadedDocs.push({ name: "Identity Proof", fileUrl: files.identityProof[0].path });
+    if (files.addressProof) uploadedDocs.push({ name: "Address Proof", fileUrl: files.addressProof[0].path });
+    if (files.inventionDescriptionDoc) uploadedDocs.push({ name: "Invention Description", fileUrl: files.inventionDescriptionDoc[0].path });
+    if (files.drawingsDiagrams) uploadedDocs.push({ name: "Drawings / Diagrams", fileUrl: files.drawingsDiagrams[0].path });
+    if (files.authLetter) uploadedDocs.push({ name: "Authorization Letter", fileUrl: files.authLetter[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      patentForm: formData,
+      patentDocs: uploadedDocs,
+      companyName: formData.applicantName || formData.inventionTitle, // Track via applicant or title
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'Patent form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting Patent form:', error);
+    res.status(500).json({ message: 'Server error while submitting Patent form.', error: error.message });
+  }
+};
+
+// Submit GST Cancellation Form
+exports.submitGstCancellationForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.gstCert) uploadedDocs.push({ name: "GST Registration Certificate", fileUrl: files.gstCert[0].path });
+    if (files.panCard) uploadedDocs.push({ name: "PAN Card", fileUrl: files.panCard[0].path });
+    if (files.supportDocs) uploadedDocs.push({ name: "Supporting Documents", fileUrl: files.supportDocs[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      gstCancellationForm: formData,
+      gstCancellationDocs: uploadedDocs,
+      companyName: formData.businessName, // Track via business name
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'GST Cancellation form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting GST Cancellation form:', error);
+    res.status(500).json({ message: 'Server error while submitting GST Cancellation form.', error: error.message });
+  }
+};
+
+// Submit GST Filing Form
+exports.submitGstFilingForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.salesReport) uploadedDocs.push({ name: "Sales Report", fileUrl: files.salesReport[0].path });
+    if (files.purchaseReport) uploadedDocs.push({ name: "Purchase Report", fileUrl: files.purchaseReport[0].path });
+    if (files.gstInvoices) uploadedDocs.push({ name: "GST Invoices", fileUrl: files.gstInvoices[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      gstFilingForm: formData,
+      gstFilingDocs: uploadedDocs,
+      companyName: formData.businessName, // Track via business name
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'GST Filing form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting GST Filing form:', error);
+    res.status(500).json({ message: 'Server error while submitting GST Filing form.', error: error.message });
+  }
+};
+
+// Submit IEC Form
+exports.submitIecForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.panCard) uploadedDocs.push({ name: "PAN Card", fileUrl: files.panCard[0].path });
+    if (files.addressProof) uploadedDocs.push({ name: "Address Proof", fileUrl: files.addressProof[0].path });
+    if (files.cancelledCheque) uploadedDocs.push({ name: "Cancelled Cheque", fileUrl: files.cancelledCheque[0].path });
+    if (files.incorpCert) uploadedDocs.push({ name: "Incorporation Certificate", fileUrl: files.incorpCert[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      iecForm: formData,
+      iecDocs: uploadedDocs,
+      companyName: formData.businessName, // Track via business name
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+
+    await order.save();
+
+    res.status(200).json({ message: 'IEC form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting IEC form:', error);
+    res.status(500).json({ message: 'Server error while submitting IEC form.', error: error.message });
+  }
+};

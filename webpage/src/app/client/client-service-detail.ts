@@ -139,6 +139,38 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     this.router.navigate(['/client/forms/bis', this.order()?._id || this.order()?.id]);
   }
 
+  goToProprietorshipForm() {
+    this.router.navigate(['/client/forms/proprietorship', this.order()?._id || this.order()?.id]);
+  }
+
+  goToTdsForm() {
+    this.router.navigate(['/client/forms/tds', this.order()?._id || this.order()?.id]);
+  }
+
+  goToPfForm() {
+    this.router.navigate(['/client/forms/pf', this.order()?._id || this.order()?.id]);
+  }
+
+  goToPatentForm() {
+    this.router.navigate(['/client/forms/patent', this.order()?._id || this.order()?.id]);
+  }
+
+  goToGstCancellationForm() {
+    this.router.navigate(['/client/forms/gst-cancellation', this.order()?._id || this.order()?.id]);
+  }
+
+  goToGstFilingForm() {
+    this.router.navigate(['/client/forms/gst-filing', this.order()?._id || this.order()?.id]);
+  }
+
+  goToIecForm() {
+    this.router.navigate(['/client/forms/iec', this.orderId()]);
+  }
+
+  goToDpiitForm() {
+    this.router.navigate(['/client/forms/dpiit', this.orderId()]);
+  }
+
   fetchOrderDetails(silent = false) {
     if (!silent) this.isLoading.set(true);
     
@@ -150,21 +182,13 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         const checklists = res.checklists || [];
         const found = checklists.find((c: any) => c._id === this.orderId());
         if (found) {
-          const isAssigned = found.assigned_to && found.assigned_to.role !== 'client_manager';
+          const isAssigned = !!found.assigned_to;
           let status = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'in-progress');
           
           if (status === 'in-progress') {
-            const isPrivateLimited = found.service_name === 'Private Limited Incorporation';
-            const isLLP = found.service_name === 'LLP Incorporation';
-            const isFSSAI = found.service_name === 'FSSAI Food License';
-            
-            if (isPrivateLimited && (!found.details || !found.details.companyName)) {
-              status = 'action-required';
-            } else if (isLLP && (!found.details || !found.details.llpName)) {
-              status = 'action-required';
-            } else if (isFSSAI && (!found.details || !found.details.fssai_business_type)) {
-              status = 'action-required';
-            } else if (found.action_required) {
+            // Rely on the backend's dynamically computed action_required flag
+            // which covers ALL services that require a form to be filled
+            if (found.action_required) {
               status = 'action-required';
             }
           }

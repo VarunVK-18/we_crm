@@ -1,0 +1,145 @@
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1>Patent Registration Form</h1>
+      </div>
+      <p class="subtitle">Please provide the details below to apply for a Patent.</p>
+    </div>
+  </div>
+
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="submitForm()" ngNativeValidate #patentForm="ngForm" class="incorp-form">
+      
+      <!-- Step 1: Applicant Details -->
+      <section class="form-section">
+        <h2>Step 1: Applicant Details</h2>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Applicant Name *</label>
+            <input type="text" [(ngModel)]="applicantName" name="applicantName" required placeholder="Individual or Company Name">
+          </div>
+          <div class="form-group">
+            <label>Entity Type *</label>
+            <select [(ngModel)]="entityType" name="entityType" required>
+              <option value="" disabled>Select Entity Type</option>
+              <option value="Individual">Individual</option>
+              <option value="Startup">Startup</option>
+              <option value="Small Entity">Small Entity</option>
+              <option value="Educational Institution">Educational Institution</option>
+              <option value="Corporate/Other">Corporate / Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mobile Number *</label>
+            <input type="tel" [(ngModel)]="mobileNumber" name="mobileNumber" required placeholder="+91">
+          </div>
+          <div class="form-group">
+            <label>Email ID *</label>
+            <input type="email" [(ngModel)]="emailId" name="emailId" required placeholder="email@example.com">
+          </div>
+          <div class="form-group full-width">
+            <label>Address *</label>
+            <textarea [(ngModel)]="address" name="address" required rows="2" placeholder="Full applicant address"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Invention Details -->
+      <section class="form-section">
+        <h2>Step 2: Invention Details</h2>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Invention Title *</label>
+            <input type="text" [(ngModel)]="inventionTitle" name="inventionTitle" required placeholder="Title of your invention">
+          </div>
+          <div class="form-group full-width">
+            <label>Invention Description *</label>
+            <textarea [(ngModel)]="inventionDescription" name="inventionDescription" required rows="3" placeholder="Brief description of the invention"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Industry Category *</label>
+            <input type="text" [(ngModel)]="industryCategory" name="industryCategory" required placeholder="e.g. Software, Mechanical, Pharma">
+          </div>
+          <div class="form-group">
+            <label>Inventor Name(s) *</label>
+            <input type="text" [(ngModel)]="inventorNames" name="inventorNames" required placeholder="Comma separated list of inventors">
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Inventor Details -->
+      <section class="form-section">
+        <h2>Step 3: Primary Inventor Details</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Inventor Name *</label>
+            <input type="text" [(ngModel)]="inventorName" name="inventorName" required placeholder="Full Name">
+          </div>
+          <div class="form-group">
+            <label>Nationality *</label>
+            <input type="text" [(ngModel)]="inventorNationality" name="inventorNationality" required placeholder="e.g. Indian">
+          </div>
+          <div class="form-group full-width">
+            <label>Inventor Address *</label>
+            <textarea [(ngModel)]="inventorAddress" name="inventorAddress" required rows="2" placeholder="Full residential address"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Document Uploads -->
+      <section class="form-section">
+        <h2>Step 4: Document Uploads</h2>
+        <p class="section-help">Please upload all required documents (Max 2MB per file).</p>
+        <div class="form-grid">
+          <div class="form-group file-group">
+            <label>Identity Proof *</label>
+            <input type="file" (change)="onFileSelected($event, 'identityProof')" accept=".pdf,.jpg,.jpeg,.png">
+            <small>Aadhaar / Passport / PAN</small>
+          </div>
+          <div class="form-group file-group">
+            <label>Address Proof *</label>
+            <input type="file" (change)="onFileSelected($event, 'addressProof')" accept=".pdf,.jpg,.jpeg,.png">
+          </div>
+          <div class="form-group file-group">
+            <label>Invention Description *</label>
+            <input type="file" (change)="onFileSelected($event, 'inventionDescriptionDoc')" accept=".pdf,.doc,.docx">
+            <small>Detailed description file</small>
+          </div>
+          <div class="form-group file-group">
+            <label>Drawings / Diagrams</label>
+            <input type="file" (change)="onFileSelected($event, 'drawingsDiagrams')" accept=".pdf,.jpg,.jpeg,.png">
+            <small>(If applicable)</small>
+          </div>
+          <div class="form-group file-group">
+            <label>Authorization Letter</label>
+            <input type="file" (change)="onFileSelected($event, 'authLetter')" accept=".pdf,.jpg,.jpeg,.png">
+            <small>(If applicable)</small>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
+          } @else {
+            Submit Application
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

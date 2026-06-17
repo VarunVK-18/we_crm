@@ -109,53 +109,50 @@
                     @if (item.isActionStep) {
                     @if (!item.isChecked) {
                     <p>{{ item.description || item.notes }}</p>
-                    @if (order()?.derivedStatus !== 'not-initialized') {
-                    @if (order()?.service_name === 'Private Limited Incorporation') {
+                    @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {
+                    @if (order()?.service_name?.includes('Private Limited')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToIncorpForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'LLP Incorporation') {
+                    @if (order()?.service_name?.includes('LLP')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToLlpForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'MSME Registration' || order()?.service_name === 'MSME Certification'
-                    || order()?.service_name === 'MSME') {
+                    @if (order()?.service_name?.includes('MSME')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToMsmeForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'FSSAI Registration' || order()?.service_name === 'FSSAI') {
+                    @if (order()?.service_name?.includes('FSSAI')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToFssaiForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'Trademark Registration' || order()?.service_name === 'Trademark' ||
-                    order()?.service_name === 'Trade mark') {
+                    @if (order()?.service_name?.toLowerCase()?.includes('trademark') || order()?.service_name?.toLowerCase()?.includes('trade mark')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToTrademarkForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'GST Registration' || order()?.service_name === 'GST') {
+                    @if (order()?.service_name?.includes('GST') && !order()?.service_name?.includes('Cancellation') && !order()?.service_name?.includes('Compliance') && !order()?.service_name?.includes('Filing')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToGstForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'ISO Registration' || order()?.service_name === 'ISO' ||
-                    order()?.service_name === 'ISO Certification') {
+                    @if (order()?.service_name?.includes('ISO')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToIsoForm(); $event.stopPropagation()">
@@ -169,38 +166,94 @@
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'One Person Company') {
+                    @if (order()?.service_name?.includes('One Person Company') || order()?.service_name?.includes('OPC')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToOpcForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'GST Compliance') {
+                    @if (order()?.service_name?.includes('GST Compliance')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToGstComplianceForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'LIE Registration' || order()?.service_name === 'LIE') {
+                    @if (order()?.service_name?.includes('LIE')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToLieForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'BIS Registration' || order()?.service_name === 'BIS') {
+                    @if (order()?.service_name?.includes('BIS')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToBisForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name === 'MCA Compliance' || order()?.service_name === 'MCA') {
+                    @if (order()?.service_name?.includes('MCA')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToMcaForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('Proprietorship')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToProprietorshipForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('TDS') || order()?.service_name?.includes('PAN, TAN')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToTdsForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('PF Registration') || order()?.service_name?.includes('PF')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToPfForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('Patent')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToPatentForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('GST Cancellation')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToGstCancellationForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('GST Filing')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToGstFilingForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('IEC')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToIecForm(); $event.stopPropagation()">
+                      Fill Form
+                    </button>
+                    }
+                    @if (order()?.service_name?.includes('DPIIT')) {
+                    <button class="action-btn"
+                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                      (click)="goToDpiitForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }

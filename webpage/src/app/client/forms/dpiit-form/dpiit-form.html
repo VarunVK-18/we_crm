@@ -1,0 +1,168 @@
+<div class="form-container">
+  <div class="form-header">
+    <button class="back-btn" (click)="goBack()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7" />
+      </svg>
+    </button>
+    <h2>DPIIT Service Form</h2>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="error-banner">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <p class="form-instructions">Please provide the required details for DPIIT Startup India Registration.</p>
+
+  <form (ngSubmit)="submitForm()">
+
+    <div class="form-group">
+      <label>Do you have Organization DSC? <span class="required">*</span></label>
+      <select [(ngModel)]="orgDsc" name="orgDsc" class="form-control" required>
+        <option value="Yes">Yes</option>
+        <option value="No, I want one">No, I want one</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Website link <span class="required">*</span></label>
+      <input type="text" [(ngModel)]="website" name="website" class="form-control" required placeholder="https://example.com" />
+    </div>
+
+    <div class="form-group">
+      <label>Brief about Company <span class="required">*</span></label>
+      <textarea [(ngModel)]="brief" name="brief" class="form-control" rows="3" required placeholder="Description of your company..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Director details (Name, email ID, Mobile) <span class="required">*</span></label>
+      <textarea [(ngModel)]="directorDetails" name="directorDetails" class="form-control" rows="2" required placeholder="E.g. John Doe, john@example.com, +91 9876543210"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Industry <span class="required">*</span></label>
+      <input type="text" [(ngModel)]="industry" name="industry" class="form-control" required placeholder="E.g. Technology" />
+    </div>
+
+    <div class="form-group">
+      <label>Sector <span class="required">*</span></label>
+      <input type="text" [(ngModel)]="sector" name="sector" class="form-control" required placeholder="E.g. Software" />
+    </div>
+
+    <div class="form-group">
+      <label>Official Address of the Company <span class="required">*</span></label>
+      <textarea [(ngModel)]="address" name="address" class="form-control" rows="3" required placeholder="Complete registered address"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Authorization details (Name, PAN, mobile, email, designation) <span class="required">*</span></label>
+      <textarea [(ngModel)]="authDetails" name="authDetails" class="form-control" rows="3" required placeholder="Authorized representative details"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Current number of employees <span class="required">*</span></label>
+      <input type="number" [(ngModel)]="employees" name="employees" class="form-control" required placeholder="E.g. 10" />
+    </div>
+
+    <div class="form-group">
+      <label>Applied for IPR? (Mention if any) <span class="required">*</span></label>
+      <input type="text" [(ngModel)]="ipr" name="ipr" class="form-control" required placeholder="Trademarks, Patents, etc. or 'None'" />
+    </div>
+
+    <div class="form-group">
+      <label>Nature of startup <span class="required">*</span></label>
+      <select [(ngModel)]="startupNature" name="startupNature" class="form-control" required>
+        <option value="Innovative">Innovative</option>
+        <option value="Scalable">Scalable</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Received any Funds? <span class="required">*</span></label>
+      <select [(ngModel)]="receivedFunds" name="receivedFunds" class="form-control" required>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Received any Awards? <span class="required">*</span></label>
+      <select [(ngModel)]="receivedAwards" name="receivedAwards" class="form-control" required>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>What is the problem startup solving? <span class="required">*</span></label>
+      <textarea [(ngModel)]="problem" name="problem" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>How does your startup propose to solve the problem? <span class="required">*</span></label>
+      <textarea [(ngModel)]="solution" name="solution" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>What uniqueness of solution? <span class="required">*</span></label>
+      <textarea [(ngModel)]="uniqueness" name="uniqueness" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Have your Startup generated revenue? (Mention last year revenue) <span class="required">*</span></label>
+      <textarea [(ngModel)]="revenue" name="revenue" class="form-control" rows="3" maxlength="400" required placeholder="E.g. No revenue generated yet, or 5 Lakhs"></textarea>
+    </div>
+
+    <div class="document-section">
+      <h3 class="section-title">Document Uploads</h3>
+      <p class="section-subtitle" style="color: #c2410c; font-weight: 600; font-size: 13px; margin-bottom: 20px;">
+        Please verify the documents before uploading, later we can't change the application. (Max 2MB per file)
+      </p>
+
+      <div class="file-upload-wrapper">
+        <div class="file-info">
+          <h4>Incorporation Certificate (PDF) <span class="required">*</span></h4>
+          <p>Required for application.</p>
+        </div>
+        <input type="file" (change)="onFileSelected($event, 'incorpCert')" accept=".pdf" />
+      </div>
+
+      <div class="file-upload-wrapper">
+        <div class="file-info">
+          <h4>Company PAN <span class="required">*</span></h4>
+          <p>PDF or Image format.</p>
+        </div>
+        <input type="file" (change)="onFileSelected($event, 'pan')" accept=".pdf,.jpg,.jpeg,.png" />
+      </div>
+
+      <div class="file-upload-wrapper">
+        <div class="file-info">
+          <h4>Company Logo (JPEG) <span class="required">*</span></h4>
+          <p>JPG/JPEG format.</p>
+        </div>
+        <input type="file" (change)="onFileSelected($event, 'logo')" accept=".jpg,.jpeg" />
+      </div>
+
+      <div class="file-upload-wrapper">
+        <div class="file-info">
+          <h4>Pitch Deck (PDF)</h4>
+          <p>Optional but recommended.</p>
+        </div>
+        <input type="file" (change)="onFileSelected($event, 'pitchDeck')" accept=".pdf" />
+      </div>
+    </div>
+
+    <div class="verification-group" style="margin: 24px 0; display: flex; align-items: flex-start; gap: 12px;">
+      <input type="checkbox" id="verifyCheck" [(ngModel)]="isVerified" name="isVerified" style="margin-top: 4px; width: 18px; height: 18px;">
+      <label for="verifyCheck" style="font-size: 13px; color: #475569; line-height: 1.5; font-weight: normal;">
+        I here verify that above mentioned facts are true and correct to best of my knowledge and belief, and understood that later the modifications and changes might affect the process and leads to fresh application.
+      </label>
+    </div>
+
+    <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+      {{ isSubmitting() ? 'Submitting...' : 'Submit Form' }}
+    </button>
+  </form>
+</div>

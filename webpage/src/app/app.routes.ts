@@ -30,6 +30,14 @@ import { GstComplianceForm } from './client/forms/gst-compliance-form/gst-compli
 import { LieForm } from './client/forms/lie-form/lie-form';
 import { BisForm } from './client/forms/bis-form/bis-form';
 import { McaFormComponent } from './client/forms/mca-form/mca-form';
+import { ProprietorshipForm } from './client/forms/proprietorship-form/proprietorship-form';
+import { TdsForm } from './client/forms/tds-form/tds-form';
+import { PfForm } from './client/forms/pf-form/pf-form';
+import { PatentForm } from './client/forms/patent-form/patent-form';
+import { GstCancellationForm } from './client/forms/gst-cancellation-form/gst-cancellation-form';
+import { GstFilingForm } from './client/forms/gst-filing-form/gst-filing-form';
+import { IecForm } from './client/forms/iec-form/iec-form';
+import { DpiitForm } from './client/forms/dpiit-form/dpiit-form';
 import { HomeOverview } from './dashboard/home-overview/home-overview';
 import { ClientsDirectory } from './dashboard/clients-directory/clients-directory';
 import { RequestsComponent } from './dashboard/requests/requests';
@@ -85,6 +93,14 @@ export const routes: Routes = [
       { path: 'forms/lie/:id', component: LieForm },
       { path: 'forms/bis/:id', component: BisForm },
       { path: 'forms/mca/:id', component: McaFormComponent },
+      { path: 'forms/proprietorship/:id', component: ProprietorshipForm },
+      { path: 'forms/tds/:id', component: TdsForm },
+      { path: 'forms/pf/:id', component: PfForm },
+      { path: 'forms/patent/:id', component: PatentForm },
+      { path: 'forms/gst-cancellation/:id', component: GstCancellationForm },
+      { path: 'forms/gst-filing/:id', component: GstFilingForm },
+      { path: 'forms/iec/:id', component: IecForm },
+      { path: 'forms/dpiit/:id', component: DpiitForm },
       { path: 'service/:id', component: ClientServiceDetail },
       { path: 'ongoing-services', component: ClientOngoingServices },
       { path: 'company-details', component: ClientCompanyDetails },

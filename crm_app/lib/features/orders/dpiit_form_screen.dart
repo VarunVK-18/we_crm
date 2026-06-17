@@ -166,7 +166,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
 
       final request = http.MultipartRequest(
         'POST',
-        Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/dpiit-form'),
+        Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-dpiit-form'),
       );
 
       request.headers['x-user-id'] = uid;

@@ -106,15 +106,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
         ref.listen<int>(navigationIndexProvider, (previous, next) {
           if (_pageController.hasClients && next != _pageController.page?.round()) {
-            if (previous != null && (next - previous).abs() > 1) {
-              _pageController.jumpToPage(next);
-            } else {
-              _pageController.animateToPage(
-                next,
-                duration: const Duration(milliseconds: 400),
-                curve: Curves.easeOutQuart,
-              );
-            }
+            _pageController.jumpToPage(next);
           }
         });
 

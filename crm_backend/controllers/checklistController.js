@@ -411,7 +411,7 @@ const getMyChecklists = async (req, res) => {
     const ServiceOrder = require('../models/ServiceOrder');
     const serviceOrders = await ServiceOrder.find({ clientUid: clientId }).lean();
 
-    // Services that require a custom Flutter form screen before processing
+    // Services that require a custom form screen before processing
     const SERVICES_WITH_FORMS = [
       'DPIIT',
       'Private Limited',
@@ -422,17 +422,31 @@ const getMyChecklists = async (req, res) => {
       'MSME Certification',
       'GST',
       'GST Registration',
+      'GST Compliance',
+      'GST Filing',
+      'GST Cancellation',
       'ISO',
       'ISO Registration',
+      'ISO Certification',
       'FSSAI',
       'FSSAI Registration',
+      'FSSAI Food License',
       'One Person Company',
-      'GST Compliance',
       'LIE Registration',
       'LIE',
       'BIS Registration',
       'BIS',
-      'MCA Compliance'
+      'MCA Compliance',
+      'DSC',
+      'IEC Registration',
+      'IEC',
+      'Proprietorship',
+      'TDS',
+      'PAN, TAN',
+      'PF Registration',
+      'PF',
+      'Patent Registration',
+      'Patent'
     ];
 
     const enrichedChecklists = checklistsPlain.map(c => {
@@ -449,13 +463,17 @@ const getMyChecklists = async (req, res) => {
             isFormFilled = true;
         } else if (serviceNameLower.includes('private limited') && c.details && c.details.companyName) {
             isFormFilled = true;
-        } else if (serviceNameLower.includes('trademark') && c.details && c.details.trademarkForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('trade mark') && c.details && c.details.trademarkForm) {
+        } else if ((serviceNameLower.includes('trademark') || serviceNameLower.includes('trade mark')) && c.details && c.details.trademarkForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('msme') && c.details && c.details.msmeForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('gst filing') && c.details && c.details.gstFilingForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('gst cancellation') && c.details && c.details.gstCancellationForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('gst compliance') && c.details && c.details.gstComplianceForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('gst') && c.details && c.details.gstForm) {
             isFormFilled = true;
@@ -463,15 +481,25 @@ const getMyChecklists = async (req, res) => {
             isFormFilled = true;
         } else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) {
             isFormFilled = true;
-        } else if (serviceNameLower.includes('one person company') && c.details && c.details.incorpForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('gst compliance') && c.details && c.details.gstComplianceForm) {
+        } else if (serviceNameLower.includes('one person company') && c.details && c.details.opcForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('lie') && c.details && c.details.lieForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('bis') && c.details && c.details.bisForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('mca') && c.details && c.details.mcaForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('dsc') && c.details && c.details.dscForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('iec') && c.details && c.details.iecForm) {
+            isFormFilled = true;
+        } else if (serviceNameLower.includes('proprietorship') && c.details && c.details.proprietorshipForm) {
+            isFormFilled = true;
+        } else if ((serviceNameLower.includes('tds') || serviceNameLower.includes('pan, tan')) && c.details && c.details.tdsForm) {
+            isFormFilled = true;
+        } else if ((serviceNameLower.includes('pf registration') || serviceNameLower.includes('pf')) && c.details && c.details.pfForm) {
+            isFormFilled = true;
+        } else if ((serviceNameLower.includes('patent registration') || serviceNameLower.includes('patent')) && c.details && c.details.patentForm) {
             isFormFilled = true;
         }
 
