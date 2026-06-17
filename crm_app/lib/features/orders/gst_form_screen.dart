@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -56,6 +57,12 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
   bool _isDeclared = false;
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _tradeNameController.dispose();
     _commenceDateController.dispose();
@@ -94,6 +101,71 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'GstFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('tradeName')) _tradeNameController.text = draft['tradeName'];
+        if (draft.containsKey('commenceDate')) _commenceDateController.text = draft['commenceDate'];
+        if (draft.containsKey('businessEmail')) _businessEmailController.text = draft['businessEmail'];
+        if (draft.containsKey('businessPhone')) _businessPhoneController.text = draft['businessPhone'];
+        if (draft.containsKey('fullName')) _fullNameController.text = draft['fullName'];
+        if (draft.containsKey('fatherName')) _fatherNameController.text = draft['fatherName'];
+        if (draft.containsKey('dob')) _dobController.text = draft['dob'];
+        if (draft.containsKey('personalPhone')) _personalPhoneController.text = draft['personalPhone'];
+        if (draft.containsKey('personalEmail')) _personalEmailController.text = draft['personalEmail'];
+        if (draft.containsKey('din')) _dinController.text = draft['din'];
+        if (draft.containsKey('pan')) _panController.text = draft['pan'];
+        if (draft.containsKey('residentialAddress')) _residentialAddressController.text = draft['residentialAddress'];
+        if (draft.containsKey('businessAddress')) _businessAddressController.text = draft['businessAddress'];
+        if (draft.containsKey('district')) _districtController.text = draft['district'];
+        if (draft.containsKey('accountNumber')) _accountNumberController.text = draft['accountNumber'];
+        if (draft.containsKey('ifscCode')) _ifscCodeController.text = draft['ifscCode'];
+        if (draft.containsKey('branch')) _branchController.text = draft['branch'];
+        if (draft.containsKey('gender')) _gender = draft['gender'];
+        if (draft.containsKey('premisesType')) _premisesType = draft['premisesType'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'tradeName': _tradeNameController.text,
+      'commenceDate': _commenceDateController.text,
+      'businessEmail': _businessEmailController.text,
+      'businessPhone': _businessPhoneController.text,
+      'fullName': _fullNameController.text,
+      'fatherName': _fatherNameController.text,
+      'dob': _dobController.text,
+      'personalPhone': _personalPhoneController.text,
+      'personalEmail': _personalEmailController.text,
+      'din': _dinController.text,
+      'pan': _panController.text,
+      'residentialAddress': _residentialAddressController.text,
+      'businessAddress': _businessAddressController.text,
+      'district': _districtController.text,
+      'accountNumber': _accountNumberController.text,
+      'ifscCode': _ifscCodeController.text,
+      'branch': _branchController.text,
+      'gender': _gender,
+      'premisesType': _premisesType,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'GstFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -194,6 +266,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'GstFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -364,7 +437,27 @@ Widget build(BuildContext context) {
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

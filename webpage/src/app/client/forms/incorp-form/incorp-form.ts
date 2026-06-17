@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 interface Director {
   fullName: string;
@@ -62,7 +63,8 @@ export class IncorpForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -117,6 +119,23 @@ export class IncorpForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      companyName: this.companyName,
+      businessActivity: this.businessActivity,
+      officePreference: this.officePreference,
+      ownerName: this.ownerName,
+      companyEmail: this.companyEmail,
+      companyPhone: this.companyPhone,
+      paidUpCapital: this.paidUpCapital,
+      valuePerShare: this.valuePerShare,
+      numberOfShares: this.numberOfShares,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -200,6 +219,7 @@ export class IncorpForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('Incorporation details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

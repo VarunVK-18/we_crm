@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-mca-form',
@@ -33,7 +34,8 @@ export class McaFormComponent implements OnInit {
     private router: Router,
     private location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
@@ -93,6 +95,7 @@ export class McaFormComponent implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success !== false) {
           alert('MCA Compliance details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/dashboard']);
         } else {
           this.errorMessage.set(res.message || 'Failed to submit form.');

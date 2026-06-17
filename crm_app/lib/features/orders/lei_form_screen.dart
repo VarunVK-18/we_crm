@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -42,6 +43,12 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
   String? _boardResolutionPath;
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _authorizedPersonController.dispose();
     _designationController.dispose();
@@ -67,6 +74,43 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'LeiFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('authorizedPerson')) _authorizedPersonController.text = draft['authorizedPerson'];
+        if (draft.containsKey('designation')) _designationController.text = draft['designation'];
+        if (draft.containsKey('mobileNumber')) _mobileController.text = draft['mobileNumber'];
+        if (draft.containsKey('emailId')) _emailController.text = draft['emailId'];
+        if (draft.containsKey('turnoverType')) _turnoverType = draft['turnoverType'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'authorizedPerson': _authorizedPersonController.text,
+      'designation': _designationController.text,
+      'mobileNumber': _mobileController.text,
+      'emailId': _emailController.text,
+      'turnoverType': _turnoverType,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'LeiFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -130,6 +174,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'LeiFormScreen');
         Navigator.pop(context, true);
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -261,7 +306,27 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

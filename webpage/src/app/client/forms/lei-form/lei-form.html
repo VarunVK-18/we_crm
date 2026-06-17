@@ -108,6 +108,8 @@
         <button type="button" class="btn-secondary" (click)="goBack()" style="margin-right: 16px;">
           Cancel
         </button>
+        
+        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...

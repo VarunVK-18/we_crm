@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -105,6 +106,7 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
   @override
   void initState() {
     super.initState();
+    _loadDraft();
     // OPC always has exactly 1 Director and 1 Nominee (Total 2 persons)
     _directors = List.generate(2, (_) => DirectorFormData());
   }
@@ -179,6 +181,51 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
             break;
         }
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'OpcFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('companyName')) _companyNameController.text = draft['companyName'];
+        if (draft.containsKey('businessActivity')) _businessActivityController.text = draft['businessActivity'];
+        if (draft.containsKey('ownerName')) _ownerNameController.text = draft['ownerName'];
+        if (draft.containsKey('companyEmail')) _companyEmailController.text = draft['companyEmail'];
+        if (draft.containsKey('companyPhone')) _companyPhoneController.text = draft['companyPhone'];
+        if (draft.containsKey('paidUpCapital')) _paidUpCapitalController.text = draft['paidUpCapital'];
+        if (draft.containsKey('valuePerShare')) _valuePerShareController.text = draft['valuePerShare'];
+        if (draft.containsKey('numberOfShares')) _numberOfSharesController.text = draft['numberOfShares'];
+        if (draft.containsKey('officePreference')) _officePreference = draft['officePreference'];
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'companyName': _companyNameController.text,
+      'businessActivity': _businessActivityController.text,
+      'ownerName': _ownerNameController.text,
+      'companyEmail': _companyEmailController.text,
+      'companyPhone': _companyPhoneController.text,
+      'paidUpCapital': _paidUpCapitalController.text,
+      'valuePerShare': _valuePerShareController.text,
+      'numberOfShares': _numberOfSharesController.text,
+      'officePreference': _officePreference,
+      'directors': jsonEncode(_directors.map((d) => d.toJson()).toList()),
+
+    };
+    await draftService.saveDraft(widget.order.id, 'OpcFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -277,6 +324,7 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'OpcFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -450,7 +498,27 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               }),
                   
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

@@ -31,7 +31,9 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
         final orders = checklistsJson.map((c) {
           final id = c['_id']?.toString() ?? '';
 
-          final isAssignedToExpert = c['assigned_to'] != null;
+          final assignedTo = c['assigned_to'];
+          final isAssignedToExpert = assignedTo != null && 
+              (assignedTo['role'] == 'filling_staff' || assignedTo['role'] == 'account_manager');
 
           final String actualCompany = (c['details'] != null && c['details']['entityName'] != null)
               ? c['details']['entityName'].toString()
@@ -62,10 +64,10 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
             'requestedDocuments': c['requested_documents'] ?? [],
             'finalDocuments': c['final_documents'] ?? [],
             'assignedExpert': isAssignedToExpert
-                ? (c['assigned_to']?['owner_name'] ?? 'To be assigned')
+                ? (assignedTo['owner_name'] ?? 'To be assigned')
                 : 'To be assigned',
             'expertPhone':
-                isAssignedToExpert ? (c['assigned_to']?['phone'] ?? '') : '',
+                isAssignedToExpert ? (assignedTo['phone'] ?? '') : '',
             'createdAt': c['createdAt'],
             'dealClosedAmount': c['dealClosedAmount'] ?? 0,
             'advanceAmountPaid': c['advanceAmountPaid'] ?? 0,

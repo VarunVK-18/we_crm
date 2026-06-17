@@ -4,6 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/pdf.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -31,7 +33,11 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   void initState() {
     super.initState();
     _checkFileType();
-    _downloadFile();
+    if (_isPdf) {
+      _isLoading = false;
+    } else {
+      _downloadFile();
+    }
   }
 
   void _checkFileType() {
@@ -65,6 +71,26 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
   }
 
   Future<void> _triggerExternalDownload() async {
+    if (_fileBytes == null && _isPdf) {
+      try {
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloading file for sharing...')));
+        }
+        final url = Uri.parse('$kBaseUrl/api/documents/${widget.documentId}');
+        final response = await http.get(url).timeout(const Duration(seconds: 30));
+        if (response.statusCode == 200) {
+          _fileBytes = response.bodyBytes;
+        } else {
+          throw Exception('Failed to download');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to download: $e'), backgroundColor: Colors.red));
+        }
+        return;
+      }
+    }
+
     if (_fileBytes == null) return;
 
     try {
@@ -119,6 +145,17 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
       );
     }
 
+    if (_isPdf) {
+      return SfPdfViewerTheme(
+        data: SfPdfViewerThemeData(
+          backgroundColor: Colors.black,
+        ),
+        child: SfPdfViewer.network(
+          '$kBaseUrl/api/documents/${widget.documentId}',
+        ),
+      );
+    }
+
     if (_errorMessage != null || _fileBytes == null) {
       return Center(
         child: Column(
@@ -152,20 +189,6 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
             ),
           ],
         ),
-      );
-    }
-
-    if (_isPdf) {
-      return PdfPreview(
-        build: (format) => _fileBytes!,
-        useActions: false, // We handle actions via AppBar
-        canChangeOrientation: false,
-        canChangePageFormat: false,
-        canDebug: false,
-        initialPageFormat: PdfPageFormat.a4,
-        pdfFileName: widget.documentName,
-        maxPageWidth: 800,
-        scrollViewDecoration: const BoxDecoration(color: Colors.black),
       );
     }
 

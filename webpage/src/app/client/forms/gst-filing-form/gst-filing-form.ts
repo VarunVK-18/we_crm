@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-gst-filing-form',
@@ -38,12 +39,23 @@ export class GstFilingForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.businessName !== undefined) this.businessName = draft.businessName;
+        if (draft.gstin !== undefined) this.gstin = draft.gstin;
+        if (draft.legalName !== undefined) this.legalName = draft.legalName;
+        if (draft.returnType !== undefined) this.returnType = draft.returnType;
+        if (draft.filingMonth !== undefined) this.filingMonth = draft.filingMonth;
+        if (draft.filingQuarter !== undefined) this.filingQuarter = draft.filingQuarter;
+        if (draft.financialYear !== undefined) this.financialYear = draft.financialYear;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -62,6 +74,21 @@ export class GstFilingForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      businessName: this.businessName,
+      gstin: this.gstin,
+      legalName: this.legalName,
+      returnType: this.returnType,
+      filingMonth: this.filingMonth,
+      filingQuarter: this.filingQuarter,
+      financialYear: this.financialYear,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -100,6 +127,7 @@ export class GstFilingForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.order) {
           alert('GST Filing details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

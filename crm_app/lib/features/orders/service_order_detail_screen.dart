@@ -71,7 +71,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
     final clientManagerPhone = userManager?['phone']?.toString() ?? '+918000000000';
     
     final bool isObjectId = order.assignedExpert.length == 24 && RegExp(r'^[0-9a-fA-F]+$').hasMatch(order.assignedExpert);
-    final expertName = (isObjectId || order.assignedExpert == 'To be assigned') ? clientManagerName : order.assignedExpert;
+    final expertName = (isObjectId || order.assignedExpert == 'To be assigned') ? 'To be assigned' : order.assignedExpert;
     final expertPhone = (order.expertPhone.isEmpty || order.expertPhone == order.assignedExpert) ? clientManagerPhone : order.expertPhone;
 
     return Scaffold(
@@ -1301,7 +1301,7 @@ class _StepTimeline extends StatelessWidget {
                     onTap: (step.isActionStep && 
                         !isCompleted && 
                         order.stage != OrderStage.reqReceived && 
-                        order.status != ServiceStatus.notInitialized)
+                        order.status == ServiceStatus.active)
                         ? () => _routeToForm(context, order)
                         : null,
                     borderRadius: BorderRadius.circular(18),
@@ -1389,13 +1389,13 @@ class _StepTimeline extends StatelessWidget {
                             Row(
                               children: [
                                 Icon(LucideIcons.mousePointerClick,
-                                    size: 14, color: AppTheme.corporateBlue),
+                                    size: 14, color: order.status == ServiceStatus.active ? AppTheme.corporateBlue : Colors.grey),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Tap to complete form',
+                                  order.status == ServiceStatus.active ? 'Tap to complete form' : 'Action Locked (Pending Assignment)',
                                   style: TextStyle(
                                       fontSize: 11,
-                                      color: AppTheme.corporateBlue,
+                                      color: order.status == ServiceStatus.active ? AppTheme.corporateBlue : Colors.grey,
                                       fontWeight: FontWeight.w800),
                                 ),
                               ],

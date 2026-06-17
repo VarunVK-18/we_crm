@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -53,6 +54,12 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
   ];
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _businessNameController.dispose();
     _gstinController.dispose();
@@ -78,6 +85,47 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'GstFilingFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('businessName')) _businessNameController.text = draft['businessName'];
+        if (draft.containsKey('legalName')) _legalNameController.text = draft['legalName'];
+        if (draft.containsKey('financialYear')) _financialYearController.text = draft['financialYear'];
+        if (draft.containsKey('gstin')) _gstinController.text = draft['gstin'];
+        if (draft.containsKey('returnType')) _returnType = draft['returnType'];
+        if (draft.containsKey('month')) _filingMonth = draft['month'];
+        if (draft.containsKey('quarter')) _filingQuarter = draft['quarter'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'businessName': _businessNameController.text,
+      'legalName': _legalNameController.text,
+      'financialYear': _financialYearController.text,
+      'gstin': _gstinController.text.toUpperCase(),
+      'returnType': _returnType,
+      'month': _filingMonth ?? '',
+      'quarter': _filingQuarter ?? '',
+
+    };
+    await draftService.saveDraft(widget.order.id, 'GstFilingFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -137,6 +185,7 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'GstFilingFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -242,7 +291,27 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
 
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

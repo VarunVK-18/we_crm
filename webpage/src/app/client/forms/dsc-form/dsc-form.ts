@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-dsc-form',
@@ -42,12 +43,24 @@ export class DscForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.applyingFor !== undefined) this.applyingFor = draft.applyingFor;
+        if (draft.applicantName !== undefined) this.applicantName = draft.applicantName;
+        if (draft.applicantMail !== undefined) this.applicantMail = draft.applicantMail;
+        if (draft.applicantPhone !== undefined) this.applicantPhone = draft.applicantPhone;
+        if (draft.organizationName !== undefined) this.organizationName = draft.organizationName;
+        if (draft.organizationType !== undefined) this.organizationType = draft.organizationType;
+        if (draft.officeAddress !== undefined) this.officeAddress = draft.officeAddress;
+        if (draft.courierAddress !== undefined) this.courierAddress = draft.courierAddress;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -71,6 +84,22 @@ export class DscForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      applyingFor: this.applyingFor,
+      applicantName: this.applicantName,
+      applicantMail: this.applicantMail,
+      applicantPhone: this.applicantPhone,
+      organizationName: this.organizationName,
+      organizationType: this.organizationType,
+      officeAddress: this.officeAddress,
+      courierAddress: this.courierAddress,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -125,6 +154,7 @@ export class DscForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('DSC details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

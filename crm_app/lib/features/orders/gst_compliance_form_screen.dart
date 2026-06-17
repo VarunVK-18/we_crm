@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -44,6 +45,33 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
     }
   }
 
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'GstComplianceFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+
+    };
+    await draftService.saveDraft(widget.order.id, 'GstComplianceFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
+    }
+  }
+
   Future<void> _submitDetails() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -86,6 +114,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'GstComplianceFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -175,7 +204,27 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

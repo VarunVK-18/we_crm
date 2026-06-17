@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,6 +55,12 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
   bool _isVerified = false;
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _enterpriseNameController.dispose();
     _addressController.dispose();
@@ -91,6 +98,75 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'MsmeFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('enterpriseName')) _enterpriseNameController.text = draft['enterpriseName'];
+        if (draft.containsKey('address')) _addressController.text = draft['address'];
+        if (draft.containsKey('unitName')) _unitNameController.text = draft['unitName'];
+        if (draft.containsKey('mobile')) _mobileController.text = draft['mobile'];
+        if (draft.containsKey('email')) _emailController.text = draft['email'];
+        if (draft.containsKey('maleEmployees')) _maleEmployeesController.text = draft['maleEmployees'];
+        if (draft.containsKey('femaleEmployees')) _femaleEmployeesController.text = draft['femaleEmployees'];
+        if (draft.containsKey('incDate')) _incDateController.text = draft['incDate'];
+        if (draft.containsKey('commenceDate')) _commenceDateController.text = draft['commenceDate'];
+        if (draft.containsKey('prevMsme')) _prevMsmeController.text = draft['prevMsme'];
+        if (draft.containsKey('gst')) _gstController.text = draft['gst'];
+        if (draft.containsKey('investment')) _investmentController.text = draft['investment'];
+        if (draft.containsKey('turnover')) _turnoverController.text = draft['turnover'];
+        if (draft.containsKey('ownerName')) _ownerNameController.text = draft['ownerName'];
+        if (draft.containsKey('whatsapp')) _whatsappController.text = draft['whatsapp'];
+        if (draft.containsKey('personalEmail')) _personalEmailController.text = draft['personalEmail'];
+        if (draft.containsKey('orgType')) _orgType = draft['orgType'];
+        if (draft.containsKey('majorActivity')) _majorActivity = draft['majorActivity'];
+        if (draft.containsKey('gender')) _gender = draft['gender'];
+        if (draft.containsKey('physicallyHandicapped')) _physicallyHandicapped = draft['physicallyHandicapped'];
+        if (draft.containsKey('socialCategory')) _socialCategory = draft['socialCategory'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'enterpriseName': _enterpriseNameController.text,
+      'address': _addressController.text,
+      'unitName': _unitNameController.text,
+      'mobile': _mobileController.text,
+      'email': _emailController.text,
+      'maleEmployees': _maleEmployeesController.text,
+      'femaleEmployees': _femaleEmployeesController.text,
+      'incDate': _incDateController.text,
+      'commenceDate': _commenceDateController.text,
+      'prevMsme': _prevMsmeController.text,
+      'gst': _gstController.text,
+      'investment': _investmentController.text,
+      'turnover': _turnoverController.text,
+      'ownerName': _ownerNameController.text,
+      'whatsapp': _whatsappController.text,
+      'personalEmail': _personalEmailController.text,
+      'orgType': _orgType,
+      'majorActivity': _majorActivity,
+      'gender': _gender,
+      'physicallyHandicapped': _physicallyHandicapped,
+      'socialCategory': _socialCategory,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'MsmeFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -180,6 +256,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'MsmeFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -351,7 +428,27 @@ Widget build(BuildContext context) {
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

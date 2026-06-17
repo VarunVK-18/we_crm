@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,6 +78,12 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
   bool _isDeclared = false;
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _fullNameController.dispose();
     _mobileController.dispose();
@@ -112,6 +119,66 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'FssaiFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('fullName')) _fullNameController.text = draft['fullName'];
+        if (draft.containsKey('mobile')) _mobileController.text = draft['mobile'];
+        if (draft.containsKey('email')) _emailController.text = draft['email'];
+        if (draft.containsKey('businessName')) _businessNameController.text = draft['businessName'];
+        if (draft.containsKey('startDate')) _startDateController.text = draft['startDate'];
+        if (draft.containsKey('employees')) _employeesController.text = draft['employees'];
+        if (draft.containsKey('premisesAddress')) _premisesAddressController.text = draft['premisesAddress'];
+        if (draft.containsKey('premisesVillage')) _premisesVillageController.text = draft['premisesVillage'];
+        if (draft.containsKey('premisesDistrict')) _premisesDistrictController.text = draft['premisesDistrict'];
+        if (draft.containsKey('corrAddress')) _corrAddressController.text = draft['corrAddress'];
+        if (draft.containsKey('corrVillage')) _corrVillageController.text = draft['corrVillage'];
+        if (draft.containsKey('corrDistrict')) _corrDistrictController.text = draft['corrDistrict'];
+        if (draft.containsKey('businessType')) _businessType = draft['businessType'];
+        if (draft.containsKey('annualTurnover')) _annualTurnover = draft['annualTurnover'];
+        if (draft.containsKey('premisesType')) _premisesType = draft['premisesType'];
+        if (draft.containsKey('isCorrespondenceSame')) _isCorrespondenceSame = draft['isCorrespondenceSame'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'fullName': _fullNameController.text,
+      'mobile': _mobileController.text,
+      'email': _emailController.text,
+      'businessName': _businessNameController.text,
+      'startDate': _startDateController.text,
+      'employees': _employeesController.text,
+      'premisesAddress': _premisesAddressController.text,
+      'premisesVillage': _premisesVillageController.text,
+      'premisesDistrict': _premisesDistrictController.text,
+      'corrAddress': _corrAddressController.text,
+      'corrVillage': _corrVillageController.text,
+      'corrDistrict': _corrDistrictController.text,
+      'businessType': _businessType == 'Other' ? 'Other: ${_otherBusinessTypeController.text}' : _businessType,
+      'natureOfBusiness': jsonEncode(_selectedNature.map((n) => n == 'Other' ? 'Other: ${_otherNatureController.text}' : n).toList()),
+      'annualTurnover': _annualTurnover,
+      'premisesType': _premisesType,
+      'isCorrespondenceSame': _isCorrespondenceSame,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'FssaiFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -225,6 +292,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'FssaiFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -398,7 +466,27 @@ Widget build(BuildContext context) {
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

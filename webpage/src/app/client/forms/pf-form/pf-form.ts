@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-pf-form',
@@ -48,12 +49,29 @@ export class PfForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.businessName !== undefined) this.businessName = draft.businessName;
+        if (draft.entityType !== undefined) this.entityType = draft.entityType;
+        if (draft.panNumber !== undefined) this.panNumber = draft.panNumber;
+        if (draft.dateOfIncorporation !== undefined) this.dateOfIncorporation = draft.dateOfIncorporation;
+        if (draft.businessAddress !== undefined) this.businessAddress = draft.businessAddress;
+        if (draft.state !== undefined) this.state = draft.state;
+        if (draft.pinCode !== undefined) this.pinCode = draft.pinCode;
+        if (draft.signatoryName !== undefined) this.signatoryName = draft.signatoryName;
+        if (draft.signatoryDesignation !== undefined) this.signatoryDesignation = draft.signatoryDesignation;
+        if (draft.signatoryMobile !== undefined) this.signatoryMobile = draft.signatoryMobile;
+        if (draft.signatoryEmail !== undefined) this.signatoryEmail = draft.signatoryEmail;
+        if (draft.numberOfEmployees !== undefined) this.numberOfEmployees = draft.numberOfEmployees;
+        if (draft.employeeDetails !== undefined) this.employeeDetails = draft.employeeDetails;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -74,6 +92,27 @@ export class PfForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      businessName: this.businessName,
+      entityType: this.entityType,
+      panNumber: this.panNumber,
+      dateOfIncorporation: this.dateOfIncorporation,
+      businessAddress: this.businessAddress,
+      state: this.state,
+      pinCode: this.pinCode,
+      signatoryName: this.signatoryName,
+      signatoryDesignation: this.signatoryDesignation,
+      signatoryMobile: this.signatoryMobile,
+      signatoryEmail: this.signatoryEmail,
+      numberOfEmployees: this.numberOfEmployees,
+      employeeDetails: this.employeeDetails,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -123,6 +162,7 @@ export class PfForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.order) {
           alert('PF details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

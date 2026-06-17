@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-dpiit-form',
@@ -49,12 +50,33 @@ export class DpiitForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.orgDsc !== undefined) this.orgDsc = draft.orgDsc;
+        if (draft.website !== undefined) this.website = draft.website;
+        if (draft.brief !== undefined) this.brief = draft.brief;
+        if (draft.directorDetails !== undefined) this.directorDetails = draft.directorDetails;
+        if (draft.industry !== undefined) this.industry = draft.industry;
+        if (draft.sector !== undefined) this.sector = draft.sector;
+        if (draft.address !== undefined) this.address = draft.address;
+        if (draft.authDetails !== undefined) this.authDetails = draft.authDetails;
+        if (draft.employees !== undefined) this.employees = draft.employees;
+        if (draft.ipr !== undefined) this.ipr = draft.ipr;
+        if (draft.startupNature !== undefined) this.startupNature = draft.startupNature;
+        if (draft.receivedFunds !== undefined) this.receivedFunds = draft.receivedFunds;
+        if (draft.receivedAwards !== undefined) this.receivedAwards = draft.receivedAwards;
+        if (draft.problem !== undefined) this.problem = draft.problem;
+        if (draft.solution !== undefined) this.solution = draft.solution;
+        if (draft.uniqueness !== undefined) this.uniqueness = draft.uniqueness;
+        if (draft.revenue !== undefined) this.revenue = draft.revenue;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -74,6 +96,31 @@ export class DpiitForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      orgDsc: this.orgDsc,
+      website: this.website,
+      brief: this.brief,
+      directorDetails: this.directorDetails,
+      industry: this.industry,
+      sector: this.sector,
+      address: this.address,
+      authDetails: this.authDetails,
+      employees: this.employees,
+      ipr: this.ipr,
+      startupNature: this.startupNature,
+      receivedFunds: this.receivedFunds,
+      receivedAwards: this.receivedAwards,
+      problem: this.problem,
+      solution: this.solution,
+      uniqueness: this.uniqueness,
+      revenue: this.revenue,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -128,6 +175,7 @@ export class DpiitForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.order) {
           alert('DPIIT Form submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

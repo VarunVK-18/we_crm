@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -52,6 +53,12 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
   ];
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _companyNameController.dispose();
     _companyAddressController.dispose();
@@ -80,6 +87,47 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'IsoFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('companyLegalName')) _companyNameController.text = draft['companyLegalName'];
+        if (draft.containsKey('companyAddress')) _companyAddressController.text = draft['companyAddress'];
+        if (draft.containsKey('applicantName')) _applicantNameController.text = draft['applicantName'];
+        if (draft.containsKey('email')) _emailController.text = draft['email'];
+        if (draft.containsKey('whatsapp')) _whatsappController.text = draft['whatsapp'];
+        if (draft.containsKey('courierAddress')) _courierAddressController.text = draft['courierAddress'];
+        if (draft.containsKey('preferredIso')) _selectedIso == 'Other' ? 'Other: ${_otherIsoController.text}' : _selectedIso = draft['preferredIso'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'companyLegalName': _companyNameController.text,
+      'companyAddress': _companyAddressController.text,
+      'applicantName': _applicantNameController.text,
+      'email': _emailController.text,
+      'whatsapp': _whatsappController.text,
+      'courierAddress': _courierAddressController.text,
+      'preferredIso': _selectedIso == 'Other' ? 'Other: ${_otherIsoController.text}' : _selectedIso,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'IsoFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -150,6 +198,7 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'IsoFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -292,7 +341,27 @@ Widget build(BuildContext context) {
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

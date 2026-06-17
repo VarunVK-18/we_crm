@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-gst-form',
@@ -57,12 +58,35 @@ export class GstForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.tradeName !== undefined) this.tradeName = draft.tradeName;
+        if (draft.commenceDate !== undefined) this.commenceDate = draft.commenceDate;
+        if (draft.businessEmail !== undefined) this.businessEmail = draft.businessEmail;
+        if (draft.businessPhone !== undefined) this.businessPhone = draft.businessPhone;
+        if (draft.fullName !== undefined) this.fullName = draft.fullName;
+        if (draft.fatherName !== undefined) this.fatherName = draft.fatherName;
+        if (draft.dob !== undefined) this.dob = draft.dob;
+        if (draft.personalPhone !== undefined) this.personalPhone = draft.personalPhone;
+        if (draft.personalEmail !== undefined) this.personalEmail = draft.personalEmail;
+        if (draft.gender !== undefined) this.gender = draft.gender;
+        if (draft.din !== undefined) this.din = draft.din;
+        if (draft.pan !== undefined) this.pan = draft.pan;
+        if (draft.residentialAddress !== undefined) this.residentialAddress = draft.residentialAddress;
+        if (draft.businessAddress !== undefined) this.businessAddress = draft.businessAddress;
+        if (draft.district !== undefined) this.district = draft.district;
+        if (draft.premisesType !== undefined) this.premisesType = draft.premisesType;
+        if (draft.accountNumber !== undefined) this.accountNumber = draft.accountNumber;
+        if (draft.ifscCode !== undefined) this.ifscCode = draft.ifscCode;
+        if (draft.branch !== undefined) this.branch = draft.branch;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -82,6 +106,33 @@ export class GstForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      tradeName: this.tradeName,
+      commenceDate: this.commenceDate,
+      businessEmail: this.businessEmail,
+      businessPhone: this.businessPhone,
+      fullName: this.fullName,
+      fatherName: this.fatherName,
+      dob: this.dob,
+      personalPhone: this.personalPhone,
+      personalEmail: this.personalEmail,
+      gender: this.gender,
+      din: this.din,
+      pan: this.pan,
+      residentialAddress: this.residentialAddress,
+      businessAddress: this.businessAddress,
+      district: this.district,
+      premisesType: this.premisesType,
+      accountNumber: this.accountNumber,
+      ifscCode: this.ifscCode,
+      branch: this.branch,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -155,6 +206,7 @@ export class GstForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('GST details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

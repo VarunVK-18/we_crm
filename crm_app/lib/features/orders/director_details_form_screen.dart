@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -95,6 +96,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
   @override
   void initState() {
     super.initState();
+    _loadDraft();
     final assignedNumStr = widget.order.details['assignedNumberOfDirectors']?.toString();
     final numStr = assignedNumStr ?? widget.order.details['numberOfDirectors']?.toString() ?? '1';
     final int count = int.tryParse(numStr) ?? 1;
@@ -143,6 +145,33 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
             break;
         }
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'DirectorDetailsFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+
+    };
+    await draftService.saveDraft(widget.order.id, 'DirectorDetailsFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -225,6 +254,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'DirectorDetailsFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to upload files: ${response.body}');
@@ -355,7 +385,27 @@ Widget build(BuildContext context) {
                   }),
                   
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-fssai-form',
@@ -63,12 +64,32 @@ export class FssaiForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.fullName !== undefined) this.fullName = draft.fullName;
+        if (draft.mobile !== undefined) this.mobile = draft.mobile;
+        if (draft.email !== undefined) this.email = draft.email;
+        if (draft.businessName !== undefined) this.businessName = draft.businessName;
+        if (draft.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType !== undefined) this.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType = draft.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType;
+        if (draft.startDate !== undefined) this.startDate = draft.startDate;
+        if (draft.annualTurnover !== undefined) this.annualTurnover = draft.annualTurnover;
+        if (draft.employees !== undefined) this.employees = draft.employees;
+        if (draft.premisesType !== undefined) this.premisesType = draft.premisesType;
+        if (draft.premisesAddress !== undefined) this.premisesAddress = draft.premisesAddress;
+        if (draft.premisesVillage !== undefined) this.premisesVillage = draft.premisesVillage;
+        if (draft.premisesDistrict !== undefined) this.premisesDistrict = draft.premisesDistrict;
+        if (draft.isCorrespondenceSame !== undefined) this.isCorrespondenceSame = draft.isCorrespondenceSame;
+        if (draft.corrAddress !== undefined) this.corrAddress = draft.corrAddress;
+        if (draft.corrVillage !== undefined) this.corrVillage = draft.corrVillage;
+        if (draft.corrDistrict !== undefined) this.corrDistrict = draft.corrDistrict;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -88,6 +109,30 @@ export class FssaiForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      fullName: this.fullName,
+      mobile: this.mobile,
+      email: this.email,
+      businessName: this.businessName,
+      businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType: this.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType,
+      startDate: this.startDate,
+      annualTurnover: this.annualTurnover,
+      employees: this.employees,
+      premisesType: this.premisesType,
+      premisesAddress: this.premisesAddress,
+      premisesVillage: this.premisesVillage,
+      premisesDistrict: this.premisesDistrict,
+      isCorrespondenceSame: this.isCorrespondenceSame,
+      corrAddress: this.corrAddress,
+      corrVillage: this.corrVillage,
+      corrDistrict: this.corrDistrict,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -179,6 +224,7 @@ export class FssaiForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('FSSAI details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

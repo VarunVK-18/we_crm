@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -51,6 +52,12 @@ class _ProprietorshipFormScreenState extends ConsumerState<ProprietorshipFormScr
   bool _needIec = false;
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _proprietorNameController.dispose();
     _panNumberController.dispose();
@@ -83,6 +90,65 @@ class _ProprietorshipFormScreenState extends ConsumerState<ProprietorshipFormScr
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'ProprietorshipFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('proprietorName')) _proprietorNameController.text = draft['proprietorName'];
+        if (draft.containsKey('panNumber')) _panNumberController.text = draft['panNumber'];
+        if (draft.containsKey('aadhaarNumber')) _aadhaarNumberController.text = draft['aadhaarNumber'];
+        if (draft.containsKey('mobileNumber')) _mobileNumberController.text = draft['mobileNumber'];
+        if (draft.containsKey('emailId')) _emailIdController.text = draft['emailId'];
+        if (draft.containsKey('dob')) _dobController.text = draft['dob'];
+        if (draft.containsKey('businessName')) _businessNameController.text = draft['businessName'];
+        if (draft.containsKey('businessActivity')) _businessActivityController.text = draft['businessActivity'];
+        if (draft.containsKey('businessAddress')) _businessAddressController.text = draft['businessAddress'];
+        if (draft.containsKey('state')) _stateController.text = draft['state'];
+        if (draft.containsKey('pinCode')) _pinCodeController.text = draft['pinCode'];
+        if (draft.containsKey('needGst')) _needGst = draft['needGst'] == 'true';
+        if (draft.containsKey('needMsme')) _needMsme = draft['needMsme'] == 'true';
+        if (draft.containsKey('needShopAct')) _needShopAct = draft['needShopAct'] == 'true';
+        if (draft.containsKey('needFssai')) _needFssai = draft['needFssai'] == 'true';
+        if (draft.containsKey('needIec')) _needIec = draft['needIec'] == 'true';
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'proprietorName': _proprietorNameController.text,
+      'panNumber': _panNumberController.text,
+      'aadhaarNumber': _aadhaarNumberController.text,
+      'mobileNumber': _mobileNumberController.text,
+      'emailId': _emailIdController.text,
+      'dob': _dobController.text,
+      'businessName': _businessNameController.text,
+      'businessActivity': _businessActivityController.text,
+      'businessAddress': _businessAddressController.text,
+      'state': _stateController.text,
+      'pinCode': _pinCodeController.text,
+      'needGst': _needGst.toString(),
+      'needMsme': _needMsme.toString(),
+      'needShopAct': _needShopAct.toString(),
+      'needFssai': _needFssai.toString(),
+      'needIec': _needIec.toString(),
+
+    };
+    await draftService.saveDraft(widget.order.id, 'ProprietorshipFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -155,6 +221,7 @@ class _ProprietorshipFormScreenState extends ConsumerState<ProprietorshipFormScr
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'ProprietorshipFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -278,7 +345,27 @@ class _ProprietorshipFormScreenState extends ConsumerState<ProprietorshipFormScr
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

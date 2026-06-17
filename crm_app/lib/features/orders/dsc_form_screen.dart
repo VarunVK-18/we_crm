@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -42,6 +43,12 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
   bool _isVerified = false;
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _applicantNameController.dispose();
     _applicantMailController.dispose();
@@ -70,6 +77,49 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'DscFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('applicantName')) _applicantNameController.text = draft['applicantName'];
+        if (draft.containsKey('applicantMail')) _applicantMailController.text = draft['applicantMail'];
+        if (draft.containsKey('applicantPhone')) _applicantPhoneController.text = draft['applicantPhone'];
+        if (draft.containsKey('organizationName')) _organizationNameController.text = draft['organizationName'];
+        if (draft.containsKey('organizationType')) _organizationTypeController.text = draft['organizationType'];
+        if (draft.containsKey('officeAddress')) _officeAddressController.text = draft['officeAddress'];
+        if (draft.containsKey('courierAddress')) _courierAddressController.text = draft['courierAddress'];
+        if (draft.containsKey('applyingFor')) _applyingFor = draft['applyingFor'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'applicantName': _applicantNameController.text,
+      'applicantMail': _applicantMailController.text,
+      'applicantPhone': _applicantPhoneController.text,
+      'organizationName': _organizationNameController.text,
+      'organizationType': _organizationTypeController.text,
+      'officeAddress': _officeAddressController.text,
+      'courierAddress': _courierAddressController.text,
+      'applyingFor': _applyingFor,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'DscFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -159,6 +209,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'DscFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -307,7 +358,27 @@ Widget build(BuildContext context) {
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

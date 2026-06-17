@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -50,6 +51,12 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
   String? _signaturePath;
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _companyNameController.dispose();
     _udyamNumberController.dispose();
@@ -92,6 +99,64 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
             break;
         }
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'TrademarkFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('companyName')) _companyNameController.text = draft['companyName'];
+        if (draft.containsKey('udyamNumber')) _udyamNumberController.text = draft['udyamNumber'];
+        if (draft.containsKey('applicantName')) _applicantNameController.text = draft['applicantName'];
+        if (draft.containsKey('companyAddress')) _companyAddressController.text = draft['companyAddress'];
+        if (draft.containsKey('companyMobile')) _companyMobileController.text = draft['companyMobile'];
+        if (draft.containsKey('companyEmail')) _companyEmailController.text = draft['companyEmail'];
+        if (draft.containsKey('partnersName')) _partnersNameController.text = draft['partnersName'];
+        if (draft.containsKey('businessDescription')) _businessDescriptionController.text = draft['businessDescription'];
+        if (draft.containsKey('dateFirstUsed')) _dateFirstUsedController.text = draft['dateFirstUsed'];
+        if (draft.containsKey('nameOfApplicant')) _nameOfApplicantController.text = draft['nameOfApplicant'];
+        if (draft.containsKey('msmeType')) _msmeType = draft['msmeType'];
+        if (draft.containsKey('tradeDescription')) _tradeDescription = draft['tradeDescription'];
+        if (draft.containsKey('categoryOfMark')) _categoryOfMark = draft['categoryOfMark'];
+        if (draft.containsKey('isVerified')) {
+          final val = draft['isVerified'];
+          _isVerified = val is bool ? val : val == 'true';
+        }
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'companyName': _companyNameController.text,
+      'udyamNumber': _udyamNumberController.text,
+      'applicantName': _applicantNameController.text,
+      'companyAddress': _companyAddressController.text,
+      'companyMobile': _companyMobileController.text,
+      'companyEmail': _companyEmailController.text,
+      'partnersName': _partnersNameController.text,
+      'businessDescription': _businessDescriptionController.text,
+      'dateFirstUsed': _dateFirstUsedController.text,
+      'nameOfApplicant': _nameOfApplicantController.text,
+      'msmeType': _msmeType,
+      'tradeDescription': _tradeDescription,
+      'categoryOfMark': _categoryOfMark,
+      'isVerified': _isVerified.toString(),
+
+    };
+    await draftService.saveDraft(widget.order.id, 'TrademarkFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -171,6 +236,7 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'TrademarkFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -323,7 +389,27 @@ Widget build(BuildContext context) {
                   ),
                   const SizedBox(height: 32),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

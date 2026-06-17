@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -55,6 +56,12 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
   ];
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _applicantNameController.dispose();
     _mobileNumberController.dispose();
@@ -87,6 +94,57 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'PatentFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('applicantName')) _applicantNameController.text = draft['applicantName'];
+        if (draft.containsKey('mobileNumber')) _mobileNumberController.text = draft['mobileNumber'];
+        if (draft.containsKey('emailId')) _emailIdController.text = draft['emailId'];
+        if (draft.containsKey('address')) _addressController.text = draft['address'];
+        if (draft.containsKey('inventionTitle')) _inventionTitleController.text = draft['inventionTitle'];
+        if (draft.containsKey('inventionDescription')) _inventionDescController.text = draft['inventionDescription'];
+        if (draft.containsKey('industryCategory')) _industryCategoryController.text = draft['industryCategory'];
+        if (draft.containsKey('inventorNames')) _inventorNamesController.text = draft['inventorNames'];
+        if (draft.containsKey('inventorName')) _inventorNameController.text = draft['inventorName'];
+        if (draft.containsKey('inventorNationality')) _inventorNationalityController.text = draft['inventorNationality'];
+        if (draft.containsKey('inventorAddress')) _inventorAddressController.text = draft['inventorAddress'];
+        if (draft.containsKey('entityType')) _entityType = draft['entityType'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'applicantName': _applicantNameController.text,
+      'mobileNumber': _mobileNumberController.text,
+      'emailId': _emailIdController.text,
+      'address': _addressController.text,
+      'inventionTitle': _inventionTitleController.text,
+      'inventionDescription': _inventionDescController.text,
+      'industryCategory': _industryCategoryController.text,
+      'inventorNames': _inventorNamesController.text,
+      'inventorName': _inventorNameController.text,
+      'inventorNationality': _inventorNationalityController.text,
+      'inventorAddress': _inventorAddressController.text,
+      'entityType': _entityType,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'PatentFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -160,6 +218,7 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'PatentFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -311,7 +370,27 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
 
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

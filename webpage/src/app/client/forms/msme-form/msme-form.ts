@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-msme-form',
@@ -50,12 +51,37 @@ export class MsmeForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.enterpriseName !== undefined) this.enterpriseName = draft.enterpriseName;
+        if (draft.orgType !== undefined) this.orgType = draft.orgType;
+        if (draft.majorActivity !== undefined) this.majorActivity = draft.majorActivity;
+        if (draft.address !== undefined) this.address = draft.address;
+        if (draft.unitName !== undefined) this.unitName = draft.unitName;
+        if (draft.mobile !== undefined) this.mobile = draft.mobile;
+        if (draft.email !== undefined) this.email = draft.email;
+        if (draft.maleEmployees !== undefined) this.maleEmployees = draft.maleEmployees;
+        if (draft.femaleEmployees !== undefined) this.femaleEmployees = draft.femaleEmployees;
+        if (draft.incDate !== undefined) this.incDate = draft.incDate;
+        if (draft.commenceDate !== undefined) this.commenceDate = draft.commenceDate;
+        if (draft.prevMsme !== undefined) this.prevMsme = draft.prevMsme;
+        if (draft.gst !== undefined) this.gst = draft.gst;
+        if (draft.investment !== undefined) this.investment = draft.investment;
+        if (draft.turnover !== undefined) this.turnover = draft.turnover;
+        if (draft.ownerName !== undefined) this.ownerName = draft.ownerName;
+        if (draft.gender !== undefined) this.gender = draft.gender;
+        if (draft.whatsapp !== undefined) this.whatsapp = draft.whatsapp;
+        if (draft.personalEmail !== undefined) this.personalEmail = draft.personalEmail;
+        if (draft.physicallyHandicapped !== undefined) this.physicallyHandicapped = draft.physicallyHandicapped;
+        if (draft.socialCategory !== undefined) this.socialCategory = draft.socialCategory;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -78,6 +104,35 @@ export class MsmeForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      enterpriseName: this.enterpriseName,
+      orgType: this.orgType,
+      majorActivity: this.majorActivity,
+      address: this.address,
+      unitName: this.unitName,
+      mobile: this.mobile,
+      email: this.email,
+      maleEmployees: this.maleEmployees,
+      femaleEmployees: this.femaleEmployees,
+      incDate: this.incDate,
+      commenceDate: this.commenceDate,
+      prevMsme: this.prevMsme,
+      gst: this.gst,
+      investment: this.investment,
+      turnover: this.turnover,
+      ownerName: this.ownerName,
+      gender: this.gender,
+      whatsapp: this.whatsapp,
+      personalEmail: this.personalEmail,
+      physicallyHandicapped: this.physicallyHandicapped,
+      socialCategory: this.socialCategory,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -140,6 +195,7 @@ export class MsmeForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('MSME details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

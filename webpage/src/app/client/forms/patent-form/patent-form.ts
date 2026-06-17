@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-patent-form',
@@ -47,12 +48,28 @@ export class PatentForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.applicantName !== undefined) this.applicantName = draft.applicantName;
+        if (draft.entityType !== undefined) this.entityType = draft.entityType;
+        if (draft.mobileNumber !== undefined) this.mobileNumber = draft.mobileNumber;
+        if (draft.emailId !== undefined) this.emailId = draft.emailId;
+        if (draft.address !== undefined) this.address = draft.address;
+        if (draft.inventionTitle !== undefined) this.inventionTitle = draft.inventionTitle;
+        if (draft.inventionDescription !== undefined) this.inventionDescription = draft.inventionDescription;
+        if (draft.industryCategory !== undefined) this.industryCategory = draft.industryCategory;
+        if (draft.inventorNames !== undefined) this.inventorNames = draft.inventorNames;
+        if (draft.inventorName !== undefined) this.inventorName = draft.inventorName;
+        if (draft.inventorAddress !== undefined) this.inventorAddress = draft.inventorAddress;
+        if (draft.inventorNationality !== undefined) this.inventorNationality = draft.inventorNationality;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -73,6 +90,26 @@ export class PatentForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      applicantName: this.applicantName,
+      entityType: this.entityType,
+      mobileNumber: this.mobileNumber,
+      emailId: this.emailId,
+      address: this.address,
+      inventionTitle: this.inventionTitle,
+      inventionDescription: this.inventionDescription,
+      industryCategory: this.industryCategory,
+      inventorNames: this.inventorNames,
+      inventorName: this.inventorName,
+      inventorAddress: this.inventorAddress,
+      inventorNationality: this.inventorNationality,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -125,6 +162,7 @@ export class PatentForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.order) {
           alert('Patent Registration details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

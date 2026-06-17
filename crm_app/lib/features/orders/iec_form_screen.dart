@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -49,6 +50,12 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
   ];
 
   @override
+    @override
+  void initState() {
+    super.initState();
+    _loadDraft();
+  }
+
   void dispose() {
     _businessNameController.dispose();
     _panNumberController.dispose();
@@ -78,6 +85,51 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'IecFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('businessName')) _businessNameController.text = draft['businessName'];
+        if (draft.containsKey('mobileNumber')) _mobileNumberController.text = draft['mobileNumber'];
+        if (draft.containsKey('emailId')) _emailIdController.text = draft['emailId'];
+        if (draft.containsKey('businessAddress')) _businessAddressController.text = draft['businessAddress'];
+        if (draft.containsKey('bankName')) _bankNameController.text = draft['bankName'];
+        if (draft.containsKey('accountNumber')) _accountNumberController.text = draft['accountNumber'];
+        if (draft.containsKey('entityType')) _entityType = draft['entityType'];
+        if (draft.containsKey('panNumber')) _panNumberController.text = draft['panNumber'];
+        if (draft.containsKey('ifscCode')) _ifscCodeController.text = draft['ifscCode'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'businessName': _businessNameController.text,
+      'mobileNumber': _mobileNumberController.text,
+      'emailId': _emailIdController.text,
+      'businessAddress': _businessAddressController.text,
+      'bankName': _bankNameController.text,
+      'accountNumber': _accountNumberController.text,
+      'entityType': _entityType,
+      'panNumber': _panNumberController.text.toUpperCase(),
+      'ifscCode': _ifscCodeController.text.toUpperCase(),
+
+    };
+    await draftService.saveDraft(widget.order.id, 'IecFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -143,6 +195,7 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'IecFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -283,7 +336,27 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
 
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

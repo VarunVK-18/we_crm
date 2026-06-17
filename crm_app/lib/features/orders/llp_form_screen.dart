@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../providers/draft_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -84,6 +85,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
   @override
   void initState() {
     super.initState();
+    _loadDraft();
     final assignedNumStr = widget.order.details['assignedNumberOfDirectors']?.toString();
     final numStr = assignedNumStr ?? widget.order.details['numberOfDirectors']?.toString() ?? '2';
     final int count = int.tryParse(numStr) ?? 2;
@@ -120,6 +122,43 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
       setState(() {
         onPicked(result.files.single.path!);
       });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'LlpFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('companyName')) _companyNameController.text = draft['companyName'];
+        if (draft.containsKey('businessActivity')) _businessActivityController.text = draft['businessActivity'];
+        if (draft.containsKey('ownerName')) _ownerNameController.text = draft['ownerName'];
+        if (draft.containsKey('totalCapital')) _totalCapitalController.text = draft['totalCapital'];
+        if (draft.containsKey('registeredOfficePreference')) _registeredOfficePreference = draft['registeredOfficePreference'];
+
+        });
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'companyName': _companyNameController.text,
+      'businessActivity': _businessActivityController.text,
+      'ownerName': _ownerNameController.text,
+      'totalCapital': _totalCapitalController.text,
+      'registeredOfficePreference': _registeredOfficePreference,
+
+    };
+    await draftService.saveDraft(widget.order.id, 'LlpFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
     }
   }
 
@@ -233,6 +272,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
           ),
         );
         if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'LlpFormScreen');
         Navigator.pop(context, true); // Success
       } else {
         throw Exception('Failed to submit form: ${response.body}');
@@ -369,7 +409,27 @@ Widget build(BuildContext context) {
                   
                   const SizedBox(height: 16),
 
-                  ElevatedButton(
+                  SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _isLoading ? null : _saveDraft,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    side: const BorderSide(color: AppTheme.deepTeal),
+                  ),
+                  child: Text(
+                    'Save as Draft',
+                    style: GoogleFonts.outfit(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,

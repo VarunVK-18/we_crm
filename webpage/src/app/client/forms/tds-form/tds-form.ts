@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-tds-form',
@@ -36,12 +37,22 @@ export class TdsForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.entityType !== undefined) this.entityType = draft.entityType;
+        if (draft.businessName !== undefined) this.businessName = draft.businessName;
+        if (draft.panNumber !== undefined) this.panNumber = draft.panNumber;
+        if (draft.mobileNumber !== undefined) this.mobileNumber = draft.mobileNumber;
+        if (draft.emailId !== undefined) this.emailId = draft.emailId;
+        if (draft.businessAddress !== undefined) this.businessAddress = draft.businessAddress;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -61,6 +72,20 @@ export class TdsForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      entityType: this.entityType,
+      businessName: this.businessName,
+      panNumber: this.panNumber,
+      mobileNumber: this.mobileNumber,
+      emailId: this.emailId,
+      businessAddress: this.businessAddress,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -98,6 +123,7 @@ export class TdsForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.order) {
           alert('TAN details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

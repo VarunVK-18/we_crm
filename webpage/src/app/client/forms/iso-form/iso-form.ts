@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-iso-form',
@@ -49,12 +50,23 @@ export class IsoForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.companyLegalName !== undefined) this.companyLegalName = draft.companyLegalName;
+        if (draft.companyAddress !== undefined) this.companyAddress = draft.companyAddress;
+        if (draft.applicantName !== undefined) this.applicantName = draft.applicantName;
+        if (draft.email !== undefined) this.email = draft.email;
+        if (draft.whatsapp !== undefined) this.whatsapp = draft.whatsapp;
+        if (draft.courierAddress !== undefined) this.courierAddress = draft.courierAddress;
+        if (draft.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso !== undefined) this.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso = draft.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -71,6 +83,21 @@ export class IsoForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      companyLegalName: this.companyLegalName,
+      companyAddress: this.companyAddress,
+      applicantName: this.applicantName,
+      email: this.email,
+      whatsapp: this.whatsapp,
+      courierAddress: this.courierAddress,
+      selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso: this.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -114,6 +141,7 @@ export class IsoForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('ISO details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

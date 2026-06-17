@@ -3,6 +3,7 @@ import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
+import { DraftService } from '../../../services/draft.service';
 
 @Component({
   selector: 'app-trademark-form',
@@ -46,12 +47,29 @@ export class TrademarkForm implements OnInit {
     private router: Router,
     public location: Location,
     private api: Api
-  ) {}
+  ,
+    private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+      if (draft) {
+        if (draft.companyName !== undefined) this.companyName = draft.companyName;
+        if (draft.udyamNumber !== undefined) this.udyamNumber = draft.udyamNumber;
+        if (draft.applicantName !== undefined) this.applicantName = draft.applicantName;
+        if (draft.companyAddress !== undefined) this.companyAddress = draft.companyAddress;
+        if (draft.companyMobile !== undefined) this.companyMobile = draft.companyMobile;
+        if (draft.companyEmail !== undefined) this.companyEmail = draft.companyEmail;
+        if (draft.partnersName !== undefined) this.partnersName = draft.partnersName;
+        if (draft.businessDescription !== undefined) this.businessDescription = draft.businessDescription;
+        if (draft.dateFirstUsed !== undefined) this.dateFirstUsed = draft.dateFirstUsed;
+        if (draft.nameOfApplicant !== undefined) this.nameOfApplicant = draft.nameOfApplicant;
+        if (draft.msmeType !== undefined) this.msmeType = draft.msmeType;
+        if (draft.tradeDescription !== undefined) this.tradeDescription = draft.tradeDescription;
+        if (draft.categoryOfMark !== undefined) this.categoryOfMark = draft.categoryOfMark;
+      }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -70,6 +88,27 @@ export class TrademarkForm implements OnInit {
 
   goBack() {
     this.location.back();
+  }
+
+  
+  saveDraft() {
+    const draftData = {
+      companyName: this.companyName,
+      udyamNumber: this.udyamNumber,
+      applicantName: this.applicantName,
+      companyAddress: this.companyAddress,
+      companyMobile: this.companyMobile,
+      companyEmail: this.companyEmail,
+      partnersName: this.partnersName,
+      businessDescription: this.businessDescription,
+      dateFirstUsed: this.dateFirstUsed,
+      nameOfApplicant: this.nameOfApplicant,
+      msmeType: this.msmeType,
+      tradeDescription: this.tradeDescription,
+      categoryOfMark: this.categoryOfMark,
+    };
+    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   submitForm() {
@@ -119,6 +158,7 @@ export class TrademarkForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('Trademark details submitted successfully!');
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },
