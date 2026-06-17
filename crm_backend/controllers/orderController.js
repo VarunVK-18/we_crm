@@ -8,7 +8,7 @@ exports.getUserOrders = async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required.' });
     }
-    const orders = await ServiceOrder.find({ clientUid: userId }).sort({ createdAt: -1 });
+    const orders = await ServiceOrder.find({ cleintUid: userId }).sort({ createdAt: -1 });
     res.status(200).json({ orders });
   } catch (error) {
     console.error('Error fetching user orders:', error);
@@ -19,14 +19,14 @@ exports.getUserOrders = async (req, res) => {
 // Create a service order (for admin/testing)
 exports.createOrder = async (req, res) => {
   try {
-    const { clientUid, entityName, serviceType, companyName, status, stage, steps, assignedExpert, expertPhone } = req.body;
+    const { cleintUid, entityName, serviceType, companyName, status, stage, steps, assignedExpert, expertPhone } = req.body;
     
-    if (!clientUid || !serviceType) {
-      return res.status(400).json({ message: 'clientUid and serviceType are required.' });
+    if (!cleintUid || !serviceType) {
+      return res.status(400).json({ message: 'cleintUid and serviceType are required.' });
     }
 
     const order = new ServiceOrder({
-      clientUid,
+      cleintUid,
       entityName,
       serviceType,
       companyName,
@@ -66,11 +66,11 @@ exports.updateOrder = async (req, res) => {
     }
 
     if (updateData.dealClosedAmount) {
-      const clientUser = await User.findById(order.clientUid);
-      if (clientUser) {
-        clientUser.revenue = (clientUser.revenue || 0) + Number(updateData.dealClosedAmount);
-        await clientUser.save();
-        console.log(`Added dealClosedAmount ${updateData.dealClosedAmount} to user ${clientUser._id} revenue. New revenue: ${clientUser.revenue}`);
+      const cleintUser = await User.findById(order.cleintUid);
+      if (cleintUser) {
+        cleintUser.revenue = (cleintUser.revenue || 0) + Number(updateData.dealClosedAmount);
+        await cleintUser.save();
+        console.log(`Added dealClosedAmount ${updateData.dealClosedAmount} to user ${cleintUser._id} revenue. New revenue: ${cleintUser.revenue}`);
       }
     }
 
@@ -84,10 +84,10 @@ exports.updateOrder = async (req, res) => {
         }).select('_id');
 
         if (assignedEmployee) {
-          // Update all non-completed checklists for this client + service
+          // Update all non-completed checklists for this cleint + service
           const updated = await Checklist.updateMany(
             {
-              client_id: order.clientUid,
+              cleint_id: order.cleintUid,
               service_name: order.serviceType,
               status: { $ne: 'completed' }
             },
@@ -116,32 +116,32 @@ exports.updateOrder = async (req, res) => {
   }
 };
 
-// Get all service orders belonging to clients of a given company
+// Get all service orders belonging to cleints of a given company
 exports.getCompanyOrders = async (req, res) => {
   try {
     const { companyId } = req.params;
     if (!companyId) {
       return res.status(400).json({ message: 'Company ID is required.' });
     }
-    let clientFilter = { company_id: companyId, role: 'customer' };
-    if (req.user && req.user.role === 'client_manager') {
-      clientFilter.$or = [
+    let cleintFilter = { company_id: companyId, role: 'customer' };
+    if (req.user && req.user.role === 'cleint_manager') {
+      cleintFilter.$or = [
         { assigned_to: req.user._id },
         { created_by: req.user._id, assigned_to: null }
       ];
     } else if (req.user && (req.user.role === 'account_manager' || req.user.role === 'filling_staff')) {
-      clientFilter.assigned_to = req.user._id;
+      cleintFilter.assigned_to = req.user._id;
     }
 
-    const clients = await User.find(clientFilter).select('_id');
-    const clientIds = clients.map(client => client._id.toString());
+    const cleints = await User.find(cleintFilter).select('_id');
+    const cleintIds = cleints.map(cleint => cleint._id.toString());
     let orderQuery = {};
-    if (req.user && ['client_manager', 'account_manager', 'filling_staff'].includes(req.user.role)) {
-      // Scoped users ONLY see orders for their authorized clients
-      orderQuery.clientUid = { $in: clientIds };
+    if (req.user && ['cleint_manager', 'account_manager', 'filling_staff'].includes(req.user.role)) {
+      // Scoped users ONLY see orders for their authorized cleints
+      orderQuery.cleintUid = { $in: cleintIds };
       
       // If the order has an assigned expert, ONLY that expert should see it, 
-      // UNLESS it's unassigned, in which case the authorized client manager can see it.
+      // UNLESS it's unassigned, in which case the authorized cleint manager can see it.
       orderQuery.$or = [
         { assignedExpert: req.user.owner_name },
         { assignedExpert: 'To be assigned' },
@@ -149,9 +149,9 @@ exports.getCompanyOrders = async (req, res) => {
         { assignedExpert: { $exists: false } }
       ];
     } else {
-      // Admin users see all orders for the company OR clients
+      // Admin users see all orders for the company OR cleints
       orderQuery.$or = [
-        { clientUid: { $in: clientIds } },
+        { cleintUid: { $in: cleintIds } },
         { companyId: companyId }
       ];
     }
@@ -551,8 +551,8 @@ exports.submitIsoForm = async (req, res) => {
   }
 };
 
-// Submit LIE Registration Form
-exports.submitLieForm = async (req, res) => {
+// Submit LEI Registration Form
+exports.submitleiForm = async (req, res) => {
   try {
     const { id } = req.params;
     const formData = req.body;
@@ -560,9 +560,15 @@ exports.submitLieForm = async (req, res) => {
     const files = req.files || {};
     const uploadedDocs = [];
 
-    if (files.msmeCertificate) {
-      uploadedDocs.push({ name: "MSME Certificate", fileUrl: files.msmeCertificate[0].path });
-    }
+    if (files.addressProof) uploadedDocs.push({ name: 'Address Proof', fileUrl: files.addressProof[0].path });
+    if (files.incorpCert) uploadedDocs.push({ name: 'Incorporation Certificate', fileUrl: files.incorpCert[0].path });
+    if (files.panCard) uploadedDocs.push({ name: 'Company PAN Card', fileUrl: files.panCard[0].path });
+    if (files.gstCert) uploadedDocs.push({ name: 'GST Certificate', fileUrl: files.gstCert[0].path });
+    if (files.auditedFinancials) uploadedDocs.push({ name: 'Audited Financials', fileUrl: files.auditedFinancials[0].path });
+    if (files.moaAoa) uploadedDocs.push({ name: 'MOA & AOA', fileUrl: files.moaAoa[0].path });
+    if (files.boardResolution) uploadedDocs.push({ name: 'Board Resolution', fileUrl: files.boardResolution[0].path });
+    // Legacy field for old ISO-based uploads
+    if (files.msmeCertificate) uploadedDocs.push({ name: 'MSME Certificate', fileUrl: files.msmeCertificate[0].path });
 
     const Checklist = require('../models/Checklist');
     const order = await Checklist.findById(id);
@@ -570,11 +576,12 @@ exports.submitLieForm = async (req, res) => {
       return res.status(404).json({ message: 'Order (Checklist) not found.' });
     }
 
-    // Merge form data into order details
+    // Merge form data into order details — save as both leiForm and lieForm for backward compat
     const updatedDetails = {
       ...order.details,
+      leiForm: formData,
       lieForm: formData,
-      lieDocs: uploadedDocs,
+      leiDocs: uploadedDocs,
     };
 
     order.details = updatedDetails;
@@ -583,12 +590,13 @@ exports.submitLieForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'LIE form submitted successfully!', order });
+    res.status(200).json({ message: 'LEI form submitted successfully!', order });
   } catch (error) {
-    console.error('Error submitting LIE form:', error);
-    res.status(500).json({ message: 'Server error while submitting LIE form.', error: error.message });
+    console.error('Error submitting LEI form:', error);
+    res.status(500).json({ message: 'Server error while submitting LEI form.', error: error.message });
   }
 };
+
 
 // Submit BIS Registration Form
 exports.submitBisForm = async (req, res) => {

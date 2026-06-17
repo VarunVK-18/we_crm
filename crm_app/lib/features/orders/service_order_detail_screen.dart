@@ -33,8 +33,15 @@ import 'dsc_form_screen.dart';
 import 'opc_form_screen.dart';
 import 'gst_compliance_form_screen.dart';
 import 'mca_compliance_form_screen.dart';
-import 'lie_form_screen.dart';
+import 'lei_form_screen.dart';
 import 'bis_form_screen.dart';
+import 'gst_cancellation_form_screen.dart';
+import 'gst_filing_form_screen.dart';
+import 'iec_form_screen.dart';
+import 'patent_form_screen.dart';
+import 'pf_form_screen.dart';
+import 'proprietorship_form_screen.dart';
+import 'tds_form_screen.dart';
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
@@ -1860,11 +1867,11 @@ class _DirectorDetailsSection extends StatelessWidget {
 void _routeToForm(BuildContext context, ServiceOrder order) {
   final WidgetRef? ref = null; // Note: In a real app, retrieve ref via context or ConsumerState
 
-  if (order.serviceType.contains('DPIIT')) {
+  if (order.serviceType.toLowerCase().contains('dpiit')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => DpiitFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('opc') || order.serviceType.toLowerCase().contains('one person company')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => OpcFormScreen(order: order)));
-  } else if (order.serviceType.contains('Private Limited')) {
+  } else if (order.serviceType.toLowerCase().contains('private limited')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => IncorpFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('trademark') || order.serviceType.toLowerCase().contains('trade mark')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
@@ -1874,20 +1881,36 @@ void _routeToForm(BuildContext context, ServiceOrder order) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => MsmeFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('gst') && order.serviceType.toLowerCase().contains('compliance')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => GstComplianceFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('gst cancellation')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => GstCancellationFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('gst filing')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => GstFilingFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('mca')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => McaComplianceFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('gst')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => GstFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('iso')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => IsoFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('lie')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => LieFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('lei') || order.serviceType.toLowerCase().contains('lie')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => LeiFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('bis')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => BisFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('fssai')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => FssaiFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('dsc') || order.serviceType.toLowerCase().contains('digital signature')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => DscFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('proprietorship')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProprietorshipFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('tds') || order.serviceType.toLowerCase().contains('pan') || order.serviceType.toLowerCase().contains('itr')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => TdsFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('pf')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => PfFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('patent')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => PatentFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('copyright')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('iec')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => IecFormScreen(order: order)));
   } else {
     // Fallback if we haven't mapped the form yet
     ScaffoldMessenger.of(context).showSnackBar(

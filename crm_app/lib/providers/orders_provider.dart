@@ -31,8 +31,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
         final orders = checklistsJson.map((c) {
           final id = c['_id']?.toString() ?? '';
 
-          final isAssignedToExpert = c['assigned_to'] != null &&
-              c['assigned_to']['role'] != 'client_manager';
+          final isAssignedToExpert = c['assigned_to'] != null;
 
           final String actualCompany = (c['details'] != null && c['details']['entityName'] != null)
               ? c['details']['entityName'].toString()

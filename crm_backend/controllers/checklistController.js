@@ -306,8 +306,18 @@ const updateChecklist = async (req, res) => {
     } else {
       if (assigned_to !== undefined) {
         checklist.assigned_to = assigned_to || null;
-        if (assigned_to && checklist.service_name.includes('DPIIT')) {
-          checklist.action_required = true;
+        // Set action_required for ALL services that have a form
+        if (assigned_to) {
+          const formServices = [
+            'dpiit', 'private limited', 'trademark', 'trade mark', 'llp', 'msme',
+            'gst', 'iso', 'fssai', 'one person company', 'opc', 'lei', 'lie', 'bis',
+            'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'pf', 'patent',
+            'copyright', 'itr'
+          ];
+          const svcLower = checklist.service_name ? checklist.service_name.toLowerCase() : '';
+          if (formServices.some(s => svcLower.includes(s))) {
+            checklist.action_required = true;
+          }
         }
       }
       if (notes !== undefined) checklist.notes = notes;
@@ -417,6 +427,7 @@ const getMyChecklists = async (req, res) => {
       'Private Limited',
       'Trade mark',
       'Trademark',
+      'Copyright',
       'LLP',
       'MSME',
       'MSME Certification',
@@ -432,6 +443,9 @@ const getMyChecklists = async (req, res) => {
       'FSSAI Registration',
       'FSSAI Food License',
       'One Person Company',
+      'OPC',
+      'LEI Registration',
+      'LEI',
       'LIE Registration',
       'LIE',
       'BIS Registration',
@@ -443,10 +457,12 @@ const getMyChecklists = async (req, res) => {
       'Proprietorship',
       'TDS',
       'PAN, TAN',
+      'ITR',
       'PF Registration',
       'PF',
       'Patent Registration',
-      'Patent'
+      'Patent',
+      'Copyright'
     ];
 
     const enrichedChecklists = checklistsPlain.map(c => {
@@ -456,14 +472,14 @@ const getMyChecklists = async (req, res) => {
       let dynamicActionRequired = c.action_required;
       let modifiedItems = c.items || [];
 
-      if (requiresForm && c.assigned_to) {
+      if (requiresForm) {
         // Let's check if the form has been filled by looking at details
         let isFormFilled = false;
         if (serviceNameLower.includes('dpiit') && c.details && c.details.dpiitForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('private limited') && c.details && c.details.companyName) {
             isFormFilled = true;
-        } else if ((serviceNameLower.includes('trademark') || serviceNameLower.includes('trade mark')) && c.details && c.details.trademarkForm) {
+        } else if ((serviceNameLower.includes('trademark') || serviceNameLower.includes('trade mark') || serviceNameLower.includes('copyright')) && c.details && c.details.trademarkForm) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) {
             isFormFilled = true;
@@ -481,9 +497,9 @@ const getMyChecklists = async (req, res) => {
             isFormFilled = true;
         } else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) {
             isFormFilled = true;
-        } else if (serviceNameLower.includes('one person company') && c.details && c.details.opcForm) {
+        } else if ((serviceNameLower.includes('one person company') || serviceNameLower.includes('opc')) && c.details && c.details.opcForm) {
             isFormFilled = true;
-        } else if (serviceNameLower.includes('lie') && c.details && c.details.lieForm) {
+        } else if ((serviceNameLower.includes('lei') || serviceNameLower.includes('lie')) && c.details && (c.details.leiForm || c.details.lieForm)) {
             isFormFilled = true;
         } else if (serviceNameLower.includes('bis') && c.details && c.details.bisForm) {
             isFormFilled = true;
@@ -495,7 +511,7 @@ const getMyChecklists = async (req, res) => {
             isFormFilled = true;
         } else if (serviceNameLower.includes('proprietorship') && c.details && c.details.proprietorshipForm) {
             isFormFilled = true;
-        } else if ((serviceNameLower.includes('tds') || serviceNameLower.includes('pan, tan')) && c.details && c.details.tdsForm) {
+        } else if ((serviceNameLower.includes('tds') || serviceNameLower.includes('pan, tan') || serviceNameLower.includes('itr')) && c.details && c.details.tdsForm) {
             isFormFilled = true;
         } else if ((serviceNameLower.includes('pf registration') || serviceNameLower.includes('pf')) && c.details && c.details.pfForm) {
             isFormFilled = true;

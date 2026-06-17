@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -10,51 +9,44 @@ import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 
-class LieFormScreen extends ConsumerStatefulWidget {
+class LeiFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
-  const LieFormScreen({super.key, required this.order});
+  const LeiFormScreen({super.key, required this.order});
 
   @override
-  ConsumerState<LieFormScreen> createState() => _LieFormScreenState();
+  ConsumerState<LeiFormScreen> createState() => _LeiFormScreenState();
 }
 
-class _LieFormScreenState extends ConsumerState<LieFormScreen> {
+class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // Details
-  final _companyNameController = TextEditingController();
-  final _companyAddressController = TextEditingController();
-  final _applicantNameController = TextEditingController();
+  // Fields
+  final _authorizedPersonController = TextEditingController();
+  final _designationController = TextEditingController();
+  final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
-  final _whatsappController = TextEditingController();
-  final _courierAddressController = TextEditingController();
 
-  // Document
-  String? _msmeCertPath;
-
-  // Verification
-  bool _isVerified = false;
-
-  final List<String> _isoOptions = [
-    'ISO 9001 - Quality Management System',
-    'ISO 27001 - Information Security Management System',
-    'ISO 14001 - Environment Management System',
-    'ISO 45001 - Occupational Health & Safety',
-    'ISO 20000 - Information Technology Service Management System',
-    'ISO 22000 - Food Safety Management System',
-    'ISO 13485 - Medical Device QMS',
-    'Other'
+  String? _turnoverType;
+  final List<String> _turnoverOptions = [
+    'Less Than 50 Cr',
+    'More Than 50 Cr'
   ];
+
+  String? _addressProofPath;
+  String? _incorpCertPath;
+  String? _panCardPath;
+  String? _gstCertPath;
+  String? _auditedFinancialsPath;
+  String? _moaAoaPath;
+  String? _boardResolutionPath;
 
   @override
   void dispose() {
-    _companyNameController.dispose();
-    _companyAddressController.dispose();
-    _applicantNameController.dispose();
+    _authorizedPersonController.dispose();
+    _designationController.dispose();
+    _mobileController.dispose();
     _emailController.dispose();
-    _whatsappController.dispose();
-    _courierAddressController.dispose();
     super.dispose();
   }
 
@@ -67,7 +59,7 @@ class _LieFormScreenState extends ConsumerState<LieFormScreen> {
       if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Upload a file less than 2 MB or equal to 2 MB.'),
+          content: Text('Upload a file less than 2 MB.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -79,21 +71,14 @@ class _LieFormScreenState extends ConsumerState<LieFormScreen> {
   }
 
   Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please fill all required fields.'),
-        backgroundColor: Colors.red,
-      ));
+    if (!_formKey.currentState!.validate() || _turnoverType == null) {
+      _showError('Please fill all required fields.');
       return;
     }
 
-    if (_msmeCertPath == null) {
-      _showError("Please upload MSME Certificate.");
-      return;
-    }
-
-    if (!_isVerified) {
-      _showError("Please check the verification checkbox.");
+    if (_addressProofPath == null || _incorpCertPath == null || _panCardPath == null ||
+        _gstCertPath == null || _auditedFinancialsPath == null) {
+      _showError('Please upload all required documents.');
       return;
     }
 
@@ -103,20 +88,28 @@ class _LieFormScreenState extends ConsumerState<LieFormScreen> {
       final uid = ref.read(authStateProvider).value?.uid;
       if (uid == null) throw Exception('Not authenticated');
 
-      final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-lie-form');
+      final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-lei-form');
       var request = http.MultipartRequest('POST', uri);
       request.headers['x-user-id'] = uid;
 
-      // Details
-      request.fields['companyLegalName'] = _companyNameController.text;
-      request.fields['companyAddress'] = _companyAddressController.text;
-      request.fields['applicantName'] = _applicantNameController.text;
-      request.fields['email'] = _emailController.text;
-      request.fields['whatsapp'] = _whatsappController.text;
-      request.fields['courierAddress'] = _courierAddressController.text;
+      request.fields['authorizedPerson'] = _authorizedPersonController.text;
+      request.fields['designation'] = _designationController.text;
+      request.fields['mobileNumber'] = _mobileController.text;
+      request.fields['emailId'] = _emailController.text;
+      request.fields['turnoverType'] = _turnoverType!;
 
-      // Add files
-      request.files.add(await http.MultipartFile.fromPath('msmeCertificate', _msmeCertPath!));
+      request.files.add(await http.MultipartFile.fromPath('addressProof', _addressProofPath!));
+      request.files.add(await http.MultipartFile.fromPath('incorpCert', _incorpCertPath!));
+      request.files.add(await http.MultipartFile.fromPath('panCard', _panCardPath!));
+      request.files.add(await http.MultipartFile.fromPath('gstCert', _gstCertPath!));
+      request.files.add(await http.MultipartFile.fromPath('auditedFinancials', _auditedFinancialsPath!));
+      
+      if (_moaAoaPath != null) {
+        request.files.add(await http.MultipartFile.fromPath('moaAoa', _moaAoaPath!));
+      }
+      if (_boardResolutionPath != null) {
+        request.files.add(await http.MultipartFile.fromPath('boardResolution', _boardResolutionPath!));
+      }
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
@@ -127,7 +120,7 @@ class _LieFormScreenState extends ConsumerState<LieFormScreen> {
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Success'),
-            content: const Text('Form submitted successfully!'),
+            content: const Text('LEI Form submitted successfully!'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(ctx),
@@ -137,7 +130,7 @@ class _LieFormScreenState extends ConsumerState<LieFormScreen> {
           ),
         );
         if (!mounted) return;
-        Navigator.pop(context, true); // Success
+        Navigator.pop(context, true);
       } else {
         throw Exception('Failed to submit form: ${response.body}');
       }
@@ -156,8 +149,6 @@ class _LieFormScreenState extends ConsumerState<LieFormScreen> {
     ));
   }
 
-  @override
-  
   Future<bool> _onWillPop() async {
     final shouldPop = await showDialog<bool>(
       context: context,
@@ -189,13 +180,14 @@ class _LieFormScreenState extends ConsumerState<LieFormScreen> {
     return shouldPop ?? false;
   }
 
-Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('LIE Registration Form', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
+        title: const Text('LEI Registration Form', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -210,59 +202,60 @@ Widget build(BuildContext context) {
                   Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.corporateBlue)),
                   const SizedBox(height: 16),
                   
-                  // Company & Applicant Details
                   _buildSectionContainer(
-                    title: 'Company & Applicant Details',
+                    title: 'Applicant Details',
                     children: [
-                      _buildField('Company Legal Name', '', _companyNameController, isRequired: true),
-                      _buildField('Company Address', '', _companyAddressController, isRequired: true, maxLines: 3),
-                      _buildField('Applicant name', '', _applicantNameController, isRequired: true),
+                      _buildField('Name of the Authorized Person', '', _authorizedPersonController, isRequired: true),
+                      _buildField('Designation', 'e.g. Director, Partner', _designationController, isRequired: true),
+                      _buildField('Mobile Number', '', _mobileController, isRequired: true, keyboardType: TextInputType.phone),
                       _buildField('Email ID', '', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                      _buildField('Whatsapp number', '', _whatsappController, isRequired: true, keyboardType: TextInputType.phone),
-                      _buildField('Address for couriering the ISO Certificate', 'Full Address with PIN code', _courierAddressController, isRequired: true, maxLines: 3),
-                    ],
-                  ),
-
-                  // Documents
-                  _buildSectionContainer(
-                    title: 'Documents',
-                    children: [
-                      _buildFileRow('Upload MSME Certificate', 'Upload 1 supported file. Max 2 MB.', _msmeCertPath, () => _pickFile((path) => _msmeCertPath = path)),
-                    ],
-                  ),
-
-                  // Verification
-                  _buildSectionContainer(
-                    title: 'Verification',
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Checkbox(
-                            value: _isVerified,
-                            activeColor: AppTheme.corporateBlue,
-                            onChanged: (val) {
-                              setState(() {
-                                _isVerified = val ?? false;
-                              });
-                            },
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 12.0),
-                              child: RichText(
-                                text: const TextSpan(
-                                  text: 'I here verify that above mentioned facts are true and correct to best of my knowledge and belief',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
-                                  children: [
-                                    TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
-                                  ]
-                                ),
+                      
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            RichText(
+                              text: const TextSpan(
+                                text: 'Turnover Details',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+                                children: [
+                                  TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+                                ]
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<String>(
+                              value: _turnoverType,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              ),
+                              items: _turnoverOptions.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  _turnoverType = val;
+                                });
+                              },
+                              validator: (value) => value == null ? 'Please select turnover details' : null,
+                            ),
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+
+                  _buildSectionContainer(
+                    title: 'Document Uploads',
+                    children: [
+                      _buildFileRow('Address Proof', 'Company Address Proof. Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path)),
+                      _buildFileRow('Incorporation Certificate', 'Max 2 MB.', _incorpCertPath, () => _pickFile((path) => _incorpCertPath = path)),
+                      _buildFileRow('Company PAN Card', 'Max 2 MB.', _panCardPath, () => _pickFile((path) => _panCardPath = path)),
+                      _buildFileRow('GST Certificate', 'Max 2 MB.', _gstCertPath, () => _pickFile((path) => _gstCertPath = path)),
+                      _buildFileRow('Audited Financials', 'Latest Audited Financials. Max 2 MB.', _auditedFinancialsPath, () => _pickFile((path) => _auditedFinancialsPath = path)),
+                      _buildFileRow('MOA and AOA', 'Max 2 MB.', _moaAoaPath, () => _pickFile((path) => _moaAoaPath = path), isRequired: false),
+                      _buildFileRow('Board Resolution', 'Max 2 MB.', _boardResolutionPath, () => _pickFile((path) => _boardResolutionPath = path), isRequired: false),
                     ],
                   ),
                   
@@ -304,61 +297,7 @@ Widget build(BuildContext context) {
     );
   }
 
-  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-          ],
-          const SizedBox(height: 12),
-          ...options.map((opt) {
-            return InkWell(
-              onTap: () => onChanged(opt),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Radio<String>(
-                      value: opt,
-                      groupValue: currentValue,
-                      onChanged: (v) {
-                        if (v != null) onChanged(v);
-                      },
-                      activeColor: AppTheme.corporateBlue,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: Text(opt, style: const TextStyle(fontSize: 14, height: 1.3)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }).toList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -382,33 +321,19 @@ Widget build(BuildContext context) {
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
-            readOnly: isDate,
-            onTap: isDate ? () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100),
-              );
-              if (date != null) {
-                controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
-              }
-            } : null,
-            maxLines: maxLines,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,
+            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required field' : null : null,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
+  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick, {bool isRequired = true}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -418,8 +343,9 @@ Widget build(BuildContext context) {
             text: TextSpan(
               text: label,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              children: [
+                if (isRequired)
+                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
               ]
             ),
           ),

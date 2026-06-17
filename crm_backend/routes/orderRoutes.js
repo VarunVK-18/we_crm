@@ -37,7 +37,7 @@ for (let i = 1; i <= 10; i++) {
 
 // @route   POST /api/orders/:id/submit-dpiit-form
 // @desc    Submit DPIIT form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-dpiit-form',
   checkUser,
@@ -47,7 +47,7 @@ router.post(
 
 // @route   POST /api/orders/:id/submit-incorp-form
 // @desc    Submit Private Limited Incorp form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-incorp-form',
   checkUser,
@@ -64,7 +64,7 @@ const trademarkUploadFields = [
 
 // @route   POST /api/orders/:id/submit-trademark-form
 // @desc    Submit Trademark form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-trademark-form',
   checkUser,
@@ -87,7 +87,7 @@ for (let i = 1; i <= 2; i++) {
 
 // @route   POST /api/orders/:id/submit-llp-form
 // @desc    Submit LLP Incorporation form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-llp-form',
   checkUser,
@@ -104,7 +104,7 @@ const msmeUploadFields = [
 
 // @route   POST /api/orders/:id/submit-msme-form
 // @desc    Submit MSME form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-msme-form',
   checkUser,
@@ -122,7 +122,7 @@ const gstUploadFields = [
 
 // @route   POST /api/orders/:id/submit-gst-form
 // @desc    Submit GST form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-gst-form',
   checkUser,
@@ -137,7 +137,7 @@ const isoUploadFields = [
 
 // @route   POST /api/orders/:id/submit-iso-form
 // @desc    Submit ISO form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-iso-form',
   checkUser,
@@ -145,12 +145,31 @@ router.post(
   orderController.submitIsoForm
 );
 
-// @route   POST /api/orders/:id/submit-lie-form
+// Define fields for LEI form uploads
+const leiUploadFields = [
+  { name: 'addressProof', maxCount: 1 },
+  { name: 'incorpCert', maxCount: 1 },
+  { name: 'panCard', maxCount: 1 },
+  { name: 'gstCert', maxCount: 1 },
+  { name: 'auditedFinancials', maxCount: 1 },
+  { name: 'moaAoa', maxCount: 1 },
+  { name: 'boardResolution', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-lei-form
+router.post(
+  '/:id/submit-lei-form',
+  checkUser,
+  upload.fields(leiUploadFields),
+  orderController.submitleiForm
+);
+
+// @route   POST /api/orders/:id/submit-lie-form (alias for LEI)
 router.post(
   '/:id/submit-lie-form',
   checkUser,
-  upload.fields(isoUploadFields),
-  orderController.submitLieForm
+  upload.fields(leiUploadFields),
+  orderController.submitleiForm
 );
 
 // @route   POST /api/orders/:id/submit-gst-compliance-form
@@ -197,7 +216,7 @@ const fssaiUploadFields = [
 
 // @route   POST /api/orders/:id/submit-fssai-form
 // @desc    Submit FSSAI form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-fssai-form',
   checkUser,
@@ -219,7 +238,7 @@ const dscUploadFields = [
 
 // @route   POST /api/orders/:id/submit-dsc-form
 // @desc    Submit DSC form details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-dsc-form',
   checkUser,
@@ -234,7 +253,7 @@ const gstComplianceUploadFields = [
 
 // @route   POST /api/orders/:id/submit-gst-compliance-form
 // @desc    Submit GST compliance details and docs
-// @access  Private (Client)
+// @access  Private (Cleint)
 router.post(
   '/:id/submit-gst-compliance-form',
   checkUser,

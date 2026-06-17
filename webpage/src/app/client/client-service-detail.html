@@ -110,147 +110,147 @@
                     @if (!item.isChecked) {
                     <p>{{ item.description || item.notes }}</p>
                     @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {
-                    @if (order()?.service_name?.includes('Private Limited')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('private limited')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToIncorpForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('LLP')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('llp')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToLlpForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('MSME')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('msme')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToMsmeForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('FSSAI')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('fssai')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToFssaiForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.toLowerCase()?.includes('trademark') || order()?.service_name?.toLowerCase()?.includes('trade mark')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('trademark') || order()?.service_name?.toLowerCase()?.includes('trade mark') || order()?.service_name?.toLowerCase()?.includes('copyright')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToTrademarkForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('GST') && !order()?.service_name?.includes('Cancellation') && !order()?.service_name?.includes('Compliance') && !order()?.service_name?.includes('Filing')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('gst') && !order()?.service_name?.toLowerCase()?.includes('cancellation') && !order()?.service_name?.toLowerCase()?.includes('compliance') && !order()?.service_name?.toLowerCase()?.includes('filing')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToGstForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('ISO')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('iso')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToIsoForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('DSC')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('dsc') || order()?.service_name?.toLowerCase()?.includes('digital signature')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToDscForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('One Person Company') || order()?.service_name?.includes('OPC')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('one person company') || order()?.service_name?.toLowerCase()?.includes('opc')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToOpcForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('GST Compliance')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('gst compliance')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToGstComplianceForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('LIE')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('lei')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
-                      (click)="goToLieForm(); $event.stopPropagation()">
+                      (click)="goToLeiForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('BIS')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('bis')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToBisForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('MCA')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('mca')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToMcaForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('Proprietorship')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('proprietorship')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToProprietorshipForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('TDS') || order()?.service_name?.includes('PAN, TAN')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('tds') || order()?.service_name?.toLowerCase()?.includes('pan') || order()?.service_name?.toLowerCase()?.includes('itr')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToTdsForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('PF Registration') || order()?.service_name?.includes('PF')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('pf registration') || order()?.service_name?.toLowerCase()?.includes('pf')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToPfForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('Patent')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('patent')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToPatentForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('GST Cancellation')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('gst cancellation')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToGstCancellationForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('GST Filing')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('gst filing')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToGstFilingForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('IEC')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('iec')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToIecForm(); $event.stopPropagation()">
                       Fill Form
                     </button>
                     }
-                    @if (order()?.service_name?.includes('DPIIT')) {
+                    @if (order()?.service_name?.toLowerCase()?.includes('dpiit')) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
                       (click)="goToDpiitForm(); $event.stopPropagation()">

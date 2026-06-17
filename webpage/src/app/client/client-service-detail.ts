@@ -91,6 +91,56 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     this.router.navigate(['/client/forms/incorp', this.order()?._id || this.order()?.id]);
   }
 
+  routeToForm(serviceName: string) {
+    if (!serviceName) return;
+    const s = serviceName.toLowerCase();
+    if (s.includes('dpiit')) {
+      this.goToDpiitForm();
+    } else if (s.includes('opc') || s.includes('one person company')) {
+      this.goToOpcForm();
+    } else if (s.includes('private limited')) {
+      this.goToIncorpForm();
+    } else if (s.includes('trademark') || s.includes('trade mark') || s.includes('copyright')) {
+      this.goToTrademarkForm();
+    } else if (s.includes('llp')) {
+      this.goToLlpForm();
+    } else if (s.includes('msme')) {
+      this.goToMsmeForm();
+    } else if (s.includes('gst') && s.includes('compliance')) {
+      this.goToGstComplianceForm();
+    } else if (s.includes('gst cancellation')) {
+      this.goToGstCancellationForm();
+    } else if (s.includes('gst filing')) {
+      this.goToGstFilingForm();
+    } else if (s.includes('mca')) {
+      this.goToMcaForm();
+    } else if (s.includes('gst')) {
+      this.goToGstForm();
+    } else if (s.includes('iso')) {
+      this.goToIsoForm();
+    } else if (s.includes('lei') || s.includes('lie')) {
+      this.goToLeiForm();
+    } else if (s.includes('bis')) {
+      this.goToBisForm();
+    } else if (s.includes('fssai')) {
+      this.goToFssaiForm();
+    } else if (s.includes('dsc') || s.includes('digital signature')) {
+      this.goToDscForm();
+    } else if (s.includes('proprietorship')) {
+      this.goToProprietorshipForm();
+    } else if (s.includes('tds') || s.includes('pan') || s.includes('itr')) {
+      this.goToTdsForm();
+    } else if (s.includes('pf')) {
+      this.goToPfForm();
+    } else if (s.includes('patent')) {
+      this.goToPatentForm();
+    } else if (s.includes('iec')) {
+      this.goToIecForm();
+    } else {
+      console.warn('No form routing defined for service:', serviceName);
+    }
+  }
+
   goToLlpForm() {
     this.router.navigate(['/client/forms/llp', this.order()?._id || this.order()?.id]);
   }
@@ -131,8 +181,8 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     this.router.navigate(['/client/forms/gst-compliance', this.order()?._id || this.order()?.id]);
   }
 
-  goToLieForm() {
-    this.router.navigate(['/client/forms/lie', this.order()?._id || this.order()?.id]);
+  goToLeiForm() {
+    this.router.navigate(['/client/forms/lei', this.order()?._id || this.order()?.id]);
   }
 
   goToBisForm() {

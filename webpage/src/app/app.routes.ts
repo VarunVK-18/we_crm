@@ -27,7 +27,7 @@ import { IsoForm } from './client/forms/iso-form/iso-form';
 import { DscForm } from './client/forms/dsc-form/dsc-form';
 import { OpcForm } from './client/forms/opc-form/opc-form';
 import { GstComplianceForm } from './client/forms/gst-compliance-form/gst-compliance-form';
-import { LieForm } from './client/forms/lie-form/lie-form';
+import { LeiForm } from './client/forms/lei-form/lei-form';
 import { BisForm } from './client/forms/bis-form/bis-form';
 import { McaFormComponent } from './client/forms/mca-form/mca-form';
 import { ProprietorshipForm } from './client/forms/proprietorship-form/proprietorship-form';
@@ -90,7 +90,8 @@ export const routes: Routes = [
       { path: 'forms/dsc/:id', component: DscForm },
       { path: 'forms/opc/:id', component: OpcForm },
       { path: 'forms/gst-compliance/:id', component: GstComplianceForm },
-      { path: 'forms/lie/:id', component: LieForm },
+      { path: 'forms/lie/:id', component: LeiForm },
+      { path: 'forms/lei/:id', component: LeiForm },
       { path: 'forms/bis/:id', component: BisForm },
       { path: 'forms/mca/:id', component: McaFormComponent },
       { path: 'forms/proprietorship/:id', component: ProprietorshipForm },

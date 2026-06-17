@@ -6,9 +6,9 @@
         Back to Service
       </button>
       <div class="title-row">
-        <h1>LIE Registration Form</h1>
+        <h1>LEI Registration Form</h1>
       </div>
-      <p class="subtitle">Please provide the required details to proceed with LIE Registration.</p>
+      <p class="subtitle">Please provide the required details to proceed with LEI (Legal Entity Identifier) Registration.</p>
     </div>
   </div>
 
@@ -20,7 +20,7 @@
       </div>
     }
 
-    <form (ngSubmit)="submitForm()" ngNativeValidate class="lie-form">
+    <form (ngSubmit)="submitForm()" ngNativeValidate class="lei-form">
       <section class="form-section">
         <h2>Company Details</h2>
         <div class="form-grid">
@@ -41,11 +41,11 @@
             <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required placeholder="Enter WhatsApp number">
           </div>
           <div class="form-group full-width">
-            <label>Company Address *</label>
+            <label>Company Registered Address *</label>
             <textarea [(ngModel)]="companyAddress" name="companyAddress" required rows="2" placeholder="Enter full company address"></textarea>
           </div>
           <div class="form-group full-width">
-            <label>Courier Address (For Certificate) *</label>
+            <label>Courier Address (For Certificate Delivery) *</label>
             <textarea [(ngModel)]="courierAddress" name="courierAddress" required rows="2" placeholder="Enter full courier address"></textarea>
           </div>
         </div>
@@ -54,9 +54,39 @@
       <section class="form-section">
         <h2>Required Documents</h2>
         <div class="form-grid">
+          <div class="form-group file-group">
+            <label>Address Proof</label>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'addressProof')">
+            <small>Max size: 2MB (PDF/JPG/PNG)</small>
+          </div>
+          <div class="form-group file-group">
+            <label>Certificate of Incorporation</label>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'incorpCert')">
+            <small>Max size: 2MB (PDF/JPG/PNG)</small>
+          </div>
+          <div class="form-group file-group">
+            <label>Company PAN Card</label>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'panCard')">
+            <small>Max size: 2MB (PDF/JPG/PNG)</small>
+          </div>
+          <div class="form-group file-group">
+            <label>GST Certificate</label>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'gstCert')">
+            <small>Max size: 2MB (PDF/JPG/PNG)</small>
+          </div>
+          <div class="form-group file-group">
+            <label>Audited Financial Statements</label>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'auditedFinancials')">
+            <small>Max size: 2MB (PDF/JPG/PNG)</small>
+          </div>
+          <div class="form-group file-group">
+            <label>MOA & AOA</label>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'moaAoa')">
+            <small>Max size: 2MB (PDF/JPG/PNG)</small>
+          </div>
           <div class="form-group file-group full-width">
-            <label>MSME Certificate *</label>
-            <input type="file" required accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'msmeCertificate')">
+            <label>Board Resolution</label>
+            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'boardResolution')">
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
         </div>
@@ -82,7 +112,7 @@
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
           } @else {
-            Submit LIE Registration
+            Submit LEI Registration
           }
         </button>
       </div>
