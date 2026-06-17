@@ -51,9 +51,24 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   bool _isLoadingNic = false;
   Timer? _debounce;
 
+  final FocusNode _amountFocus = FocusNode();
+  final FocusNode _rateFocus = FocusNode();
+  final FocusNode _durationFocus = FocusNode();
+  TextEditingController? _focusedController;
+
   @override
   void initState() {
     super.initState();
+    _amountFocus.addListener(() {
+      if (_amountFocus.hasFocus) setState(() => _focusedController = _amountController);
+    });
+    _rateFocus.addListener(() {
+      if (_rateFocus.hasFocus) setState(() => _focusedController = _rateController);
+    });
+    _durationFocus.addListener(() {
+      if (_durationFocus.hasFocus) setState(() => _focusedController = _durationController);
+    });
+    _focusedController = _amountController;
     _initializeDefaults();
     if (widget.toolName == 'NIC Finder') {
       Future.delayed(const Duration(milliseconds: 300), () {
@@ -220,23 +235,30 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (widget.toolName != 'NIC Finder' && 
-                widget.toolName != 'TDS Interest' && 
-                !widget.toolName.contains('GST')) ...[
-              _buildHeaderWidget(),
-              const SizedBox(height: 32),
-            ],
-            _buildToolContent(),
-            const SizedBox(height: 40),
-            if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
-          ],
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.toolName != 'NIC Finder' && 
+                      widget.toolName != 'TDS Interest' && 
+                      !widget.toolName.contains('GST')) ...[
+                    _buildHeaderWidget(),
+                    const SizedBox(height: 32),
+                  ],
+                  _buildToolContent(),
+                  const SizedBox(height: 40),
+                  if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
+                ],
+              ),
+            ),
+          ),
+          if (widget.toolName != 'NIC Finder') _buildNumpad(),
+        ],
       ),
     );
   }
@@ -308,7 +330,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildInputLabel('Amount (₹)'),
-        _buildTextField(_amountController, 'e.g. 10000', LucideIcons.indianRupee),
+        _buildTextField(_amountController, 'e.g. 10000', LucideIcons.indianRupee, focusNode: _amountFocus),
         const SizedBox(height: 24),
         Row(
           children: [
@@ -317,7 +339,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildInputLabel(widget.toolName == 'GST Calc' ? 'Rate (%)' : 'Rate (%) p.a.'),
-                  _buildTextField(_rateController, 'e.g. 18', LucideIcons.percent),
+                  _buildTextField(_rateController, 'e.g. 18', LucideIcons.percent, focusNode: _rateFocus),
                 ],
               ),
             ),
@@ -328,7 +350,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildInputLabel(widget.toolName == 'TDS Interest' ? 'Months' : 'Days'),
-                    _buildTextField(_durationController, 'Duration', LucideIcons.clock),
+                    _buildTextField(_durationController, 'Duration', LucideIcons.clock, focusNode: _durationFocus),
                   ],
                 ),
               ),
@@ -352,7 +374,8 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint, IconData icon) {
+  Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {FocusNode? focusNode}) {
+    bool isReadOnly = widget.toolName != 'NIC Finder';
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -361,7 +384,10 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       ),
       child: TextField(
         controller: controller,
-        keyboardType: TextInputType.number,
+        focusNode: focusNode,
+        readOnly: isReadOnly,
+        showCursor: isReadOnly,
+        keyboardType: isReadOnly ? TextInputType.none : TextInputType.number,
         onChanged: (_) => _calculate(),
         style: GoogleFonts.outfit(
           fontWeight: FontWeight.w600,
@@ -468,7 +494,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildInputLabel('Enter Amount Of Tax Deducted'),
-              _buildTextField(_amountController, 'e.g. 100000', LucideIcons.indianRupee),
+              _buildTextField(_amountController, 'e.g. 100000', LucideIcons.indianRupee, focusNode: _amountFocus),
               const SizedBox(height: 20),
               _buildInputLabel('Type Of Interest Calculation'),
               _buildDropdown(
@@ -781,7 +807,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildInputLabel('Amount'),
-          _buildTextField(_amountController, 'e.g. 10000', LucideIcons.indianRupee),
+          _buildTextField(_amountController, 'e.g. 10000', LucideIcons.indianRupee, focusNode: _amountFocus),
           const SizedBox(height: 20),
           Row(
             children: [
@@ -923,8 +949,111 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     );
   }
 
+  void _onNumpadPress(String value) {
+    if (_focusedController == null) {
+      _focusedController = _amountController;
+    }
+    
+    if (value == 'clear') {
+      _focusedController!.clear();
+    } else if (value == 'backspace') {
+      if (_focusedController!.text.isNotEmpty) {
+        _focusedController!.text = _focusedController!.text.substring(0, _focusedController!.text.length - 1);
+      }
+    } else {
+      _focusedController!.text += value;
+    }
+    _calculate();
+  }
+
+  Widget _buildNumpad() {
+    final keys = [
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+      ['.', '0', 'backspace'],
+    ];
+
+    return Container(
+      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24, top: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          )
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: keys.map((row) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: row.map((key) {
+                if (key == 'backspace') {
+                  return _buildNumpadButton(
+                    icon: LucideIcons.delete,
+                    onTap: () => _onNumpadPress('backspace'),
+                    onLongPress: () => _onNumpadPress('clear'),
+                  );
+                }
+                return _buildNumpadButton(
+                  label: key,
+                  onTap: () => _onNumpadPress(key),
+                );
+              }).toList(),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildNumpadButton({String? label, IconData? icon, VoidCallback? onTap, VoidCallback? onLongPress}) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(24),
+          child: Container(
+            height: 56,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Center(
+              child: label != null
+                  ? Text(
+                      label,
+                      style: GoogleFonts.outfit(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(icon, color: Colors.white, size: 24),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
+    _amountFocus.dispose();
+    _rateFocus.dispose();
+    _durationFocus.dispose();
     _debounce?.cancel();
     _amountController.dispose();
     _rateController.dispose();
