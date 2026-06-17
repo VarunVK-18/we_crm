@@ -37,8 +37,8 @@ class InvoiceScreen extends ConsumerWidget {
     // Store for PDF methods
     _cgstRate = cgstRate;
     _sgstRate = sgstRate;
-    final cgstAmount = _servicePrice * cgstRate;
-    final sgstAmount = _servicePrice * sgstRate;
+    final cgstAmount = order.isGstApplicable ? _servicePrice * cgstRate : 0.0;
+    final sgstAmount = order.isGstApplicable ? _servicePrice * sgstRate : 0.0;
     final total = _servicePrice + cgstAmount + sgstAmount;
     final dateStr = DateFormat('dd MMM yyyy').format(order.createdAt);
     return Scaffold(
@@ -252,16 +252,18 @@ class InvoiceScreen extends ConsumerWidget {
                               children: [
                                 _TotalRow(
                                     label: 'Subtotal', amount: _servicePrice),
-                                const SizedBox(height: 8),
-                                _TotalRow(
-                                    label: 'CGST (${settings.cgstPercentage.toStringAsFixed(0)}%)',
-                                    amount: cgstAmount,
-                                    isGst: true),
-                                const SizedBox(height: 8),
-                                _TotalRow(
-                                    label: 'SGST (${settings.sgstPercentage.toStringAsFixed(0)}%)',
-                                    amount: sgstAmount,
-                                    isGst: true),
+                                if (order.isGstApplicable) ...[
+                                  const SizedBox(height: 8),
+                                  _TotalRow(
+                                      label: 'CGST (${settings.cgstPercentage.toStringAsFixed(0)}%)',
+                                      amount: cgstAmount,
+                                      isGst: true),
+                                  const SizedBox(height: 8),
+                                  _TotalRow(
+                                      label: 'SGST (${settings.sgstPercentage.toStringAsFixed(0)}%)',
+                                      amount: sgstAmount,
+                                      isGst: true),
+                                ],
                                 const SizedBox(height: 12),
                                 const Divider(),
                                 const SizedBox(height: 12),
@@ -583,20 +585,22 @@ class InvoiceScreen extends ConsumerWidget {
                           fmt,
                           secondaryGrey,
                         ),
-                        pw.SizedBox(height: 6),
-                        _pdfTotalRow(
-                          'CGST (${(cgstRate * 100).toStringAsFixed(0)}%)',
-                          cgstAmount,
-                          fmt,
-                          secondaryGrey,
-                        ),
-                        pw.SizedBox(height: 6),
-                        _pdfTotalRow(
-                          'SGST (${(sgstRate * 100).toStringAsFixed(0)}%)',
-                          sgstAmount,
-                          fmt,
-                          secondaryGrey,
-                        ),
+                        if (order.isGstApplicable) ...[
+                          pw.SizedBox(height: 6),
+                          _pdfTotalRow(
+                            'CGST (${(cgstRate * 100).toStringAsFixed(0)}%)',
+                            cgstAmount,
+                            fmt,
+                            secondaryGrey,
+                          ),
+                          pw.SizedBox(height: 6),
+                          _pdfTotalRow(
+                            'SGST (${(sgstRate * 100).toStringAsFixed(0)}%)',
+                            sgstAmount,
+                            fmt,
+                            secondaryGrey,
+                          ),
+                        ],
                         pw.Divider(color: borderLight, thickness: 1),
                         pw.SizedBox(height: 8),
                         // Grand Total Highlight

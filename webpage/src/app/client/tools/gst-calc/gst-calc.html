@@ -16,7 +16,7 @@
           <label>Amount (₹)</label>
           <div class="input-wrapper">
             <span class="material-symbols-outlined prefix-icon">currency_rupee</span>
-            <input type="number" placeholder="e.g. 10000" [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+            <input type="text" placeholder="e.g. 10,000" [value]="amount() ? (amount() | number:'1.0-2') : ''" (input)="onAmountInput($event)" />
           </div>
         </div>
 

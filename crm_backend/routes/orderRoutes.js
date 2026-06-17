@@ -13,6 +13,7 @@ router.get('/user/:userId', orderController.getUserOrders);
 router.get('/company/:companyId', checkUser, orderController.getCompanyOrders);
 router.post('/', orderController.createOrder);
 router.put('/:id', orderController.updateOrder);
+router.post('/:id/financial-logs', checkUser, orderController.addFinancialLog);
 
 // Define fields for DPIIT form uploads
 const dpiitUploadFields = [

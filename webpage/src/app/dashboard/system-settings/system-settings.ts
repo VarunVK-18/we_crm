@@ -21,7 +21,13 @@ export class SystemSettings implements OnInit {
     cgst_percentage: 9,
     allow_agent_registration: true,
     require_document_verification: true,
-    enable_document_extraction: false
+    enable_document_extraction: false,
+    bank_details: {
+      savings_account_last_four: '',
+      current_account_last_four: '',
+      add_gst_savings: false,
+      add_gst_current: false
+    }
   });
 
   activeTab = signal<string>('system');
@@ -35,31 +41,53 @@ export class SystemSettings implements OnInit {
 
   availableServices = [
     '360° Compliance',
-    'Trademark Registration',
-    'Company Incorporation',
     'Accounting & Tax',
-    'GST Onboarding',
-    'Strategic Tax Planning',
-    'ISO Certifications',
+    'BIS',
     'Capital Funding',
-    'Risk Management',
+    'Company Incorporation',
     'Compliance Audit',
-    'MCA Compliance Package (Private Ltd)',
-    'GST Compliance Package',
-    'MCA Compliance Package (LLP)',
-    'Proprietorship Registration',
-    'Partnership Firm Registration',
-    'IEC Code Registration',
     'Comprehensive MCA + GST + TDS',
-    'FSSAI Food License',
-    'MSME Certification',
+    'Copyright',
+    'DPIIT',
+    'DSC',
     'DUNS Number Registration',
+    'FSSAI',
+    'FSSAI Food License',
+    'GST Cancelation',
+    'GST Compliance',
+    'GST Compliance Package',
+    'GST filing',
+    'GST Onboarding',
+    'GST Registration',
+    'GST Services',
+    'IE code',
+    'IEC Code Registration',
+    'ISO',
+    'ISO Certifications',
+    'ITR',
+    'LEI',
+    'LLP Incorporation',
+    'MCA Compliance',
+    'MCA Compliance Package (LLP)',
+    'MCA Compliance Package (Private Ltd)',
+    'MSME',
+    'MSME Certification',
+    'OPC',
+    'PAN, TAN & Bamk Setup',
+    'Partnership Firm Registration',
+    'Patent',
+    'PF',
+    'Private Limited Incorporation',
+    'Proprietorship',
+    'Proprietorship Registration',
+    'Risk Management',
+    'ROSH & CE',
+    'Strategic Tax Planning',
     'TAX filing',
     'TAX Planning',
-    'GST Services',
-    'Private Limited Incorporation',
-    'LLP Incorporation',
-    'PAN, TAN & Bamk Setup'
+    'TDS',
+    'Trade Mark',
+    'Trademark Registration'
   ];
 
   selectedService = '';
@@ -87,7 +115,16 @@ export class SystemSettings implements OnInit {
     this.api.get<any>('settings').subscribe({
       next: (res) => {
         if (res && res.success) {
-          this.settings.set(res.settings);
+          const fetchedSettings = res.settings || {};
+          if (!fetchedSettings.bank_details) {
+            fetchedSettings.bank_details = {
+              savings_account_last_four: '',
+              current_account_last_four: '',
+              add_gst_savings: false,
+              add_gst_current: false
+            };
+          }
+          this.settings.set(fetchedSettings);
         }
         this.isLoading.set(false);
       },

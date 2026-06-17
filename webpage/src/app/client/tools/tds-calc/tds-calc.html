@@ -16,7 +16,7 @@
           <label>Amount (₹)</label>
           <div class="input-wrapper">
             <span class="material-symbols-outlined prefix-icon">currency_rupee</span>
-            <input type="number" placeholder="e.g. 100000" [ngModel]="amount()" (ngModelChange)="amount.set($event)" />
+            <input type="text" placeholder="e.g. 100,000" [ngModel]="formattedAmount()" (ngModelChange)="formattedAmount.set($event)" (input)="onAmountInput($event)" />
           </div>
         </div>
 
@@ -37,14 +37,14 @@
         <div class="form-group">
           <label>{{ date1Label() }}</label>
           <div class="input-wrapper">
-            <span class="material-symbols-outlined prefix-icon" style="font-size: 18px;">calendar_today</span>
+            <hugeicons-icon [icon]="Calendar01Icon" [size]="20" class="prefix-icon"></hugeicons-icon>
             <input type="date" [ngModel]="date1()" (ngModelChange)="date1.set($event)" />
           </div>
         </div>
         <div class="form-group">
           <label>{{ date2Label() }}</label>
           <div class="input-wrapper">
-            <span class="material-symbols-outlined prefix-icon" style="font-size: 18px;">calendar_today</span>
+            <hugeicons-icon [icon]="Calendar01Icon" [size]="20" class="prefix-icon"></hugeicons-icon>
             <input type="date" [ngModel]="date2()" (ngModelChange)="date2.set($event)" />
           </div>
         </div>

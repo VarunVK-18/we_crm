@@ -125,6 +125,7 @@ class ServiceOrder {
   final String notes;
   final Map<String, dynamic> details;
   final bool actionRequired;
+  final bool isGstApplicable;
 
   const ServiceOrder({
     required this.id,
@@ -145,6 +146,7 @@ class ServiceOrder {
     this.notes = '',
     this.details = const {},
     this.actionRequired = false,
+    this.isGstApplicable = true,
   });
 
   factory ServiceOrder.fromMap(Map<String, dynamic> data, String id) {
@@ -183,6 +185,7 @@ class ServiceOrder {
       notes: data['notes']?.toString() ?? '',
       details: data['details'] is Map ? Map<String, dynamic>.from(data['details'] as Map) : {},
       actionRequired: data['actionRequired'] == true || data['action_required'] == true,
+      isGstApplicable: data['isGstApplicable'] == null ? true : data['isGstApplicable'] == true,
     );
   }
 

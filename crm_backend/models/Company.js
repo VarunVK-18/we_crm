@@ -38,7 +38,13 @@ const CompanySchema = new mongoose.Schema({
     cgst_percentage: { type: Number, default: 9 },
     allow_agent_registration: { type: Boolean, default: true },
     require_document_verification: { type: Boolean, default: true },
-    enable_document_extraction: { type: Boolean, default: false }
+    enable_document_extraction: { type: Boolean, default: false },
+    bank_details: {
+      savings_account_last_four: { type: String, default: '' },
+      current_account_last_four: { type: String, default: '' },
+      add_gst_savings: { type: Boolean, default: false },
+      add_gst_current: { type: Boolean, default: false }
+    }
   }
 }, { timestamps: true });
 

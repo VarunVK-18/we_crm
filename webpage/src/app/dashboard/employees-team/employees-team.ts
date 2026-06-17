@@ -214,7 +214,7 @@ export class EmployeesTeam implements OnInit {
       this.employeeErrorMessage.set('Name and email are required.');
       return;
     }
-    this.api.patch<any>(`update_user/${this.editEmployee.id}`, this.editEmployee).subscribe({
+    this.api.patch<any>(`edit_user/${this.editEmployee.id}`, this.editEmployee).subscribe({
       next: (res) => {
         this.employeeSuccessMessage.set('Employee details updated!');
         this.fetchTeams();

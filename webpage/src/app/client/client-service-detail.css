@@ -1044,6 +1044,14 @@
   font-size: 15px;
   font-weight: 600;
   transition: background-color 0.2s ease;
+  overflow: hidden;
+}
+
+.mc-link span:not(.material-symbols-outlined) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .mc-link:hover {

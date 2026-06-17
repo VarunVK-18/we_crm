@@ -110,6 +110,7 @@
               <span class="total-label">Subtotal</span>
               <span class="total-value">{{ servicePrice | currency:'INR':'symbol':'1.2-2' }}</span>
             </div>
+            @if (order()?.isGstApplicable !== false) {
             <div class="total-row">
               <span class="total-label">CGST ({{ cgstRate() }}%)</span>
               <span class="total-value">{{ cgst | currency:'INR':'symbol':'1.2-2' }}</span>
@@ -118,6 +119,7 @@
               <span class="total-label">SGST ({{ sgstRate() }}%)</span>
               <span class="total-value">{{ sgst | currency:'INR':'symbol':'1.2-2' }}</span>
             </div>
+            }
             
             <div class="total-divider"></div>
             

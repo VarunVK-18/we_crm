@@ -331,6 +331,14 @@
   font-weight: 600;
   transition: all 0.2s;
   backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.mcd-contact-btn span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .mcd-contact-btn:hover {

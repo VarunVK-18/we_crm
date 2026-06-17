@@ -10,7 +10,8 @@ const {
   uploadFinalDocuments,
   deleteFinalDocument,
   reuploadFinalDocument,
-  createSupportTicketForChecklist
+  createSupportTicketForChecklist,
+  addFinancialLog
 } = require('../controllers/checklistController');
 
 const { checkUser, permit } = require('../middleware/rbac');
@@ -42,5 +43,8 @@ router.post('/checklists/:id/upload-documents', checkUser, upload.any(), uploadR
 
 // Support ticket for a checklist
 router.post('/checklists/:id/support-ticket', checkUser, createSupportTicketForChecklist);
+
+// Financial log for a checklist
+router.post('/checklists/:id/financial-logs', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), addFinancialLog);
 
 module.exports = router;

@@ -134,6 +134,8 @@
   left: 16px;
   color: #64748b;
   font-size: 20px;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .dropdown-icon {

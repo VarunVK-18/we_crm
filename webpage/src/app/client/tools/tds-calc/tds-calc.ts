@@ -3,22 +3,62 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { CalculatorIcon } from '@hugeicons/core-free-icons';
+import { CalculatorIcon, Calendar01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-tds-calc',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
   templateUrl: './tds-calc.html',
   styleUrl: './tds-calc.css',
 })
 export class TdsCalc {
   CalculatorIcon = CalculatorIcon;
+  Calendar01Icon = Calendar01Icon;
 
   amount = signal<number | null>(null);
+  formattedAmount = signal<string>('');
   calcType = signal<'deduction' | 'payment' | 'filing'>('deduction');
   date1 = signal<string>('');
   date2 = signal<string>('');
+
+  onAmountInput(event: any) {
+    const input = event.target;
+    let rawValue = input.value.replace(/[^0-9.]/g, '');
+    
+    const parts = rawValue.split('.');
+    if (parts.length > 2) {
+      rawValue = parts[0] + '.' + parts[1];
+    }
+
+    if (rawValue === '') {
+      this.amount.set(null);
+      this.formattedAmount.set('');
+      return;
+    }
+
+    this.amount.set(parseFloat(rawValue));
+
+    let integerPart = parts[0];
+    let decimalPart = parts.length > 1 ? '.' + parts[1] : '';
+    
+    if (integerPart) {
+      integerPart = Number(integerPart).toLocaleString('en-IN');
+    }
+    
+    const cursorPosition = input.selectionStart;
+    const oldLength = input.value.length;
+    
+    const newValue = integerPart + decimalPart;
+    this.formattedAmount.set(newValue);
+    
+    setTimeout(() => {
+      const newLength = input.value.length;
+      const addedCommas = newLength - oldLength;
+      const newCursorPos = Math.max(0, cursorPosition + addedCommas);
+      input.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  }
 
   safeAmount = computed(() => this.amount() || 0);
 

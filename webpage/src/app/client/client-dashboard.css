@@ -1688,6 +1688,7 @@ a.eab-value:hover {
   justify-content: space-between;
   gap: 12px;
   overflow-x: auto;
+  padding-top: 2px;
   padding-bottom: 12px;
   scrollbar-width: none;
 }

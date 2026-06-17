@@ -96,7 +96,8 @@ exports.updateOrder = async (req, res) => {
                 assigned_to: assignedEmployee._id,
                 stage: updateData.stage || 'workAssigned',
                 dealClosedAmount: updateData.dealClosedAmount || 0,
-                advanceAmountPaid: updateData.advanceAmountPaid || 0
+                advanceAmountPaid: updateData.advanceAmountPaid || 0,
+                isGstApplicable: updateData.isGstApplicable !== undefined ? updateData.isGstApplicable : true
               }
             }
           );
@@ -1103,5 +1104,64 @@ exports.submitIecForm = async (req, res) => {
   } catch (error) {
     console.error('Error submitting IEC form:', error);
     res.status(500).json({ message: 'Server error while submitting IEC form.', error: error.message });
+  }
+};
+
+// Add financial log to an order
+exports.addFinancialLog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentType, amount, transactionId, paymentTimestamp, isVerified } = req.body;
+
+    const order = await ServiceOrder.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    if (!order.financialLogs) {
+      order.financialLogs = [];
+    }
+
+    order.financialLogs.push({
+      paymentType,
+      amount,
+      transactionId,
+      paymentTimestamp: paymentTimestamp ? new Date(paymentTimestamp) : new Date(),
+      isVerified: Boolean(isVerified)
+    });
+    
+    // Also update advanceAmountPaid automatically
+    if (paymentType && paymentType.toLowerCase().includes('advance')) {
+      order.advanceAmountPaid = (order.advanceAmountPaid || 0) + Number(amount);
+    }
+
+    await order.save();
+
+    // Try to update checklist as well
+    try {
+      const Checklist = require('../models/Checklist');
+      const checklistOrder = await Checklist.findOne({ _id: id });
+      if (checklistOrder) {
+        if (!checklistOrder.financialLogs) checklistOrder.financialLogs = [];
+        checklistOrder.financialLogs.push({
+          paymentType,
+          amount,
+          transactionId,
+          paymentTimestamp: paymentTimestamp ? new Date(paymentTimestamp) : new Date(),
+          isVerified: Boolean(isVerified)
+        });
+        if (paymentType && paymentType.toLowerCase().includes('advance')) {
+          checklistOrder.advanceAmountPaid = (checklistOrder.advanceAmountPaid || 0) + Number(amount);
+        }
+        await checklistOrder.save();
+      }
+    } catch(e) {
+      console.error('Checklist log sync error:', e);
+    }
+
+    res.status(201).json({ message: 'Financial log added successfully!', order });
+  } catch (error) {
+    console.error('Error adding financial log:', error);
+    res.status(500).json({ message: 'Server error while adding financial log.', error: error.message });
   }
 };

@@ -100,7 +100,19 @@ const ChecklistSchema = new mongoose.Schema({
   advanceAmountPaid: {
     type: Number,
     default: 0
-  }
+  },
+  isGstApplicable: {
+    type: Boolean,
+    default: true
+  },
+  financialLogs: [{
+    paymentType: { type: String, required: true },
+    amount: { type: Number, required: true },
+    transactionId: { type: String, default: '' },
+    paymentTimestamp: { type: Date },
+    addedAt: { type: Date, default: Date.now },
+    isVerified: { type: Boolean, default: false }
+  }]
 }, { timestamps: true });
 
 // Auto-update status based on item completion

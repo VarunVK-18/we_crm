@@ -43,7 +43,7 @@ const updateSettings = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User is not linked to any company' });
     }
 
-    const { incorporation_fee, default_filing_tax, gst_percentage, cgst_percentage, allow_agent_registration, require_document_verification, enable_document_extraction } = req.body;
+    const { incorporation_fee, default_filing_tax, gst_percentage, cgst_percentage, allow_agent_registration, require_document_verification, enable_document_extraction, bank_details } = req.body;
 
     const company = await Company.findById(companyId);
     if (!company) {
@@ -61,6 +61,7 @@ const updateSettings = async (req, res) => {
     if (allow_agent_registration !== undefined) company.settings.allow_agent_registration = Boolean(allow_agent_registration);
     if (require_document_verification !== undefined) company.settings.require_document_verification = Boolean(require_document_verification);
     if (enable_document_extraction !== undefined) company.settings.enable_document_extraction = Boolean(enable_document_extraction);
+    if (bank_details !== undefined) company.settings.bank_details = bank_details;
 
     await company.save();
 

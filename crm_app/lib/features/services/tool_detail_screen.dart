@@ -238,26 +238,46 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (widget.toolName != 'NIC Finder' && 
-                      widget.toolName != 'TDS Interest' && 
-                      !widget.toolName.contains('GST')) ...[
-                    _buildHeaderWidget(),
-                    const SizedBox(height: 32),
-                  ],
-                  _buildToolContent(),
-                  const SizedBox(height: 40),
-                  if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
-                ],
-              ),
-            ),
+            child: widget.toolName == 'NIC Finder' || widget.toolName == 'TDS Interest'
+                ? SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (widget.toolName != 'NIC Finder' && 
+                            widget.toolName != 'TDS Interest' && 
+                            !widget.toolName.contains('GST')) ...[
+                          _buildHeaderWidget(),
+                          const SizedBox(height: 32),
+                        ],
+                        _buildToolContent(),
+                        const SizedBox(height: 40),
+                        if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
+                      ],
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (widget.toolName != 'NIC Finder' && 
+                            widget.toolName != 'TDS Interest' && 
+                            !widget.toolName.contains('GST')) ...[
+                          _buildHeaderWidget(),
+                          const Spacer(),
+                        ],
+                        _buildToolContent(),
+                        if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) ...[
+                          const Spacer(),
+                          _buildResultCard(),
+                        ],
+                      ],
+                    ),
+                  ),
           ),
-          if (widget.toolName != 'NIC Finder') _buildNumpad(),
+          if (widget.toolName != 'NIC Finder' && widget.toolName != 'TDS Interest') _buildNumpad(),
         ],
       ),
     );
@@ -375,7 +395,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   }
 
   Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {FocusNode? focusNode}) {
-    bool isReadOnly = widget.toolName != 'NIC Finder';
+    bool isReadOnly = widget.toolName != 'NIC Finder' && widget.toolName != 'TDS Interest';
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -400,16 +420,19 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             fontWeight: FontWeight.w400,
           ),
           prefixIcon: Container(
-            margin: const EdgeInsets.all(8),
-            padding: const EdgeInsets.all(8),
+            margin: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: Colors.grey[100],
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, color: Colors.grey[600], size: 18),
           ),
+          isDense: true,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          focusedBorder: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         ),
       ),
     );
@@ -476,23 +499,9 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           date2Label = 'Actual Date Of Filing';
         }
 
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
               _buildInputLabel('Enter Amount Of Tax Deducted'),
               _buildTextField(_amountController, 'e.g. 100000', LucideIcons.indianRupee, focusNode: _amountFocus),
               const SizedBox(height: 20),
@@ -520,7 +529,6 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                 _calculate();
               }),
             ],
-          ),
         );
       },
     );
@@ -789,23 +797,9 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   }
 
   Widget _buildGstCalculator() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
           _buildInputLabel('Amount'),
           _buildTextField(_amountController, 'e.g. 10000', LucideIcons.indianRupee, focusNode: _amountFocus),
           const SizedBox(height: 20),
@@ -865,8 +859,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 
   Widget _buildDropdown({
@@ -978,13 +971,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24, top: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          )
-        ],
+        
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1015,25 +1002,21 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
 
   Widget _buildNumpadButton({String? label, IconData? icon, VoidCallback? onTap, VoidCallback? onLongPress}) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: InkWell(
-          onTap: onTap,
-          onLongPress: onLongPress,
-          borderRadius: BorderRadius.circular(24),
-          child: Container(
-            height: 56,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Center(
-              child: label != null
-                  ? Text(
+      child: Center(
+        child: Material(
+          color: const Color(0xFF312E81),
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: onTap,
+            onLongPress: onLongPress,
+            customBorder: const CircleBorder(),
+            child: SizedBox(
+              width: 80,
+              height: 80,
+              child: Center(
+                child: label != null
+                    ? Text(
                       label,
                       style: GoogleFonts.outfit(
                         fontSize: 24,
@@ -1046,7 +1029,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           ),
         ),
       ),
-    );
+    ));
   }
 
   @override

@@ -1205,6 +1205,78 @@ const createSupportTicketForChecklist = async (req, res) => {
   }
 };
 
+// @desc    Add a financial log directly to a checklist
+// @route   POST /api/checklists/:id/financial-logs
+// @access  Private (Admin, Client Manager, Staff)
+const addFinancialLog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentType, amount, transactionId, paymentTimestamp, isVerified } = req.body;
+
+    const checklist = await Checklist.findById(id);
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    if (!checklist.financialLogs) {
+      checklist.financialLogs = [];
+    }
+
+    checklist.financialLogs.push({
+      paymentType: paymentType || 'installment',
+      amount: Number(amount) || 0,
+      transactionId: transactionId || '',
+      paymentTimestamp: paymentTimestamp ? new Date(paymentTimestamp) : new Date(),
+      isVerified: Boolean(isVerified)
+    });
+
+    if (paymentType && paymentType.toLowerCase().includes('advance')) {
+      checklist.advanceAmountPaid = (checklist.advanceAmountPaid || 0) + Number(amount);
+    } else {
+      // By default add to advanceAmountPaid to reflect total paid, but maybe it's just 'amountPaid' conceptually.
+      // We'll just add it to advanceAmountPaid so the UI shows total paid.
+      checklist.advanceAmountPaid = (checklist.advanceAmountPaid || 0) + Number(amount);
+    }
+
+    await checklist.save();
+
+    // Try to sync with ServiceOrder
+    try {
+      const ServiceOrder = require('../models/ServiceOrder');
+      const order = await ServiceOrder.findOne({ 
+        clientUid: checklist.client_id, 
+        serviceType: checklist.service_name 
+      }).sort({ createdAt: -1 });
+
+      if (order) {
+        if (!order.financialLogs) order.financialLogs = [];
+        order.financialLogs.push({
+          paymentType: paymentType || 'installment',
+          amount: Number(amount) || 0,
+          transactionId: transactionId || '',
+          paymentTimestamp: paymentTimestamp ? new Date(paymentTimestamp) : new Date(),
+          isVerified: Boolean(isVerified)
+        });
+        order.advanceAmountPaid = (order.advanceAmountPaid || 0) + Number(amount);
+        await order.save();
+      }
+    } catch(e) {
+      console.error('ServiceOrder sync error from checklist:', e);
+    }
+
+    const populated = await Checklist.findById(id)
+      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('assigned_to', 'owner_name email role')
+      .populate('created_by', 'owner_name email role')
+      .populate('items.checkedBy', 'owner_name');
+
+    res.status(201).json({ success: true, checklist: populated });
+  } catch (error) {
+    console.error('Error adding financial log to checklist:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   createChecklist,
   getChecklists,
@@ -1216,5 +1288,6 @@ module.exports = {
   uploadFinalDocuments,
   deleteFinalDocument,
   reuploadFinalDocument,
-  createSupportTicketForChecklist
+  createSupportTicketForChecklist,
+  addFinancialLog
 };

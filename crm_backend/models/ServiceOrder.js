@@ -36,6 +36,14 @@ const ServiceOrderSchema = new mongoose.Schema({
     name: { type: String },
     filename: { type: String },
     fileUrl: { type: String }
+  }],
+  financialLogs: [{
+    paymentType: { type: String, required: true },
+    amount: { type: Number, required: true },
+    transactionId: { type: String, default: '' },
+    paymentTimestamp: { type: Date },
+    addedAt: { type: Date, default: Date.now },
+    isVerified: { type: Boolean, default: false }
   }]
 }, { timestamps: true });
 

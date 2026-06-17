@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 
+import { OcrService } from '../../services/ocr.service';
+
 @Component({
   selector: 'app-checklist-details',
   standalone: true,
@@ -19,9 +21,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   user = signal<any>(null);
   checklist = signal<any>(null);
+  systemBankSettings = signal<any>(null);
   pollInterval: any;
-
-  // Icon assets removed, using material-symbols-outlined
 
   // Add Item Modal
   isAddChecklistItemModalOpen = signal<boolean>(false);
@@ -91,7 +92,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   newChatMessage: string = '';
   chatPollingInterval: any;
 
-  constructor(public api: Api) { }
+  constructor(public api: Api, private ocrService: OcrService) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -99,11 +100,23 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       this.user.set(JSON.parse(savedUser));
     }
     this.fetchChecklist();
+    this.fetchSystemSettings();
 
     // Poll for changes
     this.pollInterval = setInterval(() => {
       this.fetchChecklist();
     }, 5000);
+  }
+
+  fetchSystemSettings() {
+    this.api.get<any>('settings').subscribe({
+      next: (res: any) => {
+        if (res && res.settings && res.settings.bank_details) {
+          this.systemBankSettings.set(res.settings.bank_details);
+        }
+      },
+      error: (err: any) => console.error('Error fetching settings:', err)
+    });
   }
 
   ngOnDestroy() {
@@ -236,8 +249,16 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  paymentTidToAdd: string = 'Manual Entry';
+  paymentOcrVerifiedToAdd: boolean = false;
+  paymentTimestampToAdd: string = '';
+  isOcrProcessingForPayment = signal<boolean>(false);
+
   openAddPayment() {
     this.paymentAmountToAdd = 0;
+    this.paymentTidToAdd = 'Manual Entry';
+    this.paymentOcrVerifiedToAdd = false;
+    this.paymentTimestampToAdd = new Date().toISOString();
     this.isAddingPayment.set(true);
   }
 
@@ -245,21 +266,69 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.isAddingPayment.set(false);
   }
 
+  async handlePaymentOcrUpload(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.isOcrProcessingForPayment.set(true);
+
+    try {
+      const details = await this.ocrService.extractPaymentDetails(file, this.systemBankSettings());
+      
+      if (details.amount) {
+        this.paymentAmountToAdd = details.amount;
+      }
+      
+      if (details.transactionId) {
+        this.paymentTidToAdd = details.transactionId;
+      }
+
+      if (details.paymentTimestamp) {
+        this.paymentTimestampToAdd = details.paymentTimestamp;
+      }
+
+      this.paymentOcrVerifiedToAdd = details.isVerified;
+    } catch (err) {
+      console.error('OCR Error:', err);
+    } finally {
+      this.isOcrProcessingForPayment.set(false);
+      // Reset input
+      event.target.value = '';
+    }
+  }
+
   submitAddPayment() {
     if (!this.paymentAmountToAdd || this.paymentAmountToAdd <= 0) {
        alert("Please enter a valid amount to add.");
        return;
     }
+
+    if (!this.paymentOcrVerifiedToAdd) {
+       return;
+    }
+
     const cl = this.checklist();
     if (!cl) return;
 
     const currentAdvance = Number(cl.advanceAmountPaid) || 0;
-    const newAdvance = currentAdvance + Number(this.paymentAmountToAdd);
+    const paymentType = currentAdvance === 0 ? 'advance' : 'installment';
 
-    this.api.patch<any>(`checklists/${cl._id}`, { advanceAmountPaid: newAdvance }).subscribe({
-      next: () => {
-         this.isAddingPayment.set(false);
-         this.fetchChecklist();
+    const logData = {
+      paymentType: paymentType,
+      amount: this.paymentAmountToAdd,
+      transactionId: this.paymentTidToAdd,
+      paymentTimestamp: this.paymentTimestampToAdd,
+      isVerified: this.paymentOcrVerifiedToAdd
+    };
+
+    this.api.post(`checklists/${cl._id}/financial-logs`, logData).subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+        } else {
+          this.fetchChecklist();
+        }
+        this.isAddingPayment.set(false);
       },
       error: (err) => {
          alert(err.error?.message || 'Failed to add payment.');

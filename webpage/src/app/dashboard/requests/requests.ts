@@ -5,6 +5,7 @@ import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { UserIcon, CheckmarkBadge01Icon, Time01Icon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
+import { OcrService } from '../../services/ocr.service';
 
 @Component({
   selector: 'app-requests',
@@ -70,8 +71,17 @@ export class RequestsComponent implements OnInit {
   advanceAmountPaidForOrder = signal<Record<string, number>>({});
   numberOfDirectorsForOrder = signal<Record<string, number>>({});
   isAssigningOrder = signal<Record<string, boolean>>({});
+  
+  // OCR additions
+  transactionIdForOrder = signal<Record<string, string>>({});
+  paymentTimestampForOrder = signal<Record<string, string>>({});
+  isOcrProcessingForOrder = signal<Record<string, boolean>>({});
+  ocrMessageForOrder = signal<Record<string, string>>({});
+  isOcrVerifiedForOrder = signal<Record<string, boolean>>({});
+  isGstApplicableForOrder = signal<Record<string, boolean>>({});
+  systemBankSettings = signal<any>(null);
 
-  constructor(public api: Api) { }
+  constructor(public api: Api, private ocrService: OcrService) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -79,12 +89,64 @@ export class RequestsComponent implements OnInit {
       try {
         this.user.set(JSON.parse(savedUser));
       } catch (e) {
-        console.error('Failed to parse user', e);
+        console.error('Error parsing user data', e);
       }
     }
-
+    
+    this.fetchSystemSettings();
     this.fetchOrders();
     this.fetchTeam();
+  }
+
+  fetchSystemSettings() {
+    this.api.get<any>('settings').subscribe({
+      next: (res) => {
+        if (res && res.success && res.settings && res.settings.bank_details) {
+          this.systemBankSettings.set(res.settings.bank_details);
+        }
+      },
+      error: (err) => console.error('Error fetching settings:', err)
+    });
+  }
+
+  async handleOcrUpload(orderId: string, event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.isOcrProcessingForOrder.update(prev => ({ ...prev, [orderId]: true }));
+    this.ocrMessageForOrder.update(prev => ({ ...prev, [orderId]: 'Processing image...' }));
+
+    try {
+      const details = await this.ocrService.extractPaymentDetails(file, this.systemBankSettings());
+
+      if (details.amount) {
+        this.advanceAmountPaidForOrder.update(prev => ({ ...prev, [orderId]: details.amount! }));
+      }
+      
+      if (details.transactionId) {
+        this.transactionIdForOrder.update(prev => ({ ...prev, [orderId]: details.transactionId! }));
+      }
+
+      if (details.paymentTimestamp) {
+        this.paymentTimestampForOrder.update(prev => ({ ...prev, [orderId]: details.paymentTimestamp! }));
+      }
+
+      this.isOcrVerifiedForOrder.update(prev => ({ ...prev, [orderId]: details.isVerified }));
+      this.isGstApplicableForOrder.update(prev => ({ ...prev, [orderId]: !!(details as any).isGstApplicable }));
+
+      if (details.isVerified) {
+        this.ocrMessageForOrder.update(prev => ({ ...prev, [orderId]: 'Verified: Bank match found!' }));
+      } else {
+        this.ocrMessageForOrder.update(prev => ({ ...prev, [orderId]: 'Warning: Bank match not found.' }));
+      }
+    } catch (err) {
+      this.ocrMessageForOrder.update(prev => ({ ...prev, [orderId]: 'OCR Failed. Please enter manually.' }));
+      console.error(err);
+    } finally {
+      this.isOcrProcessingForOrder.update(prev => ({ ...prev, [orderId]: false }));
+      // Clear file input so it can be re-selected if needed
+      event.target.value = '';
+    }
   }
 
   showToast(message: string, type: 'success' | 'error' = 'success') {
@@ -221,6 +283,15 @@ export class RequestsComponent implements OnInit {
     const emp = this.selectedEmployeeForOrder()[orderId];
     const amount = this.dealClosedAmountForOrder()[orderId] || 0;
     const advance = this.advanceAmountPaidForOrder()[orderId] || 0;
+    const tid = this.transactionIdForOrder()[orderId] || '';
+    const ts = this.paymentTimestampForOrder()[orderId];
+    const isVerified = this.isOcrVerifiedForOrder()[orderId] || false;
+    const isGstApplicable = this.isGstApplicableForOrder()[orderId] ?? true;
+
+    if (!isVerified) {
+      this.showToast('Cannot assign: OCR Bank Verification failed or receipt not uploaded.', 'error');
+      return;
+    }
 
     if (!emp || amount <= 0 || advance <= 0) {
       this.showToast('Please fill all details (Assign Expert, Deal Closed Amount, and Advance Amount Paid).', 'error');
@@ -244,7 +315,8 @@ export class RequestsComponent implements OnInit {
       expertPhone: emp.phone || '',
       stage: 'workAssigned',
       dealClosedAmount: amount,
-      advanceAmountPaid: advance
+      advanceAmountPaid: advance,
+      isGstApplicable: isGstApplicable
     };
 
     if (needsDirectors && directors) {
@@ -253,8 +325,35 @@ export class RequestsComponent implements OnInit {
 
     this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: true }));
 
+    // Assign Employee and update deal closed amount
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
       next: (res: any) => {
+        
+        // After assigning, add financial log for the advance amount
+        if (advance > 0) {
+          let isoTimestamp = new Date().toISOString();
+          if (ts) {
+             try {
+                // Check if extracted timestamp is a valid date
+                const extractedDate = new Date(ts);
+                if (!isNaN(extractedDate.getTime())) {
+                   isoTimestamp = extractedDate.toISOString();
+                }
+             } catch(e) {}
+          }
+          const logData = {
+            paymentType: 'advance',
+            amount: advance,
+            transactionId: tid,
+            paymentTimestamp: isoTimestamp,
+            isVerified: isVerified
+          };
+          this.api.post(`orders/${orderId}/financial-logs`, logData).subscribe({
+            next: () => console.log('Financial log added'),
+            error: (err) => console.error('Failed to add financial log', err)
+          });
+        }
+
         this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: false }));
         this.showToast(`Assigned to ${emp.name} successfully!`, 'success');
 
@@ -270,6 +369,11 @@ export class RequestsComponent implements OnInit {
           return next;
         });
         this.advanceAmountPaidForOrder.update(prev => {
+          const next = { ...prev };
+          delete next[orderId];
+          return next;
+        });
+        this.transactionIdForOrder.update(prev => {
           const next = { ...prev };
           delete next[orderId];
           return next;

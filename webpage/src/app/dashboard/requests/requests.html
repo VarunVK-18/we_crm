@@ -142,23 +142,59 @@
 
         <div class="assign-field-group">
           <label class="assign-label">Advance Amount Paid (INR):</label>
-          <div class="amount-assign-row">
-            <input type="text" class="form-control-input number-input" placeholder="Enter advance (e.g. 1,000)"
-              [value]="getFormattedAdvance(order._id)" (input)="onAdvanceChange(order._id, $event)">
-            <button class="btn-primary" (click)="assignEmployee(order._id)" [disabled]="isAssigningOrder()[order._id]">
-              @if (isAssigningOrder()[order._id]) {
-                <div class="btn-loading-content">
-                  <div class="dot-spinner">
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
+          <div class="amount-assign-row" style="flex-direction: column; gap: 8px;">
+            <div style="display: flex; gap: 8px; width: 100%;">
+                <input type="text" class="form-control-input number-input" placeholder="Enter amount or upload screenshot"
+                  [value]="getFormattedAdvance(order._id)" 
+                  (input)="onAdvanceChange(order._id, $event)"
+                  style="flex: 1; height: 38px; font-weight: 600; color: #1e293b;">
+                
+              <!-- OCR Upload Button -->
+              <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                <input type="file" (change)="handleOcrUpload(order._id, $event)" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;" [disabled]="isOcrProcessingForOrder()[order._id]" />
+                @if (isOcrProcessingForOrder()[order._id]) {
+                  <span class="material-symbols-outlined" style="color: #3b82f6; animation: spin 1s linear infinite;">sync</span>
+                } @else {
+                  <span class="material-symbols-outlined" style="color: #64748b;">document_scanner</span>
+                }
+              </div>
+
+              <button class="btn-primary" (click)="assignEmployee(order._id)" [disabled]="isAssigningOrder()[order._id]" style="white-space: nowrap;">
+                @if (isAssigningOrder()[order._id]) {
+                  <div class="btn-loading-content">
+                    <div class="dot-spinner">
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                      <span class="dot"></span>
+                    </div>
+                    Assigning...
                   </div>
-                  Assigning...
+                } @else {
+                  Assign
+                }
+              </button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                @if (transactionIdForOrder()[order._id]) {
+                  <span style="font-size: 12px; font-weight: 600; color: #64748b; font-family: monospace;">TID: {{ transactionIdForOrder()[order._id] }}</span>
+                }
+                @if (paymentTimestampForOrder()[order._id]) {
+                  <span style="font-size: 11px; font-weight: 500; color: #94a3b8;">{{ paymentTimestampForOrder()[order._id] }}</span>
+                }
+                @if (advanceAmountPaidForOrder()[order._id] > 0) {
+                  <span style="font-size: 12px; font-weight: 600; color: #10b981;">Amount: ₹{{ getFormattedAdvance(order._id) }}</span>
+                }
+              </div>
+              
+              @if (ocrMessageForOrder()[order._id]) {
+                <div style="font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 4px;" [style.color]="isOcrVerifiedForOrder()[order._id] ? '#10b981' : (ocrMessageForOrder()[order._id].includes('Warning') ? '#f59e0b' : '#64748b')">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">{{ isOcrVerifiedForOrder()[order._id] ? 'verified' : 'info' }}</span>
+                  {{ ocrMessageForOrder()[order._id] }}
                 </div>
-              } @else {
-                Assign
               }
-            </button>
+            </div>
           </div>
         </div>
 

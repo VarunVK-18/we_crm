@@ -1,8 +1,17 @@
 <div class="services-container">
-  <div class="services-header">
+  <div class="services-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
     <div class="header-titles">
       <h1 class="page-title">Service Catalog</h1>
       <p class="page-subtitle">Browse and request quotes for our professional services.</p>
+    </div>
+    
+    <div class="search-container" style="position: relative; width: 300px; max-width: 100%;">
+      <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #64748b;">search</span>
+      <input type="text"
+             placeholder="Search services..."
+             [ngModel]="searchQuery()"
+             (ngModelChange)="onSearchChange($event)"
+             style="width: 100%; padding: 10px 12px 10px 40px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; background: white; box-sizing: border-box;" />
     </div>
   </div>
 
@@ -41,12 +50,12 @@
     <div class="col-services">
       <h3 class="col-title">AVAILABLE SERVICES</h3>
       <div class="service-list">
-        @if (currentServices().length === 0) {
+        @if (filteredServices().length === 0) {
           <div class="empty-state">
-            <p>No services found in this category.</p>
+            <p>No services found.</p>
           </div>
         } @else {
-          @for (service of currentServices(); track service.title) {
+          @for (service of filteredServices(); track service.title) {
             <div class="service-item" 
                  [class.active]="selectedService()?.title === service.title"
                  (click)="selectService(service)">

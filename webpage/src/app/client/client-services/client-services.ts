@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -38,26 +38,17 @@ export class ClientServicesComponent implements OnInit {
   MailOpenIcon = MailOpenIcon;
 
   categories = [
+    { id: 'all', label: 'All', icon: GridIcon },
     { id: 'incorporation', label: 'Incorporation', icon: OfficeIcon },
     { id: 'compliance', label: 'Compliance', icon: Briefcase01Icon },
     { id: 'ip', label: 'IP', icon: CheckmarkCircle01Icon },
-    { id: 'licensing', label: 'Licensing', icon: LicenseIcon },
     { id: 'tax', label: 'Tax', icon: CalculatorIcon },
-    { id: 'other', label: 'Other', icon: GridIcon }
+    { id: 'licensing', label: 'Licensing', icon: LicenseIcon },
+    { id: 'others', label: 'Others', icon: GridIcon }
   ];
 
   servicesDatabase: any = {
     'incorporation': [
-      {
-        title: 'Proprietorship Registration',
-        description: 'Sole vendor formation with business identification.',
-        features: ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'Partnership Firm Registration',
-        description: 'Legal drafting and registration for business partners under Indian Partnership Act.',
-        features: ['Drafting Partnership Deed', 'Deed Notarization', 'Firm Registration (ROF)', 'PAN & TAN Application', 'Trade License', 'Processing Time: 5-7 business days']
-      },
       {
         title: 'Private Limited Incorporation',
         description: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.',
@@ -74,7 +65,12 @@ export class ClientServicesComponent implements OnInit {
         features: ['Name Reservation', 'DSC & DIN', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Bank Setup Support', 'Processing Time: 5-7 business days']
       },
       {
-        title: 'MSME Registration',
+        title: 'Proprietorship',
+        description: 'Sole vendor formation with business identification.',
+        features: ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'MSME',
         description: 'Official Udyam Registration for small and medium enterprises.',
         features: ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'ISO Reimbursement Advisory', 'Processing Time: 5-7 business days']
       }
@@ -94,75 +90,28 @@ export class ClientServicesComponent implements OnInit {
         title: 'PF',
         description: 'Provident Fund registration and monthly compliance.',
         features: ['PF Registration', 'Monthly ECR Filing', 'Challan Generation', 'Employee Addition/Deletion', 'KYC Updates', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'DUNS Registration',
-        description: 'Global business identification number.',
-        features: ['DUNS Number Assignment', 'International Credit Credibility', 'Supply Chain Compliance', 'Verified Business Profile', 'Universal Business Language', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'PAN, TAN & Bank Setup',
-        description: 'Basic registrations for new businesses.',
-        features: ['PAN Application', 'TAN Registration', 'Bank Account Opening', 'KYC Support', 'Initial Setup', 'Processing Time: 5-7 business days']
       }
     ],
     'ip': [
       {
-        title: 'Trademark Registration',
-        description: 'Brand protection and IP rights.',
+        title: 'Trade Mark',
+        description: 'Brand protection and intellectual property rights.',
         features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Processing Time: 5-7 business days']
       },
       {
-        title: 'Copyright Registration',
-        description: 'Protect your original creative work from unauthorized use.',
-        features: ['Copyright Filing', 'Objection Reply', 'Registration Certificate', 'Infringement Protection', 'Global Recognition', 'Processing Time: 5-7 business days']
+        title: 'Copyright',
+        description: 'Protection for original creative literary or artistic works.',
+        features: ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate', 'Processing Time: 5-7 business days']
       },
       {
-        title: 'Patent Registration',
-        description: 'Exclusive rights for your inventions and intellectual property.',
-        features: ['Prior Art Search', 'Patent Drafting', 'Filing Application', 'Examination Report Reply', 'Grant of Patent', 'Processing Time: 5-7 business days']
-      }
-    ],
-    'licensing': [
-      {
-        title: 'FSSAI Registration',
-        description: 'Registration for food business operators, manufacturers, and startups.',
-        features: ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'ISO Certification',
-        description: 'Quality management certification (ISO 9001 and others).',
-        features: ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'DPIIT Certification',
-        description: 'Startup India Certification for your startup! Please provide your details correctly.',
-        features: ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'IE code',
-        description: 'Import Export Code registration for cross-border trade.',
-        features: ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'LEI',
-        description: 'Legal Entity Identifier registration for financial transactions.',
-        features: ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'BIS',
-        description: 'Bureau of Indian Standards product certification.',
-        features: ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'ROSH & CE',
-        description: 'European standard certifications for electronics and products.',
-        features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 business days']
+        title: 'Patent',
+        description: 'Exclusive rights for your inventions.',
+        features: ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant', 'Processing Time: 5-7 business days']
       }
     ],
     'tax': [
       {
-        title: 'GST Onboarding',
+        title: 'GST Registration',
         description: 'GST Registration for your business! Thank you for choosing Wealth Empires.',
         features: ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate', 'Processing Time: 5-7 business days']
       },
@@ -187,16 +136,48 @@ export class ClientServicesComponent implements OnInit {
         features: ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support', 'Processing Time: 5-7 business days']
       }
     ],
-    'other': [
+    'licensing': [
       {
-        title: 'Individual DSC',
-        description: 'Class 3 Digital Signature Certificate for Individuals.',
-        features: ['Identity Verification', 'Digital Signature Creation', 'USB Token', 'Validity 2 Years', 'Technical Support', 'Processing Time: 5-7 business days']
+        title: 'ISO',
+        description: 'Quality management certification (ISO 9001 and others).',
+        features: ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training', 'Processing Time: 5-7 business days']
       },
       {
-        title: 'Organization DSC',
-        description: 'Class 3 Digital Signature Certificate for Organizations.',
-        features: ['Organization Verification', 'Digital Signature Creation', 'USB Token', 'Validity 2 Years', 'Technical Support', 'Processing Time: 5-7 business days']
+        title: 'DPIIT',
+        description: 'Startup India Certification for your startup! Please provide your details correctly.',
+        features: ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'FSSAI',
+        description: 'Registration for food business operators, manufacturers, and startups.',
+        features: ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'IE code',
+        description: 'Import Export Code registration for cross-border trade.',
+        features: ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'LEI',
+        description: 'Legal Entity Identifier registration for financial transactions.',
+        features: ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'BIS',
+        description: 'Bureau of Indian Standards product certification.',
+        features: ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'ROSH & CE',
+        description: 'European standard certifications for electronics and products.',
+        features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 business days']
+      }
+    ],
+    'others': [
+      {
+        title: 'DSC',
+        description: 'Digital Signature Certificate for individuals & organizations.',
+        features: ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity', 'Processing Time: 5-7 business days']
       }
     ]
   };
@@ -205,6 +186,16 @@ export class ClientServicesComponent implements OnInit {
   selectedCategory = signal<string>('incorporation');
   selectedService = signal<any>(null);
   currentServices = signal<any[]>([]);
+  searchQuery = signal<string>('');
+  
+  filteredServices = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    if (!q) return this.currentServices();
+    return this.currentServices().filter(s => 
+      s.title.toLowerCase().includes(q) || 
+      s.description.toLowerCase().includes(q)
+    );
+  });
   clientManager = signal<any>(null);
   availableEntities = signal<string[]>([]);
 
@@ -224,7 +215,7 @@ export class ClientServicesComponent implements OnInit {
   constructor(private api: Api, private route: ActivatedRoute) {}
 
   ngOnInit() {
-    this.selectCategory('incorporation');
+    this.selectCategory('all');
     
     this.route.queryParams.subscribe(params => {
       if (params['serviceName']) {
@@ -393,13 +384,31 @@ export class ClientServicesComponent implements OnInit {
 
   selectCategory(categoryId: string) {
     this.selectedCategory.set(categoryId);
-    this.currentServices.set(this.servicesDatabase[categoryId] || []);
+    
+    let services: any[] = [];
+    if (categoryId === 'all') {
+      Object.keys(this.servicesDatabase).forEach(cat => {
+        services = services.concat(this.servicesDatabase[cat] || []);
+      });
+    } else {
+      services = [...(this.servicesDatabase[categoryId] || [])];
+    }
+    
+    services.sort((a, b) => a.title.localeCompare(b.title));
+    this.currentServices.set(services);
     
     // Auto-select first service if available
     if (this.currentServices().length > 0) {
       this.selectService(this.currentServices()[0]);
     } else {
       this.selectedService.set(null);
+    }
+  }
+
+  onSearchChange(val: string) {
+    this.searchQuery.set(val);
+    if (val.trim() && this.selectedCategory() !== 'all') {
+      this.selectCategory('all');
     }
   }
 

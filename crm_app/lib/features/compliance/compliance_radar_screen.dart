@@ -1,3 +1,4 @@
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -68,21 +69,21 @@ class ComplianceRadarScreen extends ConsumerWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Service Alerts',
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 24,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                         color: AppTheme.deepTeal,
                         letterSpacing: -0.5,
                       ),
                     ),
                     Text(
                       'Action required for your entities',
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 13,
                         color: Colors.grey[500],
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -118,9 +119,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                         child: Center(
                           child: Text(
                             'No active alerts for this entity.',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               color: Colors.grey[400],
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -196,21 +197,21 @@ class ComplianceRadarScreen extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Compliances',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               fontSize: 24,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w600,
                               color: AppTheme.deepTeal,
                               letterSpacing: -0.5,
                             ),
                           ),
                           Text(
                             'Upcoming filings & actions required',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               fontSize: 13,
                               color: Colors.grey[500],
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -225,9 +226,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
                             ),
                             child: PopupMenuButton<String>(
                               color: Colors.white,
-                              elevation: 6,
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(color: Colors.grey.withOpacity(0.2)),
                               ),
                               offset: const Offset(0, 40),
                               child: const Padding(
@@ -243,23 +245,23 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 PopupMenuItem(
                                     value: 'pending',
                                     child: Text('Pending',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.grey[500],
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            color: AppTheme.deepTeal,
                                             fontWeight: FontWeight.w500))),
                                 PopupMenuItem(
                                     value: 'completed',
                                     child: Text('Completed',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.grey[500],
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            color: AppTheme.deepTeal,
                                             fontWeight: FontWeight.w500))),
                                 PopupMenuItem(
                                     value: 'all',
                                     child: Text('All',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.grey[500],
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            color: AppTheme.deepTeal,
                                             fontWeight: FontWeight.w500))),
                               ],
                             ),
@@ -297,9 +299,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                   child: Center(
                                     child: Text(
                                       'No compliances found for this filter.',
-                                      style: TextStyle(
+                                      style: GoogleFonts.outfit(
                                         color: Colors.grey[400],
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ),
@@ -344,9 +346,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                           const SizedBox(width: 8),
                                           Text(
                                             entry.key,
-                                            style: const TextStyle(
+                                            style: GoogleFonts.outfit(
                                               fontSize: 16,
-                                              fontWeight: FontWeight.w900,
+                                              fontWeight: FontWeight.w600,
                                               color: AppTheme.deepTeal,
                                               letterSpacing: -0.3,
                                             ),
@@ -479,11 +481,11 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                   children: [
                                     Text(
                                       'COMPLIANCE CENTER',
-                                      style: TextStyle(
+                                      style: GoogleFonts.outfit(
                                         color:
                                             AppTheme.deepTeal.withOpacity(0.4),
                                         fontSize: 10.sp,
-                                        fontWeight: FontWeight.w900,
+                                        fontWeight: FontWeight.w600,
                                         letterSpacing: 2,
                                       ),
                                     ),
@@ -493,10 +495,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                         Flexible(
                                           child: Text(
                                             currentEntity,
-                                            style: TextStyle(
+                                            style: GoogleFonts.outfit(
                                               color: AppTheme.deepTeal,
                                               fontSize: 18.sp,
-                                              fontWeight: FontWeight.w900,
+                                              fontWeight: FontWeight.w600,
                                               letterSpacing: -0.5,
                                             ),
                                             overflow: TextOverflow.ellipsis,
@@ -537,9 +539,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                                 SizedBox(width: 6.r),
                                                 Text(
                                                   'SWITCH',
-                                                  style: TextStyle(
+                                                  style: GoogleFonts.outfit(
                                                     fontSize: 10.sp,
-                                                    fontWeight: FontWeight.w900,
+                                                    fontWeight: FontWeight.w600,
                                                     color: AppTheme.deepTeal,
                                                   ),
                                                 ),
@@ -708,9 +710,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       Expanded(
                                         child: Text(
                                           'Check Your Realtime Health Score In Startup doctor',
-                                          style: TextStyle(
+                                          style: GoogleFonts.outfit(
                                             fontSize: 14.sp,
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w500,
                                             color: AppTheme.deepTeal,
                                           ),
                                         ),
@@ -805,20 +807,20 @@ class _BentoHealthCard extends StatelessWidget {
                   children: [
                     Text(
                       'HEALTH SCORE',
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         color: Colors.white.withOpacity(0.4),
                         fontSize: 10.sp,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: 2,
                       ),
                     ),
                     SizedBox(height: 4.r),
                     Text(
                       '${(score * 100).toInt()}%',
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 36.sp,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: -1,
                         height: 1.1,
                       ),
@@ -840,10 +842,10 @@ class _BentoHealthCard extends StatelessWidget {
                 ),
                 child: Text(
                   status,
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     color: _statusColor,
                     fontSize: 9.sp,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     letterSpacing: 1,
                   ),
                 ),
@@ -853,10 +855,10 @@ class _BentoHealthCard extends StatelessWidget {
           const Spacer(),
           Text(
             message,
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               color: Colors.white.withOpacity(0.85),
               fontSize: 13.sp,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w500,
               height: 1.4,
             ),
           ),
@@ -923,9 +925,9 @@ class _BentoSimpleStatCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   value,
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 32.sp,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     color: AppTheme.deepTeal,
                     letterSpacing: -0.5,
                     height: 1.1,
@@ -934,10 +936,10 @@ class _BentoSimpleStatCard extends StatelessWidget {
                 SizedBox(height: 2.r),
                 Text(
                   label,
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 12.sp,
                     color: Colors.grey[500],
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -1022,9 +1024,9 @@ class _BentoDeadlineCard extends StatelessWidget {
                         title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           fontSize: 15.sp,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.deepTeal,
                           letterSpacing: -0.5,
                           height: 1.2,
@@ -1035,10 +1037,10 @@ class _BentoDeadlineCard extends StatelessWidget {
                         date,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           fontSize: 12.sp,
                           color: Colors.grey[500],
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -1066,10 +1068,10 @@ class _BentoDeadlineCard extends StatelessWidget {
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
+                      style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 10.sp,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
                         height: 1.2,
                       ),
@@ -1141,9 +1143,9 @@ class _BentoToolCard extends StatelessWidget {
                 Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 14.sp,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     color: AppTheme.deepTeal,
                     height: 1.2,
                   ),
@@ -1187,9 +1189,9 @@ class _BentoTimelineCard extends StatelessWidget {
         children: [
           Text(
             'UPCOMING TIMELINE',
-            style: TextStyle(
+            style: GoogleFonts.outfit(
               fontSize: 10.sp,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
               color: AppTheme.deepTeal.withOpacity(0.3),
               letterSpacing: 2,
             ),
@@ -1198,69 +1200,104 @@ class _BentoTimelineCard extends StatelessWidget {
           ...items.asMap().entries.map((entry) {
             final item = entry.value;
             final isLast = entry.key == items.length - 1;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            return _TimelineItemRow(item: item, isLast: isLast);
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+class _TimelineItemRow extends StatefulWidget {
+  final Map<String, String> item;
+  final bool isLast;
+
+  const _TimelineItemRow({required this.item, required this.isLast});
+
+  @override
+  State<_TimelineItemRow> createState() => _TimelineItemRowState();
+}
+
+class _TimelineItemRowState extends State<_TimelineItemRow> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 5.r),
+              width: 10.r,
+              height: 10.r,
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 68, 97, 176),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color.fromARGB(255, 0, 0, 0).withOpacity(0.2),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(width: 20.r),
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  setState(() {
+                    _isExpanded = !_isExpanded;
+                  });
+                },
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 10.r,
-                      height: 10.r,
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 68, 97, 176),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color.fromARGB(255, 0, 0, 0)
-                                .withOpacity(0.2),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 20.r),
-                    Expanded(
-                      child: Text(
-                        item['title']!,
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.deepTeal,
-                        ),
-                      ),
-                    ),
                     Text(
-                      item['status']!,
-                      style: TextStyle(
+                      widget.item['title']!,
+                      maxLines: _isExpanded ? null : 1,
+                      overflow: _isExpanded ? null : TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.deepTeal,
+                      ),
+                    ),
+                    SizedBox(height: 4.r),
+                    Text(
+                      widget.item['status']!,
+                      style: GoogleFonts.outfit(
                         fontSize: 12.sp,
                         color: Colors.grey[500],
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-                if (!isLast)
-                  Container(
-                    margin: EdgeInsets.only(left: 4.r, top: 6.r, bottom: 6.r),
-                    height: 24.r,
-                    width: 2.r,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppTheme.accentCyan.withOpacity(0.3),
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          }),
-        ],
-      ),
+              ),
+            ),
+          ],
+        ),
+        if (!widget.isLast)
+          Container(
+            margin: EdgeInsets.only(left: 4.r, top: 6.r, bottom: 6.r),
+            height: 24.r,
+            width: 2.r,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.accentCyan.withOpacity(0.3),
+                  Colors.transparent,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -1296,9 +1333,9 @@ class _ReminderItem extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       reminder.title,
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         fontSize: 24,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                         color: AppTheme.deepTeal,
                         letterSpacing: -0.5,
                       ),
@@ -1342,19 +1379,19 @@ class _ReminderItem extends ConsumerWidget {
                         children: [
                           Text(
                             reminder.message,
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w500,
                               color: reminder.color,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Entity: ${reminder.entityName}',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               fontSize: 14,
                               color: Colors.grey[600],
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -1365,11 +1402,11 @@ class _ReminderItem extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               if (reminder.documents.isNotEmpty) ...[
-                const Text(
+                Text(
                   'Attached Documents',
-                  style: TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 18,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w600,
                     color: AppTheme.deepTeal,
                   ),
                 ),
@@ -1379,9 +1416,11 @@ class _ReminderItem extends ConsumerWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     child: InkWell(
                       onTap: () async {
-                        final url = Uri.parse('$kBaseUrl/api/documents/${doc.id}');
+                        final url =
+                            Uri.parse('$kBaseUrl/api/documents/${doc.id}');
                         if (await canLaunchUrl(url)) {
-                          await launchUrl(url, mode: LaunchMode.externalApplication);
+                          await launchUrl(url,
+                              mode: LaunchMode.externalApplication);
                         }
                       },
                       borderRadius: BorderRadius.circular(16),
@@ -1389,7 +1428,8 @@ class _ReminderItem extends ConsumerWidget {
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                          border:
+                              Border.all(color: Colors.grey.withOpacity(0.2)),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Row(
@@ -1413,19 +1453,19 @@ class _ReminderItem extends ConsumerWidget {
                                 children: [
                                   Text(
                                     doc.type,
-                                    style: const TextStyle(
+                                    style: GoogleFonts.outfit(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w500,
                                       color: AppTheme.deepTeal,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     doc.filename,
-                                    style: TextStyle(
+                                    style: GoogleFonts.outfit(
                                       fontSize: 13,
                                       color: Colors.grey[600],
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1449,14 +1489,15 @@ class _ReminderItem extends ConsumerWidget {
                     padding: const EdgeInsets.all(32.0),
                     child: Column(
                       children: [
-                        Icon(LucideIcons.fileMinus, size: 48, color: Colors.grey[300]),
+                        Icon(LucideIcons.fileMinus,
+                            size: 48, color: Colors.grey[300]),
                         const SizedBox(height: 16),
                         Text(
                           'No documents attached yet',
-                          style: TextStyle(
+                          style: GoogleFonts.outfit(
                             fontSize: 16,
                             color: Colors.grey[500],
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ],
@@ -1491,6 +1532,7 @@ class _ReminderItem extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -1514,8 +1556,10 @@ class _ReminderItem extends ConsumerWidget {
                     children: [
                       Text(
                         reminder.title,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w600,
                           fontSize: 16,
                           color: AppTheme.deepTeal,
                           letterSpacing: -0.3,
@@ -1526,18 +1570,18 @@ class _ReminderItem extends ConsumerWidget {
                           padding: const EdgeInsets.only(top: 2),
                           child: Text(
                             reminder.entityName,
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               fontSize: 11,
                               color: Colors.grey[500],
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
                       const SizedBox(height: 2),
                       Text(
                         reminder.message.toUpperCase(),
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w600,
                           fontSize: 10,
                           color: reminder.color,
                           letterSpacing: 1.2,
@@ -1546,18 +1590,19 @@ class _ReminderItem extends ConsumerWidget {
                       if (reminder.daysLeft <= 3) ...[
                         const SizedBox(height: 6),
                         Container(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.red.withOpacity(0.3)),
+                            border:
+                                Border.all(color: Colors.red.withOpacity(0.3)),
                           ),
-                          child: const Text(
+                          child: Text(
                             'If not completed you Need To Pay Penalty',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               fontSize: 10,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w500,
                               color: Colors.red,
                             ),
                           ),
@@ -1567,7 +1612,8 @@ class _ReminderItem extends ConsumerWidget {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1579,10 +1625,10 @@ class _ReminderItem extends ConsumerWidget {
                       const SizedBox(width: 4),
                       Text(
                         'Pending',
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           color: Colors.grey[500],
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 0.2,
                         ),
                       ),

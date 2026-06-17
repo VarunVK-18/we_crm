@@ -116,10 +116,14 @@ export class ClientInvoice implements OnInit {
   }
 
   get cgst(): number {
+    const o = this.order();
+    if (o && o.isGstApplicable === false) return 0;
     return this.servicePrice * (this.cgstRate() / 100);
   }
 
   get sgst(): number {
+    const o = this.order();
+    if (o && o.isGstApplicable === false) return 0;
     return this.servicePrice * (this.sgstRate() / 100);
   }
 
