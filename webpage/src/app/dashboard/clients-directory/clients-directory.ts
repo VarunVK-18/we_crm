@@ -37,6 +37,7 @@ export class ClientsDirectory implements OnInit {
   readonly CheckmarkCircle02Icon = CheckmarkCircle02Icon;
 
   isCreateModalOpen = signal<boolean>(false);
+  isSubmitting = signal<boolean>(false);
   errorMessage = signal<string>('');
   successMessage = signal<string>('');
   selectedGstinFile: File | null = null;
@@ -247,6 +248,7 @@ export class ClientsDirectory implements OnInit {
       return;
     }
 
+    this.isSubmitting.set(true);
     const formData = new FormData();
     formData.append('owner_name', this.newClient.owner_name);
     formData.append('email', this.newClient.email);
@@ -280,10 +282,12 @@ export class ClientsDirectory implements OnInit {
         this.fetchClients();
         setTimeout(() => {
           this.closeCreateModal();
+          this.isSubmitting.set(false);
         }, 1200);
       },
       error: (err) => {
         this.errorMessage.set(err.error?.message || 'Failed to create client.');
+        this.isSubmitting.set(false);
       }
     });
   }

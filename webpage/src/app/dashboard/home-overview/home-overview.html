@@ -91,7 +91,19 @@
         Financial Analytics
       </h3>
       <div class="ho-perf-actions">
-        <input type="month" class="ho-btn-outline" [value]="financialMonth()" (change)="onFinancialMonthChange($event)" style="padding: 4px 12px; font-family: inherit;">
+        <div class="ho-dropdown">
+          <button class="ho-btn-outline ho-dropdown-trigger" style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
+            {{ getFinancialMonthLabel() }}
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="ho-dropdown-menu" style="max-height: 250px; overflow-y: auto;">
+            <button *ngFor="let m of availableMonths" class="ho-dropdown-item pop-item" [class.active]="financialMonth() === m.value" (click)="setFinancialMonth(m.value)">
+              {{ m.label }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
     

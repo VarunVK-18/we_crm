@@ -158,7 +158,7 @@
         </button>
       </div>
 
-      <form (ngSubmit)="submitCreateClient()" class="modal-form">
+      <form (ngSubmit)="submitCreateClient()" class="modal-form" ngNativeValidate>
         <div class="modal-body">
           
           <!-- Notifications inside modal -->
@@ -301,7 +301,13 @@
 
         <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="closeCreateModal()">Cancel</button>
-          <button type="submit" class="btn-submit">Register Client Account</button>
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting()">
+            @if (isSubmitting()) {
+              Registering...
+            } @else {
+              Register Client Account
+            }
+          </button>
         </div>
       </form>
 

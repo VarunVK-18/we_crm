@@ -222,6 +222,12 @@ select:hover {
   border-color: #b0b4b8;
 }
 
+/* Textareas global styles */
+textarea {
+  resize: none !important;
+  font-family: var(--font-body);
+}
+
 /* Global Loading Spinner */
 .we-loader {
   width: 40px;

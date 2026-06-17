@@ -2,16 +2,18 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-audit-logs',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './audit-logs.html',
   styleUrl: './audit-logs.css'
 })
 export class AuditLogs implements OnInit {
   logs = signal<any[]>([]);
+  isLoading = signal<boolean>(true);
   searchQuery = signal<string>('');
   fromDate = signal<string>('');
   toDate = signal<string>('');
@@ -28,9 +30,11 @@ export class AuditLogs implements OnInit {
         if (res && res.success) {
           this.logs.set(res.logs);
         }
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to fetch audit logs:', err);
+        this.isLoading.set(false);
       }
     });
   }

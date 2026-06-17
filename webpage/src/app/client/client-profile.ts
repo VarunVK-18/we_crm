@@ -21,6 +21,7 @@ export class ClientProfile implements OnInit {
 
   user = signal<any>(null);
   clientManager = signal<any>(null);
+  allDocuments = signal<any[]>([]);
   isLoading = signal(true);
   
   constructor(private router: Router, public api: Api) {}
@@ -53,8 +54,54 @@ export class ClientProfile implements OnInit {
           }
           // Update local storage to keep data fresh
           localStorage.setItem('user', JSON.stringify(res.user));
+          let docs: any[] = [];
+          if (res.user.onboarding_documents) {
+            docs = [...res.user.onboarding_documents];
+          }
+          
+          this.api.get<any>('my-checklists').subscribe({
+            next: (chkRes) => {
+              if (chkRes.checklists) {
+                for (const c of chkRes.checklists) {
+                  if (c.requested_documents) {
+                    for (const d of c.requested_documents) {
+                      if (d.isUploaded && d.fileUrl) {
+                        docs.push({
+                          _id: d._id || Math.random().toString(),
+                          name: `${c.service_name} - ${d.name}`,
+                          fileUrl: d.fileUrl,
+                          uploadedAt: d.uploadedAt
+                        });
+                      }
+                    }
+                  }
+                  if (c.final_documents) {
+                    for (const f of c.final_documents) {
+                      if (f.document_id) {
+                        const docId = f.document_id._id || f.document_id;
+                        docs.push({
+                          _id: f._id || Math.random().toString(),
+                          name: `${c.service_name} - ${f.name} (Final)`,
+                          fileUrl: `api/documents/${docId}`,
+                          uploadedAt: f.uploadedAt
+                        });
+                      }
+                    }
+                  }
+                }
+              }
+              this.allDocuments.set(docs);
+              this.isLoading.set(false);
+            },
+            error: (err) => {
+              console.error('Failed to fetch checklists for docs:', err);
+              this.allDocuments.set(docs);
+              this.isLoading.set(false);
+            }
+          });
+        } else {
+          this.isLoading.set(false);
         }
-        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to fetch client profile:', err);

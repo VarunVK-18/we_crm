@@ -191,6 +191,7 @@
   color: #64748b;
   text-decoration: none;
   display: block;
+  border: 1px solid transparent;
 }
 
 .nav-item-wrapper:hover {
@@ -203,13 +204,13 @@
   color: #000000;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-  border: 1px solid #e2e8f0;
+  border: 1px solid transparent;
 }
 
 .nav-item-wrapper.selected::before {
   content: '';
   position: absolute;
-  left: -1px;
+  left: 0;
   top: 50%;
   transform: translateY(-50%);
   width: 4px;

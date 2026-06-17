@@ -2,11 +2,12 @@ import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } fro
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-service-checklists',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './service-checklists.html',
   styleUrl: './service-checklists.css'
 })
@@ -16,6 +17,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   checklists = signal<any[]>([]);
   teams = input<any[]>([]);
   clients = signal<any[]>([]);
+  isLoading = signal<boolean>(true);
   pollInterval: any;
 
   // Directory State
@@ -129,9 +131,11 @@ export class ServiceChecklists implements OnInit, OnDestroy {
         if (res && res.success) {
           this.checklists.set(res.checklists);
         }
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to fetch checklists:', err);
+        this.isLoading.set(false);
       }
     });
   }

@@ -49,6 +49,12 @@
     @if (activeTab() === 'system') {
       <section class="content-pane">
         <div class="pane-card">
+          @if (isLoading()) {
+            <div class="loading-state" style="padding: 48px; text-align: center;">
+              <app-we-loader></app-we-loader>
+              <p style="margin-top: 16px; color: var(--text-secondary);">Loading settings...</p>
+            </div>
+          } @else {
           <form (ngSubmit)="saveSettings()">
             <div class="pane-header">
               <div>
@@ -153,7 +159,7 @@
               </div>
             </div>
           </div>
-
+          }
         </div>
       </section>
     }
@@ -162,6 +168,12 @@
     @if (activeTab() !== 'system') {
       <section class="content-pane">
         <div class="pane-card">
+          @if (isTemplateLoading()) {
+            <div class="loading-state" style="padding: 48px; text-align: center;">
+              <app-we-loader></app-we-loader>
+              <p style="margin-top: 16px; color: var(--text-secondary);">Loading template...</p>
+            </div>
+          } @else {
           <div class="pane-header">
             <div>
               <h2 class="pane-title">{{ activeTab() }} Configuration</h2>
@@ -237,6 +249,7 @@
               </ul>
             </div>
           </div>
+          }
         </div>
       </section>
     }

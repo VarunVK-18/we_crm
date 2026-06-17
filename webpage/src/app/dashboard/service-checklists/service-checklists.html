@@ -46,7 +46,12 @@
   </div>
 
   <!-- Checklist Cards Grid -->
-  @if (filteredChecklists().length === 0) {
+  @if (isLoading()) {
+    <div class="loading-state" style="text-align: center; padding: 60px 0;">
+      <app-we-loader></app-we-loader>
+      <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading checklists...</p>
+    </div>
+  } @else if (filteredChecklists().length === 0) {
     <div class="empty-state">
       <span class="material-symbols-outlined empty-icon">inbox</span>
       <h3>No Checklists Found</h3>

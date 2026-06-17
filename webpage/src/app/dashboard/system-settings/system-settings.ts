@@ -2,15 +2,18 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-system-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './system-settings.html',
   styleUrl: './system-settings.css'
 })
 export class SystemSettings implements OnInit {
+  isLoading = signal<boolean>(true);
+  isTemplateLoading = signal<boolean>(false);
   user = signal<any>(null);
   settings = signal<any>({
     default_filing_tax: 18,
@@ -80,14 +83,17 @@ export class SystemSettings implements OnInit {
   }
 
   fetchSettings() {
+    this.isLoading.set(true);
     this.api.get<any>('settings').subscribe({
       next: (res) => {
         if (res && res.success) {
           this.settings.set(res.settings);
         }
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Failed to fetch settings:', err);
+        this.isLoading.set(false);
       }
     });
   }
@@ -128,6 +134,7 @@ export class SystemSettings implements OnInit {
     if (!this.selectedService) {
       return;
     }
+    this.isTemplateLoading.set(true);
     this.api.get<any>('templates/checklists').subscribe({
       next: (res) => {
         if (res && res.success) {
@@ -140,8 +147,12 @@ export class SystemSettings implements OnInit {
             this.activeTemplateExtractEnabled = false;
           }
         }
+        this.isTemplateLoading.set(false);
       },
-      error: (err) => console.error('Failed to fetch templates:', err)
+      error: (err) => {
+        console.error('Failed to fetch templates:', err);
+        this.isTemplateLoading.set(false);
+      }
     });
   }
 

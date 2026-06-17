@@ -70,7 +70,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
   currentSlideIndex = signal<number>(0);
   sliderInterval: any;
   totalSlides = computed(() => {
-    return 2 + (this.activeOrders().length === 0 ? 1 : this.activeOrders().length);
+    return 1 + (this.activeOrders().length === 0 ? 1 : this.activeOrders().length);
   });
 
   constructor(private router: Router, private api: Api) {}
