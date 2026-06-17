@@ -30,6 +30,45 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   checklists = signal<any[]>([]);
   ongoingItems = signal<any[]>([]);
 
+  filteredRoleClients = computed(() => this.filterByRole(this.clients(), 'client'));
+  filteredRoleTasks = computed(() => this.filterByRole(this.tasks(), 'task'));
+  filteredRoleChecklists = computed(() => this.filterByRole(this.checklists(), 'checklist'));
+  filteredRoleOrders = computed(() => this.filterByRole(this.orders(), 'order'));
+  filteredRoleReminders = computed(() => this.filterByRole(this.complianceReminders(), 'reminder'));
+
+  filterByRole(data: any[], type: 'client' | 'task' | 'checklist' | 'order' | 'reminder'): any[] {
+    const user = this.user();
+    if (!user) return data;
+    const role = (user.role || '').toLowerCase();
+    const userId = user._id || user.id || user.uid;
+
+    if (role === 'admin' || role === 'account_manager') {
+      return data;
+    }
+
+    if (role === 'client_manager') {
+      if (type === 'client') return data.filter(c => c.client_manager === userId);
+      if (type === 'task') return data.filter(t => t.client_id?.client_manager === userId);
+      if (type === 'checklist') return data.filter(c => c.client_id?.client_manager === userId);
+      if (type === 'order') return data.filter(o => o.client_id?.client_manager === userId);
+      if (type === 'reminder') return data.filter(r => r.client_id?.client_manager === userId);
+    }
+
+    if (role === 'filing_staff') {
+      if (type === 'task') return data.filter(t => {
+        const tid = typeof t.assigned_to === 'object' ? t.assigned_to?._id : t.assigned_to;
+        return tid === userId;
+      });
+      if (type === 'checklist') return data.filter(c => {
+        const cid = typeof c.assigned_to === 'object' ? c.assigned_to?._id : c.assigned_to;
+        return cid === userId;
+      });
+      return [];
+    }
+
+    return data;
+  }
+
   filteredOngoingItems = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!q) return this.ongoingItems();
@@ -42,8 +81,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
   filteredReminders = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return this.complianceReminders();
-    return this.complianceReminders().filter(r => 
+    if (!q) return this.filteredRoleReminders();
+    return this.filteredRoleReminders().filter(r => 
       (r.title && r.title.toLowerCase().includes(q)) ||
       (r.client_id?.owner_name && r.client_id.owner_name.toLowerCase().includes(q)) ||
       (r.client_id?.company_name && r.client_id.company_name.toLowerCase().includes(q))
@@ -61,7 +100,9 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     { title: 'Pending Invoices', value: '0', detail: 'All clear', isGood: true }
   ];
 
-  constructor(private api: Api) {}
+  constructor(private api: Api) {
+    this.generateAvailableMonths();
+  }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -75,7 +116,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         this.fetchTasks();
         this.fetchChecklists();
         
-        if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager') {
+        if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff') {
           this.fetchCompanyComplianceReminders();
           this.fetchCompanyOrders();
         }
@@ -132,7 +173,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getTotalServicesCount(): number {
-    return this.clients().reduce((acc, c) => acc + (c.services?.length || 0), 0);
+    return this.filteredRoleClients().reduce((acc, c) => acc + (c.services?.length || 0), 0);
   }
 
   fetchClients() {
@@ -175,16 +216,41 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
   fetchCompanyComplianceReminders() {
     const companyId = this.getCompanyId();
-    if (!companyId) return;
-    this.api.get<any>(`compliance/company/${companyId}`).subscribe({
-      next: (res) => {
-        if (res && res.reminders) {
-          this.complianceReminders.set(res.reminders);
-          this.updateStats();
-          this.initOrUpdateCharts();
+    if (companyId) {
+      this.api.get<any>(`compliance/company/${companyId}`).subscribe({
+        next: (res) => {
+          if (res && res.reminders) {
+            this.complianceReminders.set(res.reminders);
+            this.updateStats();
+            this.initOrUpdateCharts();
+          }
         }
-      }
-    });
+      });
+    } else {
+      this.api.get<any>('compliance/tasks/all').subscribe({
+        next: (res) => {
+          if (res && res.tasks) {
+            const mappedReminders = res.tasks.map((t: any) => ({
+              _id: t._id,
+              title: t.title || t.checklistId?.service_name || 'Compliance Task',
+              dueDate: t.dueDate,
+              daysLeft: t.daysLeft,
+              status: t.status === 'Completed' ? 'completed' : 
+                      (t.daysLeft <= 0 ? 'expired' : (t.daysLeft <= 7 ? 'urgent' : 'upcoming')),
+              entityName: t.entityName,
+              client_id: {
+                owner_name: t.clientUid?.owner_name || 'Client',
+                company_name: t.clientUid?.company_name || 'Individual',
+                client_manager: this.user()?.role === 'client_manager' ? (this.user()?._id || this.user()?.id) : null
+              }
+            }));
+            this.complianceReminders.set(mappedReminders);
+            this.updateStats();
+            this.initOrUpdateCharts();
+          }
+        }
+      });
+    }
   }
 
   fetchCompanyOrders() {
@@ -205,7 +271,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const list: any[] = [];
     
     // Add checklists
-    this.checklists().forEach(c => {
+    this.filteredRoleChecklists().forEach(c => {
       list.push({
         _id: c._id,
         title: c.service_name,
@@ -219,7 +285,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Add tasks
-    this.tasks().forEach(t => {
+    this.filteredRoleTasks().forEach(t => {
       list.push({
         _id: t._id,
         title: t.title,
@@ -260,10 +326,32 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   selectedPeriod = signal<string>('last6Months');
 
   financialMonth = signal<string>(new Date().toISOString().slice(0, 7));
+  availableMonths: { value: string, label: string }[] = [];
+
+  generateAvailableMonths() {
+    const months = [];
+    const now = new Date();
+    for (let i = 0; i < 24; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const val = d.toISOString().slice(0, 7);
+      const lbl = d.toLocaleString('default', { month: 'short', year: 'numeric' });
+      months.push({ value: val, label: lbl });
+    }
+    this.availableMonths = months;
+  }
+
+  getFinancialMonthLabel(): string {
+    const m = this.availableMonths.find(x => x.value === this.financialMonth());
+    return m ? m.label : this.financialMonth();
+  }
+
+  setFinancialMonth(val: string) {
+    this.financialMonth.set(val);
+  }
 
   financialTotals = computed(() => {
     const monthStr = this.financialMonth();
-    const ordersList = this.orders() || [];
+    const ordersList = this.filteredRoleOrders() || [];
     let totalRev = 0;
     let amtRecv = 0;
 
@@ -300,10 +388,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       pendingDetails
     };
   });
-
-  onFinancialMonthChange(event: any) {
-    this.financialMonth.set(event.target.value);
-  }
 
   getPeriodLabel(): string {
     const map: Record<string, string> = {
@@ -367,7 +451,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const revenue = new Array(dates.length).fill(0);
     const clients = new Array(dates.length).fill(0);
 
-    this.tasks().forEach(task => {
+    this.filteredRoleTasks().forEach(task => {
       if (!task.createdAt) return;
       const created = new Date(task.createdAt);
       if (created >= start && created <= end) {
@@ -381,7 +465,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    this.checklists().forEach(checklist => {
+    this.filteredRoleChecklists().forEach(checklist => {
       if (!checklist.createdAt) return;
       const created = new Date(checklist.createdAt);
       if (created >= start && created <= end) {
@@ -395,7 +479,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    this.clients().forEach(client => {
+    this.filteredRoleClients().forEach(client => {
       if (!client.createdAt) return;
       const created = new Date(client.createdAt);
       if (created >= start && created <= end) {
@@ -464,7 +548,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         let revSum = 0;
         let clientsCount = 0;
 
-        this.tasks().forEach(t => {
+        this.filteredRoleTasks().forEach(t => {
           if (!t.createdAt) return;
           const time = new Date(t.createdAt).getTime();
           if (time >= start && time <= end) {
@@ -473,7 +557,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           }
         });
 
-        this.checklists().forEach(c => {
+        this.filteredRoleChecklists().forEach(c => {
           if (!c.createdAt) return;
           const time = new Date(c.createdAt).getTime();
           if (time >= start && time <= end) {
@@ -482,7 +566,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           }
         });
 
-        this.clients().forEach(client => {
+        this.filteredRoleClients().forEach(client => {
           if (!client.createdAt) return;
           const time = new Date(client.createdAt).getTime();
           if (time >= start && time <= end) {
@@ -516,7 +600,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         let revSum = 0;
         let clientsCount = 0;
 
-        this.tasks().forEach(t => {
+        this.filteredRoleTasks().forEach(t => {
           if (!t.createdAt) return;
           const time = new Date(t.createdAt).getTime();
           if (time >= bounds.start && time <= bounds.end) {
@@ -525,7 +609,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           }
         });
 
-        this.checklists().forEach(c => {
+        this.filteredRoleChecklists().forEach(c => {
           if (!c.createdAt) return;
           const time = new Date(c.createdAt).getTime();
           if (time >= bounds.start && time <= bounds.end) {
@@ -534,7 +618,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           }
         });
 
-        this.clients().forEach(client => {
+        this.filteredRoleClients().forEach(client => {
           if (!client.createdAt) return;
           const time = new Date(client.createdAt).getTime();
           if (time >= bounds.start && time <= bounds.end) {
@@ -558,7 +642,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       const taskCountByMonth = [0, 0, 0, 0, 0, 0];
       const completedTaskCountByMonth = [0, 0, 0, 0, 0, 0];
 
-      this.tasks().forEach(task => {
+      this.filteredRoleTasks().forEach(task => {
         if (!task.createdAt) return;
         const createdDate = new Date(task.createdAt);
         const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
@@ -571,7 +655,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         }
       });
 
-      this.checklists().forEach(checklist => {
+      this.filteredRoleChecklists().forEach(checklist => {
         if (!checklist.createdAt) return;
         const createdDate = new Date(checklist.createdAt);
         const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
@@ -588,7 +672,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       line2Data = completedTaskCountByMonth;
 
       const revenueByMonth = [0, 0, 0, 0, 0, 0];
-      this.clients().forEach(client => {
+      this.filteredRoleClients().forEach(client => {
         const createdDate = client.createdAt ? new Date(client.createdAt) : new Date();
         const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
         if (diffMonths >= 0 && diffMonths < 6) {
@@ -599,7 +683,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       revenueDataPoints = revenueByMonth;
 
       const clientCountByMonth = [0, 0, 0, 0, 0, 0];
-      this.clients().forEach(client => {
+      this.filteredRoleClients().forEach(client => {
         const createdDate = client.createdAt ? new Date(client.createdAt) : new Date();
         const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
         if (diffMonths >= 0 && diffMonths < 6) {
@@ -686,7 +770,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   updateStats() {
     const activeServicesCount = this.getTotalServicesCount();
 
-    const reminders = this.complianceReminders();
+    const reminders = this.filteredRoleReminders();
     let complianceScoreValue = 100;
     let complianceDetail = 'Excellent Standing';
     let complianceTrendUp = true;
@@ -711,8 +795,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    const openTasksCount = this.tasks().filter(t => !['Approved', 'Completed', 'Rejected'].includes(t.status)).length;
-    const pendingInvoicesCount = this.orders().filter(o => o.status === 'notInitialized').length;
+    const openTasksCount = this.filteredRoleTasks().filter(t => !['Approved', 'Completed', 'Cancelled'].includes(t.status)).length;
+    const pendingInvoicesCount = this.filteredRoleOrders().filter(o => o.status === 'notInitialized').length;
 
     this.stats = [
       { 

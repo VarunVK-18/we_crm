@@ -92,7 +92,7 @@
           <div class="profile-card documents-card">
             <div class="card-header">
               <h2>Uploaded Documents</h2>
-              <span class="doc-count">{{ (user()?.onboarding_documents?.length || 0) + (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) }} Total</span>
+              <span class="doc-count">{{ allDocuments().length + (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) }} Total</span>
             </div>
             
             <div class="documents-list">
@@ -103,7 +103,7 @@
                     <hugeicons-icon [icon]="File01Icon" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
                   </div>
                   <div class="doc-info">
-                    <span class="doc-name">PAN Card Document</span>
+                    <span class="doc-name" title="PAN Card Document">PAN Card Document</span>
                   </div>
                   <a [href]="api.getFileUrl(user()?.pan_file)" target="_blank" class="download-btn" title="View Document">
                     <hugeicons-icon [icon]="EyeIcon" [size]="18" color="color-mix(in srgb, var(--palette-dark) 65%, transparent)" [strokeWidth]="1.5"></hugeicons-icon>
@@ -117,7 +117,7 @@
                     <hugeicons-icon [icon]="File01Icon" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
                   </div>
                   <div class="doc-info">
-                    <span class="doc-name">GSTIN Document</span>
+                    <span class="doc-name" title="GSTIN Document">GSTIN Document</span>
                   </div>
                   <a [href]="api.getFileUrl(user()?.gstin_file)" target="_blank" class="download-btn" title="View Document">
                     <hugeicons-icon [icon]="EyeIcon" [size]="18" color="color-mix(in srgb, var(--palette-dark) 65%, transparent)" [strokeWidth]="1.5"></hugeicons-icon>
@@ -126,7 +126,7 @@
               }
               
               <!-- Additional onboarding documents array -->
-              @for (doc of user()?.onboarding_documents; track doc._id) {
+              @for (doc of allDocuments(); track doc._id) {
                 <!-- Skip duplicates if they are already handled above based on naming, otherwise show them -->
                 @if (doc.name !== 'PAN Card Verification') {
                   <div class="document-item">
@@ -134,7 +134,7 @@
                       <hugeicons-icon [icon]="File01Icon" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
                     </div>
                     <div class="doc-info">
-                      <span class="doc-name">{{ doc.name }}</span>
+                      <span class="doc-name" [title]="doc.name">{{ doc.name }}</span>
                       @if (doc.uploadedAt) {
                         <span class="doc-date">{{ doc.uploadedAt | date:'mediumDate' }}</span>
                       }
@@ -146,7 +146,7 @@
                 }
               }
               
-              @if (!user()?.pan_file && !user()?.gstin_file && (!user()?.onboarding_documents || user()?.onboarding_documents?.length === 0)) {
+              @if (!user()?.pan_file && !user()?.gstin_file && allDocuments().length === 0) {
                 <div class="empty-docs">
                   <span class="material-symbols-outlined">folder_open</span>
                   <p>No documents uploaded yet.</p>

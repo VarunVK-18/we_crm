@@ -15,6 +15,7 @@ export class ServiceTrackComponent implements OnInit {
 
   checklists = signal<any[]>([]);
   isLoading = signal<boolean>(true);
+  isFirstLoad = signal<boolean>(true);
 
   // Grouped checklists by category
   groupedServices = signal<Record<string, any[]>>({
@@ -53,7 +54,9 @@ export class ServiceTrackComponent implements OnInit {
   }
 
   fetchActiveServices() {
-    this.isLoading.set(true);
+    if (this.isFirstLoad()) {
+      this.isLoading.set(true);
+    }
     this.api.get<any>('checklists').subscribe({
       next: (res) => {
         if (res.checklists) {
@@ -63,10 +66,12 @@ export class ServiceTrackComponent implements OnInit {
           this.groupServices(active);
         }
         this.isLoading.set(false);
+        this.isFirstLoad.set(false);
       },
       error: (err) => {
-        console.error('Failed to fetch checklists:', err);
+        console.error('Error fetching services for kanban', err);
         this.isLoading.set(false);
+        this.isFirstLoad.set(false);
       }
     });
   }

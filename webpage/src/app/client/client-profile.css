@@ -432,7 +432,7 @@
 
 .profile-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  /* grid-template-columns: 1fr 2fr; */
   gap: 24px;
   align-items: start;
 }
@@ -455,8 +455,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -606,6 +606,7 @@
 }
 
 .doc-name {
+  display: block;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);

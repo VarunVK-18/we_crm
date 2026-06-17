@@ -2,6 +2,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { 
   ArrowLeft01Icon, 
@@ -20,7 +21,7 @@ import {
 @Component({
   selector: 'app-client-support-tickets',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './client-support-tickets.html',
   styleUrl: './client-support-tickets.css'
 })

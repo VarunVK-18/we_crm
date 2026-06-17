@@ -132,7 +132,7 @@
                 @if (showEntityDropdown()) {
                   <div class="form-group">
                     <label>Select Entity for this Service</label>
-                    <select name="selectedEntity" [(ngModel)]="quoteForm.selectedEntity" required class="form-input" style="height: 48px;">
+                    <select name="selectedEntity" [(ngModel)]="quoteForm.selectedEntity" required class="form-input select-input" style="height: 48px;">
                       @for (entity of availableEntities(); track entity) {
                         <option [value]="entity">{{ entity }}</option>
                       }
