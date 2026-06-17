@@ -127,17 +127,24 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Are You Sure To Exit ?', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: const Text('Are You Sure To Exit ?'),
           content: const Text('Any unsaved progress will be lost.'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('No'),
+              child: Text(
+                'Cancel',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () => Navigator.of(context).pop(true),
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Yes', style: TextStyle(color: Colors.white)),
+              child: Text(
+                'OK',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color.fromARGB(255, 6, 6, 6),
+                    ),
+              ),
             ),
           ],
         );

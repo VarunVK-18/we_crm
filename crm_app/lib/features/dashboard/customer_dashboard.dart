@@ -27,6 +27,7 @@ import '../search/search_screen.dart';
 import '../services/registration_services_screen.dart';
 import '../../core/utils/responsive.dart';
 import '../../core/constants/port.dart';
+import '../../core/widgets/we_loader.dart';
 
 class CustomerDashboard extends ConsumerWidget {
   const CustomerDashboard({super.key});
@@ -1490,7 +1491,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.corporateBlue))
+          ? const Center(child: WeLoader(size: 24))
           : _error != null
               ? Center(
                   child: Padding(

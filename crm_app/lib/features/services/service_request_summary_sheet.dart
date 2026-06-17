@@ -524,6 +524,8 @@ class _ServiceRequestSummarySheetState
       availableEntities.insert(0, userProfile.companyName);
     }
     
+    availableEntities.add('Add New Entity...');
+
     if (_selectedEntity == null && availableEntities.isNotEmpty) {
        _selectedEntity = availableEntities.first;
     }
@@ -548,7 +550,7 @@ class _ServiceRequestSummarySheetState
     }
 
     for (final name in availableEntities) {
-      if (!entityTypesMap.containsKey(name)) {
+      if (!entityTypesMap.containsKey(name) && name != 'Add New Entity...') {
         final lower = name.toLowerCase();
         if (lower.endsWith('pvt ltd') || lower.endsWith('private limited')) {
           entityTypesMap[name] = 'Private Limited Company';
@@ -565,6 +567,16 @@ class _ServiceRequestSummarySheetState
       
       final entityType = entityTypesMap[_selectedEntity] ?? 'Unknown';
       final reqService = widget.packageName;
+      
+      bool isIncorporationService = reqService.contains('Incorporation') || reqService.contains('Proprietorship') || reqService == 'OPC';
+
+      if (isIncorporationService && _selectedEntity != 'Add New Entity...') {
+          return {
+            'type': 'error',
+            'header': 'Already Incorporated',
+            'message': 'This service is for registering a new entity. You have selected an already existing entity.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
+          };
+      }
 
       if (entityType == 'Private Limited Company') {
         if (reqService == 'OPC' || reqService.contains('Proprietorship')) {
@@ -920,7 +932,7 @@ class _ServiceRequestSummarySheetState
                 if (_currentPage == 0 && _isTwoStepForm)
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
+                      onPressed: (_getCompatibilityWarning() != null && _getCompatibilityWarning()!['type'] == 'error') ? null : () {
                         if (_formKey.currentState!.validate()) {
                           setState(() {
                             _currentPage = 1;
@@ -961,7 +973,8 @@ class _ServiceRequestSummarySheetState
                       onPressed: _isLoading ||
                               (!_isTwoStepForm
                                   ? false
-                                  : !_areAllRequiredDocsUploaded)
+                                  : !_areAllRequiredDocsUploaded) ||
+                              (_getCompatibilityWarning() != null && _getCompatibilityWarning()!['type'] == 'error')
                           ? null
                           : () async {
                               if (_formKey.currentState!.validate()) {

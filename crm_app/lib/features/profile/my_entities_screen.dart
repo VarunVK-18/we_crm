@@ -175,27 +175,28 @@ class _AllEntitiesCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedEntity = ref.watch(selectedEntityProvider);
     final isSelected = selectedEntity == 'All Entities';
+    const color = Color.fromARGB(255, 0, 0, 4);
 
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         ref.read(selectedEntityProvider.notifier).state = 'All Entities';
         Navigator.pop(context);
       },
+      borderRadius: BorderRadius.circular(24),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppTheme.deepTeal, Color(0xFF1E293B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.deepTeal.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+              color: isSelected
+                  ? AppTheme.deepTeal.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
+              blurRadius: isSelected ? 24 : 16,
+              spreadRadius: 0,
+              offset: Offset(0, isSelected ? 12 : 8),
             ),
           ],
         ),
@@ -205,14 +206,10 @@ class _AllEntitiesCard extends ConsumerWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Icon(
-                LucideIcons.layoutGrid,
-                color: Colors.white,
-                size: 28,
-              ),
+              child: const Icon(LucideIcons.layoutGrid, color: color, size: 28),
             ),
             const SizedBox(width: 20),
             Expanded(
@@ -224,7 +221,7 @@ class _AllEntitiesCard extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                      color: AppTheme.deepTeal,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -232,17 +229,19 @@ class _AllEntitiesCard extends ConsumerWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: color.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Portfolio',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: color,
                           ),
                         ),
                       ),
@@ -251,7 +250,7 @@ class _AllEntitiesCard extends ConsumerWidget {
                         '$totalEntities Entities · $totalActiveServices Active',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.7),
+                          color: Colors.grey.shade500,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -264,15 +263,14 @@ class _AllEntitiesCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child:
-                    const Icon(LucideIcons.check, color: Colors.white, size: 20),
+                child: Icon(LucideIcons.check,
+                    color: color, size: 20),
               )
             else
-              Icon(LucideIcons.chevronRight,
-                  color: Colors.white.withOpacity(0.5)),
+              Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
           ],
         ),
       ),
@@ -299,126 +297,98 @@ class _EntityCard extends ConsumerWidget {
     final selectedEntity = ref.watch(selectedEntityProvider);
     final isSelected = selectedEntity == entityName;
 
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         // Store entityName as the canonical selector key
         ref.read(selectedEntityProvider.notifier).state = entityName;
         Navigator.pop(context);
       },
+      borderRadius: BorderRadius.circular(24),
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: isSelected
-              ? Border.all(color: color.withOpacity(0.5), width: 2)
-              : null,
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? color.withOpacity(0.15)
+                  ? AppTheme.deepTeal.withOpacity(0.1)
                   : Colors.black.withOpacity(0.05),
               blurRadius: isSelected ? 24 : 16,
+              spreadRadius: 0,
               offset: Offset(0, isSelected ? 12 : 8),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entityName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: AppTheme.deepTeal,
+                    ),
                   ),
-                  child: Icon(icon, color: color, size: 28),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 6),
+                  Row(
                     children: [
-                      Text(
-                        entityName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.deepTeal,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          entityType,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: color,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: color.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              entityType,
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: color,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '${data.serviceCount} Active Services',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: 12),
+                      Text(
+                        '${data.serviceCount} Active Services',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
-                ),
-                if (isSelected)
-                  Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(LucideIcons.check, color: color, size: 20),
-                  )
-                else
-                  Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
-              ],
-            ),
-            // ── Show key details if available ────────────────────────────
-            if (entity.cin.isNotEmpty ||
-                entity.pan.isNotEmpty ||
-                entity.gstin.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              const Divider(height: 1),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 12,
-                runSpacing: 8,
-                children: [
-                  if (entity.cin.isNotEmpty)
-                    _DetailChip(label: 'CIN', value: entity.cin),
-                  if (entity.pan.isNotEmpty)
-                    _DetailChip(label: 'PAN', value: entity.pan),
-                  if (entity.tan.isNotEmpty)
-                    _DetailChip(label: 'TAN', value: entity.tan),
-                  if (entity.gstin.isNotEmpty)
-                    _DetailChip(label: 'GSTIN', value: entity.gstin),
                 ],
               ),
-            ],
+            ),
+            if (isSelected)
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(LucideIcons.check, color: color, size: 20),
+              )
+            else
+              Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
           ],
         ),
       ),
@@ -426,45 +396,6 @@ class _EntityCard extends ConsumerWidget {
   }
 }
 
-class _DetailChip extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _DetailChip({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF4F6F9),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: '$label: ',
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey,
-              ),
-            ),
-            TextSpan(
-              text: value,
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.deepTeal,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ── Empty State ────────────────────────────────────────────────────────────
 

@@ -12,6 +12,7 @@ import '../../models/order_model.dart';
 import 'order_chat_screen.dart';
 import 'service_order_detail_screen.dart';
 import '../../providers/orders_provider.dart';
+import '../../core/widgets/we_loader.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/compliance_provider.dart';
 import 'notification_sheet.dart';
@@ -209,13 +210,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,8 +256,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       isExpanded: true,
                       valueListenable: ValueNotifier(selectedEntity),
                       decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFFF4F6F9),
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 12,
                         ),
@@ -295,20 +287,53 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       menuItemStyleData: const MenuItemStyleData(
                         padding: EdgeInsets.symmetric(horizontal: 14),
                       ),
-                      items: [
-                        const DropdownItem<String>(
-                          value: 'All Entities',
-                          child: Text(
+                      selectedItemBuilder: (BuildContext context) {
+                        return [
+                          const Text(
                             'All Entities',
                             style: TextStyle(fontSize: 14),
+                          ),
+                          ...entities.map((e) => Text(
+                                e,
+                                style: const TextStyle(fontSize: 14),
+                                overflow: TextOverflow.ellipsis,
+                              )),
+                        ];
+                      },
+                      items: [
+                        DropdownItem<String>(
+                          value: 'All Entities',
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'All Entities',
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              if (selectedEntity == 'All Entities')
+                                const Icon(LucideIcons.check, size: 16, color: AppTheme.deepTeal),
+                            ],
                           ),
                         ),
                         ...entities.map(
                           (e) => DropdownItem<String>(
                             value: e,
-                            child: Text(
-                              e,
-                              style: const TextStyle(fontSize: 14),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    e,
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (selectedEntity == e)
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 8.0),
+                                    child: Icon(LucideIcons.check, size: 16, color: AppTheme.deepTeal),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
@@ -446,10 +471,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
             Expanded(
               child: isLoading
                   ? const Center(
-                      child: CircularProgressIndicator(
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(AppTheme.deepTeal),
-                      ),
+                      child: WeLoader(size: 24),
                     )
                   : visibleList.isEmpty
                       ? _EmptyState(tab: _selectedTab)

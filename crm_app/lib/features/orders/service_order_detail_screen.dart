@@ -50,6 +50,8 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final order = ref.watch(serviceOrdersProvider).value?.firstWhere((o) => o.id == this.order.id, orElse: () => this.order) ?? this.order;
+    
     final unreadCount =
         ref.watch(notificationProvider).where((n) => !n.isRead).length;
     final completedSteps = order.steps.where((s) => s.isCompleted).length;

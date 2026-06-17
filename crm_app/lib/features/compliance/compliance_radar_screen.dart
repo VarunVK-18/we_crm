@@ -12,6 +12,7 @@ import '../services/service_request_summary_sheet.dart';
 import '../../core/utils/responsive.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/port.dart';
+import '../../core/widgets/we_loader.dart';
 
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
@@ -451,10 +452,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
           body: SafeArea(
             child: isLoading
                 ? const Center(
-                    child: CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppTheme.deepTeal),
-                    ),
+                    child: WeLoader(size: 24),
                   )
                 : RefreshIndicator(
                     color: AppTheme.deepTeal,

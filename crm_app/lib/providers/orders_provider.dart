@@ -84,7 +84,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
       print("Error fetching real-time service orders: $e");
     }
 
-    await Future.delayed(const Duration(seconds: 4));
+    await Future.delayed(const Duration(seconds: 2));
   }
 });
 

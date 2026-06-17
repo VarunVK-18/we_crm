@@ -55,7 +55,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         if (this.isChatOpen()) {
           this.fetchChatMessages(true);
         }
-      }, 4000);
+      }, 2000);
     });
   }
 

@@ -9,6 +9,7 @@ import '../profile/profile_screen.dart';
 import '../compliance/compliance_radar_screen.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/navigation_provider.dart';
+import '../../core/widgets/we_loader.dart';
 
 class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
@@ -73,8 +74,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                     const CircularProgressIndicator(),
-                     const SizedBox(height: 24),
+                     const WeLoader(size: 24),
+                     const SizedBox(height: 32),
                      const Text(
                       'Setting up your workspace...',
                       style: TextStyle(
@@ -105,11 +106,15 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
         ref.listen<int>(navigationIndexProvider, (previous, next) {
           if (_pageController.hasClients && next != _pageController.page?.round()) {
-            _pageController.animateToPage(
-              next,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeOutQuart,
-            );
+            if (previous != null && (next - previous).abs() > 1) {
+              _pageController.jumpToPage(next);
+            } else {
+              _pageController.animateToPage(
+                next,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOutQuart,
+              );
+            }
           }
         });
 
@@ -170,7 +175,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         );
       },
       loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+          const Scaffold(body: Center(child: WeLoader(size: 24))),
       error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
     );
   }

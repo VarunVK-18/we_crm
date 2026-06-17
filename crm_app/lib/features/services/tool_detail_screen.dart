@@ -220,10 +220,9 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           ),
         ),
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -238,7 +237,6 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
           ],
         ),
-      ),
       ),
     );
   }
