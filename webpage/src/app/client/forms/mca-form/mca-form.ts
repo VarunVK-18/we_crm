@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +9,7 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-mca-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './mca-form.html',
   styleUrls: ['./mca-form.css']
 })
@@ -16,6 +17,7 @@ export class McaFormComponent implements OnInit {
   orderId = signal<string | null>(null);
   isLoading = signal(false);
   isSubmitting = signal(false);
+  isSuccess = signal(false);
   errorMessage = signal('');
 
   username = '';
@@ -110,9 +112,11 @@ export class McaFormComponent implements OnInit {
       next: (res: any) => {
         this.isSubmitting.set(false);
         if (res && res.success !== false) {
-          alert('MCA Compliance details submitted successfully!');
+          this.isSuccess.set(true);
           this.draftService.clearDraft(this.orderId()!, this.constructor.name);
-          this.router.navigate(['/client/dashboard']);
+          setTimeout(() => {
+            this.router.navigate(['/client/service', this.orderId()]);
+          }, 2000);
         } else {
           this.errorMessage.set(res.message || 'Failed to submit form.');
         }

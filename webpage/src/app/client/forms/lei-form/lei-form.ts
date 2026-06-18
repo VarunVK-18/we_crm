@@ -1,4 +1,5 @@
 import { Component, signal, OnInit } from '@angular/core';
+import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,13 +9,14 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-lei-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './lei-form.html',
   styleUrl: './lei-form.css',
 })
 export class LeiForm implements OnInit {
   orderId = signal<string>('');
   isSubmitting = signal<boolean>(false);
+  isSuccess = signal<boolean>(false);
   errorMessage = signal<string>('');
 
   // Company Details
@@ -133,9 +135,11 @@ export class LeiForm implements OnInit {
     this.api.post(`orders/${this.orderId()}/submit-lei-form`, formData).subscribe({
       next: (res: any) => {
         this.isSubmitting.set(false);
-        alert('LEI Registration details submitted successfully!');
-        this.draftService.clearDraft(this.orderId(), this.constructor.name);
-        this.router.navigate(['/client/service', this.orderId()]);
+        this.isSuccess.set(true);
+          this.draftService.clearDraft(this.orderId(), this.constructor.name);
+          setTimeout(() => {
+            this.router.navigate(['/client/service', this.orderId()]);
+          }, 2000);
       },
       error: (err: any) => {
         this.isSubmitting.set(false);

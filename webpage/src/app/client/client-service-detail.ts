@@ -232,12 +232,10 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         const checklists = res.checklists || [];
         const found = checklists.find((c: any) => c._id === this.orderId());
         if (found) {
-          const isAssigned = !!found.assigned_to;
+          const isAssigned = this.isFormEnabled(found);
           let status = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'in-progress');
           
           if (status === 'in-progress') {
-            // Rely on the backend's dynamically computed action_required flag
-            // which covers ALL services that require a form to be filled
             if (found.action_required) {
               status = 'action-required';
             }
@@ -253,6 +251,21 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         if (!silent) this.isLoading.set(false);
       }
     });
+  }
+
+  isFormEnabled(order: any): boolean {
+    if (!order || !order.assigned_to) return false;
+    if (order.status === 'completed') return false;
+    
+    const stage = (order.stage || '').toLowerCase();
+    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
+    if (isNew) return false;
+    
+    if (order.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress') {
+      return false;
+    }
+    
+    return true;
   }
 
   toggleChecklistItem(item: any, event: Event) {

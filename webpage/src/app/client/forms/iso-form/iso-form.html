@@ -123,3 +123,21 @@
     </form>
   </div>
 </div>
+
+<!-- Full page overlays -->
+@if (isSubmitting() || isSuccess()) {
+  <div class="overlay-container">
+    @if (isSubmitting()) {
+      <app-we-loader></app-we-loader>
+      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Submitting Application...</h3>
+      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Please wait while we process your documents</p>
+    }
+    @if (isSuccess()) {
+      <div class="success-icon">
+        <span class="material-symbols-outlined" style="font-size: 64px; color: #10b981;">check_circle</span>
+      </div>
+      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Application Submitted Successfully!</h3>
+      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Redirecting to tracking page...</p>
+    }
+  </div>
+}

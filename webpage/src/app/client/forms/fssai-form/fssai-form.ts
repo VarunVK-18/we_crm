@@ -1,4 +1,5 @@
 import { Component, signal, OnInit } from '@angular/core';
+import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,7 +9,7 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-fssai-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './fssai-form.html',
   styleUrl: './fssai-form.css',
 })
@@ -16,6 +17,7 @@ export class FssaiForm implements OnInit {
   orderId = signal<string>('');
   isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
+  isSuccess = signal<boolean>(false);
   errorMessage = signal<string>('');
 
   // Personal Info
@@ -223,9 +225,11 @@ export class FssaiForm implements OnInit {
       next: (res: any) => {
         this.isSubmitting.set(false);
         if (res && res.success) {
-          alert('FSSAI details submitted successfully!');
-        this.draftService.clearDraft(this.orderId(), this.constructor.name);
-          this.router.navigate(['/client/service', this.orderId()]);
+          this.isSuccess.set(true);
+          this.draftService.clearDraft(this.orderId(), this.constructor.name);
+          setTimeout(() => {
+            this.router.navigate(['/client/service', this.orderId()]);
+          }, 2000);
         }
       },
       error: (err: any) => {

@@ -1,4 +1,5 @@
 import { Component, signal, OnInit } from '@angular/core';
+import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,7 +35,7 @@ interface Director {
 @Component({
   selector: 'app-incorp-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './incorp-form.html',
   styleUrl: './incorp-form.css',
 })
@@ -42,6 +43,7 @@ export class IncorpForm implements OnInit {
   orderId = signal<string>('');
   isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
+  isSuccess = signal<boolean>(false);
   errorMessage = signal<string>('');
 
   // Company Details
@@ -218,9 +220,11 @@ export class IncorpForm implements OnInit {
       next: (res) => {
         this.isSubmitting.set(false);
         if (res && res.success) {
-          alert('Incorporation details submitted successfully!');
-        this.draftService.clearDraft(this.orderId(), this.constructor.name);
-          this.router.navigate(['/client/service', this.orderId()]);
+          this.isSuccess.set(true);
+          this.draftService.clearDraft(this.orderId(), this.constructor.name);
+          setTimeout(() => {
+            this.router.navigate(['/client/service', this.orderId()]);
+          }, 2000);
         }
       },
       error: (err) => {

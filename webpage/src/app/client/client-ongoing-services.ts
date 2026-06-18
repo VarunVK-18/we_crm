@@ -76,15 +76,7 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
             let status = c.status === 'completed' ? 'completed' : 'in-progress';
             
             if (status === 'in-progress') {
-              const isPrivateLimited = c.service_name === 'Private Limited Incorporation';
-              const isLLP = c.service_name === 'LLP Incorporation';
-              const isFSSAI = c.service_name === 'FSSAI Food License';
-              
-              if (isPrivateLimited && (!c.details || !c.details.companyName)) {
-                status = 'action-required';
-              } else if (isLLP && (!c.details || !c.details.llpName)) {
-                status = 'action-required';
-              } else if (isFSSAI && (!c.details || !c.details.fssai_business_type)) {
+              if (c.action_required) {
                 status = 'action-required';
               }
             }

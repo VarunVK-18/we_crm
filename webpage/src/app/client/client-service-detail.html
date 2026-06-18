@@ -112,13 +112,13 @@
                     @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
-                      [disabled]="order()?.status !== 'active'"
-                      [style.opacity]="order()?.status !== 'active' ? '0.5' : '1'"
-                      [style.cursor]="order()?.status !== 'active' ? 'not-allowed' : 'pointer'"
-                      (click)="order()?.status === 'active' ? routeToForm(order()?.service_name) : null; $event.stopPropagation()">
+                      [disabled]="!isFormEnabled(order())"
+                      [style.opacity]="!isFormEnabled(order()) ? '0.5' : '1'"
+                      [style.cursor]="!isFormEnabled(order()) ? 'not-allowed' : 'pointer'"
+                      (click)="isFormEnabled(order()) ? routeToForm(order()?.service_name) : null; $event.stopPropagation()">
                       Fill Form
                     </button>
-                    @if (order()?.status !== 'active') {
+                    @if (!isFormEnabled(order())) {
                       <div style="font-size: 11px; color: #666; margin-top: 4px;">Form will be enabled once a filing expert is assigned and service is active.</div>
                     }
                     }
