@@ -293,7 +293,12 @@ export class OcrService {
 
     // --- Bank Verification Logic ---
     if (bankSettings) {
-      const { savings_account_last_four, current_account_last_four } = bankSettings;
+      const { 
+        savings_account_last_four, 
+        current_account_last_four,
+        savings_upi_id,
+        current_upi_id
+      } = bankSettings;
       let matched = false;
       let gstApplicable = true;
 
@@ -308,6 +313,20 @@ export class OcrService {
         if (cleanedText.includes(current_account_last_four)) {
           matched = true;
           gstApplicable = !!bankSettings.add_gst_current;
+        }
+      }
+
+      if (!matched && savings_upi_id) {
+        if (cleanedText.includes(savings_upi_id.toUpperCase())) {
+          matched = true;
+          gstApplicable = !!bankSettings.add_gst_savings_upi;
+        }
+      }
+
+      if (!matched && current_upi_id) {
+        if (cleanedText.includes(current_upi_id.toUpperCase())) {
+          matched = true;
+          gstApplicable = !!bankSettings.add_gst_current_upi;
         }
       }
 

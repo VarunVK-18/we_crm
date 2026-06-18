@@ -106,36 +106,63 @@
                 </div>
               </div>
 
-              <div class="form-group-list" style="margin-top: 16px;">
-                <div class="info-box" style="margin-bottom: 24px; background: #f8fafc; border-left: 4px solid var(--accent-primary);">
-                  <h3 class="info-box-title">
-                    <span class="material-symbols-outlined" style="color: var(--accent-primary);">account_balance</span> Bank Account Settings (For OCR Verification)
+              <div class="form-group-list" style="margin-top: 16px; grid-column: 1 / -1;">
+                <div style="margin-bottom: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #0f172a; border-radius: 8px; padding: 20px;">
+                  <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0; display: flex; align-items: center; gap: 10px;">
+                    <span class="material-symbols-outlined" style="font-size: 24px; color: #0f172a;">account_balance</span> 
+                    Bank Account Settings (For OCR Verification)
                   </h3>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div>
-                      <label class="form-input-label">Savings Account (Last 4 Digits)</label>
+                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Savings Account (Last 4 Digits)</label>
                       <input type="text" 
                              [(ngModel)]="settings().bank_details.savings_account_last_four" 
                              name="savings_last_4" 
                              [disabled]="user()?.role !== 'admin'"
-                             class="form-control-input" 
+                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
                              placeholder="e.g. 1234" />
-                      <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                        <input type="checkbox" id="gst_savings" [(ngModel)]="settings().bank_details.add_gst_savings" name="add_gst_savings" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />
-                        <label for="gst_savings" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Add GST for this bank</label>
+                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
+                        <input type="checkbox" id="gst_savings" [(ngModel)]="settings().bank_details.add_gst_savings" name="add_gst_savings" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
+                        <label for="gst_savings" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>bank</label>
                       </div>
                     </div>
                     <div>
-                      <label class="form-input-label">Current Account (Last 4 Digits)</label>
+                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Current Account (Last 4 Digits)</label>
                       <input type="text" 
                              [(ngModel)]="settings().bank_details.current_account_last_four" 
                              name="current_last_4" 
                              [disabled]="user()?.role !== 'admin'"
-                             class="form-control-input" 
+                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
                              placeholder="e.g. 5678" />
-                      <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                        <input type="checkbox" id="gst_current" [(ngModel)]="settings().bank_details.add_gst_current" name="add_gst_current" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />
-                        <label for="gst_current" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">Add GST for this bank</label>
+                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
+                        <input type="checkbox" id="gst_current" [(ngModel)]="settings().bank_details.add_gst_current" name="add_gst_current" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
+                        <label for="gst_current" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>bank</label>
+                      </div>
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Savings Account UPI ID</label>
+                      <input type="text" 
+                             [(ngModel)]="settings().bank_details.savings_upi_id" 
+                             name="savings_upi_id" 
+                             [disabled]="user()?.role !== 'admin'"
+                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
+                             placeholder="e.g. user@bank" />
+                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
+                        <input type="checkbox" id="gst_savings_upi" [(ngModel)]="settings().bank_details.add_gst_savings_upi" name="add_gst_savings_upi" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
+                        <label for="gst_savings_upi" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>UPI</label>
+                      </div>
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Current Account UPI ID</label>
+                      <input type="text" 
+                             [(ngModel)]="settings().bank_details.current_upi_id" 
+                             name="current_upi_id" 
+                             [disabled]="user()?.role !== 'admin'"
+                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
+                             placeholder="e.g. user@bank" />
+                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
+                        <input type="checkbox" id="gst_current_upi" [(ngModel)]="settings().bank_details.add_gst_current_upi" name="add_gst_current_upi" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
+                        <label for="gst_current_upi" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>UPI</label>
                       </div>
                     </div>
                   </div>

@@ -42,8 +42,12 @@ const CompanySchema = new mongoose.Schema({
     bank_details: {
       savings_account_last_four: { type: String, default: '' },
       current_account_last_four: { type: String, default: '' },
+      savings_upi_id: { type: String, default: '' },
+      current_upi_id: { type: String, default: '' },
       add_gst_savings: { type: Boolean, default: false },
-      add_gst_current: { type: Boolean, default: false }
+      add_gst_current: { type: Boolean, default: false },
+      add_gst_savings_upi: { type: Boolean, default: false },
+      add_gst_current_upi: { type: Boolean, default: false }
     }
   }
 }, { timestamps: true });

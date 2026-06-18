@@ -240,7 +240,7 @@
                     @if (log.isVerified) {
                       <div style="display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-outlined" style="color: #10b981; font-size: 18px;" title="Verified by OCR">verified</span>
-                        <span style="font-size: 11px; color: #10b981; font-weight: 600;">{{ log.paymentTimestamp | date:'medium' }}</span>
+                        <span style="font-size: 11px; color: #10b981; font-weight: 600;">{{ log.addedAt | date:'medium' }}</span>
                       </div>
                     } @else {
                       <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 18px;" title="Manual Entry / Unverified">info</span>
