@@ -25,17 +25,19 @@ export class GstComplianceForm implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     public location: Location,
-    private api: Api
-  ,
+    private api: Api,
     private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
-      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
-      if (draft) {
+    const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+    if (draft) {
+      if (draft.isDeclared !== undefined) {
+        this.isDeclared = draft.isDeclared;
       }
+    }
   }
 
   onFileSelected(event: any, fieldName: string) {
@@ -53,10 +55,10 @@ export class GstComplianceForm implements OnInit {
   goBack() {
     this.location.back();
   }
-
   
   saveDraft() {
     const draftData = {
+      isDeclared: this.isDeclared
     };
     this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
     alert('Draft saved successfully!');
@@ -84,7 +86,7 @@ export class GstComplianceForm implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success) {
           alert('GST Compliance details submitted successfully!');
-        this.draftService.clearDraft(this.orderId(), this.constructor.name);
+          this.draftService.clearDraft(this.orderId(), this.constructor.name);
           this.router.navigate(['/client/service', this.orderId()]);
         }
       },

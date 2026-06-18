@@ -61,7 +61,7 @@ export class ServiceTrackComponent implements OnInit {
       next: (res) => {
         if (res.checklists) {
           // Filter out completed/rejected checklists to only show active ones
-          const active = res.checklists.filter((c: any) => c.status !== 'completed' && c.status !== 'rejected');
+          const active = res.checklists.filter((c: any) => c.status !== 'completed' && c.status !== 'rejected' && c.assigned_to);
           this.checklists.set(active);
           this.groupServices(active);
         }

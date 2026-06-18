@@ -77,7 +77,7 @@ export class FssaiForm implements OnInit {
         if (draft.mobile !== undefined) this.mobile = draft.mobile;
         if (draft.email !== undefined) this.email = draft.email;
         if (draft.businessName !== undefined) this.businessName = draft.businessName;
-        if (draft.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType !== undefined) this.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType = draft.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType;
+        if (draft.businessType !== undefined) this.businessType = draft.businessType;
         if (draft.startDate !== undefined) this.startDate = draft.startDate;
         if (draft.annualTurnover !== undefined) this.annualTurnover = draft.annualTurnover;
         if (draft.employees !== undefined) this.employees = draft.employees;
@@ -118,7 +118,7 @@ export class FssaiForm implements OnInit {
       mobile: this.mobile,
       email: this.email,
       businessName: this.businessName,
-      businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType: this.businessType === 'Other' ? `Other: ${this.otherBusinessType}` : this.businessType,
+      businessType: this.businessType,
       startDate: this.startDate,
       annualTurnover: this.annualTurnover,
       employees: this.employees,

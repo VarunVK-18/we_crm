@@ -65,7 +65,7 @@ export class IsoForm implements OnInit {
         if (draft.email !== undefined) this.email = draft.email;
         if (draft.whatsapp !== undefined) this.whatsapp = draft.whatsapp;
         if (draft.courierAddress !== undefined) this.courierAddress = draft.courierAddress;
-        if (draft.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso !== undefined) this.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso = draft.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso;
+        if (draft.selectedIso !== undefined) this.selectedIso = draft.selectedIso;
       }
   }
 
@@ -94,7 +94,7 @@ export class IsoForm implements OnInit {
       email: this.email,
       whatsapp: this.whatsapp,
       courierAddress: this.courierAddress,
-      selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso: this.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso,
+      selectedIso: this.selectedIso,
     };
     this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
     alert('Draft saved successfully!');

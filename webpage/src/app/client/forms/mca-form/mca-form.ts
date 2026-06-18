@@ -32,19 +32,35 @@ export class McaFormComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location,
-    private api: Api
-  ,
+    public location: Location,
+    private api: Api,
     private draftService: DraftService) {}
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       this.orderId.set(params.get('id'));
+      if (this.orderId()) {
+        const draft = this.draftService.loadDraft(this.orderId()!, this.constructor.name);
+        if (draft) {
+          if (draft.username !== undefined) this.username = draft.username;
+          if (draft.password !== undefined) this.password = draft.password;
+        }
+      }
     });
   }
 
   goBack() {
     this.location.back();
+  }
+
+  saveDraft() {
+    if (!this.orderId()) return;
+    const draftData = {
+      username: this.username,
+      password: this.password
+    };
+    this.draftService.saveDraft(this.orderId()!, this.constructor.name, draftData);
+    alert('Draft saved successfully!');
   }
 
   onFileSelected(event: any, field: string) {
@@ -95,7 +111,7 @@ export class McaFormComponent implements OnInit {
         this.isSubmitting.set(false);
         if (res && res.success !== false) {
           alert('MCA Compliance details submitted successfully!');
-        this.draftService.clearDraft(this.orderId(), this.constructor.name);
+          this.draftService.clearDraft(this.orderId()!, this.constructor.name);
           this.router.navigate(['/client/dashboard']);
         } else {
           this.errorMessage.set(res.message || 'Failed to submit form.');

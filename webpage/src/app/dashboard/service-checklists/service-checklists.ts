@@ -129,7 +129,8 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     this.api.get<any>('checklists').subscribe({
       next: (res) => {
         if (res && res.success) {
-          this.checklists.set(res.checklists);
+          const assignedChecklists = res.checklists.filter((c: any) => c.assigned_to);
+          this.checklists.set(assignedChecklists);
         }
         this.isLoading.set(false);
       },

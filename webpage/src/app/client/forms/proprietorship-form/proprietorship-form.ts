@@ -72,11 +72,11 @@ export class ProprietorshipForm implements OnInit {
         if (draft.businessAddress !== undefined) this.businessAddress = draft.businessAddress;
         if (draft.state !== undefined) this.state = draft.state;
         if (draft.pinCode !== undefined) this.pinCode = draft.pinCode;
-        if (draft.needGst ? 'true' : 'false' !== undefined) this.needGst ? 'true' : 'false' = draft.needGst ? 'true' : 'false';
-        if (draft.needMsme ? 'true' : 'false' !== undefined) this.needMsme ? 'true' : 'false' = draft.needMsme ? 'true' : 'false';
-        if (draft.needShopAct ? 'true' : 'false' !== undefined) this.needShopAct ? 'true' : 'false' = draft.needShopAct ? 'true' : 'false';
-        if (draft.needFssai ? 'true' : 'false' !== undefined) this.needFssai ? 'true' : 'false' = draft.needFssai ? 'true' : 'false';
-        if (draft.needIec ? 'true' : 'false' !== undefined) this.needIec ? 'true' : 'false' = draft.needIec ? 'true' : 'false';
+        if (draft.needGst !== undefined) this.needGst = draft.needGst;
+        if (draft.needMsme !== undefined) this.needMsme = draft.needMsme;
+        if (draft.needShopAct !== undefined) this.needShopAct = draft.needShopAct;
+        if (draft.needFssai !== undefined) this.needFssai = draft.needFssai;
+        if (draft.needIec !== undefined) this.needIec = draft.needIec;
       }
   }
 
@@ -114,11 +114,11 @@ export class ProprietorshipForm implements OnInit {
       businessAddress: this.businessAddress,
       state: this.state,
       pinCode: this.pinCode,
-      needGst ? 'true' : 'false': this.needGst ? 'true' : 'false',
-      needMsme ? 'true' : 'false': this.needMsme ? 'true' : 'false',
-      needShopAct ? 'true' : 'false': this.needShopAct ? 'true' : 'false',
-      needFssai ? 'true' : 'false': this.needFssai ? 'true' : 'false',
-      needIec ? 'true' : 'false': this.needIec ? 'true' : 'false',
+      needGst: this.needGst,
+      needMsme: this.needMsme,
+      needShopAct: this.needShopAct,
+      needFssai: this.needFssai,
+      needIec: this.needIec,
     };
     this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
     alert('Draft saved successfully!');

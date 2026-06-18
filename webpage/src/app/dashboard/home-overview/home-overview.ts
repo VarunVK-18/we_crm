@@ -272,11 +272,12 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     
     // Add checklists
     this.filteredRoleChecklists().forEach(c => {
+      if (!c.assigned_to) return;
       list.push({
         _id: c._id,
         title: c.service_name,
         clientName: c.details?.entityName || c.details?.companyName || c.client_id?.company_name || c.client_id?.owner_name || 'Client',
-        assignedTo: c.assigned_to?.owner_name || 'Unassigned',
+        assignedTo: c.assigned_to?.owner_name || c.assigned_to?.name || 'Unassigned',
         status: c.status === 'completed' ? 'Certified' : (c.status === 'in_progress' ? 'In Progress' : 'Pending'),
         isCompleted: c.status === 'completed',
         createdAt: c.createdAt,
@@ -286,11 +287,12 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
     // Add tasks
     this.filteredRoleTasks().forEach(t => {
+      if (!t.assigned_to) return;
       list.push({
         _id: t._id,
         title: t.title,
         clientName: t.details?.entityName || t.details?.companyName || t.client_id?.company_name || t.client_id?.owner_name || 'Client',
-        assignedTo: t.assigned_to?.owner_name || 'Unassigned',
+        assignedTo: t.assigned_to?.owner_name || t.assigned_to?.name || 'Unassigned',
         status: t.status,
         isCompleted: t.status === 'Completed' || t.status === 'Approved',
         createdAt: t.createdAt,

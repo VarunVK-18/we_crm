@@ -12,6 +12,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:syncfusion_flutter_core/theme.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
@@ -1452,6 +1453,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
@@ -1498,12 +1500,17 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                     child: Text(_error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
                   ),
                 )
-              : SfPdfViewer.network(
-                  _loadedUrl!,
-                  headers: {'x-user-id': widget.uid},
-                  controller: _pdfViewerController,
-                  canShowScrollHead: false,
-                  canShowScrollStatus: false,
+              : SfPdfViewerTheme(
+                  data: SfPdfViewerThemeData(
+                    backgroundColor: Colors.white,
+                  ),
+                  child: SfPdfViewer.network(
+                    _loadedUrl!,
+                    headers: {'x-user-id': widget.uid},
+                    controller: _pdfViewerController,
+                    canShowScrollHead: false,
+                    canShowScrollStatus: false,
+                  ),
                 ),
     );
   }
