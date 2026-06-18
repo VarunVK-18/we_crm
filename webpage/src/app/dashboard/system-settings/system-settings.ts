@@ -25,8 +25,12 @@ export class SystemSettings implements OnInit {
     bank_details: {
       savings_account_last_four: '',
       current_account_last_four: '',
+      savings_upi_id: '',
+      current_upi_id: '',
       add_gst_savings: false,
-      add_gst_current: false
+      add_gst_current: false,
+      add_gst_savings_upi: false,
+      add_gst_current_upi: false
     }
   });
 
@@ -120,8 +124,12 @@ export class SystemSettings implements OnInit {
             fetchedSettings.bank_details = {
               savings_account_last_four: '',
               current_account_last_four: '',
+              savings_upi_id: '',
+              current_upi_id: '',
               add_gst_savings: false,
-              add_gst_current: false
+              add_gst_current: false,
+              add_gst_savings_upi: false,
+              add_gst_current_upi: false
             };
           }
           this.settings.set(fetchedSettings);

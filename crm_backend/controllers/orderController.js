@@ -1138,18 +1138,19 @@ exports.addFinancialLog = async (req, res) => {
       isVerified: Boolean(isVerified)
     });
     
-    // Also update advanceAmountPaid automatically
-    if (paymentType && paymentType.toLowerCase().includes('advance')) {
-      order.advanceAmountPaid = (order.advanceAmountPaid || 0) + Number(amount);
-    }
-
+    // Note: We no longer add to advanceAmountPaid here because updateOrder already sets it to the exact value.
     await order.save();
 
     // Try to update checklist as well
     try {
       const Checklist = require('../models/Checklist');
-      const checklistOrder = await Checklist.findOne({ _id: id });
-      if (checklistOrder) {
+      const checklists = await Checklist.find({ 
+        cleint_id: order.cleintUid,
+        service_name: order.serviceType,
+        status: { $ne: 'completed' }
+      });
+      
+      for (let checklistOrder of checklists) {
         if (!checklistOrder.financialLogs) checklistOrder.financialLogs = [];
         checklistOrder.financialLogs.push({
           paymentType,
@@ -1158,9 +1159,6 @@ exports.addFinancialLog = async (req, res) => {
           paymentTimestamp: paymentTimestamp ? new Date(paymentTimestamp) : new Date(),
           isVerified: Boolean(isVerified)
         });
-        if (paymentType && paymentType.toLowerCase().includes('advance')) {
-          checklistOrder.advanceAmountPaid = (checklistOrder.advanceAmountPaid || 0) + Number(amount);
-        }
         await checklistOrder.save();
       }
     } catch(e) {
