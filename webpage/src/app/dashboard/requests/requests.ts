@@ -293,6 +293,11 @@ export class RequestsComponent implements OnInit {
       return;
     }
 
+    if (advance > amount) {
+      this.showToast('Advance amount cannot exceed Deal Closed amount.', 'error');
+      return;
+    }
+
     if (!emp || amount <= 0 || advance <= 0) {
       this.showToast('Please fill all details (Assign Expert, Deal Closed Amount, and Advance Amount Paid).', 'error');
       return;
@@ -404,7 +409,7 @@ export class RequestsComponent implements OnInit {
     if (!obj || typeof obj !== 'object') return [];
     return Object.keys(obj).filter(key => {
       const lowerKey = key.toLowerCase();
-      if (lowerKey === 'status' || lowerKey === 'next step') return false;
+      if (lowerKey === 'status' || lowerKey === 'next step' || lowerKey === 'badge' || lowerKey === 'requesttype') return false;
 
       const val = obj[key];
       // Hide null, undefined, empty string

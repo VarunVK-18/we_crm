@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/validation_utils.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
 
@@ -27,6 +28,10 @@ class DirectorFormData {
   final TextEditingController aadhaarController = TextEditingController();
   final TextEditingController dinController = TextEditingController();
   final TextEditingController shareholdingController = TextEditingController();
+
+  final FocusNode emailFocus = FocusNode();
+  final FocusNode phoneFocus = FocusNode();
+  final FocusNode panFocus = FocusNode();
 
   String nationality = 'Indian';
   String needDsc = 'Yes';
@@ -75,6 +80,9 @@ class DirectorFormData {
     aadhaarController.dispose();
     dinController.dispose();
     shareholdingController.dispose();
+    emailFocus.dispose();
+    phoneFocus.dispose();
+    panFocus.dispose();
   }
 }
 
@@ -99,6 +107,10 @@ class _IncorpFormScreenState extends ConsumerState<IncorpFormScreen> {
   final _valuePerShareController = TextEditingController();
   final _numberOfSharesController = TextEditingController();
 
+  final FocusNode _companyEmailFocus = FocusNode();
+  final FocusNode _companyPhoneFocus = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+
   late final List<DirectorFormData> _directors;
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -106,11 +118,15 @@ class _IncorpFormScreenState extends ConsumerState<IncorpFormScreen> {
   @override
   void initState() {
     super.initState();
-    _loadDraft();
     final assignedNumStr = widget.order.details['assignedNumberOfDirectors']?.toString();
     final numStr = assignedNumStr ?? widget.order.details['numberOfDirectors']?.toString() ?? '1';
     final int count = int.tryParse(numStr) ?? 1;
     _directors = List.generate(count, (_) => DirectorFormData());
+    
+    // Defer loading draft to ensure providers are ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDraft();
+    });
   }
 
   @override
@@ -126,6 +142,9 @@ class _IncorpFormScreenState extends ConsumerState<IncorpFormScreen> {
     for (var d in _directors) {
       d.dispose();
     }
+    _companyEmailFocus.dispose();
+    _companyPhoneFocus.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -233,11 +252,32 @@ class _IncorpFormScreenState extends ConsumerState<IncorpFormScreen> {
   }
 
   Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate()) {
+    List<FocusNode> errorNodes = [];
+    if (!ValidationUtils.isValidEmail(_companyEmailController.text)) errorNodes.add(_companyEmailFocus);
+    if (!ValidationUtils.isValidPhone(_companyPhoneController.text)) errorNodes.add(_companyPhoneFocus);
+    for (var d in _directors) {
+      if (!ValidationUtils.isValidEmail(d.emailController.text)) errorNodes.add(d.emailFocus);
+      if (!ValidationUtils.isValidPhone(d.phoneController.text)) errorNodes.add(d.phoneFocus);
+      if (!ValidationUtils.isValidPan(d.panController.text)) errorNodes.add(d.panFocus);
+    }
+
+    if (!_formKey.currentState!.validate() || errorNodes.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please fill all required fields.'),
+        content: Text('Please fix the errors in the form.'),
         backgroundColor: Colors.red,
       ));
+      
+      if (errorNodes.isNotEmpty) {
+        final targetNode = errorNodes.first;
+        targetNode.requestFocus();
+        if (targetNode.context != null) {
+          Scrollable.ensureVisible(
+            targetNode.context!,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
       return;
     }
     
@@ -392,6 +432,7 @@ Widget build(BuildContext context) {
           : Form(
               key: _formKey,
               child: ListView(
+                controller: _scrollController,
                 padding: const EdgeInsets.all(20),
                 children: [
                   // --- Company Details Section ---
@@ -418,8 +459,8 @@ Widget build(BuildContext context) {
                           _buildField('Name of Owner in Utility Bill', 'Enter the name of the person who owns or has authority over the registered office address.', _ownerNameController, isRequired: true),
                         ],
                         
-                        _buildField('Company Mail', 'Should not be same as director.', _companyEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                        _buildField('Company Phone Number', 'Should not be same as director.', _companyPhoneController, isRequired: true, keyboardType: TextInputType.phone),
+                        _buildField('Company Mail', 'Should not be same as director.', _companyEmailController, isRequired: true, keyboardType: TextInputType.emailAddress, focusNode: _companyEmailFocus, validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address'),
+                        _buildField('Company Phone Number', 'Should not be same as director.', _companyPhoneController, isRequired: true, keyboardType: TextInputType.phone, focusNode: _companyPhoneFocus, validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number'),
                         _buildField('Paid up Share Capital', 'Minimum requirement is ₹10,000 for private limited companies.', _paidUpCapitalController, isRequired: true, keyboardType: TextInputType.number),
                         _buildField('Value Per Share', 'Typically ₹10 or ₹100 per share.', _valuePerShareController, isRequired: true, keyboardType: TextInputType.number),
                         _buildField('No. of Shares', 'Total number of shares issued.', _numberOfSharesController, isRequired: true, keyboardType: TextInputType.number),
@@ -464,10 +505,10 @@ Widget build(BuildContext context) {
                           _buildRadioGroup('Select the occupation', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
 
                           _buildField('Education', '', data.educationController, isRequired: true),
-                          _buildField('Email', 'Enter your personal email address.', data.emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                          _buildField('Phone number', 'Enter your mobile number.', data.phoneController, isRequired: true, keyboardType: TextInputType.phone),
+                          _buildField('Email', 'Enter your personal email address.', data.emailController, isRequired: true, keyboardType: TextInputType.emailAddress, focusNode: data.emailFocus, validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address'),
+                          _buildField('Phone number', 'Enter your mobile number.', data.phoneController, isRequired: true, keyboardType: TextInputType.phone, focusNode: data.phoneFocus, validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number'),
                           _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
-                          _buildField('PAN', 'Enter your 10-character PAN.', data.panController, isRequired: true),
+                          _buildField('PAN', 'Enter your 10-character PAN.', data.panController, isRequired: true, focusNode: data.panFocus, validator: (v) => ValidationUtils.isValidPan(v) ? null : 'Enter a valid PAN'),
                           _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number.', data.aadhaarController, isRequired: true),
                           _buildField('DIN Number', 'Enter your 8-digit DIN if you have one. Leave blank if not.', data.dinController, isRequired: false),
                           
@@ -573,7 +614,7 @@ Widget build(BuildContext context) {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false, FocusNode? focusNode, String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -596,6 +637,7 @@ Widget build(BuildContext context) {
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
+            focusNode: focusNode,
             keyboardType: keyboardType,
             readOnly: isDate,
             onTap: isDate ? () async {
@@ -615,7 +657,7 @@ Widget build(BuildContext context) {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.isEmpty ? 'This is a required question' : null : null,
+            validator: validator ?? (isRequired ? (v) => v == null || v.isEmpty ? 'This is a required question' : null : null),
           ),
         ],
       ),

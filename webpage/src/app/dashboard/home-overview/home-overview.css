@@ -434,6 +434,10 @@
   border-radius: 4px;
 }
 
+.ho-chart-badge.trend-down {
+  color: var(--color-red, #dc2626);
+}
+
 .ho-chart-legend {
   display: flex;
   align-items: center;
@@ -794,7 +798,8 @@
 }
 
 .ho-banner-card-btn:hover {
-  background-color: var(--background);
+  background-color: #ffffff;
+  color: var(--palette-purple);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }

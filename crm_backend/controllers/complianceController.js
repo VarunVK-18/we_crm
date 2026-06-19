@@ -185,7 +185,6 @@ exports.getCompanyComplianceReminders = async (req, res) => {
     // 3. Fetch dynamic compliance reminders from checklists with final documents for this company
     let checklistFilter = { 
       company_id: companyId, 
-      client_id: { $in: clientIds },
       'final_documents.0': { $exists: true } 
     };
 
@@ -194,10 +193,12 @@ exports.getCompanyComplianceReminders = async (req, res) => {
       const authorizedChecklists = await Checklist.find({
           $or: [
               { assigned_to: req.user._id },
-              { client_id: { $in: clientIds }, assigned_to: null }
+              { client_id: { $in: clientIds } }
           ]
       }).select('_id');
       checklistFilter._id = { $in: authorizedChecklists.map(c => c._id) };
+    } else {
+      checklistFilter.client_id = { $in: clientIds };
     }
 
     const completedChecklists = await Checklist.find(checklistFilter)
@@ -247,7 +248,7 @@ exports.getAllComplianceTasks = async (req, res) => {
         const authorizedChecklists = await Checklist.find({
             $or: [
                 { assigned_to: req.user._id },
-                { client_id: { $in: authorizedClientIds }, assigned_to: null }
+                { client_id: { $in: authorizedClientIds } }
             ]
         }).select('_id');
         const authorizedChecklistIds = authorizedChecklists.map(c => c._id);

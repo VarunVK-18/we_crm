@@ -238,44 +238,26 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       body: Column(
         children: [
           Expanded(
-            child: widget.toolName == 'NIC Finder' || widget.toolName == 'TDS Interest'
-                ? SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.toolName != 'NIC Finder' && 
-                            widget.toolName != 'TDS Interest' && 
-                            !widget.toolName.contains('GST')) ...[
-                          _buildHeaderWidget(),
-                          const SizedBox(height: 32),
-                        ],
-                        _buildToolContent(),
-                        const SizedBox(height: 40),
-                        if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) _buildResultCard(),
-                      ],
-                    ),
-                  )
-                : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.toolName != 'NIC Finder' && 
-                            widget.toolName != 'TDS Interest' && 
-                            !widget.toolName.contains('GST')) ...[
-                          _buildHeaderWidget(),
-                          const Spacer(),
-                        ],
-                        _buildToolContent(),
-                        if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) ...[
-                          const Spacer(),
-                          _buildResultCard(),
-                        ],
-                      ],
-                    ),
-                  ),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.toolName != 'NIC Finder' && 
+                      widget.toolName != 'TDS Interest' && 
+                      !widget.toolName.contains('GST')) ...[
+                    _buildHeaderWidget(),
+                    const SizedBox(height: 32),
+                  ],
+                  _buildToolContent(),
+                  if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) ...[
+                    const SizedBox(height: 32),
+                    _buildResultCard(),
+                  ],
+                ],
+              ),
+            ),
           ),
           if (widget.toolName != 'NIC Finder' && widget.toolName != 'TDS Interest') _buildNumpad(),
         ],
@@ -842,7 +824,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           ),
           const SizedBox(height: 32),
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
             decoration: BoxDecoration(
               color: Colors.grey.shade50,
               borderRadius: BorderRadius.circular(16),
@@ -851,9 +833,9 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 _buildOutputColumn('₹${_actualAmount.toStringAsFixed(0)}', 'Actual Amount', Colors.blue.shade700),
-                Text('+', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
+                Text('+', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
                 _buildOutputColumn('₹${_gstAmount.toStringAsFixed(0)}', 'GST Amount', Colors.green),
-                Text('=', style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
+                Text('=', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
                 _buildOutputColumn('₹${_totalAmount.toStringAsFixed(0)}', 'Total Amount', Colors.blue.shade700),
               ],
             ),
@@ -915,27 +897,31 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     return Expanded(
       child: Column(
         children: [
-          Text(
-            amount,
-            style: GoogleFonts.outfit(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.deepTeal,
-              letterSpacing: -0.5,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              amount,
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: AppTheme.deepTeal,
+                letterSpacing: -0.5,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 6),
-          Text(
-            label,
-            style: GoogleFonts.outfit(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: GoogleFonts.outfit(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -968,16 +954,15 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 24, top: 16),
+      padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16, top: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: keys.map((row) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: row.map((key) {
@@ -1012,19 +997,19 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             onLongPress: onLongPress,
             customBorder: const CircleBorder(),
             child: SizedBox(
-              width: 80,
-              height: 80,
+              width: 65,
+              height: 65,
               child: Center(
                 child: label != null
                     ? Text(
                       label,
                       style: GoogleFonts.outfit(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
                       ),
                     )
-                  : Icon(icon, color: Colors.white, size: 24),
+                  : Icon(icon, color: Colors.white, size: 22),
             ),
           ),
         ),

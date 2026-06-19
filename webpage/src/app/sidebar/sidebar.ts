@@ -1,7 +1,8 @@
-import { Component, input, output, signal, OnInit, effect } from '@angular/core';
+import { Component, input, output, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon } from '@hugeicons/core-free-icons';
+import { Api } from '../api';
 
 @Component({
   selector: 'app-sidebar',
@@ -10,7 +11,7 @@ import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileVa
   templateUrl: './sidebar.html',
   styleUrl: './sidebar.css',
 })
-export class Sidebar implements OnInit {
+export class Sidebar implements OnInit, OnDestroy {
   isCollapsed = signal<boolean>(false);
   autoCollapsedForServiceTrack = false;
   currentTab = input<string>('dashboard');
@@ -26,8 +27,10 @@ export class Sidebar implements OnInit {
   readonly HistoryIcon = WorkHistoryIcon;
 
   user = signal<any>(null);
+  newRequestsCount = signal<number>(0);
+  private pollInterval: any;
 
-  constructor() {
+  constructor(private api: Api) {
     effect(() => {
       const tab = this.currentTab();
       if (tab === 'service-track') {
@@ -129,6 +132,50 @@ export class Sidebar implements OnInit {
     if (savedState) {
       this.isCollapsed.set(savedState === 'true');
     }
+    
+    this.fetchNewRequestsCount();
+    this.pollInterval = setInterval(() => {
+      this.fetchNewRequestsCount();
+    }, 10000);
+  }
+
+  ngOnDestroy() {
+    if (this.pollInterval) {
+      clearInterval(this.pollInterval);
+    }
+  }
+
+  getCompanyId(): string | null {
+    const u = this.user();
+    if (!u) return null;
+    if (u.company_id && typeof u.company_id === 'object') {
+      return u.company_id._id || null;
+    }
+    return u.company_id || null;
+  }
+
+  fetchNewRequestsCount() {
+    const u = this.user();
+    if (!u || (u.role !== 'admin' && u.role !== 'client_manager')) return;
+    
+    const companyId = this.getCompanyId();
+    if (!companyId) return;
+
+    this.api.get<any>(`orders/company/${companyId}`).subscribe({
+      next: (res) => {
+        if (res && res.orders) {
+          const NEW_STATUSES = ['new', 'pending'];
+          const NEW_STAGES = ['reqreceived', 'quot pending', 'quotepending'];
+          const count = res.orders.filter((o: any) => {
+            const status = (o.status || '').toLowerCase();
+            const stage = (o.stage || '').toLowerCase();
+            return NEW_STATUSES.includes(status) || NEW_STAGES.includes(stage);
+          }).length;
+          this.newRequestsCount.set(count);
+        }
+      },
+      error: () => {}
+    });
   }
 
   toggleCollapse() {

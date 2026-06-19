@@ -65,4 +65,12 @@ export class ClientSubscriptions implements OnInit {
       }
     });
   }
+
+  getExpiryDate(): string {
+    const now = new Date();
+    // In India, Financial Year ends on March 31st.
+    // If current month is Jan-Mar (0-2), expiry is this year. If Apr-Dec (3-11), expiry is next year.
+    const targetYear = now.getMonth() > 2 ? now.getFullYear() + 1 : now.getFullYear();
+    return `31 Mar ${targetYear}`;
+  }
 }

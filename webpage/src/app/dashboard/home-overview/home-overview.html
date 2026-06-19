@@ -238,7 +238,7 @@
             <h4 class="ho-chart-title">Revenue Analytics</h4>
             <p class="ho-chart-subtitle">Monthly legal services (INR)</p>
           </div>
-          <span class="ho-chart-badge">+8.1%</span>
+          <span class="ho-chart-badge" [class.trend-down]="!revenueTrendUp()">{{ revenueGrowth() }}</span>
         </div>
         <div class="ho-chart-container">
           <canvas #revenueChart></canvas>

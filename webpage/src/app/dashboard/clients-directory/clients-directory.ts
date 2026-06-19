@@ -129,7 +129,19 @@ export class ClientsDirectory implements OnInit {
     });
   }
 
+  openMail(email: string, event: Event) {
+    event.stopPropagation();
+    if (email) {
+      window.location.href = `mailto:${email}`;
+    }
+  }
 
+  openPhone(phone: string, event: Event) {
+    event.stopPropagation();
+    if (phone) {
+      window.location.href = `tel:${phone}`;
+    }
+  }
 
   getFilteredClients() {
     const query = this.searchQuery().toLowerCase().trim();

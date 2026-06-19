@@ -62,8 +62,8 @@ function parseWrittenDate(dateStr) {
 const createTask = async (req, res) => {
   try {
     const { client_id, assigned_to, title, description } = req.body;
-    if (!client_id || !title) {
-      return res.status(400).json({ success: false, message: 'Client ID and title are required' });
+    if (!client_id || !title || !assigned_to) {
+      return res.status(400).json({ success: false, message: 'Client ID, title, and assigned staff are required' });
     }
 
     const client = await User.findById(client_id);
@@ -88,6 +88,16 @@ const createTask = async (req, res) => {
       title,
       description: description || ''
     });
+
+    if (assigned_to) {
+      const Notification = require('../models/Notification');
+      await Notification.create({
+        client_id: assigned_to,
+        title: 'New Task Assigned',
+        message: `You have been assigned the task '${title}' for client '${client.owner_name}'`,
+        type: 'status_update'
+      });
+    }
 
     await logActivity(
       req.user._id,
@@ -158,8 +168,21 @@ const updateTask = async (req, res) => {
     }
 
     const oldStatus = task.status;
+    const oldAssignedTo = task.assigned_to ? task.assigned_to.toString() : null;
+
     if (status) task.status = status;
-    if (assigned_to !== undefined) task.assigned_to = assigned_to || null;
+    if (assigned_to !== undefined) {
+      task.assigned_to = assigned_to || null;
+      if (assigned_to && assigned_to.toString() !== oldAssignedTo) {
+        const Notification = require('../models/Notification');
+        await Notification.create({
+          client_id: assigned_to,
+          title: 'New Task Assigned',
+          message: `You have been assigned the task '${task.title}' for client '${task.client_id?.owner_name}'`,
+          type: 'status_update'
+        });
+      }
+    }
     if (title) task.title = title;
     if (description !== undefined) task.description = description;
 

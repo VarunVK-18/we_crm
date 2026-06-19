@@ -43,11 +43,15 @@
     <div class="request-card" [class.status-new]="['new','pending'].includes((order.status||'').toLowerCase())"
       [class.status-complete]="(order.status||'').toLowerCase() === 'complete'">
       <div class="card-header">
-        <div class="service-badge">{{ order.serviceType }}</div>
         <div style="display: flex; gap: 8px; align-items: center;">
-          <button (click)="openChatModal(order)" style="background: none; border: none; cursor: pointer; color: #2563eb; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%;" title="Chat with Client" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='none'">
-            <span class="material-symbols-outlined" style="font-size: 18px;">chat</span>
-          </button>
+          <div class="service-badge">{{ order.serviceType }}</div>
+          @if (order.details?.badge === 'RENEW') {
+            <div style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid #fecaca; box-shadow: 0 2px 4px rgba(220,38,38,0.1); display: flex; align-items: center; gap: 4px;">
+              <span class="material-symbols-outlined" style="font-size: 14px;">autorenew</span> RENEWAL REQUEST
+            </div>
+          }
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
           <div class="date-badge">
             <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
             {{ formatDate(order.createdAt) }}
@@ -194,6 +198,13 @@
                 </div>
               }
             </div>
+            
+            @if (advanceAmountPaidForOrder()[order._id] > (dealClosedAmountForOrder()[order._id] || 0)) {
+              <div style="color: #dc2626; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px; background: #fef2f2; padding: 6px 10px; border-radius: 6px; border: 1px solid #fecaca; margin-top: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">warning</span>
+                Advance amount cannot exceed Deal Closed amount!
+              </div>
+            }
           </div>
         </div>
 

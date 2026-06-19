@@ -565,8 +565,23 @@ class _ServiceRequestSummarySheetState
     Map<String, String>? _getCompatibilityWarning() {
       if (_selectedEntity == null || _selectedEntity == 'Add New Entity...') return null;
       
-      final entityType = entityTypesMap[_selectedEntity] ?? 'Unknown';
       final reqService = widget.packageName;
+
+      bool isDuplicate = ordersState.value?.any((o) =>
+              o.serviceType == reqService &&
+              o.entityName == _selectedEntity &&
+              o.status != 'completed' && o.status != 'complete') ??
+          false;
+
+      if (isDuplicate) {
+        return {
+          'type': 'error',
+          'header': 'Service Already Requested',
+          'message': 'Service request already done wait for manager approval'
+        };
+      }
+
+      final entityType = entityTypesMap[_selectedEntity] ?? 'Unknown';
       
       bool isIncorporationService = reqService.contains('Incorporation') || reqService.contains('Proprietorship') || reqService == 'OPC';
 

@@ -198,6 +198,7 @@ export class ClientServicesComponent implements OnInit {
   });
   clientManager = signal<any>(null);
   availableEntities = signal<string[]>([]);
+  myChecklists = signal<any[]>([]);
 
   // Form State
   quoteForm = {
@@ -283,6 +284,7 @@ export class ClientServicesComponent implements OnInit {
       next: (res) => {
         let entities = new Set<string>();
         if (res.checklists) {
+          this.myChecklists.set(res.checklists);
           res.checklists.forEach((c: any) => {
             if (c.details && c.details.entityName && c.details.entityName.toLowerCase() !== 'client') {
               const name = c.details.entityName;
@@ -339,11 +341,25 @@ export class ClientServicesComponent implements OnInit {
   getCompatibilityWarning(): { message: string, type: string, header: string } | null {
     if (this.quoteForm.selectedEntity === 'Add New Entity...') return null;
     
-    const entityType = this.entityTypesMap.get(this.quoteForm.selectedEntity) || 'Unknown';
     const reqService = this.selectedService()?.title;
-    
     if (!reqService) return null;
 
+    const isDuplicate = this.myChecklists().some(c => 
+      c.service_name === reqService && 
+      c.details?.entityName === this.quoteForm.selectedEntity && 
+      c.status !== 'completed' && c.status !== 'complete'
+    );
+
+    if (isDuplicate) {
+      return {
+        type: 'error',
+        header: 'Service Already Requested',
+        message: 'Service request already done wait for manager approval'
+      };
+    }
+
+    const entityType = this.entityTypesMap.get(this.quoteForm.selectedEntity) || 'Unknown';
+    
     const isIncorporationService = reqService.includes('Incorporation') || reqService.includes('Proprietorship') || reqService === 'OPC';
 
     if (isIncorporationService && this.quoteForm.selectedEntity !== 'Add New Entity...') {

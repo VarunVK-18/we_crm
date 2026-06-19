@@ -155,6 +155,91 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     return labels[role] || role;
   }
 
+  getAssigneeName(cl: any): string {
+    if (!cl) return 'Yet to Assign';
+    const stage = (cl.stage || '').toLowerCase();
+    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
+    
+    if (isNew || !cl.assigned_to) {
+      return 'Yet to Assign';
+    }
+    
+    if (cl.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress' && stage !== 'completed') {
+      return 'Yet to Assign';
+    }
+    
+    return cl.assigned_to.owner_name || cl.assigned_to.name || 'Yet to Assign';
+  }
+
+  isActionRequired(c: any): boolean {
+    if (!c) return false;
+    const serviceNameLower = (c.service_name || '').toLowerCase();
+    const SERVICES_WITH_FORMS = [
+      'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
+      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
+    ];
+    
+    const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
+    
+    if (requiresForm) {
+      let isFormFilled = false;
+      if (serviceNameLower.includes('dpiit') && c.details && c.details.dpiitForm) isFormFilled = true;
+      else if (serviceNameLower.includes('private limited') && c.details && c.details.companyName) isFormFilled = true;
+      else if ((serviceNameLower.includes('trademark') || serviceNameLower.includes('trade mark') || serviceNameLower.includes('copyright')) && c.details && c.details.trademarkForm) isFormFilled = true;
+      else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) isFormFilled = true;
+      else if (serviceNameLower.includes('msme') && c.details && c.details.msmeForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst filing') && c.details && c.details.gstFilingForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst cancellation') && c.details && c.details.gstCancellationForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst compliance') && c.details && c.details.gstComplianceForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst') && c.details && c.details.gstForm) isFormFilled = true;
+      else if (serviceNameLower.includes('iso') && c.details && c.details.isoForm) isFormFilled = true;
+      else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('one person company') || serviceNameLower.includes('opc')) && c.details && c.details.opcForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('lei') || serviceNameLower.includes('lie')) && c.details && (c.details.leiForm || c.details.lieForm)) isFormFilled = true;
+      else if (serviceNameLower.includes('bis') && c.details && c.details.bisForm) isFormFilled = true;
+      else if (serviceNameLower.includes('mca') && c.details && c.details.mcaForm) isFormFilled = true;
+      else if (serviceNameLower.includes('dsc') && c.details && c.details.dscForm) isFormFilled = true;
+      else if (serviceNameLower.includes('iec') && c.details && c.details.iecForm) isFormFilled = true;
+      else if (serviceNameLower.includes('proprietorship') && c.details && c.details.proprietorshipForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('tds') || serviceNameLower.includes('pan, tan') || serviceNameLower.includes('itr')) && c.details && c.details.tdsForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('pf registration') || serviceNameLower.includes('pf')) && c.details && c.details.pfForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('patent registration') || serviceNameLower.includes('patent')) && c.details && c.details.patentForm) isFormFilled = true;
+      
+      return !isFormFilled;
+    }
+    
+    return false;
+  }
+
+  getChecklistDisplayStatus(c: any): string {
+    if (!c) return 'Pending';
+    if (c.status === 'completed') return 'Completed';
+    
+    const assigneeName = this.getAssigneeName(c);
+    const isAssigned = assigneeName !== 'Yet to Assign';
+
+    if (isAssigned) {
+      if (this.isActionRequired(c)) {
+        return 'Action Required';
+      } else {
+        return 'In Progress';
+      }
+    }
+
+    return 'Pending';
+  }
+
+  getChecklistStatusClass(status: string): string {
+    const s = (status || '').toLowerCase().replace(' ', '-');
+    const map: Record<string, string> = {
+      'pending': 'pending',
+      'action-required': 'action_required',
+      'in-progress': 'in_progress',
+      'completed': 'completed'
+    };
+    return map[s] || 'pending';
+  }
+
   fetchChecklist() {
     this.api.get<any>('checklists').subscribe({
       next: (res) => {
@@ -244,7 +329,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     newDetails['assignedNumberOfDirectors'] = count;
     
     this.api.patch<any>(`checklists/${cl._id}`, { details: newDetails }).subscribe({
-      next: () => this.fetchChecklist(),
+      next: () => {
+        this.fetchChecklist();
+        alert('Director count saved successfully!');
+      },
       error: (err) => alert(err.error?.message || 'Failed to assign director count.')
     });
   }
@@ -416,7 +504,15 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
   }
 
-  getGeneralDetails(): { key: string, value: any }[] {
+  formatLabel(key: any): string {
+    if (typeof key !== 'string') return String(key);
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
+  }
+
+  getGeneralDetails(): { key: string, value: any, rawKey: string }[] {
     const cl = this.checklist();
     if (!cl || !cl.details) return [];
     const entries = [];
@@ -428,7 +524,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       if (ignoredKeys.includes(key)) continue;
       // Skip objects to avoid [object Object] rendering
       if (typeof cl.details[key] === 'object' && cl.details[key] !== null) continue;
-      entries.push({ key, value: cl.details[key] });
+      entries.push({ key: this.formatLabel(key), value: cl.details[key], rawKey: key });
     }
     return entries;
   }
@@ -667,9 +763,14 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     return [...pending, ...uploaded];
   }
 
+  // Request Document Modal
+  isRequestingDoc = signal<boolean>(false);
+  requestDocSuccessMessage = signal<string>('');
+
   openRequestDocModal() {
     this.newDocRequestName = '';
     this.checklistErrorMessage.set('');
+    this.requestDocSuccessMessage.set('');
     this.isRequestDocModalOpen.set(true);
   }
 
@@ -687,6 +788,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const cl = this.checklist();
     if (!cl) return;
 
+    this.isRequestingDoc.set(true);
+    this.checklistErrorMessage.set('');
+    this.requestDocSuccessMessage.set('');
+
     const requested_documents = cl.requested_documents || [];
     requested_documents.push({
       name: this.newDocRequestName,
@@ -698,12 +803,17 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       stage: 'documentRequested'
     }).subscribe({
       next: (res: any) => {
+        this.isRequestingDoc.set(false);
         if (res && res.success) {
           this.checklist.set(res.checklist);
-          this.closeRequestDocModal();
+          this.requestDocSuccessMessage.set('Document requested successfully!');
+          setTimeout(() => {
+            this.closeRequestDocModal();
+          }, 1500);
         }
       },
       error: (err) => {
+        this.isRequestingDoc.set(false);
         this.checklistErrorMessage.set(err.error?.message || 'Error requesting document');
       }
     });

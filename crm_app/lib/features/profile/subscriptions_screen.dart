@@ -143,6 +143,11 @@ class SubscriptionsScreen extends ConsumerWidget {
   }
 
   Widget _buildPlanCard() {
+    final now = DateTime.now();
+    // In India, Financial Year ends on March 31st.
+    // If current month is Jan-Mar (1-3), expiry is this year. If Apr-Dec (4-12), expiry is next year.
+    final targetYear = now.month > 3 ? now.year + 1 : now.year;
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -194,9 +199,9 @@ class SubscriptionsScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 32),
-          const Row(
+          Row(
             children: [
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('STATUS', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
@@ -204,13 +209,13 @@ class SubscriptionsScreen extends ConsumerWidget {
                   Text('Active', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
               ),
-              SizedBox(width: 48),
+              const SizedBox(width: 48),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('EXPIRES', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text('31 Mar 2025', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const Text('EXPIRES', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text('31 Mar $targetYear', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],

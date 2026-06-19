@@ -5,7 +5,7 @@
       <h2 class="page-title">Custom Tasks</h2>
       <p class="page-subtitle">Propelling Wealth to New Frontiers</p>
     </div>
-    @if (canManage() || isFillingStaff()) {
+    @if (canManage()) {
       <button class="btn-new-checklist" (click)="openCreateTaskModal()">
         <span class="material-symbols-outlined">add</span>
         New Task
@@ -504,9 +504,9 @@
           </div>
 
           <div class="form-group-item" style="margin-top: 16px;">
-            <label class="form-input-label">Assign Filing Consultant</label>
-            <select name="task_assignee" class="form-control-input select-input" [(ngModel)]="newTaskAssignedTo">
-              <option value="">-- Unassigned (Pool) --</option>
+            <label class="form-input-label">Assign Filing Consultant *</label>
+            <select name="task_assignee" class="form-control-input select-input" [(ngModel)]="newTaskAssignedTo" required>
+              <option value="">-- Select Assignee --</option>
               @for (emp of getFlatEmployees(); track emp.id) {
                 @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
                   <option [value]="emp.id">{{ emp.name }}</option>
