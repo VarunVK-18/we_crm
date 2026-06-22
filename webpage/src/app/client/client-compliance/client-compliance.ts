@@ -24,6 +24,7 @@ export class ClientCompliance implements OnInit {
 
   reminders = signal<any[]>([]);
   checklists = signal<any[]>([]);
+  certificates = signal<any[]>([]);
   isLoading = signal(true);
   user = signal<any>(null);
   isPendingModalOpen = signal(false);
@@ -74,13 +75,13 @@ export class ClientCompliance implements OnInit {
     );
   });
 
-  pendingTasks = computed(() => this.filteredTasks().filter(r => r.status !== 'Completed'));
+  pendingTasks = computed(() => this.filteredTasks().filter(r => r.status?.toLowerCase() !== 'completed'));
   
   modalTasks = computed(() => {
     const filter = this.taskFilter();
     const tasks = this.filteredTasks();
-    if (filter === 'pending') return tasks.filter(r => r.status !== 'Completed');
-    if (filter === 'completed') return tasks.filter(r => r.status === 'Completed');
+    if (filter === 'pending') return tasks.filter(r => r.status?.toLowerCase() !== 'completed');
+    if (filter === 'completed') return tasks.filter(r => r.status?.toLowerCase() === 'completed');
     return tasks;
   });
 
@@ -142,9 +143,9 @@ export class ClientCompliance implements OnInit {
     const tab = this.timelineTab();
     
     if (tab === 'pending') {
-      tasks = tasks.filter(r => r.status !== 'Completed');
+      tasks = tasks.filter(r => r.status?.toLowerCase() !== 'completed');
     } else if (tab === 'completed') {
-      tasks = tasks.filter(r => r.status === 'Completed');
+      tasks = tasks.filter(r => r.status?.toLowerCase() === 'completed');
     }
 
     if (tasks.length === 0) {
@@ -159,6 +160,31 @@ export class ClientCompliance implements OnInit {
     }));
   });
 
+  // Certificate Computations
+  filteredCertificates = computed(() => {
+    const entity = this.currentEntity();
+    if (entity === 'All Entities') return this.certificates();
+    return this.certificates().filter(c => 
+      c.entityName && c.entityName.trim().toLowerCase() === entity.toLowerCase()
+    );
+  });
+
+  hasWarningCertificates = computed(() => {
+    return this.certificates().some(c => 
+      ['Due Soon', 'Action Required', 'Critical', 'Expired'].includes(c.renewalStatus)
+    );
+  });
+
+  warningCertificates = computed(() => {
+    return this.certificates().filter(c => 
+      ['Due Soon', 'Action Required', 'Critical', 'Expired'].includes(c.renewalStatus)
+    );
+  });
+
+  isRenewModalOpen = signal(false);
+  selectedCertForRenewal = signal<any>(null);
+  isRenewing = signal(false);
+
   constructor(private api: Api, private router: Router) {}
 
   ngOnInit() {
@@ -167,6 +193,7 @@ export class ClientCompliance implements OnInit {
       this.user.set(JSON.parse(savedUser));
       this.fetchReminders();
       this.fetchChecklists();
+      this.fetchCertificates();
     } else {
       this.isLoading.set(false);
     }
@@ -224,6 +251,19 @@ export class ClientCompliance implements OnInit {
     });
   }
 
+  fetchCertificates() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    this.api.get<any>(`certificates/client/${uid}`).subscribe({
+      next: (res) => {
+        if (res.certificates) {
+          this.certificates.set(res.certificates);
+        }
+      },
+      error: (err) => console.error('Failed to fetch certificates', err)
+    });
+  }
+
   // Removed file upload state since clients do not complete tasks
 
   renewService(serviceName: string) {
@@ -238,5 +278,30 @@ export class ClientCompliance implements OnInit {
   switchEntity(entity: string) {
     this.currentEntity.set(entity);
     this.isEntityModalOpen.set(false);
+  }
+
+  openRenewModal(cert: any) {
+    this.selectedCertForRenewal.set(cert);
+    this.isRenewModalOpen.set(true);
+  }
+
+  confirmRenewal() {
+    const cert = this.selectedCertForRenewal();
+    if (!cert) return;
+    
+    this.isRenewing.set(true);
+    this.api.post<any>(`certificates/${cert._id}/renew`, {}).subscribe({
+      next: (res) => {
+        alert('Renewal request submitted successfully!');
+        this.isRenewing.set(false);
+        this.isRenewModalOpen.set(false);
+        this.fetchCertificates(); // Refresh to update status
+      },
+      error: (err) => {
+        console.error('Renewal request failed', err);
+        alert(err.error?.message || 'Failed to submit renewal request.');
+        this.isRenewing.set(false);
+      }
+    });
   }
 }

@@ -484,9 +484,8 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                                 const Duration(milliseconds: 500));
                           },
                           child: ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-                            physics: const AlwaysScrollableScrollPhysics(
-                                parent: BouncingScrollPhysics()),
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                            physics: const AlwaysScrollableScrollPhysics(),
                             itemCount: visibleList.length,
                             itemBuilder: (context, i) =>
                                 _ServiceCard(order: visibleList[i]),

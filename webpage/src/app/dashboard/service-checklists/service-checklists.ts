@@ -129,8 +129,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     this.api.get<any>('checklists').subscribe({
       next: (res) => {
         if (res && res.success) {
-          const assignedChecklists = res.checklists.filter((c: any) => c.assigned_to);
-          this.checklists.set(assignedChecklists);
+          this.checklists.set(res.checklists);
         }
         this.isLoading.set(false);
       },
@@ -147,9 +146,16 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     const query = this.searchQuery().toLowerCase().trim();
     
     let filtered = all;
-    if (tab === 'pending') filtered = all.filter(c => c.status === 'pending');
-    else if (tab === 'in_progress') filtered = all.filter(c => c.status === 'in_progress');
-    else if (tab === 'completed') filtered = all.filter(c => c.status === 'completed');
+    if (tab === 'pending') {
+      filtered = all.filter(c => {
+        const ds = this.getChecklistDisplayStatus(c);
+        return ds === 'Pending' || ds === 'Action Required';
+      });
+    } else if (tab === 'in_progress') {
+      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress');
+    } else if (tab === 'completed') {
+      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed');
+    }
     
     if (query) {
       filtered = filtered.filter(c => {
@@ -294,24 +300,107 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   }
 
   getActiveCount(): number {
-    return this.checklists().filter(c => c.status !== 'completed').length;
+    return this.checklists().filter(c => this.getChecklistDisplayStatus(c) !== 'Completed').length;
   }
 
   getPendingActionCount(): number {
-    return this.checklists().filter(c => c.status === 'pending').length;
+    return this.checklists().filter(c => {
+      const ds = this.getChecklistDisplayStatus(c);
+      return ds === 'Pending' || ds === 'Action Required';
+    }).length;
+  }
+
+  getAssigneeName(cl: any): string {
+    const stage = (cl.stage || '').toLowerCase();
+    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
+    
+    if (isNew || !cl.assigned_to) {
+      return 'Yet to Assign';
+    }
+    
+    // If it is assigned to a client manager but the work hasn't started, consider it unassigned
+    if (cl.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress' && stage !== 'completed') {
+      return 'Yet to Assign';
+    }
+    
+    return cl.assigned_to.owner_name || cl.assigned_to.name || 'Yet to Assign';
+  }
+
+  getAssigneeInitial(cl: any): string {
+    const name = this.getAssigneeName(cl);
+    if (name === 'Yet to Assign') return 'Y';
+    return name.charAt(0).toUpperCase();
   }
 
   getCompletedThisWeekCount(): number {
-    return this.checklists().filter(c => c.status === 'completed').length; // Mocking "This week" with just completed count
+    return this.checklists().filter(c => this.getChecklistDisplayStatus(c) === 'Completed').length; // Mocking "This week" with just completed count
+  }
+
+  getChecklistDisplayStatus(c: any): string {
+    if (c.status === 'completed') return 'Completed';
+    
+    const assigneeName = this.getAssigneeName(c);
+    const isAssigned = assigneeName !== 'Yet to Assign';
+
+    if (isAssigned) {
+      if (this.isActionRequired(c)) {
+        return 'Action Required';
+      } else {
+        return 'In Progress';
+      }
+    }
+
+    return 'Pending';
+  }
+
+  isActionRequired(c: any): boolean {
+    const serviceNameLower = (c.service_name || '').toLowerCase();
+    const SERVICES_WITH_FORMS = [
+      'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
+      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
+    ];
+    
+    const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
+    
+    if (requiresForm) {
+      let isFormFilled = false;
+      if (serviceNameLower.includes('dpiit') && c.details && c.details.dpiitForm) isFormFilled = true;
+      else if (serviceNameLower.includes('private limited') && c.details && c.details.companyName) isFormFilled = true;
+      else if ((serviceNameLower.includes('trademark') || serviceNameLower.includes('trade mark') || serviceNameLower.includes('copyright')) && c.details && c.details.trademarkForm) isFormFilled = true;
+      else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) isFormFilled = true;
+      else if (serviceNameLower.includes('msme') && c.details && c.details.msmeForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst filing') && c.details && c.details.gstFilingForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst cancellation') && c.details && c.details.gstCancellationForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst compliance') && c.details && c.details.gstComplianceForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst') && c.details && c.details.gstForm) isFormFilled = true;
+      else if (serviceNameLower.includes('iso') && c.details && c.details.isoForm) isFormFilled = true;
+      else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('one person company') || serviceNameLower.includes('opc')) && c.details && c.details.opcForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('lei') || serviceNameLower.includes('lie')) && c.details && (c.details.leiForm || c.details.lieForm)) isFormFilled = true;
+      else if (serviceNameLower.includes('bis') && c.details && c.details.bisForm) isFormFilled = true;
+      else if (serviceNameLower.includes('mca') && c.details && c.details.mcaForm) isFormFilled = true;
+      else if (serviceNameLower.includes('dsc') && c.details && c.details.dscForm) isFormFilled = true;
+      else if (serviceNameLower.includes('iec') && c.details && c.details.iecForm) isFormFilled = true;
+      else if (serviceNameLower.includes('proprietorship') && c.details && c.details.proprietorshipForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('tds') || serviceNameLower.includes('pan, tan') || serviceNameLower.includes('itr')) && c.details && c.details.tdsForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('pf registration') || serviceNameLower.includes('pf')) && c.details && c.details.pfForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('patent registration') || serviceNameLower.includes('patent')) && c.details && c.details.patentForm) isFormFilled = true;
+      
+      return !isFormFilled;
+    }
+    
+    return false;
   }
 
   getChecklistStatusClass(status: string): string {
+    const s = (status || '').toLowerCase().replace(' ', '-');
     const map: Record<string, string> = {
-      pending: 'status-pending',
-      in_progress: 'status-in-progress',
-      completed: 'status-completed'
+      'pending': 'status-pending',
+      'action-required': 'status-action-required',
+      'in-progress': 'status-in-progress',
+      'completed': 'status-completed'
     };
-    return map[status] || 'status-pending';
+    return map[s] || 'status-pending';
   }
 
   updateChecklistStage(checklistId: string, stage: string) {

@@ -26,6 +26,7 @@ import '../services/service_detail_screen.dart';
 import '../services/tool_detail_screen.dart';
 import '../search/search_screen.dart';
 import '../services/registration_services_screen.dart';
+import '../orders/service_order_detail_screen.dart';
 import '../../core/utils/responsive.dart';
 import '../../core/constants/port.dart';
 import '../../core/widgets/we_loader.dart';
@@ -934,7 +935,12 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      ref.read(navigationIndexProvider.notifier).state = 1;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ServiceOrderDetailScreen(order: order),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,

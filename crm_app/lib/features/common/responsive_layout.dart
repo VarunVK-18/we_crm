@@ -113,26 +113,35 @@ class ResponsiveLayout extends ConsumerWidget {
               statusBarIconBrightness: Brightness.dark,
               statusBarBrightness: Brightness.light,
             ),
-            child: Scaffold(
-              appBar: null,
-              extendBody: true,
-              body: Stack(
-                children: [
-                  mobileBody,
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: SafeArea(
-                      top: false,
-                      child: _ModernBottomNav(
-                        currentIndex: currentIndex,
-                        onTap: onIndexChanged,
-                        navItems: navItems,
+            child: WillPopScope(
+              onWillPop: () async {
+                if (currentIndex != 0) {
+                  onIndexChanged(0);
+                  return false;
+                }
+                return true;
+              },
+              child: Scaffold(
+                appBar: null,
+                extendBody: true,
+                body: Stack(
+                  children: [
+                    mobileBody,
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: SafeArea(
+                        top: false,
+                        child: _ModernBottomNav(
+                          currentIndex: currentIndex,
+                          onTap: onIndexChanged,
+                          navItems: navItems,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

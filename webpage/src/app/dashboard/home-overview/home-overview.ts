@@ -23,12 +23,57 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   private activityChartInstance: any = null;
 
   user = signal<any>(null);
+  revenueGrowth = signal<string>('+0.0%');
+  revenueTrendUp = signal<boolean>(true);
   complianceReminders = signal<any[]>([]);
   orders = signal<any[]>([]);
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
   checklists = signal<any[]>([]);
-  ongoingItems = signal<any[]>([]);
+  ongoingItems = computed(() => {
+    const list: any[] = [];
+    
+    // Add checklists
+    this.filteredRoleChecklists().forEach(c => {
+      let clientObj = typeof c.client_id === 'object' ? c.client_id : this.clients().find(client => client._id === c.client_id);
+      
+      list.push({
+        _id: c._id,
+        title: c.service_name,
+        clientName: c.details?.entityName || c.details?.companyName || clientObj?.company_name || clientObj?.owner_name || 'Client',
+        assignedTo: this.getAssigneeName(c),
+        status: c.status === 'completed' ? 'Certified' : (c.status === 'in_progress' ? 'In Progress' : 'Pending'),
+        isCompleted: c.status === 'completed',
+        createdAt: c.createdAt,
+        type: 'certification'
+      });
+    });
+
+    // Add tasks
+    this.filteredRoleTasks().forEach(t => {
+      let clientObj = typeof t.client_id === 'object' ? t.client_id : this.clients().find(client => client._id === t.client_id);
+      
+      list.push({
+        _id: t._id,
+        title: t.title,
+        clientName: t.details?.entityName || t.details?.companyName || clientObj?.company_name || clientObj?.owner_name || 'Client',
+        assignedTo: t.assigned_to?.owner_name || t.assigned_to?.name || 'Unassigned',
+        status: t.status,
+        isCompleted: t.status === 'Completed' || t.status === 'Approved',
+        createdAt: t.createdAt,
+        type: 'task'
+      });
+    });
+
+    // Sort by createdAt descending
+    list.sort((a, b) => {
+      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return db - da;
+    });
+
+    return list;
+  });
 
   filteredRoleClients = computed(() => this.filterByRole(this.clients(), 'client'));
   filteredRoleTasks = computed(() => this.filterByRole(this.tasks(), 'task'));
@@ -47,14 +92,14 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (role === 'client_manager') {
-      if (type === 'client') return data.filter(c => c.client_manager === userId);
-      if (type === 'task') return data.filter(t => t.client_id?.client_manager === userId);
-      if (type === 'checklist') return data.filter(c => c.client_id?.client_manager === userId);
-      if (type === 'order') return data.filter(o => o.client_id?.client_manager === userId);
-      if (type === 'reminder') return data.filter(r => r.client_id?.client_manager === userId);
+      const allowedClientIds = this.clients().filter(c => c.client_manager === userId || c.created_by === userId || (c.client_manager && c.client_manager._id === userId) || (c.created_by && c.created_by._id === userId)).map(c => c._id);
+      if (type === 'client') return data.filter(c => c.client_manager === userId || c.created_by === userId || (c.client_manager && c.client_manager._id === userId) || (c.created_by && c.created_by._id === userId));
+      if (type === 'task') return data.filter(t => allowedClientIds.includes(typeof t.client_id === 'object' ? t.client_id?._id : t.client_id));
+      if (type === 'checklist') return data.filter(c => allowedClientIds.includes(typeof c.client_id === 'object' ? c.client_id?._id : c.client_id));
+      if (type === 'order') return data.filter(o => allowedClientIds.includes(typeof o.client_id === 'object' ? o.client_id?._id : o.client_id));
     }
 
-    if (role === 'filing_staff') {
+    if (role === 'filing_staff' || role === 'filling_staff') {
       if (type === 'task') return data.filter(t => {
         const tid = typeof t.assigned_to === 'object' ? t.assigned_to?._id : t.assigned_to;
         return tid === userId;
@@ -63,7 +108,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         const cid = typeof c.assigned_to === 'object' ? c.assigned_to?._id : c.assigned_to;
         return cid === userId;
       });
-      return [];
+      return data;
     }
 
     return data;
@@ -94,10 +139,10 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   });
 
   stats: any[] = [
-    { title: 'Active Services', value: '0', detail: '+12% from last month', isTrendUp: true },
+    { title: 'Active Services', value: '0', detail: 'No in process services', isTrendUp: true },
     { title: 'Compliance Score', value: '100%', detail: 'Excellent Standing', isTrendUp: true },
     { title: 'Open Audit Tasks', value: '0', detail: 'All caught up', isGood: true },
-    { title: 'Pending Invoices', value: '0', detail: 'All clear', isGood: true }
+    { title: 'Actions Pending', value: '0', detail: 'All clear', isGood: true }
   ];
 
   constructor(private api: Api) {
@@ -116,7 +161,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         this.fetchTasks();
         this.fetchChecklists();
         
-        if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff') {
+        if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff') {
           this.fetchCompanyComplianceReminders();
           this.fetchCompanyOrders();
         }
@@ -193,7 +238,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         if (res && res.success) {
           this.tasks.set(res.tasks);
-          this.combineOngoingItems();
           this.updateStats();
           this.initOrUpdateCharts();
         }
@@ -206,7 +250,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         if (res && res.success) {
           this.checklists.set(res.checklists);
-          this.combineOngoingItems();
           this.updateStats();
           this.initOrUpdateCharts();
         }
@@ -215,42 +258,29 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   fetchCompanyComplianceReminders() {
-    const companyId = this.getCompanyId();
-    if (companyId) {
-      this.api.get<any>(`compliance/company/${companyId}`).subscribe({
-        next: (res) => {
-          if (res && res.reminders) {
-            this.complianceReminders.set(res.reminders);
-            this.updateStats();
-            this.initOrUpdateCharts();
-          }
+    this.api.get<any>('compliance/tasks/all').subscribe({
+      next: (res) => {
+        if (res && res.tasks) {
+          const mappedReminders = res.tasks.map((t: any) => ({
+            _id: t._id,
+            title: t.title || t.checklistId?.service_name || 'Compliance Task',
+            dueDate: t.dueDate,
+            daysLeft: t.daysLeft,
+            status: t.status === 'Completed' ? 'completed' : 
+                    (t.daysLeft <= 0 ? 'expired' : (t.daysLeft <= 7 ? 'urgent' : 'upcoming')),
+            entityName: t.entityName,
+            client_id: {
+              owner_name: t.clientUid?.owner_name || 'Client',
+              company_name: t.clientUid?.company_name || 'Individual',
+              client_manager: this.user()?.role === 'client_manager' ? (this.user()?._id || this.user()?.id) : null
+            }
+          }));
+          this.complianceReminders.set(mappedReminders);
+          this.updateStats();
+          this.initOrUpdateCharts();
         }
-      });
-    } else {
-      this.api.get<any>('compliance/tasks/all').subscribe({
-        next: (res) => {
-          if (res && res.tasks) {
-            const mappedReminders = res.tasks.map((t: any) => ({
-              _id: t._id,
-              title: t.title || t.checklistId?.service_name || 'Compliance Task',
-              dueDate: t.dueDate,
-              daysLeft: t.daysLeft,
-              status: t.status === 'Completed' ? 'completed' : 
-                      (t.daysLeft <= 0 ? 'expired' : (t.daysLeft <= 7 ? 'urgent' : 'upcoming')),
-              entityName: t.entityName,
-              client_id: {
-                owner_name: t.clientUid?.owner_name || 'Client',
-                company_name: t.clientUid?.company_name || 'Individual',
-                client_manager: this.user()?.role === 'client_manager' ? (this.user()?._id || this.user()?.id) : null
-              }
-            }));
-            this.complianceReminders.set(mappedReminders);
-            this.updateStats();
-            this.initOrUpdateCharts();
-          }
-        }
-      });
-    }
+      }
+    });
   }
 
   fetchCompanyOrders() {
@@ -265,49 +295,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         }
       }
     });
-  }
-
-  combineOngoingItems() {
-    const list: any[] = [];
-    
-    // Add checklists
-    this.filteredRoleChecklists().forEach(c => {
-      if (!c.assigned_to) return;
-      list.push({
-        _id: c._id,
-        title: c.service_name,
-        clientName: c.details?.entityName || c.details?.companyName || c.client_id?.company_name || c.client_id?.owner_name || 'Client',
-        assignedTo: c.assigned_to?.owner_name || c.assigned_to?.name || 'Unassigned',
-        status: c.status === 'completed' ? 'Certified' : (c.status === 'in_progress' ? 'In Progress' : 'Pending'),
-        isCompleted: c.status === 'completed',
-        createdAt: c.createdAt,
-        type: 'certification'
-      });
-    });
-
-    // Add tasks
-    this.filteredRoleTasks().forEach(t => {
-      if (!t.assigned_to) return;
-      list.push({
-        _id: t._id,
-        title: t.title,
-        clientName: t.details?.entityName || t.details?.companyName || t.client_id?.company_name || t.client_id?.owner_name || 'Client',
-        assignedTo: t.assigned_to?.owner_name || t.assigned_to?.name || 'Unassigned',
-        status: t.status,
-        isCompleted: t.status === 'Completed' || t.status === 'Approved',
-        createdAt: t.createdAt,
-        type: 'task'
-      });
-    });
-
-    // Sort by createdAt descending
-    list.sort((a, b) => {
-      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return db - da;
-    });
-
-    this.ongoingItems.set(list);
   }
 
   destroyCharts() {
@@ -696,6 +683,22 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       clientActivityPoints = clientCountByMonth;
     }
 
+    if (revenueDataPoints.length > 1) {
+      const current = revenueDataPoints[revenueDataPoints.length - 1];
+      const previous = revenueDataPoints[revenueDataPoints.length - 2];
+      if (previous > 0) {
+        const growth = ((current - previous) / previous) * 100;
+        this.revenueTrendUp.set(growth >= 0);
+        this.revenueGrowth.set(`${growth >= 0 ? '+' : ''}${growth.toFixed(1)}%`);
+      } else if (current > 0) {
+        this.revenueTrendUp.set(true);
+        this.revenueGrowth.set('+100.0%');
+      } else {
+        this.revenueTrendUp.set(true);
+        this.revenueGrowth.set('+0.0%');
+      }
+    }
+
     const ctxGrowth = this.growthChartCanvas.nativeElement.getContext('2d');
     const ctxRevenue = this.revenueChartCanvas.nativeElement.getContext('2d');
     const ctxActivity = this.activityChartCanvas.nativeElement.getContext('2d');
@@ -769,6 +772,77 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  getAssigneeName(cl: any): string {
+    const stage = (cl.stage || '').toLowerCase();
+    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
+    
+    if (isNew || !cl.assigned_to) {
+      return 'Yet to Assign';
+    }
+    
+    if (cl.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress' && stage !== 'completed') {
+      return 'Yet to Assign';
+    }
+    
+    return cl.assigned_to.owner_name || cl.assigned_to.name || 'Yet to Assign';
+  }
+
+  isActionRequired(c: any): boolean {
+    const serviceNameLower = (c.service_name || '').toLowerCase();
+    const SERVICES_WITH_FORMS = [
+      'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
+      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
+    ];
+    
+    const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
+    
+    if (requiresForm) {
+      let isFormFilled = false;
+      if (serviceNameLower.includes('dpiit') && c.details && c.details.dpiitForm) isFormFilled = true;
+      else if (serviceNameLower.includes('private limited') && c.details && c.details.companyName) isFormFilled = true;
+      else if ((serviceNameLower.includes('trademark') || serviceNameLower.includes('trade mark') || serviceNameLower.includes('copyright')) && c.details && c.details.trademarkForm) isFormFilled = true;
+      else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) isFormFilled = true;
+      else if (serviceNameLower.includes('msme') && c.details && c.details.msmeForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst filing') && c.details && c.details.gstFilingForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst cancellation') && c.details && c.details.gstCancellationForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst compliance') && c.details && c.details.gstComplianceForm) isFormFilled = true;
+      else if (serviceNameLower.includes('gst') && c.details && c.details.gstForm) isFormFilled = true;
+      else if (serviceNameLower.includes('iso') && c.details && c.details.isoForm) isFormFilled = true;
+      else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('one person company') || serviceNameLower.includes('opc')) && c.details && c.details.opcForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('lei') || serviceNameLower.includes('lie')) && c.details && (c.details.leiForm || c.details.lieForm)) isFormFilled = true;
+      else if (serviceNameLower.includes('bis') && c.details && c.details.bisForm) isFormFilled = true;
+      else if (serviceNameLower.includes('mca') && c.details && c.details.mcaForm) isFormFilled = true;
+      else if (serviceNameLower.includes('dsc') && c.details && c.details.dscForm) isFormFilled = true;
+      else if (serviceNameLower.includes('iec') && c.details && c.details.iecForm) isFormFilled = true;
+      else if (serviceNameLower.includes('proprietorship') && c.details && c.details.proprietorshipForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('tds') || serviceNameLower.includes('pan, tan') || serviceNameLower.includes('itr')) && c.details && c.details.tdsForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('pf registration') || serviceNameLower.includes('pf')) && c.details && c.details.pfForm) isFormFilled = true;
+      else if ((serviceNameLower.includes('patent registration') || serviceNameLower.includes('patent')) && c.details && c.details.patentForm) isFormFilled = true;
+      
+      return !isFormFilled;
+    }
+    
+    return false;
+  }
+
+  getChecklistDisplayStatus(c: any): string {
+    if (c.status === 'completed') return 'Completed';
+    
+    const assigneeName = this.getAssigneeName(c);
+    const isAssigned = assigneeName !== 'Yet to Assign';
+
+    if (isAssigned) {
+      if (this.isActionRequired(c)) {
+        return 'Action Required';
+      } else {
+        return 'In Progress';
+      }
+    }
+
+    return 'Pending';
+  }
+
   updateStats() {
     const activeServicesCount = this.getTotalServicesCount();
 
@@ -798,13 +872,15 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const openTasksCount = this.filteredRoleTasks().filter(t => !['Approved', 'Completed', 'Cancelled'].includes(t.status)).length;
-    const pendingInvoicesCount = this.filteredRoleOrders().filter(o => o.status === 'notInitialized').length;
+    
+    const actionRequiredCount = this.filteredRoleChecklists().filter(c => this.getChecklistDisplayStatus(c) === 'Action Required').length;
+    const inProcessCount = this.filteredRoleChecklists().filter(c => this.getChecklistDisplayStatus(c) === 'In Progress').length;
 
     this.stats = [
       { 
         title: 'Active Services', 
-        value: activeServicesCount.toString(), 
-        detail: '+12% from last month', 
+        value: inProcessCount.toString(), 
+        detail: inProcessCount > 0 ? `${inProcessCount} services in process` : 'No in process services', 
         isTrendUp: true 
       },
       { 
@@ -821,11 +897,11 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         isGood: openTasksCount === 0 
       },
       { 
-        title: 'Pending Invoices', 
-        value: pendingInvoicesCount.toString(), 
-        detail: pendingInvoicesCount > 0 ? `${pendingInvoicesCount} requires initialization` : 'All clear', 
-        isGood: pendingInvoicesCount === 0,
-        isWarning: pendingInvoicesCount > 0
+        title: 'Actions Pending', 
+        value: actionRequiredCount.toString(), 
+        detail: actionRequiredCount > 0 ? `${actionRequiredCount} action required services` : 'All clear', 
+        isGood: actionRequiredCount === 0,
+        isWarning: actionRequiredCount > 0
       }
     ];
   }

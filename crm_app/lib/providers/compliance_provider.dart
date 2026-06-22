@@ -12,6 +12,76 @@ final selectedEntityProvider = StateProvider<String>((ref) {
   return 'All Entities'; // Default to all entities
 });
 
+class CertificateModel {
+  final String id;
+  final String serviceName;
+  final String certificateNumber;
+  final String expiryDate;
+  final int daysRemaining;
+  final String renewalStatus;
+  final bool renewalRequired;
+  final String entityName;
+
+  CertificateModel({
+    required this.id,
+    required this.serviceName,
+    required this.certificateNumber,
+    required this.expiryDate,
+    required this.daysRemaining,
+    required this.renewalStatus,
+    required this.renewalRequired,
+    required this.entityName,
+  });
+
+  factory CertificateModel.fromJson(Map<String, dynamic> json) {
+    return CertificateModel(
+      id: json['_id'] ?? '',
+      serviceName: json['serviceName'] ?? '',
+      certificateNumber: json['certificateNumber'] ?? '',
+      expiryDate: json['expiryDate'] ?? '',
+      daysRemaining: (json['daysRemaining'] as num?)?.toInt() ?? 0,
+      renewalStatus: json['renewalStatus'] ?? 'Active',
+      renewalRequired: json['renewalRequired'] ?? true,
+      entityName: json['entityName'] ?? '',
+    );
+  }
+}
+
+final certificatesProvider = StreamProvider<List<CertificateModel>>((ref) {
+  final uid = ref.watch(authStateProvider).value?.uid;
+  if (uid == null) return Stream.value([]);
+
+  final controller = StreamController<List<CertificateModel>>();
+
+  Future<void> fetchCertificates() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/certificates/client/$uid'),
+        headers: {'x-user-id': uid},
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        final List<dynamic> certsJson = data['certificates'] ?? [];
+        final certs = certsJson.map((json) => CertificateModel.fromJson(json)).toList();
+        if (!controller.isClosed) controller.add(certs);
+      }
+    } catch (e) {
+      debugPrint("Error fetching certificates API: $e");
+    }
+  }
+
+  fetchCertificates();
+  final timer = Timer.periodic(const Duration(seconds: 4), (_) => fetchCertificates());
+
+  ref.onDispose(() {
+    timer.cancel();
+    controller.close();
+  });
+
+  return controller.stream;
+});
+
 /// Real-time stream of [ComplianceTask] documents from the database.
 final complianceRemindersProvider =
     StreamProvider<List<ComplianceTask>>((ref) {
@@ -77,10 +147,11 @@ final complianceRemindersProvider =
             final String rawStatus = t['status']?.toString() ?? 'Upcoming';
             
             TaskStatus status = TaskStatus.upcoming;
-            if (rawStatus == 'Due Soon') status = TaskStatus.dueSoon;
-            else if (rawStatus == 'Critical') status = TaskStatus.critical;
-            else if (rawStatus == 'Overdue') status = TaskStatus.overdue;
-            else if (rawStatus == 'Completed') status = TaskStatus.completed;
+            final lowerStatus = rawStatus.toLowerCase();
+            if (lowerStatus == 'due soon') status = TaskStatus.dueSoon;
+            else if (lowerStatus == 'critical') status = TaskStatus.critical;
+            else if (lowerStatus == 'overdue') status = TaskStatus.overdue;
+            else if (lowerStatus == 'completed') status = TaskStatus.completed;
 
             final List<ComplianceDocument> docs = [];
             

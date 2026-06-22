@@ -168,14 +168,31 @@ export class ClientHelpSupport implements OnInit {
     this.faqs[index].isOpen = !this.faqs[index].isOpen;
   }
 
+  getSupportPhone(): string {
+    const manager = this.clientManager();
+    if (manager && manager.phone) {
+      let phone = manager.phone.replace(/[^\d+]/g, '');
+      if (phone.length === 10) {
+        phone = '91' + phone;
+      }
+      if (phone.length > 0) return phone;
+    }
+    return '918072286963';
+  }
+
   openWhatsApp() {
-    const phone = '918072286963';
+    let phone = this.getSupportPhone();
+    phone = phone.replace('+', '');
     const message = 'Hi Wealth Empires Support, I need help with...';
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   }
 
   callSupport() {
-    window.location.href = 'tel:+918072286963';
+    let phone = this.getSupportPhone();
+    if (!phone.startsWith('+') && phone.length >= 10) {
+      phone = '+' + phone;
+    }
+    window.location.href = `tel:${phone}`;
   }
 }

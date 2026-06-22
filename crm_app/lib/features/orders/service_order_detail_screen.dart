@@ -484,7 +484,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                                 final valStr = e.value?.toString() ?? '';
                                                 if (valStr.isEmpty) return const SizedBox.shrink();
                                                 
-                                                String formattedKey = e.key.replaceAll(RegExp(r'([a-z])([A-Z])'), r'$1 $2').toUpperCase();
+                                                String formattedKey = e.key.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (match) => '${match.group(1)} ${match.group(2)}').toUpperCase();
                                                 
                                                 return Padding(
                                                   padding: const EdgeInsets.only(bottom: 16),
@@ -748,20 +748,59 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      // _showPaymentGateway(context); (Would be called if accessible here)
-                                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please tap Contact Manager at the top.')));
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppTheme.corporateBlue,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    ),
-                                    child: const Text('Pay Now', style: TextStyle(fontWeight: FontWeight.bold)),
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade50,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: Colors.grey.shade200),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.corporateBlue.withOpacity(0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(LucideIcons.user, color: AppTheme.corporateBlue),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Contact your manager',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              order.assignedExpert,
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                                color: AppTheme.deepTeal,
+                                              ),
+                                            ),
+                                            if (order.expertPhone.isNotEmpty) ...[
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                order.expertPhone,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Colors.grey.shade700,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],

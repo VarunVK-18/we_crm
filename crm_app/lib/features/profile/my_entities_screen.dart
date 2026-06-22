@@ -22,10 +22,35 @@ class MyEntitiesScreen extends ConsumerWidget {
         userAsync.isLoading || (ordersAsync.isLoading && orders.isEmpty);
 
     // ── Real entities from the profile API (client_entities[]) ────────────
-    final clientEntities = userAsync.value?.clientEntities ?? [];
+    final List<ClientEntity> clientEntities = List.from(userAsync.value?.clientEntities ?? []);
+
+    // Create a map to ensure uniqueness by entityName
+    final Map<String, ClientEntity> mergedEntities = {};
+    for (final ce in clientEntities) {
+      mergedEntities[ce.entityName.trim().toLowerCase()] = ce;
+    }
+
+    // Add entities found in orders that aren't in clientEntities yet
+    for (final o in orders) {
+      final name = o.entityName.trim().isNotEmpty && o.entityName.trim() != 'Default'
+          ? o.entityName.trim()
+          : o.companyName.trim();
+      if (name.isNotEmpty && !mergedEntities.containsKey(name.toLowerCase())) {
+        mergedEntities[name.toLowerCase()] = ClientEntity(
+          entityName: name,
+          entityType: 'Company', // fallback
+          cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
+          trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
+          patentApplicationNumber: '', patentStatus: '', patentNumber: '',
+          copyrightRegistrationNumber: '', copyrightCertificate: '',
+        );
+      }
+    }
+    
+    final finalEntities = mergedEntities.values.toList();
 
     // Enrich with active service count from checklists
-    final entityCards = clientEntities.map((e) {
+    final entityCards = finalEntities.map((e) {
       final entityName = e.entityName.trim();
       final activeCount = orders
           .where((o) =>

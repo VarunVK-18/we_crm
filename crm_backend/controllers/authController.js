@@ -211,7 +211,7 @@ const getUserProfile = async (req, res) => {
 
     if (user.created_by) {
       const creator = await User.findById(user.created_by).select('-password');
-      if (creator && creator.role === 'client_manager') {
+      if (creator) {
         clientManager = creator.toObject();
       }
     }
@@ -754,6 +754,10 @@ const subscribeService = async (req, res) => {
       'details.entityName': requestedEntityName,
       status: { $ne: 'completed' }
     });
+
+    if (existingChecklist) {
+      return res.status(409).json({ success: false, message: 'Service request already done wait for manager approval' });
+    }
 
     if (isNewSubscription || !existingChecklist) {
 

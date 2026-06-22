@@ -232,12 +232,10 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         const checklists = res.checklists || [];
         const found = checklists.find((c: any) => c._id === this.orderId());
         if (found) {
-          const isAssigned = !!found.assigned_to;
+          const isAssigned = this.isFormEnabled(found);
           let status = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'in-progress');
           
           if (status === 'in-progress') {
-            // Rely on the backend's dynamically computed action_required flag
-            // which covers ALL services that require a form to be filled
             if (found.action_required) {
               status = 'action-required';
             }
@@ -253,6 +251,21 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         if (!silent) this.isLoading.set(false);
       }
     });
+  }
+
+  isFormEnabled(order: any): boolean {
+    if (!order || !order.assigned_to) return false;
+    if (order.status === 'completed') return false;
+    
+    const stage = (order.stage || '').toLowerCase();
+    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
+    if (isNew) return false;
+    
+    if (order.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress') {
+      return false;
+    }
+    
+    return true;
   }
 
   toggleChecklistItem(item: any, event: Event) {
@@ -459,10 +472,33 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   uploadRequestedDocument(doc: any, event: any) {
     const file = event.target.files[0];
     if (!file) return;
-    
-    // In a real app we would use FormData to upload the file to the server.
-    // For now we just mark it as uploaded in the UI.
-    alert('File selected for upload: ' + file.name + '. Implementation pending backend endpoint.');
-    doc.isUploaded = true;
+
+    const formData = new FormData();
+    formData.append('document', file);
+    formData.append('docName', doc.name);
+
+    this.api.post<any>(`checklists/${this.orderId()}/upload-documents`, formData).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          doc.isUploaded = true;
+          this.fetchOrderDetails(true); // refresh to get the updated document status
+          alert('Document uploaded successfully!');
+        }
+      },
+      error: (err) => {
+        console.error('Failed to upload document:', err);
+        alert(err.error?.message || 'Failed to upload document');
+      }
+    });
+  }
+
+  formatKey(key: string): string {
+    if (!key) return '';
+    return key.replace(/([a-z])([A-Z])/g, '$1 $2').toUpperCase();
+  }
+
+  getDirectorKeys(dir: any): string[] {
+    if (!dir) return [];
+    return Object.keys(dir).filter(k => !['directorName', 'name', 'fullName', '_id'].includes(k));
   }
 }

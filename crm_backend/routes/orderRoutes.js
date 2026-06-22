@@ -4,9 +4,18 @@ const orderController = require('../controllers/orderController');
 const { checkUser } = require('../middleware/rbac');
 const multer = require('multer');
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/dpiit/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
 const upload = multer({
-  dest: 'uploads/dpiit/',
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB limit
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
 });
 
 router.get('/user/:userId', orderController.getUserOrders);

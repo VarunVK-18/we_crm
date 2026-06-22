@@ -423,10 +423,10 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                         if (!isMe)
                           Text(
                             senderName,
-                            style: TextStyle(
-                              fontSize: 12,
+                            style: const TextStyle(
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade800,
+                              color: Color(0xFF4B9BFF), // Light blue
                             ),
                           ),
                         if (!isMe) const SizedBox(width: 8),
@@ -450,21 +450,21 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                   ),
                 ],
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isMe ? AppTheme.deepTeal : Colors.white,
+                    color: isMe ? const Color(0xFF111827) : const Color(0xFF232427),
                     borderRadius: BorderRadius.circular(16).copyWith(
-                      bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
-                      bottomLeft: !isMe ? const Radius.circular(4) : const Radius.circular(16),
+                      bottomRight: isMe ? const Radius.circular(2) : const Radius.circular(16),
+                      topLeft: !isMe ? const Radius.circular(2) : const Radius.circular(16),
                     ),
-                    border: isMe ? null : Border.all(color: Colors.grey.shade200),
                   ),
               child: RichText(
                 text: TextSpan(
                   text: content,
-                  style: TextStyle(
-                    color: isMe ? Colors.white : Colors.black87,
-                    fontSize: 14,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14.5,
+                    height: 1.3,
                     decoration: TextDecoration.none,
                   ),
                   children: [
@@ -479,8 +479,8 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             Text(
                               timeStr,
                               style: TextStyle(
-                                color: isMe ? Colors.white.withOpacity(0.7) : Colors.grey.shade500,
-                                fontSize: 10,
+                                color: Colors.white.withOpacity(0.5),
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),

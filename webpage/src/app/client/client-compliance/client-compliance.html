@@ -22,6 +22,21 @@
     </div>
   } @else {
     <div class="compliance-content">
+      @if (hasWarningCertificates()) {
+        <div class="warning-banner" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start;">
+          <hugeicons-icon [icon]="Alert01Icon" [size]="24" color="#dc2626" [strokeWidth]="2" style="flex-shrink: 0; margin-top: 2px;"></hugeicons-icon>
+          <div>
+            <h3 style="color: #991b1b; font-size: 16px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.3px;">Attention Required</h3>
+            <p style="color: #b91c1c; font-size: 14px; margin: 0 0 12px 0; font-weight: 500;">{{ warningCertificates().length }} certificates require renewal action.</p>
+            <ul style="margin: 0; padding-left: 16px; color: #b91c1c; font-size: 13px;">
+              @for (cert of warningCertificates(); track cert._id) {
+                <li style="margin-bottom: 4px;"><strong>{{ cert.serviceName }}</strong> expires in {{ cert.daysRemaining }} days.</li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
+
       <div class="grid-row">
         <!-- Health Card -->
         <div class="bento-card health-card">
@@ -128,12 +143,81 @@
                       }
                     </td>
                     <td>
-                      @if (item.type === 'Completed') {
+                      @if (item.type?.toLowerCase() === 'completed') {
                         <span class="status-badge resolved-badge">COMPLETED</span>
                       } @else if (item.type === 'Overdue' || item.daysLeft < 0) {
                         <span class="status-badge" style="background: #fee2e2; color: #dc2626;">OVERDUE</span>
                       } @else {
                         <span class="status-badge pending-badge">PENDING</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Renewals & Expiry -->
+      <div class="main-table-card" style="margin-top: 24px;">
+        <div class="table-card-header">
+          <div class="header-left">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">Renewals & Expiry</h3>
+          </div>
+        </div>
+        <div class="table-container">
+          <table class="tickets-table">
+            <thead>
+              <tr>
+                <th>SERVICE NAME</th>
+                <th>CERTIFICATE NO</th>
+                <th>EXPIRY DATE</th>
+                <th>DAYS REMAINING</th>
+                <th>STATUS</th>
+                <th>ACTION</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (filteredCertificates().length === 0) {
+                <tr>
+                  <td colspan="6" class="empty-state" style="text-align: center; padding: 40px; color: #64748b;">No certificates found</td>
+                </tr>
+              } @else {
+                @for (cert of filteredCertificates(); track cert._id) {
+                  <tr>
+                    <td style="color: #0f172a; font-weight: 600;">{{ cert.serviceName }}</td>
+                    <td style="color: #475569; font-size: 13px;">{{ cert.certificateNumber }}</td>
+                    <td style="font-size: 13px; font-weight: 500; color: #334155;">{{ cert.expiryDate | date:'mediumDate' }}</td>
+                    <td style="font-size: 13px;">
+                      @if (cert.daysRemaining < 0) {
+                        <span style="color: #ef4444; font-weight: 600;">Expired</span>
+                      } @else {
+                        <span style="color: #64748b; font-weight: 500;">{{ cert.daysRemaining }} days left</span>
+                      }
+                    </td>
+                    <td>
+                      @if (cert.renewalStatus === 'Active') {
+                        <span class="status-badge" style="background: #dcfce7; color: #16a34a;">ACTIVE</span>
+                      } @else if (cert.renewalStatus === 'Renewal Upcoming') {
+                        <span class="status-badge" style="background: #f3f4f6; color: #4b5563;">UPCOMING</span>
+                      } @else if (cert.renewalStatus === 'Due Soon' || cert.renewalStatus === 'Action Required') {
+                        <span class="status-badge" style="background: #fef3c7; color: #d97706;">{{ cert.renewalStatus | uppercase }}</span>
+                      } @else if (cert.renewalStatus === 'Critical') {
+                        <span class="status-badge" style="background: #fee2e2; color: #dc2626;">CRITICAL</span>
+                      } @else if (cert.renewalStatus === 'Expired') {
+                        <span class="status-badge" style="background: #f1f5f9; color: #64748b;">EXPIRED</span>
+                      } @else {
+                        <span class="status-badge pending-badge">{{ cert.renewalStatus | uppercase }}</span>
+                      }
+                    </td>
+                    <td>
+                      @if (cert.renewalRequired && cert.renewalStatus !== 'Renewal Processing') {
+                        <button (click)="openRenewModal(cert)" style="font-family: inherit; background: var(--palette-dark); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                          Renew Now
+                        </button>
+                      } @else if (cert.renewalStatus === 'Renewal Processing') {
+                        <span style="font-size: 12px; color: #64748b; font-weight: 500;">Processing...</span>
                       }
                     </td>
                   </tr>
@@ -186,7 +270,7 @@
                     <h4>{{ task.title }}</h4>
                     <p>{{ task.message }} - Status: <strong>{{ task.status }}</strong></p>
                   </div>
-                  @if (task.status === 'Completed') {
+                  @if (task.status?.toLowerCase() === 'completed') {
                     <div style="display: flex; align-items: center; gap: 6px; color: #10b981; font-weight: 600; font-size: 13px;">
                       <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#10b981" [strokeWidth]="2.5"></hugeicons-icon>
                       Completed
@@ -241,6 +325,40 @@
               }
             </div>
           }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Renew Confirmation Modal -->
+  @if (isRenewModalOpen()) {
+    <div class="modal-overlay" (click)="isRenewModalOpen.set(false)">
+      <div class="modal-content" style="max-width: 400px; padding: 32px;" (click)="$event.stopPropagation()">
+        <div class="modal-header" style="border: none; padding-bottom: 0; margin-bottom: 16px;">
+          <div style="width: 100%;">
+            <h2 style="font-size: 20px; text-align: center; color: var(--text-dark); margin-bottom: 8px;">Renew Service</h2>
+            <p style="text-align: center; color: #64748b; font-size: 14px;">Do you want to submit a renewal request for this service?</p>
+          </div>
+        </div>
+        
+        <div style="background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="color: #64748b; font-size: 13px;">Service</span>
+            <strong style="color: #0f172a; font-size: 13px;">{{ selectedCertForRenewal()?.serviceName }}</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: #64748b; font-size: 13px;">Certificate No</span>
+            <strong style="color: #0f172a; font-size: 13px;">{{ selectedCertForRenewal()?.certificateNumber }}</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; width: 100%;">
+          <button (click)="isRenewModalOpen.set(false)" style="flex: 1; padding: 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; color: #475569; cursor: pointer; transition: background 0.2s;">
+            Cancel
+          </button>
+          <button (click)="confirmRenewal()" [disabled]="isRenewing()" style="font-family: inherit; flex: 1; padding: 12px; background: var(--palette-dark); border: none; border-radius: 8px; font-weight: 600; color: white; cursor: pointer; transition: opacity 0.2s;" [style.opacity]="isRenewing() ? '0.7' : '1'">
+            {{ isRenewing() ? 'Submitting...' : 'Submit Request' }}
+          </button>
         </div>
       </div>
     </div>

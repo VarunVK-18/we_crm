@@ -3,12 +3,28 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/whatsapp_utils.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../providers/auth_provider.dart';
 
-class ChatSupportScreen extends StatelessWidget {
+class ChatSupportScreen extends ConsumerWidget {
   const ChatSupportScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userProfileProvider).value;
+    String supportPhone = '918072286963';
+    
+    if (user != null && user.manager != null && user.manager!['phone'] != null) {
+      String phone = user.manager!['phone'].toString().replaceAll(RegExp(r'[^\d+]'), '');
+      if (phone.length == 10) {
+        phone = '91$phone';
+      }
+      if (phone.isNotEmpty) supportPhone = phone;
+    }
+
+    String waPhone = supportPhone.replaceAll('+', '');
+
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
@@ -73,7 +89,7 @@ class ChatSupportScreen extends StatelessWidget {
               color: const Color(0xFF25D366),
               onTap: () => openWhatsApp(
                 context: context,
-                phone: '918072286963',
+                phone: waPhone,
                 message: 'Hi Wealth Empires Support, I need help with...',
               ),
             ),
@@ -83,7 +99,7 @@ class ChatSupportScreen extends StatelessWidget {
               title: 'Call Support',
               subtitle: 'Speak directly with our consultants',
               color: AppTheme.corporateBlue,
-              onTap: () {}, // Would use url_launcher for tel: link
+              onTap: () => launchUrl(Uri.parse('tel:${supportPhone.startsWith('+') ? supportPhone : '+$supportPhone'}')),
             ),
             const SizedBox(height: 48),
             const Align(

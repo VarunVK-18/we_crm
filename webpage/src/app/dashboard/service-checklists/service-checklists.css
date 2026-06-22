@@ -283,6 +283,7 @@
 }
 
 .status-pill.status-pending { background-color: #fef3c7; color: #92400e; }
+.status-pill.status-action-required { background-color: #fee2e2; color: #b91c1c; }
 .status-pill.status-in-progress { background-color: #ccfbf1; color: #115e59; }
 .status-pill.status-completed { background-color: #d1fae5; color: #065f46; }
 

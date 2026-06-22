@@ -17,7 +17,7 @@ const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac')
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 1 * 1024 * 1024 } // 1MB limit
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB limit
 });
 
 // Task Management Routes

@@ -1,9 +1,11 @@
 import { Component, signal, OnInit } from '@angular/core';
+import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../../api';
 import { DraftService } from '../../../services/draft.service';
+import { ValidationUtils } from '../../../utils/validation.utils';
 
 interface Director {
   fullName: string;
@@ -34,7 +36,7 @@ interface Director {
 @Component({
   selector: 'app-incorp-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './incorp-form.html',
   styleUrl: './incorp-form.css',
 })
@@ -42,6 +44,7 @@ export class IncorpForm implements OnInit {
   orderId = signal<string>('');
   isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
+  isSuccess = signal<boolean>(false);
   errorMessage = signal<string>('');
 
   // Company Details
@@ -70,7 +73,23 @@ export class IncorpForm implements OnInit {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
       this.fetchOrderDetails();
+      this.loadDraft();
     });
+  }
+
+  loadDraft() {
+    const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+    if (draft) {
+      this.companyName = draft.companyName || '';
+      this.businessActivity = draft.businessActivity || '';
+      this.officePreference = draft.officePreference || 'Already have address';
+      this.ownerName = draft.ownerName || '';
+      this.companyEmail = draft.companyEmail || '';
+      this.companyPhone = draft.companyPhone || '';
+      this.paidUpCapital = draft.paidUpCapital || '';
+      this.valuePerShare = draft.valuePerShare || '';
+      this.numberOfShares = draft.numberOfShares || '';
+    }
   }
 
   fetchOrderDetails() {
@@ -144,6 +163,17 @@ export class IncorpForm implements OnInit {
       return;
     }
 
+    if (this.companyEmail && !ValidationUtils.isValidEmail(this.companyEmail)) {
+      this.errorMessage.set('Please enter a valid company email containing @.');
+      ValidationUtils.scrollToError('companyEmailInput');
+      return;
+    }
+    if (this.companyPhone && !ValidationUtils.isValidPhone(this.companyPhone)) {
+      this.errorMessage.set('Please enter a valid 10-digit company phone number.');
+      ValidationUtils.scrollToError('companyPhoneInput');
+      return;
+    }
+
     const capital = parseInt(this.paidUpCapital) || 0;
     if (capital < 10000) {
       this.errorMessage.set('Paid up share capital must be at least ₹10,000.');
@@ -155,11 +185,28 @@ export class IncorpForm implements OnInit {
       return;
     }
 
-    // Check director files
+    // Check director files & validations
     for (let i = 0; i < this.directors.length; i++) {
       const d = this.directors[i];
+      if (!ValidationUtils.isValidEmail(d.email)) {
+        this.errorMessage.set(`Please enter a valid email containing @ for Person ${i + 1}.`);
+        ValidationUtils.scrollToError(`directorEmailInput_${i}`);
+        return;
+      }
+      if (!ValidationUtils.isValidPhone(d.phone)) {
+        this.errorMessage.set(`Please enter a valid 10-digit phone number for Person ${i + 1}.`);
+        ValidationUtils.scrollToError(`directorPhoneInput_${i}`);
+        return;
+      }
+      if (!ValidationUtils.isValidPan(d.pan)) {
+        this.errorMessage.set(`Please enter a valid PAN (e.g. ABCDE1234F) for Person ${i + 1}.`);
+        ValidationUtils.scrollToError(`directorPanInput_${i}`);
+        return;
+      }
+
       if (!d.photoFile || !d.signatureFile || !d.addressProofFile || !d.aadhaarFile || !d.panFile) {
         this.errorMessage.set(`Please upload all required files for Person ${i + 1}`);
+        ValidationUtils.scrollToError(`directorFileInput_${i}`);
         return;
       }
     }
@@ -218,9 +265,11 @@ export class IncorpForm implements OnInit {
       next: (res) => {
         this.isSubmitting.set(false);
         if (res && res.success) {
-          alert('Incorporation details submitted successfully!');
-        this.draftService.clearDraft(this.orderId(), this.constructor.name);
-          this.router.navigate(['/client/service', this.orderId()]);
+          this.isSuccess.set(true);
+          this.draftService.clearDraft(this.orderId(), this.constructor.name);
+          setTimeout(() => {
+            this.router.navigate(['/client/service', this.orderId()]);
+          }, 2000);
         }
       },
       error: (err) => {

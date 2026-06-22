@@ -14,6 +14,8 @@ import '../../core/utils/responsive.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/port.dart';
 import '../../core/widgets/we_loader.dart';
+import '../../providers/auth_provider.dart';
+import 'package:http/http.dart' as http;
 
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
@@ -431,6 +433,11 @@ class ComplianceRadarScreen extends ConsumerWidget {
         ? null
         : pendingReminders.reduce((a, b) => a.daysLeft < b.daysLeft ? a : b);
 
+    final certsAsync = ref.watch(certificatesProvider);
+    final certs = certsAsync.value ?? [];
+    final filteredCerts = certs.where((c) => currentEntity == 'All Entities' || c.entityName == currentEntity).toList();
+    final warningCerts = filteredCerts.where((c) => ['Due Soon', 'Action Required', 'Critical', 'Expired'].contains(c.renewalStatus)).toList();
+
     // Map upcoming items dynamically to the timeline card
     final List<Map<String, String>> timelineItems = pendingReminders
         .map((r) => <String, String>{
@@ -603,6 +610,39 @@ class ComplianceRadarScreen extends ConsumerWidget {
                             ],
                           ),
                           SizedBox(height: 32.r),
+                          if (warningCerts.isNotEmpty) ...[
+                            Container(
+                              padding: EdgeInsets.all(16.r),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFEF2F2),
+                                border: Border.all(color: const Color(0xFFFECACA)),
+                                borderRadius: BorderRadius.circular(12.r),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Icon(LucideIcons.alertCircle, color: const Color(0xFFDC2626), size: 24.r),
+                                  SizedBox(width: 16.r),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Attention Required', style: GoogleFonts.outfit(fontSize: 16.sp, fontWeight: FontWeight.w700, color: const Color(0xFF991B1B))),
+                                        SizedBox(height: 4.r),
+                                        Text('${warningCerts.length} certificates require renewal action.', style: GoogleFonts.outfit(fontSize: 14.sp, fontWeight: FontWeight.w500, color: const Color(0xFFB91C1C))),
+                                        SizedBox(height: 8.r),
+                                        ...warningCerts.map((c) => Padding(
+                                          padding: EdgeInsets.only(bottom: 4.r),
+                                          child: Text('• ${c.serviceName} expires in ${c.daysRemaining} days.', style: GoogleFonts.outfit(fontSize: 13.sp, color: const Color(0xFFB91C1C))),
+                                        )),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 16.r),
+                          ],
 
                           // --- Grid Layout ---
                           Row(
@@ -740,6 +780,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                     },
                                   ],
                           ),
+                          SizedBox(height: 16.r),
+                          _BentoRenewalsCard(certificates: filteredCerts),
                           SizedBox(
                               height: 120
                                   .r), // Added extra padding for bottom nav bar
@@ -1639,6 +1681,194 @@ class _ReminderItem extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _BentoRenewalsCard extends ConsumerWidget {
+  final List<CertificateModel> certificates;
+  const _BentoRenewalsCard({required this.certificates});
+
+  Color _getStatusColor(String status) {
+    if (status == 'Active') return Colors.green;
+    if (status == 'Renewal Upcoming') return Colors.grey;
+    if (status == 'Due Soon' || status == 'Action Required') return Colors.orange;
+    if (status == 'Critical') return Colors.red;
+    if (status == 'Expired') return Colors.grey;
+    return Colors.grey;
+  }
+
+  void _showRenewConfirmDialog(BuildContext context, WidgetRef ref, CertificateModel cert) {
+    bool isSubmitting = false;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+              title: Text('Renew Service', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 20.sp)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Do you want to submit a renewal request for this service?', style: GoogleFonts.outfit(fontSize: 14.sp)),
+                  SizedBox(height: 16.r),
+                  Container(
+                    padding: EdgeInsets.all(12.r),
+                    decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8.r)),
+                    child: Column(
+                      children: [
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          Text('Service', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 13.sp)),
+                          Expanded(child: Text(cert.serviceName, textAlign: TextAlign.right, style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 13.sp))),
+                        ]),
+                        SizedBox(height: 8.r),
+                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          Text('Certificate No', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 13.sp)),
+                          Text(cert.certificateNumber, style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 13.sp)),
+                        ]),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+                  child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.grey[600], fontWeight: FontWeight.bold)),
+                ),
+                ElevatedButton(
+                  onPressed: isSubmitting ? null : () async {
+                    setState(() => isSubmitting = true);
+                    try {
+                      final uid = ref.read(authStateProvider).value?.uid;
+                      final res = await http.post(
+                        Uri.parse('$kBaseUrl/api/certificates/${cert.id}/renew'),
+                        headers: {'x-user-id': uid ?? ''},
+                      );
+                      setState(() => isSubmitting = false);
+                      Navigator.pop(ctx);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Renewal request submitted!')));
+                      ref.refresh(certificatesProvider);
+                    } catch (e) {
+                      setState(() => isSubmitting = false);
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to submit renewal')));
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.corporateBlue,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                  ),
+                  child: Text(isSubmitting ? 'Submitting...' : 'Submit Request', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            );
+          }
+        );
+      }
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      padding: EdgeInsets.all(24.r),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Renewals & Expiry',
+            style: GoogleFonts.outfit(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.deepTeal,
+              letterSpacing: -0.5,
+            ),
+          ),
+          SizedBox(height: 16.r),
+          if (certificates.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 24.r),
+              child: Center(
+                child: Text('No certificates found.', style: GoogleFonts.outfit(color: Colors.grey, fontSize: 14.sp)),
+              ),
+            )
+          else
+            ...certificates.map((cert) => Container(
+              margin: EdgeInsets.only(bottom: 12.r),
+              padding: EdgeInsets.all(16.r),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          cert.serviceName,
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15.sp, color: AppTheme.deepTeal),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 4.r),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(cert.renewalStatus).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6.r),
+                        ),
+                        child: Text(
+                          cert.renewalStatus.toUpperCase(),
+                          style: GoogleFonts.outfit(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.bold,
+                            color: _getStatusColor(cert.renewalStatus),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8.r),
+                  Text('Cert No: ${cert.certificateNumber}', style: GoogleFonts.outfit(fontSize: 13.sp, color: Colors.grey[600])),
+                  Text('Expires: ${cert.expiryDate.split("T")[0]}', style: GoogleFonts.outfit(fontSize: 13.sp, color: Colors.grey[600])),
+                  Text('${cert.daysRemaining} Days Remaining', style: GoogleFonts.outfit(fontSize: 13.sp, fontWeight: FontWeight.bold, color: cert.daysRemaining < 0 ? Colors.red : Colors.grey[800])),
+                  if (cert.renewalRequired && cert.renewalStatus != 'Renewal Processing') ...[
+                    SizedBox(height: 12.r),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () => _showRenewConfirmDialog(context, ref, cert),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.deepTeal,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
+                        ),
+                        child: Text('Renew Now', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                      ),
+                    ),
+                  ] else if (cert.renewalStatus == 'Renewal Processing') ...[
+                    SizedBox(height: 12.r),
+                    Text('Renewal in Processing...', style: GoogleFonts.outfit(color: Colors.grey, fontStyle: FontStyle.italic)),
+                  ],
+                ],
+              ),
+            )),
+        ],
       ),
     );
   }

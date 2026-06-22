@@ -96,6 +96,17 @@ const createChecklist = async (req, res) => {
       notes: notes || ''
     });
 
+    if (assigned_to) {
+      const Notification = require('../models/Notification');
+      await Notification.create({
+        client_id: assigned_to,
+        title: 'New Service Assigned',
+        message: `You have been assigned to handle the service '${service_name}' for client '${client.owner_name}'`,
+        type: 'status_update',
+        order_id: checklist._id
+      });
+    }
+
     await logActivity(
       req.user._id,
       'checklist_created',
@@ -305,7 +316,20 @@ const updateChecklist = async (req, res) => {
       if (details !== undefined) checklist.details = details;
     } else {
       if (assigned_to !== undefined) {
+        const prevAssigned = checklist.assigned_to ? checklist.assigned_to.toString() : null;
         checklist.assigned_to = assigned_to || null;
+        
+        if (assigned_to && assigned_to.toString() !== prevAssigned) {
+          const Notification = require('../models/Notification');
+          await Notification.create({
+            client_id: assigned_to,
+            title: 'New Service Assigned',
+            message: `You have been assigned to handle the service '${checklist.service_name}'`,
+            type: 'status_update',
+            order_id: checklist._id
+          });
+        }
+        
         // Set action_required for ALL services that have a form
         if (assigned_to) {
           const formServices = [

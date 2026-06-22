@@ -49,6 +49,8 @@ exports.sendMessage = async (req, res) => {
       const isClientSender = (order.client_id && order.client_id.toString() === senderId.toString()) || senderRole === 'customer' || senderRole === 'client';
 
       if (isClientSender) {
+        let notifiedUserIds = new Set();
+
         // Sent by client, notify assigned filing staff
         if (order.assigned_to && order.assigned_to.toString() !== senderId.toString()) {
           await Notification.create({
@@ -59,10 +61,11 @@ exports.sendMessage = async (req, res) => {
             order_id: orderId,
             related_data: { messageId: newMessage._id }
           });
+          notifiedUserIds.add(order.assigned_to.toString());
         }
         
-        // Notify client manager
-        if (order.created_by && order.assigned_to?.toString() !== order.created_by.toString() && order.created_by.toString() !== senderId.toString()) {
+        // Notify client manager (creator)
+        if (order.created_by && order.created_by.toString() !== senderId.toString() && !notifiedUserIds.has(order.created_by.toString())) {
           await Notification.create({
             client_id: order.created_by,
             title: 'New Message from Client',
@@ -71,6 +74,24 @@ exports.sendMessage = async (req, res) => {
             order_id: orderId,
             related_data: { messageId: newMessage._id }
           });
+          notifiedUserIds.add(order.created_by.toString());
+        }
+
+        // Also notify all admins and client managers
+        const User = require('../models/User');
+        const managers = await User.find({ role: { $in: ['admin', 'client_manager'] } });
+        for (const mgr of managers) {
+          if (mgr._id.toString() !== senderId.toString() && !notifiedUserIds.has(mgr._id.toString())) {
+            await Notification.create({
+              client_id: mgr._id,
+              title: 'New Message from Client',
+              message: `Client sent a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+              type: 'chat',
+              order_id: orderId,
+              related_data: { messageId: newMessage._id }
+            });
+            notifiedUserIds.add(mgr._id.toString());
+          }
         }
       } else {
         // Sent by staff/admin, notify client

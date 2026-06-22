@@ -96,18 +96,18 @@
               </td>
               <td>
                 <div class="assignee-info">
-                  @if (cl.assigned_to?.owner_name) {
+                  @if (getAssigneeName(cl) !== 'Yet to Assign') {
                     <div class="assignee-avatar has-user">
-                      {{ cl.assigned_to.owner_name.charAt(0).toUpperCase() }}
+                      {{ getAssigneeInitial(cl) }}
                     </div>
                   } @else {
-                    <div class="assignee-avatar no-user">U</div>
+                    <div class="assignee-avatar no-user" style="background-color: #f1f5f9; color: #64748b; font-size: 13px; font-weight: 600;">Y</div>
                   }
-                  <span class="assignee-name">{{ cl.assigned_to?.owner_name || 'Unassigned' }}</span>
+                  <span class="assignee-name" [ngStyle]="{'color': getAssigneeName(cl) === 'Yet to Assign' ? '#94a3b8' : 'inherit', 'font-style': getAssigneeName(cl) === 'Yet to Assign' ? 'italic' : 'normal'}">{{ getAssigneeName(cl) }}</span>
                 </div>
               </td>
               <td>
-                <span class="status-pill" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
+                <span class="status-pill" [ngClass]="getChecklistStatusClass(getChecklistDisplayStatus(cl))">{{ getChecklistDisplayStatus(cl) }}</span>
               </td>
               <td>
                 <button class="action-btn-sm" title="View Details">

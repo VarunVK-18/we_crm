@@ -132,6 +132,9 @@
                 </svg>
               }
               <span class="nav-item-label">{{ item.label }}</span>
+              @if (item.id === 'requests' && newRequestsCount() > 0 && !isCollapsed()) {
+                <span class="nav-badge" style="color: var(--text-secondary, #64748b); font-size: 13px; margin-left: 8px; font-weight: 500;">({{ newRequestsCount() }})</span>
+              }
             </div>
             @if (isCollapsed()) {
               <div class="nav-tooltip">{{ item.label }}</div>

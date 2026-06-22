@@ -299,8 +299,8 @@ export class FilingTasks implements OnInit {
   submitCreateTask() {
     this.taskErrorMessage.set('');
     this.taskSuccessMessage.set('');
-    if (!this.newTaskClientId || !this.newTaskTitle) {
-      this.taskErrorMessage.set('Client and Task Title are required.');
+    if (!this.newTaskClientId || !this.newTaskTitle || !this.newTaskAssignedTo) {
+      this.taskErrorMessage.set('Client, Task Title, and Assignee are required.');
       return;
     }
     const payload = {

@@ -112,13 +112,13 @@
                     @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {
                     <button class="action-btn"
                       style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
-                      [disabled]="order()?.status !== 'active'"
-                      [style.opacity]="order()?.status !== 'active' ? '0.5' : '1'"
-                      [style.cursor]="order()?.status !== 'active' ? 'not-allowed' : 'pointer'"
-                      (click)="order()?.status === 'active' ? routeToForm(order()?.service_name) : null; $event.stopPropagation()">
+                      [disabled]="!isFormEnabled(order())"
+                      [style.opacity]="!isFormEnabled(order()) ? '0.5' : '1'"
+                      [style.cursor]="!isFormEnabled(order()) ? 'not-allowed' : 'pointer'"
+                      (click)="isFormEnabled(order()) ? routeToForm(order()?.service_name) : null; $event.stopPropagation()">
                       Fill Form
                     </button>
-                    @if (order()?.status !== 'active') {
+                    @if (!isFormEnabled(order())) {
                       <div style="font-size: 11px; color: #666; margin-top: 4px;">Form will be enabled once a filing expert is assigned and service is active.</div>
                     }
                     }
@@ -143,6 +143,39 @@
             <div class="note-content">
               <h4>Notes</h4>
               <p>{{ order()?.notes }}</p>
+            </div>
+          </div>
+          }
+
+          <!-- New Director Details Section -->
+          @if (getParsedDirectors().length > 0) {
+          <div class="director-details-area" style="margin-top: 32px;">
+            <div class="progress-header" style="margin-bottom: 16px;">
+              <h3>Director Details</h3>
+            </div>
+            <div class="director-cards" style="display: flex; flex-direction: column; gap: 16px;">
+              @for (dir of getParsedDirectors(); track dir; let i = $index) {
+                <div class="director-card" style="background: #ffffff; border: 1px solid #eaeaea; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                  <div style="display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 16px;">
+                    <div style="width: 32px; height: 32px; border-radius: 8px; background: #f0fdf4; color: #16a34a; display: flex; align-items: center; justify-content: center;">
+                      <span class="material-symbols-outlined" style="font-size: 18px;">person</span>
+                    </div>
+                    <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: #0f172a;">
+                      Director {{ i + 1 }}: {{ dir.directorName || dir.name || dir.fullName || 'Name not specified' }}
+                    </h4>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+                    @for (key of getDirectorKeys(dir); track key) {
+                      @if (dir[key]) {
+                        <div class="dir-field">
+                          <span style="display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">{{ formatKey(key) }}</span>
+                          <span style="display: block; font-size: 14px; font-weight: 600; color: #334155; word-break: break-all;">{{ dir[key] }}</span>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+              }
             </div>
           </div>
           }
@@ -292,21 +325,17 @@
 
         <div class="message-row"
           [class.is-client]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_')">
-          @if (msg.senderRole !== 'client' && !msg.senderRole.startsWith('director_')) {
-          <div class="sender-info">
-            <span class="sender-name">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</span>
-            <span class="sender-role">{{ formatRole(msg.senderRole) }}</span>
-          </div>
-          } @else {
           @if (msg.senderRole.startsWith('director_')) {
           <div class="sender-info" style="justify-content: flex-end; margin-bottom: 4px;">
             <span class="sender-role" style="background: #ffedd5; color: #ea580c;">{{ formatRole(msg.senderRole)
               }}</span>
           </div>
           }
-          }
           <div class="message-bubble"
             [class.is-client]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_')">
+            @if (msg.senderRole !== 'client' && !msg.senderRole.startsWith('director_')) {
+            <div class="bubble-sender-name">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</div>
+            }
             <p>{{ msg.content }}</p>
             <div class="message-meta">
               <span>{{ msg.createdAt | date:'shortTime' }}</span>

@@ -31,7 +31,7 @@ const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac')
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
-  limits: { fileSize: 2 * 1024 * 1024 } // 2MB limit
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
 // Authentication routes
