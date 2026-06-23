@@ -39,7 +39,19 @@
                     <span class="file-name" [class.selected]="coiFile">{{ coiFile ? coiFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
                     <label class="upload-btn" [class.change]="coiFile">
                         {{ coiFile ? 'Change' : 'Upload' }}
-                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'coi')" accept=".jpg,.jpeg,.png,.pdf">
+                        @if (existingDocs['coi']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['coi'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('coi')">Change</button>
+            </div>
+          } @else {
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'coi')" accept=".jpg,.jpeg,.png,.pdf">
+          }
                     </label>
                 </div>
             </div>
@@ -50,7 +62,19 @@
                     <span class="file-name" [class.selected]="panFile">{{ panFile ? panFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
                     <label class="upload-btn" [class.change]="panFile">
                         {{ panFile ? 'Change' : 'Upload' }}
-                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'pan')" accept=".jpg,.jpeg,.png,.pdf">
+                        @if (existingDocs['pan']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['pan'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('pan')">Change</button>
+            </div>
+          } @else {
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'pan')" accept=".jpg,.jpeg,.png,.pdf">
+          }
                     </label>
                 </div>
             </div>
@@ -61,7 +85,19 @@
                     <span class="file-name" [class.selected]="moaFile">{{ moaFile ? moaFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
                     <label class="upload-btn" [class.change]="moaFile">
                         {{ moaFile ? 'Change' : 'Upload' }}
-                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'moa')" accept=".jpg,.jpeg,.png,.pdf">
+                        @if (existingDocs['moa']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['moa'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('moa')">Change</button>
+            </div>
+          } @else {
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'moa')" accept=".jpg,.jpeg,.png,.pdf">
+          }
                     </label>
                 </div>
             </div>
@@ -72,7 +108,19 @@
                     <span class="file-name" [class.selected]="aoaFile">{{ aoaFile ? aoaFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
                     <label class="upload-btn" [class.change]="aoaFile">
                         {{ aoaFile ? 'Change' : 'Upload' }}
-                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'aoa')" accept=".jpg,.jpeg,.png,.pdf">
+                        @if (existingDocs['aoa']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['aoa'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('aoa')">Change</button>
+            </div>
+          } @else {
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'aoa')" accept=".jpg,.jpeg,.png,.pdf">
+          }
                     </label>
                 </div>
             </div>
@@ -83,7 +131,19 @@
                     <span class="file-name" [class.selected]="bankStatementFile">{{ bankStatementFile ? bankStatementFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
                     <label class="upload-btn" [class.change]="bankStatementFile">
                         {{ bankStatementFile ? 'Change' : 'Upload' }}
-                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'bankStatement')" accept=".jpg,.jpeg,.png,.pdf">
+                        @if (existingDocs['bankStatement']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['bankStatement'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('bankStatement')">Change</button>
+            </div>
+          } @else {
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'bankStatement')" accept=".jpg,.jpeg,.png,.pdf">
+          }
                     </label>
                 </div>
             </div>
@@ -94,7 +154,19 @@
                     <span class="file-name" [class.selected]="salesInvoiceFile">{{ salesInvoiceFile ? salesInvoiceFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
                     <label class="upload-btn" [class.change]="salesInvoiceFile">
                         {{ salesInvoiceFile ? 'Change' : 'Upload' }}
-                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'salesInvoice')" accept=".jpg,.jpeg,.png,.pdf">
+                        @if (existingDocs['salesInvoice']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['salesInvoice'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('salesInvoice')">Change</button>
+            </div>
+          } @else {
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'salesInvoice')" accept=".jpg,.jpeg,.png,.pdf">
+          }
                     </label>
                 </div>
             </div>
@@ -105,14 +177,25 @@
                     <span class="file-name" [class.selected]="purchaseBillsFile">{{ purchaseBillsFile ? purchaseBillsFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
                     <label class="upload-btn" [class.change]="purchaseBillsFile">
                         {{ purchaseBillsFile ? 'Change' : 'Upload' }}
-                        <input type="file" style="display: none;" (change)="onFileSelected($event, 'purchaseBills')" accept=".jpg,.jpeg,.png,.pdf">
+                        @if (existingDocs['purchaseBills']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['purchaseBills'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('purchaseBills')">Change</button>
+            </div>
+          } @else {
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'purchaseBills')" accept=".jpg,.jpeg,.png,.pdf">
+          }
                     </label>
                 </div>
             </div>
         </div>
 
         
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
             {{ isSubmitting() ? 'Submitting...' : 'Submit Details' }}
         </button>

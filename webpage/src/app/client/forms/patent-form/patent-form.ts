@@ -1,3 +1,4 @@
+import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 import { Component, signal, OnInit } from '@angular/core';
 import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
@@ -11,9 +12,12 @@ import { DraftService } from '../../../services/draft.service';
   standalone: true,
   imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './patent-form.html',
-  styleUrl: './patent-form.css',
+  styleUrl: '../forms-shared.css',
 })
 export class PatentForm implements OnInit {
+  existingDocs: any = {};
+  removeExistingDoc(fieldName: string) { delete this.existingDocs[fieldName]; }
+
   orderId = signal<string>('');
   isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
@@ -45,19 +49,91 @@ export class PatentForm implements OnInit {
   drawingsDiagramsFile?: File; // Optional
   authLetterFile?: File; // Optional
 
-  constructor(
-    private route: ActivatedRoute,
+  constructor(private route: ActivatedRoute,
     private router: Router,
     public location: Location,
     private api: Api
   ,
-    private draftService: DraftService) {}
+    private draftService: DraftService,
+    private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
-      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+          // Auto-fill from user profile
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        
+        if (user.owner_name) {
+          if ('fullName' in this) (this as any).fullName = user.owner_name;
+          else if ('applicantName' in this) (this as any).applicantName = user.owner_name;
+          else if ('proprietorName' in this) (this as any).proprietorName = user.owner_name;
+          else if ('directorName' in this) (this as any).directorName = user.owner_name;
+        }
+
+        if (user.email) {
+          if ('emailId' in this) (this as any).emailId = user.email;
+          else if ('email' in this) (this as any).email = user.email;
+        }
+
+        if (user.phone) {
+          if ('mobileNumber' in this) (this as any).mobileNumber = user.phone;
+          else if ('mobile' in this) (this as any).mobile = user.phone;
+          else if ('contactNumber' in this) (this as any).contactNumber = user.phone;
+        }
+
+        if (user.company_name) {
+          if ('businessName' in this) (this as any).businessName = user.company_name;
+          else if ('companyName' in this) (this as any).companyName = user.company_name;
+          else if ('entityName' in this) (this as any).entityName = user.company_name;
+        }
+
+        if (user.business_type) {
+          if ('businessType' in this) (this as any).businessType = user.business_type;
+          else if ('entityType' in this) (this as any).entityType = user.business_type;
+        }
+
+        if (user.pan) {
+          if ('panNumber' in this) (this as any).panNumber = user.pan;
+          else if ('pan' in this) (this as any).pan = user.pan;
+        }
+        if (user.onboarding_documents) {
+          const docs = user.onboarding_documents;
+          const keywordMap: any = {
+            'panCard': ['pan'],
+            'panFile': ['pan'],
+            'addressProof': ['address proof', 'aadhaar', 'passport', 'voter'],
+            'addressProofFile': ['address proof', 'aadhaar', 'passport', 'voter'],
+            'businessAddressProof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
+            'incorpCert': ['incorporation', 'incorp'],
+            'photoFile': ['photo', 'passport size'],
+            'passportPhoto': ['photo', 'passport size'],
+            'aadhaarFile': ['aadhaar'],
+            'identityProof': ['identity', 'id proof'],
+            'cancelledCheque': ['cheque', 'bank'],
+            'authSignatoryProof': ['authorization', 'signatory'],
+            'signatureFile': ['signature'],
+            'trademarkLogo': ['logo', 'brand'],
+            'msmeCert': ['msme', 'udyam'],
+            'gstCert': ['gst']
+          };
+          
+          for (const field of Object.keys(keywordMap)) {
+            const keywords = keywordMap[field];
+            const matchedDoc = docs.find((d: any) => d.name && keywords.some((k: string) => d.name.toLowerCase().includes(k)));
+            if (matchedDoc) {
+              this.existingDocs[field] = matchedDoc;
+            }
+          }
+        }
+
+      } catch(e) {}
+    }
+
+    const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
       if (draft) {
         if (draft.applicantName !== undefined) this.applicantName = draft.applicantName;
         if (draft.entityType !== undefined) this.entityType = draft.entityType;
@@ -79,7 +155,14 @@ export class PatentForm implements OnInit {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert('Upload a file less than 2 MB.');
+      this.confirmDialog.confirm({
+        title: 'File Too Large',
+        message: 'Please upload a file that is 2 MB or smaller.',
+        confirmText: 'Okay',
+        hideCancel: true,
+        isDestructive: true
+      });
+      event.target.value = '';
       return;
     }
 
@@ -90,7 +173,19 @@ export class PatentForm implements OnInit {
     else if (fieldName === 'authLetter') this.authLetterFile = file;
   }
 
-  goBack() {
+  async goBack() {
+    const shouldDraft = await this.confirmDialog.confirm({
+      title: 'Save Draft?',
+      message: 'Do you want to save this form as a draft before leaving?',
+      confirmText: 'Save Draft',
+      cancelText: 'Leave without saving'
+    });
+    if (shouldDraft === null) {
+      return;
+    }
+    if (shouldDraft) {
+      this.saveDraft();
+    }
     this.location.back();
   }
 
@@ -122,7 +217,7 @@ export class PatentForm implements OnInit {
       return;
     }
 
-    if (!this.identityProofFile || !this.addressProofFile || !this.inventionDescriptionDocFile) {
+    if ((!this.identityProofFile && !this.existingDocs['identityProof']) || (!this.addressProofFile && !this.existingDocs['addressProof']) || (!this.inventionDescriptionDocFile && !this.existingDocs['inventionDescriptionDoc'])) {
       this.errorMessage.set('Please upload all required documents.');
       return;
     }
@@ -148,15 +243,15 @@ export class PatentForm implements OnInit {
     formData.append('inventorNationality', this.inventorNationality);
 
     // Files
-    formData.append('identityProof', this.identityProofFile);
-    formData.append('addressProof', this.addressProofFile);
-    formData.append('inventionDescriptionDoc', this.inventionDescriptionDocFile);
+    if (this.identityProofFile) formData.append('identityProof', this.identityProofFile); else if (this.existingDocs['identityProof']) formData.append('identityProof_existing', this.existingDocs['identityProof'].fileUrl);
+    if (this.addressProofFile) formData.append('addressProof', this.addressProofFile); else if (this.existingDocs['addressProof']) formData.append('addressProof_existing', this.existingDocs['addressProof'].fileUrl);
+    if (this.inventionDescriptionDocFile) formData.append('inventionDescriptionDoc', this.inventionDescriptionDocFile); else if (this.existingDocs['inventionDescriptionDoc']) formData.append('inventionDescriptionDoc_existing', this.existingDocs['inventionDescriptionDoc'].fileUrl);
     
     if (this.drawingsDiagramsFile) {
-      formData.append('drawingsDiagrams', this.drawingsDiagramsFile);
+      if (this.drawingsDiagramsFile) formData.append('drawingsDiagrams', this.drawingsDiagramsFile); else if (this.existingDocs['drawingsDiagrams']) formData.append('drawingsDiagrams_existing', this.existingDocs['drawingsDiagrams'].fileUrl);
     }
     if (this.authLetterFile) {
-      formData.append('authLetter', this.authLetterFile);
+      if (this.authLetterFile) formData.append('authLetter', this.authLetterFile); else if (this.existingDocs['authLetter']) formData.append('authLetter_existing', this.existingDocs['authLetter'].fileUrl);
     }
 
     this.api.post<any>(`orders/${this.orderId()}/submit-patent-form`, formData).subscribe({

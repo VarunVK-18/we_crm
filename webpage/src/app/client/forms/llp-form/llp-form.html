@@ -53,7 +53,19 @@
             <div class="form-group file-upload-group">
               <label>Registered office proof <span class="required">*</span></label>
               <span class="file-hint">EB bill, wifi bill not less than 2 months old (Max 2MB)</span>
-              <input type="file" (change)="onFileSelected($event, 'officeProof')" accept=".jpg,.jpeg,.png,.pdf">
+              @if (existingDocs['officeProof']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['officeProof'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('officeProof')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'officeProof')" accept=".jpg,.jpeg,.png,.pdf">
+          }
             </div>
           </div>
 
@@ -65,7 +77,19 @@
             <div class="form-group file-upload-group">
               <label>Payment Screenshot <span class="required">*</span></label>
               <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
-              <input type="file" (change)="onFileSelected($event, 'paymentScreenshot')" accept=".jpg,.jpeg,.png,.pdf">
+              @if (existingDocs['paymentScreenshot']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['paymentScreenshot'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('paymentScreenshot')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'paymentScreenshot')" accept=".jpg,.jpeg,.png,.pdf">
+          }
             </div>
           </div>
         </div>
@@ -223,7 +247,6 @@
 
       <div class="form-actions">
         
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...

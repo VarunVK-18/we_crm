@@ -25,22 +25,18 @@
       <!-- Personal Information -->
       <section class="form-section">
         <h3 class="section-title">Personal Information</h3>
-        <div class="form-grid">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Applicant Full Name *</label>
-              <input type="text" [(ngModel)]="fullName" name="fullName" required>
-            </div>
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Applicant Full Name *</label>
+            <input type="text" [(ngModel)]="fullName" name="fullName" required>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Mobile Number *</label>
-              <input type="tel" [(ngModel)]="mobile" name="mobile" required>
-            </div>
-            <div class="form-group">
-              <label>Email ID *</label>
-              <input type="email" [(ngModel)]="email" name="email" required>
-            </div>
+          <div class="form-group">
+            <label>Mobile Number *</label>
+            <input type="tel" [(ngModel)]="mobile" name="mobile" required>
+          </div>
+          <div class="form-group">
+            <label>Email ID *</label>
+            <input type="email" [(ngModel)]="email" name="email" required>
           </div>
         </div>
       </section>
@@ -55,19 +51,17 @@
             <input type="text" [(ngModel)]="businessName" name="businessName" required>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Type of Business *</label>
-              <select [(ngModel)]="businessType" name="businessType">
-                <option value="Proprietorship">Proprietorship</option>
-                <option value="Partnership">Partnership</option>
-                <option value="Private Limited">Private Limited</option>
-                <option value="Public Limited">Public Limited</option>
-                <option value="LLP">LLP</option>
-                <option value="Society/Trust">Society/Trust</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
+          <div class="form-group">
+            <label>Type of Business *</label>
+            <select [(ngModel)]="businessType" name="businessType">
+              <option value="Proprietorship">Proprietorship</option>
+              <option value="Partnership">Partnership</option>
+              <option value="Private Limited">Private Limited</option>
+              <option value="Public Limited">Public Limited</option>
+              <option value="LLP">LLP</option>
+              <option value="Society/Trust">Society/Trust</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           @if (businessType === 'Other') {
@@ -96,19 +90,17 @@
             </div>
           }
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Start Date of Business *</label>
-              <input type="date" [(ngModel)]="startDate" name="startDate" required>
-            </div>
-            <div class="form-group">
-              <label>Estimated Annual Turnover *</label>
-              <select [(ngModel)]="annualTurnover" name="annualTurnover">
-                <option value="Below ₹12 Lakhs">Below ₹12 Lakhs</option>
-                <option value="₹12 Lakhs to ₹20 Crores">₹12 Lakhs to ₹20 Crores</option>
-                <option value="Above ₹20 Crores">Above ₹20 Crores</option>
-              </select>
-            </div>
+          <div class="form-group">
+            <label>Start Date of Business *</label>
+            <input type="date" [(ngModel)]="startDate" name="startDate" required>
+          </div>
+          <div class="form-group">
+            <label>Estimated Annual Turnover *</label>
+            <select [(ngModel)]="annualTurnover" name="annualTurnover">
+              <option value="Below ₹12 Lakhs">Below ₹12 Lakhs</option>
+              <option value="₹12 Lakhs to ₹20 Crores">₹12 Lakhs to ₹20 Crores</option>
+              <option value="Above ₹20 Crores">Above ₹20 Crores</option>
+            </select>
           </div>
 
           <div class="form-group full-width">
@@ -143,15 +135,13 @@
             <textarea [(ngModel)]="premisesAddress" name="premisesAddress" required rows="2"></textarea>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Village/Town/City *</label>
-              <input type="text" [(ngModel)]="premisesVillage" name="premisesVillage" required>
-            </div>
-            <div class="form-group">
-              <label>District/State *</label>
-              <input type="text" [(ngModel)]="premisesDistrict" name="premisesDistrict" required>
-            </div>
+          <div class="form-group">
+            <label>Village/Town/City *</label>
+            <input type="text" [(ngModel)]="premisesVillage" name="premisesVillage" required>
+          </div>
+          <div class="form-group">
+            <label>District/State *</label>
+            <input type="text" [(ngModel)]="premisesDistrict" name="premisesDistrict" required>
           </div>
 
           <div class="form-group full-width">
@@ -174,15 +164,13 @@
               <textarea [(ngModel)]="corrAddress" name="corrAddress" required rows="2"></textarea>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label>Village/Town/City *</label>
-                <input type="text" [(ngModel)]="corrVillage" name="corrVillage" required>
-              </div>
-              <div class="form-group">
-                <label>District/State *</label>
-                <input type="text" [(ngModel)]="corrDistrict" name="corrDistrict" required>
-              </div>
+            <div class="form-group">
+              <label>Village/Town/City *</label>
+              <input type="text" [(ngModel)]="corrVillage" name="corrVillage" required>
+            </div>
+            <div class="form-group">
+              <label>District/State *</label>
+              <input type="text" [(ngModel)]="corrDistrict" name="corrDistrict" required>
             </div>
           }
 
@@ -197,25 +185,73 @@
           <div class="form-group file-upload-group full-width">
             <label>Aadhaar Card (Applicant/Authorized Signatory) *</label>
             <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            @if (existingDocs['aadhaarCard']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['aadhaarCard'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('aadhaarCard')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'aadhaarCard')" accept=".jpg,.jpeg,.png,.pdf" required>
+          }
           </div>
 
           <div class="form-group file-upload-group full-width">
             <label>PAN Card (Applicant/Authorized Signatory) *</label>
             <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            @if (existingDocs['panCard']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['panCard'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('panCard')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'panCard')" accept=".jpg,.jpeg,.png,.pdf" required>
+          }
           </div>
 
           <div class="form-group file-upload-group full-width">
             <label>Passport Size Photo *</label>
             <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            @if (existingDocs['passportPhoto']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['passportPhoto'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('passportPhoto')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'passportPhoto')" accept=".jpg,.jpeg,.png,.pdf" required>
+          }
           </div>
 
           <div class="form-group file-upload-group full-width">
             <label>Business Address Proof *</label>
             <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            @if (existingDocs['businessAddressProof']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['businessAddressProof'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('businessAddressProof')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'businessAddressProof')" accept=".jpg,.jpeg,.png,.pdf" required>
+          }
           </div>
 
         </div>
@@ -236,7 +272,6 @@
 
       <div class="form-actions">
         
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...

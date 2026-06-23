@@ -109,7 +109,19 @@
           <div class="form-group file-upload-group full-width">
             <label>Upload Photo *</label>
             <span class="file-hint">Upload 1 supported file: image. Max 2 MB.</span>
+            @if (existingDocs['photo']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['photo'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('photo')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'photo')" accept=".jpg,.jpeg,.png" required>
+          }
           </div>
         </div>
       </section>
@@ -145,20 +157,56 @@
           <div class="form-group file-upload-group full-width">
             <label>Upload Latest EB Bill *</label>
             <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            @if (existingDocs['ebBill']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['ebBill'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('ebBill')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'ebBill')" accept=".jpg,.jpeg,.png,.pdf" required>
+          }
           </div>
 
           @if (premisesType === 'Own') {
             <div class="form-group file-upload-group full-width">
               <label>For Own House (Upload House Tax Receipt) *</label>
               <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
-              <input type="file" (change)="onFileSelected($event, 'houseTaxReceipt')" accept=".jpg,.jpeg,.png,.pdf" required>
+              @if (existingDocs['houseTaxReceipt']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['houseTaxReceipt'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('houseTaxReceipt')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'houseTaxReceipt')" accept=".jpg,.jpeg,.png,.pdf" required>
+          }
             </div>
           } @else if (premisesType === 'Rent') {
             <div class="form-group file-upload-group full-width">
               <label>For Rented Office (Upload Rental Agreement) *</label>
               <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
-              <input type="file" (change)="onFileSelected($event, 'rentalAgreement')" accept=".jpg,.jpeg,.png,.pdf" required>
+              @if (existingDocs['rentalAgreement']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['rentalAgreement'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('rentalAgreement')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'rentalAgreement')" accept=".jpg,.jpeg,.png,.pdf" required>
+          }
             </div>
           }
         </div>
@@ -198,7 +246,6 @@
 
       <div class="form-actions">
         
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...

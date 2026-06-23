@@ -126,7 +126,19 @@
           <h4>Incorporation Certificate (PDF) <span class="required">*</span></h4>
           <p>Required for application.</p>
         </div>
-        <input type="file" (change)="onFileSelected($event, 'incorpCert')" accept=".pdf" />
+        @if (existingDocs['incorpCert']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['incorpCert'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('incorpCert')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'incorpCert')" accept=".pdf" />
+          }
       </div>
 
       <div class="file-upload-wrapper">
@@ -134,7 +146,19 @@
           <h4>Company PAN <span class="required">*</span></h4>
           <p>PDF or Image format.</p>
         </div>
-        <input type="file" (change)="onFileSelected($event, 'pan')" accept=".pdf,.jpg,.jpeg,.png" />
+        @if (existingDocs['pan']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['pan'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('pan')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'pan')" accept=".pdf,.jpg,.jpeg,.png" />
+          }
       </div>
 
       <div class="file-upload-wrapper">
@@ -142,7 +166,19 @@
           <h4>Company Logo (JPEG) <span class="required">*</span></h4>
           <p>JPG/JPEG format.</p>
         </div>
-        <input type="file" (change)="onFileSelected($event, 'logo')" accept=".jpg,.jpeg" />
+        @if (existingDocs['logo']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['logo'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('logo')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'logo')" accept=".jpg,.jpeg" />
+          }
       </div>
 
       <div class="file-upload-wrapper">
@@ -150,7 +186,19 @@
           <h4>Pitch Deck (PDF)</h4>
           <p>Optional but recommended.</p>
         </div>
-        <input type="file" (change)="onFileSelected($event, 'pitchDeck')" accept=".pdf" />
+        @if (existingDocs['pitchDeck']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['pitchDeck'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('pitchDeck')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'pitchDeck')" accept=".pdf" />
+          }
       </div>
     </div>
 
@@ -162,7 +210,6 @@
     </div>
 
     
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
       {{ isSubmitting() ? 'Submitting...' : 'Submit Form' }}
     </button>

@@ -1,6 +1,12 @@
 @if (confirmService.isOpen()) {
-  <div class="confirm-backdrop" (click)="confirmService.handleCancel()">
+  <div class="confirm-backdrop" (click)="confirmService.handleDismiss()">
     <div class="confirm-modal" (click)="$event.stopPropagation()">
+      <button class="modal-close-btn" (click)="confirmService.handleDismiss()" aria-label="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
       <div class="confirm-icon" [class.destructive]="confirmService.options()?.isDestructive">
         @if (confirmService.options()?.isDestructive) {
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="icon-svg">
@@ -17,9 +23,11 @@
         <p class="confirm-message">{{ confirmService.options()?.message }}</p>
       </div>
       <div class="confirm-actions">
-        <button class="btn-cancel" (click)="confirmService.handleCancel()">
-          {{ confirmService.options()?.cancelText }}
-        </button>
+        @if (!confirmService.options()?.hideCancel) {
+          <button class="btn-cancel" (click)="confirmService.handleCancel()">
+            {{ confirmService.options()?.cancelText }}
+          </button>
+        }
         <button class="btn-confirm" [class.destructive]="confirmService.options()?.isDestructive" (click)="confirmService.handleConfirm()">
           {{ confirmService.options()?.confirmText }}
         </button>

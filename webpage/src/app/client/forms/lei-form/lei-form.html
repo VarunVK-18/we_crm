@@ -56,37 +56,121 @@
         <div class="form-grid">
           <div class="form-group file-group">
             <label>Address Proof</label>
+            @if (existingDocs['addressProof']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['addressProof'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('addressProof')">Change</button>
+            </div>
+          } @else {
             <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'addressProof')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
           <div class="form-group file-group">
             <label>Certificate of Incorporation</label>
+            @if (existingDocs['incorpCert']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['incorpCert'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('incorpCert')">Change</button>
+            </div>
+          } @else {
             <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'incorpCert')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
           <div class="form-group file-group">
             <label>Company PAN Card</label>
+            @if (existingDocs['panCard']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['panCard'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('panCard')">Change</button>
+            </div>
+          } @else {
             <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'panCard')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
           <div class="form-group file-group">
             <label>GST Certificate</label>
+            @if (existingDocs['gstCert']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['gstCert'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('gstCert')">Change</button>
+            </div>
+          } @else {
             <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'gstCert')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
           <div class="form-group file-group">
             <label>Audited Financial Statements</label>
+            @if (existingDocs['auditedFinancials']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['auditedFinancials'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('auditedFinancials')">Change</button>
+            </div>
+          } @else {
             <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'auditedFinancials')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
           <div class="form-group file-group">
             <label>MOA & AOA</label>
+            @if (existingDocs['moaAoa']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['moaAoa'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('moaAoa')">Change</button>
+            </div>
+          } @else {
             <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'moaAoa')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
           <div class="form-group file-group full-width">
             <label>Board Resolution</label>
+            @if (existingDocs['boardResolution']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['boardResolution'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('boardResolution')">Change</button>
+            </div>
+          } @else {
             <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'boardResolution')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
         </div>
@@ -109,7 +193,6 @@
           Cancel
         </button>
         
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...

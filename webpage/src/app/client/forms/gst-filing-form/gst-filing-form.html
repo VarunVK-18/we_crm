@@ -7,8 +7,8 @@
       </button>
       <div class="title-row">
         <h1>GST Filing Form</h1>
+        <p class="subtitle">Please provide the details below to complete your GST Filing details.</p>
       </div>
-      <p class="subtitle">Please provide the details below to complete your GST Filing details.</p>
     </div>
   </div>
 
@@ -96,15 +96,51 @@
         <div class="form-grid">
           <div class="form-group file-group">
             <label>Sales Report *</label>
+            @if (existingDocs['salesReport']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['salesReport'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('salesReport')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'salesReport')" accept=".pdf,.xlsx,.xls,.csv">
+          }
           </div>
           <div class="form-group file-group">
             <label>Purchase Report *</label>
+            @if (existingDocs['purchaseReport']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['purchaseReport'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('purchaseReport')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'purchaseReport')" accept=".pdf,.xlsx,.xls,.csv">
+          }
           </div>
           <div class="form-group file-group">
             <label>GST Invoices *</label>
+            @if (existingDocs['gstInvoices']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['gstInvoices'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('gstInvoices')">Change</button>
+            </div>
+          } @else {
             <input type="file" (change)="onFileSelected($event, 'gstInvoices')" accept=".pdf,.zip">
+          }
             <small>Provide compressed folder for multiple invoices</small>
           </div>
         </div>
@@ -112,7 +148,6 @@
 
       <div class="form-actions">
         
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...

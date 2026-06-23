@@ -1,3 +1,4 @@
+import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 import { Component, signal, OnInit } from '@angular/core';
 import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
@@ -11,9 +12,12 @@ import { DraftService } from '../../../services/draft.service';
   standalone: true,
   imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './gst-filing-form.html',
-  styleUrl: './gst-filing-form.css',
+  styleUrl: '../forms-shared.css',
 })
 export class GstFilingForm implements OnInit {
+  existingDocs: any = {};
+  removeExistingDoc(fieldName: string) { delete this.existingDocs[fieldName]; }
+
   orderId = signal<string>('');
   isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
@@ -36,19 +40,91 @@ export class GstFilingForm implements OnInit {
   purchaseReportFile?: File;
   gstInvoicesFile?: File;
 
-  constructor(
-    private route: ActivatedRoute,
+  constructor(private route: ActivatedRoute,
     private router: Router,
     public location: Location,
     private api: Api
   ,
-    private draftService: DraftService) {}
+    private draftService: DraftService,
+    private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
-      const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
+          // Auto-fill from user profile
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        
+        if (user.owner_name) {
+          if ('fullName' in this) (this as any).fullName = user.owner_name;
+          else if ('applicantName' in this) (this as any).applicantName = user.owner_name;
+          else if ('proprietorName' in this) (this as any).proprietorName = user.owner_name;
+          else if ('directorName' in this) (this as any).directorName = user.owner_name;
+        }
+
+        if (user.email) {
+          if ('emailId' in this) (this as any).emailId = user.email;
+          else if ('email' in this) (this as any).email = user.email;
+        }
+
+        if (user.phone) {
+          if ('mobileNumber' in this) (this as any).mobileNumber = user.phone;
+          else if ('mobile' in this) (this as any).mobile = user.phone;
+          else if ('contactNumber' in this) (this as any).contactNumber = user.phone;
+        }
+
+        if (user.company_name) {
+          if ('businessName' in this) (this as any).businessName = user.company_name;
+          else if ('companyName' in this) (this as any).companyName = user.company_name;
+          else if ('entityName' in this) (this as any).entityName = user.company_name;
+        }
+
+        if (user.business_type) {
+          if ('businessType' in this) (this as any).businessType = user.business_type;
+          else if ('entityType' in this) (this as any).entityType = user.business_type;
+        }
+
+        if (user.pan) {
+          if ('panNumber' in this) (this as any).panNumber = user.pan;
+          else if ('pan' in this) (this as any).pan = user.pan;
+        }
+        if (user.onboarding_documents) {
+          const docs = user.onboarding_documents;
+          const keywordMap: any = {
+            'panCard': ['pan'],
+            'panFile': ['pan'],
+            'addressProof': ['address proof', 'aadhaar', 'passport', 'voter'],
+            'addressProofFile': ['address proof', 'aadhaar', 'passport', 'voter'],
+            'businessAddressProof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
+            'incorpCert': ['incorporation', 'incorp'],
+            'photoFile': ['photo', 'passport size'],
+            'passportPhoto': ['photo', 'passport size'],
+            'aadhaarFile': ['aadhaar'],
+            'identityProof': ['identity', 'id proof'],
+            'cancelledCheque': ['cheque', 'bank'],
+            'authSignatoryProof': ['authorization', 'signatory'],
+            'signatureFile': ['signature'],
+            'trademarkLogo': ['logo', 'brand'],
+            'msmeCert': ['msme', 'udyam'],
+            'gstCert': ['gst']
+          };
+          
+          for (const field of Object.keys(keywordMap)) {
+            const keywords = keywordMap[field];
+            const matchedDoc = docs.find((d: any) => d.name && keywords.some((k: string) => d.name.toLowerCase().includes(k)));
+            if (matchedDoc) {
+              this.existingDocs[field] = matchedDoc;
+            }
+          }
+        }
+
+      } catch(e) {}
+    }
+
+    const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
       if (draft) {
         if (draft.businessName !== undefined) this.businessName = draft.businessName;
         if (draft.gstin !== undefined) this.gstin = draft.gstin;
@@ -65,7 +141,14 @@ export class GstFilingForm implements OnInit {
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert('Upload a file less than 2 MB.');
+      this.confirmDialog.confirm({
+        title: 'File Too Large',
+        message: 'Please upload a file that is 2 MB or smaller.',
+        confirmText: 'Okay',
+        hideCancel: true,
+        isDestructive: true
+      });
+      event.target.value = '';
       return;
     }
 
@@ -74,7 +157,19 @@ export class GstFilingForm implements OnInit {
     else if (fieldName === 'gstInvoices') this.gstInvoicesFile = file;
   }
 
-  goBack() {
+  async goBack() {
+    const shouldDraft = await this.confirmDialog.confirm({
+      title: 'Save Draft?',
+      message: 'Do you want to save this form as a draft before leaving?',
+      confirmText: 'Save Draft',
+      cancelText: 'Leave without saving'
+    });
+    if (shouldDraft === null) {
+      return;
+    }
+    if (shouldDraft) {
+      this.saveDraft();
+    }
     this.location.back();
   }
 
@@ -99,7 +194,7 @@ export class GstFilingForm implements OnInit {
       return;
     }
 
-    if (!this.salesReportFile || !this.purchaseReportFile || !this.gstInvoicesFile) {
+    if ((!this.salesReportFile && !this.existingDocs['salesReport']) || (!this.purchaseReportFile && !this.existingDocs['purchaseReport']) || (!this.gstInvoicesFile && !this.existingDocs['gstInvoices'])) {
       this.errorMessage.set('Please upload all required documents.');
       return;
     }
@@ -120,9 +215,9 @@ export class GstFilingForm implements OnInit {
     formData.append('financialYear', this.financialYear);
 
     // Files
-    formData.append('salesReport', this.salesReportFile);
-    formData.append('purchaseReport', this.purchaseReportFile);
-    formData.append('gstInvoices', this.gstInvoicesFile);
+    if (this.salesReportFile) formData.append('salesReport', this.salesReportFile); else if (this.existingDocs['salesReport']) formData.append('salesReport_existing', this.existingDocs['salesReport'].fileUrl);
+    if (this.purchaseReportFile) formData.append('purchaseReport', this.purchaseReportFile); else if (this.existingDocs['purchaseReport']) formData.append('purchaseReport_existing', this.existingDocs['purchaseReport'].fileUrl);
+    if (this.gstInvoicesFile) formData.append('gstInvoices', this.gstInvoicesFile); else if (this.existingDocs['gstInvoices']) formData.append('gstInvoices_existing', this.existingDocs['gstInvoices'].fileUrl);
 
     this.api.post<any>(`orders/${this.orderId()}/submit-gst-filing-form`, formData).subscribe({
       next: (res) => {

@@ -27,7 +27,19 @@
         <div class="form-grid">
           <div class="form-group file-group full-width">
             <label>Last 3 months Bank Statement (Current Account) *</label>
+            @if (existingDocs['bankStatement']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['bankStatement'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('bankStatement')">Change</button>
+            </div>
+          } @else {
             <input type="file" required accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'bankStatement')">
+          }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
         </div>
@@ -50,7 +62,6 @@
           Cancel
         </button>
         
-        <button type="button" class="action-btn" style="background-color: #6c757d; margin-right: 12px; height: 50px; border-radius: 8px; font-weight: 500; font-size: 16px; padding: 0 24px; color: white; border: none; cursor: pointer;" (click)="saveDraft()">Save as Draft</button>
         <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
           @if (isSubmitting()) {
             <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...

@@ -6,6 +6,7 @@ export interface ConfirmOptions {
   confirmText?: string;
   cancelText?: string;
   isDestructive?: boolean;
+  hideCancel?: boolean;
 }
 
 @Injectable({
@@ -15,9 +16,9 @@ export class ConfirmDialogService {
   isOpen = signal(false);
   options = signal<ConfirmOptions | null>(null);
   
-  private resolveFn: ((value: boolean) => void) | null = null;
+  private resolveFn: ((value: boolean | null) => void) | null = null;
 
-  confirm(options: ConfirmOptions): Promise<boolean> {
+  confirm(options: ConfirmOptions): Promise<boolean | null> {
     this.options.set({
       confirmText: 'Confirm',
       cancelText: 'Cancel',
@@ -43,6 +44,14 @@ export class ConfirmDialogService {
     this.isOpen.set(false);
     if (this.resolveFn) {
       this.resolveFn(false);
+      this.resolveFn = null;
+    }
+  }
+
+  handleDismiss() {
+    this.isOpen.set(false);
+    if (this.resolveFn) {
+      this.resolveFn(null);
       this.resolveFn = null;
     }
   }
