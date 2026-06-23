@@ -49,6 +49,23 @@ export class ClientCompanyDetails implements OnInit {
     this.api.get<any>(`users/profile/${id}`).subscribe({
       next: (res: any) => {
         if (res.user) {
+          // Fallback: Ensure primary company_name is in client_entities
+          if (res.user.company_name && res.user.company_name.trim() !== '') {
+            if (!res.user.client_entities) res.user.client_entities = [];
+            const primaryName = res.user.company_name.trim();
+            const exists = res.user.client_entities.some((e: any) => 
+              e.entityName && e.entityName.trim().toLowerCase() === primaryName.toLowerCase()
+            );
+            if (!exists) {
+              res.user.client_entities.unshift({
+                entityName: primaryName,
+                entityType: res.user.business_type || 'Company',
+                pan: res.user.pan || '',
+                gstin: res.user.gstin || ''
+              });
+            }
+          }
+
           this.user.set(res.user);
           localStorage.setItem('user', JSON.stringify(res.user));
           

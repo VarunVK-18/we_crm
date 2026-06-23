@@ -95,6 +95,16 @@ const registerUser = async (req, res) => {
       }
     }
 
+    let initialClientEntities = [];
+    if (company_name && company_name.trim() !== '') {
+      initialClientEntities.push({
+        entityName: company_name.trim(),
+        entityType: business_type || 'Company',
+        pan: pan || '',
+        gstin: gstin || ''
+      });
+    }
+
     // Create user (password is automatically hashed via mongoose pre-save hook)
     const user = await User.create({
       company_id: finalCompanyId,
@@ -114,7 +124,8 @@ const registerUser = async (req, res) => {
       pan_file,
       services: parsedServices || [],
       created_by: creatorId,
-      onboarding_status
+      onboarding_status,
+      client_entities: initialClientEntities
     });
 
     if (user) {

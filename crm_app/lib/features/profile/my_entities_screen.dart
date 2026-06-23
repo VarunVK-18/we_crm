@@ -27,7 +27,23 @@ class MyEntitiesScreen extends ConsumerWidget {
     // Create a map to ensure uniqueness by entityName
     final Map<String, ClientEntity> mergedEntities = {};
     for (final ce in clientEntities) {
-      mergedEntities[ce.entityName.trim().toLowerCase()] = ce;
+      if (ce.entityName.trim().isNotEmpty) {
+        mergedEntities[ce.entityName.trim().toLowerCase()] = ce;
+      }
+    }
+
+    // Fallback: If the user's primary companyName isn't in the list, add it automatically
+    final primaryCompanyName = userAsync.value?.companyName?.trim() ?? '';
+    if (primaryCompanyName.isNotEmpty && !mergedEntities.containsKey(primaryCompanyName.toLowerCase())) {
+      mergedEntities[primaryCompanyName.toLowerCase()] = ClientEntity(
+        entityName: primaryCompanyName,
+        entityType: 'Company',
+        cin: '', pan: '', tan: '', gstin: '', 
+        iso: '', msme: '', fssai: '', coi: '', dsc: '',
+        trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
+        patentApplicationNumber: '', patentStatus: '', patentNumber: '',
+        copyrightRegistrationNumber: '', copyrightCertificate: '',
+      );
     }
 
     // Add entities found in orders that aren't in clientEntities yet

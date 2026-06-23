@@ -50,6 +50,23 @@ export class ClientDashboard implements OnInit, OnChanges {
             this.errorMessage.set('Client not found.');
             this.isLoading.set(false);
           } else {
+            // Fallback: Ensure primary company_name is in client_entities
+            if (found.company_name && found.company_name.trim() !== '') {
+              if (!found.client_entities) found.client_entities = [];
+              const primaryName = found.company_name.trim();
+              const exists = found.client_entities.some((e: any) => 
+                e.entityName && e.entityName.trim().toLowerCase() === primaryName.toLowerCase()
+              );
+              if (!exists) {
+                found.client_entities.unshift({
+                  entityName: primaryName,
+                  entityType: found.business_type || 'Company',
+                  pan: found.pan || '',
+                  gstin: found.gstin || ''
+                });
+              }
+            }
+
             this.client.set(found);
             // Fetch client's orders to get their entities and services
             this.api.get<any>(`orders/user/${this.clientId}`).subscribe({
