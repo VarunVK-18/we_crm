@@ -50,7 +50,7 @@ export class ClientHelpSupport implements OnInit {
     return count;
   });
 
-  constructor(private router: Router, private api: Api) {}
+  constructor(private router: Router, public api: Api) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

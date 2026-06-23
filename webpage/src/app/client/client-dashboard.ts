@@ -73,7 +73,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
     return 1 + (this.activeOrders().length === 0 ? 1 : this.activeOrders().length);
   });
 
-  constructor(private router: Router, private api: Api) {}
+  constructor(private router: Router, public api: Api) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

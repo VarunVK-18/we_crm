@@ -19,7 +19,7 @@ export class EmployeeProfile implements OnInit {
   isLoading = signal<boolean>(true);
   errorMessage = signal<string>('');
 
-  constructor(private api: Api) {}
+  constructor(public api: Api) {}
 
   ngOnInit() {
     this.fetchClients();
