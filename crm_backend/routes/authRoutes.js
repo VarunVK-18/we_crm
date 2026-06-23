@@ -22,7 +22,8 @@ const {
   migrateChecklistAssignments,
   uploadProfileImage,
   removeProfileImage,
-  updateClientEntities
+  updateClientEntities,
+  getPublicManagers
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -59,6 +60,7 @@ router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, pe
 
 // Employee/Team routes
 router.get('/users/team-groups', checkUser, getTeamGroups);
+router.get('/users/public/managers', getPublicManagers);
 router.delete('/delete_user/:id', checkUser, preventAuditorWrite, permit('admin'), deleteUser);
 router.patch('/edit_user/:id', checkUser, preventAuditorWrite, permit('admin'), editUser);
 router.post('/reset-password/:id', checkUser, preventAuditorWrite, permit('admin'), resetPassword);

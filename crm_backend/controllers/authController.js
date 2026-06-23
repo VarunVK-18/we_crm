@@ -54,7 +54,7 @@ const registerUser = async (req, res) => {
       }
     }
 
-    const creatorId = req.user ? req.user._id : null;
+    const creatorId = req.body.created_by || (req.user ? req.user._id : null);
 
     // Handle uploaded file paths
     let gstin_file = '';
@@ -1035,6 +1035,16 @@ const updateClientEntities = async (req, res) => {
   }
 };
 
+const getPublicManagers = async (req, res) => {
+  try {
+    const { company_id } = req.query;
+    const managers = await User.find({ role: 'client_manager', company_id }).select('_id owner_name email');
+    res.status(200).json(managers);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error fetching managers' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -1054,5 +1064,6 @@ module.exports = {
   migrateChecklistAssignments,
   uploadProfileImage,
   removeProfileImage,
-  updateClientEntities
+  updateClientEntities,
+  getPublicManagers
 };
