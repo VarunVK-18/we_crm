@@ -1592,6 +1592,30 @@ a.eab-value:hover {
   text-underline-offset: 4px;
 }
 
+.skeleton-text {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-title {
+  width: 250px;
+  height: 28px;
+  margin-bottom: 12px;
+}
+
+.skeleton-desc {
+  width: 400px;
+  max-width: 100%;
+  height: 18px;
+}
+
+.skeleton-contact {
+  width: 180px;
+  height: 24px;
+}
+
 @media (max-width: 1024px) {
   .expert-assistance-banner {
     flex-direction: column;
@@ -1668,6 +1692,33 @@ a.eab-value:hover {
   margin-bottom: 24px;
 }
 
+.metric-card .number {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--palette-dark);
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.skeleton-number {
+  height: 32px;
+  width: 60px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .qa-title {
   font-family: 'Inter', sans-serif;
   font-size: 18px;
@@ -1689,7 +1740,8 @@ a.eab-value:hover {
   gap: 12px;
   overflow-x: auto;
   padding-top: 2px;
-  padding-bottom: 12px;
+  padding-bottom: 40px;
+  margin-bottom: -28px;
   scrollbar-width: none;
 }
 
@@ -1734,4 +1786,45 @@ a.eab-value:hover {
   font-weight: 600;
   color: var(--text-primary);
   text-align: center;
+}
+
+.custom-tooltip-container {
+  position: relative;
+}
+
+.custom-tooltip {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  transform: translateY(8px);
+  background-color: var(--palette-purple);
+  color: white;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  pointer-events: none;
+}
+
+/* Add a small arrow/triangle pointing UP */
+.custom-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  right: 24px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--palette-purple) transparent;
+}
+
+.custom-tooltip-container:hover .custom-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
 }

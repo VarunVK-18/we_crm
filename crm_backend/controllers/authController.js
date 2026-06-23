@@ -1045,6 +1045,39 @@ const getPublicManagers = async (req, res) => {
   }
 };
 
+// Client self-editing profile
+const editClientProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Ensure the user is only editing their own profile
+    if (req.user._id.toString() !== id) {
+      return res.status(403).json({ success: false, message: 'Unauthorized to edit this profile.' });
+    }
+
+    const { company_name, owner_name, email, phone, business_type, address } = req.body;
+    
+    // Only update allowed fields
+    const user = await User.findByIdAndUpdate(id, {
+      company_name,
+      owner_name,
+      email,
+      phone,
+      business_type,
+      address
+    }, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    res.status(200).json({ success: true, message: 'Profile updated successfully.', user });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ success: false, message: 'Server error while updating profile.' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -1065,5 +1098,6 @@ module.exports = {
   uploadProfileImage,
   removeProfileImage,
   updateClientEntities,
-  getPublicManagers
+  getPublicManagers,
+  editClientProfile
 };

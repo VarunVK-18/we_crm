@@ -196,6 +196,7 @@ export class ClientServicesComponent implements OnInit {
       s.description.toLowerCase().includes(q)
     );
   });
+  isLoadingManager = signal(true);
   clientManager = signal<any>(null);
   availableEntities = signal<string[]>([]);
   myChecklists = signal<any[]>([]);
@@ -260,10 +261,11 @@ export class ClientServicesComponent implements OnInit {
   }
 
   fetchClientManager() {
-    const userVal = this.user();
-    if (!userVal) return;
-    const uid = userVal._id || userVal.id;
-    if (!uid) return;
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) {
+      this.isLoadingManager.set(false);
+      return;
+    }
 
     this.api.get<any>(`users/profile/${uid}`).subscribe({
       next: (res) => {
@@ -272,8 +274,12 @@ export class ClientServicesComponent implements OnInit {
         } else if (res.user && res.user.assigned_to) {
           this.clientManager.set(res.user.assigned_to);
         }
+        this.isLoadingManager.set(false);
       },
-      error: (err) => console.error('Failed to fetch client manager:', err)
+      error: (err) => {
+        console.error('Failed to fetch client manager:', err);
+        this.isLoadingManager.set(false);
+      }
     });
   }
 

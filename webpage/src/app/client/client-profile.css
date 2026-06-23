@@ -500,7 +500,7 @@
 
 .details-list {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 28px 24px;
 }
 
@@ -513,6 +513,7 @@
   background: transparent;
   border: none;
   gap: 6px;
+  min-width: 0;
 }
 
 .detail-item:last-child {
@@ -531,6 +532,7 @@
 .detail-item.full-width .detail-value {
   text-align: left;
   max-width: 100%;
+  white-space: normal;
 }
 
 .detail-label {
@@ -539,6 +541,7 @@
   font-weight: 600;
   text-transform: none;
   letter-spacing: normal;
+  white-space: nowrap;
 }
 
 .detail-value {
@@ -547,7 +550,10 @@
   font-weight: 600;
   text-align: left;
   max-width: 100%;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 /* Documents section */
@@ -674,6 +680,49 @@
   font-size: 32px;
   color: #3b82f6;
   margin-bottom: 16px;
+}
+
+/* Table styles for Directors */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: white;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.data-table th {
+  padding: 14px 16px;
+  background-color: rgba(15, 23, 42, 0.02);
+  color: color-mix(in srgb, var(--palette-dark) 60%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--palette-dark);
+  vertical-align: middle;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background-color: rgba(15, 23, 42, 0.01);
 }
 
 @keyframes spin {

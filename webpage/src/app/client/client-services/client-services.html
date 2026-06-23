@@ -186,7 +186,18 @@
     </div>
   </div>
 
-  @if (clientManager()) {
+  @if (isLoadingManager()) {
+    <div class="expert-assistance-banner skeleton-banner" style="margin-top: 32px;">
+      <div class="eab-content">
+        <div class="skeleton-text skeleton-title"></div>
+        <div class="skeleton-text skeleton-desc"></div>
+      </div>
+      <div class="eab-contact">
+         <div class="skeleton-text skeleton-contact"></div>
+         <div class="skeleton-text skeleton-contact"></div>
+      </div>
+    </div>
+  } @else if (clientManager()) {
     <div class="expert-assistance-banner" style="margin-top: 32px;">
       <div class="eab-content">
         <h2 class="eab-title">Need Expert Assistance?</h2>

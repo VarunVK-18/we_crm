@@ -498,7 +498,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   Widget _buildTicketCard(dynamic ticket) {
     final status = ticket['status'] ?? 'Pending';
     final expert = ticket['expert'] ?? 'Unassigned';
-    final ticketId = ticket['ticketId'] ?? 'TKT-0000';
+    final ticketId = ticket['ticketId'] ?? 'INC-0000';
     final subject = ticket['subject'] ?? 'No Subject';
     final description = ticket['description'] ?? '';
     final category = ticket['category'] ?? 'General Support';
@@ -615,7 +615,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   }
 
   Widget _buildHistoryTicket(dynamic ticket) {
-    final ticketId = ticket['ticketId'] ?? 'TKT-0000';
+    final ticketId = ticket['ticketId'] ?? 'INC-0000';
     final subject = ticket['subject'] ?? 'No Subject';
     final status = ticket['status'] ?? 'Resolved';
     final category = ticket['category'] ?? 'General Support';

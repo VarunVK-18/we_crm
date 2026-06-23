@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Search01Icon, File01Icon, Download04Icon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
+import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-client-document-hub',
@@ -34,7 +35,11 @@ export class ClientDocumentHub implements OnInit {
     );
   });
 
-  constructor(private router: Router, private api: Api) { }
+  constructor(
+    private router: Router, 
+    private api: Api,
+    private confirmDialog: ConfirmDialogService
+  ) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -56,9 +61,7 @@ export class ClientDocumentHub implements OnInit {
         const docs: any[] = [];
 
         for (const c of checklists) {
-          // If payment is pending, we do not show final documents
           const isPaymentPending = (c.dealClosedAmount || 0) > (c.advanceAmountPaid || 0);
-          if (isPaymentPending) continue;
 
           if (c.final_documents && c.final_documents.length > 0) {
             for (const fd of c.final_documents) {
@@ -66,7 +69,8 @@ export class ClientDocumentHub implements OnInit {
                 ...fd,
                 serviceName: c.service_name,
                 orderId: c._id,
-                date: fd.uploadedAt || c.updatedAt
+                date: fd.uploadedAt || c.updatedAt,
+                isPaymentPending
               });
             }
           }
@@ -84,7 +88,17 @@ export class ClientDocumentHub implements OnInit {
     });
   }
 
-  downloadDocument(doc: any) {
+  async downloadDocument(doc: any) {
+    if (doc.isPaymentPending) {
+      await this.confirmDialog.confirm({
+        title: 'Document Locked',
+        message: 'This document cannot be downloaded because there is a pending payment for its service. Please clear the balance to unlock your documents.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      return;
+    }
+
     const baseUrl = (this.api as any).baseUrl || 'http://localhost:5001/api';
     if (doc.document_id) {
       window.open(`${baseUrl}/documents/${doc.document_id}`, '_blank');

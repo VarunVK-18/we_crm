@@ -249,6 +249,21 @@
   background: #f1f5f9;
 }
 
+/* Drag and Drop states */
+.file-group.drag-over,
+.file-upload-group.drag-over {
+  border-color: var(--palette-primary);
+  background: color-mix(in srgb, var(--palette-primary) 10%, #f1f5f9);
+  border-style: solid;
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.file-group.drag-over *,
+.file-upload-group.drag-over * {
+  pointer-events: none;
+}
+
 .file-group input[type="file"],
 .file-upload-group input[type="file"] {
   font-size: 13px;

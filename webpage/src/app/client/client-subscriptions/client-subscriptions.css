@@ -135,7 +135,7 @@
 .history-card {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 10px;
   padding: 24px;
   background: white;
   border-radius: 20px;
@@ -145,6 +145,7 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 }
 
 
@@ -152,7 +153,6 @@
   width: 52px;
   height: 52px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--palette-purple) 8%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,7 +162,6 @@
 
 .history-card:hover .hc-icon {
   transform: scale(1.05) rotate(-5deg);
-  background: color-mix(in srgb, var(--palette-purple) 15%, transparent);
 }
 
 .hc-content {
@@ -221,7 +220,7 @@
   transition: opacity 0.2s;
   background: color-mix(in srgb, var(--palette-purple) 10%, transparent);
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: 8px;
 }
 
 .history-card:hover .hc-download {
@@ -230,7 +229,18 @@
   color: white;
 }
 
-/* Right Column: Premium Sticky Sidebar */
+.hc-pending {
+  color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.1) !important;
+}
+
+.history-card:hover .hc-pending {
+  background-color: rgba(239, 68, 68, 0.2) !important;
+  color: #dc2626 !important;
+}
+
+/* ==========================================================================
+   Premium Plan Sticky Sidebar */
 .sticky-wrapper {
   position: sticky;
   top: 32px;

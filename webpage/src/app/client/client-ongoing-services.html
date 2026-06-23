@@ -53,10 +53,9 @@
                     <tr (click)="openServiceDetails(order)">
                       <td>
                         <div style="display: flex; flex-direction: column; gap: 4px;">
-                          <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark); white-space: nowrap;">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
+                          <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
                           @if (order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name) {
                             <span style="font-size: 12px; font-weight: 500; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); display: flex; align-items: center; gap: 4px;">
-                              <hugeicons-icon [icon]="ApartmentIcon" [size]="14" [strokeWidth]="2" color="currentColor" style="display: flex;"></hugeicons-icon>
                               {{ order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name }}
                             </span>
                           }
@@ -125,7 +124,8 @@
           <div class="manager-info">
             <h3 class="manager-name">{{ clientManager().owner_name || clientManager().name || 'Support Team' }}</h3>
             <p class="manager-desc">
-              <span class="manager-role">Your Client Manager</span>
+              Your
+              <span class="manager-role">Client Manager</span>
               is available to assist you with any queries.
             </p>
           </div>

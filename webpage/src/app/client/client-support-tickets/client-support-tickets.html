@@ -59,7 +59,7 @@
             } @else {
               @for (ticket of filteredTickets(); track ticket._id) {
                 <tr>
-                  <td class="ticket-id-cell">{{ ticket.ticketId || 'TKT-0000' }}</td>
+                  <td class="ticket-id-cell">{{ ticket.ticketId || 'INC-0000' }}</td>
                   <td>{{ ticket.category || 'General Support' }}</td>
                   <td class="ticket-subject-cell"><strong>{{ ticket.subject || 'No Subject' }}</strong></td>
                   <td>{{ formatDate(ticket.createdAt) }}</td>

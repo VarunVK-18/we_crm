@@ -115,6 +115,25 @@
   margin: 0 auto;
 }
 
+.download-btn-small:hover {
+  background: var(--palette-purple);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.btn-locked {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.btn-locked:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+  transform: translateY(-2px);
+}
+
 .documents-table-wrapper {
   background: var(--surface);
   border: 1px solid #e2e8f0;

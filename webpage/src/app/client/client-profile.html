@@ -24,34 +24,57 @@
         <div class="profile-grid">
           <!-- Details Section -->
           <div class="profile-card">
-            <div class="card-header">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
               <h2>Account Details</h2>
+              <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" (click)="toggleEdit()">
+                {{ isEditing() ? 'Cancel' : 'Edit Profile' }}
+              </button>
             </div>
             
             <div class="details-list">
               <div class="detail-item">
                 <span class="detail-label">Company Name</span>
-                <span class="detail-value">{{ user()?.company_name || 'N/A' }}</span>
+                @if (isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.company_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="detail-value" [title]="user()?.company_name || 'N/A'">{{ user()?.company_name || 'N/A' }}</span>
+                }
               </div>
               <div class="detail-item">
                 <span class="detail-label">Owner Name</span>
-                <span class="detail-value">{{ user()?.owner_name || 'N/A' }}</span>
+                @if (isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.owner_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="detail-value" [title]="user()?.owner_name || 'N/A'">{{ user()?.owner_name || 'N/A' }}</span>
+                }
               </div>
               <div class="detail-item">
                 <span class="detail-label">Email</span>
-                <span class="detail-value">{{ user()?.email || 'N/A' }}</span>
+                @if (isEditing()) {
+                  <input type="email" class="form-input" [(ngModel)]="editData.email" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="detail-value" [title]="user()?.email || 'N/A'">{{ user()?.email || 'N/A' }}</span>
+                }
               </div>
               <div class="detail-item">
                 <span class="detail-label">Phone</span>
-                <span class="detail-value">{{ user()?.phone || 'N/A' }}</span>
+                @if (isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.phone" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="detail-value" [title]="user()?.phone || 'N/A'">{{ user()?.phone || 'N/A' }}</span>
+                }
               </div>
               <div class="detail-item">
                 <span class="detail-label">Business Type</span>
-                <span class="detail-value">{{ user()?.business_type || 'N/A' }}</span>
+                @if (isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.business_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="detail-value" [title]="user()?.business_type || 'N/A'">{{ user()?.business_type || 'N/A' }}</span>
+                }
               </div>
               <div class="detail-item">
                 <span class="detail-label">PAN</span>
-                <span class="detail-value">{{ user()?.pan || 'N/A' }}</span>
+                <span class="detail-value" [title]="user()?.pan || 'N/A'">{{ user()?.pan || 'N/A' }}</span>
               </div>
               <div class="detail-item">
                 <span class="detail-label">PAN Verified Name</span>
@@ -83,9 +106,22 @@
               </div>
               <div class="detail-item full-width">
                 <span class="detail-label">Address</span>
-                <span class="detail-value">{{ user()?.address || 'N/A' }}</span>
+                @if (isEditing()) {
+                  <textarea class="form-input" [(ngModel)]="editData.address" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; min-height: 80px; resize: vertical;"></textarea>
+                } @else {
+                  <span class="detail-value">{{ user()?.address || 'N/A' }}</span>
+                }
               </div>
             </div>
+            
+            @if (isEditing()) {
+              <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="btn btn-outline" (click)="toggleEdit()" [disabled]="isSaving()">Cancel</button>
+                <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isSaving()">
+                  {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+                </button>
+              </div>
+            }
           </div>
 
           <!-- Documents Section -->
@@ -154,6 +190,46 @@
               }
             </div>
           </div>
+          
+          <!-- Directors Section -->
+          @if (directors().length > 0) {
+            <div class="profile-card directors-card" style="grid-column: 1 / -1;">
+              <div class="card-header">
+                <h2>Directors & Partners</h2>
+                <span class="doc-count">{{ directors().length }} Total</span>
+              </div>
+              <div class="table-container" style="margin-top: 16px;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Role</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>PAN</th>
+                      <th>Aadhaar</th>
+                      <th>DOB</th>
+                      <th>DIN</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (dir of directors(); track dir.pan || dir.fullName) {
+                      <tr>
+                        <td style="font-weight: 600;">{{ dir.fullName }}</td>
+                        <td><span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ dir.role || 'Director' }}</span></td>
+                        <td>{{ dir.email || 'N/A' }}</td>
+                        <td>{{ dir.phone || 'N/A' }}</td>
+                        <td>{{ dir.pan || 'N/A' }}</td>
+                        <td>{{ dir.aadhaar || 'N/A' }}</td>
+                        <td>{{ dir.dob || 'N/A' }}</td>
+                        <td>{{ dir.din || 'N/A' }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
         </div>
       }
     </div>

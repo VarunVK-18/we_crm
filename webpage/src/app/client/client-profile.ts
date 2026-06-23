@@ -1,5 +1,6 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -9,7 +10,7 @@ import { WeLoaderComponent } from '../components/we-loader/we-loader';
 @Component({
   selector: 'app-client-profile',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './client-profile.html',
   styleUrl: './client-profile.css',
 })
@@ -22,6 +23,7 @@ export class ClientProfile implements OnInit {
   user = signal<any>(null);
   clientManager = signal<any>(null);
   allDocuments = signal<any[]>([]);
+  directors = signal<any[]>([]);
   isLoading = signal(true);
   
   constructor(private router: Router, public api: Api) {}
@@ -58,6 +60,7 @@ export class ClientProfile implements OnInit {
           if (res.user.onboarding_documents) {
             docs = [...res.user.onboarding_documents];
           }
+          let directorsList: any[] = [];
           
           this.api.get<any>('my-checklists').subscribe({
             next: (chkRes) => {
@@ -88,9 +91,21 @@ export class ClientProfile implements OnInit {
                       }
                     }
                   }
+                  if (c.details && c.details.directors && Array.isArray(c.details.directors)) {
+                    for (const d of c.details.directors) {
+                      // Prevent duplicates by checking PAN or DIN
+                      if (!directorsList.some(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || existing.fullName === d.fullName)) {
+                        directorsList.push({
+                          ...d,
+                          serviceName: c.service_name
+                        });
+                      }
+                    }
+                  }
                 }
               }
               this.allDocuments.set(docs);
+              this.directors.set(directorsList);
               this.isLoading.set(false);
             },
             error: (err) => {
@@ -117,5 +132,49 @@ export class ClientProfile implements OnInit {
 
   goToDashboard() {
     this.router.navigate(['/client-dashboard']);
+  }
+
+  isEditing = signal(false);
+  isSaving = signal(false);
+  editData: any = {};
+
+  toggleEdit() {
+    if (!this.isEditing()) {
+      // Enter edit mode, copy user data
+      const current = this.user();
+      this.editData = {
+        company_name: current?.company_name || '',
+        owner_name: current?.owner_name || '',
+        email: current?.email || '',
+        phone: current?.phone || '',
+        business_type: current?.business_type || '',
+        address: current?.address || ''
+      };
+      this.isEditing.set(true);
+    } else {
+      // Cancel edit mode
+      this.isEditing.set(false);
+    }
+  }
+
+  saveProfile() {
+    const userId = this.user()?._id || this.user()?.id;
+    if (!userId) return;
+
+    this.isSaving.set(true);
+    this.api.patch<any>(`users/profile/${userId}`, this.editData).subscribe({
+      next: (res) => {
+        if (res.success && res.user) {
+          this.user.set(res.user);
+          localStorage.setItem('user', JSON.stringify(res.user));
+          this.isEditing.set(false);
+        }
+        this.isSaving.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to save profile:', err);
+        this.isSaving.set(false);
+      }
+    });
   }
 }

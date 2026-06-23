@@ -109,12 +109,26 @@ export class ClientDashboard implements OnInit, OnDestroy {
   fetchClientManager() {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) return;
+    
+    const cachedManager = localStorage.getItem(`dashboard-manager-${uid}`);
+    if (cachedManager) {
+      try {
+        this.clientManager.set(JSON.parse(cachedManager));
+      } catch (e) {}
+    }
+
     this.api.get<any>(`users/profile/${uid}`).subscribe({
       next: (res) => {
+        let manager = null;
         if (res.user && res.user.client_manager) {
-          this.clientManager.set(res.user.client_manager);
+          manager = res.user.client_manager;
         } else if (res.user && res.user.assigned_to) {
-          this.clientManager.set(res.user.assigned_to);
+          manager = res.user.assigned_to;
+        }
+        
+        if (manager) {
+          this.clientManager.set(manager);
+          localStorage.setItem(`dashboard-manager-${uid}`, JSON.stringify(manager));
         }
       },
       error: (err) => console.error('Failed to fetch client manager:', err)
@@ -176,56 +190,72 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/client/services'], { queryParams: { category: categoryId } });
   }
 
+  processChecklists(checklists: any[]) {
+    const active: any[] = [];
+    const completed: any[] = [];
+    const notInit: any[] = [];
+    
+    for (const c of checklists) {
+      const isAssigned = c.assigned_to && c.assigned_to.role !== 'client_manager';
+      let status = 'in-progress';
+      if (c.status === 'completed') {
+        status = 'completed';
+      } else if (!isAssigned) {
+        status = 'pending-request';
+      } else {
+        const isPrivateLimited = c.service_name === 'Private Limited Incorporation';
+        const isLLP = c.service_name === 'LLP Incorporation';
+        const isFSSAI = c.service_name === 'FSSAI Food License';
+        
+        if (isPrivateLimited && (!c.details || !c.details.companyName)) {
+          status = 'action-required';
+        } else if (isLLP && (!c.details || !c.details.llpName)) {
+          status = 'action-required';
+        } else if (isFSSAI && (!c.details || !c.details.fssai_business_type)) {
+          status = 'action-required';
+        } else if (c.action_required) {
+          status = 'action-required';
+        }
+      }
+      
+      c.derivedStatus = status;
+      
+      if (status === 'action-required' || status === 'in-progress' || status === 'active') active.push(c);
+      else if (status === 'completed') completed.push(c);
+      else notInit.push(c);
+    }
+    
+    this.activeOrders.set(active);
+    this.completedOrders.set(completed);
+    this.pendingOrders.set(notInit);
+    this.isLoading.set(false);
+  }
+
   fetchOrders() {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) return;
     
+    const cachedData = localStorage.getItem(`dashboard-orders-${uid}`);
+    if (cachedData) {
+      try {
+        const checklists = JSON.parse(cachedData);
+        this.processChecklists(checklists);
+      } catch (e) {
+        // ignore JSON parse error
+      }
+    }
+    
     this.api.get<any>('my-checklists').subscribe({
       next: (res: any) => {
         const checklists = res.checklists || [];
-        
-        const active: any[] = [];
-        const completed: any[] = [];
-        const notInit: any[] = [];
-        
-        for (const c of checklists) {
-          const isAssigned = c.assigned_to && c.assigned_to.role !== 'client_manager';
-          let status = 'in-progress';
-          if (c.status === 'completed') {
-            status = 'completed';
-          } else if (!isAssigned) {
-            status = 'pending-request';
-          } else {
-            const isPrivateLimited = c.service_name === 'Private Limited Incorporation';
-            const isLLP = c.service_name === 'LLP Incorporation';
-            const isFSSAI = c.service_name === 'FSSAI Food License';
-            
-            if (isPrivateLimited && (!c.details || !c.details.companyName)) {
-              status = 'action-required';
-            } else if (isLLP && (!c.details || !c.details.llpName)) {
-              status = 'action-required';
-            } else if (isFSSAI && (!c.details || !c.details.fssai_business_type)) {
-              status = 'action-required';
-            } else if (c.action_required) {
-              status = 'action-required';
-            }
-          }
-          
-          c.derivedStatus = status;
-          
-          if (status === 'action-required' || status === 'in-progress' || status === 'active') active.push(c);
-          else if (status === 'completed') completed.push(c);
-          else notInit.push(c);
-        }
-        
-        this.activeOrders.set(active);
-        this.completedOrders.set(completed);
-        this.pendingOrders.set(notInit);
-        this.isLoading.set(false);
+        localStorage.setItem(`dashboard-orders-${uid}`, JSON.stringify(checklists));
+        this.processChecklists(checklists);
       },
       error: (err) => {
         console.error('Failed to fetch client orders:', err);
-        this.isLoading.set(false);
+        if (!cachedData) {
+          this.isLoading.set(false);
+        }
       }
     });
   }

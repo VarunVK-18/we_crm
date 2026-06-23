@@ -23,7 +23,8 @@ const {
   uploadProfileImage,
   removeProfileImage,
   updateClientEntities,
-  getPublicManagers
+  getPublicManagers,
+  editClientProfile
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -47,6 +48,7 @@ router.post('/auth/register-company', registerCompany);
 
 // User profile route
 router.get('/users/profile/:id', getUserProfile);
+router.patch('/users/profile/:id', checkUser, editClientProfile);
 router.post('/users/profile/:id/subscribe-service', upload.any(), subscribeService);
 router.post('/users/profile/:id/pan', upload.single('panFile'), savePanDetails);
 router.put('/users/profile/:id/entities', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), updateClientEntities);

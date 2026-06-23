@@ -17,10 +17,20 @@
    ========================================================================== */
 .screen-layout {
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
+  height: 100vh;
   width: 100%;
   background-color: var(--bg-secondary);
   position: relative;
+  overflow: hidden;
+}
+
+.split-layout-top {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 /* Left side panel: Branding */
@@ -58,17 +68,46 @@
 .brand-logo {
   height: 180px;
   width: 180px;
+  object-fit: cover;
+  border-radius: 16px;
+}
+
+/* Custom Branding Section */
+.custom-branding {
+  background: #ffffff !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
+.custom-branding-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 100%;
+}
+
+.custom-brand-logo {
+  max-width: 350px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.custom-brand-clients {
+  max-width: 500px;
+  width: 100%;
+  height: auto;
   object-fit: contain;
 }
 
 .branding-narrative {
-  font-family: var(--font-heading);
-  font-size: var(--text-3xl); /* 20px */
-  line-height: 1.6;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text-primary);
+  font-size: 28px;
+  line-height: 1.4;
+  font-weight: 700;
   margin: 0;
-  letter-spacing: -0.01em;
 }
 
 /* Right side panel: Auth Form */
@@ -79,8 +118,7 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ==========================================================================
@@ -115,9 +153,10 @@
   width: 100%;
   min-height: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
-  padding: 3rem 2rem;
+  padding: 1rem 2rem;
   box-sizing: border-box;
 }
 
@@ -125,6 +164,7 @@
   width: 100%;
   max-width: 440px;
   z-index: 5;
+  margin: auto 0;
 }
 
 .mobile-logo-header {
@@ -145,8 +185,9 @@
 
 .main-title {
   font-family: var(--font-heading);
-  font-size: var(--text-5xl); /* 32px */
+  font-size: 28px;
   font-weight: 800;
+  line-height: 1.2;
   letter-spacing: -0.5px;
   color: var(--text-primary);
   margin: 0 0 12px 0;
@@ -158,13 +199,13 @@
   font-weight: 500;
   line-height: 1.5;
   color: var(--text-secondary);
-  margin: 0 0 40px 0;
+  margin: 0 0 20px 0;
 }
 
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
 }
 
 /* ==========================================================================
@@ -173,7 +214,7 @@
 .form-field-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .input-label {
@@ -206,7 +247,7 @@
 
 .styled-text-input {
   width: 100%;
-  height: 56px;
+  height: 48px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 16px;
@@ -296,7 +337,7 @@
    ========================================================================== */
 .submit-button-container {
   width: 100%;
-  height: 56px;
+  height: 48px;
   background: var(--premium-gradient);
   border-radius: 16px;
   box-shadow: var(--card-shadow);
@@ -353,7 +394,7 @@
   border: none;
   font-family: var(--font-body);
   font-size: var(--text-base); /* 13px */
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-secondary);
   cursor: pointer;
   padding: 8px 16px;
@@ -616,7 +657,7 @@
 
 /* Media Query: Screens <= 900px */
 @media (max-width: 900px) {
-  .screen-layout {
+  .split-layout-top {
     flex-direction: column;
   }
   
@@ -640,4 +681,50 @@
   .main-title {
     font-size: var(--text-4xl); /* 24px */
   }
+}
+
+/* ==========================================================================
+   Client Logos Section
+   ========================================================================== */
+.client-logos-section {
+  flex-shrink: 0;
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background-color: var(--bg-secondary);
+}
+
+.client-logos-title {
+  font-size: 8px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+
+.client-logos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.client-logos-grid img {
+  height: 22px;
+  width: auto;
+  max-width: 90px;
+  object-fit: contain;
+  opacity: 0.7;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  filter: grayscale(100%);
+}
+
+.client-logos-grid img:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+  transform: scale(1.05);
 }

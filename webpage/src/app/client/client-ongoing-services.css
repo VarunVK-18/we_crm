@@ -529,7 +529,16 @@
   font-size: 13px;
   color: rgba(255, 255, 255, 0.9);
   font-weight: 700;
-  margin-right: 4px;
+  padding: 2px 1px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.manager-role:hover {
+  background-color: var(--palette-purple);
+  color: white;
 }
 
 .manager-desc {

@@ -45,12 +45,13 @@ const TicketSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Pre-save hook to generate sequential/random ticket IDs like TKT-4821
-TicketSchema.pre('save', function() {
+// Pre-save hook to generate sequential/random ticket IDs like INC-4821
+TicketSchema.pre('save', function(next) {
   if (!this.ticketId) {
-    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4 digit random number
-    this.ticketId = `TKT-${randomDigits}`;
+    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+    this.ticketId = `INC-${randomDigits}`;
   }
+  next();
 });
 
 module.exports = mongoose.model('Ticket', TicketSchema);

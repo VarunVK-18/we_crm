@@ -36,9 +36,9 @@
           </div>
         } @else {
           @for (service of completedServices(); track service._id) {
-            <a [routerLink]="['/client/invoice', service._id || service.id]" class="history-card">
+            <div (click)="handleServiceClick($event, service)" class="history-card" [class.is-pending]="isPaymentPending(service)">
               <div class="hc-icon">
-                <hugeicons-icon [icon]="FileAttachmentIcon" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
+                <hugeicons-icon [icon]="getServiceIcon(service)" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
               </div>
               <div class="hc-content">
                 <h3>{{ service.service_name || service.checklist_name || 'Service Package' }}</h3>
@@ -49,13 +49,16 @@
                 </div>
               </div>
               <div class="hc-actions">
-
-                <div class="hc-download">
-                  <span>Invoice</span>
-                  <hugeicons-icon [icon]="Download01Icon" [size]="16" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                <div class="hc-download" [class.hc-pending]="isPaymentPending(service)">
+                  @if (isPaymentPending(service)) {
+                    <span>Payment Pending</span>
+                  } @else {
+                    <span>Invoice</span>
+                    <hugeicons-icon [icon]="Download01Icon" [size]="16" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                  }
                 </div>
               </div>
-            </a>
+            </div>
           }
         }
       </div>
