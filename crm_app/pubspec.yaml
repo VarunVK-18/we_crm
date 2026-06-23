@@ -28,7 +28,7 @@ dependencies:
   connectivity_plus: ^6.1.5
   internet_connection_checker: ^3.0.1
   google_mlkit_text_recognition: ^0.15.1
-  open_file: ^3.5.11
+  open_filex: ^4.5.0
   dropdown_button2: ^3.1.0
   syncfusion_flutter_pdfviewer: ^33.2.12
 

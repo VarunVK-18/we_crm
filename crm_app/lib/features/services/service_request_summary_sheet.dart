@@ -16,7 +16,7 @@ import 'dart:convert';
 import '../../core/constants/port.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../models/director_form_data.dart';
-import 'package:open_file/open_file.dart';
+import 'package:open_filex/open_filex.dart';
 
 class ServiceRequestSummarySheet extends ConsumerStatefulWidget {
   final String packageName;
@@ -1881,7 +1881,7 @@ class _ServiceRequestSummarySheetState
                                   icon: const Icon(LucideIcons.eye, size: 14),
                                   color: AppTheme.corporateBlue,
                                   onPressed: () =>
-                                      OpenFile.open(entry.value.path!),
+                                      OpenFilex.open(entry.value.path!),
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints()),
                             if (entry.value.path != null)
