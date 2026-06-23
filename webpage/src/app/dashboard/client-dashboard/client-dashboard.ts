@@ -136,6 +136,11 @@ export class ClientDashboard implements OnInit, OnChanges {
   editingEntityIndex = signal<number>(-1);
   currentEntity: any = {};
   isUploadingDoc = signal<boolean>(false);
+  showPassword: Record<string, boolean> = {};
+
+  togglePassword(field: string) {
+    this.showPassword[field] = !this.showPassword[field];
+  }
 
   openEntityForm() {
     this.editingEntityIndex.set(-1);

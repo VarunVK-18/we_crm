@@ -1,20 +1,21 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
+const User = require('./models/User');
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/we_crm').then(async () => {
-  const Checklist = require('./models/Checklist');
-  const checklists = await Checklist.find({});
-  let uploaded = false;
-  for (const c of checklists) {
-    if (c.requested_documents) {
-      for (const d of c.requested_documents) {
-        if (d.isUploaded) {
-          console.log(`Uploaded document found in checklist ${c._id}: ${d.name}`);
-          uploaded = true;
-        }
-      }
+const MONGO_URI = 'mongodb+srv://kingkohli43255_db_user:UjMgPzVdBG9353yE@cluster0.bxb9nii.mongodb.net/';
+
+async function test() {
+  await mongoose.connect(MONGO_URI);
+  const users = await User.find({ "client_entities.0": { $exists: true } });
+  if (users.length > 0) {
+    console.log(`Found ${users.length} users with client_entities.`);
+    for (const u of users) {
+      console.log(`User: ${u.email}`);
+      console.log(JSON.stringify(u.client_entities, null, 2));
     }
+  } else {
+    console.log("No users with client_entities found.");
   }
-  if (!uploaded) console.log("No uploaded documents found.");
-  process.exit(0);
-});
+  mongoose.disconnect();
+}
+
+test().catch(console.error);
