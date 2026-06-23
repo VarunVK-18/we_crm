@@ -506,6 +506,40 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     this.closeExportModal();
   }
 
+  exportFinancialData() {
+    const monthStrFilter = this.financialMonth();
+    const ordersList = this.filteredRoleOrders() || [];
+    
+    let csvContent = 'Client Name,Service Name,Total Revenue,Amount Received,Pending Amount\n';
+
+    ordersList.forEach(o => {
+      if (!o.createdAt) return;
+      const oMonthStr = new Date(o.createdAt).toISOString().slice(0, 7);
+      if (oMonthStr === monthStrFilter) {
+        const clientName = o.entityName || o.companyName || 'Unknown Client';
+        const serviceName = o.serviceType || 'Service';
+        const rev = o.dealClosedAmount || 0;
+        const recv = o.advanceAmountPaid || 0;
+        const pend = rev - recv;
+        
+        const safeClientName = `"${clientName.replace(/"/g, '""')}"`;
+        const safeServiceName = `"${serviceName.replace(/"/g, '""')}"`;
+        
+        csvContent += `${safeClientName},${safeServiceName},${rev},${recv},${pend}\n`;
+      }
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Financial_Export_${monthStrFilter}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
   initOrUpdateCharts() {
     // Only construct if canvas elements are available in the DOM
     if (!this.growthChartCanvas || !this.revenueChartCanvas || !this.activityChartCanvas) {
