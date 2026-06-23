@@ -262,22 +262,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 
                                 Container(
                                   padding: const EdgeInsets.symmetric(vertical: 24),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.03),
-                                        blurRadius: 10,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
                                   child: SizedBox(
                                     height: 190,
                                     child: Image.asset(
                                       'assets/Client/whatsapp_image.jpeg',
                                       fit: BoxFit.contain,
+                                      color: const Color(0xFFFDFBF7),
+                                      colorBlendMode: BlendMode.darken,
                                     ),
                                   ),
                                 ),
