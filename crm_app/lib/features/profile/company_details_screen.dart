@@ -294,30 +294,64 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppTheme.deepTeal),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: () {
+                ref.invalidate(userProfileProvider);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Refreshing details...'),
+                    duration: Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              tooltip: 'Refresh',
+            ),
+          ),
+        ],
       ),
       body: userAsync.when(
         data: (user) {
           if (user == null || user.clientEntities.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            return RefreshIndicator(
+              color: AppTheme.deepTeal,
+              onRefresh: () async {
+                ref.invalidate(userProfileProvider);
+                await Future.delayed(const Duration(milliseconds: 500));
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Icon(Icons.business_rounded, size: 64, color: Colors.grey[300]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No Entities Found',
-                    style: GoogleFonts.outfit(
-                      color: AppTheme.deepTeal,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Your filing staff hasn\'t uploaded\nentity details yet.',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.outfit(
-                      color: Colors.grey[600],
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.business_rounded, size: 64, color: Colors.grey[300]),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No Entities Found',
+                            style: GoogleFonts.outfit(
+                              color: AppTheme.deepTeal,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Your filing staff hasn\'t uploaded\nentity details yet.\nPull down to refresh.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.outfit(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -325,13 +359,22 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: user.clientEntities.length,
-            itemBuilder: (context, index) {
-              final entity = user.clientEntities[index];
-              return _EntityExpandableCard(entity: entity);
+          return RefreshIndicator(
+            color: AppTheme.deepTeal,
+            onRefresh: () async {
+              ref.invalidate(userProfileProvider);
+              // Small delay to let the UI show the refresh spinner
+              await Future.delayed(const Duration(milliseconds: 500));
             },
+            child: ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              itemCount: user.clientEntities.length,
+              itemBuilder: (context, index) {
+                final entity = user.clientEntities[index];
+                return _EntityExpandableCard(entity: entity);
+              },
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFF312E81))),

@@ -630,6 +630,30 @@
 
             </div>
             }
+            
+            @if (isExpiryService(checklist()?.service_name)) {
+              <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 8px; padding: 16px; margin-top: 8px;">
+                <h5 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 18px; color: #f59e0b;">verified</span>
+                  Certificate Expiry Details
+                </h5>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Issue Date <span style="color: var(--color-danger);">*</span></label>
+                    <input type="date" [(ngModel)]="certIssueDate" style="padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary);" />
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Expiry Date <span style="color: var(--color-danger);">*</span></label>
+                    <input type="date" [(ngModel)]="certExpiryDate" style="padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary);" />
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">Certificate Number (Optional)</label>
+                  <input type="text" [(ngModel)]="certNumber" placeholder="e.g. FSSAI-2023-XXXX" style="padding: 8px 12px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary);" />
+                </div>
+              </div>
+            }
+
             <button (click)="submitFinalDocuments()" [disabled]="isFinalDocUploading"
               style="width: 100%; padding: 12px; background-color: var(--color-success); border: none; border-radius: 8px; color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px;">
               {{ isFinalDocUploading ? 'Uploading...' : 'Upload & Save Documents' }}

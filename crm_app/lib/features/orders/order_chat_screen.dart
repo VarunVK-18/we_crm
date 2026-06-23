@@ -92,7 +92,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     });
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundLight,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -197,15 +197,9 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
             // Chat Input Area
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
+                // Removed shadow as requested
               ),
               child: SafeArea(
                 child: Column(
@@ -279,15 +273,15 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                           fillColor: Colors.grey.shade100,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: const BorderSide(color: Colors.black, width: 1),
+                            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: const BorderSide(color: Colors.black, width: 1),
+                            borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
-                            borderSide: const BorderSide(color: Colors.black, width: 1.5),
+                            borderSide: BorderSide(color: AppTheme.deepTeal.withOpacity(0.5), width: 1.5),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 20,

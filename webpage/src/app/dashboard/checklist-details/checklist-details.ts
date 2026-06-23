@@ -628,11 +628,36 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.finalDocsToUpload.splice(index, 1);
   }
 
+  certIssueDate: string = '';
+  certExpiryDate: string = '';
+  certNumber: string = '';
+
+  isExpiryService(serviceName: string): boolean {
+    if (!serviceName) return false;
+    const nameLower = serviceName.toLowerCase();
+    return nameLower.includes('dsc') ||
+           nameLower.includes('digital signature') ||
+           nameLower.includes('fssai') ||
+           nameLower.includes('iso') ||
+           nameLower.includes('trademark') ||
+           nameLower.includes('trade mark') ||
+           nameLower.includes('copyright') ||
+           nameLower.includes('patent') ||
+           nameLower.includes('lei') ||
+           nameLower.includes('lie') ||
+           nameLower.includes('bis');
+  }
+
   submitFinalDocuments() {
-
-
     const cl = this.checklist();
     if (!cl) return;
+
+    if (this.isExpiryService(cl.service_name)) {
+      if (!this.certIssueDate || !this.certExpiryDate) {
+         alert('Issue Date and Expiry Date are required for this service.');
+         return;
+      }
+    }
 
     this.isFinalDocUploading = true;
     const formData = new FormData();
@@ -647,11 +672,22 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       formData.append('final_files', newFile);
     }
 
+    if (this.isExpiryService(cl.service_name)) {
+      formData.append('issueDate', this.certIssueDate);
+      formData.append('expiryDate', this.certExpiryDate);
+      if (this.certNumber) {
+        formData.append('certificateNumber', this.certNumber);
+      }
+    }
+
     this.api.post(`checklists/${cl._id}/final-documents`, formData).subscribe({
       next: (res: any) => {
         if (res && res.success) {
           this.checklist.set(res.checklist);
           this.finalDocsToUpload = [];
+          this.certIssueDate = '';
+          this.certExpiryDate = '';
+          this.certNumber = '';
           alert('Final documents uploaded successfully!');
         }
         this.isFinalDocUploading = false;

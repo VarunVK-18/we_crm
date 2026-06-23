@@ -855,6 +855,42 @@ const uploadFinalDocuments = async (req, res) => {
         }
       }
 
+      // Expiry Certificate Logic
+      if (req.body.issueDate && req.body.expiryDate) {
+        try {
+          const Certificate = require('../models/Certificate');
+          const sName = checklist.service_name.toLowerCase();
+          const isExpiry = sName.includes('dsc') || sName.includes('digital signature') || sName.includes('fssai') || sName.includes('iso') || sName.includes('trademark') || sName.includes('trade mark') || sName.includes('copyright') || sName.includes('patent') || sName.includes('lei') || sName.includes('lie') || sName.includes('bis');
+          
+          if (isExpiry) {
+            let cert = await Certificate.findOne({ latestRenewalChecklistId: checklist._id });
+            if (!cert) {
+              const User = require('../models/User');
+              const client = await User.findById(checklist.client_id);
+              
+              cert = new Certificate({
+                client_id: checklist.client_id,
+                entityName: checklist.details?.companyName || checklist.details?.proposed_company_name || checklist.details?.entityName || checklist.details?.businessName || client?.company_name || 'Individual',
+                serviceName: checklist.service_name,
+                certificateNumber: req.body.certificateNumber || 'N/A',
+                issueDate: new Date(req.body.issueDate),
+                expiryDate: new Date(req.body.expiryDate),
+                renewalRequired: true,
+                latestRenewalChecklistId: checklist._id
+              });
+            } else {
+              cert.issueDate = new Date(req.body.issueDate);
+              cert.expiryDate = new Date(req.body.expiryDate);
+              if (req.body.certificateNumber) cert.certificateNumber = req.body.certificateNumber;
+            }
+            await cert.save();
+            console.log(`[CERTIFICATE] Created/Updated Expiry Certificate for ${checklist.service_name}`);
+          }
+        } catch (err) {
+          console.error('Error creating Certificate record:', err);
+        }
+      }
+
       await checklist.save();
     }
 
