@@ -1,5 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -23,62 +23,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   bool _isPasswordVisible = false;
   bool _isLoading = false;
-
-  late PageController _pageController;
-  int _currentIndex = 10000;
-  Timer? _autoScrollTimer;
-
-  final List<Map<String, String>> _clients = [
-    {
-      'image': 'assets/client/client 6.jpeg',
-      'testimony': '"The CRM is incredibly easy to use. It saves us hours every week!"'
-    },
-    {
-      'image': 'assets/client/client 1.jpeg',
-      'testimony': '"It streamlined our audit process perfectly. Highly recommended."'
-    },
-    {
-      'image': 'assets/client/client 3.jpeg',
-      'testimony': '"A game-changer for our daily operations. Our team loves it."'
-    },
-    {
-      'image': 'assets/client/client 2.jpeg',
-      'testimony': '"I highly recommend Wealth Empires to any growing firm."'
-    },
-    {
-      'image': 'assets/client/client 4.jpeg',
-      'testimony': '"Reliable, fast, and feature-rich! It scales with our business."'
-    },
-    {
-      'image': 'assets/client/client 5.jpeg',
-      'testimony': '"Excellent support and great features. 10/10."'
-    },
-  ];
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController(viewportFraction: 0.35, initialPage: _currentIndex);
-    _pageController.addListener(() {
-      if (_pageController.position.haveDimensions) {
-        int next = _pageController.page!.round();
-        if (_currentIndex != next) {
-          setState(() {
-            _currentIndex = next;
-          });
-        }
-      }
-    });
-
-    _autoScrollTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_pageController.hasClients) {
-        _pageController.nextPage(
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
 
   void _showAuthDialog({
     required String title,
@@ -169,7 +113,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     Responsive.init(context);
     
-    // We constrain the width to make it look good on desktop too, acting as a mobile-sized card on large screens.
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -178,10 +121,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: const Color(0xFFFDFBF7), // Soft off-white to match the design
+        backgroundColor: const Color(0xFFFDFBF7),
         body: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500), // Ensures desktop doesn't stretch
+            constraints: const BoxConstraints(maxWidth: 500),
             child: SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -189,265 +132,191 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: ConstrainedBox(
                       constraints: BoxConstraints(minHeight: constraints.maxHeight),
                       child: IntrinsicHeight(
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 32),
-                              child: Form(
-                                key: _formKey,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    const SizedBox(height: 10),
-                                    Center(
-                                      child: Image.asset(
-                                        'assets/logo.png',
-                                        height: 160,
-                                        width: 160,
-                                        fit: BoxFit.contain,
-                                      ),
-                                    ),
-                                    
-                                    // Email Field
-                                    Text(
-                                      'E-mail',
-                                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    TextFormField(
-                                      controller: _emailController,
-                                      keyboardType: TextInputType.emailAddress,
-                                      autofillHints: const [AutofillHints.email],
-                                      textInputAction: TextInputAction.next,
-                                      decoration: InputDecoration(
-                                        hintText: 'hello@company.com',
-                                        hintStyle: TextStyle(color: Colors.grey[400]),
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
-                                      ),
-                                      validator: (val) {
-                                        if (val == null || val.isEmpty) return 'Email is required';
-                                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) return 'Enter a valid email address';
-                                        return null;
-                                      },
-                                    ),
-                                    
-                                    const SizedBox(height: 24),
-                                    
-                                    // Password Field
-                                    Text(
-                                      'Password',
-                                      style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    TextFormField(
-                                      controller: _passwordController,
-                                      obscureText: !_isPasswordVisible,
-                                      autofillHints: const [AutofillHints.password],
-                                      textInputAction: TextInputAction.done,
-                                      onEditingComplete: () => TextInput.finishAutofillContext(),
-                                      decoration: InputDecoration(
-                                        hintText: '••••••••',
-                                        hintStyle: TextStyle(color: Colors.grey[400]),
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-                                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
-                                        suffixIcon: Padding(
-                                          padding: const EdgeInsets.only(right: 8),
-                                          child: IconButton(
-                                            icon: Icon(_isPasswordVisible ? LucideIcons.eye : LucideIcons.eyeOff, color: Colors.black),
-                                            onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                                          ),
-                                        ),
-                                      ),
-                                      validator: (val) {
-                                        if (val == null || val.isEmpty) return 'Password is required';
-                                        if (val.length < 6) return 'Password must be at least 6 characters';
-                                        return null;
-                                      },
-                                    ),
-                                    
-                                    const SizedBox(height: 8),
-                                    
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: TextButton(
-                                        onPressed: () {
-                                          _showAuthDialog(
-                                            title: 'Notice',
-                                            message: 'Contact Support To Reset Your Password.',
-                                            isError: false,
-                                          );
-                                        },
-                                        child: Text(
-                                          'Forgot password?',
-                                          style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
-                                        ),
-                                      ),
-                                    ),
-                                    
-                                    const SizedBox(height: 16),
-                                    
-                                    SizedBox(
-                                      height: 64,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.black,
-                                          foregroundColor: Colors.white,
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
-                                          elevation: 0,
-                                        ),
-                                        onPressed: _isLoading ? null : _handleSignIn,
-                                        child: _isLoading
-                                            ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                            : Text('Log in', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold)),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 40),
-                                  ],
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const SizedBox(height: 32),
+                                Center(
+                                  child: Image.asset(
+                                    'assets/WE CRM logo .png',
+                                    height: 120,
+                                    width: 120,
+                                    fit: BoxFit.contain,
+                                  ),
                                 ),
-                              ),
-                            ),
-                            
-                            const Spacer(), // Pushes the rest to the bottom
-                            
-                            // Curved Carousel Section
-                            SizedBox(
-                              height: 220,
-                              child: AnimatedBuilder(
-                                animation: _pageController,
-                                builder: (context, child) {
-                                  return PageView.builder(
-                                    clipBehavior: Clip.none,
-                                    controller: _pageController,
-                                    itemBuilder: (context, index) {
-                                      int actualIndex = index % _clients.length;
-                                      double page = _currentIndex.toDouble();
-                                      if (_pageController.position.haveDimensions) {
-                                        page = _pageController.page ?? page;
-                                      }
-                                      
-                                      // Calculate position relative to center (negative is left, positive is right)
-                                      double position = index - page;
-                                      double delta = position.abs();
-                                      
-                                      // Scale factor (center is 1.0, adjacent is smaller)
-                                      double scale = (1 - (delta * 0.2)).clamp(0.4, 1.0);
-                                      
-                                      // Translation (center is lower (20), adjacent goes UP)
-                                      double dy = 20 - (delta * 40); 
-                                      
-                                      // Rotation (left is clockwise (+), right is counter-clockwise (-))
-                                      double angle = -position * 0.2;
-                                      
-                                      // Color saturation (center = 1.0 color, adjacent = 0.0 black & white)
-                                      double saturation = (1 - delta).clamp(0.0, 1.0);
-                                      double invSat = 1 - saturation;
-                                      double r = 0.2126 * invSat;
-                                      double g = 0.7152 * invSat;
-                                      double b = 0.0722 * invSat;
-                                      
-                                      ColorFilter filter = ColorFilter.matrix(<double>[
-                                        saturation + r, g, b, 0, 0,
-                                        r, saturation + g, b, 0, 0,
-                                        r, g, saturation + b, 0, 0,
-                                        0, 0, 0, 1, 0,
-                                      ]);
-
-                                      return Center(
-                                        child: Transform.translate(
-                                          offset: Offset(0, dy),
-                                          child: Transform.rotate(
-                                            angle: angle,
-                                            child: Transform.scale(
-                                              scale: scale,
-                                              child: SizedBox(
-                                                height: 140,
-                                                child: ColorFiltered(
-                                                  colorFilter: filter,
-                                                  child: Container(
-                                                    decoration: BoxDecoration(
-                                                      borderRadius: BorderRadius.circular(24),
-                                                      boxShadow: const [
-                                                        BoxShadow(
-                                                          color: Colors.black12,
-                                                          blurRadius: 15,
-                                                          offset: Offset(0, 10),
-                                                        )
-                                                      ],
-                                                      image: DecorationImage(
-                                                        image: AssetImage(_clients[actualIndex]['image']!),
-                                                        fit: BoxFit.cover,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                
+                                const SizedBox(height: 32),
+                                
+                                // Email Field
+                                Text(
+                                  'E-mail',
+                                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  height: 56,
+                                  child: TextFormField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    autofillHints: const [AutofillHints.email],
+                                    textInputAction: TextInputAction.next,
+                                    decoration: InputDecoration(
+                                      hintText: 'hello@company.com',
+                                      hintStyle: TextStyle(color: Colors.grey[400]),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
+                                    ),
+                                    validator: (val) {
+                                      if (val == null || val.isEmpty) return 'Email is required';
+                                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) return 'Enter a valid email address';
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                
+                                const SizedBox(height: 24),
+                                
+                                // Password Field
+                                Text(
+                                  'Password',
+                                  style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey[600]),
+                                ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  height: 56,
+                                  child: TextFormField(
+                                    controller: _passwordController,
+                                    obscureText: !_isPasswordVisible,
+                                    autofillHints: const [AutofillHints.password],
+                                    textInputAction: TextInputAction.done,
+                                    onEditingComplete: () => TextInput.finishAutofillContext(),
+                                    decoration: InputDecoration(
+                                      hintText: '••••••••',
+                                      hintStyle: TextStyle(color: Colors.grey[400]),
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.black)),
+                                      suffixIcon: IconButton(
+                                        icon: Icon(_isPasswordVisible ? LucideIcons.eye : LucideIcons.eyeOff, color: Colors.black),
+                                        onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                                      ),
+                                    ),
+                                    validator: (val) {
+                                      if (val == null || val.isEmpty) return 'Password is required';
+                                      if (val.length < 6) return 'Password must be at least 6 characters';
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                
+                                const SizedBox(height: 16),
+                                
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: Size.zero,
+                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    onPressed: () {
+                                      _showAuthDialog(
+                                        title: 'Notice',
+                                        message: 'Contact Support To Reset Your Password.',
+                                        isError: false,
                                       );
                                     },
-                                  );
-                                },
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 16),
-                            
-                            // Testimonial
-                            SizedBox(
-                              height: 50,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 32),
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  child: Text(
-                                    _clients[_currentIndex % _clients.length]['testimony']!,
-                                    key: ValueKey<int>(_currentIndex),
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontStyle: FontStyle.italic,
-                                      color: Colors.grey[800],
-                                      fontWeight: FontWeight.w500,
+                                    child: Text(
+                                      'Forgot password?',
+                                      style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w500),
                                     ),
                                   ),
                                 ),
-                              ),
-                            ),
-                            
-                            const SizedBox(height: 16),
-                            
-                            // Footer Sign Up Link
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 24),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'New to Wealth Empires? ',
-                                    style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14),
+                                
+                                const SizedBox(height: 24),
+                                
+                                SizedBox(
+                                  height: 56,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.black,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      elevation: 0,
+                                    ),
+                                    onPressed: _isLoading ? null : _handleSignIn,
+                                    child: _isLoading
+                                        ? const SizedBox(height: 24, width: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                        : Text('Log in', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold)),
                                   ),
-                                  GestureDetector(
-                                    onTap: _contactSupport,
-                                    child: Text(
-                                      'Sign up',
-                                      style: GoogleFonts.inter(
-                                        color: Colors.black,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                        decoration: TextDecoration.underline,
+                                ),
+                                
+                                const SizedBox(height: 2),
+                                
+                                Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 24),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.03),
+                                        blurRadius: 10,
+                                        offset: const Offset(0, 4),
                                       ),
+                                    ],
+                                  ),
+                                  child: SizedBox(
+                                    height: 190,
+                                    child: Image.asset(
+                                      'assets/Client/whatsapp_image.jpeg',
+                                      fit: BoxFit.contain,
                                     ),
                                   ),
-                                ],
-                              ),
+                                ),
+                                
+                                const SizedBox(height: 8),
+                                
+                                _AutoScrollingLogos(logos: _clientLogos),
+                                
+                                const Spacer(),
+                                const SizedBox(height: 22),
+                                
+                                // Footer Sign Up Link
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'New to Wealth Empires? ',
+                                        style: GoogleFonts.inter(color: Colors.grey[600], fontSize: 14),
+                                      ),
+                                      GestureDetector(
+                                        onTap: _contactSupport,
+                                        child: Text(
+                                          'Sign up',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
@@ -461,12 +330,110 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  final List<String> _clientLogos = [
+    'assets/Client/idfc_bank.png',
+    'assets/Client/softrate.png',
+    'assets/Client/dbs.png',
+    'assets/Client/logo6.png',
+    'assets/Client/pvr.png',
+    'assets/Client/hcl_tech.png',
+  ];
+
+  Widget _buildClientImage(int index) {
+    return SizedBox(
+      height: 28,
+      child: Image.asset(
+        _clientLogos[index - 1],
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    _autoScrollTimer?.cancel();
     _emailController.dispose();
     _passwordController.dispose();
-    _pageController.dispose();
     super.dispose();
+  }
+}
+
+class _AutoScrollingLogos extends StatefulWidget {
+  final List<String> logos;
+  const _AutoScrollingLogos({Key? key, required this.logos}) : super(key: key);
+
+  @override
+  _AutoScrollingLogosState createState() => _AutoScrollingLogosState();
+}
+
+class _AutoScrollingLogosState extends State<_AutoScrollingLogos> {
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAutoScroll();
+    });
+  }
+
+  void _startAutoScroll() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    while (mounted) {
+      if (_scrollController.hasClients) {
+        await _scrollController.animateTo(
+          _scrollController.offset + 100.0,
+          duration: const Duration(milliseconds: 2000),
+          curve: Curves.linear,
+        );
+      } else {
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Colors.transparent,
+            Colors.white,
+            Colors.white,
+            Colors.transparent,
+          ],
+          stops: [0.0, 0.1, 0.9, 1.0],
+        ).createShader(bounds);
+      },
+      blendMode: BlendMode.dstIn,
+      child: SizedBox(
+        height: 40,
+        child: ListView.builder(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(), // pure auto-scroll
+          itemBuilder: (context, index) {
+            final logo = widget.logos[index % widget.logos.length];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: SizedBox(
+                height: 40,
+                width: 80,
+                child: Image.asset(logo, fit: BoxFit.contain),
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 }
