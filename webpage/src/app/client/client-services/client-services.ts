@@ -214,7 +214,7 @@ export class ClientServicesComponent implements OnInit {
   formSubmitting = signal<boolean>(false);
   formSuccess = signal<boolean>(false);
 
-  constructor(private api: Api, private route: ActivatedRoute) {}
+  constructor(public api: Api, private route: ActivatedRoute) {}
 
   ngOnInit() {
     this.selectCategory('all');

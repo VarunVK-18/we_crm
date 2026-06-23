@@ -36,7 +36,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     private route: ActivatedRoute, 
     private router: Router,
     public location: Location,
-    private api: Api
+    public api: Api
   ) {}
 
   ngOnInit() {

@@ -71,7 +71,7 @@ export class Dashboard implements OnInit, OnDestroy {
   isNotificationOpen = signal<boolean>(false);
   isProfileDropdownOpen = signal<boolean>(false);
 
-  constructor(private router: Router, private api: Api, public notifService: NotificationService) {}
+  constructor(private router: Router, public api: Api, public notifService: NotificationService) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -139,6 +139,29 @@ export class Dashboard implements OnInit, OnDestroy {
     }
     
     this.isNotificationOpen.set(false);
+  }
+
+  uploadProfilePhoto(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const u = this.user();
+    if (!u) return;
+
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    this.api.post<any>(`users/profile/${u._id || u.id}/upload-image`, formData).subscribe({
+      next: (res) => {
+        if (res.success && res.profile_image) {
+          const updatedUser = { ...u, profile_image: res.profile_image };
+          this.user.set(updatedUser);
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          this.isProfileDropdownOpen.set(false);
+        }
+      },
+      error: (err) => console.error('Failed to upload profile photo', err)
+    });
   }
 
   fetchTeams() {

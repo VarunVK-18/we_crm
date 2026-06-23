@@ -91,7 +91,11 @@
         <!-- Manager Card (Dark Theme) -->
         <div class="manager-card-dark">
           <div class="mcd-avatar">
-            <span class="material-symbols-outlined mcd-icon">person</span>
+            @if (clientManager()?.profile_image) {
+              <img [src]="api.getFileUrl(clientManager()?.profile_image)" alt="Manager Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            } @else {
+              <span class="material-symbols-outlined mcd-icon">person</span>
+            }
           </div>
           
           <h3 class="mcd-name">{{ clientManager()?.owner_name || clientManager()?.name || 'varun' }}</h3>

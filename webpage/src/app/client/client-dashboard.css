@@ -452,9 +452,12 @@
   flex: 2.5;
   min-width: 0;
   position: relative;
-  background-color: var(--palette-dark);
-  background-image: radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 40%),
-    radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 10%, transparent) 0%, transparent 60%);
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  background-image: repeating-linear-gradient(45deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 2px,
+      transparent 2px,
+      transparent 12px), linear-gradient(135deg, #1e1b4b, #312e81);
   border-radius: 1.25rem;
   padding: 48px;
   color: var(--palette-light);
@@ -469,6 +472,7 @@
   left: 0;
   right: 0;
   bottom: 0;
+  opacity: 0;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
@@ -517,6 +521,12 @@
 .slide-dark {
   background-color: var(--palette-dark);
   color: white;
+}
+
+.slide-light {
+  background-color: #efefff;
+  color: #000000;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .register-icon-box {
@@ -746,6 +756,10 @@
   margin-bottom: 12px;
 }
 
+.slide-light .slide-badge {
+  background: rgba(0, 0, 0, 0.08);
+}
+
 .slide-progress-section {
   margin-top: auto;
 }
@@ -756,6 +770,10 @@
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 8px;
+}
+
+.slide-light .slide-progress-bar {
+  background: rgba(0, 0, 0, 0.08);
 }
 
 .slide-progress-fill {

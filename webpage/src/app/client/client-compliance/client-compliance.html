@@ -66,16 +66,32 @@
         </div>
       </div>
 
-      <!-- Urgent Deadline -->
-      <div class="bento-card deadline-card" [class.urgent]="urgentReminder()?.status === 'Critical' || urgentReminder()?.status === 'Overdue'">
-        <div class="deadline-content">
-          <h3 class="deadline-title">{{ urgentReminder() ? urgentReminder()?.title : 'All Compliances Met' }}</h3>
-          <p class="deadline-subtitle">{{ urgentReminder() ? urgentReminder()?.message : 'Up to date' }}</p>
+      <!-- Urgent Deadlines -->
+      @if (urgentReminders().length > 0) {
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          @for (reminder of urgentReminders(); track reminder.title) {
+            <div class="bento-card deadline-card" [class.urgent]="reminder.status === 'Critical' || reminder.status === 'Overdue'" style="margin-bottom: 0;">
+              <div class="deadline-content">
+                <h3 class="deadline-title">{{ reminder.title }}</h3>
+                <p class="deadline-subtitle">{{ reminder.message }}</p>
+              </div>
+              <div class="deadline-date">
+                {{ reminder.daysLeft }} Days Left
+              </div>
+            </div>
+          }
         </div>
-        <div class="deadline-date">
-          {{ urgentReminder() ? urgentReminder()?.daysLeft + ' Days Left' : 'No upcoming deadlines' }}
+      } @else {
+        <div class="bento-card deadline-card">
+          <div class="deadline-content">
+            <h3 class="deadline-title">All Compliances Met</h3>
+            <p class="deadline-subtitle">Up to date</p>
+          </div>
+          <div class="deadline-date">
+            No upcoming deadlines
+          </div>
         </div>
-      </div>
+      }
 
       <!-- Startup Doctor Link -->
       <a href="https://aistartupdoctor.com/" target="_blank" class="bento-card doctor-card">

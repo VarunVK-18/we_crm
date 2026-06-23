@@ -194,9 +194,14 @@
           <!-- Directors Section -->
           @if (directors().length > 0) {
             <div class="profile-card directors-card" style="grid-column: 1 / -1;">
-              <div class="card-header">
-                <h2>Directors & Partners</h2>
-                <span class="doc-count">{{ directors().length }} Total</span>
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h2>Directors & Partners</h2>
+                  <span class="doc-count">{{ directors().length }} Total</span>
+                </div>
+                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" (click)="toggleEdit()">
+                  {{ isEditing() ? 'Cancel' : 'Edit Directors' }}
+                </button>
               </div>
               <div class="table-container" style="margin-top: 16px;">
                 <table class="data-table">
@@ -210,24 +215,88 @@
                       <th>Aadhaar</th>
                       <th>DOB</th>
                       <th>DIN</th>
+                      <th>Photo</th>
+                      <th>Signature</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    @for (dir of directors(); track dir.pan || dir.fullName) {
-                      <tr>
-                        <td style="font-weight: 600;">{{ dir.fullName }}</td>
-                        <td><span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ dir.role || 'Director' }}</span></td>
-                        <td>{{ dir.email || 'N/A' }}</td>
-                        <td>{{ dir.phone || 'N/A' }}</td>
-                        <td>{{ dir.pan || 'N/A' }}</td>
-                        <td>{{ dir.aadhaar || 'N/A' }}</td>
-                        <td>{{ dir.dob || 'N/A' }}</td>
-                        <td>{{ dir.din || 'N/A' }}</td>
-                      </tr>
-                    }
-                  </tbody>
+                  @if (isEditing()) {
+                    <tbody>
+                      @for (dir of editData.directors; track $index) {
+                        <tr>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.fullName" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.role" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.email" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.phone" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.pan" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.aadhaar" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.dob" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td><input type="text" class="form-input" [(ngModel)]="dir.din" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
+                          <td>
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                              @if (dir.photo) {
+                                <a [href]="api.getFileUrl(dir.photo)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
+                              }
+                              <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                                Upload
+                                <input type="file" style="display: none;" (change)="uploadDirectorDocument($index, 'photo', $event)" accept="image/*" />
+                              </label>
+                            </div>
+                          </td>
+                          <td>
+                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                              @if (dir.signature) {
+                                <a [href]="api.getFileUrl(dir.signature)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
+                              }
+                              <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                                Upload
+                                <input type="file" style="display: none;" (change)="uploadDirectorDocument($index, 'signature', $event)" accept="image/*,application/pdf" />
+                              </label>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  } @else {
+                    <tbody>
+                      @for (dir of directors(); track dir.pan || dir.fullName) {
+                        <tr>
+                          <td style="font-weight: 600;">{{ dir.fullName }}</td>
+                          <td><span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ dir.role || 'Director' }}</span></td>
+                          <td>{{ dir.email || 'N/A' }}</td>
+                          <td>{{ dir.phone || 'N/A' }}</td>
+                          <td>{{ dir.pan || 'N/A' }}</td>
+                          <td>{{ dir.aadhaar || 'N/A' }}</td>
+                          <td>{{ dir.dob || 'N/A' }}</td>
+                          <td>{{ dir.din || 'N/A' }}</td>
+                          <td>
+                            @if (dir.photo) {
+                              <a [href]="api.getFileUrl(dir.photo)" target="_blank" style="font-size: 12px; color: var(--palette-purple); font-weight: 600; text-decoration: none;">View</a>
+                            } @else {
+                              <span style="color: #94a3b8; font-size: 12px;">N/A</span>
+                            }
+                          </td>
+                          <td>
+                            @if (dir.signature) {
+                              <a [href]="api.getFileUrl(dir.signature)" target="_blank" style="font-size: 12px; color: var(--palette-purple); font-weight: 600; text-decoration: none;">View</a>
+                            } @else {
+                              <span style="color: #94a3b8; font-size: 12px;">N/A</span>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  }
                 </table>
               </div>
+              
+              @if (isEditing()) {
+                <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+                  <button class="btn btn-outline" (click)="toggleEdit()" [disabled]="isSaving()">Cancel</button>
+                  <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isSaving()">
+                    {{ isSaving() ? 'Saving...' : 'Save Changes' }}
+                  </button>
+                </div>
+              }
             </div>
           }
         </div>

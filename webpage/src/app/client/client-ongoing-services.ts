@@ -24,7 +24,7 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
   isLoading = signal(true);
   pollingInterval: any;
 
-  constructor(private router: Router, private api: Api) {}
+  constructor(private router: Router, public api: Api) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

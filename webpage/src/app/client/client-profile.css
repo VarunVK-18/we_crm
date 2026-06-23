@@ -365,7 +365,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: 
+  background-image:
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 32px 32px;
@@ -375,9 +375,12 @@
 
 .phc-bg {
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-image: radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 20%, transparent) 0%, transparent 50%),
-                    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 50%);
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 50%);
   opacity: 0.8;
   z-index: 1;
 }
@@ -601,7 +604,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .doc-info {
@@ -726,6 +729,67 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--palette-purple, #6366f1);
+  color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--palette-purple, #6366f1) 90%, black);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--palette-dark, #1e293b);
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: rgba(15, 23, 42, 0.05);
+  border-color: color-mix(in srgb, var(--border, #e2e8f0) 80%, black);
+}
+
+.form-input {
+  box-sizing: border-box;
+  font-family: inherit;
+  background: white;
+  color: var(--palette-dark, #1e293b);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--palette-purple, #6366f1) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }

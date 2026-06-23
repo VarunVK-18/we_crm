@@ -132,10 +132,11 @@ export class ClientCompliance implements OnInit {
     return 'Action required: resolve overdue items.';
   });
 
-  urgentReminder = computed(() => {
+  urgentReminders = computed(() => {
     const pending = this.pendingTasks();
-    if (pending.length === 0) return null;
-    return pending.reduce((prev, curr) => (prev.daysLeft < curr.daysLeft ? prev : curr));
+    if (pending.length === 0) return [];
+    const minDaysLeft = Math.min(...pending.map(t => t.daysLeft));
+    return pending.filter(t => t.daysLeft === minDaysLeft);
   });
 
   timelineItems = computed(() => {
