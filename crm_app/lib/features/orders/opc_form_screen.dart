@@ -356,7 +356,10 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () async {
+                await _saveDraft();
+                if (context.mounted) Navigator.of(context).pop(true);
+              },
               child: Text(
                 'OK',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -382,6 +385,13 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
+        actions: [
+          TextButton(
+            onPressed: _isLoading ? null : _saveDraft,
+            child: const Text('Save Draft', style: TextStyle(color: AppTheme.corporateBlue, fontWeight: FontWeight.w600)),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 
@@ -496,28 +506,6 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
                   ],
                 );
               }),
-                  
-
-                  SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: _isLoading ? null : _saveDraft,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    side: const BorderSide(color: AppTheme.deepTeal),
-                  ),
-                  child: Text(
-                    'Save as Draft',
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.deepTeal,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(

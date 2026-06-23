@@ -11,6 +11,7 @@ import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/draft_provider.dart';
 import '../../core/widgets/local_document_viewer.dart';
 
 class DpiitFormScreen extends ConsumerStatefulWidget {
@@ -54,6 +55,70 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
 
   // 2MB Limit in bytes
   static const int maxFileSize = 2 * 1024 * 1024;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadDraft();
+    });
+  }
+
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'DpiitFormScreen');
+    if (draft != null && mounted) {
+      setState(() {
+        if (draft.containsKey('orgDsc')) _orgDsc = draft['orgDsc'];
+        if (draft.containsKey('website')) _websiteCtrl.text = draft['website'];
+        if (draft.containsKey('brief')) _briefCtrl.text = draft['brief'];
+        if (draft.containsKey('directorDetails')) _directorDetailsCtrl.text = draft['directorDetails'];
+        if (draft.containsKey('industry')) _industryCtrl.text = draft['industry'];
+        if (draft.containsKey('sector')) _sectorCtrl.text = draft['sector'];
+        if (draft.containsKey('address')) _addressCtrl.text = draft['address'];
+        if (draft.containsKey('authDetails')) _authDetailsCtrl.text = draft['authDetails'];
+        if (draft.containsKey('employees')) _employeesCtrl.text = draft['employees'];
+        if (draft.containsKey('ipr')) _iprCtrl.text = draft['ipr'];
+        if (draft.containsKey('startupNature')) _startupNature = draft['startupNature'];
+        if (draft.containsKey('receivedFunds')) _receivedFunds = draft['receivedFunds'];
+        if (draft.containsKey('receivedAwards')) _receivedAwards = draft['receivedAwards'];
+        if (draft.containsKey('problem')) _problemCtrl.text = draft['problem'];
+        if (draft.containsKey('solution')) _solutionCtrl.text = draft['solution'];
+        if (draft.containsKey('uniqueness')) _uniquenessCtrl.text = draft['uniqueness'];
+        if (draft.containsKey('revenue')) _revenueCtrl.text = draft['revenue'];
+      });
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'orgDsc': _orgDsc,
+      'website': _websiteCtrl.text,
+      'brief': _briefCtrl.text,
+      'directorDetails': _directorDetailsCtrl.text,
+      'industry': _industryCtrl.text,
+      'sector': _sectorCtrl.text,
+      'address': _addressCtrl.text,
+      'authDetails': _authDetailsCtrl.text,
+      'employees': _employeesCtrl.text,
+      'ipr': _iprCtrl.text,
+      'startupNature': _startupNature,
+      'receivedFunds': _receivedFunds,
+      'receivedAwards': _receivedAwards,
+      'problem': _problemCtrl.text,
+      'solution': _solutionCtrl.text,
+      'uniqueness': _uniquenessCtrl.text,
+      'revenue': _revenueCtrl.text,
+    };
+    await draftService.saveDraft(widget.order.id, 'DpiitFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
+    }
+  }
 
   @override
   void dispose() {
@@ -199,6 +264,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
       final response = await request.send();
       if (response.statusCode == 200) {
         if (mounted) {
+          ref.read(draftServiceProvider).clearDraft(widget.order.id, 'DpiitFormScreen');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('DPIIT Form submitted successfully!'), backgroundColor: Colors.green),
           );
@@ -220,8 +286,6 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
     }
   }
 
-  @override
-  
   Future<bool> _onWillPop() async {
     final shouldPop = await showDialog<bool>(
       context: context,
@@ -238,7 +302,10 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () async {
+                await _saveDraft();
+                if (context.mounted) Navigator.of(context).pop(true);
+              },
               child: Text(
                 'OK',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
