@@ -1055,7 +1055,7 @@ const editClientProfile = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Unauthorized to edit this profile.' });
     }
 
-    const { company_name, owner_name, email, phone, business_type, address } = req.body;
+    const { company_name, owner_name, email, phone, business_type, address, directors } = req.body;
     
     // Only update allowed fields
     const user = await User.findByIdAndUpdate(id, {
@@ -1064,7 +1064,8 @@ const editClientProfile = async (req, res) => {
       email,
       phone,
       business_type,
-      address
+      address,
+      ...(directors !== undefined && { directors })
     }, { new: true });
 
     if (!user) {
@@ -1075,6 +1076,62 @@ const editClientProfile = async (req, res) => {
   } catch (error) {
     console.error('Error updating profile:', error);
     res.status(500).json({ success: false, message: 'Server error while updating profile.' });
+  }
+};
+
+// Upload document for a specific director
+const uploadDirectorDocument = async (req, res) => {
+  try {
+    const { id, index } = req.params;
+    const { docType } = req.body; // 'photo' or 'signature'
+    
+    if (req.user._id.toString() !== id) {
+      return res.status(403).json({ success: false, message: 'Unauthorized.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file provided.' });
+    }
+
+    if (docType !== 'photo' && docType !== 'signature') {
+      return res.status(400).json({ success: false, message: 'Invalid document type.' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    const dirIndex = parseInt(index, 10);
+    if (isNaN(dirIndex) || dirIndex < 0 || dirIndex >= user.directors.length) {
+      return res.status(400).json({ success: false, message: 'Invalid director index.' });
+    }
+
+    const doc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      uploadedBy: user._id
+    });
+
+    const fileUrl = `api/documents/${doc._id}`;
+    
+    // Update the specific director's document
+    user.directors[dirIndex][docType] = fileUrl;
+    
+    // Mark the array as modified so Mongoose saves the subdocument changes
+    user.markModified('directors');
+    await user.save();
+
+    res.status(200).json({ 
+      success: true, 
+      message: `${docType} uploaded successfully.`, 
+      user,
+      fileUrl
+    });
+  } catch (error) {
+    console.error('Error uploading director document:', error);
+    res.status(500).json({ success: false, message: 'Server error while uploading document.' });
   }
 };
 
@@ -1099,5 +1156,6 @@ module.exports = {
   removeProfileImage,
   updateClientEntities,
   getPublicManagers,
-  editClientProfile
+  editClientProfile,
+  uploadDirectorDocument
 };

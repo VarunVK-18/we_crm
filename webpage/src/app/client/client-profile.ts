@@ -104,6 +104,20 @@ export class ClientProfile implements OnInit {
                   }
                 }
               }
+              
+              // Merge with user.directors if any exist
+              if (res.user.directors && Array.isArray(res.user.directors)) {
+                for (const d of res.user.directors) {
+                  const existingIndex = directorsList.findIndex(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || existing.fullName === d.fullName);
+                  if (existingIndex >= 0) {
+                    // Update existing with newer user profile data
+                    directorsList[existingIndex] = { ...directorsList[existingIndex], ...d };
+                  } else {
+                    directorsList.push(d);
+                  }
+                }
+              }
+              
               this.allDocuments.set(docs);
               this.directors.set(directorsList);
               this.isLoading.set(false);
@@ -111,6 +125,7 @@ export class ClientProfile implements OnInit {
             error: (err) => {
               console.error('Failed to fetch checklists for docs:', err);
               this.allDocuments.set(docs);
+              this.directors.set(directorsList);
               this.isLoading.set(false);
             }
           });
@@ -148,7 +163,8 @@ export class ClientProfile implements OnInit {
         email: current?.email || '',
         phone: current?.phone || '',
         business_type: current?.business_type || '',
-        address: current?.address || ''
+        address: current?.address || '',
+        directors: JSON.parse(JSON.stringify(this.directors())) // Deep copy directors
       };
       this.isEditing.set(true);
     } else {
@@ -167,12 +183,50 @@ export class ClientProfile implements OnInit {
         if (res.success && res.user) {
           this.user.set(res.user);
           localStorage.setItem('user', JSON.stringify(res.user));
+          this.directors.set(this.editData.directors);
           this.isEditing.set(false);
         }
         this.isSaving.set(false);
       },
       error: (err) => {
         console.error('Failed to save profile:', err);
+        this.isSaving.set(false);
+      }
+    });
+  }
+
+  uploadDirectorDocument(index: number, docType: 'photo' | 'signature', event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const userId = this.user()?._id || this.user()?.id;
+    if (!userId) return;
+
+    this.isSaving.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('docType', docType);
+
+    this.api.post<any>(`users/profile/${userId}/directors/${index}/document`, formData).subscribe({
+      next: (res) => {
+        if (res.success && res.user) {
+          this.user.set(res.user);
+          localStorage.setItem('user', JSON.stringify(res.user));
+          
+          // Update local arrays
+          const dirs = [...this.directors()];
+          if (dirs[index]) {
+            dirs[index][docType] = res.fileUrl;
+            this.directors.set(dirs);
+          }
+          if (this.editData.directors && this.editData.directors[index]) {
+            this.editData.directors[index][docType] = res.fileUrl;
+          }
+        }
+        this.isSaving.set(false);
+      },
+      error: (err) => {
+        console.error(`Failed to upload ${docType}:`, err);
         this.isSaving.set(false);
       }
     });

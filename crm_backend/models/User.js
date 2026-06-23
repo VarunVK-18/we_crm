@@ -192,6 +192,21 @@ const UserSchema = new mongoose.Schema({
       msmeCertificate: String
     }],
     default: []
+  },
+  directors: {
+    type: [{
+      fullName: String,
+      role: String,
+      email: String,
+      phone: String,
+      pan: String,
+      aadhaar: String,
+      dob: String,
+      din: String,
+      photo: String,
+      signature: String
+    }],
+    default: []
   }
 }, { timestamps: true });
 
