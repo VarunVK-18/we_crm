@@ -21,6 +21,7 @@ import 'notification_sheet.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
+import '../profile/chat_support_screen.dart';
 import 'incorp_form_screen.dart';
 import 'dpiit_form_screen.dart';
 import 'trademark_form_screen.dart';
@@ -291,7 +292,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'The service has been completed successfully, but there is a pending payment of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please contact your manager to settle the balance and unlock the progress steps.',
+                                      'The service has been completed successfully, but there is a pending payment of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please contact support to settle the balance and unlock the progress steps.',
                                       style: const TextStyle(
                                         fontSize: 13,
                                         color: Color(0xFFB45309),
@@ -307,20 +308,22 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.only(left: 32),
                             child: FilledButton.icon(
-                              onPressed: () async {
-                                final uri = Uri.parse('tel:$expertPhone');
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri);
-                                }
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const ChatSupportScreen(),
+                                  ),
+                                );
                               },
-                              icon: const Icon(LucideIcons.phone, size: 16),
-                              label: Text('Contact Manager (₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)})'),
+                              icon: const Icon(LucideIcons.headset, size: 16),
+                              label: Text('Contact Support (₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)})'),
                               style: FilledButton.styleFrom(
                                 backgroundColor: const Color(0xFFD97706),
                                 foregroundColor: Colors.white,
                                 textStyle: const TextStyle(
                                   fontSize: 13,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 shape: RoundedRectangleBorder(
@@ -692,7 +695,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
 
                     if (order.isPaymentPending && order.status == ServiceStatus.complete) {
                       return Stack(
-                        alignment: Alignment.center,
+                        alignment: Alignment.topCenter,
                         children: [
                           IgnorePointer(
                             child: ImageFiltered(
@@ -704,7 +707,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                             ),
                           ),
                           Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
+                            margin: const EdgeInsets.only(top: 40, left: 16, right: 16),
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -748,59 +751,27 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 24),
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade50,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: Colors.grey.shade200),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.corporateBlue.withOpacity(0.1),
-                                          shape: BoxShape.circle,
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: FilledButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const ChatSupportScreen(),
                                         ),
-                                        child: const Icon(LucideIcons.user, color: AppTheme.corporateBlue),
+                                      );
+                                    },
+                                    icon: const Icon(LucideIcons.headset, size: 18),
+                                    label: const Text('Contact Support'),
+                                    style: FilledButton.styleFrom(
+                                      backgroundColor: AppTheme.deepTeal,
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      textStyle: const TextStyle(fontWeight: FontWeight.w500),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Contact your manager',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              order.assignedExpert,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppTheme.deepTeal,
-                                              ),
-                                            ),
-                                            if (order.expertPhone.isNotEmpty) ...[
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                order.expertPhone,
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Colors.grey.shade700,
-                                                ),
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                    ),
                                   ),
                                 ),
                               ],
