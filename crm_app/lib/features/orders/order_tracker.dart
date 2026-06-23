@@ -165,8 +165,9 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: Colors.grey.shade200, width: 2.0),
                           ),
-                          shadowColor: Colors.black.withValues(alpha: 0.04),
+                          shadowColor: Colors.black.withValues(alpha: 0.06),
                           elevation: 2,
                         ),
                         icon: const Icon(
@@ -210,6 +211,14 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey.shade200, width: 2.0),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,11 +382,12 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         decoration: BoxDecoration(
                           color: isSelected ? AppTheme.deepTeal : Colors.white,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.shade200, width: 2.0),
                           boxShadow: [
                             BoxShadow(
                               color: isSelected
                                   ? AppTheme.deepTeal.withValues(alpha: 0.3)
-                                  : Colors.black.withValues(alpha: 0.04),
+                                  : Colors.black.withValues(alpha: 0.06),
                               blurRadius: isSelected ? 10 : 6,
                               offset: const Offset(0, 3),
                             ),
@@ -411,6 +421,14 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey.shade200, width: 2.0),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: TextField(
                           onChanged: (val) => setState(() => _searchQuery = val),
@@ -436,10 +454,10 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: Colors.grey.shade200, width: 2.0),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
+                            color: Colors.black.withValues(alpha: 0.06),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -572,9 +590,10 @@ class _ServiceCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade200, width: 2.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 15,
               offset: const Offset(0, 5),
             ),

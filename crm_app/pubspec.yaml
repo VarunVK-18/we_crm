@@ -47,11 +47,16 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   assets:
-    - assets/logo.jpg
-    - assets/logo.png
+    - assets/WE CRM logo .png
     - assets/google.png
     - assets/fonts/
-    - assets/client/
+    - assets/Client/dbs.png
+    - assets/Client/hcl_tech.png
+    - assets/Client/idfc_bank.png
+    - assets/Client/logo6.png
+    - assets/Client/pvr.png
+    - assets/Client/softrate.png
+    - assets/Client/whatsapp_image.jpeg
     - assets/json/
 
   fonts:
