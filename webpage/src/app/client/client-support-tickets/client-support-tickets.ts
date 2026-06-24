@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
+import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { 
@@ -140,7 +141,7 @@ export class ClientSupportTickets implements OnInit, OnDestroy {
 
   user: any = null;
 
-  constructor(private api: Api) {}
+  constructor(private api: Api, private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -224,7 +225,11 @@ export class ClientSupportTickets implements OnInit, OnDestroy {
 
   openNewTicketModal() {
     if (this.completedServices().length === 0) {
-      alert('No completed services available to raise a ticket for.');
+      this.confirmDialog.confirm({
+        title: 'No Services Available',
+        message: 'No completed services available to raise a ticket for.',
+        confirmText: 'OK'
+      });
       return;
     }
     this.newTicket.subject = '';
@@ -239,7 +244,11 @@ export class ClientSupportTickets implements OnInit, OnDestroy {
 
   submitNewTicket() {
     if (!this.newTicket.subject.trim() || !this.newTicket.description.trim() || !this.newTicket.checklistId) {
-      alert('Please fill out all fields.');
+      this.confirmDialog.confirm({
+        title: 'Missing Fields',
+        message: 'Please fill out all fields.',
+        confirmText: 'OK'
+      });
       return;
     }
 
@@ -263,8 +272,12 @@ export class ClientSupportTickets implements OnInit, OnDestroy {
         this.fetchData();
       },
       error: (err: any) => {
-        const msg = err?.error?.message || err?.message || 'Unknown error';
-        alert(`Failed to raise ticket: ${msg}`);
+        const msg = err.error?.message || 'Unknown error occurred';
+        this.confirmDialog.confirm({
+          title: 'Error',
+          message: `Failed to raise ticket: ${msg}`,
+          confirmText: 'OK'
+        });
         this.isSubmitting.set(false);
       }
     });
