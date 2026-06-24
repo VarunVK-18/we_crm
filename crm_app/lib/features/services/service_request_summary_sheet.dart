@@ -586,11 +586,27 @@ class _ServiceRequestSummarySheetState
       bool isIncorporationService = reqService.contains('Incorporation') || reqService.contains('Proprietorship') || reqService == 'OPC';
 
       if (isIncorporationService && _selectedEntity != 'Add New Entity...') {
-          return {
-            'type': 'error',
-            'header': 'Already Incorporated',
-            'message': 'This service is for registering a new entity. You have selected an already existing entity.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
-          };
+          bool isTrulyIncorporated = false;
+          
+          // Check if the entity has a CIN (Corporate Identification Number), which proves it's already incorporated.
+          if (userProfile != null) {
+            try {
+              final entity = userProfile.clientEntities.firstWhere((e) => e.entityName == _selectedEntity);
+              if (entity.cin.trim().isNotEmpty || entity.coi.trim().isNotEmpty) {
+                isTrulyIncorporated = true;
+              }
+            } catch (e) {
+              // Not found in client entities directly
+            }
+          }
+
+          if (isTrulyIncorporated) {
+            return {
+              'type': 'error',
+              'header': 'Already Incorporated',
+              'message': 'This service is for registering a new entity. You have selected an entity that is already fully incorporated.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
+            };
+          }
       }
 
       if (entityType == 'Private Limited Company') {

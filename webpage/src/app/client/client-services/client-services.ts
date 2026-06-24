@@ -369,11 +369,23 @@ export class ClientServicesComponent implements OnInit {
     const isIncorporationService = reqService.includes('Incorporation') || reqService.includes('Proprietorship') || reqService === 'OPC';
 
     if (isIncorporationService && this.quoteForm.selectedEntity !== 'Add New Entity...') {
-      return {
-        type: 'error',
-        header: 'Already Incorporated',
-        message: 'This service is for registering a new entity. You have selected an already existing entity.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
-      };
+      let isTrulyIncorporated = false;
+      const userVal = this.user();
+      
+      if (userVal && userVal.client_entities) {
+        const entity = userVal.client_entities.find((e: any) => e.entityName === this.quoteForm.selectedEntity);
+        if (entity && ((entity.cin && entity.cin.trim() !== '') || (entity.coi && entity.coi.trim() !== ''))) {
+          isTrulyIncorporated = true;
+        }
+      }
+
+      if (isTrulyIncorporated) {
+        return {
+          type: 'error',
+          header: 'Already Incorporated',
+          message: 'This service is for registering a new entity. You have selected an entity that is already fully incorporated.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
+        };
+      }
     }
 
     if (entityType === 'Private Limited Company') {
