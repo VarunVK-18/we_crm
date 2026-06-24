@@ -6,6 +6,8 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/checklist_provider.dart';
 import '../../models/checklist_model.dart';
 import '../../models/order_model.dart';
+import '../../providers/subscription_provider.dart';
+import '../../providers/compliance_provider.dart';
 import '../orders/invoice_screen.dart';
 
 class SubscriptionsScreen extends ConsumerWidget {
@@ -14,6 +16,8 @@ class SubscriptionsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final checklistsAsync = ref.watch(myChecklistsProvider);
+    final subscriptionsAsync = ref.watch(mySubscriptionsProvider);
+    final selectedEntity = ref.watch(selectedEntityProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -47,11 +51,38 @@ class SubscriptionsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildPlanCard(),
+            subscriptionsAsync.when(
+              data: (subscriptions) {
+                if (subscriptions.isEmpty) {
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: AppTheme.deepTeal,
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'No Active Plans',
+                        style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
+                }
+                return Column(
+                  children: subscriptions.map((sub) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate),
+                  )).toList(),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.deepTeal)),
+              error: (err, stack) => const Center(child: Text('Failed to load subscriptions')),
+            ),
             const SizedBox(height: 48),
-            const Text(
-              'Completed Services',
-              style: TextStyle(
+            Text(
+              selectedEntity == 'All Entities' ? 'Completed Services' : 'Completed Services of $selectedEntity',
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: AppTheme.deepTeal,
@@ -61,7 +92,11 @@ class SubscriptionsScreen extends ConsumerWidget {
             
             checklistsAsync.when(
               data: (checklists) {
-                final completed = checklists.where((c) => c.status == ChecklistStatus.completed).toList();
+                final completed = checklists.where((c) {
+                  if (c.status != ChecklistStatus.completed) return false;
+                  if (selectedEntity == 'All Entities') return true;
+                  return c.entityName.trim().toLowerCase() == selectedEntity.trim().toLowerCase();
+                }).toList();
                 
                 if (completed.isEmpty) {
                   return Container(
@@ -142,11 +177,8 @@ class SubscriptionsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlanCard() {
-    final now = DateTime.now();
-    // In India, Financial Year ends on March 31st.
-    // If current month is Jan-Mar (1-3), expiry is this year. If Apr-Dec (4-12), expiry is next year.
-    final targetYear = now.month > 3 ? now.year + 1 : now.year;
+  Widget _buildPlanCard(String planName, String status, DateTime expiryDate) {
+    final expiryStr = DateFormat('dd MMM yyyy').format(expiryDate);
     
     return Container(
       width: double.infinity,
@@ -189,9 +221,9 @@ class SubscriptionsScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 32),
-          const Text(
-            'Wealth Empires\nGold Plan',
-            style: TextStyle(
+          Text(
+            'Wealth Empires\n$planName',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
               fontWeight: FontWeight.w900,
@@ -201,12 +233,12 @@ class SubscriptionsScreen extends ConsumerWidget {
           const SizedBox(height: 32),
           Row(
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('STATUS', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text('Active', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  const Text('STATUS', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  Text(status, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
               ),
               const SizedBox(width: 48),
@@ -215,7 +247,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                 children: [
                   const Text('EXPIRES', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text('31 Mar $targetYear', style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text(expiryStr, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
@@ -223,6 +255,20 @@ class SubscriptionsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  IconData _getServiceIcon(String serviceName) {
+    final name = serviceName.toLowerCase();
+    if (name.contains('gst') || name.contains('tax')) return LucideIcons.fileText;
+    if (name.contains('dsc') || name.contains('digital signature')) return LucideIcons.key;
+    if (name.contains('msme') || name.contains('shop')) return LucideIcons.store;
+    if (name.contains('patent') || name.contains('copyright')) return LucideIcons.award;
+    if (name.contains('trademark')) return LucideIcons.stamp;
+    if (name.contains('company') || name.contains('incorporation') || name.contains('llp') || name.contains('opc')) return LucideIcons.building2;
+    if (name.contains('fssai') || name.contains('iso') || name.contains('compliance')) return LucideIcons.shieldCheck;
+    if (name.contains('pf') || name.contains('esi') || name.contains('labor')) return LucideIcons.briefcase;
+
+    return LucideIcons.fileText;
   }
 
   Widget _buildHistoryItem({
@@ -256,7 +302,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                 color: Colors.grey.shade50,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(LucideIcons.fileText, color: AppTheme.deepTeal, size: 20),
+              child: Icon(_getServiceIcon(service), color: AppTheme.deepTeal, size: 20),
             ),
             const SizedBox(width: 16),
             Expanded(

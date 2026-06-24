@@ -156,49 +156,22 @@ class _EntityCardData {
   const _EntityCardData({required this.entity, required this.serviceCount});
 }
 
-// ── Helper: resolve icon and color from entityType ────────────────────────
+final List<IconData> _entityIcons = [
+  LucideIcons.building2,
+  LucideIcons.briefcase,
+  LucideIcons.landmark,
+  LucideIcons.store,
+  LucideIcons.boxes,
+  LucideIcons.gem,
+  LucideIcons.factory,
+  LucideIcons.album,
+  LucideIcons.cpu,
+  LucideIcons.network,
+];
 
-IconData _iconForType(String type) {
-  switch (type.toLowerCase()) {
-    case 'llp':
-      return LucideIcons.cpu;
-    case 'partnership':
-      return LucideIcons.users;
-    case 'proprietorship':
-    case 'sole proprietorship':
-      return LucideIcons.user;
-    case 'opc':
-    case 'one person company':
-      return LucideIcons.userCheck;
-    case 'ngo':
-    case 'section 8':
-      return LucideIcons.heart;
-    case 'trust':
-      return LucideIcons.shield;
-    default:
-      return LucideIcons.building2; // Private Limited, Public, etc.
-  }
-}
-
-Color _colorForType(String type) {
-  switch (type.toLowerCase()) {
-    case 'llp':
-      return AppTheme.corporateBlue;
-    case 'partnership':
-      return const Color(0xFF10B981);
-    case 'proprietorship':
-    case 'sole proprietorship':
-      return const Color(0xFFF59E0B);
-    case 'opc':
-    case 'one person company':
-      return const Color(0xFF8B5CF6);
-    case 'ngo':
-    case 'section 8':
-    case 'trust':
-      return const Color(0xFFEC4899);
-    default:
-      return const Color(0xFF6366F1); // Private Limited, Public
-  }
+IconData _iconForEntity(String name) {
+  final hash = name.trim().toLowerCase().codeUnits.fold<int>(0, (p, e) => p + e);
+  return _entityIcons[hash % _entityIcons.length];
 }
 
 // ── All Entities summary card ─────────────────────────────────────────────
@@ -223,13 +196,13 @@ class _AllEntitiesCard extends ConsumerWidget {
         ref.read(selectedEntityProvider.notifier).state = 'All Entities';
         Navigator.pop(context);
       },
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
               color: isSelected
@@ -244,15 +217,12 @@ class _AllEntitiesCard extends ConsumerWidget {
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Icon(LucideIcons.layoutGrid, color: color, size: 28),
+              width: 48,
+              height: 48,
+              alignment: Alignment.center,
+              child: const Icon(LucideIcons.layoutGrid, color: AppTheme.deepTeal, size: 24),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,7 +230,7 @@ class _AllEntitiesCard extends ConsumerWidget {
                   const Text(
                     'All Entities',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w900,
                       color: AppTheme.deepTeal,
                     ),
@@ -274,15 +244,15 @@ class _AllEntitiesCard extends ConsumerWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
+                          border: Border.all(color: AppTheme.deepTeal.withOpacity(0.3)),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Portfolio',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: color,
+                            color: AppTheme.deepTeal,
                           ),
                         ),
                       ),
@@ -304,11 +274,11 @@ class _AllEntitiesCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: AppTheme.deepTeal.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(LucideIcons.check,
-                    color: color, size: 20),
+                child: const Icon(LucideIcons.check,
+                    color: AppTheme.deepTeal, size: 20),
               )
             else
               Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
@@ -331,8 +301,7 @@ class _EntityCard extends ConsumerWidget {
     final entity = data.entity;
     final entityName = entity.entityName.trim();
     final entityType = entity.entityType.isNotEmpty ? entity.entityType : 'Company';
-    final color = _colorForType(entityType);
-    final icon = _iconForType(entityType);
+    final icon = _iconForEntity(entityName);
 
     // Selected state uses entityName (canonical key)
     final selectedEntity = ref.watch(selectedEntityProvider);
@@ -344,13 +313,13 @@ class _EntityCard extends ConsumerWidget {
         ref.read(selectedEntityProvider.notifier).state = entityName;
         Navigator.pop(context);
       },
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
               color: isSelected
@@ -365,15 +334,12 @@ class _EntityCard extends ConsumerWidget {
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Icon(icon, color: color, size: 28),
+              width: 48,
+              height: 48,
+              alignment: Alignment.center,
+              child: Icon(icon, color: AppTheme.deepTeal, size: 24),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,7 +347,7 @@ class _EntityCard extends ConsumerWidget {
                   Text(
                     entityName,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w900,
                       color: AppTheme.deepTeal,
                     ),
@@ -393,15 +359,15 @@ class _EntityCard extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.1),
+                          border: Border.all(color: AppTheme.deepTeal.withOpacity(0.3)),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           entityType,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: color,
+                            color: AppTheme.deepTeal,
                           ),
                         ),
                       ),
@@ -423,10 +389,10 @@ class _EntityCard extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: AppTheme.deepTeal.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(LucideIcons.check, color: color, size: 20),
+                child: const Icon(LucideIcons.check, color: AppTheme.deepTeal, size: 20),
               )
             else
               Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),

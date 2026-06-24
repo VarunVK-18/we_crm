@@ -30,6 +30,7 @@ import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.servic
 export class ClientSubscriptions implements OnInit, OnDestroy {
   user = signal<any>(null);
   completedServices = signal<any[]>([]);
+  activeSubscriptions = signal<any[]>([]);
   isLoading = signal(true);
 
   // Entity filter synced with topbar switcher
@@ -102,6 +103,7 @@ export class ClientSubscriptions implements OnInit, OnDestroy {
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
       this.fetchCompletedServices();
+      this.fetchActiveSubscriptions();
     } else {
       this.isLoading.set(false);
     }
@@ -133,6 +135,19 @@ export class ClientSubscriptions implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Error fetching completed services', err);
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  fetchActiveSubscriptions() {
+    this.api.get<any>('subscriptions/my-subscriptions').subscribe({
+      next: (res: any) => {
+        if (res && res.success) {
+          this.activeSubscriptions.set(res.subscriptions || []);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching subscriptions', err);
       }
     });
   }

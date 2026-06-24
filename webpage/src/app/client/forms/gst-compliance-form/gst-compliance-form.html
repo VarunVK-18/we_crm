@@ -46,6 +46,26 @@
       </section>
 
       <section class="form-section">
+        <h2>Annual Turnover *</h2>
+        <div class="form-group full-width" style="margin-top: 12px;">
+          <div class="radio-group" style="display: flex; flex-direction: column; gap: 12px;">
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px;">
+                <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Less than ₹20 Lakhs" required>
+                Less than ₹20 Lakhs
+            </label>
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px;">
+                <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Greater than ₹20 Lakhs and Less than ₹50 Lakhs" required>
+                Greater than ₹20 Lakhs and Less than ₹50 Lakhs
+            </label>
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px;">
+                <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Greater than ₹50 Lakhs" required>
+                Greater than ₹50 Lakhs
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
         <h2>Declaration</h2>
         <div class="form-group full-width" style="margin-top: 8px;">
           <label class="radio-label" style="align-items: flex-start;">

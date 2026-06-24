@@ -1033,10 +1033,6 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                  color: isLocallyUploaded
-                      ? Colors.green.withValues(alpha: 0.3)
-                      : Colors.red.withValues(alpha: 0.3)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.03),
@@ -1306,7 +1302,7 @@ class _StepTimeline extends StatelessWidget {
               // Right: step content card
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : 36),
                   child: InkWell(
                     onTap: (step.isActionStep && 
                         !isCompleted && 
@@ -1316,28 +1312,11 @@ class _StepTimeline extends StatelessWidget {
                         : null,
                     borderRadius: BorderRadius.circular(18),
                     child: Container(
-                      padding: const EdgeInsets.all(18),
+                      padding: const EdgeInsets.all(0),
                       decoration: BoxDecoration(
-                        color: isCompleted
-                            ? Colors.green.withOpacity(0.04)
-                            : (step.isActionStep
-                                ? Colors.orange.withOpacity(0.08)
-                                : Colors.white),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: isCompleted
-                              ? Colors.green.withOpacity(0.2)
-                              : (step.isActionStep
-                                  ? Colors.orange.withOpacity(0.3)
-                                  : Colors.grey.withOpacity(0.08)),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.03),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
+                        color: Colors.transparent,
+
+
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

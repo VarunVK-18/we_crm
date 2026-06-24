@@ -50,6 +50,7 @@ flutter:
   assets:
     - assets/WE CRM logo .png
     - assets/google.png
+    - assets/sdlogo.png
     - assets/fonts/
     - assets/Client/dbs.png
     - assets/Client/hcl_tech.png

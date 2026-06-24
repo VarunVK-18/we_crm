@@ -1926,7 +1926,7 @@ class _ServiceRequestSummarySheetState
                         decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[200]!)),
+                        ),
                         child: Row(
                           children: [
                             Expanded(
@@ -1964,10 +1964,6 @@ class _ServiceRequestSummarySheetState
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                        border: Border.all(
-                            color:
-                                AppTheme.corporateBlue.withValues(alpha: 0.2),
-                            style: BorderStyle.solid),
                         borderRadius: BorderRadius.circular(12),
                         color: AppTheme.corporateBlue.withValues(alpha: 0.02)),
                     child: Row(

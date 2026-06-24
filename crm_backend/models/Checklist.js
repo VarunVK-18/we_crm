@@ -101,6 +101,19 @@ const ChecklistSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  turnover_category: {
+    type: String,
+    enum: ['Less than ₹20 Lakhs', 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs', 'Greater than ₹50 Lakhs', ''],
+    default: ''
+  },
+  recommended_plan: {
+    type: String,
+    default: ''
+  },
+  recommended_fee: {
+    type: Number,
+    default: 0
+  },
   isGstApplicable: {
     type: Boolean,
     default: true

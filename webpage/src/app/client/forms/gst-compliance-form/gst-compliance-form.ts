@@ -25,6 +25,7 @@ export class GstComplianceForm implements OnInit {
   errorMessage = signal<string>('');
 
   bankStatementFile?: File;
+  annualTurnover = '';
   isDeclared = false;
 
   constructor(private route: ActivatedRoute,
@@ -162,7 +163,12 @@ export class GstComplianceForm implements OnInit {
   }
 
   submitForm() {
-    if (!this.bankStatementFile) {
+    if (!this.annualTurnover) {
+      this.errorMessage.set('Please select your annual turnover category.');
+      return;
+    }
+
+    if (!this.bankStatementFile && !this.existingDocs['bankStatement']) {
       this.errorMessage.set('Please upload the Last 3 months Bank Statement.');
       return;
     }
@@ -176,7 +182,12 @@ export class GstComplianceForm implements OnInit {
     this.errorMessage.set('');
 
     const formData = new FormData();
-    formData.append('bankStatement', this.bankStatementFile as File);
+    if (this.bankStatementFile) {
+        formData.append('bankStatement', this.bankStatementFile as File);
+    } else if (this.existingDocs['bankStatement']) {
+        formData.append('bankStatement_existing', this.existingDocs['bankStatement'].fileUrl);
+    }
+    formData.append('annualTurnover', this.annualTurnover);
 
     this.api.post(`orders/${this.orderId()}/submit-gst-compliance-form`, formData).subscribe({
       next: (res: any) => {

@@ -97,6 +97,8 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/calendar', calendarRoutes);
+const subscriptionRoutes = require('./routes/subscriptionRoutes');
+app.use('/api/subscriptions', subscriptionRoutes);
 
 // Initialize Cron Jobs
 require('./utils/cronJobs');

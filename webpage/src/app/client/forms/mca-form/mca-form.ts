@@ -26,6 +26,7 @@ export class McaFormComponent implements OnInit {
 
   username = '';
   password = '';
+  annualTurnover = '';
 
   coiFile: File | null = null;
   panFile: File | null = null;
@@ -175,6 +176,11 @@ export class McaFormComponent implements OnInit {
   submitDetails() {
     if (!this.orderId()) return;
 
+    if (!this.annualTurnover) {
+      this.errorMessage.set('Please select your annual turnover category.');
+      return;
+    }
+
     if ((!this.coiFile && !this.existingDocs['coi']) || (!this.panFile && !this.existingDocs['pan']) || (!this.moaFile && !this.existingDocs['moa']) || (!this.aoaFile && !this.existingDocs['aoa']) || (!this.bankStatementFile && !this.existingDocs['bankStatement']) || (!this.salesInvoiceFile && !this.existingDocs['salesInvoice']) || (!this.purchaseBillsFile && !this.existingDocs['purchaseBills'])) {
       this.errorMessage.set('Please upload all the required documents.');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -187,6 +193,7 @@ export class McaFormComponent implements OnInit {
     const formData = new FormData();
     formData.append('mcaUsername', this.username);
     formData.append('mcaPassword', this.password);
+    formData.append('annualTurnover', this.annualTurnover);
 
     if (this.coiFile) if (this.coiFile) formData.append('coi', this.coiFile); else if (this.existingDocs['coi']) formData.append('coi_existing', this.existingDocs['coi'].fileUrl);
     if (this.panFile) if (this.panFile) formData.append('pan', this.panFile); else if (this.existingDocs['pan']) formData.append('pan_existing', this.existingDocs['pan'].fileUrl);

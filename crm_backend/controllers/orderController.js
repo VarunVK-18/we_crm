@@ -852,6 +852,27 @@ exports.submitMcaForm = async (req, res) => {
       mcaDocs: uploadedDocs,
     };
 
+    let turnoverCategory = formData.annualTurnover || '';
+    let recommendedPlan = '';
+    let recommendedFee = 0;
+
+    if (turnoverCategory === 'Less than ₹20 Lakhs') {
+      recommendedPlan = 'Startup Plan';
+      recommendedFee = 25000;
+    } else if (turnoverCategory === 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs') {
+      recommendedPlan = 'Business Plan';
+      recommendedFee = 35000;
+    } else if (turnoverCategory === 'Greater than ₹50 Lakhs') {
+      recommendedPlan = 'Corporate Plan';
+      recommendedFee = 50000;
+    }
+
+    if (turnoverCategory) {
+      order.turnover_category = turnoverCategory;
+      order.recommended_plan = recommendedPlan;
+      order.recommended_fee = recommendedFee;
+    }
+
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
@@ -892,6 +913,27 @@ exports.submitGstComplianceForm = async (req, res) => {
       gstComplianceForm: formData,
       gstComplianceDocs: uploadedDocs,
     };
+
+    let turnoverCategory = formData.annualTurnover || '';
+    let recommendedPlan = '';
+    let recommendedFee = 0;
+
+    if (turnoverCategory === 'Less than ₹20 Lakhs') {
+      recommendedPlan = 'Startup Plan';
+      recommendedFee = 25000;
+    } else if (turnoverCategory === 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs') {
+      recommendedPlan = 'Business Plan';
+      recommendedFee = 35000;
+    } else if (turnoverCategory === 'Greater than ₹50 Lakhs') {
+      recommendedPlan = 'Corporate Plan';
+      recommendedFee = 50000;
+    }
+
+    if (turnoverCategory) {
+      order.turnover_category = turnoverCategory;
+      order.recommended_plan = recommendedPlan;
+      order.recommended_fee = recommendedFee;
+    }
 
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required

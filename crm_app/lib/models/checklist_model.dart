@@ -22,6 +22,7 @@ class ChecklistModel {
   final String notes;
   final DateTime? updatedAt;
   final double? dealClosedAmount;
+  final String entityName;
 
   ChecklistModel({
     required this.id,
@@ -31,6 +32,7 @@ class ChecklistModel {
     this.notes = '',
     this.updatedAt,
     this.dealClosedAmount,
+    this.entityName = '',
   });
 
   /// Progress as a value between 0.0 and 1.0
@@ -72,6 +74,16 @@ class ChecklistModel {
       updatedAt = DateTime.tryParse(data['updatedAt'].toString());
     }
 
+    final details = data['details'] as Map<String, dynamic>? ?? {};
+    final entityName = (details['entityName'] ?? 
+                        details['companyName'] ?? 
+                        details['proposed_company_name'] ?? 
+                        details['businessName'] ?? 
+                        details['entity_name'] ?? 
+                        data['entityName'] ?? 
+                        data['companyName'] ?? 
+                        '').toString();
+
     return ChecklistModel(
       id: id,
       serviceName: data['service_name']?.toString() ?? data['checklist_name']?.toString() ?? '',
@@ -80,6 +92,7 @@ class ChecklistModel {
       notes: data['notes']?.toString() ?? '',
       updatedAt: updatedAt,
       dealClosedAmount: (data['dealClosedAmount'] as num?)?.toDouble(),
+      entityName: entityName,
     );
   }
 }

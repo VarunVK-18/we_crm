@@ -28,7 +28,12 @@ class ComplianceRadarScreen extends ConsumerWidget {
             (selectedEntity == 'All Entities' ||
                 r.entityName == selectedEntity) &&
             r.daysLeft <= 3)
-        .toList();
+        .toList()
+      ..sort((a, b) {
+        if (a.status == TaskStatus.completed && b.status != TaskStatus.completed) return 1;
+        if (a.status != TaskStatus.completed && b.status == TaskStatus.completed) return -1;
+        return a.daysLeft.compareTo(b.daysLeft);
+      });
 
     showModalBottomSheet(
       context: context,
@@ -162,7 +167,12 @@ class ComplianceRadarScreen extends ConsumerWidget {
                             r.status != TaskStatus.completed) ||
                         (filterType == 'completed' &&
                             r.status == TaskStatus.completed)))
-                .toList();
+                .toList()
+              ..sort((a, b) {
+                if (a.status == TaskStatus.completed && b.status != TaskStatus.completed) return 1;
+                if (a.status != TaskStatus.completed && b.status == TaskStatus.completed) return -1;
+                return a.daysLeft.compareTo(b.daysLeft);
+              });
 
             return Container(
               padding: const EdgeInsets.fromLTRB(28, 12, 28, 40),
@@ -561,6 +571,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                   ],
                                 ),
                               ),
+                              SizedBox(width: 16.r),
                               Stack(
                                 children: [
                                   Container(
@@ -735,16 +746,13 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                   child: Row(
                                     children: [
                                       Container(
-                                        padding: EdgeInsets.all(12.r),
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.corporateBlue
-                                              .withOpacity(0.08),
-                                          borderRadius:
-                                              BorderRadius.circular(16.r),
+                                        padding: EdgeInsets.all(4.r),
+                                        child: Image.asset(
+                                          'assets/sdlogo.png',
+                                          height: 56.ip,
+                                          width: 56.ip,
+                                          fit: BoxFit.contain,
                                         ),
-                                        child: Icon(LucideIcons.stethoscope,
-                                            color: AppTheme.corporateBlue,
-                                            size: 24.ip),
                                       ),
                                       SizedBox(width: 16.r),
                                       Expanded(
@@ -958,10 +966,7 @@ class _BentoSimpleStatCard extends StatelessWidget {
               children: [
                 Container(
                   padding: EdgeInsets.all(12.r),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(16.r),
-                  ),
+
                   child: Icon(icon, color: color, size: 22.ip),
                 ),
                 const Spacer(),
@@ -1043,10 +1048,7 @@ class _BentoDeadlineCard extends StatelessWidget {
                 Container(
                   width: 64.r,
                   height: 64.r,
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(20.r),
-                  ),
+
                   child: Center(
                     child: HugeIcon(
                       icon: HugeIcons.strokeRoundedCalendar02,
@@ -1175,10 +1177,7 @@ class _BentoToolCard extends StatelessWidget {
               children: [
                 Container(
                   padding: EdgeInsets.all(10.r),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
+
                   child: Icon(icon, color: color, size: 22.ip),
                 ),
                 SizedBox(height: 16.r),
@@ -1375,64 +1374,53 @@ class _ReminderItem extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       reminder.title,
-                      style: GoogleFonts.outfit(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.deepTeal,
-                        letterSpacing: -0.5,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black87,
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
                     icon: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(LucideIcons.x, size: 20),
+                      child: const Icon(LucideIcons.x, size: 16, color: Colors.black54),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: reminder.color.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: reminder.color.withOpacity(0.2)),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: const BoxDecoration(
+                  border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      reminder.status == TaskStatus.overdue ||
-                              reminder.status == TaskStatus.critical
-                          ? LucideIcons.alertTriangle
-                          : LucideIcons.calendarClock,
-                      color: reminder.color,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             reminder.message,
-                            style: GoogleFonts.outfit(
-                              fontSize: 16,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade700,
                               fontWeight: FontWeight.w500,
-                              color: reminder.color,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Entity: ${reminder.entityName}',
-                            style: GoogleFonts.outfit(
-                              fontSize: 14,
-                              color: Colors.grey[600],
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade500,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -1444,12 +1432,13 @@ class _ReminderItem extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               if (reminder.documents.isNotEmpty) ...[
-                Text(
+                const Text(
                   'Attached Documents',
-                  style: GoogleFonts.outfit(
-                    fontSize: 18,
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: AppTheme.deepTeal,
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -1458,55 +1447,44 @@ class _ReminderItem extends ConsumerWidget {
                     margin: const EdgeInsets.only(bottom: 12),
                     child: InkWell(
                       onTap: () async {
-                        final url =
-                            Uri.parse('$kBaseUrl/api/documents/${doc.id}');
+                        final url = Uri.parse('$kBaseUrl/api/documents/${doc.id}');
                         if (await canLaunchUrl(url)) {
-                          await launchUrl(url,
-                              mode: LaunchMode.externalApplication);
+                          await launchUrl(url, mode: LaunchMode.externalApplication);
                         }
                       },
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(8),
                       child: Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          border:
-                              Border.all(color: Colors.grey.withOpacity(0.2)),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppTheme.corporateBlue.withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                LucideIcons.fileText,
-                                color: AppTheme.corporateBlue,
-                                size: 20,
-                              ),
+                            const Icon(
+                              LucideIcons.fileText,
+                              color: Colors.black54,
+                              size: 20,
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     doc.type,
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      color: AppTheme.deepTeal,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 2),
                                   Text(
                                     doc.filename,
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 13,
-                                      color: Colors.grey[600],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade500,
                                       fontWeight: FontWeight.w500,
                                     ),
                                     maxLines: 1,
@@ -1516,28 +1494,28 @@ class _ReminderItem extends ConsumerWidget {
                               ),
                             ),
                             const Icon(
-                              LucideIcons.downloadCloud,
-                              color: AppTheme.corporateBlue,
+                              LucideIcons.download,
+                              size: 18,
+                              color: Colors.black54,
                             ),
                           ],
                         ),
                       ),
                     ),
                   );
-                }).toList(),
+                }),
               ] else ...[
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.all(32.0),
                     child: Column(
                       children: [
-                        Icon(LucideIcons.fileMinus,
-                            size: 48, color: Colors.grey[300]),
-                        const SizedBox(height: 16),
+                        Icon(LucideIcons.fileMinus, size: 32, color: Colors.grey[300]),
+                        const SizedBox(height: 12),
                         Text(
                           'No documents attached yet',
-                          style: GoogleFonts.outfit(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: 14,
                             color: Colors.grey[500],
                             fontWeight: FontWeight.w500,
                           ),
@@ -1559,127 +1537,94 @@ class _ReminderItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEntity = ref.watch(selectedEntityProvider);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.withOpacity(0.08)),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _showTaskDetailsBottomSheet(context),
-          borderRadius: BorderRadius.circular(24),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: reminder.color.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(
-                    reminder.status == TaskStatus.overdue ||
-                            reminder.status == TaskStatus.critical
-                        ? LucideIcons.alertTriangle
-                        : LucideIcons.calendarClock,
-                    color: reminder.color,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return InkWell(
+      onTap: () => _showTaskDetailsBottomSheet(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        reminder.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: AppTheme.deepTeal,
-                          letterSpacing: -0.3,
+                      Expanded(
+                        child: Text(
+                          reminder.title,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (currentEntity == 'All Entities')
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            reminder.entityName,
-                            style: GoogleFonts.outfit(
-                              fontSize: 11,
-                              color: Colors.grey[500],
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 2),
+                      const SizedBox(width: 8),
                       Text(
-                        reminder.message.toUpperCase(),
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 10,
-                          color: reminder.color,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
-                      if (reminder.daysLeft <= 3) ...[
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                            border:
-                                Border.all(color: Colors.red.withOpacity(0.3)),
-                          ),
-                          child: Text(
-                            'If not completed you Need To Pay Penalty',
-                            style: GoogleFonts.outfit(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.red,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        LucideIcons.clock,
-                        size: 14,
-                        color: Colors.grey[500],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Pending',
-                        style: GoogleFonts.outfit(
-                          color: Colors.grey[500],
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
+                        reminder.status == TaskStatus.completed
+                            ? 'Completed'
+                            : (reminder.status == TaskStatus.overdue || reminder.daysLeft < 0)
+                                ? 'Overdue'
+                                : '${reminder.daysLeft} days left',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: reminder.status == TaskStatus.completed
+                              ? Colors.green
+                              : (reminder.status == TaskStatus.overdue || reminder.daysLeft < 0)
+                                  ? Colors.red
+                                  : Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 2),
+                  Text(
+                    reminder.message,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (currentEntity == 'All Entities')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        'Entity: ${reminder.entityName}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  if (reminder.daysLeft <= 3 && reminder.status != TaskStatus.completed) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'If not completed you Need To Pay Penalty',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.red.shade600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
