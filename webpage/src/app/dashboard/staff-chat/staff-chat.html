@@ -19,37 +19,41 @@
           <div class="loader"></div>
           <p>Loading chats...</p>
         </div>
-      } @else if (filteredConversations().length === 0) {
+      } @else if (filteredGroupedConversations().length === 0) {
         <div class="empty-state">
           <p>No chats found</p>
         </div>
       } @else {
-        @for (conv of filteredConversations(); track conv.checklist._id) {
+        @for (group of filteredGroupedConversations(); track group.client._id) {
           <div class="conversation-item" 
-               [class.active]="activeConversation()?.checklist?._id === conv.checklist._id"
-               (click)="selectConversation(conv)">
+               [class.active]="activeGroup()?.client?._id === group.client._id"
+               (click)="selectGroup(group)">
             <div class="conv-avatar">
-              @if (conv.checklist?.client_id?.profile_image) {
-                <img [src]="getFileUrl(conv.checklist.client_id.profile_image)" alt="Profile" class="avatar-img">
+              @if (group.client.profile_image) {
+                <img [src]="getFileUrl(group.client.profile_image)" alt="Profile" class="avatar-img">
               } @else {
-                {{ getInitials(conv.checklist?.client_id?.owner_name || conv.checklist?.client_id?.company_name) }}
+                {{ getInitials(group.client.owner_name || group.client.company_name) }}
               }
             </div>
             <div class="conv-details">
               <div class="conv-header">
-                <h4>{{ conv.checklist?.client_id?.owner_name || conv.checklist?.client_id?.company_name || 'Client' }}</h4>
-                @if (conv.lastMessage) {
-                  <span class="conv-time">{{ conv.lastMessage.createdAt | date:'shortTime' }}</span>
-                }
+                <h4>{{ group.client.owner_name || group.client.company_name || 'Client' }}</h4>
+                <span class="conv-time">{{ group.latestMessageAt | date:'shortTime' }}</span>
               </div>
               <div class="conv-snippet">
-                <p class="service-name">{{ conv.checklist?.service_name }}</p>
+                <p class="service-name">
+                  @if (group.chats.length > 1) {
+                    {{ group.chats.length }} Services
+                  } @else {
+                    {{ group.chats[0].checklist?.service_name }}
+                  }
+                </p>
                 <div class="snippet-bottom">
-                  <span class="last-msg-text" [class.unread]="conv.unreadCount > 0">
-                    {{ conv.lastMessage ? conv.lastMessage.content : 'No messages yet' }}
+                  <span class="last-msg-text" [class.unread]="group.totalUnreadCount > 0">
+                    {{ group.chats[0].lastMessage ? group.chats[0].lastMessage.content : 'No messages yet' }}
                   </span>
-                  @if (conv.unreadCount > 0) {
-                    <span class="unread-badge">{{ conv.unreadCount }}</span>
+                  @if (group.totalUnreadCount > 0) {
+                    <span class="unread-badge">{{ group.totalUnreadCount }}</span>
                   }
                 </div>
               </div>
@@ -83,15 +87,26 @@
         </button>
         <div class="active-chat-info">
           <div class="active-avatar">
-            @if (activeConversation().checklist?.client_id?.profile_image) {
-              <img [src]="getFileUrl(activeConversation().checklist.client_id.profile_image)" alt="Profile" class="avatar-img">
+            @if (activeGroup()?.client.profile_image) {
+              <img [src]="getFileUrl(activeGroup()!.client.profile_image)" alt="Profile" class="avatar-img">
             } @else {
-              {{ getInitials(activeConversation().checklist?.client_id?.owner_name || activeConversation().checklist?.client_id?.company_name) }}
+              {{ getInitials(activeGroup()?.client.owner_name || activeGroup()?.client.company_name) }}
             }
           </div>
           <div class="active-details">
-            <h3>{{ activeConversation().checklist?.client_id?.owner_name || activeConversation().checklist?.client_id?.company_name || 'Client' }}</h3>
-            <span class="active-service">{{ activeConversation().checklist?.service_name }}</span>
+            <h3>{{ activeGroup()?.client.owner_name || activeGroup()?.client.company_name || 'Client' }}</h3>
+            <div class="service-selector-wrapper">
+              <select class="service-selector" [ngModel]="activeConversation()" (ngModelChange)="onServiceSwitch($event)">
+                @for (c of activeGroup()?.chats; track c.checklist._id) {
+                  <option [ngValue]="c">
+                    {{ c.checklist.service_name }} {{ c.unreadCount > 0 ? '*' : '' }}
+                  </option>
+                }
+              </select>
+              @if ((activeGroup()?.totalUnreadCount || 0) > 0) {
+                <span class="selector-notification-dot"></span>
+              }
+            </div>
           </div>
         </div>
 

@@ -238,15 +238,57 @@
 }
 
 .active-details h3 {
-  margin: 0 0 2px 0;
+  margin: 0 0 4px 0;
   font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.active-service {
-  font-size: 12px;
-  color: #64748b;
+.service-selector-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.selector-notification-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: #ef4444;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  pointer-events: none;
+}
+
+.service-selector {
+  font-size: 13px;
+  color: #475569;
+  background-color: #ffffff;
+  border: 1px solid #eff2f6;
+  border-radius: 6px;
+  padding: 4px 28px 4px 8px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 14px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.service-selector:hover {
+  border-color: #94a3b8;
+}
+
+.service-selector:focus {
+  border-color: var(--palette-purple, #7c3aed);
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
 }
 
 .chat-actions {
@@ -366,7 +408,9 @@
   flex: 1;
   padding: 24px;
   overflow-y: auto;
-  background: #f8fafc;
+  background-image: linear-gradient(rgba(248, 250, 252, 0.85), rgba(248, 250, 252, 0.85)), url('/assets/chart/Abstract Geometric Hexagon Banner Medium.jpeg');
+  background-size: cover;
+  background-position: center;
   display: flex;
   flex-direction: column;
 }

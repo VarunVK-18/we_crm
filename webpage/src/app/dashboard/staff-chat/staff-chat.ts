@@ -11,6 +11,13 @@ import {
   CheckmarkBadge01Icon
 } from '@hugeicons/core-free-icons';
 
+export interface ClientChatGroup {
+  client: any;
+  chats: any[];
+  latestMessageAt: Date;
+  totalUnreadCount: number;
+}
+
 @Component({
   selector: 'app-staff-chat',
   standalone: true,
@@ -29,12 +36,13 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   user = signal<any>(null);
   
   // Conversations State
-  conversations = signal<any[]>([]);
-  filteredConversations = signal<any[]>([]);
+  groupedConversations = signal<ClientChatGroup[]>([]);
+  filteredGroupedConversations = signal<ClientChatGroup[]>([]);
   isLoadingConversations = signal<boolean>(true);
   searchQuery = signal<string>('');
 
   // Active Chat State
+  activeGroup = signal<ClientChatGroup | null>(null);
   activeConversation = signal<any>(null);
   chatMessages = signal<any[]>([]);
   isLoadingChat = signal<boolean>(false);
@@ -164,11 +172,8 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['initialOrderId'] && this.initialOrderId && this.conversations().length > 0) {
-      const conv = this.conversations().find(c => c.checklist?._id === this.initialOrderId);
-      if (conv) {
-        this.selectConversation(conv);
-      }
+    if (changes['initialOrderId'] && this.initialOrderId && this.groupedConversations().length > 0) {
+      this.selectByOrderId(this.initialOrderId);
     }
   }
 
@@ -177,15 +182,38 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     this.api.get<any>('chat/conversations/all').subscribe({
       next: (res) => {
         if (res.success) {
-          this.conversations.set(res.conversations || []);
+          const rawConvs = res.conversations || [];
+          const groupsMap = new Map<string, ClientChatGroup>();
+
+          rawConvs.forEach((conv: any) => {
+            const clientId = conv.checklist?.client_id?._id;
+            if (!clientId) return;
+
+            if (!groupsMap.has(clientId)) {
+              groupsMap.set(clientId, {
+                client: conv.checklist.client_id,
+                chats: [],
+                latestMessageAt: new Date(conv.lastMessage.createdAt),
+                totalUnreadCount: 0
+              });
+            }
+
+            const group = groupsMap.get(clientId)!;
+            group.chats.push(conv);
+            group.totalUnreadCount += (conv.unreadCount || 0);
+
+            const msgDate = new Date(conv.lastMessage.createdAt);
+            if (msgDate > group.latestMessageAt) {
+              group.latestMessageAt = msgDate;
+            }
+          });
+
+          const groupsArray = Array.from(groupsMap.values()).sort((a, b) => b.latestMessageAt.getTime() - a.latestMessageAt.getTime());
+          this.groupedConversations.set(groupsArray);
           this.filterConversations(this.searchQuery());
           
-          // Auto-select if initialOrderId provided
           if (this.initialOrderId && !this.activeConversation()) {
-            const conv = this.conversations().find(c => c.checklist?._id === this.initialOrderId);
-            if (conv) {
-              this.selectConversation(conv);
-            }
+            this.selectByOrderId(this.initialOrderId);
           }
         }
         this.isLoadingConversations.set(false);
@@ -197,37 +225,61 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     });
   }
 
+  selectByOrderId(orderId: string) {
+    for (const group of this.groupedConversations()) {
+      const conv = group.chats.find(c => c.checklist?._id === orderId);
+      if (conv) {
+        this.selectGroup(group, conv);
+        return;
+      }
+    }
+  }
+
   filterConversations(query: string) {
     this.searchQuery.set(query);
     if (!query.trim()) {
-      this.filteredConversations.set(this.conversations());
+      this.filteredGroupedConversations.set(this.groupedConversations());
       return;
     }
     
     const lowerQuery = query.toLowerCase();
-    const filtered = this.conversations().filter(conv => {
-      const clientName = conv.checklist?.client_id?.owner_name || '';
-      const companyName = conv.checklist?.client_id?.company_name || '';
-      const serviceName = conv.checklist?.service_name || '';
+    const filtered = this.groupedConversations().filter(group => {
+      const clientName = group.client?.owner_name || '';
+      const companyName = group.client?.company_name || '';
       return clientName.toLowerCase().includes(lowerQuery) || 
-             companyName.toLowerCase().includes(lowerQuery) || 
-             serviceName.toLowerCase().includes(lowerQuery);
+             companyName.toLowerCase().includes(lowerQuery) ||
+             group.chats.some(c => (c.checklist?.service_name || '').toLowerCase().includes(lowerQuery));
     });
-    this.filteredConversations.set(filtered);
+    this.filteredGroupedConversations.set(filtered);
   }
 
-  selectConversation(conv: any) {
+  selectGroup(group: ClientChatGroup, specificConv?: any) {
+    this.activeGroup.set(group);
+    
+    // Select the specific conv or default to the most recent one
+    const convToSelect = specificConv || group.chats[0];
+    this.onServiceSwitch(convToSelect);
+  }
+
+  onServiceSwitch(conv: any) {
     this.activeConversation.set(conv);
     this.chatMessages.set([]);
     this.fetchChatMessages(true);
     this.markMessagesAsSeen(conv.checklist._id);
     
     // Optimistically clear the unread count in the sidebar
-    this.conversations.update(convs => convs.map(c => {
-      if (c.checklist._id === conv.checklist._id) {
-        return { ...c, unreadCount: 0 };
+    this.groupedConversations.update(groups => groups.map(g => {
+      if (g.client._id === this.activeGroup()?.client._id) {
+        const updatedChats = g.chats.map(c => {
+          if (c.checklist._id === conv.checklist._id) {
+            return { ...c, unreadCount: 0 };
+          }
+          return c;
+        });
+        const newUnreadCount = updatedChats.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+        return { ...g, chats: updatedChats, totalUnreadCount: newUnreadCount };
       }
-      return c;
+      return g;
     }));
     this.filterConversations(this.searchQuery());
     
