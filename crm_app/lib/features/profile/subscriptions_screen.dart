@@ -133,9 +133,19 @@ class SubscriptionsScreen extends ConsumerWidget {
                         ? NumberFormat.currency(locale: 'en_IN', symbol: '₹', decimalDigits: 0).format(c.dealClosedAmount)
                         : 'Paid';
 
+                    String invoiceId = c.id.length > 6 ? c.id.substring(c.id.length - 6).toUpperCase() : c.id;
+                    if (c.updatedAt != null) {
+                      final yy = c.updatedAt!.year.toString().substring(2);
+                      final mm = c.updatedAt!.month.toString().padLeft(2, '0');
+                      final dd = c.updatedAt!.day.toString().padLeft(2, '0');
+                      final hh = c.updatedAt!.hour.toString().padLeft(2, '0');
+                      final min = c.updatedAt!.minute.toString().padLeft(2, '0');
+                      invoiceId = 'WE$yy$mm$dd$hh$min';
+                    }
+
                     return _buildHistoryItem(
                       service: c.serviceName.isEmpty ? 'Service Package' : c.serviceName,
-                      id: c.id.length > 6 ? c.id.substring(c.id.length - 6).toUpperCase() : c.id,
+                      id: invoiceId,
                       amount: amountStr,
                       date: dateStr,
                       onTap: () {

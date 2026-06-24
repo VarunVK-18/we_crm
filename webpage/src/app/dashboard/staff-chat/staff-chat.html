@@ -95,23 +95,34 @@
           </div>
           <div class="active-details">
             <h3>{{ activeGroup()?.client.owner_name || activeGroup()?.client.company_name || 'Client' }}</h3>
-            <div class="service-selector-wrapper">
-              <select class="service-selector" [ngModel]="activeConversation()" (ngModelChange)="onServiceSwitch($event)">
-                @for (c of activeGroup()?.chats; track c.checklist._id) {
-                  <option [ngValue]="c">
-                    {{ c.checklist.service_name }} {{ c.unreadCount > 0 ? '*' : '' }}
-                  </option>
-                }
-              </select>
-              @if ((activeGroup()?.totalUnreadCount || 0) > 0) {
-                <span class="selector-notification-dot"></span>
-              }
-            </div>
           </div>
         </div>
 
+        @if (!isSearchingMessages()) {
+          <div class="service-selector-wrapper center-selector">
+            <select class="service-selector premium-select" [ngModel]="activeConversation()" (ngModelChange)="onServiceSwitch($event)">
+              @for (c of activeGroup()?.chats; track c.checklist._id) {
+                <option [ngValue]="c">
+                  {{ c.checklist.service_name }} {{ c.unreadCount > 0 ? '*' : '' }}
+                </option>
+              }
+            </select>
+            @if ((activeGroup()?.totalUnreadCount || 0) > 0) {
+              <span class="selector-notification-dot"></span>
+            }
+          </div>
+        }
+
         @if (isSearchingMessages()) {
           <div class="message-search-bar">
+            <button class="icon-btn small-btn" (click)="toggleMessageSearch()" title="Show Services">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+            </button>
             <input type="text" placeholder="Search messages..." 
                    [ngModel]="messageSearchQuery()" 
                    (ngModelChange)="messageSearchQuery.set($event); updateSearchMatches($event)" 
@@ -224,25 +235,25 @@
             }
           </div>
         }
-      </div>
-
-      <!-- Chat Input Area -->
-      <div class="chat-input-area">
-        <div class="input-wrapper">
-          <input type="text" 
-                 placeholder="Type a message..." 
-                 [(ngModel)]="newChatMessage" 
-                 (keyup.enter)="sendChatMessage()">
-          <button class="send-btn" 
-                  [disabled]="!newChatMessage().trim()" 
-                  (click)="sendChatMessage()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-          </button>
+        <!-- Chat Input Area -->
+        <div class="chat-input-area">
+          <div class="input-wrapper">
+            <input type="text" 
+                   placeholder="Type a message..." 
+                   [(ngModel)]="newChatMessage" 
+                   (keyup.enter)="sendChatMessage()">
+            <button class="send-btn" 
+                    [disabled]="!newChatMessage().trim()" 
+                    (click)="sendChatMessage()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
+
     }
   </div>
 

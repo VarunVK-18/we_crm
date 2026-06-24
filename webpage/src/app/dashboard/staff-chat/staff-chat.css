@@ -173,6 +173,7 @@
   display: flex;
   flex-direction: column;
   background: white;
+  position: relative;
 }
 
 .no-chat-selected {
@@ -215,6 +216,7 @@
   align-items: center;
   justify-content: space-between;
   background: white;
+  position: relative;
 }
 
 .active-chat-info {
@@ -289,6 +291,42 @@
 .service-selector:focus {
   border-color: var(--palette-purple, #7c3aed);
   box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+}
+
+.center-selector {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.premium-select {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 8px 36px 8px 16px;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.premium-select:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.premium-select:focus {
+  background-color: #ffffff;
+  border-color: var(--palette-purple, #7c3aed);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
 }
 
 .chat-actions {
@@ -407,8 +445,9 @@
 .chat-messages-container {
   flex: 1;
   padding: 24px;
+  padding-bottom: 90px; /* Space for the floating input */
   overflow-y: auto;
-  background-image: linear-gradient(rgba(248, 250, 252, 0.85), rgba(248, 250, 252, 0.85)), url('/assets/chart/Abstract Geometric Hexagon Banner Medium.jpeg');
+  background-image: linear-gradient(rgba(248, 250, 252, 0.85), rgba(248, 250, 252, 0.85)), url('/assets/chart/chart.png');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -423,7 +462,7 @@
 }
 
 .date-divider span {
-  background-color: #eef2ff;
+  background-color: #eef2ffd6;
   color: #2563eb;
   padding: 6px 16px;
   border-radius: 20px;
@@ -529,9 +568,16 @@
 
 /* Input Area */
 .chat-input-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   padding: 16px 24px;
-  background: white;
-  border-top: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 10;
 }
 
 .input-wrapper {

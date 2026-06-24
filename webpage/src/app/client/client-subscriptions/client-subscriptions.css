@@ -190,8 +190,6 @@
 .hc-id {
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
-  background: #f1f5f9;
-  padding: 2px 6px;
   border-radius: 4px;
   color: var(--palette-dark);
 }

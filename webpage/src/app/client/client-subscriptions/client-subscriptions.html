@@ -47,7 +47,7 @@
               <div class="hc-content">
                 <h3>{{ service.service_name || service.checklist_name || 'Service Package' }}</h3>
                 <div class="hc-meta">
-                  <span class="hc-id">{{ service._id?.slice(-6).toUpperCase() || 'INV-0000' }}</span>
+                  <span class="hc-id">{{ getInvoiceNumber(service) }}</span>
                   <span class="hc-dot">•</span>
                   <span class="hc-date">{{ service.updatedAt | date:'dd MMM yyyy' }}</span>
                 </div>
