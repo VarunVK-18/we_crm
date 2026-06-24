@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../../api';
@@ -13,7 +13,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
   templateUrl: './client-compliance.html',
   styleUrl: './client-compliance.css'
 })
-export class ClientCompliance implements OnInit {
+export class ClientCompliance implements OnInit, OnDestroy {
   readonly Clock02Icon = Clock02Icon;
   readonly Alert01Icon = Alert01Icon;
   readonly CheckmarkCircle01Icon = CheckmarkCircle01Icon;
@@ -186,6 +186,12 @@ export class ClientCompliance implements OnInit {
   selectedCertForRenewal = signal<any>(null);
   isRenewing = signal(false);
 
+  private entityChangeHandler = (e: Event) => {
+    const name = (e as CustomEvent).detail as string;
+    // Map global 'All' to compliance's 'All Entities' convention
+    this.currentEntity.set(name === 'All' ? 'All Entities' : name);
+  };
+
   constructor(private api: Api, private router: Router) {}
 
   ngOnInit() {
@@ -198,6 +204,17 @@ export class ClientCompliance implements OnInit {
     } else {
       this.isLoading.set(false);
     }
+
+    // Sync with global entity switcher
+    const saved = localStorage.getItem('client_selected_entity');
+    if (saved && saved !== 'All') {
+      this.currentEntity.set(saved);
+    }
+    window.addEventListener('entityChanged', this.entityChangeHandler);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('entityChanged', this.entityChangeHandler);
   }
 
   fetchChecklists() {

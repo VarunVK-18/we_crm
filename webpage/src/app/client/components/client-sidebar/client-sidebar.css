@@ -96,12 +96,8 @@
 }
 
 .logo-box {
-  width: 42px;
-  height: 42px;
-  background: white;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  width: 49px;
+  height: 49px;
   display: flex;
   align-items: center;
   justify-content: center;

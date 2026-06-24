@@ -127,8 +127,15 @@
           <!-- Documents Section -->
           <div class="profile-card documents-card">
             <div class="card-header">
-              <h2>Uploaded Documents</h2>
-              <span class="doc-count">{{ allDocuments().length + (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) }} Total</span>
+              <div>
+                <h2>Uploaded Documents</h2>
+                @if (selectedEntity() !== 'All') {
+                  <span style="font-size: 11px; font-weight: 700; color: #7c3aed; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 99px; padding: 2px 10px; margin-left: 8px;">
+                    {{ selectedEntity() }}
+                  </span>
+                }
+              </div>
+              <span class="doc-count">{{ filteredDocuments().length + (selectedEntity() === 'All' ? (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) : 0) }} Total</span>
             </div>
             
             <div class="documents-list">
@@ -162,7 +169,7 @@
               }
               
               <!-- Additional onboarding documents array -->
-              @for (doc of allDocuments(); track doc._id) {
+              @for (doc of filteredDocuments(); track doc._id) {
                 <!-- Skip duplicates if they are already handled above based on naming, otherwise show them -->
                 @if (doc.name !== 'PAN Card Verification') {
                   <div class="document-item">
@@ -182,22 +189,26 @@
                 }
               }
               
-              @if (!user()?.pan_file && !user()?.gstin_file && allDocuments().length === 0) {
+              @if (!user()?.pan_file && !user()?.gstin_file && filteredDocuments().length === 0) {
                 <div class="empty-docs">
                   <span class="material-symbols-outlined">folder_open</span>
-                  <p>No documents uploaded yet.</p>
+                  <p>{{ selectedEntity() !== 'All' ? 'No documents for ' + selectedEntity() : 'No documents uploaded yet.' }}</p>
                 </div>
               }
             </div>
           </div>
           
           <!-- Directors Section -->
-          @if (directors().length > 0) {
+          @if (filteredDirectors().length > 0) {
             <div class="profile-card directors-card" style="grid-column: 1 / -1;">
               <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <h2>Directors & Partners</h2>
-                  <span class="doc-count">{{ directors().length }} Total</span>
+                  <h2>Directors &amp; Partners</h2>
+                  <span class="doc-count">{{ filteredDirectors().length }} Total
+                    @if (selectedEntity() !== 'All') {
+                      &nbsp;&bull;&nbsp;<span style="color: #7c3aed;">{{ selectedEntity() }}</span>
+                    }
+                  </span>
                 </div>
                 <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" (click)="toggleEdit()">
                   {{ isEditing() ? 'Cancel' : 'Edit Directors' }}
@@ -258,7 +269,7 @@
                     </tbody>
                   } @else {
                     <tbody>
-                      @for (dir of directors(); track dir.pan || dir.fullName) {
+                      @for (dir of filteredDirectors(); track dir.pan || dir.fullName) {
                         <tr>
                           <td style="font-weight: 600;">{{ dir.fullName }}</td>
                           <td><span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ dir.role || 'Director' }}</span></td>

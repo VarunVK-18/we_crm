@@ -46,7 +46,9 @@ exports.getUserTickets = async (req, res) => {
       return res.status(400).json({ message: 'User ID is required.' });
     }
 
-    const tickets = await Ticket.find({ userId }).sort({ createdAt: -1 });
+    const tickets = await Ticket.find({ userId })
+      .populate('checklistId', 'service_name details entityName companyName')
+      .sort({ createdAt: -1 });
     res.status(200).json({ tickets });
   } catch (error) {
     console.error('Error fetching user tickets:', error);

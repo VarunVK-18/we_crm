@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, OnDestroy, effect } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../api';
@@ -39,16 +39,40 @@ export class ClientDashboard implements OnInit, OnDestroy {
   completedOrders = signal<any[]>([]);
   pendingOrders = signal<any[]>([]);
   
-  // Computed stats
-  totalOpenTasks = computed(() => {
-    let count = 0;
-    for (const order of this.activeOrders()) {
-      if (order.items) {
-        count += order.items.filter((i: any) => !i.isChecked).length;
-      }
-    }
-    return count;
-  });
+  // Ticket stats
+  pendingTicketsCount = signal(0);
+
+  // Entity filter (synced with topbar switcher via localStorage + custom event)
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
+  private entityChangeHandler = (e: Event) => {
+    const name = (e as CustomEvent).detail as string;
+    this.selectedEntity.set(name);
+  };
+
+  // Helper: resolve entity name from a checklist object
+  private resolveEntityName(order: any): string {
+    return (
+      order.entityName ||
+      order.companyName ||
+      order.details?.entityName ||
+      order.details?.companyName ||
+      order.details?.proposed_company_name ||
+      order.details?.businessName ||
+      order.details?.entity_name ||
+      ''
+    ).trim();
+  }
+
+  private matchesEntity(order: any): boolean {
+    const sel = this.selectedEntity();
+    if (sel === 'All') return true;
+    return this.resolveEntityName(order).toLowerCase() === sel.toLowerCase();
+  }
+
+  // Filtered computed lists
+  filteredActiveOrders = computed(() => this.activeOrders().filter(o => this.matchesEntity(o)));
+  filteredCompletedOrders = computed(() => this.completedOrders().filter(o => this.matchesEntity(o)));
+  filteredPendingOrders = computed(() => this.pendingOrders().filter(o => this.matchesEntity(o)));
   
   // UI State
   activeTab = signal<'active' | 'completed' | 'pending-request'>('active');
@@ -57,9 +81,9 @@ export class ClientDashboard implements OnInit, OnDestroy {
   // Computed list for the current tab
   currentList = computed(() => {
     switch (this.activeTab()) {
-      case 'active': return this.activeOrders();
-      case 'completed': return this.completedOrders();
-      case 'pending-request': return this.pendingOrders();
+      case 'active': return this.filteredActiveOrders();
+      case 'completed': return this.filteredCompletedOrders();
+      case 'pending-request': return this.filteredPendingOrders();
       default: return [];
     }
   });
@@ -90,8 +114,13 @@ export class ClientDashboard implements OnInit, OnDestroy {
     
     this.fetchClientManager();
     this.fetchOrders();
-    this.pollingInterval = setInterval(() => this.fetchOrders(), 4000);
+    this.fetchTickets();
+    this.pollingInterval = setInterval(() => {
+      this.fetchOrders();
+      this.fetchTickets();
+    }, 4000);
     this.startSlider();
+    window.addEventListener('entityChanged', this.entityChangeHandler);
   }
 
   startSlider() {
@@ -135,6 +164,21 @@ export class ClientDashboard implements OnInit, OnDestroy {
     });
   }
 
+  fetchTickets() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    
+    this.api.get<any>(`tickets/user/${uid}`).subscribe({
+      next: (res) => {
+        if (res && res.tickets) {
+          const pendingCount = res.tickets.filter((t: any) => t.status === 'Pending' || t.status === 'In Progress').length;
+          this.pendingTicketsCount.set(pendingCount);
+        }
+      },
+      error: (err) => console.error('Failed to fetch tickets:', err)
+    });
+  }
+
   ngOnDestroy() {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
@@ -142,6 +186,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
     if (this.sliderInterval) {
       clearInterval(this.sliderInterval);
     }
+    window.removeEventListener('entityChanged', this.entityChangeHandler);
   }
 
   logout() {

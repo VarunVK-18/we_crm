@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { WeLoaderComponent } from '../components/we-loader/we-loader';
   templateUrl: './client-profile.html',
   styleUrl: './client-profile.css',
 })
-export class ClientProfile implements OnInit {
+export class ClientProfile implements OnInit, OnDestroy {
   readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
   readonly UserAccountIcon = UserAccountIcon;
   readonly File01Icon = File01Icon;
@@ -25,7 +25,39 @@ export class ClientProfile implements OnInit {
   allDocuments = signal<any[]>([]);
   directors = signal<any[]>([]);
   isLoading = signal(true);
-  
+
+  // Entity filter — synced with topbar switcher
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
+  private entityChangeHandler = (e: Event) => {
+    this.selectedEntity.set((e as CustomEvent).detail as string);
+  };
+
+  // Stores which entity each document belongs to (by doc._id)
+  private docEntityMap = new Map<string, string>();
+  // Stores which entity each director entry belongs to
+  private directorEntityMap = new Map<number, string>();
+
+  /** Documents filtered by the selected entity */
+  filteredDocuments = computed(() => {
+    const sel = this.selectedEntity();
+    if (sel === 'All') return this.allDocuments();
+    return this.allDocuments().filter(doc => {
+      const entityName = this.docEntityMap.get(doc._id) || '';
+      return entityName.toLowerCase() === sel.toLowerCase();
+    });
+  });
+
+  /** Directors filtered by the selected entity */
+  filteredDirectors = computed(() => {
+    const sel = this.selectedEntity();
+    if (sel === 'All') return this.directors();
+    return this.directors().filter(d => {
+      // directors have serviceName set from the checklist; map back via directorEntityMap
+      const entityName = d._entityName || '';
+      return entityName.toLowerCase() === sel.toLowerCase();
+    });
+  });
+
   constructor(private router: Router, public api: Api) {}
 
   ngOnInit() {
@@ -43,6 +75,11 @@ export class ClientProfile implements OnInit {
     // We start with the local user data to render quickly
     this.user.set(parsedUser);
     this.fetchFullProfile(parsedUser._id || parsedUser.id);
+    window.addEventListener('entityChanged', this.entityChangeHandler);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('entityChanged', this.entityChangeHandler);
   }
 
   fetchFullProfile(id: string) {
@@ -66,11 +103,23 @@ export class ClientProfile implements OnInit {
             next: (chkRes) => {
               if (chkRes.checklists) {
                 for (const c of chkRes.checklists) {
+                  // Resolve entity name for this checklist
+                  const entityName = (
+                    c.details?.entityName ||
+                    c.details?.companyName ||
+                    c.details?.proposed_company_name ||
+                    c.details?.businessName ||
+                    c.details?.entity_name ||
+                    c.entityName || c.companyName || ''
+                  ).trim();
+
                   if (c.requested_documents) {
                     for (const d of c.requested_documents) {
                       if (d.isUploaded && d.fileUrl) {
+                        const docId = d._id || Math.random().toString();
+                        this.docEntityMap.set(docId, entityName);
                         docs.push({
-                          _id: d._id || Math.random().toString(),
+                          _id: docId,
                           name: `${c.service_name} - ${d.name}`,
                           fileUrl: d.fileUrl,
                           uploadedAt: d.uploadedAt
@@ -82,8 +131,10 @@ export class ClientProfile implements OnInit {
                     for (const f of c.final_documents) {
                       if (f.document_id) {
                         const docId = f.document_id._id || f.document_id;
+                        const fId = f._id || Math.random().toString();
+                        this.docEntityMap.set(fId, entityName);
                         docs.push({
-                          _id: f._id || Math.random().toString(),
+                          _id: fId,
                           name: `${c.service_name} - ${f.name} (Final)`,
                           fileUrl: `api/documents/${docId}`,
                           uploadedAt: f.uploadedAt
@@ -97,7 +148,8 @@ export class ClientProfile implements OnInit {
                       if (!directorsList.some(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || existing.fullName === d.fullName)) {
                         directorsList.push({
                           ...d,
-                          serviceName: c.service_name
+                          serviceName: c.service_name,
+                          _entityName: entityName  // tag with entity for filtering
                         });
                       }
                     }

@@ -28,6 +28,11 @@ export class ClientTopbarComponent implements OnInit {
   pageSubtitle = signal('Client Portal Dashboard');
   isDropdownOpen = signal(false);
   isNotificationOpen = signal(false);
+  isEntityDropdownOpen = signal(false);
+
+  // Entity switcher state (shared via localStorage so all pages react)
+  availableEntities = signal<string[]>([]);
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
 
   constructor(
     private router: Router, 
@@ -61,10 +66,62 @@ export class ClientTopbarComponent implements OnInit {
           },
           error: (err) => console.error('Failed to sync profile', err)
         });
+
+        // Fetch checklists to build entity list
+        this.fetchEntities();
       }
     }
     this.updateTitle(this.router.url);
     this.notifService.startPolling();
+  }
+
+  fetchEntities() {
+    this.api.get<any>('my-checklists').subscribe({
+      next: (res: any) => {
+        const checklists: any[] = res.checklists || [];
+        const entitySet = new Set<string>();
+        checklists.forEach((c: any) => {
+          const name = (
+            c.entityName ||
+            c.companyName ||
+            c.details?.entityName ||
+            c.details?.companyName ||
+            c.details?.proposed_company_name ||
+            c.details?.businessName ||
+            c.details?.entity_name ||
+            ''
+          ).trim();
+          if (name && name.toLowerCase() !== 'client') {
+            entitySet.add(name);
+          }
+        });
+        this.availableEntities.set(Array.from(entitySet).sort());
+
+        // Validate saved selection still exists
+        const saved = localStorage.getItem('client_selected_entity');
+        if (saved && saved !== 'All' && !entitySet.has(saved)) {
+          this.selectedEntity.set('All');
+          localStorage.setItem('client_selected_entity', 'All');
+        } else if (saved) {
+          this.selectedEntity.set(saved);
+        }
+      },
+      error: (err) => console.error('Failed to fetch entities for switcher', err)
+    });
+  }
+
+  selectEntity(name: string) {
+    this.selectedEntity.set(name);
+    localStorage.setItem('client_selected_entity', name);
+    this.isEntityDropdownOpen.set(false);
+    // Dispatch a custom event so other components can react immediately
+    window.dispatchEvent(new CustomEvent('entityChanged', { detail: name }));
+  }
+
+  toggleEntityDropdown() {
+    this.isEntityDropdownOpen.update(v => !v);
+    this.isDropdownOpen.set(false);
+    this.isNotificationOpen.set(false);
   }
 
   ngOnDestroy() {
@@ -93,17 +150,20 @@ export class ClientTopbarComponent implements OnInit {
     if (!this.eRef.nativeElement.contains(event.target)) {
       this.isDropdownOpen.set(false);
       this.isNotificationOpen.set(false);
+      this.isEntityDropdownOpen.set(false);
     }
   }
 
   toggleDropdown() {
     this.isDropdownOpen.update(v => !v);
     this.isNotificationOpen.set(false);
+    this.isEntityDropdownOpen.set(false);
   }
 
   toggleNotifications() {
     this.isNotificationOpen.update(v => !v);
     this.isDropdownOpen.set(false);
+    this.isEntityDropdownOpen.set(false);
     if (this.isNotificationOpen()) {
       this.notifService.markAllAsRead();
     }
@@ -186,6 +246,7 @@ export class ClientTopbarComponent implements OnInit {
   logout() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('client_selected_entity');
     this.router.navigate(['/login']);
   }
 

@@ -24,6 +24,12 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
   isLoading = signal(true);
   pollingInterval: any;
 
+  // Entity filter — synced with topbar via custom event
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
+  private entityChangeHandler = (e: Event) => {
+    this.selectedEntity.set((e as CustomEvent).detail as string);
+  };
+
   constructor(private router: Router, public api: Api) {}
 
   ngOnInit() {
@@ -37,12 +43,14 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     this.fetchClientManager();
     this.fetchOrders();
     this.pollingInterval = setInterval(() => this.fetchOrders(), 4000);
+    window.addEventListener('entityChanged', this.entityChangeHandler);
   }
 
   ngOnDestroy() {
     if (this.pollingInterval) {
       clearInterval(this.pollingInterval);
     }
+    window.removeEventListener('entityChanged', this.entityChangeHandler);
   }
 
   fetchClientManager() {
@@ -120,6 +128,20 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     const query = this.searchQuery().toLowerCase().trim();
     if (query) {
       orders = orders.filter(o => (o.service_name || o.checklist_name || '').toLowerCase().includes(query));
+    }
+
+    // Apply entity filter
+    const sel = this.selectedEntity();
+    if (sel !== 'All') {
+      orders = orders.filter(o => {
+        const name = (
+          o.entityName || o.companyName ||
+          o.details?.entityName || o.details?.companyName ||
+          o.details?.proposed_company_name || o.details?.businessName ||
+          o.details?.entity_name || ''
+        ).trim();
+        return name.toLowerCase() === sel.toLowerCase();
+      });
     }
     
     return orders;

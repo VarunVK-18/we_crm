@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const TicketSchema = new mongoose.Schema({
   ticketId: { 
     type: String, 
-    unique: true 
+    unique: true,
+    sparse: true   // allows null without unique conflict
   },
   userId: { 
     type: String, 
@@ -29,6 +30,11 @@ const TicketSchema = new mongoose.Schema({
     type: String,
     default: 'General Support'
   },
+  checklistId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Checklist',
+    default: null
+  },
   priority: {
     type: String,
     enum: ['Low', 'Medium', 'High'],
@@ -45,13 +51,21 @@ const TicketSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Pre-save hook to generate sequential/random ticket IDs like INC-4821
-TicketSchema.pre('save', function(next) {
+/**
+ * Generate a unique ticket ID using last 4 digits of timestamp + 3 random digits.
+ * Format: TKT-XXXXXXX  (e.g. TKT-4271853)
+ * This gives ~10M combinations vs the old 9K, making collisions extremely rare.
+ */
+function generateTicketId() {
+  const tsPart = Date.now().toString().slice(-4);   // last 4 digits of ms timestamp
+  const randPart = Math.floor(100 + Math.random() * 900); // 3-digit random
+  return `TKT-${tsPart}${randPart}`;
+}
+
+TicketSchema.pre('save', function() {
   if (!this.ticketId) {
-    const randomDigits = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
-    this.ticketId = `INC-${randomDigits}`;
+    this.ticketId = generateTicketId();
   }
-  next();
 });
 
 module.exports = mongoose.model('Ticket', TicketSchema);

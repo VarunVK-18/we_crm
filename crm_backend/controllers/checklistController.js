@@ -1227,8 +1227,10 @@ const createSupportTicketForChecklist = async (req, res) => {
       isChecked: false
     });
     
-    // Changing the checklist status to in_progress
-    checklist.status = 'in_progress';
+    // Only update status if checklist is not already completed
+    if (checklist.status !== 'completed') {
+      checklist.status = 'in_progress';
+    }
     
     await checklist.save();
 
@@ -1241,7 +1243,8 @@ const createSupportTicketForChecklist = async (req, res) => {
       subject: subject,
       description: description,
       category: checklist.service_name,
-      priority: 'High' // Default to high since it's an escalated request on a completed service
+      checklistId: checklist._id,
+      priority: 'High'
     });
     await ticket.save();
 
@@ -1249,7 +1252,11 @@ const createSupportTicketForChecklist = async (req, res) => {
     const Notification = require('../models/Notification');
     
     // Notify Client Manager (ensure it's not the client themselves)
-    if (checklist.created_by && checklist.created_by.toString() !== checklist.client_id.toString()) {
+    if (
+      checklist.created_by &&
+      checklist.client_id &&
+      checklist.created_by.toString() !== checklist.client_id.toString()
+    ) {
       await Notification.create({
         client_id: checklist.created_by,
         title: 'New Support Ticket',
@@ -1262,6 +1269,7 @@ const createSupportTicketForChecklist = async (req, res) => {
     // Notify Filing Staff (ensure it's not the client and not the same as created_by)
     if (
       checklist.assigned_to && 
+      checklist.client_id &&
       checklist.assigned_to.toString() !== checklist.client_id.toString() &&
       (!checklist.created_by || checklist.assigned_to.toString() !== checklist.created_by.toString())
     ) {

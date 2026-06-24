@@ -19,16 +19,52 @@ class SupportTicketsScreen extends ConsumerStatefulWidget {
 class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   List<dynamic> _tickets = [];
   List<dynamic> _completedServices = [];
+
+  /// Maps checklist _id → entity name so tickets can show their entity
+  final Map<String, String> _checklistEntityMap = {};
+
   bool _isLoading = true;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    // Schedule fetch after first frame when context is available
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchTickets();
     });
+  }
+
+  /// Resolve entity name for a ticket.
+  /// Chain: ticket.checklistId (populated object) → details.entityName
+  String _resolveEntityName(Map<String, dynamic> ticket) {
+    // 1. If backend populated checklistId as an object
+    final clObj = ticket['checklistId'];
+    if (clObj is Map<String, dynamic>) {
+      final details = clObj['details'];
+      final name = (details is Map<String, dynamic>
+              ? (details['entityName'] ??
+                  details['companyName'] ??
+                  details['proposed_company_name'] ??
+                  details['businessName'] ??
+                  details['entity_name'])
+              : null) ??
+          clObj['entityName'] ??
+          clObj['companyName'];
+      if (name != null && name.toString().trim().isNotEmpty) {
+        return name.toString().trim();
+      }
+    }
+
+    // 2. Fallback: look up in local map by string ID
+    if (clObj is String && _checklistEntityMap.containsKey(clObj)) {
+      return _checklistEntityMap[clObj]!;
+    }
+
+    // 3. Direct entity fields on ticket
+    if (ticket['entityName'] != null) return ticket['entityName'].toString().trim();
+
+    // 4. Last resort: category (service name — not ideal but better than nothing)
+    return ticket['category']?.toString() ?? 'Support';
   }
 
   Future<void> _fetchTickets() async {
@@ -47,30 +83,62 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
     });
 
     try {
+      // 1. Fetch checklists FIRST to build entity map & completed services
+      //    (needed so entity names are ready when tickets render)
+      final servicesResponse = await http.get(
+        Uri.parse('$kBaseUrl/api/my-checklists'),
+        headers: {'x-user-id': user.id},
+      ).timeout(const Duration(seconds: 10));
+
+      List<dynamic> completedServices = [];
+      _checklistEntityMap.clear();
+
+      if (servicesResponse.statusCode == 200) {
+        final servicesData = jsonDecode(servicesResponse.body);
+        final checklists =
+            servicesData['checklists'] as List<dynamic>? ?? [];
+
+        for (final c in checklists) {
+          final cMap = c as Map<String, dynamic>;
+          final id = cMap['_id']?.toString() ?? '';
+
+          // Resolve entity name: details fields take priority
+          final details = cMap['details'];
+          final entityName = (details is Map<String, dynamic>
+                  ? (details['entityName'] ??
+                      details['companyName'] ??
+                      details['proposed_company_name'] ??
+                      details['businessName'] ??
+                      details['entity_name'])
+                  : null) ??
+              cMap['entityName'] ??
+              cMap['companyName'] ??
+              '';
+
+          if (id.isNotEmpty && entityName.toString().trim().isNotEmpty) {
+            _checklistEntityMap[id] = entityName.toString().trim();
+          }
+
+          // Include completed services (backend now preserves 'completed' status)
+          if (cMap['status'] == 'completed') {
+            completedServices.add(c);
+          }
+        }
+      }
+
+      // 2. Fetch tickets (backend now populates checklistId with entity details)
       final response = await http
           .get(
             Uri.parse('$kBaseUrl/api/tickets/user/${user.id}'),
+            headers: {'x-user-id': user.id},
           )
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        
-        // Fetch completed services
-        final servicesResponse = await http.get(
-          Uri.parse('$kBaseUrl/api/my-checklists'),
-          headers: {'x-user-id': user.id},
-        ).timeout(const Duration(seconds: 10));
-
-        List<dynamic> completedServices = [];
-        if (servicesResponse.statusCode == 200) {
-          final servicesData = jsonDecode(servicesResponse.body);
-          final checklists = servicesData['checklists'] as List<dynamic>? ?? [];
-          completedServices = checklists.where((c) => c['status'] == 'completed').toList();
-        }
-
+        final tickets = (data['tickets'] as List<dynamic>?) ?? [];
         setState(() {
-          _tickets = data['tickets'] ?? [];
+          _tickets = tickets;
           _completedServices = completedServices;
           _isLoading = false;
         });
@@ -88,8 +156,8 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
     }
   }
 
-  Future<void> _createNewTicket(String subject, String description,
-      String checklistId) async {
+  Future<void> _createNewTicket(
+      String subject, String description, String checklistId) async {
     final user = ref.read(userProfileProvider).value;
     if (user == null) return;
 
@@ -97,7 +165,10 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
       final response = await http
           .post(
             Uri.parse('$kBaseUrl/api/checklists/$checklistId/support-ticket'),
-            headers: {'Content-Type': 'application/json', 'x-user-id': user.id},
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': user.id,
+            },
             body: jsonEncode({
               'userId': user.id,
               'userName': user.name,
@@ -119,7 +190,8 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
         }
         _fetchTickets();
       } else {
-        throw Exception("Server returned ${response.statusCode}");
+        final body = jsonDecode(response.body);
+        throw Exception(body['message'] ?? "Server returned ${response.statusCode}");
       }
     } catch (e) {
       if (mounted) {
@@ -165,7 +237,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: AppTheme.deepTeal.withOpacity(0.08),
+                      color: AppTheme.deepTeal.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
@@ -222,14 +294,23 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           }
                         },
                         items: _completedServices.map((service) {
+                          final sMap = service as Map<String, dynamic>;
+                          // Show "EntityName – ServiceName" in dropdown
+                          final entityName =
+                              _checklistEntityMap[sMap['_id']?.toString() ?? ''] ?? '';
+                          final serviceName = sMap['service_name'] ?? 'Service';
+                          final label = entityName.isNotEmpty
+                              ? '$entityName – $serviceName'
+                              : serviceName;
                           return DropdownMenuItem<String>(
-                            value: service['_id'],
+                            value: sMap['_id'],
                             child: Text(
-                              service['service_name'] ?? 'Service',
+                              label,
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w400,
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           );
                         }).toList(),
@@ -242,7 +323,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide:
-                                BorderSide(color: Colors.grey.withOpacity(0.1)),
+                                BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
                           ),
                         ),
                       ),
@@ -259,7 +340,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide:
-                                BorderSide(color: Colors.grey.withOpacity(0.1)),
+                                BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
                           ),
                         ),
                         validator: (value) {
@@ -270,7 +351,6 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      // Priority level removed
                       TextFormField(
                         controller: descriptionController,
                         maxLines: 4,
@@ -285,7 +365,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
                             borderSide:
-                                BorderSide(color: Colors.grey.withOpacity(0.1)),
+                                BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
                           ),
                         ),
                         validator: (value) {
@@ -371,7 +451,6 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   Widget build(BuildContext context) {
     Responsive.init(context);
 
-    // Split tickets into Active (Pending, In Progress) and History (Resolved)
     final activeTickets = _tickets
         .where((t) => t['status'] == 'Pending' || t['status'] == 'In Progress')
         .toList();
@@ -430,7 +509,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                   child: ListView(
                     padding: const EdgeInsets.all(24),
                     children: [
-                      // Active Tickets Header & List
+                      // Active Tickets
                       const Text(
                         'Active Tickets',
                         style: TextStyle(
@@ -455,7 +534,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
 
                       const SizedBox(height: 32),
 
-                      // History Tickets Header & List
+                      // Previous Tickets
                       const Text(
                         'Previous Tickets',
                         style: TextStyle(
@@ -496,13 +575,13 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   }
 
   Widget _buildTicketCard(dynamic ticket) {
-    final status = ticket['status'] ?? 'Pending';
-    final expert = ticket['expert'] ?? 'Unassigned';
-    final ticketId = ticket['ticketId'] ?? 'INC-0000';
-    final subject = ticket['subject'] ?? 'No Subject';
-    final description = ticket['description'] ?? '';
-    final category = ticket['category'] ?? 'General Support';
-    final priority = ticket['priority'] ?? 'Low';
+    final t = ticket as Map<String, dynamic>;
+    final status = t['status'] ?? 'Pending';
+    final expert = t['expert'] ?? 'Unassigned';
+    final ticketId = t['ticketId'] ?? 'INC-0000';
+    final subject = t['subject'] ?? 'No Subject';
+    final description = t['description'] ?? '';
+    final entityName = _resolveEntityName(t);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -512,7 +591,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.deepTeal.withOpacity(0.3),
+            color: AppTheme.deepTeal.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -528,7 +607,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -554,36 +633,37 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              // Category badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.white.withOpacity(0.12)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(LucideIcons.grid,
-                        size: 10, color: Colors.white70),
-                    const SizedBox(width: 4),
-                    Text(
-                      category,
+          if (entityName.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            // Entity badge
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(LucideIcons.building2,
+                      size: 10, color: Colors.white70),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      entityName,
                       style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 10,
-                          fontWeight: FontWeight.w500),
+                          fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              // Priority badge removed
-            ],
-          ),
+            ),
+          ],
           const SizedBox(height: 12),
           Text(
             description,
@@ -615,11 +695,11 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   }
 
   Widget _buildHistoryTicket(dynamic ticket) {
-    final ticketId = ticket['ticketId'] ?? 'INC-0000';
-    final subject = ticket['subject'] ?? 'No Subject';
-    final status = ticket['status'] ?? 'Resolved';
-    final category = ticket['category'] ?? 'General Support';
-    final priority = ticket['priority'] ?? 'Low';
+    final t = ticket as Map<String, dynamic>;
+    final ticketId = t['ticketId'] ?? 'INC-0000';
+    final subject = t['subject'] ?? 'No Subject';
+    final status = t['status'] ?? 'Resolved';
+    final entityName = _resolveEntityName(t);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -629,7 +709,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -657,23 +737,23 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                       style:
                           TextStyle(color: Colors.grey.shade500, fontSize: 11),
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '•',
-                      style:
-                          TextStyle(color: Colors.grey.shade400, fontSize: 11),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        category,
-                        style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500),
-                        overflow: TextOverflow.ellipsis,
+                    if (entityName.isNotEmpty) ...[
+                      const SizedBox(width: 6),
+                      Text('•',
+                          style: TextStyle(
+                              color: Colors.grey.shade400, fontSize: 11)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          entityName,
+                          style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ],
@@ -682,7 +762,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
+              color: Colors.green.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
