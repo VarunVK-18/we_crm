@@ -634,6 +634,38 @@ const approveClient = async (req, res) => {
   }
 };
 
+const toggleComplianceRadar = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { in_compliance_radar } = req.body;
+    
+    if (in_compliance_radar === undefined) {
+      return res.status(400).json({ success: false, message: 'in_compliance_radar field is required' });
+    }
+
+    const client = await User.findById(id);
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'Client not found' });
+    }
+
+    client.in_compliance_radar = in_compliance_radar;
+    await client.save();
+
+    if (req.user) {
+      await logActivity(
+        req.user._id,
+        'compliance_radar_toggle',
+        `${in_compliance_radar ? 'Enabled' : 'Disabled'} compliance radar for client '${client.owner_name}'`,
+        req.user.company_id
+      );
+    }
+
+    res.status(200).json({ success: true, message: 'Compliance radar setting updated successfully', in_compliance_radar: client.in_compliance_radar });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get system audit logs
 // @route   GET /api/audit-logs
 // @access  Private (Admin, Auditor)
@@ -1168,5 +1200,6 @@ module.exports = {
   updateClientEntities,
   getPublicManagers,
   editClientProfile,
-  uploadDirectorDocument
+  uploadDirectorDocument,
+  toggleComplianceRadar
 };

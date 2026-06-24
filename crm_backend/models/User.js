@@ -37,6 +37,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'customer'
   },
+  in_compliance_radar: {
+    type: Boolean,
+    default: true
+  },
   company_code: {
     type: String,
     default: 'WE',

@@ -1,0 +1,234 @@
+<div class="staff-chat-container">
+  
+  <!-- Left Pane: Conversations List -->
+  <div class="chat-sidebar">
+    <div class="sidebar-header">
+      <h2>Chats</h2>
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" placeholder="Search chats..." [ngModel]="searchQuery()" (ngModelChange)="filterConversations($event)">
+      </div>
+    </div>
+
+    <div class="conversations-list">
+      @if (isLoadingConversations()) {
+        <div class="loading-state">
+          <div class="loader"></div>
+          <p>Loading chats...</p>
+        </div>
+      } @else if (filteredConversations().length === 0) {
+        <div class="empty-state">
+          <p>No chats found</p>
+        </div>
+      } @else {
+        @for (conv of filteredConversations(); track conv.checklist._id) {
+          <div class="conversation-item" 
+               [class.active]="activeConversation()?.checklist?._id === conv.checklist._id"
+               (click)="selectConversation(conv)">
+            <div class="conv-avatar">
+              @if (conv.checklist?.client_id?.profile_image) {
+                <img [src]="getFileUrl(conv.checklist.client_id.profile_image)" alt="Profile" class="avatar-img">
+              } @else {
+                {{ getInitials(conv.checklist?.client_id?.owner_name || conv.checklist?.client_id?.company_name) }}
+              }
+            </div>
+            <div class="conv-details">
+              <div class="conv-header">
+                <h4>{{ conv.checklist?.client_id?.owner_name || conv.checklist?.client_id?.company_name || 'Client' }}</h4>
+                @if (conv.lastMessage) {
+                  <span class="conv-time">{{ conv.lastMessage.createdAt | date:'shortTime' }}</span>
+                }
+              </div>
+              <div class="conv-snippet">
+                <p class="service-name">{{ conv.checklist?.service_name }}</p>
+                <div class="snippet-bottom">
+                  <span class="last-msg-text" [class.unread]="conv.unreadCount > 0">
+                    {{ conv.lastMessage ? conv.lastMessage.content : 'No messages yet' }}
+                  </span>
+                  @if (conv.unreadCount > 0) {
+                    <span class="unread-badge">{{ conv.unreadCount }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- Right Pane: Active Chat Window -->
+  <div class="chat-main">
+    @if (!activeConversation()) {
+      <div class="no-chat-selected">
+        <div class="empty-chat-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <h2>Select a chat to start messaging</h2>
+        <p>Choose a conversation from the left menu</p>
+      </div>
+    } @else {
+      <!-- Chat Header -->
+      <div class="chat-header">
+        <button class="back-btn mobile-only" (click)="closeActiveChat()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <div class="active-chat-info">
+          <div class="active-avatar">
+            @if (activeConversation().checklist?.client_id?.profile_image) {
+              <img [src]="getFileUrl(activeConversation().checklist.client_id.profile_image)" alt="Profile" class="avatar-img">
+            } @else {
+              {{ getInitials(activeConversation().checklist?.client_id?.owner_name || activeConversation().checklist?.client_id?.company_name) }}
+            }
+          </div>
+          <div class="active-details">
+            <h3>{{ activeConversation().checklist?.client_id?.owner_name || activeConversation().checklist?.client_id?.company_name || 'Client' }}</h3>
+            <span class="active-service">{{ activeConversation().checklist?.service_name }}</span>
+          </div>
+        </div>
+
+        @if (isSearchingMessages()) {
+          <div class="message-search-bar">
+            <input type="text" placeholder="Search messages..." 
+                   [ngModel]="messageSearchQuery()" 
+                   (ngModelChange)="messageSearchQuery.set($event); updateSearchMatches($event)" 
+                   autofocus>
+            
+            @if (messageSearchQuery()) {
+              <span class="search-count">
+                @if (searchMatchIndices().length > 0) {
+                  {{ currentSearchMatchIndex() + 1 }} / {{ searchMatchIndices().length }}
+                } @else {
+                  0 / 0
+                }
+              </span>
+            }
+
+            <button class="icon-btn small-btn" (click)="prevMatch()" [disabled]="searchMatchIndices().length === 0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button class="icon-btn small-btn" (click)="nextMatch()" [disabled]="searchMatchIndices().length === 0">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+
+            <button class="icon-btn" (click)="toggleMessageSearch()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+
+            <button class="move-to-service-btn" (click)="openService()">
+              <span>Move to Service</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        } @else {
+          <div class="chat-actions">
+            <button class="icon-btn" (click)="toggleMessageSearch()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+            <button class="move-to-service-btn" (click)="openService()">
+              <span>Move to Service</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Chat Messages -->
+      <div class="chat-messages-container">
+        @if (isLoadingChat()) {
+          <div class="loading-state">
+            <div class="loader"></div>
+          </div>
+        } @else {
+          @if (chatMessages().length === 0) {
+            <div class="empty-messages">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <p>No messages yet. Send a message to start the conversation.</p>
+            </div>
+          }
+          
+          <div class="messages-wrapper">
+            @for (msg of chatMessages(); track msg._id; let i = $index) {
+              @if (shouldShowDateDivider(i)) {
+                <div class="date-divider">
+                  <span>{{ getDateLabel(msg.createdAt) }}</span>
+                </div>
+              }
+              <div class="message-row" id="msg-{{ i }}" [class.sent]="msg.senderId._id === user()?._id" [class.received]="msg.senderId._id !== user()?._id">
+                @if (msg.senderId._id !== user()?._id) {
+                  <div class="msg-avatar">
+                    @if (msg.senderId?.profile_image) {
+                      <img [src]="getFileUrl(msg.senderId.profile_image)" alt="Profile" class="avatar-img">
+                    } @else {
+                      {{ getInitials(msg.senderId?.owner_name) }}
+                    }
+                  </div>
+                }
+                <div class="message-bubble" [class.temp]="msg.isTemp">
+                  @if (msg.senderId._id !== user()?._id) {
+                    <span class="sender-name">{{ msg.senderId?.owner_name || 'Client' }} <small>({{ msg.senderRole }})</small></span>
+                  }
+                  <p class="msg-content" [innerHTML]="getHighlightedContent(msg.content, i)"></p>
+                  <span class="msg-time">
+                    {{ msg.createdAt | date:'shortTime' }}
+                    @if (msg.senderId._id === user()?._id) {
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" [attr.stroke]="msg.seen ? '#3b82f6' : '#94a3b8'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                    }
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="chat-input-area">
+        <div class="input-wrapper">
+          <input type="text" 
+                 placeholder="Type a message..." 
+                 [(ngModel)]="newChatMessage" 
+                 (keyup.enter)="sendChatMessage()">
+          <button class="send-btn" 
+                  [disabled]="!newChatMessage().trim()" 
+                  (click)="sendChatMessage()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+</div>

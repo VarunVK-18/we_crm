@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { Api } from '../../api';
@@ -27,10 +27,34 @@ import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.servic
   templateUrl: './client-subscriptions.html',
   styleUrl: './client-subscriptions.css'
 })
-export class ClientSubscriptions implements OnInit {
+export class ClientSubscriptions implements OnInit, OnDestroy {
   user = signal<any>(null);
   completedServices = signal<any[]>([]);
   isLoading = signal(true);
+
+  // Entity filter synced with topbar switcher
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
+  private entityChangeHandler = (e: Event) => {
+    this.selectedEntity.set((e as CustomEvent).detail as string);
+  };
+
+  /** Services filtered by the selected entity */
+  filteredServices = computed(() => {
+    const sel = this.selectedEntity();
+    if (sel === 'All') return this.completedServices();
+    
+    return this.completedServices().filter(service => {
+      const entityName = (
+        service.details?.entityName ||
+        service.details?.companyName ||
+        service.details?.proposed_company_name ||
+        service.details?.businessName ||
+        service.details?.entity_name ||
+        service.entityName || service.companyName || ''
+      ).trim();
+      return entityName.toLowerCase() === sel.toLowerCase();
+    });
+  });
 
   // Icons
   CrownIcon = CrownIcon;
@@ -81,6 +105,11 @@ export class ClientSubscriptions implements OnInit {
     } else {
       this.isLoading.set(false);
     }
+    window.addEventListener('entityChanged', this.entityChangeHandler);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('entityChanged', this.entityChangeHandler);
   }
 
   fetchCompletedServices() {
@@ -114,6 +143,17 @@ export class ClientSubscriptions implements OnInit {
     // If current month is Jan-Mar (0-2), expiry is this year. If Apr-Dec (3-11), expiry is next year.
     const targetYear = now.getMonth() > 2 ? now.getFullYear() + 1 : now.getFullYear();
     return `31 Mar ${targetYear}`;
+  }
+
+  formatTitleCase(text: string): string {
+    if (!text) return text;
+    const lowerWords = ['of', 'and', 'is', 'in', 'on', 'at', 'to', 'for', 'a', 'an'];
+    return text.toLowerCase().split(' ').map((word, index) => {
+      if (index > 0 && lowerWords.includes(word)) {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
   }
 
   isPaymentPending(service: any): boolean {

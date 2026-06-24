@@ -129,11 +129,6 @@
             <div class="card-header">
               <div>
                 <h2>Uploaded Documents</h2>
-                @if (selectedEntity() !== 'All') {
-                  <span style="font-size: 11px; font-weight: 700; color: #7c3aed; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 99px; padding: 2px 10px; margin-left: 8px;">
-                    {{ selectedEntity() }}
-                  </span>
-                }
               </div>
               <span class="doc-count">{{ filteredDocuments().length + (selectedEntity() === 'All' ? (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) : 0) }} Total</span>
             </div>
@@ -204,100 +199,169 @@
               <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                   <h2>Directors &amp; Partners</h2>
-                  <span class="doc-count">{{ filteredDirectors().length }} Total
-                    @if (selectedEntity() !== 'All') {
-                      &nbsp;&bull;&nbsp;<span style="color: #7c3aed;">{{ selectedEntity() }}</span>
-                    }
-                  </span>
                 </div>
                 <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" (click)="toggleEdit()">
                   {{ isEditing() ? 'Cancel' : 'Edit Directors' }}
                 </button>
               </div>
-              <div class="table-container" style="margin-top: 16px;">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Role</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>PAN</th>
-                      <th>Aadhaar</th>
-                      <th>DOB</th>
-                      <th>DIN</th>
-                      <th>Photo</th>
-                      <th>Signature</th>
-                    </tr>
-                  </thead>
-                  @if (isEditing()) {
-                    <tbody>
-                      @for (dir of editData.directors; track $index) {
-                        <tr>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.fullName" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.role" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.email" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.phone" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.pan" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.aadhaar" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.dob" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td><input type="text" class="form-input" [(ngModel)]="dir.din" style="width: 100%; padding: 6px; font-size: 13px; border: 1px solid var(--border); border-radius: 4px;" /></td>
-                          <td>
-                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                              @if (dir.photo) {
-                                <a [href]="api.getFileUrl(dir.photo)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
-                              }
-                              <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
-                                Upload
-                                <input type="file" style="display: none;" (change)="uploadDirectorDocument($index, 'photo', $event)" accept="image/*" />
-                              </label>
-                            </div>
-                          </td>
-                          <td>
-                            <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                              @if (dir.signature) {
-                                <a [href]="api.getFileUrl(dir.signature)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
-                              }
-                              <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 4px 8px; border-radius: 4px; border: 1px solid #e5e7eb;">
-                                Upload
-                                <input type="file" style="display: none;" (change)="uploadDirectorDocument($index, 'signature', $event)" accept="image/*,application/pdf" />
-                              </label>
-                            </div>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
+              <div class="directors-master-detail" style="display: grid; grid-template-columns: 280px 1fr; gap: 24px; margin-top: 16px;">
+                <!-- Left: List -->
+                <div class="directors-list" style="display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--border); padding-right: 16px; max-height: 400px; overflow-y: auto;">
+                   @for (dir of filteredDirectors(); track $index) {
+                     <div class="director-list-item" 
+                          [class.active]="selectedDirectorIndex() === $index"
+                          (click)="selectedDirectorIndex.set($index)"
+                          style="padding: 12px 16px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;">
+                       <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">{{ dir.fullName || 'Unnamed' }}</div>
+                       <div style="font-size: 12px; color: #64748b; font-weight: 500;">{{ dir.role || 'Director' }}</div>
+                     </div>
+                   }
+                </div>
+
+                <!-- Right: Details -->
+                <div class="director-detail" style="padding: 8px 16px;">
+                  @if (!isEditing()) {
+                    @if (filteredDirectors()[selectedDirectorIndex()]; as currentDir) {
+                      <div class="detail-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Name</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.fullName || 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Role</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">
+                            <span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ currentDir.role || 'Director' }}</span>
+                          </div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Email</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.email || 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Phone</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.phone || 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">PAN</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.pan || 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Aadhaar</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.aadhaar || 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DOB</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.dob || 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DIN</label>
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.din || 'N/A' }}</div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Photo</label>
+                          <div>
+                            @if (currentDir.photo) {
+                              <div class="image-preview-container">
+                                <img [src]="api.getFileUrl(currentDir.photo)" class="preview-img" alt="Photo" />
+                                <div class="image-overlay">
+                                  <a [href]="api.getFileUrl(currentDir.photo)" target="_blank" class="overlay-btn view-btn" title="View">
+                                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                  </a>
+                                  <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(currentDir.photo), currentDir.fullName + '-Photo.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
+                                    <hugeicons-icon [icon]="Download04Icon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                  </a>
+                                </div>
+                              </div>
+                            } @else {
+                              <span style="font-size: 13px; color: #94a3b8;">N/A</span>
+                            }
+                          </div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Signature</label>
+                          <div>
+                            @if (currentDir.signature) {
+                              <div class="image-preview-container">
+                                <img [src]="api.getFileUrl(currentDir.signature)" class="preview-img" alt="Signature" />
+                                <div class="image-overlay">
+                                  <a [href]="api.getFileUrl(currentDir.signature)" target="_blank" class="overlay-btn view-btn" title="View">
+                                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                  </a>
+                                  <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(currentDir.signature), currentDir.fullName + '-Signature.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
+                                    <hugeicons-icon [icon]="Download04Icon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                  </a>
+                                </div>
+                              </div>
+                            } @else {
+                              <span style="font-size: 13px; color: #94a3b8;">N/A</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    }
                   } @else {
-                    <tbody>
-                      @for (dir of filteredDirectors(); track dir.pan || dir.fullName) {
-                        <tr>
-                          <td style="font-weight: 600;">{{ dir.fullName }}</td>
-                          <td><span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ dir.role || 'Director' }}</span></td>
-                          <td>{{ dir.email || 'N/A' }}</td>
-                          <td>{{ dir.phone || 'N/A' }}</td>
-                          <td>{{ dir.pan || 'N/A' }}</td>
-                          <td>{{ dir.aadhaar || 'N/A' }}</td>
-                          <td>{{ dir.dob || 'N/A' }}</td>
-                          <td>{{ dir.din || 'N/A' }}</td>
-                          <td>
-                            @if (dir.photo) {
-                              <a [href]="api.getFileUrl(dir.photo)" target="_blank" style="font-size: 12px; color: var(--palette-purple); font-weight: 600; text-decoration: none;">View</a>
-                            } @else {
-                              <span style="color: #94a3b8; font-size: 12px;">N/A</span>
+                    @if (editData.directors[selectedDirectorIndex()]; as editDir) {
+                      <div class="detail-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Name</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.fullName" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Role</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.role" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Email</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.email" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Phone</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.phone" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">PAN</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.pan" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Aadhaar</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.aadhaar" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DOB</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.dob" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DIN</label>
+                          <input type="text" class="form-input" [(ngModel)]="editDir.din" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Photo</label>
+                          <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                            @if (editDir.photo) {
+                              <a [href]="api.getFileUrl(editDir.photo)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
                             }
-                          </td>
-                          <td>
-                            @if (dir.signature) {
-                              <a [href]="api.getFileUrl(dir.signature)" target="_blank" style="font-size: 12px; color: var(--palette-purple); font-weight: 600; text-decoration: none;">View</a>
-                            } @else {
-                              <span style="color: #94a3b8; font-size: 12px;">N/A</span>
+                            <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
+                              Upload Photo
+                              <input type="file" style="display: none;" (change)="uploadDirectorDocument(selectedDirectorIndex(), 'photo', $event)" accept="image/*" />
+                            </label>
+                          </div>
+                        </div>
+                        <div class="detail-item">
+                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Signature</label>
+                          <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                            @if (editDir.signature) {
+                              <a [href]="api.getFileUrl(editDir.signature)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
                             }
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
+                            <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
+                              Upload Signature
+                              <input type="file" style="display: none;" (change)="uploadDirectorDocument(selectedDirectorIndex(), 'signature', $event)" accept="image/*,application/pdf" />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    }
                   }
-                </table>
+                </div>
               </div>
               
               @if (isEditing()) {
