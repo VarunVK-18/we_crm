@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/navigation_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -65,6 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _emailController.text.trim(),
             _passwordController.text.trim(),
           );
+      ref.read(navigationIndexProvider.notifier).state = 0;
       TextInput.finishAutofillContext();
     } catch (e) {
       String title = 'Sign In Failed';

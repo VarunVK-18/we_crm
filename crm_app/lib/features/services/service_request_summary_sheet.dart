@@ -185,6 +185,38 @@ class _ServiceRequestSummarySheetState
     return true;
   }
 
+  String? _validateCompanyName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'This field is required';
+    }
+    final lowerValue = value.toLowerCase();
+    
+    if (widget.packageName == 'Private Limited Incorporation') {
+      if (lowerValue.contains('llp') ||
+          lowerValue.contains('opc') ||
+          lowerValue.contains('one person company')) {
+        return 'You are applying for Private Limited. Do not use LLP or OPC in the name.';
+      }
+    } else if (widget.packageName == 'LLP Incorporation') {
+      if (lowerValue.contains('private limited') ||
+          lowerValue.contains('pvt ltd') ||
+          lowerValue.contains('pvt. ltd.') ||
+          lowerValue.contains('opc') ||
+          lowerValue.contains('one person company')) {
+        return 'You are applying for LLP. Enter company name as [Name] LLP.';
+      }
+    } else if (widget.packageName.contains('OPC') ||
+               widget.packageName.contains('One Person Company')) {
+      if (lowerValue.contains('private limited') ||
+          lowerValue.contains('pvt ltd') ||
+          lowerValue.contains('pvt. ltd.') ||
+          lowerValue.contains('llp')) {
+        return 'You are applying for OPC. Do not use Private Limited or LLP.';
+      }
+    }
+    return null;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -725,7 +757,7 @@ class _ServiceRequestSummarySheetState
                           color: AppTheme.deepTeal,
                         ),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
                       _EditableField(
                         label: 'Full Name',
                         controller: _nameController,
@@ -810,6 +842,11 @@ class _ServiceRequestSummarySheetState
                           onChanged: (val) {
                             setState(() {
                               _selectedEntity = val;
+                              if (val != null && val != 'Add New Entity...') {
+                                _companyNameController.text = val;
+                              } else {
+                                _companyNameController.clear();
+                              }
                             });
                           },
                         ),
@@ -868,11 +905,13 @@ class _ServiceRequestSummarySheetState
                             icon: LucideIcons.building,
                             hint: 'Enter entity name',
                             isRequired: true,
+                            validator: _validateCompanyName,
                           ),
                         ],
                       ],
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 12),
                       _DetailRow(label: 'Package:', value: widget.packageName),
+                      const SizedBox(height: 12),
                       ..._buildServiceSpecificForms(),
                     ] else ...[
                       if (widget.packageName == 'LLP Incorporation' ||
@@ -1161,17 +1200,18 @@ class _ServiceRequestSummarySheetState
                       widget.packageName,
                       style: GoogleFonts.outfit(
                         fontSize: 22,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: -0.5,
                       ),
                     ),
+                    const SizedBox(height: 8),
                     Text(
                       'Service Request Form',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -1230,7 +1270,6 @@ class _ServiceRequestSummarySheetState
 
   List<Widget> _buildPrivateLimitedForm() {
     return [
-      const SizedBox(height: 32),
       Text('Incorporation Details',
           style: GoogleFonts.outfit(
               fontSize: 16,
@@ -1242,7 +1281,8 @@ class _ServiceRequestSummarySheetState
           controller: _companyNameController,
           icon: LucideIcons.building,
           hint: 'Proposed Company Name',
-          isRequired: true),
+          isRequired: true,
+          validator: _validateCompanyName),
       const SizedBox(height: 20),
       _EditableField(
           label: 'Company Phone Number',
@@ -1254,9 +1294,18 @@ class _ServiceRequestSummarySheetState
           isRequired: true),
       const SizedBox(height: 20),
       _EditableField(
+          label: 'Number of Directors',
+          controller: _numberOfDirectorsController,
+          icon: LucideIcons.users,
+          hint: 'Number of directors to be appointed',
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
           label: 'Business Activities',
           controller: _businessActivityController,
-          hint: 'Describe the main business activities',
+          hint: 'Describe the main business activities your company will undertake. Be specific about the products or services you plan to offer.',
           maxLines: 3,
           isRequired: true),
       const SizedBox(height: 24),
@@ -1265,7 +1314,6 @@ class _ServiceRequestSummarySheetState
 
   List<Widget> _buildTrademarkForm() {
     return [
-      const SizedBox(height: 32),
       Text('Trademark Details',
           style: GoogleFonts.outfit(
               fontSize: 16,
@@ -1307,8 +1355,7 @@ class _ServiceRequestSummarySheetState
 
   List<Widget> _buildMsmeForm() {
     return [
-      const SizedBox(height: 32),
-      Text('Udyam Registration Details',
+      Text('Enterprise Details',
           style: GoogleFonts.outfit(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -1481,13 +1528,12 @@ class _ServiceRequestSummarySheetState
 
   List<Widget> _buildDunsForm() {
     return [
-      const SizedBox(height: 32),
-      Text('Application Details',
+      Text('DUNS Registration Details',
           style: GoogleFonts.outfit(
               fontSize: 16,
               fontWeight: FontWeight.w800,
               color: AppTheme.deepTeal)),
-      const SizedBox(height: 20),
+      const SizedBox(height: 24),
       _EditableField(
           label: 'Legal Business Name',
           controller: _companyNameController,
@@ -1538,8 +1584,7 @@ class _ServiceRequestSummarySheetState
 
   List<Widget> _buildLlpForm() {
     return [
-      const SizedBox(height: 32),
-      Text('Proposed LLP Details',
+      Text('LLP Details',
           style: GoogleFonts.outfit(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -1550,6 +1595,16 @@ class _ServiceRequestSummarySheetState
           controller: _companyNameController,
           icon: LucideIcons.building,
           hint: 'Eg: Wealth Empires LLP',
+          isRequired: true,
+          validator: _validateCompanyName),
+      const SizedBox(height: 12),
+      _EditableField(
+          label: 'Number of Partners',
+          controller: _numberOfDirectorsController,
+          icon: LucideIcons.users,
+          hint: 'Number of partners in the LLP',
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           isRequired: true),
       const SizedBox(height: 12),
       Text(
@@ -1559,17 +1614,8 @@ class _ServiceRequestSummarySheetState
       _EditableField(
           label: 'Business Activity',
           controller: _businessActivityController,
-          icon: LucideIcons.fileText,
-          hint: 'Describe the main business activities...',
+          hint: 'Describe the main business activities your company will undertake. Be specific about the products or services you plan to offer.',
           maxLines: 3,
-          isRequired: true),
-      const SizedBox(height: 20),
-      _EditableField(
-          label: 'Number of Partners',
-          controller: _numberOfDirectorsController,
-          icon: LucideIcons.users,
-          hint: 'Number of Partners/Directors',
-          keyboardType: TextInputType.number,
           isRequired: true),
       const SizedBox(height: 24),
       _buildSectionHeader('Registered Office Preference'),
@@ -1602,8 +1648,7 @@ class _ServiceRequestSummarySheetState
 
   List<Widget> _buildFssaiForm() {
     return [
-      const SizedBox(height: 32),
-      Text('Business Details',
+      Text('FSSAI License Details',
           style: GoogleFonts.outfit(
               fontSize: 16,
               fontWeight: FontWeight.w800,
@@ -1994,7 +2039,7 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2010,12 +2055,26 @@ class _DetailRow extends StatelessWidget {
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: GoogleFonts.outfit(
-                color: AppTheme.deepTeal,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.deepTeal.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: AppTheme.deepTeal.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  value,
+                  style: GoogleFonts.outfit(
+                    color: AppTheme.deepTeal,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             ),
           ),
@@ -2152,8 +2211,8 @@ class _EditableField extends StatelessWidget {
                     ? null
                     : (maxLines > 1
                         ? Container(
-                            padding: const EdgeInsets.only(top: 18),
-                            alignment: Alignment.topCenter,
+                            padding: const EdgeInsets.only(top: 16, left: 16),
+                            alignment: Alignment.topLeft,
                             width: 48,
                             child: icon is IconData
                                 ? Icon(icon,

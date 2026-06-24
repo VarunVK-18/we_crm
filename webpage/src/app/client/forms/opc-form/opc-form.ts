@@ -238,6 +238,12 @@ export class OpcForm implements OnInit {
       return;
     }
 
+    const lowerName = this.companyName.toLowerCase();
+    if (lowerName.includes('private limited') || lowerName.includes('pvt ltd') || lowerName.includes('pvt. ltd.') || lowerName.includes('llp')) {
+      this.errorMessage.set('You are applying for OPC. Please do not use Private Limited or LLP in the company name.');
+      return;
+    }
+
     const capital = parseInt(this.paidUpCapital) || 0;
     if (capital < 10000) {
       this.errorMessage.set('Paid up share capital must be at least ₹10,000.');

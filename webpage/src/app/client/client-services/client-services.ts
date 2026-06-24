@@ -196,6 +196,41 @@ export class ClientServicesComponent implements OnInit {
       s.description.toLowerCase().includes(q)
     );
   });
+
+  // Pagination state
+  currentPage = signal<number>(1);
+  itemsPerPage = 4;
+  
+  paginatedServices = computed(() => {
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    return this.filteredServices().slice(start, start + this.itemsPerPage);
+  });
+
+  totalPages = computed(() => {
+    return Math.ceil(this.filteredServices().length / this.itemsPerPage) || 1;
+  });
+
+  pageNumbers = computed(() => {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages(); i++) {
+      pages.push(i);
+    }
+    return pages;
+  });
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  prevPage() {
+    this.goToPage(this.currentPage() - 1);
+  }
   isLoadingManager = signal(true);
   clientManager = signal<any>(null);
   availableEntities = signal<string[]>([]);
@@ -418,6 +453,7 @@ export class ClientServicesComponent implements OnInit {
 
   selectCategory(categoryId: string) {
     this.selectedCategory.set(categoryId);
+    this.currentPage.set(1);
     
     let services: any[] = [];
     if (categoryId === 'all') {
@@ -441,6 +477,7 @@ export class ClientServicesComponent implements OnInit {
 
   onSearchChange(val: string) {
     this.searchQuery.set(val);
+    this.currentPage.set(1);
     if (val.trim() && this.selectedCategory() !== 'all') {
       this.selectCategory('all');
     }

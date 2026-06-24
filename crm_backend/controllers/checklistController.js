@@ -713,6 +713,16 @@ const uploadFinalDocuments = async (req, res) => {
               extractedDate = parseWrittenDate(dateMatch[1].trim());
             }
 
+            if (!extractedDate) {
+              const standardDateMatch = text.match(/\b(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{4})\b/);
+              if (standardDateMatch) {
+                const day = parseInt(standardDateMatch[1], 10);
+                const month = parseInt(standardDateMatch[2], 10) - 1;
+                const year = parseInt(standardDateMatch[3], 10);
+                extractedDate = new Date(Date.UTC(year, month, day));
+              }
+            }
+
             // Update client profile and specific client entity
             if (extractedCompany || extractedCin || extractedTan) {
               const client = await User.findById(checklist.client_id);
@@ -1034,8 +1044,17 @@ const reuploadFinalDocument = async (req, res) => {
           dateMatch = text.match(/(\d{1,2}(?:st|nd|rd|th)?\s+(?:day of\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*,?\s*(?:two thousand[a-z\s]*|20\d{2}))/i);
         }
         if (dateMatch) {
-          const { parseWrittenDate } = require('../utils/dateUtils');
           extractedDate = parseWrittenDate(dateMatch[1].trim());
+        }
+
+        if (!extractedDate) {
+          const standardDateMatch = text.match(/\b(\d{2})[\/\-\.](\d{2})[\/\-\.](\d{4})\b/);
+          if (standardDateMatch) {
+            const day = parseInt(standardDateMatch[1], 10);
+            const month = parseInt(standardDateMatch[2], 10) - 1;
+            const year = parseInt(standardDateMatch[3], 10);
+            extractedDate = new Date(Date.UTC(year, month, day));
+          }
         }
 
         // Update client profile and specific client entity

@@ -27,6 +27,24 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   String _selectedSenderRole = 'client';
+  
+  bool _isSearching = false;
+  String _searchQuery = '';
+  int _currentMatchIndex = 0;
+  List<int> _matchedMessageIndices = [];
+  final Map<int, GlobalKey> _itemKeys = {};
+
+  void _scrollToMatch(int index) {
+    final key = _itemKeys[index];
+    if (key != null && key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: 0.5,
+      );
+    }
+  }
 
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
@@ -84,6 +102,19 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
       }(),
     ];
 
+    _matchedMessageIndices.clear();
+    if (_searchQuery.isNotEmpty) {
+      final queryRegex = RegExp(RegExp.escape(_searchQuery), caseSensitive: false);
+      for (int i = 0; i < chatState.messages.length; i++) {
+        if (queryRegex.hasMatch(chatState.messages[i].content)) {
+          _matchedMessageIndices.add(i);
+        }
+      }
+    }
+    if (_currentMatchIndex >= _matchedMessageIndices.length) {
+      _currentMatchIndex = _matchedMessageIndices.isNotEmpty ? _matchedMessageIndices.length - 1 : 0;
+    }
+
     ref.listen(chatProvider(widget.orderId), (previous, next) {
       if (previous == null || next.messages.length > previous.messages.length) {
         // Use a longer delay to ensure the ListView is fully built before scrolling
@@ -101,7 +132,39 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
+        title: _isSearching
+            ? Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      autofocus: true,
+                      style: const TextStyle(color: AppTheme.deepTeal),
+                      decoration: const InputDecoration(
+                        hintText: 'Search chat...',
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          _searchQuery = val.toLowerCase();
+                        });
+                      },
+                    ),
+                  ),
+                  if (_searchQuery.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Text(
+                        _matchedMessageIndices.isEmpty ? '0 of 0' : '${_currentMatchIndex + 1} of ${_matchedMessageIndices.length}',
+                        style: const TextStyle(
+                          color: AppTheme.deepTeal,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              )
+            : Row(
           children: [
             CircleAvatar(
               radius: 20,
@@ -134,6 +197,47 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
             ),
           ],
         ),
+        actions: [
+          if (_isSearching && _matchedMessageIndices.isNotEmpty) ...[
+            IconButton(
+              icon: const Icon(LucideIcons.chevronUp, color: AppTheme.deepTeal),
+              onPressed: () {
+                setState(() {
+                  if (_currentMatchIndex > 0) {
+                    _currentMatchIndex--;
+                    _scrollToMatch(_matchedMessageIndices[_currentMatchIndex]);
+                  }
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(LucideIcons.chevronDown, color: AppTheme.deepTeal),
+              onPressed: () {
+                setState(() {
+                  if (_currentMatchIndex < _matchedMessageIndices.length - 1) {
+                    _currentMatchIndex++;
+                    _scrollToMatch(_matchedMessageIndices[_currentMatchIndex]);
+                  }
+                });
+              },
+            ),
+          ],
+          IconButton(
+            icon: Icon(_isSearching ? LucideIcons.x : LucideIcons.search, color: AppTheme.deepTeal),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchQuery = '';
+                  _currentMatchIndex = 0;
+                  _matchedMessageIndices.clear();
+                } else {
+                  _isSearching = true;
+                }
+              });
+            },
+          ),
+        ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
           child: Container(
@@ -153,44 +257,50 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                   )
                 : chatState.error != null && chatState.messages.isEmpty
                     ? Center(child: Text(chatState.error!))
-                    : ListView.builder(
+                    : SingleChildScrollView(
                         controller: _scrollController,
                         padding: const EdgeInsets.all(20),
-                        itemCount: chatState.messages.length,
-                        itemBuilder: (context, index) {
-                          final message = chatState.messages[index];
-                          final isMe = message.senderRole == 'client' || message.senderRole.startsWith('director_');
-                          
-                          bool showDateDivider = false;
-                          if (index == 0) {
-                            showDateDivider = true;
-                          } else {
-                            final prevMsg = chatState.messages[index - 1];
-                            final currDate = DateTime(message.timestamp.year, message.timestamp.month, message.timestamp.day);
-                            final prevDate = DateTime(prevMsg.timestamp.year, prevMsg.timestamp.month, prevMsg.timestamp.day);
-                            if (currDate != prevDate) showDateDivider = true;
-                          }
+                        child: Column(
+                          children: [
+                            for (int index = 0; index < chatState.messages.length; index++) ...() {
+                              final message = chatState.messages[index];
+                              final isMe = message.senderRole == 'client' || message.senderRole.startsWith('director_');
+                              
+                              bool showDateDivider = false;
+                              if (index == 0) {
+                                showDateDivider = true;
+                              } else {
+                                final prevMsg = chatState.messages[index - 1];
+                                final currDate = DateTime(message.timestamp.year, message.timestamp.month, message.timestamp.day);
+                                final prevDate = DateTime(prevMsg.timestamp.year, prevMsg.timestamp.month, prevMsg.timestamp.day);
+                                if (currDate != prevDate) showDateDivider = true;
+                              }
 
-                          Widget bubble = _buildMessageBubble(
-                            content: message.content,
-                            isMe: isMe,
-                            timestamp: message.timestamp,
-                            seen: message.seen,
-                            senderName: message.senderName,
-                            senderRole: message.senderRole,
-                            directors: directors,
-                          );
+                              if (!_itemKeys.containsKey(index)) {
+                                _itemKeys[index] = GlobalKey();
+                              }
 
-                          if (showDateDivider) {
-                            return Column(
-                              children: [
-                                _buildDateDivider(message.timestamp),
+                              Widget bubble = Container(
+                                key: _itemKeys[index],
+                                child: _buildMessageBubble(
+                                  content: message.content,
+                                  isMe: isMe,
+                                  timestamp: message.timestamp,
+                                  seen: message.seen,
+                                  senderName: message.senderName,
+                                  senderRole: message.senderRole,
+                                  directors: directors,
+                                  searchQuery: _searchQuery,
+                                ),
+                              );
+
+                              return [
+                                if (showDateDivider) _buildDateDivider(message.timestamp),
                                 bubble,
-                              ],
-                            );
-                          }
-                          return bubble;
-                        },
+                              ];
+                            }(),
+                          ],
+                        ),
                       ),
           ),
           
@@ -320,6 +430,29 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
 );
   }
 
+  List<TextSpan> _buildHighlightedText(String text, String query) {
+    if (query.isEmpty) return [TextSpan(text: text)];
+    final lowerText = text.toLowerCase();
+    final lowerQuery = query.toLowerCase();
+    List<TextSpan> spans = [];
+    int start = 0;
+    int idx;
+    while ((idx = lowerText.indexOf(lowerQuery, start)) != -1) {
+      if (idx > start) {
+        spans.add(TextSpan(text: text.substring(start, idx)));
+      }
+      spans.add(TextSpan(
+        text: text.substring(idx, idx + query.length),
+        style: const TextStyle(backgroundColor: Colors.amber, color: Colors.black, fontWeight: FontWeight.bold),
+      ));
+      start = idx + query.length;
+    }
+    if (start < text.length) {
+      spans.add(TextSpan(text: text.substring(start)));
+    }
+    return spans;
+  }
+
   Widget _buildDateDivider(DateTime timestamp) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -361,6 +494,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     required String senderName,
     required String senderRole,
     required List<dynamic> directors,
+    String searchQuery = '',
   }) {
     final timeStr = DateFormat('hh:mm a').format(timestamp);
     
@@ -454,7 +588,6 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                   ),
               child: RichText(
                 text: TextSpan(
-                  text: content,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14.5,
@@ -462,6 +595,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                     decoration: TextDecoration.none,
                   ),
                   children: [
+                    ..._buildHighlightedText(content, searchQuery),
                     const WidgetSpan(child: SizedBox(width: 12)),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.bottom,

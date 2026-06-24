@@ -258,6 +258,12 @@ export class IncorpForm implements OnInit {
       return;
     }
 
+    const lowerName = this.companyName.toLowerCase();
+    if (lowerName.includes('llp') || lowerName.includes('opc') || lowerName.includes('one person company')) {
+      this.errorMessage.set('You are applying for Private Limited. Please do not use LLP or OPC in the company name.');
+      return;
+    }
+
     if (this.companyEmail && !ValidationUtils.isValidEmail(this.companyEmail)) {
       this.errorMessage.set('Please enter a valid company email containing @.');
       ValidationUtils.scrollToError('companyEmailInput');

@@ -238,6 +238,12 @@ export class LlpForm implements OnInit {
       return;
     }
 
+    const lowerName = this.companyName.toLowerCase();
+    if (lowerName.includes('private limited') || lowerName.includes('pvt ltd') || lowerName.includes('pvt. ltd.') || lowerName.includes('opc') || lowerName.includes('one person company')) {
+      this.errorMessage.set('You are applying for LLP. Enter company name as [Name] LLP.');
+      return;
+    }
+
     if (!this.officeProofFile) {
       this.errorMessage.set('Please upload the registered office proof.');
       return;
