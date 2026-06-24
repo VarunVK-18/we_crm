@@ -250,6 +250,35 @@ export class ClientDashboard implements OnInit, OnChanges {
     return unique.filter(d => d.name.toLowerCase().includes(query));
   }
 
+  downloadDocument(doc: any) {
+    // Basic fallback to opening URL if actual download mechanism varies
+    if (doc.url) window.open(this.api.getFileUrl(doc.url), '_blank');
+  }
+
+  toggleComplianceRadar() {
+    const currentStatus = this.client().in_compliance_radar;
+    // Optimistic update
+    this.client.update(c => ({ ...c, in_compliance_radar: !currentStatus }));
+    
+    this.api.patch(`users/clients/${this.clientId}/compliance-radar`, { 
+      in_compliance_radar: !currentStatus 
+    }).subscribe({
+      next: (res: any) => {
+        if (!res.success) {
+          // Revert on failure
+          this.client.update(c => ({ ...c, in_compliance_radar: currentStatus }));
+          alert('Failed to update compliance radar status: ' + res.message);
+        }
+      },
+      error: (err) => {
+        // Revert on failure
+        this.client.update(c => ({ ...c, in_compliance_radar: currentStatus }));
+        console.error('Failed to toggle compliance radar', err);
+        alert('An error occurred while updating the status.');
+      }
+    });
+  }
+
   editEntityByRef(entity: any) {
     const index = this.client().client_entities.findIndex((e: any) => e === entity);
     if (index >= 0) this.editEntity(index);

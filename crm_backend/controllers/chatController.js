@@ -1,6 +1,7 @@
 const Message = require('../models/Message');
 const Notification = require('../models/Notification');
 const Checklist = require('../models/Checklist');
+const User = require('../models/User');
 
 exports.getMessages = async (req, res) => {
   try {
@@ -8,7 +9,7 @@ exports.getMessages = async (req, res) => {
     
     // Fetch all messages for the order, sorted by creation date ascending (oldest first)
     const messages = await Message.find({ orderId })
-      .populate('senderId', 'owner_name role') // Populate sender name and role
+      .populate('senderId', 'owner_name role profile_image') // Populate sender name and role and image
       .sort({ createdAt: 1 })
       .lean();
       
@@ -18,6 +19,75 @@ exports.getMessages = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching messages:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.getConversations = async (req, res) => {
+  try {
+    const userCompanyId = req.user.company_id;
+    const filter = {};
+    if (userCompanyId) {
+      filter.company_id = userCompanyId;
+    }
+
+    const role = req.user.role;
+    if (role === 'filling_staff' || role === 'account_manager') {
+      filter.assigned_to = req.user._id;
+    } else if (role === 'client_manager') {
+      const myClients = await User.find({
+        role: 'customer',
+        $or: [
+          { assigned_to: req.user._id },
+          { created_by: req.user._id, assigned_to: null }
+        ]
+      }).select('_id');
+      const myClientIds = myClients.map(c => c._id);
+      filter.$or = [
+        { assigned_to: req.user._id },
+        { client_id: { $in: myClientIds } }
+      ];
+    }
+
+    // Fetch checklists
+    const checklists = await Checklist.find(filter)
+      .populate('client_id', 'owner_name company_name email profile_image')
+      .populate('assigned_to', 'owner_name email role profile_image')
+      .populate('created_by', 'owner_name email role profile_image')
+      .lean();
+
+    // Attach latest message and unread count
+    const conversations = [];
+    for (const cl of checklists) {
+      const messages = await Message.find({ orderId: cl._id.toString() })
+        .sort({ createdAt: -1 })
+        .limit(1)
+        .lean();
+        
+      const unreadCount = await Message.countDocuments({
+        orderId: cl._id.toString(),
+        senderRole: { $in: ['customer', 'client'] },
+        seen: false
+      });
+
+      if (messages.length > 0) {
+        conversations.push({
+          checklist: cl,
+          lastMessage: messages[0],
+          unreadCount
+        });
+      }
+    }
+
+    // Sort by latest message date
+    conversations.sort((a, b) => new Date(b.lastMessage.createdAt) - new Date(a.lastMessage.createdAt));
+
+    res.status(200).json({
+      success: true,
+      conversations
+    });
+  } catch (error) {
+    console.error('Error fetching conversations:', error);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -41,7 +111,7 @@ exports.sendMessage = async (req, res) => {
     await newMessage.save();
     
     // Populate sender details before returning
-    await newMessage.populate('senderId', 'owner_name role');
+    await newMessage.populate('senderId', 'owner_name role profile_image');
 
     // Handle notifications
     const order = await Checklist.findById(orderId);

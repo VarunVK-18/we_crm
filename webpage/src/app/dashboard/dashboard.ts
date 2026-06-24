@@ -23,6 +23,7 @@ import { ChecklistDetails } from './checklist-details/checklist-details';
 import { StaffCompliance } from './staff-compliance/staff-compliance';
 import { EmployeeProfile } from './employee-profile/employee-profile';
 import { ServiceTrackComponent } from './service-track/service-track';
+import { StaffChatComponent } from './staff-chat/staff-chat';
 
 @Component({
   selector: 'app-dashboard',
@@ -45,7 +46,8 @@ import { ServiceTrackComponent } from './service-track/service-track';
     ChecklistDetails,
     StaffCompliance,
     EmployeeProfile,
-    ServiceTrackComponent
+    ServiceTrackComponent,
+    StaffChatComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -133,7 +135,12 @@ export class Dashboard implements OnInit, OnDestroy {
   handleNotificationClick(notif: any) {
     // Default action for notification click
     if (notif.type === 'chat' && notif.orderId) {
-      this.viewChecklist(notif.orderId, true);
+      if (this.user()?.role === 'filling_staff') {
+        this.selectedChecklistId.set(notif.orderId);
+        this.handleTabChanged('staff-chat');
+      } else {
+        this.viewChecklist(notif.orderId, true);
+      }
     } else if (notif.orderId) {
       this.viewChecklist(notif.orderId, false);
     }

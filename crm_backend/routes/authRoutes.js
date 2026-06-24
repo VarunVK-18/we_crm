@@ -25,7 +25,8 @@ const {
   updateClientEntities,
   getPublicManagers,
   editClientProfile,
-  uploadDirectorDocument
+  uploadDirectorDocument,
+  toggleComplianceRadar
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -61,6 +62,7 @@ router.delete('/users/profile/:id/remove-image', removeProfileImage);
 router.get('/users/clients', checkUser, getClients);
 router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), assignClient);
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);
+router.patch('/users/clients/:id/compliance-radar', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), toggleComplianceRadar);
 
 // Employee/Team routes
 router.get('/users/team-groups', checkUser, getTeamGroups);

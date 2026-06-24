@@ -231,7 +231,7 @@ exports.getAllComplianceTasks = async (req, res) => {
 
       const role = req.user.role;
       if (role === 'client_manager' || role === 'account_manager' || role === 'filling_staff') {
-        let clientFilter = { role: 'customer' };
+        let clientFilter = { role: 'customer', in_compliance_radar: { $ne: false } };
         if (role === 'client_manager') {
           clientFilter.$or = [
             { assigned_to: req.user._id },
@@ -244,8 +244,13 @@ exports.getAllComplianceTasks = async (req, res) => {
         const authorizedClients = await User.find(clientFilter).select('_id');
         const authorizedClientIds = authorizedClients.map(c => c._id);
 
+        // Get global set of clients in compliance radar to ensure no excluded client slips through checklist assignment
+        const globalRadarClients = await User.find({ role: 'customer', in_compliance_radar: { $ne: false } }).select('_id');
+        const globalRadarClientIds = globalRadarClients.map(c => c._id);
+
         const Checklist = require('../models/Checklist');
         const authorizedChecklists = await Checklist.find({
+            client_id: { $in: globalRadarClientIds },
             $or: [
                 { assigned_to: req.user._id },
                 { client_id: { $in: authorizedClientIds } }
@@ -259,6 +264,13 @@ exports.getAllComplianceTasks = async (req, res) => {
             { clientUid: { $in: authorizedClientIds }, checklistId: null }
         ];
         checklistFilter._id = { $in: authorizedChecklistIds };
+      } else {
+        // For admin/others, still filter out clients not in compliance radar
+        const radarClients = await User.find({ role: 'customer', in_compliance_radar: { $ne: false } }).select('_id');
+        const radarClientIds = radarClients.map(c => c._id);
+        
+        taskFilter.clientUid = { $in: radarClientIds };
+        checklistFilter.client_id = { $in: radarClientIds };
       }
     }
 

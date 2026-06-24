@@ -20,9 +20,6 @@
           </div>
           <h2 class="client-name">{{ client().owner_name }}</h2>
           <p class="client-company">{{ client().company_name || 'Individual Account' }}</p>
-          <div class="status-badge" [class.active]="client().status === 'active'">
-            {{ client().status | titlecase }}
-          </div>
         </div>
 
         <div class="info-card">
@@ -56,6 +53,17 @@
           <div class="address-box">
             <span class="label">Registered Address</span>
             <p>{{ client().address || 'No address provided.' }}</p>
+          </div>
+          
+          <div class="compliance-toggle-container" style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; padding-top: 16px; border-top: 1px solid #e2e8f0;">
+            <div>
+              <span class="label" style="font-weight: 600; color: #1e293b;">Compliance Radar</span>
+              <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Show in compliance tracking</p>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [checked]="client().in_compliance_radar !== false" (change)="toggleComplianceRadar()">
+              <span class="slider round"></span>
+            </label>
           </div>
         </div>
       </aside>

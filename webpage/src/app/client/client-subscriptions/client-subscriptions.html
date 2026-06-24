@@ -17,7 +17,11 @@
     <!-- Left Column: Completed Services List -->
     <div class="services-column">
       <div class="section-header">
-        <h2 class="section-title">Completed Services</h2>
+        <div>
+          <h2 class="section-title" style="display: inline-block;">
+            {{ selectedEntity() === 'All' ? 'Completed Services' : 'Completed Services of ' + formatTitleCase(selectedEntity()) }}
+          </h2>
+        </div>
       </div>
       
       <div class="history-list">
@@ -26,16 +30,16 @@
             <app-we-loader></app-we-loader>
             <p>Loading completed services...</p>
           </div>
-        } @else if (completedServices().length === 0) {
+        } @else if (filteredServices().length === 0) {
           <div class="empty-state">
             <div class="empty-icon-wrapper">
               <hugeicons-icon [icon]="CheckmarkBadge01Icon" [size]="48" color="#cbd5e1" [strokeWidth]="1.5"></hugeicons-icon>
             </div>
             <h3>No Completed Services</h3>
-            <p>You don't have any completed services yet.</p>
+            <p>{{ selectedEntity() !== 'All' ? 'No completed services found for ' + selectedEntity() + '.' : 'You don\'t have any completed services yet.' }}</p>
           </div>
         } @else {
-          @for (service of completedServices(); track service._id) {
+          @for (service of filteredServices(); track service._id) {
             <div (click)="handleServiceClick($event, service)" class="history-card" [class.is-pending]="isPaymentPending(service)">
               <div class="hc-icon">
                 <hugeicons-icon [icon]="getServiceIcon(service)" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>

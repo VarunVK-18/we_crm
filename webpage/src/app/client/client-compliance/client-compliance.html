@@ -5,11 +5,7 @@
       <div class="comp-hero-text">
         <span class="comp-hero-badge">COMPLIANCE CENTER</span>
         <div class="entity-header">
-          <h1 class="comp-hero-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;" [title]="currentEntity()">{{ currentEntity() }}</h1>
-          <div class="entity-switch-btn" (click)="isEntityModalOpen.set(true)">
-            <hugeicons-icon [icon]="ArrowLeftRightIcon" [size]="12" color="var(--palette-dark)" [strokeWidth]="2.5"></hugeicons-icon>
-            <span>SWITCH</span>
-          </div>
+          <h1 class="comp-hero-title" [title]="currentEntity()">{{ currentEntity() }}</h1>
         </div>
         <p class="comp-hero-subtitle">Track, manage, and resolve your compliance requirements in real-time.</p>
       </div>

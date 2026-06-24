@@ -1,4 +1,4 @@
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,12 +9,12 @@ import { Building04Icon, ArrowDown01Icon, ArrowUp01Icon, Copy01Icon } from '@hug
 @Component({
   selector: 'app-client-company-details',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
   providers: [DatePipe],
   templateUrl: './client-company-details.html',
   styleUrl: './client-company-details.css'
 })
-export class ClientCompanyDetails implements OnInit {
+export class ClientCompanyDetails implements OnInit, OnDestroy {
   readonly Building04Icon = Building04Icon;
   readonly ArrowDown01Icon = ArrowDown01Icon;
   readonly ArrowUp01Icon = ArrowUp01Icon;
@@ -23,7 +23,26 @@ export class ClientCompanyDetails implements OnInit {
   user = signal<any>(null);
   isLoading = signal(true);
   
+  copiedState = signal<Record<string, boolean>>({});
+  
   selectedEntityIndex = signal<number>(0);
+
+  // Global entity filter synced with topbar switcher
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
+  private entityChangeHandler = (e: Event) => {
+    this.selectedEntity.set((e as CustomEvent).detail as string);
+    this.selectedEntityIndex.set(0); // Reset index when global filter changes
+  };
+
+  filteredEntities = computed(() => {
+    if (!this.user()?.client_entities) return [];
+    const sel = this.selectedEntity();
+    if (sel === 'All') return this.user().client_entities;
+    
+    return this.user().client_entities.filter((e: any) => 
+      e.entityName && e.entityName.trim().toLowerCase() === sel.toLowerCase()
+    );
+  });
 
   constructor(private router: Router, public api: Api, private datePipe: DatePipe) {}
 
@@ -42,6 +61,11 @@ export class ClientCompanyDetails implements OnInit {
     }
     
     this.fetchFullProfile(parsedUser._id || parsedUser.id);
+    window.addEventListener('entityChanged', this.entityChangeHandler);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('entityChanged', this.entityChangeHandler);
   }
 
   fetchFullProfile(id: string) {
@@ -89,8 +113,11 @@ export class ClientCompanyDetails implements OnInit {
   copyToClipboard(text: string, label: string) {
     if (!text) return;
     navigator.clipboard.writeText(text).then(() => {
-      alert(`${label} copied to clipboard!`);
-    });
+      this.copiedState.update(state => ({ ...state, [label]: true }));
+      setTimeout(() => {
+        this.copiedState.update(state => ({ ...state, [label]: false }));
+      }, 2000);
+    }).catch(err => console.error('Failed to copy', err));
   }
 
   formatDate(dateStr: string) {

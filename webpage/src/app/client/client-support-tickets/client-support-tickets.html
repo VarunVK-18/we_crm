@@ -40,13 +40,6 @@
         </div>
       </div>
 
-      @if (selectedEntity() !== 'All') {
-        <div style="margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px; background: #f5f3ff; border: 1px solid #ddd6fe; border-radius: 10px; padding: 10px 16px; font-size: 13px; font-weight: 600; color: #7c3aed;">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 22V8C14 5.17157 14 3.75736 13.1213 2.87868C12.2426 2 10.8284 2 8 2C5.17157 2 3.75736 2 2.87868 2.87868C2 3.75736 2 5.17157 2 8V16C2 18.8284 2 20.2426 2.87868 21.1213C3.75736 22 5.17157 22 8 22H14Z" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"/></svg>
-          Filtered by entity: <strong>{{ selectedEntity() }}</strong>
-        </div>
-      }
-
       <div class="table-container">
         <table class="tickets-table">
           <thead>

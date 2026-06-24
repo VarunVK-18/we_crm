@@ -148,7 +148,7 @@
     </div>
 
     <!-- Active Tab Screen Content -->
-    <div class="screen-content-wrapper">
+    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat'">
       @if (currentTab() === 'dashboard') {
         <app-home-overview (viewRequests)="handleTabChanged('requests')" [searchQuery]="globalSearchQuery()"></app-home-overview>
       }
@@ -157,6 +157,12 @@
       }
       @if (currentTab() === 'clients' && user()?.role !== 'filling_staff' && user()?.role !== 'account_manager') {
         <app-clients-directory [teams]="teams()" (onViewClient)="viewClient($event)"></app-clients-directory>
+      }
+      @if (currentTab() === 'staff-chat') {
+        <app-staff-chat 
+          [initialOrderId]="selectedChecklistId()"
+          (onViewService)="viewChecklist($event)">
+        </app-staff-chat>
       }
       @if (currentTab() === 'client-dashboard' && selectedClientId()) {
         <app-client-dashboard 

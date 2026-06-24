@@ -217,6 +217,11 @@
   overflow-y: auto;
 }
 
+.screen-content-wrapper.no-padding {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 /* Mobile Menu Toggle Button in AppBar */
 .mobile-menu-toggle {
   display: none;

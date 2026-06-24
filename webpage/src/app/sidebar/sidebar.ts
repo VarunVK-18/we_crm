@@ -1,7 +1,7 @@
 import { Component, input, output, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon, Search01Icon, Message02Icon, Settings01Icon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 
 @Component({
@@ -25,6 +25,9 @@ export class Sidebar implements OnInit, OnDestroy {
   readonly BookMarkedIcon = Bookmark02Icon;
   readonly FileValidationIcon = FileValidationIcon;
   readonly HistoryIcon = WorkHistoryIcon;
+  readonly Search01Icon = Search01Icon;
+  readonly Message02Icon = Message02Icon;
+  readonly Settings01Icon = Settings01Icon;
 
   user = signal<any>(null);
   newRequestsCount = signal<number>(0);
@@ -66,6 +69,7 @@ export class Sidebar implements OnInit, OnDestroy {
         items: [
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
+          { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'service-track', label: 'Service Track', color: '#8B5CF6' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
@@ -92,6 +96,7 @@ export class Sidebar implements OnInit, OnDestroy {
         items: [
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
+          { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
@@ -108,6 +113,7 @@ export class Sidebar implements OnInit, OnDestroy {
         header: 'Operations',
         items: [
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
+          { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
