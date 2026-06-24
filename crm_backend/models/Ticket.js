@@ -53,13 +53,13 @@ const TicketSchema = new mongoose.Schema({
 
 /**
  * Generate a unique ticket ID using last 4 digits of timestamp + 3 random digits.
- * Format: TKT-XXXXXXX  (e.g. TKT-4271853)
+ * Format: INC-XXXXXXX  (e.g. INC-4271853)
  * This gives ~10M combinations vs the old 9K, making collisions extremely rare.
  */
 function generateTicketId() {
   const tsPart = Date.now().toString().slice(-4);   // last 4 digits of ms timestamp
   const randPart = Math.floor(100 + Math.random() * 900); // 3-digit random
-  return `TKT-${tsPart}${randPart}`;
+  return `INC-${tsPart}${randPart}`;
 }
 
 TicketSchema.pre('save', function() {
