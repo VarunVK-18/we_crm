@@ -129,7 +129,7 @@
         </div>
 
         <!-- Slide 2: Active Orders -->
-        @for (order of activeOrders(); track order._id) {
+        @for (order of filteredActiveOrders(); track order._id) {
         <div class="ho-slide slide-light" (click)="openServiceDetails(order)">
           <div class="slide-content col-layout">
             <div class="slide-text">
@@ -149,7 +149,7 @@
         }
 
         <!-- Slide 3: Fallback (if no active orders) -->
-        @if (activeOrders().length === 0) {
+        @if (filteredActiveOrders().length === 0) {
         <div class="ho-slide slide-dark">
           <div class="slide-content row-layout">
             <div class="slide-icon-box">

@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:math' as math;
+import '../../providers/compliance_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -542,7 +543,17 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
   Widget build(BuildContext context) {
     final activeOrdersRaw = ref.watch(activeOrdersProvider);
     final notInitRaw = ref.watch(notInitializedOrdersProvider);
+    final selectedEntity = ref.watch(selectedEntityProvider);
+
     final combinedOrders = [...activeOrdersRaw, ...notInitRaw]
+      .where((o) {
+        if (selectedEntity == 'All Entities') return true;
+        final en = (o.entityName ?? '').trim();
+        final cn = (o.companyName ?? '').trim();
+        return en.toLowerCase() == selectedEntity.toLowerCase() ||
+               cn.toLowerCase() == selectedEntity.toLowerCase();
+      })
+      .toList()
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
 
