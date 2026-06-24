@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/compliance_provider.dart';
 import '../../core/utils/responsive.dart';
 
 class SupportTicketsScreen extends ConsumerStatefulWidget {
@@ -206,10 +207,20 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   }
 
   void _showNewTicketDialog() {
-    if (_completedServices.isEmpty) {
+    final selectedEntity = ref.read(selectedEntityProvider);
+    final filteredCompletedServices = _completedServices.where((c) {
+      if (selectedEntity == 'All Entities') return true;
+      final cMap = c as Map<String, dynamic>;
+      final entityName = _checklistEntityMap[cMap['_id']?.toString() ?? ''] ?? '';
+      return entityName.toLowerCase() == selectedEntity.toLowerCase();
+    }).toList();
+
+    if (filteredCompletedServices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No completed services available to raise a ticket for.'),
+        SnackBar(
+          content: Text(selectedEntity == 'All Entities' 
+            ? 'No completed services available to raise a ticket for.' 
+            : 'No completed services available for $selectedEntity.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -219,7 +230,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
     final formKey = GlobalKey<FormState>();
     final subjectController = TextEditingController();
     final descriptionController = TextEditingController();
-    String selectedCategory = _completedServices[0]['_id'] ?? '';
+    String selectedCategory = filteredCompletedServices[0]['_id'] ?? '';
     bool isSubmitting = false;
 
     showDialog(
@@ -293,7 +304,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                             });
                           }
                         },
-                        items: _completedServices.map((service) {
+                        items: filteredCompletedServices.map((service) {
                           final sMap = service as Map<String, dynamic>;
                           // Show "EntityName – ServiceName" in dropdown
                           final entityName =
@@ -451,11 +462,19 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
   Widget build(BuildContext context) {
     Responsive.init(context);
 
-    final activeTickets = _tickets
+    final selectedEntity = ref.watch(selectedEntityProvider);
+
+    final filteredTickets = _tickets.where((t) {
+      if (selectedEntity == 'All Entities') return true;
+      final entityName = _resolveEntityName(t as Map<String, dynamic>);
+      return entityName.toLowerCase() == selectedEntity.toLowerCase();
+    }).toList();
+
+    final activeTickets = filteredTickets
         .where((t) => t['status'] == 'Pending' || t['status'] == 'In Progress')
         .toList();
     final previousTickets =
-        _tickets.where((t) => t['status'] == 'Resolved').toList();
+        filteredTickets.where((t) => t['status'] == 'Resolved').toList();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
