@@ -2,6 +2,7 @@ const Checklist = require('../models/Checklist');
 const User = require('../models/User');
 const { logActivity } = require('../middleware/rbac');
 const Document = require('../models/Document');
+const Subscription = require('../models/Subscription');
 const pdfParse = require('pdf-parse');
 const complianceService = require('../services/complianceService');
 
@@ -240,6 +241,36 @@ const toggleChecklistItem = async (req, res) => {
 
     await checklist.save();
 
+    if (checklist.status === 'completed' && checklist.recommended_plan) {
+      const existingSub = await Subscription.findOne({ checklist_id: checklist._id });
+      if (!existingSub) {
+        let planTier = 'Startup';
+        if (checklist.recommended_plan === 'Business Plan') planTier = 'Business';
+        if (checklist.recommended_plan === 'Corporate Plan') planTier = 'Corporate';
+        
+        const activationDate = new Date();
+        const expiryDate = new Date();
+        const currentMonth = activationDate.getMonth();
+        const targetYear = currentMonth > 2 ? activationDate.getFullYear() + 1 : activationDate.getFullYear();
+        expiryDate.setFullYear(targetYear, 2, 31);
+        expiryDate.setHours(23, 59, 59, 999);
+        
+        await Subscription.create({
+          client_id: checklist.client_id,
+          company_id: checklist.company_id,
+          checklist_id: checklist._id,
+          plan_name: checklist.recommended_plan,
+          plan_tier: planTier,
+          service_type: checklist.service_name,
+          service_fee: checklist.recommended_fee,
+          activation_date: activationDate,
+          expiry_date: expiryDate,
+          status: 'Active'
+        });
+        console.log(`[DEBUG] Auto-activated subscription for ${checklist.service_name}`);
+      }
+    }
+
     const populated = await Checklist.findById(id)
       .populate('client_id', 'owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
@@ -391,6 +422,36 @@ const updateChecklist = async (req, res) => {
     }
 
     await checklist.save();
+
+    if (checklist.status === 'completed' && checklist.recommended_plan) {
+      const existingSub = await Subscription.findOne({ checklist_id: checklist._id });
+      if (!existingSub) {
+        let planTier = 'Startup';
+        if (checklist.recommended_plan === 'Business Plan') planTier = 'Business';
+        if (checklist.recommended_plan === 'Corporate Plan') planTier = 'Corporate';
+        
+        const activationDate = new Date();
+        const expiryDate = new Date();
+        const currentMonth = activationDate.getMonth();
+        const targetYear = currentMonth > 2 ? activationDate.getFullYear() + 1 : activationDate.getFullYear();
+        expiryDate.setFullYear(targetYear, 2, 31);
+        expiryDate.setHours(23, 59, 59, 999);
+        
+        await Subscription.create({
+          client_id: checklist.client_id,
+          company_id: checklist.company_id,
+          checklist_id: checklist._id,
+          plan_name: checklist.recommended_plan,
+          plan_tier: planTier,
+          service_type: checklist.service_name,
+          service_fee: checklist.recommended_fee,
+          activation_date: activationDate,
+          expiry_date: expiryDate,
+          status: 'Active'
+        });
+        console.log(`[DEBUG] Auto-activated subscription for ${checklist.service_name}`);
+      }
+    }
 
     const populated = await Checklist.findById(id)
       .populate('client_id', 'owner_name company_name email onboarding_documents')

@@ -5,6 +5,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/nic_codes.dart';
+import '../../core/constants/tm_classes.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 class ToolDetailScreen extends StatefulWidget {
@@ -49,12 +50,20 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   List<NicCode> _filteredNicCodes = [];
   Map<NicCode, List<NicCode>> _groupedNicCodes = {};
   bool _isLoadingNic = false;
+
+  List<TmClass> _allTmClasses = [];
+  List<TmClass> _filteredTmClasses = [];
+  bool _isLoadingTm = false;
+
   Timer? _debounce;
 
   final FocusNode _amountFocus = FocusNode();
   final FocusNode _rateFocus = FocusNode();
   final FocusNode _durationFocus = FocusNode();
   TextEditingController? _focusedController;
+
+  final ScrollController _scrollController = ScrollController();
+  bool _showBackToTopButton = false;
 
   @override
   void initState() {
@@ -74,7 +83,29 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) _loadNicData();
       });
+    } else if (widget.toolName == 'Trade Mark Class') {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) _loadTmData();
+      });
     }
+
+    _scrollController.addListener(() {
+      if (_scrollController.offset >= 400 && !_showBackToTopButton) {
+        setState(() => _showBackToTopButton = true);
+      } else if (_scrollController.offset < 400 && _showBackToTopButton) {
+        setState(() => _showBackToTopButton = false);
+      }
+    });
+  }
+
+  Future<void> _loadTmData() async {
+    setState(() => _isLoadingTm = true);
+    final classes = await TmClassService.loadTmClasses();
+    setState(() {
+      _allTmClasses = classes;
+      _filteredTmClasses = classes;
+      _isLoadingTm = false;
+    });
   }
 
   Future<void> _loadNicData() async {
@@ -211,6 +242,25 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     });
   }
 
+  void _searchTmClass(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      setState(() {
+        if (query.isEmpty) {
+          _filteredTmClasses = _allTmClasses;
+        } else {
+          _filteredTmClasses = _allTmClasses
+              .where((item) =>
+                  item.classNum.toString().contains(query) ||
+                  item.description.toLowerCase().contains(query.toLowerCase()) ||
+                  item.type.toLowerCase().contains(query.toLowerCase()))
+              .toList();
+        }
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -225,33 +275,50 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          widget.toolName,
-          style: GoogleFonts.outfit(
-            color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w900,
-            fontSize: 20,
-            letterSpacing: -0.5,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 12, top: 12),
+          child: Text(
+            widget.toolName,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  height: 1.0,
+                ),
           ),
         ),
       ),
+      floatingActionButton: _showBackToTopButton
+          ? FloatingActionButton(
+              onPressed: () {
+                _scrollController.animateTo(
+                  0,
+                  duration: const Duration(milliseconds: 500),
+                  curve: Curves.easeInOut,
+                );
+              },
+              backgroundColor: AppTheme.corporateBlue,
+              child: const Icon(LucideIcons.arrowUp, color: Colors.white),
+            )
+          : null,
       body: Column(
         children: [
           Expanded(
             child: SingleChildScrollView(
+              controller: _scrollController,
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (widget.toolName != 'NIC Finder' && 
+                      widget.toolName != 'Trade Mark Class' &&
                       widget.toolName != 'TDS Interest' && 
                       !widget.toolName.contains('GST')) ...[
                     _buildHeaderWidget(),
                     const SizedBox(height: 32),
                   ],
                   _buildToolContent(),
-                  if (widget.toolName != 'NIC Finder' && !widget.toolName.contains('GST Calc')) ...[
+                  if (widget.toolName != 'NIC Finder' && widget.toolName != 'Trade Mark Class' && !widget.toolName.contains('GST Calc')) ...[
                     const SizedBox(height: 32),
                     _buildResultCard(),
                   ],
@@ -259,14 +326,14 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
               ),
             ),
           ),
-          if (widget.toolName != 'NIC Finder' && widget.toolName != 'TDS Interest') _buildNumpad(),
+          if (widget.toolName != 'NIC Finder' && widget.toolName != 'Trade Mark Class' && widget.toolName != 'TDS Interest') _buildNumpad(),
         ],
       ),
     );
   }
 
   Widget _buildHeaderWidget() {
-    if (widget.toolName == 'NIC Finder') {
+    if (widget.toolName == 'NIC Finder' || widget.toolName == 'Trade Mark Class') {
       return const SizedBox.shrink();
     }
     
@@ -312,6 +379,8 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         return 'Calculate interest for late TDS deposits (1.5% p.m.).';
       case 'NIC Finder':
         return 'Search for the appropriate National Industrial Classification code.';
+      case 'Trade Mark Class':
+        return 'Search for the appropriate Trade Mark class for goods and services.';
       default:
         return 'Professional utility for business compliance management.';
     }
@@ -320,6 +389,9 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   Widget _buildToolContent() {
     if (widget.toolName == 'NIC Finder') {
       return _buildNICFinder();
+    }
+    if (widget.toolName == 'Trade Mark Class') {
+      return _buildTradeMarkClassFinder();
     }
     if (widget.toolName.contains('GST Calc')) {
       return _buildGstCalculator();
@@ -377,7 +449,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   }
 
   Widget _buildTextField(TextEditingController controller, String hint, IconData icon, {FocusNode? focusNode}) {
-    bool isReadOnly = widget.toolName != 'NIC Finder' && widget.toolName != 'TDS Interest';
+    bool isReadOnly = widget.toolName != 'NIC Finder' && widget.toolName != 'Trade Mark Class' && widget.toolName != 'TDS Interest';
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -707,6 +779,118 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     );
   }
 
+  Widget _buildTradeMarkClassFinder() {
+    if (_isLoadingTm) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: CircularProgressIndicator(color: AppTheme.corporateBlue),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: _searchTmClass,
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.w500,
+              color: AppTheme.deepTeal,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Search by class number, description, or type...',
+              hintStyle: GoogleFonts.outfit(color: Colors.grey[400]),
+              prefixIcon: Icon(LucideIcons.search, size: 20, color: Colors.grey[400]),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _filteredTmClasses.length,
+          itemBuilder: (context, index) {
+            final item = _filteredTmClasses[index];
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppTheme.corporateBlue,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Class ${item.classNum}',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        fontSize: 13,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.type.toUpperCase(),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                            color: AppTheme.corporateBlue.withOpacity(0.8),
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.description,
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 14,
+                            color: Colors.grey[800],
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildResultCard() {
     return Container(
       padding: const EdgeInsets.all(28),
@@ -1019,6 +1203,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _amountFocus.dispose();
     _rateFocus.dispose();
     _durationFocus.dispose();

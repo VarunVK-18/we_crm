@@ -57,6 +57,30 @@ export class ClientSubscriptions implements OnInit, OnDestroy {
     });
   });
 
+  /** Subscriptions filtered by the selected entity */
+  filteredActiveSubscriptions = computed(() => {
+    const sel = this.selectedEntity();
+    if (sel === 'All') return this.activeSubscriptions();
+    
+    return this.activeSubscriptions().filter(sub => {
+      const checklist = sub.checklist_id || {};
+      const entityName = (
+        checklist.details?.entityName ||
+        checklist.details?.companyName ||
+        checklist.details?.proposed_company_name ||
+        checklist.details?.businessName ||
+        checklist.details?.entity_name ||
+        checklist.entityName || checklist.companyName || ''
+      ).trim();
+      
+      // If no entity name is attached, we can fallback to true to show it everywhere, 
+      // or false to hide it. Better to show if we can't figure it out.
+      if (!entityName) return true;
+      
+      return entityName.toLowerCase() === sel.toLowerCase();
+    });
+  });
+
   // Icons
   CrownIcon = CrownIcon;
   Download01Icon = Download01Icon;

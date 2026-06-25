@@ -138,6 +138,18 @@
         </div>
         }
 
+        @if (['MCA Compliance', 'GST Compliance'].includes(order.serviceType || order.service_name || '')) {
+        <div class="assign-field-group">
+          <label class="assign-label">Recommended Plan:</label>
+          <select class="form-control-input select-input" (change)="onPlanChange(order._id, $event)">
+            <option value="">-- No Plan / Default --</option>
+            <option value="Startup Plan" [selected]="order.recommended_plan === 'Startup Plan' || order.details?.recommended_plan === 'Startup Plan'">Startup Plan</option>
+            <option value="Business Plan" [selected]="order.recommended_plan === 'Business Plan' || order.details?.recommended_plan === 'Business Plan'">Business Plan</option>
+            <option value="Corporate Plan" [selected]="order.recommended_plan === 'Corporate Plan' || order.details?.recommended_plan === 'Corporate Plan'">Corporate Plan</option>
+          </select>
+        </div>
+        }
+
         <div class="assign-field-group">
           <label class="assign-label">Deal Closed Amount (INR):</label>
           <input type="text" class="form-control-input number-input" placeholder="Enter amount (e.g. 5,000)"
@@ -151,7 +163,7 @@
                 <input type="text" class="form-control-input number-input" placeholder="Enter amount or upload screenshot"
                   [value]="getFormattedAdvance(order._id)" 
                   (input)="onAdvanceChange(order._id, $event)"
-                  style="flex: 1; height: 38px; font-weight: 600; color: #1e293b;">
+                  style="flex: 1; min-width: 0; height: 38px; font-weight: 600; color: #1e293b;">
                 
               <!-- OCR Upload Button -->
               <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
@@ -163,7 +175,7 @@
                 }
               </div>
 
-              <button class="btn-primary" (click)="assignEmployee(order._id)" [disabled]="isAssigningOrder()[order._id]" style="white-space: nowrap;">
+              <button class="btn-primary" (click)="assignEmployee(order._id)" [disabled]="isAssigningOrder()[order._id] || isAssignButtonDisabled(order)" style="white-space: nowrap;">
                 @if (isAssigningOrder()[order._id]) {
                   <div class="btn-loading-content">
                     <div class="dot-spinner">

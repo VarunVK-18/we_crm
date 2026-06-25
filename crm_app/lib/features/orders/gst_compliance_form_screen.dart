@@ -24,6 +24,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
 
   // Document
   String? _bankStatementPath;
+  String _annualTurnover = 'Less than ₹20 Lakhs';
 
   Future<void> _pickFile(Function(String) onPicked) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -52,7 +53,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
     if (draft != null) {
       if (mounted) {
         setState(() {
-
+          if (draft.containsKey('annualTurnover')) _annualTurnover = draft['annualTurnover'];
         });
       }
     }
@@ -61,7 +62,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
   Future<void> _saveDraft() async {
     final draftService = ref.read(draftServiceProvider);
     final data = <String, dynamic>{
-
+      'annualTurnover': _annualTurnover,
     };
     await draftService.saveDraft(widget.order.id, 'GstComplianceFormScreen', data);
     if (mounted) {
@@ -91,6 +92,9 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
       final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-gst-compliance-form');
       var request = http.MultipartRequest('POST', uri);
       request.headers['x-user-id'] = uid;
+
+      // Add fields
+      request.fields['annualTurnover'] = _annualTurnover;
 
       // Add files
       request.files.add(await http.MultipartFile.fromPath('bankStatement', _bankStatementPath!));
@@ -204,6 +208,20 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
                   Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.corporateBlue)),
                   const SizedBox(height: 16),
                   
+                  // Business Details
+                  _buildSectionContainer(
+                    title: 'Business Details',
+                    children: [
+                      _buildRadioGroup(
+                        'Expected Annual Turnover',
+                        '',
+                        ['Less than ₹20 Lakhs', 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs', 'Greater than ₹50 Lakhs'],
+                        _annualTurnover,
+                        (v) => setState(() => _annualTurnover = v),
+                      ),
+                    ],
+                  ),
+
                   // Documents
                   _buildSectionContainer(
                     title: 'Documents',
@@ -289,6 +307,45 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
                 child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, ValueChanged<String> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 8),
+          Column(
+            children: options.map((option) {
+              return RadioListTile<String>(
+                contentPadding: EdgeInsets.zero,
+                title: Text(option, style: const TextStyle(fontSize: 14)),
+                value: option,
+                groupValue: currentValue,
+                activeColor: AppTheme.corporateBlue,
+                onChanged: (value) {
+                  if (value != null) onChanged(value);
+                },
+              );
+            }).toList(),
           ),
         ],
       ),

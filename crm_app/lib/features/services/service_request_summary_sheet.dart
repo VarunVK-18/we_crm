@@ -61,6 +61,7 @@ class _ServiceRequestSummarySheetState
 
   bool _isBrandUsed = false;
   String _selectedEducation = '';
+  String _annualTurnover = 'Less than ₹20 Lakhs';
 
   String? _selectedEntity;
   late TextEditingController _customEntityController;
@@ -502,6 +503,8 @@ class _ServiceRequestSummarySheetState
         details['duns_trade_name'] = _dunsTradeNameController.text;
         details['duns_year'] = _dunsYearController.text;
         details['duns_employees'] = _fssaiEmployeesController.text;
+      } else if (widget.packageName == 'GST Compliance' || widget.packageName == 'MCA Compliance') {
+        details['annualTurnover'] = _annualTurnover;
       }
 
       if (details.isNotEmpty) {
@@ -897,7 +900,10 @@ class _ServiceRequestSummarySheetState
                             ),
                           ),
                         ],
-                        if (_selectedEntity == 'Add New Entity...') ...[
+                        if (_selectedEntity == 'Add New Entity...' && 
+                            !(widget.packageName.contains('Incorporation') || 
+                              widget.packageName.contains('Proprietorship') || 
+                              widget.packageName.contains('OPC'))) ...[
                           const SizedBox(height: 12),
                           _EditableField(
                             label: 'New Entity Name',
@@ -1265,6 +1271,7 @@ class _ServiceRequestSummarySheetState
       if (widget.packageName == 'DUNS Number Registration') ..._buildDunsForm(),
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
       if (widget.packageName == 'FSSAI Food License') ..._buildFssaiForm(),
+      if (widget.packageName == 'GST Compliance' || widget.packageName == 'MCA Compliance') ..._buildComplianceForm(),
     ];
   }
 
@@ -1308,6 +1315,25 @@ class _ServiceRequestSummarySheetState
           hint: 'Describe the main business activities your company will undertake. Be specific about the products or services you plan to offer.',
           maxLines: 3,
           isRequired: true),
+      const SizedBox(height: 24),
+    ];
+  }
+
+  List<Widget> _buildComplianceForm() {
+    return [
+      Text('Business Details',
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
+      const SizedBox(height: 16),
+      _buildSectionHeader('Expected Annual Turnover'),
+      ...[
+        'Less than ₹20 Lakhs',
+        'Greater than ₹20 Lakhs and Less than ₹50 Lakhs',
+        'Greater than ₹50 Lakhs'
+      ].map((turnover) => _buildModernRadio(turnover, turnover, _annualTurnover,
+          (val) => setState(() => _annualTurnover = val!))),
       const SizedBox(height: 24),
     ];
   }

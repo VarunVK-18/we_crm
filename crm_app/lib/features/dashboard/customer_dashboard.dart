@@ -255,7 +255,7 @@ class CustomerDashboard extends ConsumerWidget {
               const _HorizontalServiceList(
                 items: [
                   {'label': 'NIC Finder', 'icon': LucideIcons.binary},
-                  {'label': 'TDS Interest', 'icon': LucideIcons.landmark},
+                  {'label': 'Trade Mark Class', 'icon': HugeIcons.strokeRoundedLicense},
                   {'label': 'GST Calc', 'icon': LucideIcons.calculator},
                   {'label': 'Compliance Cal', 'icon': LucideIcons.calendar},
                 ],
@@ -1310,7 +1310,8 @@ class _HorizontalServiceList extends ConsumerWidget {
 
               final isTool = label.contains('Calc') ||
                   label.contains('Finder') ||
-                  label.contains('Interest');
+                  label.contains('Interest') ||
+                  label.contains('Class');
 
               if (isTool) {
                 Navigator.push(
@@ -1481,13 +1482,15 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          'Compliance Cal',
-          style: GoogleFonts.outfit(
-            color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-            letterSpacing: -0.5,
+        title: Padding(
+          padding: EdgeInsets.only(left: 12.r, top: 12.r),
+          child: Text(
+            'Compliance Cal',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w800,
+                  height: 1.0,
+                ),
           ),
         ),
         actions: [

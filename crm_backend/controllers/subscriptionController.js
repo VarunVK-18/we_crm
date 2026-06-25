@@ -47,7 +47,9 @@ exports.activateSubscription = async (req, res) => {
 exports.getMySubscriptions = async (req, res) => {
   try {
     const clientId = req.user._id;
-    const subscriptions = await Subscription.find({ client_id: clientId }).sort({ createdAt: -1 });
+    const subscriptions = await Subscription.find({ client_id: clientId })
+      .populate('checklist_id', 'details entityName companyName')
+      .sort({ createdAt: -1 });
     
     res.status(200).json({ success: true, subscriptions });
   } catch (error) {

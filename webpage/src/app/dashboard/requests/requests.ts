@@ -65,11 +65,12 @@ export class RequestsComponent implements OnInit {
 
 
   // Selected employee per order { orderId: employeeData }
-  selectedEmployeeForOrder = signal<Record<string, any>>({});
+  selectedEmployeeForOrder = signal<{ [orderId: string]: any }>({});
   // Deal closed amount per order { orderId: number }
-  dealClosedAmountForOrder = signal<Record<string, number>>({});
-  advanceAmountPaidForOrder = signal<Record<string, number>>({});
-  numberOfDirectorsForOrder = signal<Record<string, number>>({});
+  dealClosedAmountForOrder = signal<{ [orderId: string]: number }>({});
+  advanceAmountPaidForOrder = signal<{ [orderId: string]: number }>({});
+  numberOfDirectorsForOrder = signal<{ [orderId: string]: number }>({});
+  selectedPlanForOrder = signal<{ [orderId: string]: string }>({});
   isAssigningOrder = signal<Record<string, boolean>>({});
   
   // OCR additions
@@ -279,6 +280,24 @@ export class RequestsComponent implements OnInit {
     this.numberOfDirectorsForOrder.update(prev => ({ ...prev, [orderId]: val }));
   }
 
+  onPlanChange(orderId: string, event: any) {
+    const val = event.target.value;
+    this.selectedPlanForOrder.update(prev => ({ ...prev, [orderId]: val }));
+  }
+
+  isAssignButtonDisabled(order: any): boolean {
+    const s = order.serviceType || order.service_name || '';
+    if (['MCA Compliance', 'GST Compliance'].includes(s)) {
+      const selected = this.selectedPlanForOrder()[order._id];
+      if (selected !== undefined) {
+         return !['Startup Plan', 'Business Plan', 'Corporate Plan'].includes(selected);
+      }
+      const dbPlan = order.recommended_plan || order.details?.recommended_plan;
+      return !['Startup Plan', 'Business Plan', 'Corporate Plan'].includes(dbPlan);
+    }
+    return false;
+  }
+
   assignEmployee(orderId: string) {
     const emp = this.selectedEmployeeForOrder()[orderId];
     const amount = this.dealClosedAmountForOrder()[orderId] || 0;
@@ -323,6 +342,11 @@ export class RequestsComponent implements OnInit {
       advanceAmountPaid: advance,
       isGstApplicable: isGstApplicable
     };
+
+    const plan = this.selectedPlanForOrder()[orderId];
+    if (plan) {
+      updateData.recommended_plan = plan;
+    }
 
     if (needsDirectors && directors) {
       updateData.assignedNumberOfDirectors = directors;

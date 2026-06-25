@@ -22,6 +22,7 @@ class ChecklistModel {
   final String notes;
   final DateTime? updatedAt;
   final double? dealClosedAmount;
+  final double? advanceAmountPaid;
   final String entityName;
 
   ChecklistModel({
@@ -32,6 +33,7 @@ class ChecklistModel {
     this.notes = '',
     this.updatedAt,
     this.dealClosedAmount,
+    this.advanceAmountPaid,
     this.entityName = '',
   });
 
@@ -92,6 +94,7 @@ class ChecklistModel {
       notes: data['notes']?.toString() ?? '',
       updatedAt: updatedAt,
       dealClosedAmount: (data['dealClosedAmount'] as num?)?.toDouble(),
+      advanceAmountPaid: (data['advanceAmountPaid'] as num?)?.toDouble(),
       entityName: entityName,
     );
   }

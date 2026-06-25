@@ -156,6 +156,26 @@
                   </div>
                 }
 
+                @if (showAnnualTurnover()) {
+                  <div class="form-group">
+                    <label style="margin-bottom: 8px; display: block; font-weight: 600; color: #1e293b;">Expected Annual Turnover</label>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="annualTurnover" value="Less than ₹20 Lakhs" [(ngModel)]="quoteForm.annualTurnover">
+                        Less than ₹20 Lakhs
+                      </label>
+                      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="annualTurnover" value="Greater than ₹20 Lakhs and Less than ₹50 Lakhs" [(ngModel)]="quoteForm.annualTurnover">
+                        Greater than ₹20 Lakhs and Less than ₹50 Lakhs
+                      </label>
+                      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="radio" name="annualTurnover" value="Greater than ₹50 Lakhs" [(ngModel)]="quoteForm.annualTurnover">
+                        Greater than ₹50 Lakhs
+                      </label>
+                    </div>
+                  </div>
+                }
+
                 <div class="form-group">
                   <label>Additional Requirements (Optional)</label>
                   <textarea name="requirements" [(ngModel)]="quoteForm.requirements" rows="3" class="form-input" style="resize: none;"></textarea>

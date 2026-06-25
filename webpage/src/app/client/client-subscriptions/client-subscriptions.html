@@ -74,8 +74,7 @@
         <div class="section-header">
           <h2 class="section-title">Current Plan</h2>
         </div>
-        
-        @if (activeSubscriptions().length === 0) {
+        @if (filteredActiveSubscriptions().length === 0) {
           <div class="premium-plan-card">
             <div class="ppc-glow"></div>
             <div class="ppc-bg-pattern"></div>
@@ -84,7 +83,7 @@
             </div>
           </div>
         } @else {
-          @for (sub of activeSubscriptions(); track sub._id) {
+          @for (sub of filteredActiveSubscriptions(); track sub._id) {
             <div class="premium-plan-card" style="margin-bottom: 24px;">
               <div class="ppc-glow"></div>
               <div class="ppc-bg-pattern"></div>

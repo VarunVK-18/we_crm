@@ -28,7 +28,7 @@
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <span class="info-badge">{{ checklist().service_name }}</span>
             <h3 class="info-title">{{ checklist().client_id?.owner_name }}</h3>
-            @if (checklist().client_id?.company_name) {
+            @if (checklist().details?.entityName || checklist().client_id?.company_name) {
             <p class="info-subtitle" style="display: flex; align-items: center; gap: 6px;">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M2 22H22" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -40,7 +40,7 @@
                 <path opacity="0.4" d="M7 7.5H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
                 <path opacity="0.4" d="M14 7.5H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
-              {{ checklist().client_id?.company_name }}
+              {{ checklist().details?.entityName || checklist().client_id?.company_name }}
             </p>
             }
           </div>

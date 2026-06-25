@@ -53,7 +53,14 @@ class SubscriptionsScreen extends ConsumerWidget {
             const SizedBox(height: 16),
             subscriptionsAsync.when(
               data: (subscriptions) {
-                if (subscriptions.isEmpty) {
+                final filteredSubscriptions = subscriptions.where((s) {
+                  if (selectedEntity == 'All Entities') return true;
+                  // If entityName is empty, show it everywhere as a fallback.
+                  if (s.entityName.isEmpty) return true;
+                  return s.entityName.toLowerCase() == selectedEntity.trim().toLowerCase();
+                }).toList();
+
+                if (filteredSubscriptions.isEmpty) {
                   return Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(32),
@@ -70,7 +77,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                   );
                 }
                 return Column(
-                  children: subscriptions.map((sub) => Padding(
+                  children: filteredSubscriptions.map((sub) => Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate),
                   )).toList(),
@@ -143,12 +150,33 @@ class SubscriptionsScreen extends ConsumerWidget {
                       invoiceId = 'WE$yy$mm$dd$hh$min';
                     }
 
+                    final closed = c.dealClosedAmount ?? 0.0;
+                    final paid = c.advanceAmountPaid ?? 0.0;
+                    final isPaymentPending = closed > paid;
+
                     return _buildHistoryItem(
                       service: c.serviceName.isEmpty ? 'Service Package' : c.serviceName,
                       id: invoiceId,
                       amount: amountStr,
                       date: dateStr,
+                      isPaymentPending: isPaymentPending,
                       onTap: () {
+                        if (isPaymentPending) {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Payment Pending'),
+                              content: const Text('This service has a pending payment. Please contact your manager or complete the payment to access your invoice.'),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text('OK', style: TextStyle(color: AppTheme.deepTeal)),
+                                ),
+                              ],
+                            ),
+                          );
+                          return;
+                        }
                         // Pass mock ServiceOrder to InvoiceScreen
                         Navigator.push(
                           context,
@@ -286,6 +314,7 @@ class SubscriptionsScreen extends ConsumerWidget {
     required String id,
     required String amount,
     required String date,
+    required bool isPaymentPending,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
@@ -341,19 +370,20 @@ class SubscriptionsScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Text(
-                      'Download',
+                      isPaymentPending ? 'Pending Payment' : 'Download',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: AppTheme.deepTeal.withOpacity(0.6),
+                        color: isPaymentPending ? Colors.red.withOpacity(0.8) : AppTheme.deepTeal.withOpacity(0.6),
                       ),
                     ),
                     const SizedBox(width: 4),
-                    Icon(
-                      LucideIcons.download,
-                      size: 12,
-                      color: AppTheme.deepTeal.withOpacity(0.6),
-                    ),
+                    if (!isPaymentPending)
+                      Icon(
+                        LucideIcons.download,
+                        size: 12,
+                        color: AppTheme.deepTeal.withOpacity(0.6),
+                      ),
                   ],
                 ),
               ],

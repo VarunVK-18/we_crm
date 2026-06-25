@@ -10,6 +10,7 @@ class SubscriptionModel {
   final String planTier;
   final String status;
   final DateTime expiryDate;
+  final String entityName;
 
   SubscriptionModel({
     required this.id,
@@ -17,7 +18,21 @@ class SubscriptionModel {
     required this.planTier,
     required this.status,
     required this.expiryDate,
+    required this.entityName,
   });
+
+  static String _parseEntityName(Map<String, dynamic> map) {
+    if (map['checklist_id'] is Map<String, dynamic>) {
+      final cl = map['checklist_id'];
+      if (cl['details'] != null && cl['details'] is Map) {
+         if (cl['details']['entityName'] != null) return cl['details']['entityName'].toString().trim();
+         if (cl['details']['companyName'] != null) return cl['details']['companyName'].toString().trim();
+      }
+      if (cl['entityName'] != null) return cl['entityName'].toString().trim();
+      if (cl['companyName'] != null) return cl['companyName'].toString().trim();
+    }
+    return '';
+  }
 
   factory SubscriptionModel.fromMap(Map<String, dynamic> map) {
     return SubscriptionModel(
@@ -26,6 +41,7 @@ class SubscriptionModel {
       planTier: map['plan_tier'] ?? 'Gold',
       status: map['status'] ?? 'Active',
       expiryDate: map['expiry_date'] != null ? DateTime.parse(map['expiry_date']) : DateTime.now().add(const Duration(days: 365)),
+      entityName: _parseEntityName(map),
     );
   }
 }

@@ -24,6 +24,8 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  
+  String _annualTurnover = 'Less than ₹20 Lakhs';
 
   // Document paths
   String? _coiPath;
@@ -63,6 +65,7 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
         setState(() {
         if (draft.containsKey('mcaUsername')) _usernameController.text = draft['mcaUsername'];
         if (draft.containsKey('mcaPassword')) _passwordController.text = draft['mcaPassword'];
+        if (draft.containsKey('annualTurnover')) _annualTurnover = draft['annualTurnover'];
 
         });
       }
@@ -74,6 +77,7 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
     final data = <String, dynamic>{
       'mcaUsername': _usernameController.text,
       'mcaPassword': _passwordController.text,
+      'annualTurnover': _annualTurnover,
 
     };
     await draftService.saveDraft(widget.order.id, 'McaComplianceFormScreen', data);
@@ -107,6 +111,7 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
 
       request.fields['mcaUsername'] = _usernameController.text;
       request.fields['mcaPassword'] = _passwordController.text;
+      request.fields['annualTurnover'] = _annualTurnover;
 
       request.files.add(await http.MultipartFile.fromPath('coi', _coiPath!));
       request.files.add(await http.MultipartFile.fromPath('pan', _panPath!));
@@ -225,6 +230,19 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
                   Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.corporateBlue)),
                   const SizedBox(height: 16),
                   
+                  _buildSectionContainer(
+                    title: 'Business Details',
+                    children: [
+                      _buildRadioGroup(
+                        'Expected Annual Turnover',
+                        '',
+                        ['Less than ₹20 Lakhs', 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs', 'Greater than ₹50 Lakhs'],
+                        _annualTurnover,
+                        (v) => setState(() => _annualTurnover = v),
+                      ),
+                    ],
+                  ),
+
                   _buildSectionContainer(
                     title: 'Credentials (Optional)',
                     children: [
@@ -360,6 +378,45 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
                 child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, ValueChanged<String> onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+          ],
+          const SizedBox(height: 8),
+          Column(
+            children: options.map((option) {
+              return RadioListTile<String>(
+                contentPadding: EdgeInsets.zero,
+                title: Text(option, style: const TextStyle(fontSize: 14)),
+                value: option,
+                groupValue: currentValue,
+                activeColor: AppTheme.corporateBlue,
+                onChanged: (value) {
+                  if (value != null) onChanged(value);
+                },
+              );
+            }).toList(),
           ),
         ],
       ),

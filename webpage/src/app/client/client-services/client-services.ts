@@ -244,7 +244,8 @@ export class ClientServicesComponent implements OnInit {
     requirements: '',
     numberOfDirectors: '',
     selectedEntity: '',
-    customEntity: ''
+    customEntity: '',
+    annualTurnover: 'Less than ₹20 Lakhs'
   };
   formSubmitting = signal<boolean>(false);
   formSuccess = signal<boolean>(false);
@@ -380,14 +381,18 @@ export class ClientServicesComponent implements OnInit {
   }
 
   getCompatibilityWarning(): { message: string, type: string, header: string } | null {
-    if (this.quoteForm.selectedEntity === 'Add New Entity...') return null;
+    const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...' 
+      ? this.quoteForm.customEntity 
+      : this.quoteForm.selectedEntity;
+      
+    if (!finalEntity) return null;
     
     const reqService = this.selectedService()?.title;
     if (!reqService) return null;
 
     const isDuplicate = this.myChecklists().some(c => 
       c.service_name === reqService && 
-      c.details?.entityName === this.quoteForm.selectedEntity && 
+      (c.details?.entityName === finalEntity || (!c.details?.entityName && finalEntity === 'Client')) && 
       c.status !== 'completed' && c.status !== 'complete'
     );
 
@@ -398,6 +403,8 @@ export class ClientServicesComponent implements OnInit {
         message: 'Service request already done wait for manager approval'
       };
     }
+
+    if (this.quoteForm.selectedEntity === 'Add New Entity...') return null;
 
     const entityType = this.entityTypesMap.get(this.quoteForm.selectedEntity) || 'Unknown';
     
@@ -488,10 +495,15 @@ export class ClientServicesComponent implements OnInit {
     this.formSuccess.set(false);
   }
 
-  showDirectorCount(): boolean {
-    const title = this.selectedService()?.title;
-    return title === 'Private Limited Incorporation' || title === 'LLP Incorporation';
-  }
+  showDirectorCount = computed(() => {
+    const s = this.selectedService()?.title || '';
+    return ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company'].includes(s);
+  });
+
+  showAnnualTurnover = computed(() => {
+    const s = this.selectedService()?.title || '';
+    return s === 'GST Compliance' || s === 'MCA Compliance';
+  });
 
   showEntityDropdown(): boolean {
     return true;
@@ -555,6 +567,10 @@ export class ClientServicesComponent implements OnInit {
       }
     }
 
+    if (this.showAnnualTurnover()) {
+      details['annualTurnover'] = this.quoteForm.annualTurnover;
+    }
+
     formData.append('details', JSON.stringify(details));
 
     this.api.post<any>(`users/profile/${uid}/subscribe-service`, formData).subscribe({
@@ -562,7 +578,8 @@ export class ClientServicesComponent implements OnInit {
         this.formSubmitting.set(false);
         if (res && res.success) {
           this.formSuccess.set(true);
-          this.quoteForm = { name: this.user()?.owner_name || '', phone: this.user()?.phone || '', email: this.user()?.email || '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '' };
+          this.quoteForm = { name: this.user()?.owner_name || '', phone: this.user()?.phone || '', email: this.user()?.email || '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '', annualTurnover: 'Less than ₹20 Lakhs' };
+          this.fetchEntities(); // Refetch checklists to update duplicate validation
         } else {
           alert('Failed to submit quote request.');
         }

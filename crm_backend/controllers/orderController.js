@@ -84,6 +84,18 @@ exports.updateOrder = async (req, res) => {
         }).select('_id');
 
         if (assignedEmployee) {
+          const updateFields = {
+            assigned_to: assignedEmployee._id,
+            stage: updateData.stage || 'workAssigned',
+            dealClosedAmount: updateData.dealClosedAmount || 0,
+            advanceAmountPaid: updateData.advanceAmountPaid || 0,
+            isGstApplicable: updateData.isGstApplicable !== undefined ? updateData.isGstApplicable : true
+          };
+          
+          if (updateData.recommended_plan) {
+             updateFields.recommended_plan = updateData.recommended_plan;
+          }
+
           // Update all non-completed checklists for this cleint + service
           const updated = await Checklist.updateMany(
             {
@@ -92,13 +104,7 @@ exports.updateOrder = async (req, res) => {
               status: { $ne: 'completed' }
             },
             {
-              $set: {
-                assigned_to: assignedEmployee._id,
-                stage: updateData.stage || 'workAssigned',
-                dealClosedAmount: updateData.dealClosedAmount || 0,
-                advanceAmountPaid: updateData.advanceAmountPaid || 0,
-                isGstApplicable: updateData.isGstApplicable !== undefined ? updateData.isGstApplicable : true
-              }
+              $set: updateFields
             }
           );
           console.log(`Cascaded assignment to ${updated.modifiedCount} checklist(s) for ${order.serviceType}`);

@@ -38,12 +38,16 @@ class ProfileScreen extends ConsumerWidget {
             surfaceTintColor: Colors.transparent,
             backgroundColor: AppTheme.backgroundLight,
             automaticallyImplyLeading: false,
-            title: Text(
-              'Profile',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.w700,
-                  ),
+            title: Padding(
+              padding: EdgeInsets.only(left: 12.r, top: 12.r),
+              child: Text(
+                'My Profile',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w800,
+                      height: 1.0,
+                    ),
+              ),
             ),
             centerTitle: false,
             actions: [
