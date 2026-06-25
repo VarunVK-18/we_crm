@@ -452,16 +452,16 @@
   flex: 2.5;
   min-width: 0;
   position: relative;
-  background: linear-gradient(135deg, #F5F7FA, #F9FAFB);
+  background: linear-gradient(135deg, #bae9bf, #aad7b0);
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(124, 58, 237, 0.25), transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(56, 189, 248, 0.25), transparent 50%),
-    radial-gradient(rgba(0, 200, 255, 0.138) 1.5px, transparent 1.5px),
-    linear-gradient(135deg, #F5F7FA, #F9FAFB);
+    radial-gradient(circle at 15% 50%, rgba(31, 40, 35, 0.08), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.3), transparent 50%),
+    radial-gradient(rgba(31, 40, 35, 0.06) 1.5px, transparent 1.5px),
+    linear-gradient(135deg, #bae9bf, #aad7b0);
   background-size: 100% 100%, 100% 100%, 24px 24px, 100% 100%;
   border-radius: 1.25rem;
   padding: 32px 48px;
-  color: var(--palette-light);
+  color: #1f2823;
   overflow: hidden;
 }
 
@@ -524,8 +524,8 @@
 }
 
 .slide-light {
-  background-color: #efefff;
-  color: #000000;
+  background-color: #1f2823;
+  color: #ffffff;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -772,13 +772,10 @@
   margin-bottom: 8px;
 }
 
-.slide-light .slide-progress-bar {
-  background: rgba(0, 0, 0, 0.08);
-}
 
 .slide-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #a78bfa, #f472b6);
+  background: linear-gradient(90deg, #ffffff, #bae9bf);
   border-radius: 4px;
   transition: width 0.4s ease;
   box-shadow: 0 0 8px rgba(244, 114, 182, 0.5);
@@ -847,7 +844,7 @@
   font-weight: 800;
   line-height: 1.15;
   margin: 0 0 16px 0;
-  color: #000000;
+  color: #1f2823;
 }
 
 .ho-hero-subtitle {
@@ -856,7 +853,7 @@
   line-height: 1.6;
   opacity: 0.9;
   margin: 0 0 16px 0;
-  color: #404040;
+  color: #1f2823;
 }
 
 /* Decorative waves */
