@@ -214,6 +214,10 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/client/tools/tds-calc']);
   }
 
+  goToTrademarkFinder() {
+    this.router.navigate(['/client/tools/trademark-finder']);
+  }
+
   downloadComplianceCalendar() {
     this.api.get<any>('calendar/latest').subscribe({
       next: (res) => {

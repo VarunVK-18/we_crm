@@ -1,0 +1,61 @@
+<div class="tool-layout">
+  <div class="tool-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Dashboard
+      </button>
+      <div class="title-row">
+        <h1 class="tool-title">TradeMark Classes Finder</h1>
+        <p class="tool-subtitle">Search and find the correct TradeMark Class for your goods or services.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-container">
+    <div class="search-box">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search by description or class (e.g. 'Software' or '9')">
+    </div>
+
+    <div class="results-container">
+      <table class="nic-table">
+        <thead>
+          <tr>
+            <th>Class</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cls of filteredClasses(); track cls.classCode) {
+            <tr>
+              <td class="code-cell">
+                <span class="code-badge">Class {{ cls.classCode }}</span>
+              </td>
+              <td>
+                <span class="type-badge" 
+                      [class.goods-type]="cls.type === 'Goods'"
+                      [class.services-type]="cls.type === 'Services'">
+                  {{ cls.type }}
+                </span>
+              </td>
+              <td class="desc-cell">{{ cls.description }}</td>
+            </tr>
+          }
+          @if (filteredClasses().length === 0) {
+            <tr>
+              <td colspan="3" class="empty-state">
+                No TradeMark Classes found matching your search.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <button class="fab-scroll-top" [class.show]="showScrollTop()" (click)="scrollToTop()" aria-label="Scroll to top">
+    <span class="material-symbols-outlined">arrow_upward</span>
+  </button>
+</div>

@@ -17,6 +17,7 @@ import { ClientDocumentHub } from './client/client-document-hub/client-document-
 import { GstCalc } from './client/tools/gst-calc/gst-calc';
 import { TdsCalc } from './client/tools/tds-calc/tds-calc';
 import { NicFinder } from './client/tools/nic-finder/nic-finder';
+import { TrademarkFinder } from './client/tools/trademark-finder/trademark-finder';
 import { IncorpForm } from './client/forms/incorp-form/incorp-form';
 import { LlpForm } from './client/forms/llp-form/llp-form';
 import { MsmeForm } from './client/forms/msme-form/msme-form';
@@ -114,6 +115,7 @@ export const routes: Routes = [
       { path: 'tools/gst-calc', component: GstCalc },
       { path: 'tools/tds-calc', component: TdsCalc },
       { path: 'tools/nic-finder', component: NicFinder },
+      { path: 'tools/trademark-finder', component: TrademarkFinder },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
