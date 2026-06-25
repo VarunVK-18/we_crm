@@ -17,9 +17,7 @@
 
 .tool-header {
   background-color: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 32px 0;
-  margin-bottom: 32px;
+  padding: 32px 0 0px;
 }
 
 .header-container {
@@ -47,17 +45,36 @@
   color: var(--primary);
 }
 
-.title-row h1 {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0 0 8px 0;
-}
-
-.title-row p {
+.tool-subtitle {
   color: var(--text-secondary);
   font-size: 15px;
   margin: 0;
+}
+
+.logo-wrapper {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.logo-text {
+  font-size: 60px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
+}
+
+.logo-subtitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 8px;
+  display: block;
 }
 
 .tool-container {
@@ -68,33 +85,44 @@
 
 .search-box {
   position: relative;
-  margin-bottom: 24px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 30px auto;
+  display: flex;
+  align-items: center;
 }
 
 .search-icon {
   position: absolute;
-  left: 16px;
+  left: 20px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-secondary);
+  color: #9aa0a6;
   font-size: 20px;
+  pointer-events: none;
 }
 
 .search-box input {
   width: 100%;
-  padding: 16px 16px 16px 48px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  height: 56px;
+  padding: 0 24px 0 56px;
   font-size: 16px;
-  background-color: var(--surface);
   color: var(--text-primary);
+  background-color: #ffffff;
+  border: 1px solid #dfe1e5;
+  border-radius: 28px;
+  outline: none;
+  box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
   transition: all 0.2s ease;
 }
 
+.search-box input:hover {
+  box-shadow: 0 1px 8px rgba(32, 33, 36, 0.15);
+}
+
 .search-box input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+  border-color: rgba(223, 225, 229, 0);
+  box-shadow: 0 1px 10px rgba(32, 33, 36, 0.2);
 }
 
 .results-container {
