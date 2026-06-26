@@ -103,7 +103,10 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
         if (draft.containsKey('month')) _filingMonth = draft['month'];
         if (draft.containsKey('quarter')) _filingQuarter = draft['quarter'];
 
-        });
+                if (draft.containsKey('salesReportPath')) _salesReportPath = draft['salesReportPath'];
+        if (draft.containsKey('purchaseReportPath')) _purchaseReportPath = draft['purchaseReportPath'];
+        if (draft.containsKey('gstInvoicesPath')) _gstInvoicesPath = draft['gstInvoicesPath'];
+});
       }
     }
   }
@@ -119,7 +122,10 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
       'month': _filingMonth ?? '',
       'quarter': _filingQuarter ?? '',
 
-    };
+          'salesReportPath': _salesReportPath,
+      'purchaseReportPath': _purchaseReportPath,
+      'gstInvoicesPath': _gstInvoicesPath,
+};
     await draftService.saveDraft(widget.order.id, 'GstFilingFormScreen', data);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -210,9 +216,16 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Are You Sure To Exit ?'),
-          content: const Text('Any unsaved progress will be lost.'),
+          title: const Text('Save as Draft?'),
+          content: const Text('Do you want to save your progress before exiting?'),
           actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Discard',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              ),
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
@@ -226,9 +239,10 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
                 if (context.mounted) Navigator.of(context).pop(true);
               },
               child: Text(
-                'OK',
+                'Save as Draft',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color.fromARGB(255, 6, 6, 6),
+                      color: AppTheme.corporateBlue,
+                      fontWeight: FontWeight.bold,
                     ),
               ),
             ),
@@ -250,13 +264,7 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveDraft,
-            child: const Text('Save Draft', style: TextStyle(color: AppTheme.corporateBlue, fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(width: 8),
-        ],
+        actions: [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 

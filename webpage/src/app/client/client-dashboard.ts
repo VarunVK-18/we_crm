@@ -42,6 +42,9 @@ export class ClientDashboard implements OnInit, OnDestroy {
   // Ticket stats
   pendingTicketsCount = signal(0);
 
+  // Banners
+  banners = signal<any[]>([]);
+
   // Entity filter (synced with topbar switcher via localStorage + custom event)
   selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
   private entityChangeHandler = (e: Event) => {
@@ -94,7 +97,8 @@ export class ClientDashboard implements OnInit, OnDestroy {
   currentSlideIndex = signal<number>(0);
   sliderInterval: any;
   totalSlides = computed(() => {
-    return 1 + (this.filteredActiveOrders().length === 0 ? 1 : this.filteredActiveOrders().length);
+    const defaultBanners = this.banners().length > 0 ? this.banners().length : 1;
+    return defaultBanners + this.filteredActiveOrders().length;
   });
 
   constructor(private router: Router, public api: Api) {}
@@ -112,6 +116,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
     }
     this.user.set(parsedUser);
     
+    this.fetchBanners();
     this.fetchClientManager();
     this.fetchOrders();
     this.fetchTickets();
@@ -133,6 +138,17 @@ export class ClientDashboard implements OnInit, OnDestroy {
   setSlide(index: number) {
     this.currentSlideIndex.set(index);
     this.startSlider(); // reset timer
+  }
+
+  fetchBanners() {
+    this.api.get<any>('banners').subscribe({
+      next: (res) => {
+        if (res.success && res.banners) {
+          this.banners.set(res.banners);
+        }
+      },
+      error: (err) => console.error('Failed to load banners:', err)
+    });
   }
 
   fetchClientManager() {

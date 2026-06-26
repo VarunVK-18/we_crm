@@ -8,7 +8,11 @@ import '../../models/checklist_model.dart';
 import '../../models/order_model.dart';
 import '../../providers/subscription_provider.dart';
 import '../../providers/compliance_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../orders/invoice_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 class SubscriptionsScreen extends ConsumerWidget {
   const SubscriptionsScreen({super.key});
@@ -18,6 +22,8 @@ class SubscriptionsScreen extends ConsumerWidget {
     final checklistsAsync = ref.watch(myChecklistsProvider);
     final subscriptionsAsync = ref.watch(mySubscriptionsProvider);
     final selectedEntity = ref.watch(selectedEntityProvider);
+    final user = ref.watch(userProfileProvider).value;
+    final managerPhone = user?.manager?['phone'] as String? ?? '+918000000000';
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -165,12 +171,22 @@ class SubscriptionsScreen extends ConsumerWidget {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: const Text('Payment Pending'),
-                              content: const Text('This service has a pending payment. Please contact your manager or complete the payment to access your invoice.'),
+                              title: Text('Payment Pending', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
+                              content: Text('This service has a pending payment. Please contact your manager or complete the payment to access your invoice.', style: GoogleFonts.outfit(color: Colors.grey.shade700)),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
-                                  child: const Text('OK', style: TextStyle(color: AppTheme.deepTeal)),
+                                  child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.grey, fontWeight: FontWeight.bold)),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () async {
+                                    final url = Uri.parse('tel:$managerPhone');
+                                    if (await canLaunchUrl(url)) {
+                                      await launchUrl(url);
+                                    }
+                                  },
+                                  icon: const HugeIcon(icon: HugeIcons.strokeRoundedCallOutgoing03, color: AppTheme.deepTeal, size: 18),
+                                  label: Text('Call Manager', style: GoogleFonts.outfit(color: AppTheme.deepTeal, fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
@@ -218,6 +234,21 @@ class SubscriptionsScreen extends ConsumerWidget {
   Widget _buildPlanCard(String planName, String status, DateTime expiryDate) {
     final expiryStr = DateFormat('dd MMM yyyy').format(expiryDate);
     
+    String planLabel = 'PREMIUM COMPLIANCE';
+    var planIcon = HugeIcons.strokeRoundedCrown03;
+    
+    final lowerPlan = planName.toLowerCase();
+    if (lowerPlan.contains('startup')) {
+      planLabel = 'BASIC COMPLIANCE';
+      planIcon = HugeIcons.strokeRoundedAward01;
+    } else if (lowerPlan.contains('corporate')) {
+      planLabel = 'ELITE COMPLIANCE';
+      planIcon = HugeIcons.strokeRoundedCrown03;
+    } else {
+      planLabel = 'PREMIUM COMPLIANCE';
+      planIcon = HugeIcons.strokeRoundedCrown03;
+    }
+    
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
@@ -246,16 +277,16 @@ class SubscriptionsScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'PREMIUM COMPLIANCE',
-                style: TextStyle(
+              Text(
+                planLabel,
+                style: const TextStyle(
                   color: Colors.white,
                   letterSpacing: 1.5,
                   fontSize: 12,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              Icon(LucideIcons.crown, color: Colors.amber.shade400, size: 24),
+              HugeIcon(icon: planIcon, color: Colors.amber.shade400, size: 24),
             ],
           ),
           const SizedBox(height: 32),

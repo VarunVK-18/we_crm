@@ -24,6 +24,7 @@ import { StaffCompliance } from './staff-compliance/staff-compliance';
 import { EmployeeProfile } from './employee-profile/employee-profile';
 import { ServiceTrackComponent } from './service-track/service-track';
 import { StaffChatComponent } from './staff-chat/staff-chat';
+import { BannerManagement } from './banner-management/banner-management';
 
 @Component({
   selector: 'app-dashboard',
@@ -47,7 +48,8 @@ import { StaffChatComponent } from './staff-chat/staff-chat';
     StaffCompliance,
     EmployeeProfile,
     ServiceTrackComponent,
-    StaffChatComponent
+    StaffChatComponent,
+    BannerManagement
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -285,6 +287,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'requests': return 'New Requests';
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';
+      case 'banners': return 'Banner Management';
       case 'staff-compliance': return 'Staff Compliance Radar';
       default: return 'Dashboard';
     }

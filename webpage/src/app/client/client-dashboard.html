@@ -89,7 +89,7 @@
     <!-- Promotional Slider (1.5/4 width) -->
     <div class="ho-slider-container">
       <div class="ho-slider-track" [style.transform]="'translateX(-' + (currentSlideIndex() * 100) + '%)'">
-        <!-- Slide 1: Get Started -->
+        <!-- Default Slide 1: Get Started (always show first) -->
         <div class="ho-slide slide-purple">
           <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" fill="#ffffff"
             class="slide-bg-icon bi bi-rocket-takeoff" viewBox="0 0 16 16">
@@ -127,6 +127,31 @@
             </button>
           </div>
         </div>
+
+        <!-- Dynamic Banners -->
+        @for (banner of banners(); track banner._id) {
+        <div class="ho-slide slide-theme-{{ banner.theme || 'light' }}">
+          <div class="slide-content col-layout refer-layout" style="z-index: 1; position: relative;">
+            <div class="refer-header">
+              <div class="slide-icon-box register-icon-box" style="padding: 0; overflow: hidden;">
+                <img [src]="api.getFileUrl(banner.imageUrl)" style="width: 100%; height: 100%; object-fit: cover;" alt="Banner Icon">
+              </div>
+              <div class="refer-header-text">
+                <span class="register-badge">LATEST UPDATE</span>
+                <h3 class="register-title">{{ banner.title }}</h3>
+              </div>
+            </div>
+            <div class="refer-body register-body">
+              <p>{{ banner.subtitle || 'Check out the latest updates and offers from Wealth Empires.' }}</p>
+            </div>
+            <a *ngIf="banner.targetUrl" [href]="banner.targetUrl" target="_blank" class="register-btn" style="text-decoration: none;">
+              {{ banner.buttonText || 'Learn More' }}
+              <span class="material-symbols-outlined">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+        }
+
 
         <!-- Slide 2: Active Orders -->
         @for (order of filteredActiveOrders(); track order._id) {

@@ -804,10 +804,10 @@ class _RequestedDocumentsSection extends ConsumerStatefulWidget {
 }
 
 class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDocumentsSection> {
-  final Set<String> _uploadingDocs = {};
-  final Set<String> _uploadedDocs = {};
+  final Set<int> _uploadingDocs = {};
+  final Set<int> _uploadedDocs = {};
 
-  Future<void> _uploadDocument(String docName) async {
+  Future<void> _uploadDocument(String docName, int index) async {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
@@ -932,7 +932,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
         if (shouldUpload != true) return;
 
         setState(() {
-          _uploadingDocs.add(docName);
+          _uploadingDocs.add(index);
         });
 
         final uri =
@@ -940,6 +940,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
 
         final request = http.MultipartRequest('POST', uri);
         request.fields['docName'] = docName;
+        request.fields['docIndex'] = index.toString();
         request.files.add(await http.MultipartFile.fromPath('file', filePath));
 
         final uid = ref.read(authStateProvider).value?.uid;
@@ -954,8 +955,8 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
 
         if (response.statusCode == 200) {
           setState(() {
-            _uploadingDocs.remove(docName);
-            _uploadedDocs.add(docName);
+            _uploadingDocs.remove(index);
+            _uploadedDocs.add(index);
           });
           
           showDialog(
@@ -987,7 +988,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
           ref.invalidate(serviceOrdersProvider);
         } else {
           setState(() {
-            _uploadingDocs.remove(docName);
+            _uploadingDocs.remove(index);
           });
           debugPrint("Upload failed: ${response.statusCode} - $respStr");
           ScaffoldMessenger.of(context).showSnackBar(
@@ -998,7 +999,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _uploadingDocs.remove(docName);
+        _uploadingDocs.remove(index);
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e')),
@@ -1023,9 +1024,14 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
         const SizedBox(height: 16),
         ...widget.order.requestedDocuments
             .where((doc) => !doc.name.startsWith('director_'))
-            .map((doc) {
-          final isLocallyUploaded = doc.isUploaded || _uploadedDocs.contains(doc.name);
-          final isUploading = _uploadingDocs.contains(doc.name);
+            .toList()
+            .asMap()
+            .entries
+            .map((entry) {
+          final index = entry.key;
+          final doc = entry.value;
+          final isLocallyUploaded = doc.isUploaded || _uploadedDocs.contains(index);
+          final isUploading = _uploadingDocs.contains(index);
 
           return Container(
             margin: const EdgeInsets.only(bottom: 12),
@@ -1035,7 +1041,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.03),
+                  color: Colors.black.withOpacity(0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 3),
                 ),
@@ -1111,7 +1117,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
                           child: CircularProgressIndicator(strokeWidth: 3),
                         )
                       : FilledButton.icon(
-                          onPressed: () => _uploadDocument(doc.name),
+                          onPressed: () => _uploadDocument(doc.name, index),
                           icon: const Icon(LucideIcons.uploadCloud, size: 14,color: Colors.white,),
                           label: const Text('Upload',
                               style: TextStyle(

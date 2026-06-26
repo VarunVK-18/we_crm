@@ -86,7 +86,11 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
         if (draft.containsKey('solution')) _solutionCtrl.text = draft['solution'];
         if (draft.containsKey('uniqueness')) _uniquenessCtrl.text = draft['uniqueness'];
         if (draft.containsKey('revenue')) _revenueCtrl.text = draft['revenue'];
-      });
+              if (draft.containsKey('incorpCertPath')) _incorpCertPath = draft['incorpCertPath'];
+        if (draft.containsKey('panPath')) _panPath = draft['panPath'];
+        if (draft.containsKey('logoPath')) _logoPath = draft['logoPath'];
+        if (draft.containsKey('pitchDeckPath')) _pitchDeckPath = draft['pitchDeckPath'];
+});
     }
   }
 
@@ -110,7 +114,11 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
       'solution': _solutionCtrl.text,
       'uniqueness': _uniquenessCtrl.text,
       'revenue': _revenueCtrl.text,
-    };
+          'incorpCertPath': _incorpCertPath,
+      'panPath': _panPath,
+      'logoPath': _logoPath,
+      'pitchDeckPath': _pitchDeckPath,
+};
     await draftService.saveDraft(widget.order.id, 'DpiitFormScreen', data);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -291,9 +299,16 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Are You Sure To Exit ?'),
-          content: const Text('Any unsaved progress will be lost.'),
+          title: const Text('Save as Draft?'),
+          content: const Text('Do you want to save your progress before exiting?'),
           actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Discard',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              ),
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
@@ -307,9 +322,10 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
                 if (context.mounted) Navigator.of(context).pop(true);
               },
               child: Text(
-                'OK',
+                'Save as Draft',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color.fromARGB(255, 6, 6, 6),
+                      color: AppTheme.corporateBlue,
+                      fontWeight: FontWeight.bold,
                     ),
               ),
             ),

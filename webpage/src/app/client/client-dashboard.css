@@ -529,6 +529,37 @@
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
+/* Banner Custom Themes */
+.slide-theme-light {
+  background-color: #ffffff;
+  color: var(--palette-dark);
+}
+
+.slide-theme-dark {
+  background-color: #0f172a;
+  color: #ffffff;
+}
+
+.slide-theme-purple {
+  background-color: #8b5cf6;
+  color: #ffffff;
+}
+
+.slide-theme-emerald {
+  background-color: #10b981;
+  color: #ffffff;
+}
+
+.slide-theme-amber {
+  background-color: #f59e0b;
+  color: #1f2937;
+}
+
+.slide-theme-rose {
+  background-color: #f43f5e;
+  color: #ffffff;
+}
+
 .register-icon-box {
   background: rgba(0, 0, 0, 0.06);
   border-radius: 14px;
@@ -544,14 +575,14 @@
 }
 
 .register-title {
-  color: #000 !important;
+  color: inherit !important;
   font-size: 20px;
   font-weight: 800;
   margin: 0;
 }
 
 .register-body p {
-  color: #000 !important;
+  color: inherit !important;
   font-size: 14px;
   line-height: 1.5;
   margin: 0;
@@ -577,6 +608,21 @@
 .register-btn:hover {
   background-color: #111827;
   transform: translateY(-2px);
+}
+
+.slide-theme-dark .register-btn, 
+.slide-theme-purple .register-btn, 
+.slide-theme-emerald .register-btn, 
+.slide-theme-rose .register-btn {
+  background-color: #ffffff;
+  color: #1f2937;
+}
+
+.slide-theme-dark .register-btn:hover, 
+.slide-theme-purple .register-btn:hover, 
+.slide-theme-emerald .register-btn:hover, 
+.slide-theme-rose .register-btn:hover {
+  background-color: #f8fafc;
 }
 
 .register-btn .material-symbols-outlined {

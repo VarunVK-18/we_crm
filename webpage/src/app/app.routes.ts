@@ -71,6 +71,7 @@ export const routes: Routes = [
       { path: 'employees', component: EmployeesTeam },
       { path: 'settings', component: SystemSettings },
       { path: 'staff-compliance', component: StaffCompliance },
+      { path: 'banners', loadComponent: () => import('./dashboard/banner-management/banner-management').then(m => m.BannerManagement) },
       { path: '', redirectTo: 'overview', pathMatch: 'full' }
     ]
   },

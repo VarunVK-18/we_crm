@@ -90,7 +90,14 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
         if (draft.containsKey('emailId')) _emailController.text = draft['emailId'];
         if (draft.containsKey('turnoverType')) _turnoverType = draft['turnoverType'];
 
-        });
+                if (draft.containsKey('addressProofPath')) _addressProofPath = draft['addressProofPath'];
+        if (draft.containsKey('incorpCertPath')) _incorpCertPath = draft['incorpCertPath'];
+        if (draft.containsKey('panCardPath')) _panCardPath = draft['panCardPath'];
+        if (draft.containsKey('gstCertPath')) _gstCertPath = draft['gstCertPath'];
+        if (draft.containsKey('auditedFinancialsPath')) _auditedFinancialsPath = draft['auditedFinancialsPath'];
+        if (draft.containsKey('moaAoaPath')) _moaAoaPath = draft['moaAoaPath'];
+        if (draft.containsKey('boardResolutionPath')) _boardResolutionPath = draft['boardResolutionPath'];
+});
       }
     }
   }
@@ -104,7 +111,14 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
       'emailId': _emailController.text,
       'turnoverType': _turnoverType,
 
-    };
+          'addressProofPath': _addressProofPath,
+      'incorpCertPath': _incorpCertPath,
+      'panCardPath': _panCardPath,
+      'gstCertPath': _gstCertPath,
+      'auditedFinancialsPath': _auditedFinancialsPath,
+      'moaAoaPath': _moaAoaPath,
+      'boardResolutionPath': _boardResolutionPath,
+};
     await draftService.saveDraft(widget.order.id, 'LeiFormScreen', data);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -199,9 +213,16 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Are You Sure To Exit ?'),
-          content: const Text('Any unsaved progress will be lost.'),
+          title: const Text('Save as Draft?'),
+          content: const Text('Do you want to save your progress before exiting?'),
           actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Discard',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              ),
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
@@ -215,9 +236,10 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                 if (context.mounted) Navigator.of(context).pop(true);
               },
               child: Text(
-                'OK',
+                'Save as Draft',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color.fromARGB(255, 6, 6, 6),
+                      color: AppTheme.corporateBlue,
+                      fontWeight: FontWeight.bold,
                     ),
               ),
             ),
@@ -239,13 +261,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveDraft,
-            child: const Text('Save Draft', style: TextStyle(color: AppTheme.corporateBlue, fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(width: 8),
-        ],
+        actions: [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 

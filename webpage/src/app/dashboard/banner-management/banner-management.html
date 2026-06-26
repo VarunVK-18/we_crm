@@ -1,0 +1,80 @@
+<div class="banner-mgmt-container">
+  <div class="header">
+    <h2>Banner Management</h2>
+    <p>Upload and manage dynamic banners for the client dashboards (App & Web).</p>
+  </div>
+
+  <div class="card create-banner-card">
+    <h3>Create New Banner</h3>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Banner Title</label>
+        <input type="text" name="newBannerTitle" [(ngModel)]="newBannerTitle" placeholder="e.g. Summer Promo">
+      </div>
+      <div class="form-group">
+        <label>Banner Subtitle (Optional)</label>
+        <input type="text" name="newBannerSubtitle" [(ngModel)]="newBannerSubtitle" placeholder="e.g. Check out the latest updates">
+      </div>
+      <div class="form-group">
+        <label>Button Text</label>
+        <input type="text" name="newBannerButtonText" [(ngModel)]="newBannerButtonText" placeholder="e.g. Learn More">
+      </div>
+      <div class="form-group">
+        <label>Theme Color</label>
+        <div class="color-palette">
+          <div class="color-swatch" [class.selected]="newBannerTheme === 'light'" (click)="newBannerTheme = 'light'" style="background-color: #ffffff; border: 1px solid #e2e8f0;" title="Light (White)"></div>
+          <div class="color-swatch" [class.selected]="newBannerTheme === 'dark'" (click)="newBannerTheme = 'dark'" style="background-color: #0f172a;" title="Dark Slate"></div>
+          <div class="color-swatch" [class.selected]="newBannerTheme === 'purple'" (click)="newBannerTheme = 'purple'" style="background-color: #8b5cf6;" title="Royal Purple"></div>
+          <div class="color-swatch" [class.selected]="newBannerTheme === 'emerald'" (click)="newBannerTheme = 'emerald'" style="background-color: #10b981;" title="Emerald Green"></div>
+          <div class="color-swatch" [class.selected]="newBannerTheme === 'amber'" (click)="newBannerTheme = 'amber'" style="background-color: #f59e0b;" title="Warm Amber"></div>
+          <div class="color-swatch" [class.selected]="newBannerTheme === 'rose'" (click)="newBannerTheme = 'rose'" style="background-color: #f43f5e;" title="Soft Rose"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Target URL (Optional)</label>
+        <input type="text" name="newBannerTargetUrl" [(ngModel)]="newBannerTargetUrl" placeholder="e.g. https://example.com/promo">
+      </div>
+      <div class="form-group">
+        <label>Banner Image (Max 10MB)</label>
+        <input type="file" name="newBannerImage" accept="image/*" (change)="onFileSelected($event)">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" [disabled]="isUploading" (click)="createBanner()">
+        {{ isUploading ? 'Uploading...' : 'Publish Banner' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="card banners-list-card">
+    <h3>Existing Banners</h3>
+    <div *ngIf="isLoading" class="loading">Loading banners...</div>
+    <div *ngIf="error" class="error">{{ error }}</div>
+    
+    <div class="banners-grid" *ngIf="!isLoading && banners.length > 0">
+      <div class="banner-item" *ngFor="let banner of banners">
+        <div class="banner-img-wrap">
+          <img [src]="api.getFileUrl(banner.imageUrl)" alt="Banner Image">
+          <span class="status-badge" [class.active]="banner.isActive">
+            {{ banner.isActive ? 'Active' : 'Hidden' }}
+          </span>
+        </div>
+        <div class="banner-details">
+          <h4>{{ banner.title }}</h4>
+          <p *ngIf="banner.subtitle" style="font-size: 13px; color: #64748b; margin: 4px 0;">{{ banner.subtitle }}</p>
+          <p style="font-size: 12px; margin: 4px 0;"><span style="font-weight: 600;">Theme:</span> {{ banner.theme || 'light' }} | <span style="font-weight: 600;">Button:</span> {{ banner.buttonText || 'Learn More' }}</p>
+          <p class="target-url" *ngIf="banner.targetUrl">Link: <a [href]="banner.targetUrl" target="_blank">{{ banner.targetUrl }}</a></p>
+          <div class="banner-actions">
+            <button class="btn btn-toggle" (click)="toggleActive(banner)">
+              {{ banner.isActive ? 'Hide' : 'Show' }}
+            </button>
+            <button class="btn btn-danger" (click)="deleteBanner(banner)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div *ngIf="!isLoading && banners.length === 0" class="no-data">
+      No banners found. Create one above!
+    </div>
+  </div>
+</div>

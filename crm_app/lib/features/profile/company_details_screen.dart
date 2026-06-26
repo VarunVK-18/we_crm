@@ -6,6 +6,7 @@ import '../../core/theme/app_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class _EntityExpandableCard extends StatefulWidget {
   final ClientEntity entity;
@@ -18,6 +19,10 @@ class _EntityExpandableCard extends StatefulWidget {
 class _EntityExpandableCardState extends State<_EntityExpandableCard> {
   bool _isExpanded = true;
   int _selectedTabIndex = 0;
+  
+  bool _isTrademarkExpanded = false;
+  bool _isPatentExpanded = false;
+  bool _isCopyrightExpanded = false;
 
   void _copyToClipboard(BuildContext context, String label, String text) {
     if (text.isEmpty) return;
@@ -31,7 +36,7 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
     );
   }
 
-  Widget _buildDetailCard(String label, String value, BuildContext context) {
+  Widget _buildDetailCard(String label, String value, BuildContext context, {bool isTrackable = false, bool showCopy = true}) {
     if (value.isEmpty) return const SizedBox.shrink();
 
     return Container(
@@ -75,11 +80,28 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => _copyToClipboard(context, label, value),
-            icon: const Icon(Icons.copy_rounded, color: Color(0xFF312E81), size: 20),
-            tooltip: 'Copy $label',
-          )
+          if (isTrackable)
+            TextButton.icon(
+              onPressed: () async {
+                final url = Uri.parse('https://ipindia.gov.in/');
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url, mode: LaunchMode.externalApplication);
+                }
+              },
+              icon: const Icon(Icons.track_changes_rounded, size: 16, color: AppTheme.deepTeal),
+              label: Text('Track', style: GoogleFonts.outfit(color: AppTheme.deepTeal, fontSize: 12)),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                backgroundColor: AppTheme.deepTeal.withOpacity(0.1),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+            )
+          else if (showCopy)
+            IconButton(
+              onPressed: () => _copyToClipboard(context, label, value),
+              icon: const Icon(Icons.copy_rounded, color: Color(0xFF312E81), size: 20),
+              tooltip: 'Copy $label',
+            )
         ],
       ),
     );
@@ -93,8 +115,8 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
         _buildDetailCard('Incorporation Date', widget.entity.incorporationDate != null ? DateFormat('dd MMM yyyy').format(widget.entity.incorporationDate!) : '', context),
         _buildDetailCard('PAN (Permanent Account Number)', widget.entity.pan, context),
         _buildDetailCard('TAN (Tax Deduction and Collection Account Number)', widget.entity.tan, context),
-        _buildDetailCard('Certificate of Incorporation (COI)', widget.entity.coi, context),
-        _buildDetailCard('Digital Signature Certificate (DSC)', widget.entity.dsc, context),
+        _buildDetailCard('Certificate of Incorporation (COI)', widget.entity.coi, context, showCopy: false),
+        _buildDetailCard('Digital Signature Certificate (DSC)', widget.entity.dsc, context, showCopy: false),
         if (widget.entity.cin.isEmpty && widget.entity.pan.isEmpty && widget.entity.tan.isEmpty && widget.entity.coi.isEmpty && widget.entity.dsc.isEmpty && widget.entity.incorporationDate == null)
           Center(
             child: Padding(
@@ -114,29 +136,74 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.entity.trademarkApplicationNumber.isNotEmpty || widget.entity.trademarkStatus.isNotEmpty) ...[
-          Text('Trademark', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-          const SizedBox(height: 12),
-          _buildDetailCard('Application Number', widget.entity.trademarkApplicationNumber, context),
-          _buildDetailCard('Status', widget.entity.trademarkStatus, context),
-          _buildDetailCard('Certificate', widget.entity.trademarkCertificate, context),
-          const SizedBox(height: 24),
+          InkWell(
+            onTap: () => setState(() => _isTrademarkExpanded = !_isTrademarkExpanded),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Trademark', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                  Icon(_isTrademarkExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
+                ],
+              ),
+            ),
+          ),
+          if (_isTrademarkExpanded) ...[
+            const SizedBox(height: 12),
+            _buildDetailCard('Trademark Number', widget.entity.trademarkApplicationNumber, context),
+            _buildDetailCard('Status', widget.entity.trademarkStatus, context, isTrackable: true),
+            _buildDetailCard('Certificate', widget.entity.trademarkCertificate, context, showCopy: false),
+          ],
+          const SizedBox(height: 16),
         ],
         
         if (widget.entity.patentApplicationNumber.isNotEmpty || widget.entity.patentStatus.isNotEmpty) ...[
-          Text('Patent', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-          const SizedBox(height: 12),
-          _buildDetailCard('Application Number', widget.entity.patentApplicationNumber, context),
-          _buildDetailCard('Status', widget.entity.patentStatus, context),
-          _buildDetailCard('Patent Number', widget.entity.patentNumber, context),
-          const SizedBox(height: 24),
+          InkWell(
+            onTap: () => setState(() => _isPatentExpanded = !_isPatentExpanded),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Patent', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                  Icon(_isPatentExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
+                ],
+              ),
+            ),
+          ),
+          if (_isPatentExpanded) ...[
+            const SizedBox(height: 12),
+            _buildDetailCard('Patent Number', widget.entity.patentApplicationNumber, context),
+            _buildDetailCard('Status', widget.entity.patentStatus, context, isTrackable: true),
+            _buildDetailCard('Patent Number', widget.entity.patentNumber, context),
+          ],
+          const SizedBox(height: 16),
         ],
         
         if (widget.entity.copyrightRegistrationNumber.isNotEmpty) ...[
-          Text('Copyright', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-          const SizedBox(height: 12),
-          _buildDetailCard('Registration Number', widget.entity.copyrightRegistrationNumber, context),
-          _buildDetailCard('Certificate', widget.entity.copyrightCertificate, context),
-          const SizedBox(height: 24),
+          InkWell(
+            onTap: () => setState(() => _isCopyrightExpanded = !_isCopyrightExpanded),
+            borderRadius: BorderRadius.circular(8),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Copyright', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                  Icon(_isCopyrightExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
+                ],
+              ),
+            ),
+          ),
+          if (_isCopyrightExpanded) ...[
+            const SizedBox(height: 12),
+            _buildDetailCard('Registration Number', widget.entity.copyrightRegistrationNumber, context),
+            _buildDetailCard('Certificate', widget.entity.copyrightCertificate, context, showCopy: false),
+          ],
+          const SizedBox(height: 16),
         ],
         
         if (widget.entity.trademarkApplicationNumber.isEmpty && 
@@ -198,69 +265,126 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
           
           if (_isExpanded) ...[
             // Tabs
-            Row(
+            Stack(
               children: [
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _selectedTabIndex = 0),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: _selectedTabIndex == 0 ? AppTheme.deepTeal : Colors.grey.shade200,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Incorporation Details',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: _selectedTabIndex == 0 ? AppTheme.deepTeal : Colors.grey[500],
-                          ),
-                        ),
-                      ),
-                    ),
+                // Base background border
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    height: 2,
+                    color: Colors.grey.shade200,
                   ),
                 ),
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _selectedTabIndex = 1),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: _selectedTabIndex == 1 ? AppTheme.deepTeal : Colors.grey.shade200,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'Application Tracker',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: _selectedTabIndex == 1 ? AppTheme.deepTeal : Colors.grey[500],
+                // Tabs
+                Row(
+                  children: [
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => setState(() => _selectedTabIndex = 0),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 300),
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: _selectedTabIndex == 0 ? AppTheme.deepTeal : Colors.grey[500],
+                              ),
+                              child: const Text('Incorporation Details'),
+                            ),
                           ),
                         ),
                       ),
                     ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () => setState(() => _selectedTabIndex = 1),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 300),
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: _selectedTabIndex == 1 ? AppTheme.deepTeal : Colors.grey[500],
+                              ),
+                              child: const Text('Application Tracker'),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // Animated Indicator Line
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return AnimatedAlign(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                        alignment: _selectedTabIndex == 0 ? Alignment.centerLeft : Alignment.centerRight,
+                        child: Container(
+                          width: constraints.maxWidth / 2,
+                          height: 2,
+                          color: AppTheme.deepTeal,
+                        ),
+                      );
+                    }
                   ),
                 ),
               ],
             ),
             
             // Content
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _selectedTabIndex == 0 
-                  ? _buildIncorporationDetails(context) 
-                  : _buildApplicationTracker(context),
+            GestureDetector(
+              onHorizontalDragEnd: (details) {
+                // Determine swipe direction based on velocity
+                if (details.primaryVelocity != null) {
+                  if (details.primaryVelocity! > 0) {
+                    // Swiped Right -> Go to Incorporation Details (index 0)
+                    if (_selectedTabIndex == 1) {
+                      setState(() => _selectedTabIndex = 0);
+                    }
+                  } else if (details.primaryVelocity! < 0) {
+                    // Swiped Left -> Go to Application Tracker (index 1)
+                    if (_selectedTabIndex == 0) {
+                      setState(() => _selectedTabIndex = 1);
+                    }
+                  }
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    final isTab0 = (child.key as ValueKey<int>).value == 0;
+                    final slideAnimation = Tween<Offset>(
+                      begin: Offset(isTab0 ? -0.5 : 0.5, 0.0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+                    
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: slideAnimation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _selectedTabIndex == 0 
+                      ? Container(key: const ValueKey(0), child: _buildIncorporationDetails(context)) 
+                      : Container(key: const ValueKey(1), child: _buildApplicationTracker(context)),
+                ),
+              ),
             ),
           ]
         ],

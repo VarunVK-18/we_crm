@@ -82,6 +82,7 @@ const templateRoutes = require('./routes/templateRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
+const bannerRoutes = require('./routes/bannerRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
@@ -97,6 +98,7 @@ app.use('/api/templates', templateRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/banners', bannerRoutes);
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 app.use('/api/subscriptions', subscriptionRoutes);
 

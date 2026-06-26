@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/user_model.dart';
 import '../../models/order_model.dart';
@@ -125,7 +126,7 @@ class MyEntitiesScreen extends ConsumerWidget {
                   ],
                 ),
       floatingActionButton: entityCards.isNotEmpty
-          ? FloatingActionButton.extended(
+          ? FloatingActionButton(
               onPressed: () => Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -133,14 +134,8 @@ class MyEntitiesScreen extends ConsumerWidget {
                 ),
               ),
               backgroundColor: AppTheme.deepTeal,
-              icon: const Icon(LucideIcons.plus, color: Colors.white),
-              label: const Text(
-                'Add Entity',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              shape: const CircleBorder(),
+              child: const HugeIcon(icon: HugeIcons.strokeRoundedAddCircle, color: Colors.white, size: 24),
             )
           : null,
     );

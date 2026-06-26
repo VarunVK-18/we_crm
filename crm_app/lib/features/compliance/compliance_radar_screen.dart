@@ -1059,7 +1059,6 @@ class _BentoDeadlineCard extends StatelessWidget {
                 ),
                 SizedBox(width: 20.r),
                 Expanded(
-                  flex: 3,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -1087,39 +1086,35 @@ class _BentoDeadlineCard extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 12.r),
-                Flexible(
-                  flex: 2,
-                  child: Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 12.r, vertical: 8.r),
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(16.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: color.withOpacity(0.25),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                      SizedBox(height: 12.r),
+                      Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12.r, vertical: 8.r),
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(16.r),
+                          boxShadow: [
+                            BoxShadow(
+                              color: color.withOpacity(0.25),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      timeLeft,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 10.sp,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.5,
-                        height: 1.2,
+                        child: Text(
+                          timeLeft,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                            height: 1.2,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -1614,6 +1609,8 @@ class _ReminderItem extends ConsumerWidget {
                     const SizedBox(height: 6),
                     Text(
                       'If not completed you Need To Pay Penalty',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w500,

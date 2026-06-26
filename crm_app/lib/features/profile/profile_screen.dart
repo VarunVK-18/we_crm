@@ -119,7 +119,7 @@ class ProfileScreen extends ConsumerWidget {
                                 child: Text(
                                   'Yes, Sign Out',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w600, // Reduced from 700 to 600
+                                    fontWeight: FontWeight.w700,
                                     fontSize: 14.sp, // Reduced from 16 to 14
                                   ),
                                 ),
@@ -139,9 +139,9 @@ class ProfileScreen extends ConsumerWidget {
                                 child: Text(
                                   'Cancel',
                                   style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontWeight: FontWeight.w600, // Reduced from 700 to 600
-                                    fontSize: 14.sp, // Reduced from 16 to 14
+                                    color: Colors.grey.shade700,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 14.sp,
                                   ),
                                 ),
                               ),

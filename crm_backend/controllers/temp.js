@@ -601,7 +601,12 @@ const uploadRequestedDocuments = async (req, res) => {
         // If the new Flutter app sends 'document' and docName in body, use that.
         // Otherwise, fallback to the old Flutter app behavior where the fieldname is the document name.
         const docName = (req.body && req.body.docName) ? req.body.docName : f.fieldname;
-        const requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
+        let requestedDocIndex = -1;
+        if (req.body && req.body.docIndex !== undefined) {
+          requestedDocIndex = parseInt(req.body.docIndex, 10);
+        } else {
+          requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
+        }
 
         const doc = await Document.create({
           filename: f.originalname,

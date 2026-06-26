@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
@@ -579,17 +580,11 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                     ],
                   ),
                 ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         onPressed: _showNewTicketDialog,
         backgroundColor: AppTheme.deepTeal,
-        icon: const Icon(LucideIcons.plus, color: Colors.white),
-        label: const Text(
-          'New Ticket',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        shape: const CircleBorder(),
+        child: const HugeIcon(icon: HugeIcons.strokeRoundedAddCircle, color: Colors.white, size: 24),
       ),
     );
   }

@@ -134,17 +134,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 builder: (context, constraints) {
                   return SingleChildScrollView(
                     child: ConstrainedBox(
-                      constraints:
-                          BoxConstraints(minHeight: constraints.maxHeight),
-                      child: IntrinsicHeight(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Form(
-                            key: _formKey,
-                            child: AutofillGroup(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
+                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Form(
+                          key: _formKey,
+                          child: AutofillGroup(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
                                   const SizedBox(height: 32),
                                   Center(
                                     child: Image.asset(
@@ -359,12 +361,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   const SizedBox(height: 8),
 
                                   _AutoScrollingLogos(logos: _clientLogos),
+                                  ],
+                                ),
+                                Column(
+                                  children: [
+                                    const SizedBox(height: 22),
 
-                                  const Spacer(),
-                                  const SizedBox(height: 22),
-
-                                  // Footer Sign Up Link
-                                  Padding(
+                                    // Footer Sign Up Link
+                                    Padding(
                                     padding: const EdgeInsets.only(bottom: 24),
                                     child: Row(
                                       mainAxisAlignment:
@@ -392,9 +396,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                ],
-                              ),
+                                    const SizedBox(height: 2),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
                         ),

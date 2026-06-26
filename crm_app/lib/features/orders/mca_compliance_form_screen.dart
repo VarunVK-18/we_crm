@@ -67,7 +67,14 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
         if (draft.containsKey('mcaPassword')) _passwordController.text = draft['mcaPassword'];
         if (draft.containsKey('annualTurnover')) _annualTurnover = draft['annualTurnover'];
 
-        });
+                if (draft.containsKey('coiPath')) _coiPath = draft['coiPath'];
+        if (draft.containsKey('panPath')) _panPath = draft['panPath'];
+        if (draft.containsKey('moaPath')) _moaPath = draft['moaPath'];
+        if (draft.containsKey('aoaPath')) _aoaPath = draft['aoaPath'];
+        if (draft.containsKey('bankStatementPath')) _bankStatementPath = draft['bankStatementPath'];
+        if (draft.containsKey('salesInvoicePath')) _salesInvoicePath = draft['salesInvoicePath'];
+        if (draft.containsKey('purchaseBillsPath')) _purchaseBillsPath = draft['purchaseBillsPath'];
+});
       }
     }
   }
@@ -79,7 +86,14 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
       'mcaPassword': _passwordController.text,
       'annualTurnover': _annualTurnover,
 
-    };
+          'coiPath': _coiPath,
+      'panPath': _panPath,
+      'moaPath': _moaPath,
+      'aoaPath': _aoaPath,
+      'bankStatementPath': _bankStatementPath,
+      'salesInvoicePath': _salesInvoicePath,
+      'purchaseBillsPath': _purchaseBillsPath,
+};
     await draftService.saveDraft(widget.order.id, 'McaComplianceFormScreen', data);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -165,9 +179,16 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Are You Sure To Exit ?'),
-          content: const Text('Any unsaved progress will be lost.'),
+          title: const Text('Save as Draft?'),
+          content: const Text('Do you want to save your progress before exiting?'),
           actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Discard',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              ),
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
@@ -181,9 +202,10 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
                 if (context.mounted) Navigator.of(context).pop(true);
               },
               child: Text(
-                'OK',
+                'Save as Draft',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color.fromARGB(255, 6, 6, 6),
+                      color: AppTheme.corporateBlue,
+                      fontWeight: FontWeight.bold,
                     ),
               ),
             ),
@@ -212,13 +234,7 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveDraft,
-            child: const Text('Save Draft', style: TextStyle(color: AppTheme.corporateBlue, fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(width: 8),
-        ],
+        actions: [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 

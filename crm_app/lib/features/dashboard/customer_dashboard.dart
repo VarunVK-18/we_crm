@@ -19,10 +19,13 @@ import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/orders_provider.dart';
 import '../../models/order_model.dart';
+import '../../models/banner_model.dart';
+import '../../providers/banner_provider.dart';
 import '../../models/user_model.dart';
 
 import '../common/ui_components.dart';
 import '../services/service_selection_screen.dart';
+import '../../core/constants/port.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/service_detail_screen.dart';
 import '../services/tool_detail_screen.dart';
@@ -558,8 +561,14 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
 
+    final banners = ref.watch(bannerProvider).maybeWhen(
+      data: (data) => data,
+      orElse: () => <BannerModel>[],
+    );
+
     final List<Widget> cards = [
       _buildGetStartedCard(context),
+      ...banners.map((banner) => _buildBannerCard(context, banner)),
       if (combinedOrders.isNotEmpty)
         ...combinedOrders.map((order) => _buildActiveOrderCard(context, order))
       else
@@ -624,6 +633,179 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
           }),
         ),
       ],
+    );
+  }
+
+  Widget _buildBannerCard(BuildContext context, BannerModel banner) {
+    String imageUrl = banner.imageUrl;
+    if (imageUrl.startsWith('/')) {
+      imageUrl = '$kBaseUrl$imageUrl';
+    }
+
+    Color bgColor = Colors.white;
+    Color textColor = const Color(0xFF1F2937);
+
+    switch (banner.theme) {
+      case 'dark':
+        bgColor = const Color(0xFF0F172A);
+        textColor = Colors.white;
+        break;
+      case 'purple':
+        bgColor = const Color(0xFF8B5CF6);
+        textColor = Colors.white;
+        break;
+      case 'emerald':
+        bgColor = const Color(0xFF10B981);
+        textColor = Colors.white;
+        break;
+      case 'amber':
+        bgColor = const Color(0xFFF59E0B);
+        textColor = const Color(0xFF1F2937);
+        break;
+      case 'rose':
+        bgColor = const Color(0xFFF43F5E);
+        textColor = Colors.white;
+        break;
+      case 'light':
+      default:
+        bgColor = Colors.white;
+        textColor = const Color(0xFF1F2937);
+        break;
+    }
+
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: bgColor,
+      clipBehavior: Clip.antiAlias,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.r),
+        side: BorderSide(
+          color: AppTheme.deepTeal.withOpacity(0.08),
+          width: 1.r,
+        ),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(20.r),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 52.r,
+                  height: 52.r,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.06),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(),
+                  ),
+                ),
+                SizedBox(width: 16.r),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'LATEST UPDATE',
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 10.sp,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.0,
+                        ),
+                      ),
+                      SizedBox(height: 2.r),
+                      Text(
+                        banner.title,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          height: 1.2,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.r),
+            Text(
+              banner.subtitle.isNotEmpty ? banner.subtitle : 'Check out the latest updates and offers from Wealth Empires.',
+              style: TextStyle(
+                color: textColor.withOpacity(0.8),
+                fontSize: 13.sp,
+                height: 1.4,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (banner.targetUrl.isNotEmpty || banner.buttonText.isNotEmpty) ...[
+              SizedBox(height: 16.r),
+              GestureDetector(
+                onTap: () async {
+                  if (banner.targetUrl.isNotEmpty) {
+                    String url = banner.targetUrl;
+                    if (url.startsWith('/')) {
+                      url = '$kBaseUrl$url';
+                    } else if (!url.startsWith('http')) {
+                      url = 'https://$url';
+                    }
+                    final uri = Uri.parse(url);
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Could not launch $url')),
+                        );
+                      }
+                    }
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 12.r),
+                  decoration: BoxDecoration(
+                    color: banner.theme == 'light' || banner.theme == 'amber' ? const Color(0xFF1F2937) : Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        banner.buttonText.isNotEmpty ? banner.buttonText : 'Learn More',
+                        style: TextStyle(
+                          color: banner.theme == 'light' || banner.theme == 'amber' ? Colors.white : const Color(0xFF1F2937),
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 8.r),
+                      Icon(
+                        Icons.arrow_forward,
+                        color: banner.theme == 'light' || banner.theme == 'amber' ? Colors.white : const Color(0xFF1F2937),
+                        size: 18.sp,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 

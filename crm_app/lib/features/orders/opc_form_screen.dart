@@ -200,7 +200,8 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
         if (draft.containsKey('valuePerShare')) _valuePerShareController.text = draft['valuePerShare'];
         if (draft.containsKey('numberOfShares')) _numberOfSharesController.text = draft['numberOfShares'];
         if (draft.containsKey('officePreference')) _officePreference = draft['officePreference'];
-        });
+                if (draft.containsKey('officeProofPath')) _officeProofPath = draft['officeProofPath'];
+});
       }
     }
   }
@@ -219,7 +220,8 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
       'officePreference': _officePreference,
       'directors': jsonEncode(_directors.map((d) => d.toJson()).toList()),
 
-    };
+          'officeProofPath': _officeProofPath,
+};
     await draftService.saveDraft(widget.order.id, 'OpcFormScreen', data);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -345,9 +347,16 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Are You Sure To Exit ?'),
-          content: const Text('Any unsaved progress will be lost.'),
+          title: const Text('Save as Draft?'),
+          content: const Text('Do you want to save your progress before exiting?'),
           actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                'Discard',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+              ),
+            ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
@@ -361,9 +370,10 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
                 if (context.mounted) Navigator.of(context).pop(true);
               },
               child: Text(
-                'OK',
+                'Save as Draft',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: const Color.fromARGB(255, 6, 6, 6),
+                      color: AppTheme.corporateBlue,
+                      fontWeight: FontWeight.bold,
                     ),
               ),
             ),
@@ -385,13 +395,7 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [
-          TextButton(
-            onPressed: _isLoading ? null : _saveDraft,
-            child: const Text('Save Draft', style: TextStyle(color: AppTheme.corporateBlue, fontWeight: FontWeight.w600)),
-          ),
-          const SizedBox(width: 8),
-        ],
+        actions: [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 

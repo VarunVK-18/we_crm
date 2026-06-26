@@ -86,6 +86,7 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'System',
         items: [
+          { id: 'banners', label: 'Banner Management', color: '#F59E0B' },
           { id: 'logs', label: 'Audit Logs', color: '#EC4899' },
           { id: 'settings', label: 'System Settings', color: '#6366F1' }
         ]
@@ -105,7 +106,8 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Management',
         items: [
-          { id: 'clients', label: 'My Clients', color: '#10B981' }
+          { id: 'clients', label: 'My Clients', color: '#10B981' },
+          { id: 'banners', label: 'Banner Management', color: '#F59E0B' }
         ]
       });
     } else if (role === 'filling_staff' || role === 'account_manager') {
