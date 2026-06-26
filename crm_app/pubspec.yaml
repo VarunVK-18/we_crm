@@ -31,6 +31,7 @@ dependencies:
   open_filex: ^4.5.0
   dropdown_button2: ^3.1.0
   syncfusion_flutter_pdfviewer: ^33.2.12
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +61,7 @@ flutter:
     - assets/Client/softrate.png
     - assets/Client/whatsapp_image.jpeg
     - assets/json/
+    - assets/icons/
 
   fonts:
     - family: Outfit

@@ -23,6 +23,7 @@ import '../../models/user_model.dart';
 
 import '../common/ui_components.dart';
 import '../services/service_selection_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/service_detail_screen.dart';
 import '../services/tool_detail_screen.dart';
 import '../search/search_screen.dart';
@@ -257,7 +258,7 @@ class CustomerDashboard extends ConsumerWidget {
                   {'label': 'NIC Finder', 'icon': LucideIcons.binary},
                   {'label': 'Trade Mark Class', 'icon': HugeIcons.strokeRoundedLicense},
                   {'label': 'GST Calc', 'icon': LucideIcons.calculator},
-                  {'label': 'Compliance Cal', 'icon': LucideIcons.calendar},
+                  {'label': 'Compliance Calendar', 'icon': LucideIcons.calendar},
                 ],
               ),
 
@@ -821,7 +822,11 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF0D101B), // Dark background matching webpage
+          gradient: const LinearGradient(
+            colors: [Color(0xFF562877), Color(0xFF3B1B5B)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
@@ -999,11 +1004,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF14532D), Color(0xFF064E3B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: const Color(0xFFBBEBBE),
           borderRadius: BorderRadius.circular(20.r),
           boxShadow: [
             BoxShadow(
@@ -1027,13 +1028,17 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       Container(
                         padding: EdgeInsets.all(10.r),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: AppTheme.deepTeal.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10.r),
                         ),
-                        child: HugeIcon(
-                          icon: HugeIcons.strokeRoundedTaskDone01,
-                          size: 24.ip,
-                          color: Colors.white,
+                        child: SvgPicture.asset(
+                          'assets/icons/party_popper.svg',
+                          width: 24.ip,
+                          height: 24.ip,
+                          colorFilter: const ColorFilter.mode(
+                            AppTheme.deepTeal,
+                            BlendMode.srcIn,
+                          ),
                         ),
                       ),
                       SizedBox(width: 12.r),
@@ -1047,7 +1052,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                   .textTheme
                                   .labelLarge
                                   ?.copyWith(
-                                    color: Colors.white70,
+                                    color: AppTheme.deepTeal.withOpacity(0.8),
                                     fontSize: 9.sp,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -1060,7 +1065,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                                   ?.copyWith(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 14.sp,
-                                    color: Colors.white,
+                                    color: AppTheme.deepTeal,
                                   ),
                             ),
                           ],
@@ -1073,7 +1078,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           height: 1.4,
                           fontSize: 12.sp,
-                          color: Colors.white.withOpacity(0.9),
+                          color: AppTheme.deepTeal.withOpacity(0.9),
                         ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -1083,8 +1088,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       ref.read(navigationIndexProvider.notifier).state = 1;
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF064E3B),
+                      backgroundColor: AppTheme.deepTeal,
+                      foregroundColor: Colors.white,
                       minimumSize: Size(double.infinity, 44.r),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.r),
@@ -1303,7 +1308,7 @@ class _HorizontalServiceList extends ConsumerWidget {
                 return;
               }
 
-              if (label == 'Compliance Cal') {
+              if (label == 'Compliance Calendar') {
                 _openComplianceCalendar(context, ref);
                 return;
               }
@@ -1485,7 +1490,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
         title: Padding(
           padding: EdgeInsets.only(left: 12.r, top: 12.r),
           child: Text(
-            'Compliance Cal',
+            'Compliance Calendar',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w800,

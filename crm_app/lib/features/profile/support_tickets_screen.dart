@@ -550,7 +550,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           ),
                         )
                       else
-                        ...activeTickets.map((t) => _buildTicketCard(t)),
+                        ...activeTickets.map((t) => _buildListTicketCard(t)),
 
                       const SizedBox(height: 32),
 
@@ -575,7 +575,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           ),
                         )
                       else
-                        ...previousTickets.map((t) => _buildHistoryTicket(t)),
+                        ...previousTickets.map((t) => _buildListTicketCard(t)),
                     ],
                   ),
                 ),
@@ -594,132 +594,16 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
     );
   }
 
-  Widget _buildTicketCard(dynamic ticket) {
-    final t = ticket as Map<String, dynamic>;
-    final status = t['status'] ?? 'Pending';
-    final expert = t['expert'] ?? 'Unassigned';
-    final ticketId = t['ticketId'] ?? 'INC-0000';
-    final subject = t['subject'] ?? 'No Subject';
-    final description = t['description'] ?? '';
-    final entityName = _resolveEntityName(t);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: AppTheme.premiumGradient,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.deepTeal.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  status,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              Text(
-                'ID: $ticketId',
-                style: const TextStyle(color: Colors.white70, fontSize: 11),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            subject,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          if (entityName.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            // Entity badge
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(LucideIcons.building2,
-                      size: 10, color: Colors.white70),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      entityName,
-                      style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          const SizedBox(height: 12),
-          Text(
-            description,
-            style: const TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-          const SizedBox(height: 24),
-          const Divider(color: Colors.white24),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 12,
-                backgroundColor: Colors.white24,
-                child: Icon(LucideIcons.user, size: 12, color: Colors.white),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Expert: $expert',
-                style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHistoryTicket(dynamic ticket) {
+  Widget _buildListTicketCard(dynamic ticket) {
     final t = ticket as Map<String, dynamic>;
     final ticketId = t['ticketId'] ?? 'INC-0000';
     final subject = t['subject'] ?? 'No Subject';
-    final status = t['status'] ?? 'Resolved';
+    final status = t['status'] ?? 'Open';
     final entityName = _resolveEntityName(t);
+
+    final isResolved = status.toLowerCase() == 'resolved' || status.toLowerCase() == 'closed';
+    final statusColor = isResolved ? Colors.green : Colors.orange.shade700;
+    final statusBgColor = isResolved ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -782,13 +666,13 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.green.withValues(alpha: 0.1),
+              color: statusBgColor,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               status,
-              style: const TextStyle(
-                color: Colors.green,
+              style: TextStyle(
+                color: statusColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
               ),

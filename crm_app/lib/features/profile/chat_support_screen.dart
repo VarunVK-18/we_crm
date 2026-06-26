@@ -49,16 +49,16 @@ class ChatSupportScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.all(32),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: AppTheme.deepTeal.withOpacity(0.05),
                 shape: BoxShape.circle,
               ),
               child: const HugeIcon(
                 icon: HugeIcons.strokeRoundedCustomerSupport,
-                size: 64,
+                size: 48,
                 color: AppTheme.deepTeal,
               ),
             ),
@@ -81,7 +81,7 @@ class ChatSupportScreen extends ConsumerWidget {
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
             _buildSupportAction(
               icon: HugeIcons.strokeRoundedBubbleChat,
               title: 'Chat on WhatsApp',
@@ -170,8 +170,8 @@ class ChatSupportScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: icon is IconData
-                      ? Icon(icon, color: color, size: 24)
-                      : HugeIcon(icon: icon, color: color, size: 24),
+                      ? Icon(icon, color: color, size: 28)
+                      : HugeIcon(icon: icon, color: color, size: 28),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

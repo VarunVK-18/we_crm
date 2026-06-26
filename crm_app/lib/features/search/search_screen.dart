@@ -146,8 +146,8 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Tools',
     },
     {
-      'label': 'TDS Interest',
-      'icon': HugeIcons.strokeRoundedBackpack01,
+      'label': 'Trade Mark Class',
+      'icon': HugeIcons.strokeRoundedBook01,
       'category': 'Tools',
     },
     {
@@ -156,7 +156,7 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Tools',
     },
     {
-      'label': 'Compliance Cal',
+      'label': 'Compliance Calendar',
       'icon': HugeIcons.strokeRoundedCalendar01,
       'category': 'Tools',
     },
@@ -461,7 +461,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     if (isTool) {
-      if (label == 'Compliance Cal') {
+      if (label == 'Compliance Calendar') {
         _openComplianceCalendar(context);
         return;
       }

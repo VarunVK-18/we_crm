@@ -16,6 +16,7 @@ import '../../core/widgets/we_loader.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/compliance_provider.dart';
 import 'notification_sheet.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
@@ -420,7 +421,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         height: 42,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(25),
                           border: Border.all(color: Colors.grey.shade200, width: 2.0),
                           boxShadow: [
                             BoxShadow(
@@ -453,7 +454,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(25),
                         border: Border.all(color: Colors.grey.shade200, width: 2.0),
                         boxShadow: [
                           BoxShadow(
@@ -870,21 +871,26 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (icon, message) = switch (tab) {
+    final (Widget iconWidget, String message) = switch (tab) {
       _ServiceTab.active => (
-          HugeIcons.strokeRoundedTask01,
+          HugeIcon(icon: HugeIcons.strokeRoundedTask01, size: 52, color: Colors.grey.shade400),
           'No active services found',
         ),
       _ServiceTab.complete => (
-          HugeIcons.strokeRoundedTaskDone01,
+          SvgPicture.asset(
+            'assets/icons/party_popper.svg',
+            width: 52,
+            height: 52,
+            colorFilter: ColorFilter.mode(Colors.grey.shade400, BlendMode.srcIn),
+          ),
           'No completed services yet',
         ),
       _ServiceTab.notInitialized => (
-          HugeIcons.strokeRoundedHourglass,
+          HugeIcon(icon: HugeIcons.strokeRoundedHourglass, size: 52, color: Colors.grey.shade400),
           'No pending services',
         ),
       _ServiceTab.history => (
-          HugeIcons.strokeRoundedClock01,
+          HugeIcon(icon: HugeIcons.strokeRoundedClock01, size: 52, color: Colors.grey.shade400),
           'No order history found',
         ),
     };
@@ -899,7 +905,7 @@ class _EmptyState extends StatelessWidget {
               color: Colors.grey.withValues(alpha: 0.06),
               shape: BoxShape.circle,
             ),
-            child: HugeIcon(icon: icon, size: 52, color: Colors.grey.shade400),
+            child: iconWidget,
           ),
           const SizedBox(height: 20),
           Text(

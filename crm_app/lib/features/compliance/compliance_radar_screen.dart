@@ -80,7 +80,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                       'Service Alerts',
                       style: GoogleFonts.outfit(
                         fontSize: 24,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w800,
                         color: AppTheme.deepTeal,
                         letterSpacing: -0.5,
                       ),
@@ -90,7 +90,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                       style: GoogleFonts.outfit(
                         fontSize: 13,
                         color: Colors.grey[500],
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -213,7 +213,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                             'Compliances',
                             style: GoogleFonts.outfit(
                               fontSize: 24,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w800,
                               color: AppTheme.deepTeal,
                               letterSpacing: -0.5,
                             ),
@@ -223,7 +223,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                             style: GoogleFonts.outfit(
                               fontSize: 13,
                               color: Colors.grey[500],
-                              fontWeight: FontWeight.w500,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -1593,7 +1593,7 @@ class _ReminderItem extends ConsumerWidget {
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,

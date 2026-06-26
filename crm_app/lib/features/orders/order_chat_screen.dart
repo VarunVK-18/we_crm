@@ -6,6 +6,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/orders_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OrderChatScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -28,11 +29,125 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
   final ScrollController _scrollController = ScrollController();
   String _selectedSenderRole = 'client';
   
+  Color _chatBackgroundColor = Colors.white;
+  final List<Map<String, dynamic>> _bgColors = [
+    {'name': 'Light', 'color': Colors.white},
+    {'name': 'Off White', 'color': const Color(0xFFF5F5F5)},
+    {'name': 'Mint', 'color': const Color(0xFFE8F5E9)},
+    {'name': 'Blue Tint', 'color': const Color(0xFFE3F2FD)},
+    {'name': 'Warm Sand', 'color': const Color(0xFFFFF3E0)},
+    {'name': 'Soft Rose', 'color': const Color(0xFFFCE4EC)},
+  ];
+  
   bool _isSearching = false;
   String _searchQuery = '';
   int _currentMatchIndex = 0;
   List<int> _matchedMessageIndices = [];
   final Map<int, GlobalKey> _itemKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadChatBackground();
+  }
+
+  Future<void> _loadChatBackground() async {
+    final prefs = await SharedPreferences.getInstance();
+    final colorVal = prefs.getInt('chat_bg_color');
+    if (colorVal != null) {
+      setState(() {
+        _chatBackgroundColor = Color(colorVal);
+      });
+    }
+  }
+
+  Future<void> _changeChatBackground(Color color) async {
+    setState(() {
+      _chatBackgroundColor = color;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('chat_bg_color', color.value);
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  void _showThemePicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Chat Background',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.deepTeal,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Wrap(
+                spacing: 16,
+                runSpacing: 16,
+                children: _bgColors.map((bg) {
+                  final isSelected = _chatBackgroundColor.value == bg['color'].value;
+                  return GestureDetector(
+                    onTap: () => _changeChatBackground(bg['color']),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: bg['color'],
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? AppTheme.deepTeal : Colors.grey.shade300,
+                              width: isSelected ? 3 : 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              )
+                            ],
+                          ),
+                          child: isSelected 
+                            ? const Icon(LucideIcons.check, color: AppTheme.deepTeal)
+                            : null,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          bg['name'],
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? AppTheme.deepTeal : Colors.grey.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   void _scrollToMatch(int index) {
     final key = _itemKeys[index];
@@ -123,7 +238,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     });
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: _chatBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -133,36 +248,52 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: _isSearching
-            ? Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      autofocus: true,
-                      style: const TextStyle(color: AppTheme.deepTeal),
-                      decoration: const InputDecoration(
-                        hintText: 'Search chat...',
-                        border: InputBorder.none,
+            ? Container(
+                height: 38,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.black87),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        autofocus: true,
+                        style: const TextStyle(color: Colors.black87, fontSize: 14),
+                        decoration: const InputDecoration(
+                          hintText: 'Search messages...',
+                          hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                          border: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.only(bottom: 2), // small adjustment
+                        ),
+                        onChanged: (val) {
+                          setState(() {
+                            _searchQuery = val.toLowerCase();
+                          });
+                        },
                       ),
-                      onChanged: (val) {
-                        setState(() {
-                          _searchQuery = val.toLowerCase();
-                        });
-                      },
                     ),
-                  ),
-                  if (_searchQuery.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text(
-                        _matchedMessageIndices.isEmpty ? '0 of 0' : '${_currentMatchIndex + 1} of ${_matchedMessageIndices.length}',
-                        style: const TextStyle(
-                          color: AppTheme.deepTeal,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
+                    if (_searchQuery.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: Text(
+                          _matchedMessageIndices.isEmpty ? '0 of 0' : '${_currentMatchIndex + 1} of ${_matchedMessageIndices.length}',
+                          style: TextStyle(
+                            color: Colors.grey.shade500,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                    const SizedBox(width: 16),
+                  ],
+                ),
               )
             : Row(
           children: [
@@ -176,9 +307,9 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Client Support',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppTheme.deepTeal,
@@ -198,9 +329,9 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
           ],
         ),
         actions: [
-          if (_isSearching && _matchedMessageIndices.isNotEmpty) ...[
+          if (_isSearching) ...[
             IconButton(
-              icon: const Icon(LucideIcons.chevronUp, color: AppTheme.deepTeal),
+              icon: Icon(LucideIcons.chevronLeft, color: _matchedMessageIndices.isNotEmpty && _currentMatchIndex > 0 ? Colors.grey.shade600 : Colors.grey.shade300),
               onPressed: () {
                 setState(() {
                   if (_currentMatchIndex > 0) {
@@ -211,7 +342,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
               },
             ),
             IconButton(
-              icon: const Icon(LucideIcons.chevronDown, color: AppTheme.deepTeal),
+              icon: Icon(LucideIcons.chevronRight, color: _matchedMessageIndices.isNotEmpty && _currentMatchIndex < _matchedMessageIndices.length - 1 ? Colors.grey.shade600 : Colors.grey.shade300),
               onPressed: () {
                 setState(() {
                   if (_currentMatchIndex < _matchedMessageIndices.length - 1) {
@@ -221,22 +352,32 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                 });
               },
             ),
-          ],
-          IconButton(
-            icon: Icon(_isSearching ? LucideIcons.x : LucideIcons.search, color: AppTheme.deepTeal),
-            onPressed: () {
-              setState(() {
-                if (_isSearching) {
+            IconButton(
+              icon: const Icon(LucideIcons.x, color: Colors.grey),
+              onPressed: () {
+                setState(() {
                   _isSearching = false;
                   _searchQuery = '';
                   _currentMatchIndex = 0;
                   _matchedMessageIndices.clear();
-                } else {
+                });
+              },
+            ),
+          ],
+          if (!_isSearching) ...[
+            IconButton(
+              icon: const Icon(LucideIcons.palette, color: AppTheme.deepTeal),
+              onPressed: _showThemePicker,
+            ),
+            IconButton(
+              icon: const Icon(LucideIcons.search, color: AppTheme.deepTeal),
+              onPressed: () {
+                setState(() {
                   _isSearching = true;
-                }
-              });
-            },
-          ),
+                });
+              },
+            ),
+          ],
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
