@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -29,6 +29,8 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   // UI State
   isChatOpen = signal(false);
   isLoading = signal(true);
+  
+  @ViewChild('trackerScroll') trackerScroll!: ElementRef;
   
   pollingInterval: any;
 
@@ -243,6 +245,12 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
           
           found.derivedStatus = status;
           this.order.set(found);
+          
+          if (!silent) {
+            setTimeout(() => {
+              this.scrollToCurrentItem();
+            }, 100);
+          }
         }
         if (!silent) this.isLoading.set(false);
       },
@@ -266,6 +274,35 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     }
     
     return true;
+  }
+
+  scrollTrackerLeft() {
+    if (this.trackerScroll?.nativeElement) {
+      this.trackerScroll.nativeElement.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  }
+
+  scrollTrackerRight() {
+    if (this.trackerScroll?.nativeElement) {
+      this.trackerScroll.nativeElement.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  }
+
+  scrollToCurrentItem() {
+    if (!this.trackerScroll?.nativeElement || !this.order()?.items) return;
+    const items = this.order().items;
+    const activeIndex = items.findIndex((item: any) => !item.isChecked);
+    if (activeIndex !== -1) {
+      // Assuming each item is ~250px wide, scroll so the active item is the second one visible
+      // This shows the last completed task (activeIndex - 1) and the current active task
+      const itemWidth = 250; 
+      const scrollPosition = Math.max(0, (activeIndex - 1) * itemWidth);
+      
+      this.trackerScroll.nativeElement.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
   }
 
   toggleChecklistItem(item: any, event: Event) {

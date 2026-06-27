@@ -80,44 +80,58 @@
                   Completed</span>
               </div>
 
-              <div class="checklist-items">
-                @for (item of order()?.items; track item._id) {
-                <div class="checklist-item" [class.completed]="item.isChecked" style="cursor: default;">
-                  <div class="checkbox-wrapper">
-                    <div class="custom-checkbox">
-                      @if (item.isChecked) {
-                      <span class="material-symbols-outlined check-icon">check</span>
+              <div class="checklist-carousel-container">
+                @if ((order()?.items?.length || 0) > 4) {
+                  <button class="carousel-arrow left-arrow" (click)="scrollTrackerLeft()">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                  </button>
+                }
+                
+                <div class="checklist-items" #trackerScroll>
+                  @for (item of order()?.items; track item._id) {
+                  <div class="checklist-item" [class.completed]="item.isChecked" style="cursor: default;">
+                    <div class="checkbox-wrapper">
+                      <div class="custom-checkbox">
+                        @if (item.isChecked) {
+                        <span class="material-symbols-outlined check-icon">check</span>
+                        }
+                      </div>
+                    </div>
+                    <div class="item-content">
+                      <h4>{{ item.title || item.label }}</h4>
+                      @if (item.isActionStep) {
+                      @if (!item.isChecked) {
+                      <p>{{ item.description || item.notes }}</p>
+                      @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {
+                      <button class="action-btn"
+                        style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
+                        [disabled]="!isFormEnabled(order())"
+                        [style.opacity]="!isFormEnabled(order()) ? '0.5' : '1'"
+                        [style.cursor]="!isFormEnabled(order()) ? 'not-allowed' : 'pointer'"
+                        (click)="isFormEnabled(order()) ? routeToForm(order()?.service_name) : null; $event.stopPropagation()">
+                        Fill Form
+                      </button>
+                      @if (!isFormEnabled(order())) {
+                        <div style="font-size: 11px; color: #666; margin-top: 4px;">Form will be enabled once a filing expert is assigned and service is active.</div>
+                      }
+                      }
+                      } @else {
+                      <p>Form submitted successfully.</p>
+                      }
+                      } @else {
+                      @if (item.description || item.notes) {
+                      <p>{{ item.description || item.notes }}</p>
+                      }
                       }
                     </div>
                   </div>
-                  <div class="item-content">
-                    <h4>{{ item.title || item.label }}</h4>
-                    @if (item.isActionStep) {
-                    @if (!item.isChecked) {
-                    <p>{{ item.description || item.notes }}</p>
-                    @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {
-                    <button class="action-btn"
-                      style="margin-top: 12px; padding: 6px 14px; font-size: 13px; border-radius: 6px;"
-                      [disabled]="!isFormEnabled(order())"
-                      [style.opacity]="!isFormEnabled(order()) ? '0.5' : '1'"
-                      [style.cursor]="!isFormEnabled(order()) ? 'not-allowed' : 'pointer'"
-                      (click)="isFormEnabled(order()) ? routeToForm(order()?.service_name) : null; $event.stopPropagation()">
-                      Fill Form
-                    </button>
-                    @if (!isFormEnabled(order())) {
-                      <div style="font-size: 11px; color: #666; margin-top: 4px;">Form will be enabled once a filing expert is assigned and service is active.</div>
-                    }
-                    }
-                    } @else {
-                    <p>Form submitted successfully.</p>
-                    }
-                    } @else {
-                    @if (item.description || item.notes) {
-                    <p>{{ item.description || item.notes }}</p>
-                    }
-                    }
-                  </div>
+                  }
                 </div>
+
+                @if ((order()?.items?.length || 0) > 4) {
+                  <button class="carousel-arrow right-arrow" (click)="scrollTrackerRight()">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
                 }
               </div>
             </div>

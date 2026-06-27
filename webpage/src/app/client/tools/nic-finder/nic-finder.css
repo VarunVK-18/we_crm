@@ -26,29 +26,51 @@
   box-sizing: border-box;
 }
 
-.back-btn {
+.appbar-title-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.appbar-breadcrumb-trail {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: none;
-  border: none;
-  color: var(--text-secondary);
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.breadcrumb-item {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  letter-spacing: -0.5px;
+}
+
+.breadcrumb-item:hover {
+  color: var(--palette-dark);
+}
+
+.breadcrumb-item.active {
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: default;
+}
+
+.breadcrumb-separator {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+
+.appbar-subtitle {
+  color: var(--text-muted);
   font-size: 14px;
   font-weight: 500;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 24px;
-  transition: color 0.2s;
-}
-
-.back-btn:hover {
-  color: var(--primary);
-}
-
-.tool-subtitle {
-  color: var(--text-secondary);
-  font-size: 15px;
-  margin: 0;
+  margin-top: 2px;
 }
 
 .logo-wrapper {

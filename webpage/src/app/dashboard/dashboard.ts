@@ -7,6 +7,7 @@ import { NotificationService } from '../client/services/notification.service';
 import { Notification01Icon, Search01Icon, Message02Icon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 import { FormsModule } from '@angular/forms';
+import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
 
 // Import subcomponents
 import { HomeOverview } from './home-overview/home-overview';
@@ -75,7 +76,7 @@ export class Dashboard implements OnInit, OnDestroy {
   isNotificationOpen = signal<boolean>(false);
   isProfileDropdownOpen = signal<boolean>(false);
 
-  constructor(private router: Router, public api: Api, public notifService: NotificationService) {}
+  constructor(private router: Router, public api: Api, public notifService: NotificationService, private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -293,8 +294,19 @@ export class Dashboard implements OnInit, OnDestroy {
     }
   }
 
-  handleLogout() {
-    localStorage.removeItem('user');
-    this.router.navigate(['/login']);
+  async handleLogout() {
+    const choice = await this.confirmDialog.confirm({
+      title: 'Log Out',
+      message: 'Are you sure you want to log out?',
+      confirmText: 'Log Out',
+      cancelText: 'Cancel',
+      isDestructive: true
+    });
+    
+    if (choice) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.router.navigate(['/login']);
+    }
   }
 }

@@ -6,6 +6,7 @@ import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon, Download04Icon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
+import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-client-profile',
@@ -60,8 +61,7 @@ export class ClientProfile implements OnInit, OnDestroy {
     });
   });
 
-  constructor(private router: Router, public api: Api) {}
-
+  constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) {}
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (!savedUser) {
@@ -209,9 +209,21 @@ export class ClientProfile implements OnInit, OnDestroy {
     });
   }
 
-  logout() {
-    localStorage.removeItem('user');
-    this.router.navigate(['/login']);
+  async logout() {
+    const choice = await this.confirmDialog.confirm({
+      title: 'Log Out',
+      message: 'Are you sure you want to log out?',
+      confirmText: 'Log Out',
+      cancelText: 'Cancel',
+      isDestructive: true
+    });
+    
+    if (choice) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('client_selected_entity');
+      this.router.navigate(['/login']);
+    }
   }
 
   goToDashboard() {

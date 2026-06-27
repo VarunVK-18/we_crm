@@ -124,12 +124,20 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
 
   async downloadDocument(doc: any) {
     if (doc.isPaymentPending) {
-      await this.confirmDialog.confirm({
+      const choice = await this.confirmDialog.confirm({
         title: 'Document Locked',
-        message: 'This document cannot be downloaded because there is a pending payment for its service. Please clear the balance to unlock your documents.',
-        confirmText: 'OK',
-        hideCancel: true
+        message: 'Almost there! Your document is ready, but there\'s a pending balance on this service. You can securely pay online now or contact your account manager for assistance.',
+        confirmText: 'Pay Online',
+        cancelText: 'Call Account Manager'
       });
+      
+      if (choice === true) {
+        // Pay Online logic
+        window.open('/client/wallet', '_self'); // or wherever they should go to pay
+      } else if (choice === false) {
+        // Call Account Manager logic
+        window.open('/client/support', '_self'); // or support route
+      }
       return;
     }
 

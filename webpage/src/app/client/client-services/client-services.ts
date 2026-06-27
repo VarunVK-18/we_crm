@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Api } from '../../api';
-import { 
-  OfficeIcon, 
-  Briefcase01Icon, 
-  LicenseIcon, 
-  CalculatorIcon, 
+import {
+  OfficeIcon,
+  Briefcase01Icon,
+  LicenseIcon,
+  CalculatorIcon,
   GridIcon,
   ArrowRight01Icon,
   CheckmarkCircle01Icon,
@@ -43,8 +43,7 @@ export class ClientServicesComponent implements OnInit {
     { id: 'compliance', label: 'Compliance', icon: Briefcase01Icon },
     { id: 'ip', label: 'IP', icon: CheckmarkCircle01Icon },
     { id: 'tax', label: 'Tax', icon: CalculatorIcon },
-    { id: 'licensing', label: 'Licensing', icon: LicenseIcon },
-    { id: 'others', label: 'Others', icon: GridIcon }
+    { id: 'licensing', label: 'Licensing', icon: LicenseIcon }
   ];
 
   servicesDatabase: any = {
@@ -52,12 +51,12 @@ export class ClientServicesComponent implements OnInit {
       {
         title: 'Private Limited Incorporation',
         description: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.',
-        features: ['Name Reservation (RUN)', 'Digital Signature (DSC)', 'Director Identification (DIN)', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Processing Time: 5-7 business days']
+        features: ['Name Reservation (RUN)', 'Digital Signature (DSC)', 'Director Identification (DIN)', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'PAN & TAN', 'Corporate Bank Account', 'Processing Time: 5-7 business days']
       },
       {
         title: 'LLP Incorporation',
         description: 'Statutory compliance for Limited Liability Partnerships.',
-        features: ['Form 8 Statement of Account', 'Form 11 Annual Return', 'DIR-3 KYC of Partners', 'Income Tax Return Filing', 'LLP Agreement Maintenance', 'Processing Time: 5-7 business days']
+        features: ['Name Reservation (RUN)', 'PAN & TAN', 'LLP Incorporation Certificate', 'DIN Approval Letters', 'Corporate Bank Account', 'Processing Time: 5-7 business days']
       },
       {
         title: 'OPC',
@@ -65,14 +64,14 @@ export class ClientServicesComponent implements OnInit {
         features: ['Name Reservation', 'DSC & DIN', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Bank Setup Support', 'Processing Time: 5-7 business days']
       },
       {
-        title: 'Proprietorship',
-        description: 'Sole vendor formation with business identification.',
-        features: ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support', 'Processing Time: 5-7 business days']
-      },
-      {
         title: 'MSME',
         description: 'Official Udyam Registration for small and medium enterprises.',
         features: ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'ISO Reimbursement Advisory', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'Proprietorship',
+        description: 'Sole vendor formation with business identification.',
+        features: ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support', 'Processing Time: 5-7 business days']
       }
     ],
     'compliance': [
@@ -94,27 +93,12 @@ export class ClientServicesComponent implements OnInit {
     ],
     'ip': [
       {
-        title: 'Trade Mark',
-        description: 'Brand protection and intellectual property rights.',
-        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Processing Time: 5-7 business days']
-      },
-      {
         title: 'Copyright',
         description: 'Protection for original creative literary or artistic works.',
         features: ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'Patent',
-        description: 'Exclusive rights for your inventions.',
-        features: ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant', 'Processing Time: 5-7 business days']
       }
     ],
     'tax': [
-      {
-        title: 'GST Registration',
-        description: 'GST Registration for your business! Thank you for choosing Wealth Empires.',
-        features: ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate', 'Processing Time: 5-7 business days']
-      },
       {
         title: 'GST Compliance',
         description: 'Monthly/Quarterly GST returns and reconciliations.',
@@ -138,19 +122,39 @@ export class ClientServicesComponent implements OnInit {
     ],
     'licensing': [
       {
-        title: 'ISO',
-        description: 'Quality management certification (ISO 9001 and others).',
-        features: ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training', 'Processing Time: 5-7 business days']
-      },
-      {
         title: 'DPIIT',
         description: 'Startup India Certification for your startup! Please provide your details correctly.',
         features: ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track', 'Processing Time: 5-7 business days']
       },
       {
+        title: 'Trade Mark',
+        description: 'Brand protection and intellectual property rights.',
+        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'GST Registration',
+        description: 'GST Registration for your business! Thank you for choosing Wealth Empires.',
+        features: ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'ISO',
+        description: 'Quality management certification (ISO 9001 and others).',
+        features: ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'Patent',
+        description: 'Exclusive rights for your inventions.',
+        features: ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant', 'Processing Time: 5-7 business days']
+      },
+      {
         title: 'FSSAI',
         description: 'Registration for food business operators, manufacturers, and startups.',
         features: ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'DSC',
+        description: 'Digital Signature Certificate for individuals & organizations.',
+        features: ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity', 'Processing Time: 5-7 business days']
       },
       {
         title: 'IE code',
@@ -172,13 +176,6 @@ export class ClientServicesComponent implements OnInit {
         description: 'European standard certifications for electronics and products.',
         features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 business days']
       }
-    ],
-    'others': [
-      {
-        title: 'DSC',
-        description: 'Digital Signature Certificate for individuals & organizations.',
-        features: ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity', 'Processing Time: 5-7 business days']
-      }
     ]
   };
 
@@ -187,12 +184,12 @@ export class ClientServicesComponent implements OnInit {
   selectedService = signal<any>(null);
   currentServices = signal<any[]>([]);
   searchQuery = signal<string>('');
-  
+
   filteredServices = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     if (!q) return this.currentServices();
-    return this.currentServices().filter(s => 
-      s.title.toLowerCase().includes(q) || 
+    return this.currentServices().filter(s =>
+      s.title.toLowerCase().includes(q) ||
       s.description.toLowerCase().includes(q)
     );
   });
@@ -200,7 +197,7 @@ export class ClientServicesComponent implements OnInit {
   // Pagination state
   currentPage = signal<number>(1);
   itemsPerPage = 4;
-  
+
   paginatedServices = computed(() => {
     const start = (this.currentPage() - 1) * this.itemsPerPage;
     return this.filteredServices().slice(start, start + this.itemsPerPage);
@@ -250,11 +247,11 @@ export class ClientServicesComponent implements OnInit {
   formSubmitting = signal<boolean>(false);
   formSuccess = signal<boolean>(false);
 
-  constructor(public api: Api, private route: ActivatedRoute) {}
+  constructor(public api: Api, private route: ActivatedRoute) { }
 
   ngOnInit() {
     this.selectCategory('all');
-    
+
     this.route.queryParams.subscribe(params => {
       if (params['serviceName']) {
         const requestedService = params['serviceName'].toLowerCase();
@@ -331,7 +328,7 @@ export class ClientServicesComponent implements OnInit {
             if (c.details && c.details.entityName && c.details.entityName.toLowerCase() !== 'client') {
               const name = c.details.entityName;
               entities.add(name);
-              
+
               if (c.service_name) {
                 const sName = c.service_name.toLowerCase();
                 if (sName.includes('private limited incorporation')) {
@@ -347,14 +344,14 @@ export class ClientServicesComponent implements OnInit {
             }
           });
         }
-        
+
         const userVal = this.user();
         if (userVal?.company_name) {
           entities.add(userVal.company_name);
         }
 
         const entityArray = Array.from(entities);
-        
+
         // Fallback inference for entities without known type
         entityArray.forEach(name => {
           if (!this.entityTypesMap.has(name)) {
@@ -370,7 +367,7 @@ export class ClientServicesComponent implements OnInit {
         });
 
         entityArray.push('Add New Entity...');
-        
+
         this.availableEntities.set(entityArray);
         if (entityArray.length > 0) {
           this.quoteForm.selectedEntity = entityArray[0];
@@ -381,18 +378,18 @@ export class ClientServicesComponent implements OnInit {
   }
 
   getCompatibilityWarning(): { message: string, type: string, header: string } | null {
-    const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...' 
-      ? this.quoteForm.customEntity 
+    const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...'
+      ? this.quoteForm.customEntity
       : this.quoteForm.selectedEntity;
-      
+
     if (!finalEntity) return null;
-    
+
     const reqService = this.selectedService()?.title;
     if (!reqService) return null;
 
-    const isDuplicate = this.myChecklists().some(c => 
-      c.service_name === reqService && 
-      (c.details?.entityName === finalEntity || (!c.details?.entityName && finalEntity === 'Client')) && 
+    const isDuplicate = this.myChecklists().some(c =>
+      c.service_name === reqService &&
+      (c.details?.entityName === finalEntity || (!c.details?.entityName && finalEntity === 'Client')) &&
       c.status !== 'completed' && c.status !== 'complete'
     );
 
@@ -407,13 +404,13 @@ export class ClientServicesComponent implements OnInit {
     if (this.quoteForm.selectedEntity === 'Add New Entity...') return null;
 
     const entityType = this.entityTypesMap.get(this.quoteForm.selectedEntity) || 'Unknown';
-    
+
     const isIncorporationService = reqService.includes('Incorporation') || reqService.includes('Proprietorship') || reqService === 'OPC';
 
     if (isIncorporationService && this.quoteForm.selectedEntity !== 'Add New Entity...') {
       let isTrulyIncorporated = false;
       const userVal = this.user();
-      
+
       if (userVal && userVal.client_entities) {
         const entity = userVal.client_entities.find((e: any) => e.entityName === this.quoteForm.selectedEntity);
         if (entity && ((entity.cin && entity.cin.trim() !== '') || (entity.coi && entity.coi.trim() !== ''))) {
@@ -454,14 +451,14 @@ export class ClientServicesComponent implements OnInit {
         };
       }
     }
-    
+
     return null;
   }
 
   selectCategory(categoryId: string) {
     this.selectedCategory.set(categoryId);
     this.currentPage.set(1);
-    
+
     let services: any[] = [];
     if (categoryId === 'all') {
       Object.keys(this.servicesDatabase).forEach(cat => {
@@ -470,10 +467,9 @@ export class ClientServicesComponent implements OnInit {
     } else {
       services = [...(this.servicesDatabase[categoryId] || [])];
     }
-    
-    services.sort((a, b) => a.title.localeCompare(b.title));
+
     this.currentServices.set(services);
-    
+
     // Auto-select first service if available
     if (this.currentServices().length > 0) {
       this.selectService(this.currentServices()[0]);
@@ -522,7 +518,7 @@ export class ClientServicesComponent implements OnInit {
 
   submitQuote() {
     this.formSubmitting.set(true);
-    
+
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) {
       alert('User not found.');
@@ -544,8 +540,8 @@ export class ClientServicesComponent implements OnInit {
     formData.append('email', this.quoteForm.email || this.user()?.email || '');
 
     if (this.showEntityDropdown()) {
-      const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...' 
-        ? this.quoteForm.customEntity 
+      const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...'
+        ? this.quoteForm.customEntity
         : this.quoteForm.selectedEntity;
       if (finalEntity) {
         formData.append('entity_name', finalEntity);

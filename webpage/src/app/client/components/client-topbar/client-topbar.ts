@@ -26,6 +26,7 @@ export class ClientTopbarComponent implements OnInit {
   user = signal<any>(null);
   pageTitle = signal('My Services');
   pageSubtitle = signal('Client Portal Dashboard');
+  breadcrumbs = signal<{label: string, path?: string}[]>([]);
   isDropdownOpen = signal(false);
   isNotificationOpen = signal(false);
   isEntityDropdownOpen = signal(false);
@@ -129,6 +130,7 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   updateTitle(url: string) {
+    this.breadcrumbs.set([]); // clear by default
     if (url.includes('/profile')) {
       this.pageTitle.set('My Profile');
       this.pageSubtitle.set('Account Details & Documents');
@@ -139,9 +141,21 @@ export class ClientTopbarComponent implements OnInit {
       this.pageTitle.set('Compliance Center');
       const usr = this.user();
       this.pageSubtitle.set(usr?.company_name || usr?.name || 'Entity Compliance Management');
+    } else if (url.includes('/tools/nic-finder')) {
+      this.breadcrumbs.set([{label: 'Dashboard', path: '/client/dashboard'}, {label: 'NIC CODE FINDER'}]);
+      this.pageSubtitle.set('Search and find the correct National Industrial Classification (NIC) Code for your business.');
+    } else if (url.includes('/tools/trademark-finder')) {
+      this.breadcrumbs.set([{label: 'Dashboard', path: '/client/dashboard'}, {label: 'TRADEMARK CLASSES FINDER'}]);
+      this.pageSubtitle.set('Search and find the correct TradeMark Class for your goods or services.');
     } else {
       this.pageTitle.set('My Services');
       this.pageSubtitle.set('Client Portal Dashboard');
+    }
+  }
+
+  navigateTo(path?: string) {
+    if (path) {
+      this.router.navigate([path]);
     }
   }
 
@@ -243,11 +257,21 @@ export class ClientTopbarComponent implements OnInit {
     return `${days}d ago`;
   }
 
-  logout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('client_selected_entity');
-    this.router.navigate(['/login']);
+  async logout() {
+    const choice = await this.confirmDialog.confirm({
+      title: 'Log Out',
+      message: 'Are you sure you want to log out?',
+      confirmText: 'Log Out',
+      cancelText: 'Cancel',
+      isDestructive: true
+    });
+    
+    if (choice) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('client_selected_entity');
+      this.router.navigate(['/login']);
+    }
   }
 
   getInitials(name: string): string {
