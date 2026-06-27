@@ -195,7 +195,17 @@ export class RequestsComponent implements OnInit {
   fetchTeam() {
     this.api.get<any>('teams').subscribe({
       next: (res: any) => {
-        this.teams.set(res.teams || []);
+        let allTeams = res.teams || [];
+        const currentUser = this.user();
+        
+        // If user is a client manager, only show teams they manage
+        if (currentUser && currentUser.role === 'client_manager') {
+          allTeams = allTeams.filter((t: any) => 
+            t.manager_id && (t.manager_id._id === currentUser._id || t.manager_id === currentUser._id)
+          );
+        }
+        
+        this.teams.set(allTeams);
       },
       error: (err: any) => console.error('Error fetching team:', err)
     });
