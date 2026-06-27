@@ -38,203 +38,191 @@
     <p>There are no new service orders at the moment.</p>
   </div>
   } @else {
-  <div class="requests-grid">
-    @for (order of filteredOrders(); track order._id) {
-    <div class="request-card" [class.status-new]="['new','pending'].includes((order.status||'').toLowerCase())"
-      [class.status-complete]="(order.status||'').toLowerCase() === 'complete'">
-      <div class="card-header">
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <div class="service-badge">{{ order.serviceType }}</div>
-          @if (order.details?.badge === 'RENEW') {
-            <div style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border: 1px solid #fecaca; box-shadow: 0 2px 4px rgba(220,38,38,0.1); display: flex; align-items: center; gap: 4px;">
-              <span class="material-symbols-outlined" style="font-size: 14px;">autorenew</span> RENEWAL REQUEST
-            </div>
-          }
-        </div>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <div class="date-badge">
-            <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
-            {{ formatDate(order.createdAt) }}
-          </div>
-        </div>
-      </div>
-
-      <div class="card-body">
-        <h3 class="client-name">{{ order.entityName || order.companyName || 'Client Request' }}</h3>
-
-
-
-        @if (order.phone || order.contactPhone) {
-        <div class="info-row">
-          <span class="info-label">Contact:</span>
-          <a [href]="'tel:' + (order.phone || order.contactPhone)" class="contact-link">{{ order.phone ||
-            order.contactPhone }}</a>
-        </div>
-        }
-
-        @if (order.details && objectKeys(order.details).length > 0) {
-        <div class="dynamic-details hover-container">
-          <div class="details-divider"></div>
-          <span class="details-title">Application Details: <span class="hover-text">Hover to view</span></span>
-          <div class="details-grid hover-content">
-            @for (key of objectKeys(order.details); track key) {
-            <div class="detail-item">
-              <span class="detail-label">{{ formatKey(key) }}</span>
-              <span class="detail-value">{{ formatDetailValue(order.details[key]) }}</span>
-            </div>
-            }
-          </div>
-        </div>
-        }
-
-        @if (order.documents && order.documents.length > 0) {
-        <div class="documents-section hover-container">
-          <span class="documents-title">Attached Documents: <span class="hover-text">Hover to view</span></span>
-          <div class="documents-list hover-content">
-            @for (doc of order.documents; track doc._id || doc.fileUrl) {
-            <div class="document-item">
-              @if (isImage(doc.filename || doc.name)) {
-              <div class="doc-preview-popover">
-                <img [src]="api.getFileUrl(doc.fileUrl)" alt="Document Preview" />
+  <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); overflow: hidden; margin-top: 16px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+      <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+        <tr>
+          <th style="padding: 16px 20px; font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Client Name</th>
+          <th style="padding: 16px 20px; font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Details</th>
+          <th style="padding: 16px 20px; font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Service Type</th>
+          <th style="padding: 16px 20px; font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">Request Date</th>
+          <th style="padding: 16px 20px; font-size: 13px; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Action</th>
+        </tr>
+      </thead>
+      <tbody style="background: white;">
+        @for (order of filteredOrders(); track order._id) {
+        <tr style="border-bottom: 1px solid #f1f5f9; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+          <td style="padding: 16px 20px;">
+            <div style="font-weight: 600; color: #1e293b; font-size: 14px;">{{ order.entityName || order.companyName || 'Client Request' }}</div>
+            @if (order.documents && order.documents.length > 0) {
+              <div style="font-size: 12px; color: #64748b; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 14px;">attachment</span>
+                {{ order.documents.length }} document(s)
               </div>
-              }
-              <svg class="doc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                <polyline points="14 2 14 8 20 8"></polyline>
-              </svg>
-              <span class="doc-name" [title]="doc.filename || doc.name">{{ doc.filename || doc.name }}</span>
-              <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="btn-download" title="View Document">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="7 10 12 15 17 10"></polyline>
-                  <line x1="12" y1="15" x2="12" y2="3"></line>
-                </svg>
-              </a>
-            </div>
             }
-          </div>
-        </div>
-        }
-      </div>
-
-      <div class="card-footer">
-        <div class="assign-field-group">
-          <label class="assign-label">Assign Team:</label>
-          <select class="form-control-input select-input" (change)="onTeamSelectChange(order._id, $event)">
-            <option value="">-- Select Team --</option>
-            @for (team of teams(); track team._id) {
-            <option [value]="team._id">{{ team.name }}</option>
-            }
-          </select>
-        </div>
-
-        @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(order.serviceType || order.service_name || '')) {
-        <div class="assign-field-group">
-          <label class="assign-label">Number of Directors/Partners:</label>
-          <input type="number" class="form-control-input number-input" placeholder="Enter count"
-            [value]="getFormattedDirectors(order._id, order.details?.numberOfDirectors)" (input)="onDirectorsChange(order._id, $event)">
-        </div>
-        }
-
-        @if (['MCA Compliance', 'GST Compliance', '360° Compliance'].includes(order.serviceType || order.service_name || '')) {
-        <div class="assign-field-group">
-          <label class="assign-label">Turnover / Plan / Fee:</label>
-          <div style="font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 8px;">
-            <strong style="color: #1e293b;">Turnover:</strong> {{ order.turnover_category || order.details?.turnoverCategory || 'Not provided' }}
-          </div>
-          <select class="form-control-input select-input" (change)="onPlanChange(order._id, $event)">
-            <option value="">-- No Plan / Default --</option>
-            <option value="Silver Plan" [selected]="order.recommended_plan === 'Silver Plan' || order.details?.recommended_plan === 'Silver Plan'">Silver Plan (₹25,000 + GST)</option>
-            <option value="Gold Plan" [selected]="order.recommended_plan === 'Gold Plan' || order.details?.recommended_plan === 'Gold Plan'">Gold Plan (₹35,000 + GST)</option>
-            <option value="Diamond Plan" [selected]="order.recommended_plan === 'Diamond Plan' || order.details?.recommended_plan === 'Diamond Plan'">Diamond Plan (₹50,000 + GST)</option>
-          </select>
-        </div>
-        }
-
-        <div class="assign-field-group">
-          <label class="assign-label">Deal Closed Amount (INR):</label>
-          <input type="text" class="form-control-input number-input" placeholder="Enter amount (e.g. 5,000)"
-            [value]="getFormattedAmount(order._id)" (input)="onAmountChange(order._id, $event)">
-        </div>
-
-        <div class="assign-field-group">
-          <label class="assign-label">Advance Amount Paid (INR):</label>
-          <div class="amount-assign-row" style="flex-direction: column; gap: 8px;">
-            <div style="display: flex; gap: 8px; width: 100%;">
-                <input type="text" class="form-control-input number-input" placeholder="Enter amount or upload screenshot"
-                  [value]="getFormattedAdvance(order._id)" 
-                  (input)="onAdvanceChange(order._id, $event)"
-                  style="flex: 1; min-width: 0; height: 38px; font-weight: 600; color: #1e293b;">
-                
-              <!-- OCR Upload Button -->
-              <div style="position: relative; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                <input type="file" (change)="handleOcrUpload(order._id, $event)" accept="image/*" style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;" [disabled]="isOcrProcessingForOrder()[order._id]" />
-                @if (isOcrProcessingForOrder()[order._id]) {
-                  <span class="material-symbols-outlined" style="color: #3b82f6; animation: spin 1s linear infinite;">sync</span>
-                } @else {
-                  <span class="material-symbols-outlined" style="color: #64748b;">document_scanner</span>
-                }
-              </div>
-
-              <button class="btn-primary" (click)="assignEmployee(order._id)" [disabled]="isAssigningOrder()[order._id] || isAssignButtonDisabled(order)" style="white-space: nowrap;">
-                @if (isAssigningOrder()[order._id]) {
-                  <div class="btn-loading-content">
-                    <div class="dot-spinner">
-                      <span class="dot"></span>
-                      <span class="dot"></span>
-                      <span class="dot"></span>
-                    </div>
+          </td>
+          <td style="padding: 16px 20px;">
+            @if (order.details && objectKeys(order.details).length > 0) {
+              <div class="dynamic-details hover-container" style="margin: 0;">
+                <span class="details-title" style="cursor: help; color: #3e3e3e; font-weight: 500; font-size: 13px; display: flex; align-items: center; gap: 4px; text-transform: uppercase;">
+                  Hover to view
+                </span>
+                <div class="details-grid hover-content">
+                  @for (key of objectKeys(order.details); track key) {
+                  <div class="detail-item">
+                    <span class="detail-label">{{ formatKey(key) }}</span>
+                    <span class="detail-value">{{ formatDetailValue(order.details[key]) }}</span>
                   </div>
-                } @else {
-                  Assign
-                }
-              </button>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 4px;">
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                @if (transactionIdForOrder()[order._id]) {
-                  <span style="font-size: 12px; font-weight: 600; color: #64748b; font-family: monospace;">TID: {{ transactionIdForOrder()[order._id] }}</span>
-                }
-                @if (paymentTimestampForOrder()[order._id]) {
-                  <span style="font-size: 11px; font-weight: 500; color: #94a3b8;">{{ paymentTimestampForOrder()[order._id] }}</span>
-                }
-                @if (advanceAmountPaidForOrder()[order._id] > 0) {
-                  <span style="font-size: 12px; font-weight: 600; color: #10b981;">Amount: ₹{{ getFormattedAdvance(order._id) }}</span>
-                }
+                  }
+                </div>
               </div>
-              
-              @if (ocrMessageForOrder()[order._id]) {
-                <div style="font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 4px;" [style.color]="isOcrVerifiedForOrder()[order._id] ? '#10b981' : (ocrMessageForOrder()[order._id].includes('Warning') ? '#f59e0b' : '#64748b')">
-                  <span class="material-symbols-outlined" style="font-size: 14px;">{{ isOcrVerifiedForOrder()[order._id] ? 'verified' : 'info' }}</span>
-                  {{ ocrMessageForOrder()[order._id] }}
+            } @else {
+              <span style="color: #94a3b8; font-size: 13px;">No details</span>
+            }
+          </td>
+          <td style="padding: 16px 20px;">
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+              <div style="background: #eff6ff; color: #2563eb; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">
+                {{ order.serviceType }}
+              </div>
+              @if (order.details?.badge === 'RENEW') {
+                <div style="background: #fef2f2; color: #dc2626; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; border: 1px solid #fecaca; display: inline-flex; align-items: center; gap: 4px;">
+                  <span class="material-symbols-outlined" style="font-size: 12px;">autorenew</span> RENEWAL
                 </div>
               }
             </div>
-            
-            @if (advanceAmountPaidForOrder()[order._id] > (dealClosedAmountForOrder()[order._id] || 0)) {
-              <div style="color: #dc2626; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 4px; background: #fef2f2; padding: 6px 10px; border-radius: 6px; border: 1px solid #fecaca; margin-top: 4px;">
-                <span class="material-symbols-outlined" style="font-size: 16px;">warning</span>
-                Advance amount cannot exceed Deal Closed amount!
-              </div>
-            }
+          </td>
+          <td style="padding: 16px 20px;">
+            <div style="font-size: 14px; color: #475569; display: flex; align-items: center; gap: 6px;">
+              <hugeicons-icon [icon]="Time01Icon" size="14"></hugeicons-icon>
+              {{ formatDate(order.createdAt) }}
+            </div>
+          </td>
+          <td style="padding: 16px 20px; text-align: center;">
+            <button (click)="openApproveModal(order)" style="background: #0f172a; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+              Approve
+            </button>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+
+  <!-- Approval Modal Overlay -->
+  @if (isApprovalModalOpen() && selectedOrderForApproval()) {
+    <div style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 10000; display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s ease-out;">
+      <div style="background: white; width: 100%; max-width: 500px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); display: flex; flex-direction: column; max-height: 90vh; overflow: hidden;">
+        
+        <!-- Modal Header -->
+        <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+          <div>
+            <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">Approve & Assign</h3>
+            <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b;">{{ selectedOrderForApproval().entityName || selectedOrderForApproval().companyName || 'Client Request' }} - {{ selectedOrderForApproval().serviceType }}</p>
           </div>
+          <button (click)="closeApproveModal()" style="background: transparent; border: none; cursor: pointer; color: #94a3b8; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'; this.style.color='#475569'" onmouseout="this.style.background='transparent'; this.style.color='#94a3b8'">
+            <span class="material-symbols-outlined" style="font-size: 24px;">close</span>
+          </button>
         </div>
 
-        @if (order.assignedExpert && order.assignedExpert !== 'To be assigned') {
-        <div class="assigned-alert" style="display: flex; align-items: center;">
-          <div>
-            <hugeicons-icon [icon]="UserIcon" size="14"></hugeicons-icon>
-            Currently: <strong>{{ order.assignedExpert }}</strong>
+        <!-- Modal Body -->
+        <div style="padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;">
+          
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label style="font-size: 13px; font-weight: 600; color: #475569;">Assign Team</label>
+            <select style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; background: white; color: #1e293b;" (change)="onTeamSelectChange(selectedOrderForApproval()._id, $event)">
+              <option value="">-- Select Team --</option>
+              @for (team of teams(); track team._id) {
+                <option [value]="team._id">{{ team.name }}</option>
+              }
+            </select>
           </div>
+
+          @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(selectedOrderForApproval().serviceType || selectedOrderForApproval().service_name || '')) {
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="font-size: 13px; font-weight: 600; color: #475569;">Number of Directors/Partners</label>
+              <input type="number" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s;" placeholder="Enter count"
+                [value]="getFormattedDirectors(selectedOrderForApproval()._id, selectedOrderForApproval().details?.numberOfDirectors)" (input)="onDirectorsChange(selectedOrderForApproval()._id, $event)">
+            </div>
+          }
+
+          @if (['MCA Compliance', 'GST Compliance', '360° Compliance'].includes(selectedOrderForApproval().serviceType || selectedOrderForApproval().service_name || '')) {
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="font-size: 13px; font-weight: 600; color: #475569;">Turnover & Plan</label>
+              <div style="font-size: 13px; background: #f1f5f9; padding: 8px 12px; border-radius: 6px; color: #475569;">
+                <strong style="color: #1e293b;">Client Turnover:</strong> {{ selectedOrderForApproval().turnover_category || selectedOrderForApproval().details?.turnoverCategory || 'Not provided' }}
+              </div>
+              <select style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: white;" (change)="onPlanChange(selectedOrderForApproval()._id, $event)">
+                <option value="">-- No Plan / Default --</option>
+                <option value="Silver Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Silver Plan' || selectedOrderForApproval().details?.recommended_plan === 'Silver Plan'">Silver Plan (₹25,000 + GST)</option>
+                <option value="Gold Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Gold Plan' || selectedOrderForApproval().details?.recommended_plan === 'Gold Plan'">Gold Plan (₹35,000 + GST)</option>
+                <option value="Diamond Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Diamond Plan' || selectedOrderForApproval().details?.recommended_plan === 'Diamond Plan'">Diamond Plan (₹50,000 + GST)</option>
+              </select>
+            </div>
+          }
+
+          <div style="display: flex; gap: 16px;">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+              <label style="font-size: 13px; font-weight: 600; color: #475569;">Deal Closed Amount (INR)</label>
+              <input type="text" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-weight: 500; outline: none; box-sizing: border-box;" placeholder="e.g. 5,000"
+                [value]="getFormattedAmount(selectedOrderForApproval()._id)" (input)="onAmountChange(selectedOrderForApproval()._id, $event)">
+            </div>
+            
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+              <label style="font-size: 13px; font-weight: 600; color: #475569;">Advance Amount Paid (INR)</label>
+              <div style="display: flex; gap: 8px;">
+                <input type="text" style="flex: 1; width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-weight: 600; outline: none; box-sizing: border-box; min-width: 0;" placeholder="Amount"
+                  [value]="getFormattedAdvance(selectedOrderForApproval()._id)" (input)="onAdvanceChange(selectedOrderForApproval()._id, $event)">
+                
+                <!-- OCR Button -->
+                <div style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px dashed #93c5fd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" title="Upload Receipt for OCR">
+                  <input type="file" (change)="handleOcrUpload(selectedOrderForApproval()._id, $event)" accept="image/*" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;" [disabled]="isOcrProcessingForOrder()[selectedOrderForApproval()._id]" />
+                  @if (isOcrProcessingForOrder()[selectedOrderForApproval()._id]) {
+                    <span class="material-symbols-outlined" style="color: #3b82f6; animation: spin 1s linear infinite;">sync</span>
+                  } @else {
+                    <span class="material-symbols-outlined" style="color: #3b82f6;">document_scanner</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OCR Status text -->
+          @if (ocrMessageForOrder()[selectedOrderForApproval()._id] || transactionIdForOrder()[selectedOrderForApproval()._id]) {
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; font-size: 12px;">
+              @if (transactionIdForOrder()[selectedOrderForApproval()._id]) {
+                <div style="color: #475569; margin-bottom: 4px;"><strong>TID:</strong> {{ transactionIdForOrder()[selectedOrderForApproval()._id] }}</div>
+              }
+              @if (ocrMessageForOrder()[selectedOrderForApproval()._id]) {
+                <div style="display: flex; align-items: center; gap: 4px; font-weight: 500;" [style.color]="isOcrVerifiedForOrder()[selectedOrderForApproval()._id] ? '#10b981' : (ocrMessageForOrder()[selectedOrderForApproval()._id].includes('Warning') ? '#f59e0b' : '#64748b')">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">{{ isOcrVerifiedForOrder()[selectedOrderForApproval()._id] ? 'verified' : 'info' }}</span>
+                  {{ ocrMessageForOrder()[selectedOrderForApproval()._id] }}
+                </div>
+              }
+            </div>
+          }
+          
         </div>
-        }
+
+        <!-- Modal Footer -->
+        <div style="padding: 16px 24px; border-top: 1px solid #e2e8f0; background: #f8fafc; display: flex; justify-content: flex-end; gap: 12px;">
+          <button (click)="closeApproveModal()" style="padding: 10px 16px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">
+            Cancel
+          </button>
+          <button (click)="assignEmployee(selectedOrderForApproval()._id)" [disabled]="isAssigningOrder()[selectedOrderForApproval()._id]" style="padding: 10px 24px; background: #0f172a; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; min-width: 140px; transition: all 0.2s;" [style.opacity]="isAssigningOrder()[selectedOrderForApproval()._id] ? '0.7' : '1'" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+            @if (isAssigningOrder()[selectedOrderForApproval()._id]) {
+              <div class="dot-spinner" style="transform: scale(0.6);">
+                <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              </div>
+            } @else {
+              Confirm & Assign
+            }
+          </button>
+        </div>
+
       </div>
     </div>
-    }
-  </div>
   }
 
   <!-- Chat Modal Popup (Sidebar Drawer) -->

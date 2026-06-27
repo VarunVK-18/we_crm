@@ -104,6 +104,10 @@ export class SystemSettings implements OnInit {
   calendarFile: File | null = null;
   isUploadingCalendar = false;
 
+  sopFile: File | null = null;
+  isUploadingSop = false;
+  activeTemplateSop = signal<{filename: string, _id: string} | null>(null);
+
   constructor(private api: Api) {}
 
   ngOnInit() {
@@ -187,9 +191,11 @@ export class SystemSettings implements OnInit {
           if (tmpl) {
             this.activeTemplateItems = (tmpl.items || []).map((i: any) => ({ title: i.title, description: i.description }));
             this.activeTemplateExtractEnabled = !!tmpl.enable_document_extraction;
+            this.activeTemplateSop.set(tmpl.sop_document || null);
           } else {
             this.activeTemplateItems = [];
             this.activeTemplateExtractEnabled = false;
+            this.activeTemplateSop.set(null);
           }
         }
         this.isTemplateLoading.set(false);
@@ -251,6 +257,35 @@ export class SystemSettings implements OnInit {
       error: (err) => {
         this.isUploadingCalendar = false;
         alert(err.error?.message || 'Failed to upload calendar.');
+      }
+    });
+  }
+
+  onSopFileSelected(event: any) {
+    if (event.target.files && event.target.files.length > 0) {
+      this.sopFile = event.target.files[0];
+    }
+  }
+
+  uploadSop() {
+    if (!this.sopFile || !this.selectedService) return;
+    this.isUploadingSop = true;
+    
+    const formData = new FormData();
+    formData.append('sop', this.sopFile);
+
+    this.api.post<any>(`templates/checklists/${encodeURIComponent(this.selectedService)}/sop`, formData).subscribe({
+      next: (res) => {
+        this.isUploadingSop = false;
+        if (res.success && res.sop_document) {
+          this.activeTemplateSop.set(res.sop_document);
+          alert('SOP uploaded successfully!');
+        }
+        this.sopFile = null;
+      },
+      error: (err) => {
+        this.isUploadingSop = false;
+        alert(err.error?.message || 'Failed to upload SOP.');
       }
     });
   }

@@ -584,7 +584,9 @@
   position: absolute;
   top: 100%;
   left: 0;
-  width: 100%;
+  min-width: 320px;
+  width: max-content;
+  max-width: 450px;
   z-index: 9999;
   background-color: var(--bg-primary);
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);

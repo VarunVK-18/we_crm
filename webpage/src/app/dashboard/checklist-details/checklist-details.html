@@ -6,15 +6,27 @@
       </h2>
     </div>
 
-    @if (checklist()?.client_id) {
-    <button class="btn-chat" (click)="openChatModal()"
-      style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
-      onmouseover="this.style.backgroundColor='var(--bg-secondary)'"
-      onmouseout="this.style.backgroundColor='var(--bg-primary)'">
-      <span class="material-symbols-outlined" style="font-size: 20px; color: var(--accent-primary);">chat</span>
-      Chat with Client
-    </button>
-    }
+    <div style="display: flex; gap: 12px; align-items: center;">
+      @if (checklist()?.sop_document) {
+      <button class="btn-chat" (click)="viewSop()"
+        style="background-color: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+        onmouseover="this.style.backgroundColor='#fee2e2'"
+        onmouseout="this.style.backgroundColor='#fef2f2'">
+        <span class="material-symbols-outlined" style="font-size: 20px;">description</span>
+        View SOP
+      </button>
+      }
+
+      @if (checklist()?.client_id) {
+      <button class="btn-chat" (click)="openChatModal()"
+        style="background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+        onmouseover="this.style.backgroundColor='var(--bg-secondary)'"
+        onmouseout="this.style.backgroundColor='var(--bg-primary)'">
+        <span class="material-symbols-outlined" style="font-size: 20px; color: var(--accent-primary);">chat</span>
+        Chat with Client
+      </button>
+      }
+    </div>
   </div>
 
   @if (checklist()) {
@@ -958,6 +970,43 @@
           <span class="material-symbols-outlined" style="font-size: 18px; margin-left: 2px;">send</span>
         </button>
       </div>
+    </div>
+  </div>
+</div>
+}
+
+<!-- SOP Viewer Modal -->
+@if (isSopModalOpen()) {
+<div
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+  <div class="fade-in"
+    style="background: white; border-radius: 16px; width: 90%; max-width: 1000px; height: 90vh; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; overflow: hidden;">
+
+    <!-- Header -->
+    <div
+      style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-primary);">
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined" style="color: #ef4444;">description</span>
+          Standard Operating Procedure
+        </h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0;">{{ checklist()?.service_name }}</p>
+      </div>
+      <button (click)="closeSopModal()"
+        style="background: transparent; border: none; cursor: pointer; color: var(--text-secondary); padding: 8px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s;"
+        onmouseover="this.style.backgroundColor='var(--bg-secondary)'; this.style.color='var(--text-primary)'"
+        onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--text-secondary)'">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Viewer Area -->
+    <div style="flex: 1; background: #e2e8f0; position: relative; overflow: auto; padding: 16px; display: flex; justify-content: center;">
+      <pdf-viewer [src]="sopPdfSrc"
+                  [render-text]="true"
+                  [original-size]="false"
+                  style="width: 100%; max-width: 800px; height: 100%;">
+      </pdf-viewer>
     </div>
   </div>
 </div>

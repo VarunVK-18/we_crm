@@ -2,13 +2,14 @@ import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } fro
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 import { OcrService } from '../../services/ocr.service';
 
 @Component({
   selector: 'app-checklist-details',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PdfViewerModule],
   templateUrl: './checklist-details.html',
   styleUrl: './checklist-details.css'
 })
@@ -41,6 +42,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   // Final Documents Upload State
   finalDocsToUpload: { file: File, docType?: string }[] = [];
   isFinalDocUploading = false;
+
+  // SOP Viewer State
+  isSopModalOpen = signal<boolean>(false);
+  sopPdfSrc: string = '';
 
   // Add Payment State
   isAddingPayment = signal<boolean>(false);
@@ -93,6 +98,19 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   chatPollingInterval: any;
 
   constructor(public api: Api, private ocrService: OcrService) { }
+
+  viewSop() {
+    const cl = this.checklist();
+    if (cl && cl.sop_document) {
+      this.sopPdfSrc = `${this.api.serverUrl}api/documents/${cl.sop_document}`;
+      this.isSopModalOpen.set(true);
+    }
+  }
+
+  closeSopModal() {
+    this.isSopModalOpen.set(false);
+    this.sopPdfSrc = '';
+  }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

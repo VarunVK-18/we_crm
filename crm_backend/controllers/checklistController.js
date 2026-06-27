@@ -173,12 +173,15 @@ const getChecklists = async (req, res) => {
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
     const ChecklistTemplate = require('../models/ChecklistTemplate');
+    const checklistsData = [];
+
     for (let cl of checklists) {
+      const template = await ChecklistTemplate.findOne({
+        company_id: cl.company_id,
+        service_name: cl.service_name
+      });
+
       if (!cl.items || cl.items.length === 0) {
-        const template = await ChecklistTemplate.findOne({
-          company_id: cl.company_id,
-          service_name: cl.service_name
-        });
         if (template && template.items && template.items.length > 0) {
           cl.items = template.items.map(item => ({
             title: item.title,
@@ -190,9 +193,15 @@ const getChecklists = async (req, res) => {
           console.log(`[DEBUG] Dynamically populated ${cl.items.length} items from template for checklist ID ${cl._id} (${cl.service_name})`);
         }
       }
+
+      let clObj = cl.toObject();
+      if (template && template.sop_document) {
+        clObj.sop_document = template.sop_document;
+      }
+      checklistsData.push(clObj);
     }
 
-    res.status(200).json({ success: true, checklists });
+    res.status(200).json({ success: true, checklists: checklistsData });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

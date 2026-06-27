@@ -252,6 +252,37 @@
             </div>
           </div>
 
+          <!-- SOP Upload Section -->
+          <div class="form-grid" style="margin-bottom: 24px; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <div class="form-group-list">
+              <div>
+                <h3 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin: 0 0 4px;">Standard Operating Procedure (SOP)</h3>
+                <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 16px;">Upload a PDF guide for staff handling this certification.</p>
+                
+                @if (activeTemplateSop()) {
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px; padding: 12px; background: white; border: 1px solid #cbd5e1; border-radius: 6px;">
+                    <span class="material-symbols-outlined" style="color: #ef4444;">picture_as_pdf</span>
+                    <span style="font-size: 14px; font-weight: 500; color: #334155;">{{ activeTemplateSop()?.filename }}</span>
+                  </div>
+                }
+
+                <div style="display: flex; gap: 12px; align-items: flex-end;">
+                  <div style="flex: 1;">
+                    <input type="file" 
+                           (change)="onSopFileSelected($event)" 
+                           accept="application/pdf"
+                           class="form-control-input"
+                           [disabled]="user()?.role !== 'admin'" />
+                  </div>
+                  <button type="button" class="btn-primary-save" (click)="uploadSop()" [disabled]="!sopFile || isUploadingSop || user()?.role !== 'admin'" style="display: flex; justify-content: center; align-items: center; height: 42px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px; margin-right: 6px;">{{ isUploadingSop ? 'sync' : 'upload_file' }}</span> 
+                    {{ isUploadingSop ? 'Uploading...' : 'Upload SOP' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Data Table for Checklist Items -->
           <div class="table-container">
             <table class="checklist-table">

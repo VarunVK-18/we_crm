@@ -307,8 +307,25 @@ export class RequestsComponent implements OnInit {
     return false;
   }
 
+  openApproveModal(order: any) {
+    this.selectedOrderForApproval.set(order);
+    this.isApprovalModalOpen.set(true);
+  }
+
+  closeApproveModal() {
+    this.isApprovalModalOpen.set(false);
+    setTimeout(() => {
+      this.selectedOrderForApproval.set(null);
+    }, 300); // Wait for transition
+  }
+
   assignEmployee(orderId: string) {
     const emp = this.selectedEmployeeForOrder()[orderId];
+    if (!emp) {
+      this.showToast('Please select a team before assigning.', 'error');
+      return;
+    }
+
     const amount = this.dealClosedAmountForOrder()[orderId] || 0;
     const advance = this.advanceAmountPaidForOrder()[orderId] || 0;
     const tid = this.transactionIdForOrder()[orderId] || '';
@@ -316,8 +333,8 @@ export class RequestsComponent implements OnInit {
     const isVerified = this.isOcrVerifiedForOrder()[orderId] || false;
     const isGstApplicable = this.isGstApplicableForOrder()[orderId] ?? true;
 
-    if (!isVerified) {
-      this.showToast('Cannot assign: OCR Bank Verification failed or receipt not uploaded.', 'error');
+    if (advance > 0 && tid && !isVerified) {
+      this.showToast('Cannot assign: OCR Bank Verification failed.', 'error');
       return;
     }
 
@@ -326,10 +343,12 @@ export class RequestsComponent implements OnInit {
       return;
     }
 
-    if (!emp || amount <= 0 || advance <= 0) {
-      this.showToast('Please fill all details (Assign Expert, Deal Closed Amount, and Advance Amount Paid).', 'error');
+    if (!emp || amount <= 0) {
+      this.showToast('Please fill all details (Assign Expert, Deal Closed Amount).', 'error');
       return;
     }
+
+    this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: true }));
 
     const order = this.orders().find(o => o._id === orderId);
     const needsDirectors = ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(order?.serviceType || order?.serviceName || '');
@@ -339,6 +358,7 @@ export class RequestsComponent implements OnInit {
         directors = Number(order.details.numberOfDirectors);
       } else {
         this.showToast('Please enter the Number of Directors/Partners.', 'error');
+        this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: false }));
         return;
       }
     }
@@ -360,8 +380,6 @@ export class RequestsComponent implements OnInit {
     if (needsDirectors && directors) {
       updateData.assignedNumberOfDirectors = directors;
     }
-
-    this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: true }));
 
     // Assign Employee and update deal closed amount
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
@@ -395,32 +413,15 @@ export class RequestsComponent implements OnInit {
         this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: false }));
         this.showToast(`Assigned to ${emp.name} successfully!`, 'success');
 
+        // Close the modal
+        this.closeApproveModal();
+
         // Reset local selection & amount for this order
-        this.selectedEmployeeForOrder.update(prev => {
-          const next = { ...prev };
-          delete next[orderId];
-          return next;
-        });
-        this.dealClosedAmountForOrder.update(prev => {
-          const next = { ...prev };
-          delete next[orderId];
-          return next;
-        });
-        this.advanceAmountPaidForOrder.update(prev => {
-          const next = { ...prev };
-          delete next[orderId];
-          return next;
-        });
-        this.transactionIdForOrder.update(prev => {
-          const next = { ...prev };
-          delete next[orderId];
-          return next;
-        });
-        this.numberOfDirectorsForOrder.update(prev => {
-          const next = { ...prev };
-          delete next[orderId];
-          return next;
-        });
+        this.selectedEmployeeForOrder.update(prev => { const next = { ...prev }; delete next[orderId]; return next; });
+        this.dealClosedAmountForOrder.update(prev => { const next = { ...prev }; delete next[orderId]; return next; });
+        this.advanceAmountPaidForOrder.update(prev => { const next = { ...prev }; delete next[orderId]; return next; });
+        this.transactionIdForOrder.update(prev => { const next = { ...prev }; delete next[orderId]; return next; });
+        this.numberOfDirectorsForOrder.update(prev => { const next = { ...prev }; delete next[orderId]; return next; });
 
         this.fetchOrders();
       },

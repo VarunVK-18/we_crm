@@ -28,6 +28,10 @@ const ChecklistTemplateSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  sop_document: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Document'
+  },
   items: [TemplateItemSchema]
 }, { timestamps: true });
 

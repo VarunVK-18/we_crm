@@ -217,6 +217,9 @@
       @if (currentTab() === 'service-track') {
       <app-service-track (onViewChecklist)="viewChecklist($event)"></app-service-track>
       }
+      @if (currentTab() === 'service-tracker-table') {
+      <app-service-tracker-table></app-service-tracker-table>
+      }
       @if (currentTab() === 'banners') {
       <app-banner-management></app-banner-management>
       }
