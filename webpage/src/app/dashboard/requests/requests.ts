@@ -73,6 +73,10 @@ export class RequestsComponent implements OnInit {
   selectedPlanForOrder = signal<{ [orderId: string]: string }>({});
   isAssigningOrder = signal<Record<string, boolean>>({});
   
+  // Modal State
+  selectedOrderForApproval = signal<any>(null);
+  isApprovalModalOpen = signal<boolean>(false);
+  
   // OCR additions
   transactionIdForOrder = signal<Record<string, string>>({});
   paymentTimestampForOrder = signal<Record<string, string>>({});
