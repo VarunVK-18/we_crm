@@ -26,6 +26,7 @@
       <button class="tab-btn" [class.active]="currentDirectoryTab() === 'admins'" (click)="currentDirectoryTab.set('admins')">Admins</button>
       <button class="tab-btn" [class.active]="currentDirectoryTab() === 'filing'" (click)="currentDirectoryTab.set('filing')">Filing Staff</button>
       <button class="tab-btn" [class.active]="currentDirectoryTab() === 'clients'" (click)="currentDirectoryTab.set('clients')">Client Managers</button>
+      <button class="tab-btn" [class.active]="currentDirectoryTab() === 'teams'" (click)="currentDirectoryTab.set('teams')" style="color: #6366f1; font-weight: 600;">Bucket Teams</button>
     </div>
     
     <!-- Table -->
@@ -91,6 +92,70 @@
       </table>
     </div>
   </div>
+
+  <!-- Bucket Teams Panel -->
+  @if (currentDirectoryTab() === 'teams') {
+  <div style="padding: 0 0 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0 16px;">
+      <div>
+        <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;">Bucket Teams</h3>
+        <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Define teams that link a Client Manager to Filing Staff for the job bucket system.</p>
+      </div>
+      <button class="btn-add-user" (click)="openCreateTeamModal()" style="background: linear-gradient(135deg,#6366f1,#4f46e5)">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">group_add</span>
+        Create Team
+      </button>
+    </div>
+
+    @if (isLoadingTeams()) {
+      <div style="text-align: center; padding: 48px; color: #94a3b8;">Loading teams...</div>
+    } @else if (bucketTeams().length === 0) {
+      <div style="text-align: center; padding: 60px; background: #f8fafc; border-radius: 14px; color: #94a3b8;">
+        <!-- Removed emoji -->
+        <p style="font-weight: 600; color: #475569; margin: 0 0 6px;">No teams yet</p>
+        <p style="font-size: 13px; margin: 0;">Create a team to start assigning Client Managers and Filing Staff together.</p>
+      </div>
+    } @else {
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 18px;">
+        @for (team of bucketTeams(); track team._id) {
+          <div style="background: white; border: 1.5px solid #e2e8f0; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <div style="padding: 16px 18px 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: bold;">{{ team.name.charAt(0) }}</div>
+                <div>
+                  <p style="font-weight: 700; font-size: 15px; color: #1e293b; margin: 0;">{{ team.name }}</p>
+                  @if (team.manager_id) {
+                    <p style="font-size: 12px; color: #6366f1; margin: 0;">Manager: {{ team.manager_id?.owner_name || 'Assigned' }}</p>
+                  }
+                </div>
+              </div>
+              <div style="display: flex; gap: 6px;">
+                <button (click)="openEditTeamModal(team)" style="padding: 6px; border: none; background: #f1f5f9; border-radius: 8px; cursor: pointer; color: #475569;" title="Edit">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">edit</span>
+                </button>
+                <button (click)="deleteTeam(team._id, team.name)" style="padding: 6px; border: none; background: #fee2e2; border-radius: 8px; cursor: pointer; color: #dc2626;" title="Delete">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">delete</span>
+                </button>
+              </div>
+            </div>
+            <div style="padding: 12px 18px;">
+              @if (team.members && team.members.length > 0) {
+                <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">{{ team.members.length }} Member{{ team.members.length > 1 ? 's' : '' }}</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  @for (m of team.members; track m._id || m) {
+                    <span style="padding: 3px 10px; background: #f0fdf4; color: #15803d; border-radius: 20px; font-size: 12px; font-weight: 500;">{{ m.owner_name || m.name || 'Member' }}</span>
+                  }
+                </div>
+              } @else {
+                <p style="font-size: 13px; color: #cbd5e1; margin: 0;">No members assigned yet.</p>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+  }
 </div>
 
 <!-- Modals -->
@@ -228,3 +293,79 @@
     </div>
   </div>
 }
+
+<!-- Create / Edit Bucket Team Modal -->
+@if (isTeamModalOpen()) {
+  <div class="modal-overlay" (click)="closeTeamModal()">
+    <div class="modal-card-box" style="max-width: 560px; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="display:flex; align-items:center; gap:8px;">{{ isEditTeamMode() ? 'Edit' : 'Create' }} Bucket Team</h3>
+        <button class="close-modal-btn" (click)="closeTeamModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form (ngSubmit)="submitTeam()" style="padding-bottom: 8px;">
+        @if (teamError()) {
+          <div style="background: #fee2e2; color: #dc2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;">{{ teamError() }}</div>
+        }
+
+        <div class="form-group-item" style="margin-bottom: 18px;">
+          <label class="form-input-label">Team Name *</label>
+          <input type="text" placeholder="e.g. Alpha Team" class="form-control-input" [(ngModel)]="newTeam.name" name="team_name" required />
+        </div>
+
+        <div class="form-group-item" style="margin-bottom: 18px;">
+          <label class="form-input-label">Team Manager (Client Manager)</label>
+          <select class="form-control-input" [(ngModel)]="newTeam.manager_id" name="team_manager">
+            <option value="">— No manager selected —</option>
+            @for (mgr of getManagers(); track mgr.id || mgr._id) {
+              <option [value]="mgr.id || mgr._id">{{ mgr.name || mgr.owner_name }} ({{ getRoleLabel(mgr.role) }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group-item" style="margin-bottom: 22px;">
+          <label class="form-input-label">Team Members (Filing Staff)</label>
+          <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 10px;">Click to toggle. Selected members will see jobs claimed by this team's manager.</p>
+          @if (getFillingStaff().length === 0) {
+            <p style="color: #cbd5e1; font-size: 13px;">No filing staff available.</p>
+          } @else {
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              @for (staff of getFillingStaff(); track staff.id || staff._id) {
+                @if (isMemberAssignedToOtherTeam(staff.id || staff._id)) {
+                  <button type="button"
+                    disabled
+                    style="padding: 7px 14px; border-radius: 22px; font-size: 13px; font-weight: 500; cursor: not-allowed; background: #f1f5f9; border: 2px solid #e2e8f0; color: #94a3b8; opacity: 0.7;">
+                    {{ staff.name || staff.owner_name }} (in {{ getAssignedTeamName(staff.id || staff._id) }})
+                  </button>
+                } @else {
+                  <button type="button"
+                    (click)="toggleTeamMember(staff.id || staff._id)"
+                    [style.background]="isTeamMember(staff.id || staff._id) ? '#f0fdf4' : '#f8fafc'"
+                    [style.border]="isTeamMember(staff.id || staff._id) ? '2px solid #16a34a' : '2px solid #e2e8f0'"
+                    [style.color]="isTeamMember(staff.id || staff._id) ? '#15803d' : '#64748b'"
+                    style="padding: 7px 14px; border-radius: 22px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s ease;">
+                    @if (isTeamMember(staff.id || staff._id)) { ✓ }
+                    {{ staff.name || staff.owner_name }}
+                  </button>
+                }
+              }
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer-actions">
+          <button type="button" class="btn-cancel" (click)="closeTeamModal()" [disabled]="teamSubmitting()">Cancel</button>
+          <button type="submit" class="btn-submit" [disabled]="teamSubmitting()" style="display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg,#6366f1,#4f46e5);">
+            @if (teamSubmitting()) {
+              <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 18px;">progress_activity</span> Saving...
+            } @else {
+              {{ isEditTeamMode() ? 'Update Team' : 'Create Team' }}
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+

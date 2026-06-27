@@ -630,7 +630,19 @@
   margin-top: 2px;
 }
 
-.download-btn {
+.doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.document-item:hover .doc-actions {
+  opacity: 1;
+}
+
+.action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -639,13 +651,16 @@
   border-radius: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
+  color: color-mix(in srgb, var(--palette-dark) 65%, transparent);
   cursor: pointer;
   transition: all 0.2s;
+  text-decoration: none;
 }
 
-.download-btn:hover {
+.action-btn:hover {
   background: var(--background);
   border-color: #cbd5e1;
+  color: var(--palette-dark);
 }
 
 .empty-docs {

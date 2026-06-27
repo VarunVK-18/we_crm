@@ -11,13 +11,7 @@ import {
   CheckmarkBadge01Icon
 } from '@hugeicons/core-free-icons';
 
-export interface ClientChatGroup {
-  client: any;
-  chats: any[];
-  latestMessageAt: Date;
-  totalUnreadCount: number;
-}
-
+import { ChatCacheService, ClientChatGroup } from '../../services/chat-cache.service';
 @Component({
   selector: 'app-staff-chat',
   standalone: true,
@@ -35,22 +29,25 @@ export class StaffChatComponent implements OnInit, OnDestroy {
 
   user = signal<any>(null);
   
+  chatCache = inject(ChatCacheService);
+
   // Conversations State
-  groupedConversations = signal<ClientChatGroup[]>([]);
+  groupedConversations = this.chatCache.groupedConversations;
   filteredGroupedConversations = signal<ClientChatGroup[]>([]);
   isLoadingConversations = signal<boolean>(true);
   searchQuery = signal<string>('');
 
   // Active Chat State
-  activeGroup = signal<ClientChatGroup | null>(null);
-  activeConversation = signal<any>(null);
-  chatMessages = signal<any[]>([]);
+  activeGroup = this.chatCache.activeGroup;
+  activeConversation = this.chatCache.activeConversation;
+  chatMessages = this.chatCache.chatMessages;
   isLoadingChat = signal<boolean>(false);
   newChatMessage = signal<string>('');
   chatPollingInterval: any;
 
   @Output() onViewService = new EventEmitter<string>();
   @Input() initialOrderId: string | null = null;
+  @Input() initialClientId: string | null = null;
 
   isSearchingMessages = signal<boolean>(false);
   messageSearchQuery = signal<string>('');
@@ -162,7 +159,21 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
     }
-    this.fetchConversations();
+    
+    // Check if we have cached conversations
+    if (this.groupedConversations().length > 0) {
+      this.isLoadingConversations.set(false);
+      this.filterConversations(this.searchQuery());
+      // Still fetch in background to get new messages silently
+      this.fetchConversations(false);
+      
+      // If there's an active conversation in cache, restart its polling
+      if (this.activeConversation()) {
+        this.startChatPolling();
+      }
+    } else {
+      this.fetchConversations(true);
+    }
   }
 
   ngOnDestroy() {
@@ -175,10 +186,13 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     if (changes['initialOrderId'] && this.initialOrderId && this.groupedConversations().length > 0) {
       this.selectByOrderId(this.initialOrderId);
     }
+    if (changes['initialClientId'] && this.initialClientId && this.groupedConversations().length > 0) {
+      this.selectByClientId(this.initialClientId);
+    }
   }
 
-  fetchConversations() {
-    this.isLoadingConversations.set(true);
+  fetchConversations(showLoading = true) {
+    if (showLoading) this.isLoadingConversations.set(true);
     this.api.get<any>('chat/conversations/all').subscribe({
       next: (res) => {
         if (res.success) {
@@ -214,13 +228,15 @@ export class StaffChatComponent implements OnInit, OnDestroy {
           
           if (this.initialOrderId && !this.activeConversation()) {
             this.selectByOrderId(this.initialOrderId);
+          } else if (this.initialClientId && !this.activeConversation()) {
+            this.selectByClientId(this.initialClientId);
           }
         }
-        this.isLoadingConversations.set(false);
+        if (showLoading) this.isLoadingConversations.set(false);
       },
       error: (err) => {
         console.error('Error fetching conversations:', err);
-        this.isLoadingConversations.set(false);
+        if (showLoading) this.isLoadingConversations.set(false);
       }
     });
   }
@@ -232,6 +248,13 @@ export class StaffChatComponent implements OnInit, OnDestroy {
         this.selectGroup(group, conv);
         return;
       }
+    }
+  }
+
+  selectByClientId(clientId: string) {
+    const group = this.groupedConversations().find(g => g.client?._id === clientId);
+    if (group) {
+      this.selectGroup(group);
     }
   }
 
@@ -262,9 +285,18 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   }
 
   onServiceSwitch(conv: any) {
+    // If it's the same conversation, don't clear messages
+    const isSameConv = this.activeConversation()?.checklist?._id === conv.checklist._id;
+    
     this.activeConversation.set(conv);
-    this.chatMessages.set([]);
-    this.fetchChatMessages(true);
+    
+    if (!isSameConv) {
+      this.chatMessages.set([]);
+      this.fetchChatMessages(true);
+    } else {
+      // Just refresh in background
+      this.fetchChatMessages(false);
+    }
     this.markMessagesAsSeen(conv.checklist._id);
     
     // Optimistically clear the unread count in the sidebar
@@ -283,10 +315,13 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     }));
     this.filterConversations(this.searchQuery());
     
+    this.startChatPolling();
+  }
+
+  startChatPolling() {
     if (this.chatPollingInterval) {
       clearInterval(this.chatPollingInterval);
     }
-    
     this.chatPollingInterval = setInterval(() => {
       this.fetchChatMessages(false);
     }, 5000);

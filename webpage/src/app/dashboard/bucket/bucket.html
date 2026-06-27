@@ -1,0 +1,298 @@
+<div class="bucket-page">
+
+  @if (isManager) {
+  <!-- CLIENT MANAGER VIEW: Open Bucket Requests from DealVoice -->
+  <div class="bucket-header">
+    <div class="bucket-header-title">
+      <div class="bucket-icon">
+        <svg fill="#ffffff" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 16 16">
+          <path
+            d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z" />
+        </svg>
+      </div>
+      <div>
+        <h1>Bucket Requests</h1>
+        <p>New client onboarding requests from DealVoice. Accept for your team to start working.</p>
+      </div>
+    </div>
+    <div class="bucket-tabs">
+      <button class="bucket-tab" [class.active]="activeTab() === 'open'" (click)="setTab('open')">Open</button>
+      <button class="bucket-tab" [class.active]="activeTab() === 'claimed_by_manager'"
+        (click)="setTab('claimed_by_manager')">Claimed</button>
+      <button class="bucket-tab" [class.active]="activeTab() === 'assigned'"
+        (click)="setTab('assigned')">Assigned</button>
+      <button class="bucket-tab" [class.active]="activeTab() === 'all'" (click)="setTab('all')">All</button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+  <div class="bucket-loading">
+    <div class="bucket-spinner"></div>
+    <p>Loading requests...</p>
+  </div>
+  } @else if (requests().length === 0) {
+  <div class="bucket-empty">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+    <h3>No {{ activeTab() === 'open' ? 'open' : activeTab() }} requests</h3>
+    <p>New client onboardings from DealVoice will appear here.</p>
+  </div>
+  } @else {
+  <div class="bucket-table-container">
+    <table class="bucket-table">
+      <thead>
+        <tr>
+          <th>Client Name</th>
+          <th>Service</th>
+          <th>Contact Info</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (req of requests(); track req._id) {
+        <tr>
+          <td>
+            <div class="employee-cell">
+              <div class="employee-avatar">{{ getClientName(req).charAt(0).toUpperCase() }}</div>
+              <div>
+                <h3 class="employee-name">{{ getClientName(req) }}</h3>
+                @if (req.client_company_name) {
+                <span class="employee-email">{{ req.client_company_name }}</span>
+                }
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="service-name">{{ req.service_name }}</span>
+          </td>
+          <td>
+            <div class="contact-info">
+              @if (req.client_phone) { <div>{{ req.client_phone }}</div> }
+              @if (req.client_email) { <div class="text-muted">{{ req.client_email }}</div> }
+            </div>
+          </td>
+          <td>
+            <span class="time-ago">{{ getTimeAgo(req.createdAt) }}</span>
+          </td>
+          <td>
+            <div class="status-cell">
+              <span class="status-badge status-{{ req.status }}">
+                @if (req.status === 'open') { Open }
+                @else if (req.status === 'claimed_by_manager') { Claimed }
+                @else if (req.status === 'assigned') { Assigned }
+                @else if (req.status === 'declined') { Declined }
+              </span>
+              @if (req.claimed_by) {
+              <div class="claimed-by-text">{{ req.claimed_by?.owner_name || 'Manager' }}</div>
+              }
+            </div>
+          </td>
+          <td>
+            @if (req.status === 'open') {
+            <div class="action-buttons">
+              <button class="btn-claim-sm" [disabled]="claimingId() === req._id" (click)="openAcceptModal(req)">
+                {{ claimingId() === req._id ? 'Accepting...' : 'Accept' }}
+              </button>
+              <button class="btn-decline-sm" (click)="declineRequest(req._id)">Decline</button>
+            </div>
+            }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+  }
+
+  @if (isFillingStaff) {
+  <!-- FILLING STAFF VIEW: Jobs available in their team's bucket -->
+  <div class="bucket-header">
+    <div class="bucket-header-title">
+      <div class="bucket-icon bucket-icon-staff">
+        <svg fill="#ffffff" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 16 16">
+          <path
+            d="M5.45 5.154A4.25 4.25 0 0 0 9.25 7.5h1.378a2.251 2.251 0 1 1 0 1.5H9.25A5.734 5.734 0 0 1 5 7.123v3.505a2.25 2.25 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.95-.218ZM4.25 13.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm8.5-4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5ZM5 3.25a.75.75 0 1 0 0 .005V3.25Z" />
+        </svg>
+      </div>
+      <div>
+        <h1>Available Jobs</h1>
+        <p>Your manager has accepted these jobs for your team. Take a job to start working.</p>
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+  <div class="bucket-loading">
+    <div class="bucket-spinner"></div>
+    <p>Loading available jobs...</p>
+  </div>
+  } @else if (jobs().length === 0) {
+  <div class="bucket-empty">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+    <h3>No jobs available</h3>
+    <p>When your team manager accepts a client request, the jobs will appear here for you to take.</p>
+  </div>
+  } @else {
+  <div class="bucket-table-container">
+    <table class="bucket-table">
+      <thead>
+        <tr>
+          <th>Client Name</th>
+          <th>Service</th>
+          <th>Contact Info</th>
+          <th>Available Since</th>
+          <th>Team</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (job of jobs(); track job._id) {
+        <tr>
+          <td>
+            <div class="employee-cell">
+              <div class="employee-avatar">{{ getClientName(job).charAt(0).toUpperCase() }}</div>
+              <div>
+                <h3 class="employee-name">{{ getClientName(job) }}</h3>
+                @if (job.client_company_name) {
+                <span class="employee-email">{{ job.client_company_name }}</span>
+                }
+              </div>
+            </div>
+          </td>
+          <td>
+            <span class="service-name">{{ job.service_name }}</span>
+          </td>
+          <td>
+            <div class="contact-info">
+              @if (job.client_phone) { <div>{{ job.client_phone }}</div> }
+              @if (job.client_email) { <div class="text-muted">{{ job.client_email }}</div> }
+            </div>
+          </td>
+          <td>
+            <span class="time-ago">{{ getTimeAgo(job.claimed_at) }}</span>
+          </td>
+          <td>
+            @if (job.claimed_by) {
+            <div class="claimed-by-text">{{ job.claimed_by?.owner_name || 'Your Manager' }}</div>
+            }
+          </td>
+          <td>
+            <div class="table-actions">
+              <button class="btn-claim-sm" (click)="selfAssign(job._id)" [disabled]="assigningId() === job._id">
+                @if (assigningId() === job._id) {
+                <span class="mini-spinner"></span>
+                } @else {
+                Take Job
+                }
+              </button>
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  }
+  }
+
+  <!-- Accept Request Modal -->
+  @if (isAcceptModalOpen() && selectedBucketReq()) {
+  <div class="modal-overlay" (click)="closeAcceptModal()">
+    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Accept Bucket Request</h3>
+        <button class="close-modal-btn" (click)="closeAcceptModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div style="margin-bottom: 24px; color: var(--text-secondary); font-size: 14px;">
+        You are accepting the request for <strong>{{ getClientName(selectedBucketReq()) }}</strong>.
+      </div>
+
+      <div class="form-group-item">
+        <label class="form-input-label">Assign to Filling Team *</label>
+        <select class="form-control-input" [(ngModel)]="selectedTeamId">
+          <option value="">-- Select a Team --</option>
+          @for (team of bucketTeams(); track team._id) {
+          <option [value]="team._id">{{ team.name }}</option>
+          }
+        </select>
+        @if (bucketTeams().length === 0) {
+        <div style="font-size: 12px; color: var(--color-danger); margin-top: 4px;">You are not a manager of any teams.
+          Please create a team in Directory first.</div>
+        }
+      </div>
+
+      <div class="form-row-grid">
+        <div class="form-group-item">
+          <label class="form-input-label">Deal Closed Amount (INR)</label>
+          <input type="number" class="form-control-input" placeholder="0" [(ngModel)]="dealClosedAmount" min="0" />
+        </div>
+        <div class="form-group-item">
+          <label class="form-input-label">Advance Amount Paid (INR)</label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <input type="number" class="form-control-input" placeholder="0" [(ngModel)]="advanceAmountPaid" min="0"
+                style="flex: 1; width: 100%;" />
+
+              <!-- OCR Upload Button -->
+              <div
+                style="position: relative; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0 12px; cursor: pointer; transition: all 0.2s;"
+                onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                <input type="file" (change)="handleOcrUpload($event)" accept="image/*"
+                  style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;"
+                  [disabled]="isOcrProcessing()" />
+                @if (isOcrProcessing()) {
+                <span class="material-symbols-outlined"
+                  style="color: #3b82f6; animation: spin 1s linear infinite;">sync</span>
+                } @else {
+                <span class="material-symbols-outlined" style="color: #64748b;">document_scanner</span>
+                }
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              @if (ocrMessage()) {
+              <div style="font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 4px;"
+                [style.color]="isOcrVerified() ? '#10b981' : (ocrMessage().includes('Warning') ? '#f59e0b' : '#64748b')">
+                <span class="material-symbols-outlined" style="font-size: 14px;">{{ isOcrVerified() ? 'verified' :
+                  'info' }}</span>
+                {{ ocrMessage() }}
+              </div>
+              }
+
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                @if (transactionId()) {
+                <span
+                  style="font-size: 12px; font-weight: 600; color: #64748b; font-family: monospace; word-break: break-all;">TID:
+                  {{ transactionId() }}</span>
+                }
+                @if (paymentTimestamp()) {
+                <span style="font-size: 11px; font-weight: 500; color: #94a3b8;">{{ paymentTimestamp() }}</span>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
+        <button class="btn-decline-sm" (click)="closeAcceptModal()">Cancel</button>
+        <button class="btn-claim-sm" (click)="confirmAccept()"
+          [disabled]="claimingId() === selectedBucketReq()?._id || bucketTeams().length === 0">
+          {{ claimingId() === selectedBucketReq()?._id ? 'Accepting...' : 'Confirm & Accept' }}
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+
+</div>

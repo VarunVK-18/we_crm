@@ -193,14 +193,9 @@ export class RequestsComponent implements OnInit {
   }
 
   fetchTeam() {
-    this.api.get<any>('users/team-groups').subscribe({
+    this.api.get<any>('teams').subscribe({
       next: (res: any) => {
-        // team-groups returns an array of groups directly
-        if (Array.isArray(res)) {
-          this.teams.set(res);
-        } else if (res && res.groups) {
-          this.teams.set(res.groups);
-        }
+        this.teams.set(res.teams || []);
       },
       error: (err: any) => console.error('Error fetching team:', err)
     });
@@ -224,13 +219,13 @@ export class RequestsComponent implements OnInit {
     return emp.ongoingTasksCount || 0;
   }
 
-  onEmployeeSelectChange(orderId: string, event: any) {
-    const empId = event.target.value;
-    const allEmps = this.getFlatEmployees();
-    const selectedEmp = allEmps.find(e => e.id === empId);
+  onTeamSelectChange(orderId: string, event: any) {
+    const teamId = event.target.value;
+    const allTeams = this.teams();
+    const selectedTeam = allTeams.find((t: any) => t._id === teamId);
 
-    if (selectedEmp) {
-      this.selectedEmployeeForOrder.update(prev => ({ ...prev, [orderId]: selectedEmp }));
+    if (selectedTeam) {
+      this.selectedEmployeeForOrder.update(prev => ({ ...prev, [orderId]: selectedTeam }));
     } else {
       this.selectedEmployeeForOrder.update(prev => {
         const next = { ...prev };
@@ -335,8 +330,8 @@ export class RequestsComponent implements OnInit {
     }
 
     const updateData: any = {
+      team_id: emp._id,
       assignedExpert: emp.name,
-      expertPhone: emp.phone || '',
       stage: 'workAssigned',
       dealClosedAmount: amount,
       advanceAmountPaid: advance,

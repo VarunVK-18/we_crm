@@ -31,6 +31,7 @@ export class Sidebar implements OnInit, OnDestroy {
 
   user = signal<any>(null);
   newRequestsCount = signal<number>(0);
+  bucketCount = signal<number>(0);
   private pollInterval: any;
 
   constructor(private api: Api) {
@@ -67,6 +68,7 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Operations',
         items: [
+          { id: 'bucket', label: 'Bucket Requests', color: '#6366f1' },
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
@@ -95,6 +97,7 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Operations',
         items: [
+          { id: 'bucket', label: 'Bucket Requests', color: '#6366f1' },
           { id: 'requests', label: 'New Requests', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
@@ -114,6 +117,7 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Operations',
         items: [
+          { id: 'bucket', label: 'Available Jobs', color: '#6366f1' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
@@ -142,9 +146,11 @@ export class Sidebar implements OnInit, OnDestroy {
     }
     
     this.fetchNewRequestsCount();
+    this.fetchBucketCount();
     this.pollInterval = setInterval(() => {
       this.fetchNewRequestsCount();
-    }, 10000);
+      this.fetchBucketCount();
+    }, 15000);
   }
 
   ngOnDestroy() {
@@ -180,6 +186,22 @@ export class Sidebar implements OnInit, OnDestroy {
             return NEW_STATUSES.includes(status) || NEW_STAGES.includes(stage);
           }).length;
           this.newRequestsCount.set(count);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  fetchBucketCount() {
+    const u = this.user();
+    if (!u) return;
+    const role = u.role;
+    if (!['admin', 'client_manager', 'filling_staff', 'account_manager'].includes(role)) return;
+
+    this.api.get<any>('bucket/count').subscribe({
+      next: (res) => {
+        if (res && typeof res.count === 'number') {
+          this.bucketCount.set(res.count);
         }
       },
       error: () => {}

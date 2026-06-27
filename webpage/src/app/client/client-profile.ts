@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon, Download04Icon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon, Download04Icon, Upload04Icon, Loading02Icon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
 import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
 
@@ -21,6 +21,8 @@ export class ClientProfile implements OnInit, OnDestroy {
   readonly File01Icon = File01Icon;
   readonly EyeIcon = EyeIcon;
   readonly Download04Icon = Download04Icon;
+  readonly Upload04Icon = Upload04Icon;
+  readonly Loading02Icon = Loading02Icon;
 
   user = signal<any>(null);
   clientManager = signal<any>(null);
@@ -28,6 +30,7 @@ export class ClientProfile implements OnInit, OnDestroy {
   directors = signal<any[]>([]);
   isLoading = signal(true);
   selectedDirectorIndex = signal<number>(0);
+  activeLoadingAction = signal<string | null>(null);
 
   // Entity filter — synced with topbar switcher
   selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
@@ -61,7 +64,7 @@ export class ClientProfile implements OnInit, OnDestroy {
     });
   });
 
-  constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) {}
+  constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) { }
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (!savedUser) {
@@ -73,7 +76,7 @@ export class ClientProfile implements OnInit, OnDestroy {
       this.router.navigate(['/dashboard']);
       return;
     }
-    
+
     // We start with the local user data to render quickly
     this.user.set(parsedUser);
     this.fetchFullProfile(parsedUser._id || parsedUser.id);
@@ -97,10 +100,10 @@ export class ClientProfile implements OnInit, OnDestroy {
           localStorage.setItem('user', JSON.stringify(res.user));
           let docs: any[] = [];
           if (res.user.onboarding_documents) {
-            docs = [...res.user.onboarding_documents];
+            docs = [...res.user.onboarding_documents.map((d: any) => ({ ...d, docType: d.name, sourceType: 'profile_document' }))];
           }
           let directorsList: any[] = [];
-          
+
           this.api.get<any>('my-checklists').subscribe({
             next: (chkRes) => {
               if (chkRes.checklists) {
@@ -124,7 +127,10 @@ export class ClientProfile implements OnInit, OnDestroy {
                           _id: docId,
                           name: `${c.service_name} - ${d.name}`,
                           fileUrl: d.fileUrl,
-                          uploadedAt: d.uploadedAt
+                          uploadedAt: d.uploadedAt,
+                          sourceType: 'requested_document',
+                          checklistId: c._id,
+                          documentId: d._id
                         });
                       }
                     }
@@ -139,7 +145,10 @@ export class ClientProfile implements OnInit, OnDestroy {
                           _id: fId,
                           name: `${c.service_name} - ${f.name} (Final)`,
                           fileUrl: `api/documents/${docId}`,
-                          uploadedAt: f.uploadedAt
+                          uploadedAt: f.uploadedAt,
+                          sourceType: 'final_document',
+                          checklistId: c._id,
+                          documentId: f._id
                         });
                       }
                     }
@@ -147,7 +156,7 @@ export class ClientProfile implements OnInit, OnDestroy {
                   if (c.details && c.details.directors && Array.isArray(c.details.directors)) {
                     for (let i = 0; i < c.details.directors.length; i++) {
                       const d = { ...c.details.directors[i] };
-                      
+
                       // Check requested_documents for director's photo and signature if not already set
                       if (c.requested_documents) {
                         const dirIdx = i + 1;
@@ -173,7 +182,7 @@ export class ClientProfile implements OnInit, OnDestroy {
                   }
                 }
               }
-              
+
               // Merge with user.directors if any exist
               if (res.user.directors && Array.isArray(res.user.directors)) {
                 for (const d of res.user.directors) {
@@ -186,7 +195,7 @@ export class ClientProfile implements OnInit, OnDestroy {
                   }
                 }
               }
-              
+
               this.allDocuments.set(docs);
               this.directors.set(directorsList);
               this.isLoading.set(false);
@@ -217,7 +226,7 @@ export class ClientProfile implements OnInit, OnDestroy {
       cancelText: 'Cancel',
       isDestructive: true
     });
-    
+
     if (choice) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
@@ -293,7 +302,7 @@ export class ClientProfile implements OnInit, OnDestroy {
         if (res.success && res.user) {
           this.user.set(res.user);
           localStorage.setItem('user', JSON.stringify(res.user));
-          
+
           // Update local arrays
           const dirs = [...this.directors()];
           if (dirs[index]) {
@@ -312,7 +321,56 @@ export class ClientProfile implements OnInit, OnDestroy {
     });
   }
 
+  reuploadGeneralDocument(doc: any, event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const u = this.user();
+    if (!u || !u._id) return;
+
+    const docType = typeof doc === 'string' ? doc : (doc.docType || doc.name || 'doc');
+    const sourceType = typeof doc === 'object' ? doc.sourceType : 'profile_document';
+
+    this.activeLoadingAction.set(`upload-${docType}`);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('docType', docType);
+
+    let apiUrl = `users/profile/${u._id}/documents/reupload`;
+    
+    if (sourceType === 'final_document' && doc.checklistId && doc.documentId) {
+      apiUrl = `checklists/${doc.checklistId}/final-documents/${doc.documentId}/reupload`;
+      formData.delete('file');
+      formData.append('final_file', file);
+    } else if (sourceType === 'incorp_document' || sourceType === 'requested_document') {
+      alert('Reuploading this type of document is not yet fully supported by the backend.');
+      this.activeLoadingAction.set(null);
+      return;
+    }
+
+    this.api.put(apiUrl, formData).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          // Update the local user info
+          this.fetchFullProfile(u._id);
+        } else {
+          alert('Failed to reupload document');
+        }
+      },
+      error: (err) => {
+        console.error('Error reuploading document:', err);
+        alert('Error reuploading document');
+      },
+      complete: () => {
+        this.activeLoadingAction.set(null);
+        event.target.value = '';
+      }
+    });
+  }
+
   async downloadImage(url: string, filename: string) {
+    this.activeLoadingAction.set(`download-${filename}`);
     try {
       const response = await fetch(url);
       const blob = await response.blob();
@@ -328,6 +386,8 @@ export class ClientProfile implements OnInit, OnDestroy {
       console.error('Download failed:', error);
       // Fallback: open in new tab
       window.open(url, '_blank');
+    } finally {
+      this.activeLoadingAction.set(null);
     }
   }
 }

@@ -22,6 +22,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 })
 export class ClientsDirectory implements OnInit {
   @Output() onViewClient = new EventEmitter<string>();
+  @Output() onOpenChat = new EventEmitter<string>();
   isLoading = signal<boolean>(true);
   user = signal<any>(null);
   clients = signal<any[]>([]);
@@ -66,16 +67,30 @@ export class ClientsDirectory implements OnInit {
   };
 
   availableServices = [
-    '360° Compliance',
-    'Trademark Registration',
-    'Company Incorporation',
-    'Accounting & Tax',
-    'GST Onboarding',
-    'Strategic Tax Planning',
-    'ISO Certifications',
-    'Capital Funding',
-    'Risk Management',
-    'Compliance Audit'
+    'Private Limited Incorporation',
+    'LLP Incorporation',
+    'OPC',
+    'MSME',
+    'Proprietorship',
+    'MCA Compliance',
+    'TDS',
+    'PF',
+    'Copyright',
+    'GST Compliance',
+    'GST Cancelation',
+    'GST filing',
+    'ITR',
+    'DPIIT',
+    'Trade Mark',
+    'GST Registration',
+    'ISO',
+    'Patent',
+    'FSSAI',
+    'DSC',
+    'IE code',
+    'LEI',
+    'BIS',
+    'ROSH & CE'
   ];
 
   // Task Creation Modal inside clients context
@@ -141,6 +156,11 @@ export class ClientsDirectory implements OnInit {
     if (phone) {
       window.location.href = `tel:${phone}`;
     }
+  }
+
+  openChat(clientId: string, event: Event) {
+    event.stopPropagation();
+    this.onOpenChat.emit(clientId);
   }
 
   getFilteredClients() {

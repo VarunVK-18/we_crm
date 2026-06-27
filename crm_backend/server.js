@@ -101,6 +101,12 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/banners', bannerRoutes);
 const subscriptionRoutes = require('./routes/subscriptionRoutes');
 app.use('/api/subscriptions', subscriptionRoutes);
+const teamRoutes = require('./routes/teamRoutes');
+app.use('/api/teams', teamRoutes);
+const bucketRoutes = require('./routes/bucketRoutes');
+app.use('/api/bucket', bucketRoutes);
+const intakeRoutes = require('./routes/intakeRoutes');
+app.use('/api/intake', intakeRoutes);
 
 // Initialize Cron Jobs
 require('./utils/cronJobs');

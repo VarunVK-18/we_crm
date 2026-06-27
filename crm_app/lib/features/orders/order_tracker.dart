@@ -628,11 +628,15 @@ class _ServiceCard extends StatelessWidget {
                             color: Colors.grey.shade500,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            order.entityName,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade500,
+                          Expanded(
+                            child: Text(
+                              order.entityName,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
                             ),
                           ),
                         ],

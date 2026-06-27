@@ -143,9 +143,18 @@
                   <div class="doc-info">
                     <span class="doc-name" title="PAN Card Document">PAN Card Document</span>
                   </div>
-                  <a [href]="api.getFileUrl(user()?.pan_file)" target="_blank" class="download-btn" title="View Document">
-                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="color-mix(in srgb, var(--palette-dark) 65%, transparent)" [strokeWidth]="1.5"></hugeicons-icon>
-                  </a>
+                    <div class="doc-actions">
+                      <a [href]="api.getFileUrl(user()?.pan_file)" target="_blank" class="action-btn" title="View Document">
+                        <hugeicons-icon [icon]="EyeIcon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                      </a>
+                      <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(user()?.pan_file), 'PAN_Document'); $event.preventDefault()" class="action-btn" title="Download Document">
+                        @if (activeLoadingAction() === 'download-PAN_Document') {
+                          <hugeicons-icon [icon]="Loading02Icon" [size]="18" color="currentColor" [strokeWidth]="1.5" style="animation: spin 1s linear infinite;"></hugeicons-icon>
+                        } @else {
+                          <hugeicons-icon [icon]="Download04Icon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                        }
+                      </a>
+                    </div>
                 </div>
               }
               
@@ -157,9 +166,18 @@
                   <div class="doc-info">
                     <span class="doc-name" title="GSTIN Document">GSTIN Document</span>
                   </div>
-                  <a [href]="api.getFileUrl(user()?.gstin_file)" target="_blank" class="download-btn" title="View Document">
-                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="color-mix(in srgb, var(--palette-dark) 65%, transparent)" [strokeWidth]="1.5"></hugeicons-icon>
-                  </a>
+                    <div class="doc-actions">
+                      <a [href]="api.getFileUrl(user()?.gstin_file)" target="_blank" class="action-btn" title="View Document">
+                        <hugeicons-icon [icon]="EyeIcon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                      </a>
+                      <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(user()?.gstin_file), 'GSTIN_Document'); $event.preventDefault()" class="action-btn" title="Download Document">
+                        @if (activeLoadingAction() === 'download-GSTIN_Document') {
+                          <hugeicons-icon [icon]="Loading02Icon" [size]="18" color="currentColor" [strokeWidth]="1.5" style="animation: spin 1s linear infinite;"></hugeicons-icon>
+                        } @else {
+                          <hugeicons-icon [icon]="Download04Icon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                        }
+                      </a>
+                    </div>
                 </div>
               }
               
@@ -177,9 +195,18 @@
                         <span class="doc-date">{{ doc.uploadedAt | date:'mediumDate' }}</span>
                       }
                     </div>
-                    <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="download-btn" title="View Document">
-                      <hugeicons-icon [icon]="EyeIcon" [size]="18" color="color-mix(in srgb, var(--palette-dark) 65%, transparent)" [strokeWidth]="1.5"></hugeicons-icon>
-                    </a>
+                    <div class="doc-actions">
+                      <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="action-btn" title="View Document">
+                        <hugeicons-icon [icon]="EyeIcon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                      </a>
+                      <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(doc.fileUrl), doc.name); $event.preventDefault()" class="action-btn" title="Download Document">
+                        @if (activeLoadingAction() === 'download-' + doc.name) {
+                          <hugeicons-icon [icon]="Loading02Icon" [size]="18" color="currentColor" [strokeWidth]="1.5" style="animation: spin 1s linear infinite;"></hugeicons-icon>
+                        } @else {
+                          <hugeicons-icon [icon]="Download04Icon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
+                        }
+                      </a>
+                    </div>
                   </div>
                 }
               }

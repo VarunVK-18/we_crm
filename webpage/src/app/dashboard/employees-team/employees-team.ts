@@ -20,6 +20,21 @@ export class EmployeesTeam implements OnInit {
   currentDirectoryTab = signal<string>('all');
   searchQuery = signal<string>('');
 
+  // Bucket Teams state
+  bucketTeams = signal<any[]>([]);
+  isLoadingTeams = signal<boolean>(false);
+  isTeamModalOpen = signal<boolean>(false);
+  isEditTeamMode = signal<boolean>(false);
+  teamSubmitting = signal<boolean>(false);
+  teamError = signal<string>('');
+  editingTeamId = signal<string | null>(null);
+
+  newTeam = {
+    name: '',
+    manager_id: '',
+    members: [] as string[]
+  };
+
   // Modals state
   isCreateEmployeeModalOpen = signal<boolean>(false);
   isEditEmployeeModalOpen = signal<boolean>(false);
@@ -55,6 +70,7 @@ export class EmployeesTeam implements OnInit {
     if (savedUser) {
       this.user.set(JSON.parse(savedUser));
     }
+    this.loadBucketTeams();
   }
 
   getCompanyId(): string | null {
@@ -139,6 +155,114 @@ export class EmployeesTeam implements OnInit {
 
   fetchTeams() {
     this.refreshTeams.emit();
+  }
+
+  // ── Bucket Team CRUD ────────────────────────────────────────
+  loadBucketTeams() {
+    this.isLoadingTeams.set(true);
+    this.api.get<any>('teams').subscribe({
+      next: (res) => { this.bucketTeams.set(res.teams || []); this.isLoadingTeams.set(false); },
+      error: () => this.isLoadingTeams.set(false)
+    });
+  }
+
+  openCreateTeamModal() {
+    this.isEditTeamMode.set(false);
+    this.editingTeamId.set(null);
+    this.teamError.set('');
+    this.newTeam = { name: '', manager_id: '', members: [] };
+    this.isTeamModalOpen.set(true);
+  }
+
+  openEditTeamModal(team: any) {
+    this.isEditTeamMode.set(true);
+    this.editingTeamId.set(team._id);
+    this.teamError.set('');
+    this.newTeam = {
+      name: team.name || '',
+      manager_id: team.manager_id?._id || team.manager_id || '',
+      members: (team.members || []).map((m: any) => m._id || m)
+    };
+    this.isTeamModalOpen.set(true);
+  }
+
+  closeTeamModal() {
+    this.isTeamModalOpen.set(false);
+  }
+
+  toggleTeamMember(memberId: string) {
+    const idx = this.newTeam.members.indexOf(memberId);
+    if (idx >= 0) this.newTeam.members.splice(idx, 1);
+    else this.newTeam.members.push(memberId);
+  }
+
+  isTeamMember(memberId: string): boolean {
+    return this.newTeam.members.includes(memberId);
+  }
+
+  getAssignedTeamName(memberId: string): string | null {
+    for (const team of this.bucketTeams()) {
+      if (this.isEditTeamMode() && this.editingTeamId() === team._id) continue;
+      if (team.members && team.members.some((m: any) => (m._id || m) === memberId)) {
+        return team.name;
+      }
+    }
+    return null;
+  }
+
+  isMemberAssignedToOtherTeam(memberId: string): boolean {
+    return this.getAssignedTeamName(memberId) !== null;
+  }
+
+  getFillingStaff() {
+    return this.getFlatEmployees().filter((m: any) =>
+      m.role === 'filling_staff' || m.role === 'account_manager'
+    );
+  }
+
+  getManagers() {
+    return this.getFlatEmployees().filter((m: any) =>
+      m.role === 'client_manager' || m.role === 'admin'
+    );
+  }
+
+  submitTeam() {
+    if (!this.newTeam.name.trim()) {
+      this.teamError.set('Team name is required.');
+      return;
+    }
+    this.teamSubmitting.set(true);
+    this.teamError.set('');
+
+    const payload = {
+      name: this.newTeam.name.trim(),
+      manager_id: this.newTeam.manager_id || null,
+      members: this.newTeam.members
+    };
+
+    const req = this.isEditTeamMode()
+      ? this.api.put<any>(`teams/${this.editingTeamId()}`, payload)
+      : this.api.post<any>('teams', payload);
+
+    req.subscribe({
+      next: () => {
+        this.teamSubmitting.set(false);
+        this.isTeamModalOpen.set(false);
+        this.loadBucketTeams();
+      },
+      error: (err: any) => {
+        this.teamSubmitting.set(false);
+        this.teamError.set(err?.error?.message || 'Failed to save team.');
+      }
+    });
+  }
+
+  deleteTeam(teamId: string, teamName: string) {
+    if (!confirm(`Delete team "${teamName}"? This cannot be undone.`)) return;
+    this.api.delete<any>(`teams/${teamId}`).subscribe({
+      next: () => this.loadBucketTeams(),
+      error: (err: any) => alert(err?.error?.message || 'Failed to delete team.')
+    });
   }
 
   viewEmployeeProfile(member: any) {

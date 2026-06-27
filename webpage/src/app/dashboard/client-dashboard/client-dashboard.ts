@@ -1,16 +1,23 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges, Output, EventEmitter, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HugeiconsIconComponent } from '@hugeicons/angular';
+import { EyeIcon, Download04Icon, Upload04Icon, Loading02Icon } from '@hugeicons/core-free-icons';
 import { Api } from '../../api';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
   templateUrl: './client-dashboard.html',
   styleUrl: './client-dashboard.css'
 })
 export class ClientDashboard implements OnInit, OnChanges {
+  readonly EyeIcon = EyeIcon;
+  readonly Download04Icon = Download04Icon;
+  readonly Upload04Icon = Upload04Icon;
+  readonly Loading02Icon = Loading02Icon;
+
   @Input() clientId!: string;
   @Output() goBack = new EventEmitter<void>();
 
@@ -20,8 +27,9 @@ export class ClientDashboard implements OnInit, OnChanges {
   errorMessage = signal<string>('');
   entitySearchQuery = signal<string>('');
   documentSearchQuery = signal<string>('');
+  activeLoadingAction = signal<string | null>(null);
 
-  constructor(public api: Api) {}
+  constructor(public api: Api) { }
 
   ngOnInit() {
     if (this.clientId) {
@@ -41,7 +49,7 @@ export class ClientDashboard implements OnInit, OnChanges {
   fetchClientDetails() {
     this.isLoading.set(true);
     this.errorMessage.set('');
-    
+
     this.api.get<any>('users/clients').subscribe({
       next: (res) => {
         if (res && res.clients) {
@@ -54,7 +62,7 @@ export class ClientDashboard implements OnInit, OnChanges {
             if (found.company_name && found.company_name.trim() !== '') {
               if (!found.client_entities) found.client_entities = [];
               const primaryName = found.company_name.trim();
-              const exists = found.client_entities.some((e: any) => 
+              const exists = found.client_entities.some((e: any) =>
                 e.entityName && e.entityName.trim().toLowerCase() === primaryName.toLowerCase()
               );
               if (!exists) {
@@ -116,35 +124,35 @@ export class ClientDashboard implements OnInit, OnChanges {
     // The company name is actually stored in `entityName` on the order.
     // If it's missing, fallback to the user's main company_name.
     const names = orders.map(o => o.entityName).filter(n => n && n.trim() !== '');
-    
+
     const clientCompany = this.client()?.company_name;
     if (clientCompany && clientCompany.trim() !== '') {
       names.push(clientCompany);
     }
-    
+
     return Array.from(new Set(names));
   }
 
   getServicesForEntity(entityName: string): string[] {
     if (!entityName) return [];
     const orders = this.clientOrders() || [];
-    
+
     // Filter orders matching this entityName (or if it's the client's default company_name)
-    const matchingOrders = orders.filter(o => 
-      o.entityName === entityName || 
+    const matchingOrders = orders.filter(o =>
+      o.entityName === entityName ||
       (this.client()?.company_name === entityName && !o.entityName)
     );
-    
+
     // The "Entity Type" (e.g. Private Limited, LLP) is in o.serviceType
     const types = matchingOrders.map(o => o.serviceType).filter(Boolean);
-    
+
     // Fallback: If no orders match but it's the user's company, maybe infer from business_type
     if (types.length === 0 && this.client()?.company_name === entityName) {
       if (this.client()?.business_type) {
         types.push(this.client()?.business_type);
       }
     }
-    
+
     return Array.from(new Set(types));
   }
 
@@ -180,7 +188,7 @@ export class ClientDashboard implements OnInit, OnChanges {
     const query = this.entitySearchQuery().toLowerCase().trim();
     let entities = this.client()?.client_entities || [];
     if (!query) return entities;
-    return entities.filter((ent: any) => 
+    return entities.filter((ent: any) =>
       (ent.entityName && ent.entityName.toLowerCase().includes(query)) ||
       (ent.entityType && ent.entityType.toLowerCase().includes(query)) ||
       (ent.cin && ent.cin.toLowerCase().includes(query)) ||
@@ -191,7 +199,7 @@ export class ClientDashboard implements OnInit, OnChanges {
 
   getFilteredDocuments() {
     const query = this.documentSearchQuery().toLowerCase().trim();
-    
+
     const docs: any[] = [];
 
     // Add final delivery documents from all checklists
@@ -204,7 +212,11 @@ export class ClientDashboard implements OnInit, OnChanges {
             name: fd.name,
             url: `api/documents/${fd.document_id}`,
             source: cl.service_name,
-            tag: 'Delivery'
+            tag: 'Delivery',
+            docType: fd.name,
+            sourceType: 'final_document',
+            checklistId: cl._id,
+            documentId: fd._id
           });
         });
       }
@@ -218,7 +230,11 @@ export class ClientDashboard implements OnInit, OnChanges {
               name: d.name || 'Document',
               url: d.fileUrl,
               source: cl.service_name,
-              tag: 'Client Upload'
+              tag: 'Client Upload',
+              docType: d.name,
+              sourceType: 'incorp_document',
+              checklistId: cl._id,
+              documentId: d._id
             });
           }
         });
@@ -226,6 +242,13 @@ export class ClientDashboard implements OnInit, OnChanges {
     });
 
     // 3. Base onboarding documents from user profile
+    if (this.client()?.pan_file) {
+      docs.push({ name: 'PAN Card Document', url: this.client().pan_file, tag: 'Onboarding', source: 'Profile', docType: 'pan_file' });
+    }
+    if (this.client()?.gstin_file) {
+      docs.push({ name: 'GSTIN Document', url: this.client().gstin_file, tag: 'Onboarding', source: 'Profile', docType: 'gstin_file' });
+    }
+
     const profileDocs = this.client()?.onboarding_documents || [];
     profileDocs.forEach((d: any) => {
       if (d.fileUrl || d.url) {
@@ -233,7 +256,9 @@ export class ClientDashboard implements OnInit, OnChanges {
           name: d.filename || d.name || 'Document',
           url: d.fileUrl || d.url,
           source: 'Profile',
-          tag: 'Onboarding'
+          tag: 'Onboarding',
+          docType: d.name || d.filename,
+          sourceType: 'profile_document'
         });
       }
     });
@@ -259,9 +284,9 @@ export class ClientDashboard implements OnInit, OnChanges {
     const currentStatus = this.client().in_compliance_radar;
     // Optimistic update
     this.client.update(c => ({ ...c, in_compliance_radar: !currentStatus }));
-    
-    this.api.patch(`users/clients/${this.clientId}/compliance-radar`, { 
-      in_compliance_radar: !currentStatus 
+
+    this.api.patch(`users/clients/${this.clientId}/compliance-radar`, {
+      in_compliance_radar: !currentStatus
     }).subscribe({
       next: (res: any) => {
         if (!res.success) {
@@ -324,7 +349,7 @@ export class ClientDashboard implements OnInit, OnChanges {
           if (cin) this.currentEntity.cin = cin;
           if (tan) this.currentEntity.tan = tan;
           if (pan) this.currentEntity.pan = pan;
-          
+
           if (incorporationDate) {
             // Convert to YYYY-MM-DD for standard date inputs
             const dateObj = new Date(incorporationDate);
@@ -358,7 +383,7 @@ export class ClientDashboard implements OnInit, OnChanges {
 
   saveEntity() {
     if (!this.currentEntity.entityName) return;
-    
+
     const updatedEntities = [...(this.client().client_entities || [])];
     if (this.editingEntityIndex() >= 0) {
       updatedEntities[this.editingEntityIndex()] = this.currentEntity;
@@ -386,5 +411,73 @@ export class ClientDashboard implements OnInit, OnChanges {
           console.error(err);
         }
       });
+  }
+  reuploadGeneralDocument(doc: any, event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Support both string 'pan_file' and full doc objects
+    const docType = typeof doc === 'string' ? doc : (doc.docType || doc.name || 'doc');
+    const sourceType = typeof doc === 'object' ? doc.sourceType : 'profile_document';
+    
+    this.activeLoadingAction.set(`upload-${docType}`);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('docType', docType);
+
+    let apiUrl = `users/profile/${this.clientId}/documents/reupload`;
+    
+    if (sourceType === 'final_document' && doc.checklistId && doc.documentId) {
+      apiUrl = `checklists/${doc.checklistId}/final-documents/${doc.documentId}/reupload`;
+      formData.delete('file');
+      formData.append('final_file', file);
+    } else if (sourceType === 'incorp_document' || sourceType === 'requested_document') {
+      alert('Reuploading this type of document is not yet fully supported by the backend.');
+      this.activeLoadingAction.set(null);
+      return;
+    }
+
+    this.api.put(apiUrl, formData).subscribe({
+      next: (res: any) => {
+        if (res.success) {
+          // Update the client signal directly or refetch
+          this.fetchClientDetails();
+        } else {
+          alert('Failed to reupload document');
+        }
+      },
+      error: (err) => {
+        console.error('Error reuploading document:', err);
+        alert('Error reuploading document');
+      },
+      complete: () => {
+        this.activeLoadingAction.set(null);
+        event.target.value = '';
+      }
+    });
+  }
+
+  async downloadImage(url: string, filename: string) {
+    this.activeLoadingAction.set(`download-${filename}`);
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      // Fallback
+      window.open(url, '_blank');
+    } finally {
+      this.activeLoadingAction.set(null);
+    }
   }
 }

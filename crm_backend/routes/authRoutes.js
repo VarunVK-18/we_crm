@@ -26,7 +26,8 @@ const {
   getPublicManagers,
   editClientProfile,
   uploadDirectorDocument,
-  toggleComplianceRadar
+  toggleComplianceRadar,
+  reuploadProfileDocument
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -57,6 +58,7 @@ router.post('/users/profile/:id/pan', upload.single('panFile'), savePanDetails);
 router.put('/users/profile/:id/entities', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), updateClientEntities);
 router.post('/users/profile/:id/upload-image', upload.single('profileImage'), uploadProfileImage);
 router.delete('/users/profile/:id/remove-image', removeProfileImage);
+router.put('/users/profile/:id/documents/reupload', checkUser, upload.single('file'), reuploadProfileDocument);
 
 // Client users listing & actions route
 router.get('/users/clients', checkUser, getClients);

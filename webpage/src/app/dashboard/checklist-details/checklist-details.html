@@ -350,7 +350,7 @@
             style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
             <span style="font-size: 16px; font-weight: 500; color: var(--text-primary);">{{ doc.name }}</span>
             @if (doc.isUploaded) {
-            <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank"
+            <a [href]="api.getFileUrl(doc.fileUrl)" target="_self"
               style="color: var(--color-success); font-weight: 600; text-decoration: none;">View File</a>
             } @else {
             <span
@@ -465,7 +465,7 @@
               style="font-size: 16px; font-weight: 500; color: var(--text-primary); display: block; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{
               fdoc.name }}</span>
             <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; margin-top: 12px;">
-              <a [href]="api.getFileUrl('api/documents/' + (fdoc.document_id?._id || fdoc.document_id))" target="_blank"
+              <a [href]="api.getFileUrl('api/documents/' + (fdoc.document_id?._id || fdoc.document_id))" target="_self"
                 style="flex: 1; text-align: center; color: var(--accent-primary); padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
                 View
               </a>
@@ -692,7 +692,7 @@
                 style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--text-secondary); margin: 4px 0 0 0; text-transform: uppercase;">
                 {{ doc.uploadedAt | date:'mediumDate' }}</p>
             </div>
-            <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank"
+            <a [href]="api.getFileUrl(doc.fileUrl)" target="_self"
               style="color: var(--accent-primary); font-weight: 700; text-decoration: none; padding: 4px 8px;">View</a>
           </div>
           }
@@ -731,7 +731,7 @@
                   {{ doc.isUploaded ? (doc.uploadedAt | date:'mediumDate') : 'Pending' }}</p>
               </div>
               @if (doc.isUploaded) {
-              <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank"
+              <a [href]="api.getFileUrl(doc.fileUrl)" target="_self"
                 style="color: var(--accent-primary); font-weight: 700; text-decoration: none; padding: 4px 8px; font-size: 14px;">View</a>
               }
             </div>

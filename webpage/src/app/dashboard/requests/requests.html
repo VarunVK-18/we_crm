@@ -10,7 +10,7 @@
   <div class="header-actions">
     <div>
       <h2 class="page-title">Service Requests</h2>
-      <p class="page-subtitle">Manage all incoming orders and assign experts</p>
+      <p class="page-subtitle">Manage all incoming orders and assign teams</p>
     </div>
     <div style="display: flex; gap: 16px; align-items: center;">
       <div class="search-box">
@@ -121,11 +121,11 @@
 
       <div class="card-footer">
         <div class="assign-field-group">
-          <label class="assign-label">Assign Expert:</label>
-          <select class="form-control-input select-input" (change)="onEmployeeSelectChange(order._id, $event)">
-            <option value="">-- Select Employee --</option>
-            @for (emp of getFillingStaff(); track emp.id) {
-            <option [value]="emp.id">{{ emp.name }} ({{ getTaskCount(emp) }} Ongoing Tasks)</option>
+          <label class="assign-label">Assign Team:</label>
+          <select class="form-control-input select-input" (change)="onTeamSelectChange(order._id, $event)">
+            <option value="">-- Select Team --</option>
+            @for (team of teams(); track team._id) {
+            <option [value]="team._id">{{ team.name }}</option>
             }
           </select>
         </div>

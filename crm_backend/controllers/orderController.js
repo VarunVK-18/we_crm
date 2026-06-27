@@ -74,7 +74,63 @@ exports.updateOrder = async (req, res) => {
       }
     }
 
-    if (updateData.assignedExpert && updateData.assignedExpert !== 'To be assigned') {
+    if (updateData.team_id) {
+      try {
+        const BucketRequest = require('../models/BucketRequest');
+        const Checklist = require('../models/Checklist');
+        const ChecklistTemplate = require('../models/ChecklistTemplate');
+        
+        const bucketReq = await BucketRequest.findOne({ 
+          company_id: order.companyId, 
+          client_id: order.cleintUid, 
+          service_name: order.serviceType, 
+          status: 'open' 
+        });
+
+        if (bucketReq) {
+          let finalItems = [];
+          try {
+            const template = await ChecklistTemplate.findOne({
+              company_id: order.companyId,
+              service_name: bucketReq.service_name
+            });
+            if (template && template.items && template.items.length > 0) {
+              finalItems = template.items.map(item => ({
+                title: item.title, description: item.description, label: item.title, isChecked: false
+              }));
+            }
+          } catch (e) { }
+
+          if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
+            finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+          }
+
+          const checklist = await Checklist.create({
+            company_id: order.companyId,
+            client_id: bucketReq.client_id,
+            service_name: bucketReq.service_name,
+            assigned_to: req.user._id,
+            created_by: req.user._id,
+            items: finalItems,
+            status: 'pending',
+            stage: 'quotePending',
+            notes: '',
+            dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
+            advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0
+          });
+
+          bucketReq.status = 'claimed_by_manager';
+          bucketReq.claimed_by = req.user._id;
+          bucketReq.team_id = updateData.team_id;
+          bucketReq.claimed_at = new Date();
+          bucketReq.checklist_id = checklist._id;
+          await bucketReq.save();
+          console.log(`Bucket Request assigned to team ${updateData.team_id}`);
+        }
+      } catch (err) {
+        console.error('Error assigning Bucket Request to team:', err);
+      }
+    } else if (updateData.assignedExpert && updateData.assignedExpert !== 'To be assigned') {
       try {
         const Checklist = require('../models/Checklist');
 

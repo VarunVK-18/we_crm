@@ -4,6 +4,7 @@ const AuditLog = require('../models/AuditLog');
 const { logActivity } = require('../middleware/rbac');
 const Checklist = require('../models/Checklist');
 const ChecklistTemplate = require('../models/ChecklistTemplate');
+const BucketRequest = require('../models/BucketRequest');
 const Document = require('../models/Document');
 const FilingTask = require('../models/FilingTask');
 const ServiceOrder = require('../models/ServiceOrder');
@@ -142,6 +143,31 @@ const registerUser = async (req, res) => {
         `Registered client account: ${user.owner_name} (${user.email}) with onboarding status: ${onboarding_status}`,
         performerCompany
       );
+
+      // Handle serviceName provided by DealVoice Lead conversion or other frontend
+      const passedServiceName = req.body.serviceName || req.body.service_name;
+      if (passedServiceName) {
+        if (!user.services.includes(passedServiceName)) {
+          user.services.push(passedServiceName);
+          await user.save();
+        }
+        try {
+          await BucketRequest.create({
+            company_id: user.company_id || '000000000000000000000000',
+            client_id: user._id,
+            service_name: passedServiceName,
+            status: 'open',
+            source: 'we-crm',
+            client_name: user.owner_name || user.company_name || 'Client',
+            client_phone: user.phone || '',
+            client_email: user.email,
+            client_company_name: user.company_name || ''
+          });
+          console.log(`Created Bucket Request for newly registered client: ${passedServiceName}`);
+        } catch (e) {
+          console.error('Error creating Bucket Request in registerUser:', e);
+        }
+      }
 
       res.status(201).json({
         message: 'Registration successful',
@@ -831,39 +857,6 @@ const subscribeService = async (req, res) => {
           });
         }
 
-        // ── Correct Workflow: Route new service to Client Manager first ──────
-        // Correct flow: Client → Client Manager → Filing Staff / Account Manager
-        // We should NOT auto-assign to filing_staff. Find the client manager who
-        // onboarded this client, or fall back to any client_manager in the company.
-        let assignedClientManager = null;
-
-        // Priority 1: The person who created/onboarded this client
-        if (user.created_by) {
-          const creator = await User.findById(user.created_by).select('_id role');
-          if (creator && creator.role === 'client_manager') {
-            assignedClientManager = creator._id;
-          }
-        }
-
-        // Priority 2: Any client_manager in the same company
-        if (!assignedClientManager && user.company_id) {
-          const companyManager = await User.findOne({
-            company_id: user.company_id,
-            role: 'client_manager'
-          }).select('_id');
-          if (companyManager) {
-            assignedClientManager = companyManager._id;
-          }
-        }
-
-        // Priority 3: Only fall back to existing assigned_to if they are NOT filing staff
-        if (!assignedClientManager && user.assigned_to) {
-          const currentAssignee = await User.findById(user.assigned_to).select('_id role');
-          if (currentAssignee && currentAssignee.role !== 'filling_staff') {
-            assignedClientManager = currentAssignee._id;
-          }
-        }
-
         // Parse details field if present
         let details = {};
         if (req.body.details) {
@@ -894,33 +887,29 @@ const subscribeService = async (req, res) => {
         details.recommended_plan = calculatedPlan;
         details.service_fee = calculatedFee;
 
-        await Checklist.create({
-          company_id: user.company_id || '000000000000000000000000',
+        // Create a Bucket Request instead of a direct Checklist
+        const existingBucketReq = await BucketRequest.findOne({
+          company_id: user.company_id,
           client_id: user._id,
           service_name: serviceName,
-          assigned_to: assignedClientManager, // Routes to client manager first
-          created_by: user._id,
-          items: finalItems,
-          status: 'pending',
-          stage: 'quotePending',
-          notes: '',
-          details: details
+          status: { $in: ['open', 'claimed_by_manager', 'assigned'] }
         });
-        console.log(`Automatically created checklist for ${serviceName}, assigned to client manager: ${assignedClientManager}`);
 
-        let orderSteps = [];
-        if (finalItems && finalItems.length > 0) {
-          orderSteps = finalItems.map(item => ({
-            title: item.title,
-            description: item.description || '',
-            isCompleted: false
-          }));
+        if (!existingBucketReq) {
+          await BucketRequest.create({
+            company_id: user.company_id || '000000000000000000000000',
+            client_id: user._id,
+            service_name: serviceName,
+            status: 'open',
+            source: 'we-crm',
+            client_name: requestedEntityName,
+            client_phone: user.phone || '',
+            client_email: user.email,
+            client_company_name: user.company_name || ''
+          });
+          console.log(`Created open Bucket Request for ${serviceName}`);
         } else {
-          orderSteps = [
-            { title: 'Service Activated', description: 'The service has been successfully activated and logged in the system.', isCompleted: false },
-            { title: 'Setup Completed', description: 'Initial setup and configuration have been completed.', isCompleted: false },
-            { title: 'Documents Pending', description: 'Awaiting necessary documents from the client to proceed further.', isCompleted: false }
-          ];
+          console.log(`Bucket Request already exists for ${serviceName}`);
         }
 
         // Also create a ServiceOrder so it appears in the New Requests page
@@ -935,14 +924,14 @@ const subscribeService = async (req, res) => {
           expertPhone: '',
           documents: orderDocuments,
           details: details,
-          steps: orderSteps,
+          steps: finalItems, // Assuming orderSteps was renamed or using finalItems
           turnover_category: details.turnoverCategory || '',
           recommended_plan: calculatedPlan,
           service_fee: calculatedFee
         });
         console.log(`Created ServiceOrder for ${serviceName} — visible in New Requests`);
       } catch (e) {
-        console.error('Error creating checklist automatically:', e);
+        console.error('Error creating Bucket Request automatically:', e);
       }
 
       await logActivity(
@@ -1200,6 +1189,69 @@ const uploadDirectorDocument = async (req, res) => {
   }
 };
 
+// Reupload document for a specific client profile document
+const reuploadProfileDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { docType } = req.body; 
+
+    // We allow admins, managers, staff, or the user themselves to edit this
+    const allowedRoles = ['admin', 'account_manager', 'client_manager', 'filling_staff'];
+    if (req.user._id.toString() !== id && !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: 'Unauthorized.' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file provided.' });
+    }
+
+    if (!docType) {
+      return res.status(400).json({ success: false, message: 'Document type is required.' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    const doc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      uploadedBy: req.user._id
+    });
+
+    const fileUrl = `api/documents/${doc._id}`;
+    
+    if (docType === 'pan_file') {
+      user.pan_file = fileUrl;
+    } else if (docType === 'gstin_file') {
+      user.gstin_file = fileUrl;
+    } else {
+      // Must be an "onboarding_documents" item by name
+      const otherDocIndex = user.onboarding_documents.findIndex(d => d.name === docType);
+      if (otherDocIndex >= 0) {
+        user.onboarding_documents[otherDocIndex].fileUrl = fileUrl;
+      } else {
+        user.onboarding_documents.push({ name: docType, fileUrl: fileUrl, uploadedAt: new Date() });
+      }
+      user.markModified('onboarding_documents');
+    }
+    
+    await user.save();
+
+    res.status(200).json({ 
+      success: true, 
+      message: `${docType} updated successfully.`, 
+      user,
+      fileUrl
+    });
+  } catch (error) {
+    console.error('Error reuploading profile document:', error);
+    res.status(500).json({ success: false, message: 'Server error while reuploading document.' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -1223,5 +1275,6 @@ module.exports = {
   getPublicManagers,
   editClientProfile,
   uploadDirectorDocument,
-  toggleComplianceRadar
+  toggleComplianceRadar,
+  reuploadProfileDocument
 };

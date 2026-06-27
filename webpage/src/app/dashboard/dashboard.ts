@@ -26,6 +26,7 @@ import { EmployeeProfile } from './employee-profile/employee-profile';
 import { ServiceTrackComponent } from './service-track/service-track';
 import { StaffChatComponent } from './staff-chat/staff-chat';
 import { BannerManagement } from './banner-management/banner-management';
+import { BucketComponent } from './bucket/bucket';
 
 @Component({
   selector: 'app-dashboard',
@@ -50,7 +51,8 @@ import { BannerManagement } from './banner-management/banner-management';
     EmployeeProfile,
     ServiceTrackComponent,
     StaffChatComponent,
-    BannerManagement
+    BannerManagement,
+    BucketComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -59,6 +61,7 @@ export class Dashboard implements OnInit, OnDestroy {
   currentTab = signal<string>('dashboard');
   selectedClientId = signal<string | null>(null);
   selectedChecklistId = signal<string | null>(null);
+  selectedClientChatId = signal<string | null>(null);
   selectedEmployeeObj = signal<any>(null);
   openChatOnLoad = signal<boolean>(false);
   user = signal<any>(null);
@@ -222,7 +225,14 @@ export class Dashboard implements OnInit, OnDestroy {
 
   handleTabChanged(tab: string) {
     this.currentTab.set(tab);
-    if (tab === 'clients') this.selectedClientId.set(null);
+    if (tab !== 'checklist-details' && tab !== 'staff-chat') {
+      this.selectedChecklistId.set(null);
+    }
+    
+    if (tab !== 'staff-chat') {
+      this.selectedClientChatId.set(null);
+    }
+    
     if (tab === 'team') this.selectedEmployeeObj.set(null);
     
     // Reset breadcrumb trail for top-level navigation
@@ -247,6 +257,25 @@ export class Dashboard implements OnInit, OnDestroy {
       ...trail,
       { label: 'Employee Profile', action: () => this.viewEmployee(employee) }
     ]);
+  }
+
+  pushNavigation(label: string, action: () => void) {
+    this.navigationTrail.update(trail => [
+      ...trail,
+      { label, action }
+    ]);
+  }
+
+  openChecklistDetails(checklistId: string, clientName: string) {
+    this.selectedChecklistId.set(checklistId);
+    this.pushNavigation('Checklist Details', () => this.handleTabChanged('checklist-details'));
+    this.handleTabChanged('checklist-details');
+  }
+
+  openClientChat(clientId: string) {
+    this.selectedClientChatId.set(clientId);
+    this.pushNavigation('Staff Chat', () => this.handleTabChanged('staff-chat'));
+    this.handleTabChanged('staff-chat');
   }
 
   viewChecklist(checklistId: string, openChat: boolean = false) {
