@@ -14,7 +14,13 @@ const getBucketRequests = async (req, res) => {
 
     const filter = { company_id };
     if (status === 'all') {
-      // Admin can see all
+      filter.$or = [
+        { status: { $ne: 'open' } },
+        { status: 'open', source: { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm'] } }
+      ];
+    } else if (status === 'open') {
+      filter.status = 'open';
+      filter.source = { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm'] };
     } else {
       filter.status = status;
     }
@@ -42,7 +48,7 @@ const claimBucketRequest = async (req, res) => {
     const { team_id, dealClosedAmount, advanceAmountPaid } = req.body;
 
     const bucketReq = await BucketRequest.findOne({ _id: id, company_id, status: 'open' })
-      .populate('client_id', 'owner_name _id company_id');
+      .populate('client_id', 'owner_name _id company_id assigned_to');
     if (!bucketReq || !bucketReq.client_id) {
       return res.status(404).json({ success: false, message: 'Bucket request not found, already claimed, or client was deleted.' });
     }
@@ -96,6 +102,24 @@ const claimBucketRequest = async (req, res) => {
     bucketReq.claimed_at = new Date();
     bucketReq.checklist_id = checklist._id;
     await bucketReq.save();
+
+    // If the client does not have a personal manager assigned yet, assign them to this manager
+    if (!bucketReq.client_id.assigned_to) {
+      await User.findByIdAndUpdate(bucketReq.client_id._id, { assigned_to: managerId });
+      console.log(`Assigned client ${bucketReq.client_id._id} to manager ${managerId}`);
+    }
+
+    // Also update any matching ServiceOrder to remove it from the "New Requests" view
+    const ServiceOrder = require('../models/ServiceOrder');
+    await ServiceOrder.updateMany({
+      clientUid: bucketReq.client_id._id.toString(),
+      serviceType: bucketReq.service_name,
+      status: 'active',
+      stage: { $in: ['reqReceived', 'bucketPending'] }
+    }, {
+      stage: 'workAssigned',
+      assignedExpert: req.user.owner_name
+    });
 
     await logActivity(
       managerId,

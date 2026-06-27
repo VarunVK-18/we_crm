@@ -157,7 +157,7 @@ const registerUser = async (req, res) => {
             client_id: user._id,
             service_name: passedServiceName,
             status: 'open',
-            source: 'we-crm',
+            source: 'we-crm-new',
             client_name: user.owner_name || user.company_name || 'Client',
             client_phone: user.phone || '',
             client_email: user.email,
@@ -888,28 +888,31 @@ const subscribeService = async (req, res) => {
         details.service_fee = calculatedFee;
 
         // Create a Bucket Request instead of a direct Checklist
-        const existingBucketReq = await BucketRequest.findOne({
-          company_id: user.company_id,
-          client_id: user._id,
-          service_name: serviceName,
-          status: { $in: ['open', 'claimed_by_manager', 'assigned'] }
-        });
 
-        if (!existingBucketReq) {
-          await BucketRequest.create({
-            company_id: user.company_id || '000000000000000000000000',
+
+        // Create a Bucket Request ONLY if the client does not have a personal manager yet
+        if (!user.assigned_to) {
+          const existingBucketReq = await BucketRequest.findOne({
+            company_id: user.company_id,
             client_id: user._id,
             service_name: serviceName,
-            status: 'open',
-            source: 'we-crm',
-            client_name: requestedEntityName,
-            client_phone: user.phone || '',
-            client_email: user.email,
-            client_company_name: user.company_name || ''
+            status: { $in: ['open', 'claimed_by_manager', 'assigned'] }
           });
-          console.log(`Created open Bucket Request for ${serviceName}`);
-        } else {
-          console.log(`Bucket Request already exists for ${serviceName}`);
+
+          if (!existingBucketReq) {
+            await BucketRequest.create({
+              company_id: user.company_id || '000000000000000000000000',
+              client_id: user._id,
+              service_name: serviceName,
+              status: 'open',
+              source: 'we-crm',
+              client_name: requestedEntityName,
+              client_phone: user.phone || '',
+              client_email: user.email,
+              client_company_name: user.company_name || ''
+            });
+            console.log(`Created open Bucket Request for unassigned client: ${serviceName}`);
+          }
         }
 
         // Also create a ServiceOrder so it appears in the New Requests page

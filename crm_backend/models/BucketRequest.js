@@ -57,7 +57,7 @@ const bucketRequestSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['dealvoice', 'manual', 'we-crm'],
+    enum: ['dealvoice', 'manual', 'we-crm', 'we-crm-new', 'we-crm-old'],
     default: 'dealvoice'
   },
   // Extra data from DealVoice for display

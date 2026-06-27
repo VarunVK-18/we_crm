@@ -83,56 +83,64 @@ exports.updateOrder = async (req, res) => {
         
         console.log(`[ORDER ASSIGN] Querying BucketRequest: company_id=${order.companyId}, client_id=${order.clientUid}, service_name=${order.serviceType}`);
         
-        const bucketReq = await BucketRequest.findOne({ 
+        let bucketReq = await BucketRequest.findOne({ 
           company_id: order.companyId, 
           client_id: order.clientUid, 
           service_name: order.serviceType, 
           status: 'open' 
         });
 
-        if (bucketReq) {
-          console.log(`[ORDER ASSIGN] Found BucketRequest ${bucketReq._id}`);
-          let finalItems = [];
-          try {
-            const template = await ChecklistTemplate.findOne({
-              company_id: order.companyId,
-              service_name: bucketReq.service_name
-            });
-            if (template && template.items && template.items.length > 0) {
-              finalItems = template.items.map(item => ({
-                title: item.title, description: item.description, label: item.title, isChecked: false
-              }));
-            }
-          } catch (e) { }
-
-          if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
-            finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
-          }
-
-          const checklist = await Checklist.create({
+        if (!bucketReq) {
+          console.log(`[ORDER ASSIGN] BucketRequest not found for ${order.serviceType}. Creating one on the fly...`);
+          bucketReq = await BucketRequest.create({
             company_id: order.companyId,
-            client_id: bucketReq.client_id,
-            service_name: bucketReq.service_name,
-            assigned_to: req.user._id,
-            created_by: req.user._id,
-            items: finalItems,
-            status: 'pending',
-            stage: 'quotePending',
-            notes: '',
-            dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
-            advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0
+            client_id: order.clientUid,
+            service_name: order.serviceType,
+            status: 'open',
+            source: 'we-crm', // or 'we-crm-old', it will instantly be claimed anyway
+            client_name: order.entityName || '',
           });
-
-          bucketReq.status = 'claimed_by_manager';
-          bucketReq.claimed_by = req.user._id;
-          bucketReq.team_id = updateData.team_id;
-          bucketReq.claimed_at = new Date();
-          bucketReq.checklist_id = checklist._id;
-          await bucketReq.save();
-          console.log(`[ORDER ASSIGN] Bucket Request assigned to team ${updateData.team_id}`);
-        } else {
-          console.log(`[ORDER ASSIGN] WARNING: BucketRequest NOT FOUND or not open!`);
         }
+
+        console.log(`[ORDER ASSIGN] Proceeding with BucketRequest ${bucketReq._id}`);
+        let finalItems = [];
+        try {
+          const template = await ChecklistTemplate.findOne({
+            company_id: order.companyId,
+            service_name: bucketReq.service_name
+          });
+          if (template && template.items && template.items.length > 0) {
+            finalItems = template.items.map(item => ({
+              title: item.title, description: item.description, label: item.title, isChecked: false
+            }));
+          }
+        } catch (e) { }
+
+        if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
+          finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+        }
+
+        const checklist = await Checklist.create({
+          company_id: order.companyId,
+          client_id: bucketReq.client_id,
+          service_name: bucketReq.service_name,
+          assigned_to: req.user._id,
+          created_by: req.user._id,
+          items: finalItems,
+          status: 'pending',
+          stage: 'quotePending',
+          notes: '',
+          dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
+          advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0
+        });
+
+        bucketReq.status = 'claimed_by_manager';
+        bucketReq.claimed_by = req.user._id;
+        bucketReq.team_id = updateData.team_id;
+        bucketReq.claimed_at = new Date();
+        bucketReq.checklist_id = checklist._id;
+        await bucketReq.save();
+        console.log(`[ORDER ASSIGN] Bucket Request assigned to team ${updateData.team_id}`);
       } catch (err) {
         console.error('Error assigning Bucket Request to team:', err);
       }
@@ -192,7 +200,7 @@ exports.getCompanyOrders = async (req, res) => {
       return res.status(400).json({ message: 'Company ID is required.' });
     }
     let cleintFilter = { company_id: companyId, role: 'customer' };
-    if (req.user && req.user.role === 'cleint_manager') {
+    if (req.user && req.user.role === 'client_manager') {
       cleintFilter.$or = [
         { assigned_to: req.user._id },
         { created_by: req.user._id, assigned_to: null }
@@ -204,9 +212,9 @@ exports.getCompanyOrders = async (req, res) => {
     const cleints = await User.find(cleintFilter).select('_id');
     const cleintIds = cleints.map(cleint => cleint._id.toString());
     let orderQuery = {};
-    if (req.user && ['cleint_manager', 'account_manager', 'filling_staff'].includes(req.user.role)) {
+    if (req.user && ['client_manager', 'account_manager', 'filling_staff'].includes(req.user.role)) {
       // Scoped users ONLY see orders for their authorized cleints
-      orderQuery.cleintUid = { $in: cleintIds };
+      orderQuery.clientUid = { $in: cleintIds };
       
       // If the order has an assigned expert, ONLY that expert should see it, 
       // UNLESS it's unassigned, in which case the authorized cleint manager can see it.
@@ -219,7 +227,7 @@ exports.getCompanyOrders = async (req, res) => {
     } else {
       // Admin users see all orders for the company OR cleints
       orderQuery.$or = [
-        { cleintUid: { $in: cleintIds } },
+        { clientUid: { $in: cleintIds } },
         { companyId: companyId }
       ];
     }
