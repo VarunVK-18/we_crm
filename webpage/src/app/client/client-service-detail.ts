@@ -138,8 +138,6 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
       this.goToPatentForm();
     } else if (s.includes('iec')) {
       this.goToIecForm();
-    } else if (s.includes('360') && s.includes('compliance')) {
-      this.goTo360ComplianceForm();
     } else {
       console.warn('No form routing defined for service:', serviceName);
     }
@@ -223,10 +221,6 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   goToDpiitForm() {
     this.router.navigate(['/client/forms/dpiit', this.orderId()]);
-  }
-
-  goTo360ComplianceForm() {
-    this.router.navigate(['/client/fill-360-compliance-form', this.orderId()]);
   }
 
   fetchOrderDetails(silent = false) {

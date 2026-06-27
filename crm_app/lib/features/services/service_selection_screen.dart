@@ -22,22 +22,6 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen> {
   // Master list of services with category tags
   final List<Map<String, dynamic>> _allServices = [
     {
-      'title': '360° Compliance',
-      'subtitle': 'Statutory & regulatory lifecycle management',
-      'icon': HugeIcons.strokeRoundedBriefcase01,
-      'color': const Color(0xFF6366F1),
-      'category': 'Legal',
-      'description':
-          'End-to-end statutory and regulatory lifecycle management to ensure your business stays 100% compliant with changing laws.',
-      'features': [
-        'Annual Filing Support',
-        'Regulatory Impact Analysis',
-        'Compliance Health Check',
-        'Direct Access to Legal Experts',
-        'Automated Deadlines & Alerts',
-      ],
-    },
-    {
       'title': 'Trademark Registration',
       'subtitle': 'Comprehensive brand & IP protection',
       'icon': HugeIcons.strokeRoundedLicense,

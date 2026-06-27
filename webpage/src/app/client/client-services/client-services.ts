@@ -76,11 +76,6 @@ export class ClientServicesComponent implements OnInit {
     ],
     'compliance': [
       {
-        title: '360° Compliance',
-        description: 'End-to-end statutory and regulatory lifecycle management.',
-        features: ['Annual Filing Support', 'Regulatory Impact Analysis', 'Compliance Health Check', 'Direct Access to Legal Experts', 'Automated Deadlines & Alerts']
-      },
-      {
         title: 'MCA Compliance',
         description: 'Annual return filings and MCA statutory compliance.',
         features: ['AOC-4 & MGT-7 Filing', 'Director KYC', 'Statutory Audit Support', 'Minutes of Meeting', 'Event Based Filings', 'Processing Time: 5-7 business days']
@@ -432,33 +427,6 @@ export class ClientServicesComponent implements OnInit {
       }
     }
 
-    if (reqService === '360° Compliance' || reqService === '360 Compliance') {
-      const allowedTypes = [
-        'Private Limited Company',
-        'Private Limited',
-        'LLP',
-        'OPC',
-        'One Person Company',
-        'Public Limited Company',
-        'Section 8 Company'
-      ];
-      let isAllowed = false;
-      const checkStr = (entityType + ' ' + (this.quoteForm.selectedEntity || '')).toLowerCase();
-      for (const t of allowedTypes) {
-        if (checkStr.includes(t.toLowerCase())) {
-          isAllowed = true;
-          break;
-        }
-      }
-      if (!isAllowed) {
-        return {
-          type: 'error',
-          header: 'Not Eligible',
-          message: '360 Compliance is available only for registered companies, LLPs, OPCs, Public Limited Companies and Section 8 Companies.'
-        };
-      }
-    }
-
     if (entityType === 'Private Limited Company') {
       if (reqService === 'OPC' || reqService === 'Proprietorship Registration') {
         return {
@@ -525,12 +493,12 @@ export class ClientServicesComponent implements OnInit {
 
   showDirectorCount = computed(() => {
     const s = this.selectedService()?.title || '';
-    return ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(s);
+    return ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company'].includes(s);
   });
 
   showAnnualTurnover = computed(() => {
     const s = this.selectedService()?.title || '';
-    return s === 'GST Compliance' || s === 'MCA Compliance' || s === '360° Compliance' || s === '360 Compliance';
+    return s === 'GST Compliance' || s === 'MCA Compliance';
   });
 
   showEntityDropdown(): boolean {

@@ -939,7 +939,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            '₹${_primaryResult.toStringAsFixed(2)}',
+            '₹${_formatAmount(_primaryResult)}',
             style: GoogleFonts.outfit(
               color: Colors.white,
               fontSize: 40,
@@ -1015,11 +1015,11 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildOutputColumn('₹${_actualAmount.toStringAsFixed(0)}', 'Actual Amount', Colors.blue.shade700),
+                _buildOutputColumn('₹${_formatAmount(_actualAmount)}', 'Actual Amount', Colors.blue.shade700),
                 Text('+', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
-                _buildOutputColumn('₹${_gstAmount.toStringAsFixed(0)}', 'GST Amount', Colors.green),
+                _buildOutputColumn('₹${_formatAmount(_gstAmount)}', 'GST Amount', Colors.green),
                 Text('=', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
-                _buildOutputColumn('₹${_totalAmount.toStringAsFixed(0)}', 'Total Amount', Colors.blue.shade700),
+                _buildOutputColumn('₹${_formatAmount(_totalAmount)}', 'Total Amount', Colors.blue.shade700),
               ],
             ),
           ),
@@ -1074,6 +1074,15 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         ),
       ),
     );
+  }
+
+  String _formatAmount(double value) {
+    if (value == value.toInt()) return value.toInt().toString();
+    String str = value.toStringAsFixed(2);
+    if (str.endsWith('0')) str = str.substring(0, str.length - 1);
+    if (str.endsWith('0')) str = str.substring(0, str.length - 1);
+    if (str.endsWith('.')) str = str.substring(0, str.length - 1);
+    return str;
   }
 
   Widget _buildOutputColumn(String amount, String label, Color color) {

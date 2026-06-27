@@ -170,7 +170,7 @@ class _ServiceRequestSummarySheetState
       'ISO',
       'ISO Registration',
       'FSSAI',
-      'FSSAI Registration',
+      'FSSAI Registration'
       '360° Compliance'
     ];
     return !servicesWithCustomForms.any((s) => widget.packageName.contains(s));
@@ -656,32 +656,6 @@ class _ServiceRequestSummarySheetState
               'message': 'This service is for registering a new entity. You have selected an entity that is already fully incorporated.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
             };
           }
-      }
-
-      if (reqService == '360° Compliance' || reqService == '360 Compliance') {
-        const allowedTypes = [
-          'Private Limited Company',
-          'Private Limited',
-          'LLP',
-          'OPC',
-          'One Person Company',
-          'Public Limited Company',
-          'Section 8 Company'
-        ];
-        bool isAllowed = false;
-        for (final t in allowedTypes) {
-          if (entityType.toLowerCase().contains(t.toLowerCase()) || _selectedEntity!.toLowerCase().contains(t.toLowerCase())) {
-            isAllowed = true;
-            break;
-          }
-        }
-        if (!isAllowed) {
-          return {
-            'type': 'error',
-            'header': 'Not Eligible',
-            'message': '360 Compliance is available only for registered companies, LLPs, OPCs, Public Limited Companies and Section 8 Companies.'
-          };
-        }
       }
 
       if (entityType == 'Private Limited Company') {
@@ -1348,29 +1322,9 @@ class _ServiceRequestSummarySheetState
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
       if (widget.packageName == 'FSSAI Food License') ..._buildFssaiForm(),
       if (widget.packageName == 'GST Compliance' || widget.packageName == 'MCA Compliance') ..._buildComplianceForm(),
-      if (widget.packageName == '360° Compliance') ..._build360ComplianceForm(),
     ];
   }
 
-  List<Widget> _build360ComplianceForm() {
-    return [
-      Text('360° Compliance Details',
-          style: GoogleFonts.outfit(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.deepTeal)),
-      const SizedBox(height: 20),
-      _EditableField(
-          label: 'Number of Directors / Partners',
-          controller: _numberOfDirectorsController,
-          icon: LucideIcons.users,
-          hint: 'Number of directors or partners to be appointed',
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          isRequired: true),
-      const SizedBox(height: 24),
-    ];
-  }
 
   List<Widget> _buildPrivateLimitedForm() {
     return [
