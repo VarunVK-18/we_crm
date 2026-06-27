@@ -75,19 +75,23 @@ exports.updateOrder = async (req, res) => {
     }
 
     if (updateData.team_id) {
+      console.log(`[ORDER ASSIGN] Assigning to team ${updateData.team_id} for order ${order._id}`);
       try {
         const BucketRequest = require('../models/BucketRequest');
         const Checklist = require('../models/Checklist');
         const ChecklistTemplate = require('../models/ChecklistTemplate');
         
+        console.log(`[ORDER ASSIGN] Querying BucketRequest: company_id=${order.companyId}, client_id=${order.clientUid}, service_name=${order.serviceType}`);
+        
         const bucketReq = await BucketRequest.findOne({ 
           company_id: order.companyId, 
-          client_id: order.cleintUid, 
+          client_id: order.clientUid, 
           service_name: order.serviceType, 
           status: 'open' 
         });
 
         if (bucketReq) {
+          console.log(`[ORDER ASSIGN] Found BucketRequest ${bucketReq._id}`);
           let finalItems = [];
           try {
             const template = await ChecklistTemplate.findOne({
@@ -125,7 +129,9 @@ exports.updateOrder = async (req, res) => {
           bucketReq.claimed_at = new Date();
           bucketReq.checklist_id = checklist._id;
           await bucketReq.save();
-          console.log(`Bucket Request assigned to team ${updateData.team_id}`);
+          console.log(`[ORDER ASSIGN] Bucket Request assigned to team ${updateData.team_id}`);
+        } else {
+          console.log(`[ORDER ASSIGN] WARNING: BucketRequest NOT FOUND or not open!`);
         }
       } catch (err) {
         console.error('Error assigning Bucket Request to team:', err);
@@ -155,7 +161,7 @@ exports.updateOrder = async (req, res) => {
           // Update all non-completed checklists for this cleint + service
           const updated = await Checklist.updateMany(
             {
-              cleint_id: order.cleintUid,
+              client_id: order.clientUid,
               service_name: order.serviceType,
               status: { $ne: 'completed' }
             },

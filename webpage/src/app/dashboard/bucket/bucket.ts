@@ -46,7 +46,17 @@ export class BucketComponent implements OnInit {
 
     if (this.isManager) {
       this.api.get<any>('teams').subscribe({
-        next: (res) => this.bucketTeams.set(res.teams || [])
+        next: (res) => {
+          let allTeams = res.teams || [];
+          const currentUser = this.user();
+          
+          if (currentUser && currentUser.role === 'client_manager') {
+            allTeams = allTeams.filter((t: any) => 
+              t.manager_id && (t.manager_id._id === currentUser._id || t.manager_id === currentUser._id)
+            );
+          }
+          this.bucketTeams.set(allTeams);
+        }
       });
       this.api.get<any>('settings/bank').subscribe(res => {
         this.systemBankSettings.set(res.settings);
