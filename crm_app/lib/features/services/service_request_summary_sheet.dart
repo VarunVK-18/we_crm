@@ -131,6 +131,14 @@ class _ServiceRequestSummarySheetState
   bool _isCompanyPhoneValid = false;
   String _consent = 'Agree';
 
+  // Compliance Turnover Option
+  String? _selectedTurnover;
+  final List<String> _turnoverOptions = [
+    'Below ₹20 Lakhs',
+    '₹20 Lakhs - ₹50 Lakhs',
+    'Above ₹50 Lakhs'
+  ];
+
   final _formKey = GlobalKey<FormState>();
   int _currentPage = 0;
   bool _isLoading = false;
@@ -162,7 +170,8 @@ class _ServiceRequestSummarySheetState
       'ISO',
       'ISO Registration',
       'FSSAI',
-      'FSSAI Registration'
+      'FSSAI Registration',
+      '360° Compliance'
     ];
     return !servicesWithCustomForms.any((s) => widget.packageName.contains(s));
   }
@@ -471,8 +480,13 @@ class _ServiceRequestSummarySheetState
       if (!_isTwoStepForm) {
         details['Status'] = 'Pending Client Form Submission';
         details['Next Step'] = 'Assign expert to unlock form for client';
-        if (widget.packageName.contains('Incorporation')) {
+        if (widget.packageName.contains('Incorporation') || widget.packageName == '360° Compliance') {
            details['numberOfDirectors'] = _numberOfDirectorsController.text;
+        }
+        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Compliance') || widget.packageName.contains('360° Compliance')) {
+          if (_selectedTurnover != null) {
+            details['turnoverCategory'] = _selectedTurnover!;
+          }
         }
       } else if (widget.packageName == 'Trademark Registration') {
         details['brand_name'] = _companyNameController.text;
@@ -642,6 +656,32 @@ class _ServiceRequestSummarySheetState
               'message': 'This service is for registering a new entity. You have selected an entity that is already fully incorporated.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
             };
           }
+      }
+
+      if (reqService == '360° Compliance' || reqService == '360 Compliance') {
+        const allowedTypes = [
+          'Private Limited Company',
+          'Private Limited',
+          'LLP',
+          'OPC',
+          'One Person Company',
+          'Public Limited Company',
+          'Section 8 Company'
+        ];
+        bool isAllowed = false;
+        for (final t in allowedTypes) {
+          if (entityType.toLowerCase().contains(t.toLowerCase()) || _selectedEntity!.toLowerCase().contains(t.toLowerCase())) {
+            isAllowed = true;
+            break;
+          }
+        }
+        if (!isAllowed) {
+          return {
+            'type': 'error',
+            'header': 'Not Eligible',
+            'message': '360 Compliance is available only for registered companies, LLPs, OPCs, Public Limited Companies and Section 8 Companies.'
+          };
+        }
       }
 
       if (entityType == 'Private Limited Company') {
@@ -853,6 +893,42 @@ class _ServiceRequestSummarySheetState
                             });
                           },
                         ),
+                        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Compliance') || widget.packageName.contains('360° Compliance')) ...[
+                          const SizedBox(height: 24),
+                          Text(
+                            'Annual Turnover',
+                            style: GoogleFonts.outfit(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.deepTeal,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Column(
+                            children: _turnoverOptions.map((opt) {
+                              return RadioListTile<String>(
+                                title: Text(
+                                  opt,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.deepTeal,
+                                  ),
+                                ),
+                                value: opt,
+                                groupValue: _selectedTurnover,
+                                activeColor: AppTheme.corporateBlue,
+                                contentPadding: EdgeInsets.zero,
+                                dense: true,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _selectedTurnover = val;
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ],
                         if (_getCompatibilityWarning() != null) ...[
                           const SizedBox(height: 12),
                           Container(
@@ -921,8 +997,8 @@ class _ServiceRequestSummarySheetState
                       ..._buildServiceSpecificForms(),
                     ] else ...[
                       if (widget.packageName == 'LLP Incorporation' ||
-                          widget.packageName ==
-                              'Private Limited Incorporation') ...[
+                          widget.packageName == 'Private Limited Incorporation' ||
+                          widget.packageName == '360° Compliance') ...[
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Column(
@@ -1272,6 +1348,27 @@ class _ServiceRequestSummarySheetState
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
       if (widget.packageName == 'FSSAI Food License') ..._buildFssaiForm(),
       if (widget.packageName == 'GST Compliance' || widget.packageName == 'MCA Compliance') ..._buildComplianceForm(),
+      if (widget.packageName == '360° Compliance') ..._build360ComplianceForm(),
+    ];
+  }
+
+  List<Widget> _build360ComplianceForm() {
+    return [
+      Text('360° Compliance Details',
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Number of Directors / Partners',
+          controller: _numberOfDirectorsController,
+          icon: LucideIcons.users,
+          hint: 'Number of directors or partners to be appointed',
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          isRequired: true),
+      const SizedBox(height: 24),
     ];
   }
 

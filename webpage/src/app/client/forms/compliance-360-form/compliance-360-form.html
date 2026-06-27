@@ -1,0 +1,208 @@
+<div class="form-container">
+  <div class="form-header">
+    <button class="back-btn" (click)="location.back()">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <h2>360° Compliance Form</h2>
+    <p>Please provide accurate details for compliance processing.</p>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading details...</p>
+    </div>
+  } @else if (isSuccess()) {
+    <div class="success-state">
+      <i class="fas fa-check-circle"></i>
+      <h3>Form Submitted Successfully!</h3>
+      <p>Your details have been recorded. Redirecting...</p>
+    </div>
+  } @else {
+    <div class="form-content">
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <div class="form-section">
+        <h3>Company Details</h3>
+        <p class="section-desc">Details of the entity registering for compliance.</p>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Company Legal Name <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="companyName" placeholder="Enter company legal name" (ngModelChange)="saveDraft()">
+          </div>
+          <div class="form-group">
+            <label>Company Phone number <span class="required">*</span></label>
+            <input type="tel" [(ngModel)]="companyPhone" placeholder="10-digit number" (ngModelChange)="saveDraft()" maxlength="10">
+          </div>
+          <div class="form-group">
+            <label>Company Mail ID <span class="required">*</span></label>
+            <input type="email" [(ngModel)]="companyEmail" placeholder="e.g. hello@company.com" (ngModelChange)="saveDraft()">
+          </div>
+        </div>
+
+        <div class="file-upload-grid">
+          <div class="file-upload-card" [class.has-file]="incorpCertFile || existingDocs['incorp_cert_existing']">
+            <label>Company Incorporation Certificate <span class="required">*</span></label>
+            <input type="file" (change)="onFileChange($event, 'incorpCertFile')" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="upload-placeholder">
+              <i class="fas" [class.fa-file-check]="incorpCertFile || existingDocs['incorp_cert_existing']" [class.fa-cloud-upload-alt]="!incorpCertFile && !existingDocs['incorp_cert_existing']"></i>
+              <span>{{ incorpCertFile?.name || (existingDocs['incorp_cert_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+              <small>Max 10MB</small>
+            </div>
+            @if (existingDocs['incorp_cert_existing'] && !incorpCertFile) {
+              <div class="existing-file-action" (click)="removeExistingDoc('incorp_cert_existing')">
+                <i class="fas fa-times"></i> Remove existing file
+              </div>
+            }
+          </div>
+          <div class="file-upload-card" [class.has-file]="companyPanFile || existingDocs['company_pan_existing']">
+            <label>Company PAN <span class="required">*</span></label>
+            <input type="file" (change)="onFileChange($event, 'companyPanFile')" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="upload-placeholder">
+              <i class="fas" [class.fa-file-check]="companyPanFile || existingDocs['company_pan_existing']" [class.fa-cloud-upload-alt]="!companyPanFile && !existingDocs['company_pan_existing']"></i>
+              <span>{{ companyPanFile?.name || (existingDocs['company_pan_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+              <small>Max 10MB</small>
+            </div>
+            @if (existingDocs['company_pan_existing'] && !companyPanFile) {
+              <div class="existing-file-action" (click)="removeExistingDoc('company_pan_existing')">
+                <i class="fas fa-times"></i> Remove existing file
+              </div>
+            }
+          </div>
+          <div class="file-upload-card" [class.has-file]="aoaFile || existingDocs['aoa_existing']">
+            <label>Upload AOA <span class="required">*</span></label>
+            <input type="file" (change)="onFileChange($event, 'aoaFile')" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="upload-placeholder">
+              <i class="fas" [class.fa-file-check]="aoaFile || existingDocs['aoa_existing']" [class.fa-cloud-upload-alt]="!aoaFile && !existingDocs['aoa_existing']"></i>
+              <span>{{ aoaFile?.name || (existingDocs['aoa_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+              <small>Max 10MB</small>
+            </div>
+            @if (existingDocs['aoa_existing'] && !aoaFile) {
+              <div class="existing-file-action" (click)="removeExistingDoc('aoa_existing')">
+                <i class="fas fa-times"></i> Remove existing file
+              </div>
+            }
+          </div>
+          <div class="file-upload-card" [class.has-file]="moaFile || existingDocs['moa_existing']">
+            <label>Upload MOA <span class="required">*</span></label>
+            <input type="file" (change)="onFileChange($event, 'moaFile')" accept=".pdf,.jpg,.jpeg,.png">
+            <div class="upload-placeholder">
+              <i class="fas" [class.fa-file-check]="moaFile || existingDocs['moa_existing']" [class.fa-cloud-upload-alt]="!moaFile && !existingDocs['moa_existing']"></i>
+              <span>{{ moaFile?.name || (existingDocs['moa_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+              <small>Max 10MB</small>
+            </div>
+            @if (existingDocs['moa_existing'] && !moaFile) {
+              <div class="existing-file-action" (click)="removeExistingDoc('moa_existing')">
+                <i class="fas fa-times"></i> Remove existing file
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Director Sections -->
+      @for (dir of directors; track $index) {
+        <div class="form-section">
+          <h3>Director {{ $index + 1 }} Details</h3>
+          <p class="section-desc">Personal and professional details of Director {{ $index + 1 }}.</p>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Full Name <span class="required">*</span></label>
+              <input type="text" [(ngModel)]="dir.fullName" placeholder="As per PAN" (ngModelChange)="saveDraft()">
+            </div>
+            <div class="form-group">
+              <label>Mobile Number (MCA) <span class="required">*</span></label>
+              <input type="tel" [(ngModel)]="dir.phone" placeholder="10-digit number" (ngModelChange)="saveDraft()" maxlength="10">
+            </div>
+            <div class="form-group">
+              <label>Mail ID (MCA) <span class="required">*</span></label>
+              <input type="email" [(ngModel)]="dir.email" placeholder="e.g. director@email.com" (ngModelChange)="saveDraft()">
+            </div>
+          </div>
+
+          <div class="file-upload-grid">
+            <div class="file-upload-card" [class.has-file]="dir.photoFile || existingDocs['dir_' + ($index + 1) + '_photo_existing']">
+              <label>Upload Photo <span class="required">*</span></label>
+              <input type="file" (change)="onFileChange($event, 'photoFile', $index)" accept=".pdf,.jpg,.jpeg,.png">
+              <div class="upload-placeholder">
+                <i class="fas" [class.fa-file-check]="dir.photoFile || existingDocs['dir_' + ($index + 1) + '_photo_existing']" [class.fa-cloud-upload-alt]="!dir.photoFile && !existingDocs['dir_' + ($index + 1) + '_photo_existing']"></i>
+                <span>{{ dir.photoFile?.name || (existingDocs['dir_' + ($index + 1) + '_photo_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+                <small>Max 10MB</small>
+              </div>
+              @if (existingDocs['dir_' + ($index + 1) + '_photo_existing'] && !dir.photoFile) {
+                <div class="existing-file-action" (click)="removeExistingDoc('dir_' + ($index + 1) + '_photo_existing')">
+                  <i class="fas fa-times"></i> Remove existing file
+                </div>
+              }
+            </div>
+
+            <div class="file-upload-card" [class.has-file]="dir.aadhaarFile || existingDocs['dir_' + ($index + 1) + '_aadhaar_existing']">
+              <label>Upload Aadhaar <span class="required">*</span></label>
+              <input type="file" (change)="onFileChange($event, 'aadhaarFile', $index)" accept=".pdf,.jpg,.jpeg,.png">
+              <div class="upload-placeholder">
+                <i class="fas" [class.fa-file-check]="dir.aadhaarFile || existingDocs['dir_' + ($index + 1) + '_aadhaar_existing']" [class.fa-cloud-upload-alt]="!dir.aadhaarFile && !existingDocs['dir_' + ($index + 1) + '_aadhaar_existing']"></i>
+                <span>{{ dir.aadhaarFile?.name || (existingDocs['dir_' + ($index + 1) + '_aadhaar_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+                <small>Max 10MB</small>
+              </div>
+              @if (existingDocs['dir_' + ($index + 1) + '_aadhaar_existing'] && !dir.aadhaarFile) {
+                <div class="existing-file-action" (click)="removeExistingDoc('dir_' + ($index + 1) + '_aadhaar_existing')">
+                  <i class="fas fa-times"></i> Remove existing file
+                </div>
+              }
+            </div>
+
+            <div class="file-upload-card" [class.has-file]="dir.panFile || existingDocs['dir_' + ($index + 1) + '_pan_existing']">
+              <label>Upload PAN <span class="required">*</span></label>
+              <input type="file" (change)="onFileChange($event, 'panFile', $index)" accept=".pdf,.jpg,.jpeg,.png">
+              <div class="upload-placeholder">
+                <i class="fas" [class.fa-file-check]="dir.panFile || existingDocs['dir_' + ($index + 1) + '_pan_existing']" [class.fa-cloud-upload-alt]="!dir.panFile && !existingDocs['dir_' + ($index + 1) + '_pan_existing']"></i>
+                <span>{{ dir.panFile?.name || (existingDocs['dir_' + ($index + 1) + '_pan_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+                <small>Max 10MB</small>
+              </div>
+              @if (existingDocs['dir_' + ($index + 1) + '_pan_existing'] && !dir.panFile) {
+                <div class="existing-file-action" (click)="removeExistingDoc('dir_' + ($index + 1) + '_pan_existing')">
+                  <i class="fas fa-times"></i> Remove existing file
+                </div>
+              }
+            </div>
+
+            <div class="file-upload-card" [class.has-file]="dir.dinApprovalFile || existingDocs['dir_' + ($index + 1) + '_din_existing']">
+              <label>Upload DIN Approval Letter</label>
+              <input type="file" (change)="onFileChange($event, 'dinApprovalFile', $index)" accept=".pdf,.jpg,.jpeg,.png">
+              <div class="upload-placeholder">
+                <i class="fas" [class.fa-file-check]="dir.dinApprovalFile || existingDocs['dir_' + ($index + 1) + '_din_existing']" [class.fa-cloud-upload-alt]="!dir.dinApprovalFile && !existingDocs['dir_' + ($index + 1) + '_din_existing']"></i>
+                <span>{{ dir.dinApprovalFile?.name || (existingDocs['dir_' + ($index + 1) + '_din_existing'] ? 'File already uploaded' : 'Click or drag to upload') }}</span>
+                <small>Optional, Max 10MB</small>
+              </div>
+              @if (existingDocs['dir_' + ($index + 1) + '_din_existing'] && !dir.dinApprovalFile) {
+                <div class="existing-file-action" (click)="removeExistingDoc('dir_' + ($index + 1) + '_din_existing')">
+                  <i class="fas fa-times"></i> Remove existing file
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="form-actions">
+        <button class="btn-cancel" (click)="location.back()" [disabled]="isSubmitting()">Cancel</button>
+        <button class="btn-submit" (click)="submitForm()" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="spinner-small"></span>
+            Submitting...
+          } @else {
+            Submit Details
+            <i class="fas fa-arrow-right"></i>
+          }
+        </button>
+      </div>
+    </div>
+  }
+</div>

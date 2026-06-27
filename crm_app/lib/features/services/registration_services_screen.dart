@@ -67,6 +67,20 @@ class _RegistrationServicesScreenState
 
     // --- Compliance ---
     {
+      'title': '360° Compliance',
+      'description': 'End-to-end statutory and regulatory lifecycle management.',
+      'icon': HugeIcons.strokeRoundedBriefcase01,
+      'color': const Color(0xFF6366F1),
+      'category': 'Compliance',
+      'features': [
+        'Annual Filing Support',
+        'Regulatory Impact Analysis',
+        'Compliance Health Check',
+        'Direct Access to Legal Experts',
+        'Automated Deadlines & Alerts',
+      ],
+    },
+    {
       'title': 'MCA Compliance',
       'description': 'Annual return filings and MCA statutory compliance.',
       'icon': HugeIcons.strokeRoundedTask01,

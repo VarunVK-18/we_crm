@@ -501,7 +501,7 @@ Widget build(BuildContext context) {
           RichText(
             text: TextSpan(
               text: label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
               children: const [
                 TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
               ]
@@ -509,7 +509,7 @@ Widget build(BuildContext context) {
           ),
           if (hint.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
           ],
           const SizedBox(height: 12),
           ...options.map((opt) {
@@ -555,7 +555,7 @@ Widget build(BuildContext context) {
           RichText(
             text: TextSpan(
               text: label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
               children: [
                 if (isRequired)
                   const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
@@ -564,7 +564,7 @@ Widget build(BuildContext context) {
           ),
           if (hint.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
           ],
           const SizedBox(height: 8),
           TextFormField(
@@ -605,7 +605,7 @@ Widget build(BuildContext context) {
           RichText(
             text: TextSpan(
               text: label,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
               children: const [
                 TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
               ]
@@ -613,7 +613,7 @@ Widget build(BuildContext context) {
           ),
           if (hint.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
           ],
           const SizedBox(height: 8),
           Row(

@@ -875,6 +875,25 @@ const subscribeService = async (req, res) => {
         }
         details.entityName = requestedEntityName;
 
+        let calculatedPlan = '';
+        let calculatedFee = 0;
+        if (details.turnoverCategory) {
+          const tc = details.turnoverCategory.toLowerCase();
+          if (tc.includes('below') || tc.includes('less than ₹20') || tc.includes('less than 20')) {
+            calculatedPlan = 'Silver Plan';
+            calculatedFee = 25000;
+          } else if (tc.includes('greater than ₹20') || tc.includes('between')) {
+            calculatedPlan = 'Gold Plan';
+            calculatedFee = 35000;
+          } else if (tc.includes('above') || tc.includes('greater than ₹50')) {
+            calculatedPlan = 'Diamond Plan';
+            calculatedFee = 50000;
+          }
+        }
+        
+        details.recommended_plan = calculatedPlan;
+        details.service_fee = calculatedFee;
+
         await Checklist.create({
           company_id: user.company_id || '000000000000000000000000',
           client_id: user._id,
@@ -916,7 +935,10 @@ const subscribeService = async (req, res) => {
           expertPhone: '',
           documents: orderDocuments,
           details: details,
-          steps: orderSteps
+          steps: orderSteps,
+          turnover_category: details.turnoverCategory || '',
+          recommended_plan: calculatedPlan,
+          service_fee: calculatedFee
         });
         console.log(`Created ServiceOrder for ${serviceName} — visible in New Requests`);
       } catch (e) {

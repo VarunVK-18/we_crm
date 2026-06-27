@@ -209,7 +209,7 @@ class CustomerDashboard extends ConsumerWidget {
                   {
                     'label': 'Compliance',
                     'icon': HugeIcons.strokeRoundedBriefcase01,
-                    'subItems': ['MCA Compliance', 'TDS', 'PF'],
+                    'subItems': ['360° Compliance', 'MCA Compliance', 'TDS', 'PF'],
                   },
                   {
                     'label': 'IP',

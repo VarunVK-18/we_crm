@@ -289,6 +289,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       ),
       floatingActionButton: _showBackToTopButton
           ? FloatingActionButton(
+              shape: const CircleBorder(),
               onPressed: () {
                 _scrollController.animateTo(
                   0,
@@ -296,7 +297,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                   curve: Curves.easeInOut,
                 );
               },
-              backgroundColor: AppTheme.corporateBlue,
+              backgroundColor: Colors.black,
               child: const Icon(LucideIcons.arrowUp, color: Colors.white),
             )
           : null,
@@ -657,9 +658,11 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          width: 65,
+                          alignment: Alignment.center,
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                           decoration: BoxDecoration(
-                            color: AppTheme.corporateBlue,
+                            color: Colors.black,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -690,8 +693,8 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                               Text(
                                 parentClass.description,
                                 style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 13,
                                   color: AppTheme.deepTeal,
                                   height: 1.3,
                                 ),
@@ -733,17 +736,19 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                                     child: Row(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: AppTheme.corporateBlue.withOpacity(0.08),
+                                          Container(
+                                            width: 65,
+                                            alignment: Alignment.center,
+                                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                            decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.08),
                                             borderRadius: BorderRadius.circular(6),
                                           ),
                                           child: Text(
                                             item.code,
                                             style: GoogleFonts.outfit(
                                               fontWeight: FontWeight.w700,
-                                              color: AppTheme.corporateBlue,
+                                              color: Colors.black,
                                               fontSize: 12,
                                             ),
                                           ),
@@ -754,7 +759,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                                             item.description,
                                             style: GoogleFonts.outfit(
                                               fontWeight: FontWeight.w400,
-                                              fontSize: 14,
+                                              fontSize: 13,
                                               color: Colors.grey[800],
                                               height: 1.4,
                                             ),
@@ -840,9 +845,11 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    width: 75,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
                     decoration: BoxDecoration(
-                      color: AppTheme.corporateBlue,
+                      color: Colors.black,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -870,15 +877,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          item.description,
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.w400,
-                            fontSize: 14,
-                            color: Colors.grey[800],
-                            height: 1.4,
-                          ),
-                        ),
+                        _ExpandableDescription(text: item.description),
                       ],
                     ),
                   ),
@@ -1218,3 +1217,68 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     super.dispose();
   }
 }
+
+class _ExpandableDescription extends StatefulWidget {
+  final String text;
+
+  const _ExpandableDescription({required this.text});
+
+  @override
+  State<_ExpandableDescription> createState() => _ExpandableDescriptionState();
+}
+
+class _ExpandableDescriptionState extends State<_ExpandableDescription> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final span = TextSpan(
+          text: widget.text,
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.w500,
+            fontSize: 13,
+            color: AppTheme.deepTeal,
+            height: 1.3,
+          ),
+        );
+        final tp = TextPainter(
+          text: span,
+          textDirection: TextDirection.ltr,
+          maxLines: 3,
+        );
+        tp.layout(maxWidth: constraints.maxWidth);
+        
+        final isOverflowing = tp.didExceedMaxLines;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.text,
+              style: span.style,
+              maxLines: _isExpanded ? null : 3,
+              overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+            ),
+            if (isOverflowing) ...[
+              const SizedBox(height: 4),
+              InkWell(
+                onTap: () => setState(() => _isExpanded = !_isExpanded),
+                child: Text(
+                  _isExpanded ? 'View less' : 'View more',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    color: AppTheme.corporateBlue,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+

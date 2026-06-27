@@ -17,6 +17,9 @@ const ComplianceTaskSchema = new mongoose.Schema({
   certificateDocument: { type: mongoose.Schema.Types.ObjectId, ref: 'Document' },
   acknowledgementDocument: { type: mongoose.Schema.Types.ObjectId, ref: 'Document' },
   completedAt: { type: Date },
+  filing_year: { type: String, default: '' },
+  assigned_staff_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  warning_status: { type: String, enum: ['None', 'Due Soon', 'Warning', 'Critical', 'Due Tomorrow', 'Overdue'], default: 'None' }
 }, { timestamps: true });
 
 module.exports = mongoose.model('ComplianceTask', ComplianceTaskSchema);

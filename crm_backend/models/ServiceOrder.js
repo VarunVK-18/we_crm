@@ -44,7 +44,10 @@ const ServiceOrderSchema = new mongoose.Schema({
     paymentTimestamp: { type: Date },
     addedAt: { type: Date, default: Date.now },
     isVerified: { type: Boolean, default: false }
-  }]
+  }],
+  turnover_category: { type: String, default: '' },
+  recommended_plan: { type: String, default: '' },
+  service_fee: { type: Number, default: 0 }
 }, { timestamps: true });
 
 module.exports = mongoose.model('ServiceOrder', ServiceOrderSchema);

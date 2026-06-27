@@ -323,7 +323,7 @@ export class RequestsComponent implements OnInit {
     }
 
     const order = this.orders().find(o => o._id === orderId);
-    const needsDirectors = ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company'].includes(order?.serviceType || order?.serviceName || '');
+    const needsDirectors = ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(order?.serviceType || order?.serviceName || '');
     let directors = this.numberOfDirectorsForOrder()[orderId];
     if (needsDirectors && !directors) {
       if (order?.details?.numberOfDirectors) {

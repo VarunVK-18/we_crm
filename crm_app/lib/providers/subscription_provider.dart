@@ -69,3 +69,19 @@ final mySubscriptionsProvider = FutureProvider.autoDispose<List<SubscriptionMode
     return [];
   }
 });
+
+Future<bool> renewSubscription(String uid, String subId) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$kBaseUrl/api/subscriptions/renew/$subId'),
+      headers: {'x-user-id': uid},
+    ).timeout(const Duration(seconds: 8));
+
+    if (response.statusCode == 200) {
+      return true;
+    }
+    return false;
+  } catch (_) {
+    return false;
+  }
+}

@@ -66,6 +66,11 @@ class SubscriptionsScreen extends ConsumerWidget {
                   return s.entityName.toLowerCase() == selectedEntity.trim().toLowerCase();
                 }).toList();
 
+                final activePlans = filteredSubscriptions.where((s) => s.status == 'Active' || s.status == 'Pending').toList();
+                final expiringPlans = filteredSubscriptions.where((s) => s.status == 'Expiring Soon').toList();
+                final expiredPlans = filteredSubscriptions.where((s) => s.status == 'Expired').toList();
+                final renewedPlans = filteredSubscriptions.where((s) => s.status == 'Renewed').toList();
+
                 if (filteredSubscriptions.isEmpty) {
                   return Container(
                     width: double.infinity,
@@ -76,17 +81,89 @@ class SubscriptionsScreen extends ConsumerWidget {
                     ),
                     child: const Center(
                       child: Text(
-                        'No Active Plans',
+                        'No Plans Found',
                         style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
                   );
                 }
+
                 return Column(
-                  children: filteredSubscriptions.map((sub) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate),
-                  )).toList(),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (activePlans.isNotEmpty) ...[
+                      const Text('ACTIVE PLANS', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ...activePlans.map((sub) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate),
+                      )).toList(),
+                    ],
+                    if (expiringPlans.isNotEmpty) ...[
+                      const Text('EXPIRING SOON', style: TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ...expiringPlans.map((sub) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate, onRenew: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Renew Subscription'),
+                              content: const Text('Are you sure you want to renew this subscription for another year?'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Renew')),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            if (user?.id != null) {
+                              final success = await renewSubscription(user!.id, sub.id);
+                              if (success) {
+                                ref.invalidate(mySubscriptionsProvider);
+                              }
+                            }
+                          }
+                        }),
+                      )).toList(),
+                    ],
+                    if (expiredPlans.isNotEmpty) ...[
+                      const Text('EXPIRED PLANS', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ...expiredPlans.map((sub) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate, isExpired: true, onRenew: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Reactivate Subscription'),
+                              content: const Text('Are you sure you want to reactivate this subscription?'),
+                              actions: [
+                                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                                TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Reactivate')),
+                              ],
+                            ),
+                          );
+                          if (confirm == true) {
+                            if (user?.id != null) {
+                              final success = await renewSubscription(user!.id, sub.id);
+                              if (success) {
+                                ref.invalidate(mySubscriptionsProvider);
+                              }
+                            }
+                          }
+                        }),
+                      )).toList(),
+                    ],
+                    if (renewedPlans.isNotEmpty) ...[
+                      const Text('PREVIOUS PLANS (RENEWED)', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      ...renewedPlans.map((sub) => Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate, isExpired: true),
+                      )).toList(),
+                    ],
+                  ],
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.deepTeal)),
@@ -231,7 +308,7 @@ class SubscriptionsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlanCard(String planName, String status, DateTime expiryDate) {
+  Widget _buildPlanCard(String planName, String status, DateTime expiryDate, {bool isExpired = false, VoidCallback? onRenew}) {
     final expiryStr = DateFormat('dd MMM yyyy').format(expiryDate);
     
     String planLabel = 'PREMIUM COMPLIANCE';
@@ -265,15 +342,17 @@ class SubscriptionsScreen extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.deepTeal.withOpacity(0.3),
+            color: isExpired ? Colors.black12 : AppTheme.deepTeal.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: Opacity(
+        opacity: isExpired ? 0.6 : 1.0,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -301,27 +380,78 @@ class SubscriptionsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 32),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('STATUS', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(
+                    'STATUS',
+                    style: TextStyle(
+                      color: Colors.white60,
+                      fontSize: 10,
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(status, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text(
+                    status,
+                    style: TextStyle(
+                      color: isExpired ? Colors.white70 : Colors.greenAccent,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(width: 48),
               Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text('EXPIRES', style: TextStyle(color: Colors.white60, fontSize: 10, fontWeight: FontWeight.bold)),
+                  Text(
+                    isExpired ? 'EXPIRED ON' : 'EXPIRES',
+                    style: TextStyle(
+                      color: Colors.white60,
+                      fontSize: 10,
+                      letterSpacing: 1.2,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 4),
-                  Text(expiryStr, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
+                  Text(
+                    expiryStr,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ],
               ),
             ],
           ),
+          if (onRenew != null) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: onRenew,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: status == 'Expiring Soon' ? Colors.orange : Colors.white,
+                  foregroundColor: status == 'Expiring Soon' ? Colors.white : AppTheme.deepTeal,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 0,
+                ),
+                child: Text(
+                  status == 'Expired' ? 'Reactivate' : 'Renew Now',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
         ],
+      ),
       ),
     );
   }

@@ -768,7 +768,7 @@ class _ServiceCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: AppTheme.corporateBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(30),
                         border: Border.all(
                           color: AppTheme.corporateBlue.withOpacity(0.3),
                         ),
@@ -814,7 +814,7 @@ class _ServiceCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(30),
                         border: Border.all(
                           color: Colors.green.withOpacity(0.3),
                         ),

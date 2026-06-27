@@ -79,36 +79,116 @@
             <div class="ppc-glow"></div>
             <div class="ppc-bg-pattern"></div>
             <div class="ppc-content" style="text-align: center; padding: 48px 0;">
-              <h3 class="ppc-title" style="font-size: 1.2rem; color: rgba(255,255,255,0.7);">No Active Plans</h3>
+              <h3 class="ppc-title" style="font-size: 1.2rem; color: rgba(255,255,255,0.7);">No Plans Found</h3>
             </div>
           </div>
         } @else {
-          @for (sub of filteredActiveSubscriptions(); track sub._id) {
-            <div class="premium-plan-card" style="margin-bottom: 24px;">
-              <div class="ppc-glow"></div>
-              <div class="ppc-bg-pattern"></div>
-              <div class="ppc-content">
-                <div class="ppc-header">
-                  <div class="ppc-badge">PREMIUM COMPLIANCE</div>
-                  <div class="ppc-icon">
-                    <hugeicons-icon [icon]="CrownIcon" [size]="24" color="#fbbf24" [strokeWidth]="2"></hugeicons-icon>
+          <!-- Active Plans -->
+          @if (activeSubscriptionsList().length > 0) {
+            <h4 style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">Active Plans</h4>
+            @for (sub of activeSubscriptionsList(); track sub._id) {
+              <div class="premium-plan-card" style="margin-bottom: 24px;">
+                <div class="ppc-glow"></div>
+                <div class="ppc-bg-pattern"></div>
+                <div class="ppc-content">
+                  <div class="ppc-header">
+                    <div class="ppc-badge">PREMIUM COMPLIANCE</div>
+                    <div class="ppc-icon">
+                      <hugeicons-icon [icon]="CrownIcon" [size]="24" color="#fbbf24" [strokeWidth]="2"></hugeicons-icon>
+                    </div>
                   </div>
-                </div>
-                
-                <h3 class="ppc-title">Wealth Empires<br>{{ sub.plan_name || 'Premium Plan' }}</h3>
-                
-                <div class="ppc-details">
-                  <div class="ppc-detail-block">
-                    <span class="ppc-label">STATUS</span>
-                    <span class="ppc-value active">{{ sub.status || 'Active' }}</span>
-                  </div>
-                  <div class="ppc-detail-block">
-                    <span class="ppc-label">EXPIRES</span>
-                    <span class="ppc-value">{{ sub.expiry_date | date:'dd MMM yyyy' }}</span>
+                  <h3 class="ppc-title">Wealth Empires<br>{{ sub.plan_name || 'Premium Plan' }}</h3>
+                  <div class="ppc-details">
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">STATUS</span>
+                      <span class="ppc-value active">{{ sub.status || 'Active' }}</span>
+                    </div>
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">EXPIRES</span>
+                      <span class="ppc-value">{{ sub.expiry_date | date:'dd MMM yyyy' }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            }
+          }
+
+          <!-- Expiring Soon Plans -->
+          @if (expiringSubscriptionsList().length > 0) {
+            <h4 style="color: #f59e0b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; margin-top: 16px;">Expiring Soon</h4>
+            @for (sub of expiringSubscriptionsList(); track sub._id) {
+              <div class="premium-plan-card" style="margin-bottom: 24px; border-color: #fcd34d;">
+                <div class="ppc-glow" style="background: radial-gradient(circle at top right, rgba(245,158,11,0.15), transparent 60%);"></div>
+                <div class="ppc-content">
+                  <div class="ppc-header">
+                    <div class="ppc-badge" style="background: rgba(245,158,11,0.2); color: #f59e0b;">NEEDS RENEWAL</div>
+                  </div>
+                  <h3 class="ppc-title">Wealth Empires<br>{{ sub.plan_name || 'Premium Plan' }}</h3>
+                  <div class="ppc-details">
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">STATUS</span>
+                      <span class="ppc-value" style="color: #f59e0b;">{{ sub.status }}</span>
+                    </div>
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">EXPIRES</span>
+                      <span class="ppc-value">{{ sub.expiry_date | date:'dd MMM yyyy' }}</span>
+                    </div>
+                  </div>
+                  <button class="btn-primary" style="width: 100%; margin-top: 16px; background: #f59e0b; color: white;" (click)="renewSubscription(sub._id)">Renew Now</button>
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Expired Plans -->
+          @if (expiredSubscriptionsList().length > 0) {
+            <h4 style="color: #ef4444; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; margin-top: 16px;">Expired Plans</h4>
+            @for (sub of expiredSubscriptionsList(); track sub._id) {
+              <div class="premium-plan-card" style="margin-bottom: 24px; filter: grayscale(100%); opacity: 0.8;">
+                <div class="ppc-content">
+                  <div class="ppc-header">
+                    <div class="ppc-badge" style="background: rgba(239,68,68,0.2); color: #ef4444;">EXPIRED</div>
+                  </div>
+                  <h3 class="ppc-title">Wealth Empires<br>{{ sub.plan_name || 'Premium Plan' }}</h3>
+                  <div class="ppc-details">
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">STATUS</span>
+                      <span class="ppc-value" style="color: #ef4444;">{{ sub.status }}</span>
+                    </div>
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">EXPIRED ON</span>
+                      <span class="ppc-value">{{ sub.expiry_date | date:'dd MMM yyyy' }}</span>
+                    </div>
+                  </div>
+                  <button class="btn-primary" style="width: 100%; margin-top: 16px;" (click)="renewSubscription(sub._id)">Reactivate</button>
+                </div>
+              </div>
+            }
+          }
+
+          <!-- Renewed Plans -->
+          @if (renewedSubscriptionsList().length > 0) {
+            <h4 style="color: #94a3b8; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px; margin-top: 16px;">Previous Plans (Renewed)</h4>
+            @for (sub of renewedSubscriptionsList(); track sub._id) {
+              <div class="premium-plan-card" style="margin-bottom: 24px; filter: grayscale(100%); opacity: 0.6;">
+                <div class="ppc-content">
+                  <div class="ppc-header">
+                    <div class="ppc-badge" style="background: rgba(148,163,184,0.2); color: #94a3b8;">RENEWED</div>
+                  </div>
+                  <h3 class="ppc-title">Wealth Empires<br>{{ sub.plan_name || 'Premium Plan' }}</h3>
+                  <div class="ppc-details">
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">STATUS</span>
+                      <span class="ppc-value" style="color: #94a3b8;">{{ sub.status }}</span>
+                    </div>
+                    <div class="ppc-detail-block">
+                      <span class="ppc-label">EXPIRED ON</span>
+                      <span class="ppc-value">{{ sub.expiry_date | date:'dd MMM yyyy' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
           }
         }
       </div>

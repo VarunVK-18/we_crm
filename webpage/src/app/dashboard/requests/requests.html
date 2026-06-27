@@ -130,7 +130,7 @@
           </select>
         </div>
 
-        @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company'].includes(order.serviceType || order.service_name || '')) {
+        @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(order.serviceType || order.service_name || '')) {
         <div class="assign-field-group">
           <label class="assign-label">Number of Directors/Partners:</label>
           <input type="number" class="form-control-input number-input" placeholder="Enter count"
@@ -138,14 +138,17 @@
         </div>
         }
 
-        @if (['MCA Compliance', 'GST Compliance'].includes(order.serviceType || order.service_name || '')) {
+        @if (['MCA Compliance', 'GST Compliance', '360° Compliance'].includes(order.serviceType || order.service_name || '')) {
         <div class="assign-field-group">
-          <label class="assign-label">Recommended Plan:</label>
+          <label class="assign-label">Turnover / Plan / Fee:</label>
+          <div style="font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 8px;">
+            <strong style="color: #1e293b;">Turnover:</strong> {{ order.turnover_category || order.details?.turnoverCategory || 'Not provided' }}
+          </div>
           <select class="form-control-input select-input" (change)="onPlanChange(order._id, $event)">
             <option value="">-- No Plan / Default --</option>
-            <option value="Startup Plan" [selected]="order.recommended_plan === 'Startup Plan' || order.details?.recommended_plan === 'Startup Plan'">Startup Plan</option>
-            <option value="Business Plan" [selected]="order.recommended_plan === 'Business Plan' || order.details?.recommended_plan === 'Business Plan'">Business Plan</option>
-            <option value="Corporate Plan" [selected]="order.recommended_plan === 'Corporate Plan' || order.details?.recommended_plan === 'Corporate Plan'">Corporate Plan</option>
+            <option value="Silver Plan" [selected]="order.recommended_plan === 'Silver Plan' || order.details?.recommended_plan === 'Silver Plan'">Silver Plan (₹25,000 + GST)</option>
+            <option value="Gold Plan" [selected]="order.recommended_plan === 'Gold Plan' || order.details?.recommended_plan === 'Gold Plan'">Gold Plan (₹35,000 + GST)</option>
+            <option value="Diamond Plan" [selected]="order.recommended_plan === 'Diamond Plan' || order.details?.recommended_plan === 'Diamond Plan'">Diamond Plan (₹50,000 + GST)</option>
           </select>
         </div>
         }

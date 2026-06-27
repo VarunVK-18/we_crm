@@ -81,6 +81,11 @@ export class ClientSubscriptions implements OnInit, OnDestroy {
     });
   });
 
+  activeSubscriptionsList = computed(() => this.filteredActiveSubscriptions().filter(s => s.status === 'Active' || s.status === 'Pending'));
+  expiringSubscriptionsList = computed(() => this.filteredActiveSubscriptions().filter(s => s.status === 'Expiring Soon'));
+  expiredSubscriptionsList = computed(() => this.filteredActiveSubscriptions().filter(s => s.status === 'Expired'));
+  renewedSubscriptionsList = computed(() => this.filteredActiveSubscriptions().filter(s => s.status === 'Renewed'));
+
   // Icons
   CrownIcon = CrownIcon;
   Download01Icon = Download01Icon;
@@ -210,5 +215,33 @@ export class ClientSubscriptions implements OnInit, OnDestroy {
     const closed = service.dealClosedAmount || 0;
     const paid = service.advanceAmountPaid || 0;
     return closed > paid;
+  }
+
+  async renewSubscription(subId: string) {
+    try {
+      const confirmed = await this.confirmDialog.confirm({
+        title: 'Renew Subscription',
+        message: 'Are you sure you want to renew this subscription for another year?',
+        confirmText: 'Renew',
+        cancelText: 'Cancel'
+      });
+      if (!confirmed) return;
+      
+      this.isLoading.set(true);
+      this.api.post<any>(`subscriptions/renew/${subId}`, {}).subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.fetchActiveSubscriptions();
+          }
+          this.isLoading.set(false);
+        },
+        error: (err) => {
+          console.error('Failed to renew', err);
+          this.isLoading.set(false);
+        }
+      });
+    } catch(e) {
+      this.isLoading.set(false);
+    }
   }
 }

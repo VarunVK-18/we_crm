@@ -24,7 +24,7 @@ const SubscriptionSchema = new mongoose.Schema({
   },
   plan_tier: {
     type: String,
-    required: true
+    required: false
   },
   service_type: {
     type: String,
@@ -44,8 +44,13 @@ const SubscriptionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Active', 'Expired', 'Cancelled'],
+    enum: ['Pending', 'Active', 'Expiring Soon', 'Expired', 'Renewed', 'Cancelled'],
     default: 'Active'
+  },
+  renewal_status: {
+    type: String,
+    enum: ['None', 'Requested', 'Completed'],
+    default: 'None'
   }
 }, { timestamps: true });
 
