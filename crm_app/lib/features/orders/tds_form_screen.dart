@@ -268,7 +268,7 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.corporateBlue)),
+                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue)),
                   const SizedBox(height: 16),
                   
                   // Entity Details
@@ -299,7 +299,14 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
-                              items: _entityTypes.map((type) => DropdownItem(value: type, child: Text(type))).toList(),
+                              dropdownStyleData: DropdownStyleData(
+                                elevation: 2,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: Colors.black26, width: 0.5),
+                                ),
+                              ),
+                              items: _entityTypes.map((type) => DropdownItem(value: type, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
                               onChanged: (val) {
                                 setState(() {
                                   _entityType = val;

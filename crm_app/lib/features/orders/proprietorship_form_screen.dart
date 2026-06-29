@@ -313,7 +313,7 @@ class _ProprietorshipFormScreenState extends ConsumerState<ProprietorshipFormScr
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w800, color: AppTheme.corporateBlue)),
+                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue)),
                   const SizedBox(height: 16),
                   
                   // Step 1: Proprietor Details

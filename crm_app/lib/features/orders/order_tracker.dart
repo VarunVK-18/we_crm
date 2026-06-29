@@ -290,8 +290,10 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         ),
                       ),
                       dropdownStyleData: DropdownStyleData(
+                        elevation: 2,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.black26, width: 0.5),
                         ),
                       ),
                       menuItemStyleData: const MenuItemStyleData(
