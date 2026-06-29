@@ -191,7 +191,7 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 32.r),
 
               // Section 1: Services
-              _buildSectionHeader(context, 'Start with a Service', subtitle: 'Swipe ->'),
+              _buildSectionHeader(context, 'Start with a Service', subtitle: 'Swipe'),
               SizedBox(height: 20.r),
               const _HorizontalServiceList(
                 items: [
@@ -251,7 +251,7 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 40.r),
 
               // Section 2: Tools
-              _buildSectionHeader(context, 'Tools & Calculators', subtitle: 'Swipe ->'),
+              _buildSectionHeader(context, 'Tools & Calculators', subtitle: 'Swipe'),
               SizedBox(height: 18.r),
               const _HorizontalServiceList(
                 items: [
@@ -472,8 +472,6 @@ class CustomerDashboard extends ConsumerWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(LucideIcons.arrowRightLeft, size: 12.sp, color: Colors.grey.shade600),
-                SizedBox(width: 4.r),
                 Text(
                   subtitle,
                   style: GoogleFonts.inter(
@@ -482,6 +480,8 @@ class CustomerDashboard extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                SizedBox(width: 4.r),
+                Icon(LucideIcons.arrowRightLeft, size: 12.sp, color: Colors.grey.shade600),
               ],
             ),
           ]

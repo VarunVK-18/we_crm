@@ -499,8 +499,10 @@ Widget build(BuildContext context) {
             maxLines: maxLines,
             maxLength: maxLength,
             keyboardType: keyboardType,
-            style: GoogleFonts.inter(fontSize: 14),
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w400),
             decoration: InputDecoration(
+              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               filled: true,
               fillColor: Colors.white,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
@@ -532,7 +534,7 @@ Widget build(BuildContext context) {
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
-          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: GoogleFonts.inter(fontSize: 14)))).toList(),
+          items: items.map((e) => DropdownMenuItem(value: e, child: Text(e, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w400)))).toList(),
           onChanged: onChanged,
         ),
       ),

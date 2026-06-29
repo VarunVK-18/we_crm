@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -344,7 +345,7 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
     );
   }
 
-  Widget _buildDropdownField(String label, List<String> items, String? currentValue, Function(String?) onChanged, {bool isRequired = false}) {
+  Widget _buildDropdownField(String label, List<String> items, String? currentValue, Function(String?) onChanged, {bool isRequired = false, String hint = ''}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -364,6 +365,8 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
           DropdownButtonFormField<String>(
             value: currentValue,
             decoration: InputDecoration(
+              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll("*", "").trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -404,6 +407,8 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
             textCapitalization: isUppercase ? TextCapitalization.characters : TextCapitalization.none,
             maxLines: maxLines,
             decoration: InputDecoration(
+              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

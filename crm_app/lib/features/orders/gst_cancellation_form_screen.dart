@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -295,6 +296,8 @@ class _GstCancellationFormScreenState extends ConsumerState<GstCancellationFormS
                             DropdownButtonFormField<String>(
                               value: _entityType,
                               decoration: InputDecoration(
+                                hintText: 'Select Entity Type',
+                                hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -410,6 +413,8 @@ class _GstCancellationFormScreenState extends ConsumerState<GstCancellationFormS
             } : null,
             maxLines: maxLines,
             decoration: InputDecoration(
+              hintText: hint.isNotEmpty ? hint : "Enter ${label.replaceAll('*', '').trim()}",
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

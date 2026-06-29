@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -296,14 +297,16 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              value: _turnoverType,
+                            DropdownButtonFormField2<String>(
+                              valueListenable: ValueNotifier(_turnoverType),
                               decoration: InputDecoration(
+                                hintText: 'Select Turnover Details',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
-                              items: _turnoverOptions.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                              items: _turnoverOptions.map((type) => DropdownItem(value: type, child: Text(type))).toList(),
                               onChanged: (val) {
                                 setState(() {
                                   _turnoverType = val;
@@ -392,6 +395,8 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
             controller: controller,
             keyboardType: keyboardType,
             decoration: InputDecoration(
+              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

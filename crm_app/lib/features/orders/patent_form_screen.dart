@@ -1,3 +1,4 @@
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -333,14 +334,16 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              value: _entityType,
+                            DropdownButtonFormField2<String>(
+                              valueListenable: ValueNotifier(_entityType),
                               decoration: InputDecoration(
+              hintText: 'Select Entity Type',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
                                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
-                              items: _entityTypes.map((type) => DropdownMenuItem(value: type, child: Text(type))).toList(),
+                              items: _entityTypes.map((type) => DropdownItem(value: type, child: Text(type))).toList(),
                               onChanged: (val) {
                                 setState(() {
                                   _entityType = val;
@@ -453,6 +456,8 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
             keyboardType: keyboardType,
             maxLines: maxLines,
             decoration: InputDecoration(
+              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
