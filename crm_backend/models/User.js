@@ -8,6 +8,10 @@ const UserSchema = new mongoose.Schema({
     ref: 'Company',
     default: null
   },
+  custom_client_id: {
+    type: String,
+    default: null
+  },
   owner_name: {
     type: String,
     required: [true, 'Owner name is required']

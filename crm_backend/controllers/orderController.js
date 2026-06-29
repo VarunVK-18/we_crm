@@ -120,8 +120,14 @@ exports.updateOrder = async (req, res) => {
           finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
         }
 
+        let custom_service_id = null;
+        try {
+          custom_service_id = await getNextServiceId(order.companyId);
+        } catch (e) { console.error('Failed to generate custom_service_id', e); }
+
         const checklist = await Checklist.create({
           company_id: order.companyId,
+          custom_service_id,
           client_id: bucketReq.client_id,
           service_name: bucketReq.service_name,
           assigned_to: req.user._id,

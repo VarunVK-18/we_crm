@@ -47,6 +47,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   isSopModalOpen = signal<boolean>(false);
   sopPdfSrc: string = '';
 
+  // Document Viewer State
+  isDocViewerOpen = signal<boolean>(false);
+  docViewerSrc: string = '';
+  docViewerName: string = '';
+
   // Add Payment State
   isAddingPayment = signal<boolean>(false);
   paymentAmountToAdd: number = 0;
@@ -107,9 +112,27 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
   }
 
+  openSopModal(url: string) {
+    this.sopPdfSrc = this.api.getFileUrl(url);
+    this.isSopModalOpen.set(true);
+  }
+
   closeSopModal() {
     this.isSopModalOpen.set(false);
     this.sopPdfSrc = '';
+  }
+
+  openDocViewer(url: string, name: string, event: Event) {
+    event.preventDefault();
+    this.docViewerSrc = this.api.getFileUrl(url);
+    this.docViewerName = name || 'Document';
+    this.isDocViewerOpen.set(true);
+  }
+
+  closeDocViewer() {
+    this.isDocViewerOpen.set(false);
+    this.docViewerSrc = '';
+    this.docViewerName = '';
   }
 
   ngOnInit() {

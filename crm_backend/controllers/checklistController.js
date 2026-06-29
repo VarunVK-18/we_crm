@@ -1,5 +1,6 @@
 const Checklist = require('../models/Checklist');
 const User = require('../models/User');
+const { getNextServiceId } = require('../utils/counterHelper');
 const { logActivity } = require('../middleware/rbac');
 const Document = require('../models/Document');
 const Subscription = require('../models/Subscription');
@@ -87,8 +88,14 @@ const createChecklist = async (req, res) => {
       });
     }
 
+    let custom_service_id = null;
+    try {
+      custom_service_id = await getNextServiceId(req.user.company_id);
+    } catch (e) { console.error('Failed to generate custom_service_id', e); }
+
     const checklist = await Checklist.create({
       company_id: req.user.company_id,
+      custom_service_id,
       client_id,
       service_name,
       assigned_to: assigned_to || null,
@@ -116,7 +123,7 @@ const createChecklist = async (req, res) => {
     );
 
     const populated = await Checklist.findById(checklist._id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
@@ -165,7 +172,7 @@ const getChecklists = async (req, res) => {
     }
 
     const checklists = await Checklist.find(filter)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name')
@@ -281,7 +288,7 @@ const toggleChecklistItem = async (req, res) => {
     }
 
     const populated = await Checklist.findById(id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
@@ -325,7 +332,7 @@ const addChecklistItem = async (req, res) => {
     await checklist.save();
 
     const populated = await Checklist.findById(id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
@@ -463,7 +470,7 @@ const updateChecklist = async (req, res) => {
     }
 
     const populated = await Checklist.findById(id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
@@ -939,7 +946,7 @@ const uploadFinalDocuments = async (req, res) => {
     }
 
     const populated = await Checklist.findById(id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
@@ -986,7 +993,7 @@ const deleteFinalDocument = async (req, res) => {
     await Document.findByIdAndDelete(docId);
 
     const populated = await Checklist.findById(id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
@@ -1238,7 +1245,7 @@ const reuploadFinalDocument = async (req, res) => {
     }
 
     const populated = await Checklist.findById(id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
@@ -1402,7 +1409,7 @@ const addFinancialLog = async (req, res) => {
     }
 
     const populated = await Checklist.findById(id)
-      .populate('client_id', 'owner_name company_name email onboarding_documents')
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');

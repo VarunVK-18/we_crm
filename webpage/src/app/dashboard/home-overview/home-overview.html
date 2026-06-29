@@ -193,6 +193,7 @@
   </section>
 
   <!-- Performance Overview Section -->
+  @if (user()?.role !== 'filling_staff') {
   <section class="ho-perf-section" [style.display]="isSearching() ? 'none' : 'flex'">
     <div class="ho-perf-header">
       <h3 class="ho-perf-title">
@@ -271,6 +272,7 @@
       </div>
     </div>
   </section>
+  }
 
   <!-- Dynamic Content Area -->
   <div class="ho-dynamic-grid">

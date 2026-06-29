@@ -86,3 +86,57 @@
     Your secure and trusted repository for all official corporate documents. Access, download, and manage your filings with complete peace of mind.
   </div>
 </div>
+
+<!-- Document Viewer Modal -->
+@if (isDocViewerOpen()) {
+<div
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+  <div class="fade-in"
+    style="background: white; border-radius: 16px; width: 90%; max-width: 1000px; height: 90vh; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; overflow: hidden;">
+    <!-- Header -->
+    <div
+      style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-primary);">
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined" style="color: #3b82f6;">description</span>
+          Document Viewer
+        </h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0;">{{ docViewerName }}</p>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <a [href]="docViewerSrc" target="_blank" download
+          style="background: transparent; border: 1px solid var(--border-color); cursor: pointer; color: var(--text-secondary); padding: 6px 12px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s; text-decoration: none; font-size: 13px; font-weight: 500;"
+          onmouseover="this.style.backgroundColor='var(--bg-secondary)'; this.style.color='var(--text-primary)'"
+          onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--text-secondary)'">
+          <span class="material-symbols-outlined" style="font-size: 18px; margin-right: 4px;">download</span>
+          Download
+        </a>
+        <button (click)="closeDocViewer()"
+          style="background: transparent; border: none; cursor: pointer; color: var(--text-secondary); padding: 8px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s;"
+          onmouseover="this.style.backgroundColor='var(--bg-secondary)'; this.style.color='var(--text-primary)'"
+          onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--text-secondary)'">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+    <!-- Viewer Area -->
+    <div style="flex: 1; background: #e2e8f0; position: relative; overflow: auto; padding: 16px; display: flex; justify-content: center;">
+      @if (docViewerSrc.toLowerCase().endsWith('.pdf') || docViewerSrc.includes('pdf')) {
+        <pdf-viewer [src]="docViewerSrc"
+                    [render-text]="true"
+                    [original-size]="false"
+                    style="width: 100%; max-width: 800px; height: 100%;">
+        </pdf-viewer>
+      } @else if (docViewerSrc.toLowerCase().endsWith('.jpg') || docViewerSrc.toLowerCase().endsWith('.jpeg') || docViewerSrc.toLowerCase().endsWith('.png')) {
+        <img [src]="docViewerSrc" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      } @else {
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+          <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 16px;">description</span>
+          <p>Preview not available for this file type.</p>
+          <a [href]="docViewerSrc" target="_blank" download style="color: var(--primary-color); text-decoration: underline;">Click here to download/open</a>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+}

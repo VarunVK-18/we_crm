@@ -74,7 +74,7 @@ exports.getUserComplianceReminders = async (req, res) => {
     // 2. Fetch dynamic compliance reminders from checklists with final documents
     const completedChecklists = await Checklist.find({ client_id: userId, 'final_documents.0': { $exists: true } })
       .populate('company_id', 'company_name')
-      .populate('client_id', 'owner_name company_name');
+      .populate('client_id', 'custom_client_id owner_name company_name');
 
     const dynamicReminders = getDynamicReminders(completedChecklists);
 
@@ -203,7 +203,7 @@ exports.getCompanyComplianceReminders = async (req, res) => {
 
     const completedChecklists = await Checklist.find(checklistFilter)
       .populate('company_id', 'company_name')
-      .populate('client_id', 'owner_name company_name');
+      .populate('client_id', 'custom_client_id owner_name company_name');
 
     const dynamicReminders = getDynamicReminders(completedChecklists);
 
@@ -315,7 +315,7 @@ exports.getAllComplianceTasks = async (req, res) => {
     // Also fetch dynamic reminders from completed checklists across all clients
     const completedChecklists = await Checklist.find(checklistFilter)
       .populate('company_id', 'company_name')
-      .populate('client_id', 'owner_name company_name')
+      .populate('client_id', 'custom_client_id owner_name company_name')
       .lean();
 
     const dynamicRemindersRaw = getDynamicReminders(completedChecklists);
@@ -388,7 +388,7 @@ exports.getUserComplianceTasks = async (req, res) => {
     // Fetch dynamic reminders (e.g. from Trademark/FSSAI document expiry dates)
     const completedChecklists = await Checklist.find({ client_id: userId, 'final_documents.0': { $exists: true } })
       .populate('company_id', 'company_name')
-      .populate('client_id', 'owner_name company_name')
+      .populate('client_id', 'custom_client_id owner_name company_name')
       .lean();
 
     const dynamicRemindersRaw = getDynamicReminders(completedChecklists);

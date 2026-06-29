@@ -52,6 +52,7 @@ import { AuditLogs } from './dashboard/audit-logs/audit-logs';
 import { EmployeesTeam } from './dashboard/employees-team/employees-team';
 import { SystemSettings } from './dashboard/system-settings/system-settings';
 import { StaffCompliance } from './dashboard/staff-compliance/staff-compliance';
+import { TeamServiceTrackComponent } from './dashboard/team-service-track/team-service-track';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -70,6 +71,7 @@ export const routes: Routes = [
       { path: 'client/:id', component: ManagerClientDashboard },
       { path: 'audit-logs', component: AuditLogs },
       { path: 'employees', component: EmployeesTeam },
+      { path: 'team-service-track', component: TeamServiceTrackComponent },
       { path: 'settings', component: SystemSettings },
       { path: 'staff-compliance', component: StaffCompliance },
       { path: 'banners', loadComponent: () => import('./dashboard/banner-management/banner-management').then(m => m.BannerManagement) },

@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { getNextClientId } = require('../utils/counterHelper');
 const Company = require('../models/Company');
 const AuditLog = require('../models/AuditLog');
 const { logActivity } = require('../middleware/rbac');
@@ -106,9 +107,17 @@ const registerUser = async (req, res) => {
       });
     }
 
+    let custom_client_id = null;
+    if (!['admin', 'superadmin', 'client_manager', 'account_manager', 'filling_staff'].includes(role)) {
+       try {
+         custom_client_id = await getNextClientId(finalCompanyId);
+       } catch (e) { console.error('Failed to generate custom_client_id', e); }
+    }
+
     // Create user (password is automatically hashed via mongoose pre-save hook)
     const user = await User.create({
       company_id: finalCompanyId,
+      custom_client_id,
       email: email.trim(),
       password: password || '',
       owner_name,

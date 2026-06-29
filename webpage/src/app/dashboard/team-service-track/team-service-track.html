@@ -1,0 +1,131 @@
+<div class="team-track-container fade-in">
+  <!-- Header -->
+  <div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h2 class="page-title">Team Ongoing Services</h2>
+      <p class="page-subtitle">Monitor current ongoing service volumes across your teams</p>
+    </div>
+    
+    <div class="filters-container" style="display: flex; gap: 12px; align-items: center;">
+      <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Month</label>
+        <select class="form-select we-input" style="width: 140px; height: 38px; padding: 0 12px;" [(ngModel)]="selectedMonth" (change)="onFilterChange()">
+          @for (m of months; track m.value) {
+            <option [ngValue]="m.value">{{ m.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Year</label>
+        <select class="form-select we-input" style="width: 120px; height: 38px; padding: 0 12px;" [(ngModel)]="selectedYear" (change)="onFilterChange()">
+          @for (y of years; track y) {
+            <option [ngValue]="y">{{ y }}</option>
+          }
+        </select>
+      </div>
+      @if (availableManagers().length > 1) {
+        <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Manager</label>
+          <select class="form-select we-input" style="width: 160px; height: 38px; padding: 0 12px;" [(ngModel)]="selectedManagerId">
+            <option value="all">All Managers</option>
+            @for (mgr of availableManagers(); track mgr._id) {
+              <option [value]="mgr._id">{{ mgr.name }}</option>
+            }
+          </select>
+        </div>
+      }
+
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <app-we-loader></app-we-loader>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-state">
+      <span class="material-symbols-outlined error-icon">error</span>
+      <p>{{ errorMessage() }}</p>
+      <button class="retry-btn" (click)="fetchStats()">Retry</button>
+    </div>
+  } @else if (allTeams().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">group_off</span>
+      <h3>No Teams Found</h3>
+      <p>You don't manage any teams yet, or no teams exist in your company.</p>
+    </div>
+  } @else if (filteredTeams().length === 0) {
+    <div class="empty-state">
+      <span class="material-symbols-outlined empty-icon">group_off</span>
+      <h3>No Teams Match</h3>
+      <p>There are no teams for the selected manager.</p>
+    </div>
+  } @else {
+    <!-- One Table Per Team -->
+    @for (team of filteredTeams(); track team._id) {
+      <div class="table-container mb-4">
+        <!-- Team Header -->
+        <div class="team-header-box">
+          <div class="team-title-wrap">
+            <span class="material-symbols-outlined team-icon">group</span>
+            <span class="team-name">{{ team.name }}</span>
+            <span class="manager-name-badge">Manager: {{ team.manager_id.owner_name || 'Unassigned' }}</span>
+          </div>
+          <div class="team-stats-badge" style="display: flex; gap: 16px;">
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <span class="total-services">{{ team.totalOngoing || 0 }}</span>
+              <span class="services-label">Total Ongoing</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <span class="total-services" >{{ team.totalCompleted || 0 }}</span>
+              <span class="services-label">Total Completed</span>
+            </div>
+          </div>
+        </div>
+
+        <table class="we-table">
+          <thead>
+            <tr>
+              <th>Filing Staff / Member Name</th>
+              <th class="text-center">Ongoing Tasks</th>
+              <th class="text-center">Completed Tasks</th>
+            </tr>
+          </thead>
+          <tbody>
+            @if (team.members && team.members.length > 0) {
+              @for (member of team.members; track member._id) {
+                <tr>
+                  <td>
+                    <div class="member-info" style="display: flex; align-items: center; gap: 10px;">
+                      @if (member.profile_image) {
+                        <img [src]="member.profile_image" alt="Profile" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                      } @else {
+                        <div class="member-avatar">
+                          {{ (member.owner_name || 'U')[0] | uppercase }}
+                        </div>
+                      }
+                      <span class="member-name">{{ member.owner_name }}</span>
+                    </div>
+                  </td>
+                  <td class="text-center">
+                    <span class="service-count-pill">{{ member.ongoingCount || 0 }}</span>
+                  </td>
+                  <td class="text-center">
+                    <span class="service-count-pill">{{ member.completedCount || 0 }}</span>
+                  </td>
+                </tr>
+              }
+            } @else {
+              <tr>
+                <td colspan="3" class="text-muted text-center" style="font-style: italic; font-size: 13px;">
+                  No members in this team.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

@@ -162,7 +162,7 @@
     </div>
 
     <!-- Active Tab Screen Content -->
-    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat'">
+    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track'">
       @if (currentTab() === 'dashboard') {
       <app-home-overview (viewRequests)="handleTabChanged('requests')"
         [searchQuery]="globalSearchQuery()"></app-home-overview>
@@ -225,6 +225,9 @@
       }
       @if (currentTab() === 'bucket') {
       <app-bucket></app-bucket>
+      }
+      @if (currentTab() === 'team-service-track') {
+      <app-team-service-track></app-team-service-track>
       }
     </div>
   </div>

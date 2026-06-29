@@ -51,7 +51,7 @@ exports.getConversations = async (req, res) => {
 
     // Fetch checklists
     const checklists = await Checklist.find(filter)
-      .populate('client_id', 'owner_name company_name email profile_image')
+      .populate('client_id', 'custom_client_id owner_name company_name email profile_image')
       .populate('assigned_to', 'owner_name email role profile_image')
       .populate('created_by', 'owner_name email role profile_image')
       .lean();

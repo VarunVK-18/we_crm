@@ -83,4 +83,67 @@ const deleteTeam = async (req, res) => {
   }
 };
 
-module.exports = { getTeams, createTeam, updateTeam, deleteTeam };
+
+// @desc    Get team service tracking stats (Checklist counts)
+// @route   GET /api/teams/service-stats
+const getTeamServiceStats = async (req, res) => {
+  try {
+    const company_id = req.user.company_id;
+    const { month, year } = req.query;
+
+    // Default to current month and year if not provided
+    const now = new Date();
+    const targetMonth = month ? parseInt(month, 10) : now.getMonth() + 1; // 1-12
+    const targetYear = year ? parseInt(year, 10) : now.getFullYear();
+
+    const startDate = new Date(targetYear, targetMonth - 1, 1);
+    const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59, 999);
+
+    let teamQuery = { company_id };
+    if (req.user.role === 'client_manager') {
+      teamQuery.manager_id = req.user._id;
+    }
+
+    const teams = await Team.find(teamQuery)
+      .populate('manager_id', 'owner_name email')
+      .populate('members', 'owner_name email role profile_image')
+      .lean();
+
+    const Checklist = require('../models/Checklist');
+
+    // For each team, get members and their service counts
+    for (const team of teams) {
+      team.totalOngoing = 0;
+      team.totalCompleted = 0;
+      if (team.members && team.members.length > 0) {
+        for (const member of team.members) {
+          // Count checklists assigned to this member in the given date range
+          const ongoingCount = await Checklist.countDocuments({
+            company_id,
+            assigned_to: member._id,
+            status: { $ne: 'completed' },
+            createdAt: { $gte: startDate, $lte: endDate }
+          });
+          const completedCount = await Checklist.countDocuments({
+            company_id,
+            assigned_to: member._id,
+            status: 'completed',
+            createdAt: { $gte: startDate, $lte: endDate }
+          });
+          
+          member.ongoingCount = ongoingCount;
+          member.completedCount = completedCount;
+          team.totalOngoing += ongoingCount;
+          team.totalCompleted += completedCount;
+        }
+      }
+    }
+
+    res.json({ success: true, teams, month: targetMonth, year: targetYear });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+module.exports = { getTeamServiceStats, getTeams, createTeam, updateTeam, deleteTeam };
+

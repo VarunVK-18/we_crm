@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { checkUser, permit } = require('../middleware/rbac');
-const { getTeams, createTeam, updateTeam, deleteTeam } = require('../controllers/teamController');
+const { getTeams, createTeam, updateTeam, deleteTeam, getTeamServiceStats } = require('../controllers/teamController');
 
+router.get('/service-stats', checkUser, permit('admin', 'client_manager'), getTeamServiceStats);
 router.get('/', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), getTeams);
 router.post('/', checkUser, permit('admin'), createTeam);
 router.put('/:id', checkUser, permit('admin'), updateTeam);
