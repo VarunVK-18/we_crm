@@ -92,6 +92,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                 ),
               ),
               backgroundColor: AppTheme.deepTeal,
+              shape: const CircleBorder(),
               child: const Icon(LucideIcons.messageSquare, color: Colors.white),
             )
           : null,

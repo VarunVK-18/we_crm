@@ -4,14 +4,32 @@ const orderController = require('../controllers/orderController');
 const { checkUser } = require('../middleware/rbac');
 const multer = require('multer');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/dpiit/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
+const Document = require('../models/Document');
+
+const saveFilesToDatabase = async (req, res, next) => {
+  try {
+    if (!req.files) return next();
+    for (const fieldname of Object.keys(req.files)) {
+      for (const file of req.files[fieldname]) {
+        const newDoc = new Document({
+          filename: file.originalname,
+          contentType: file.mimetype,
+          data: file.buffer,
+          uploadedBy: req.user ? req.user.id : null
+        });
+        await newDoc.save();
+        file.path = '/api/documents/' + newDoc._id;
+      }
+    }
+    next();
+  } catch (error) {
+    console.error('Error saving files to DB:', error);
+    res.status(500).json({ message: 'Error saving files to database.' });
   }
-});
+};
+
+
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage: storage,
@@ -51,6 +69,7 @@ router.post(
   '/:id/submit-dpiit-form',
   checkUser,
   upload.fields(dpiitUploadFields),
+  saveFilesToDatabase,
   orderController.submitDpiitForm
 );
 
@@ -61,6 +80,7 @@ router.post(
   '/:id/submit-incorp-form',
   checkUser,
   upload.fields(incorpUploadFields),
+  saveFilesToDatabase,
   orderController.submitIncorpForm
 );
 
@@ -78,6 +98,7 @@ router.post(
   '/:id/submit-trademark-form',
   checkUser,
   upload.fields(trademarkUploadFields),
+  saveFilesToDatabase,
   orderController.submitTrademarkForm
 );
 
@@ -101,6 +122,7 @@ router.post(
   '/:id/submit-llp-form',
   checkUser,
   upload.fields(llpUploadFields),
+  saveFilesToDatabase,
   orderController.submitLlpForm
 );
 
@@ -118,6 +140,7 @@ router.post(
   '/:id/submit-msme-form',
   checkUser,
   upload.fields(msmeUploadFields),
+  saveFilesToDatabase,
   orderController.submitMsmeForm
 );
 
@@ -136,6 +159,7 @@ router.post(
   '/:id/submit-gst-form',
   checkUser,
   upload.fields(gstUploadFields),
+  saveFilesToDatabase,
   orderController.submitGstForm
 );
 
@@ -151,6 +175,7 @@ router.post(
   '/:id/submit-iso-form',
   checkUser,
   upload.fields(isoUploadFields),
+  saveFilesToDatabase,
   orderController.submitIsoForm
 );
 
@@ -170,6 +195,7 @@ router.post(
   '/:id/submit-lei-form',
   checkUser,
   upload.fields(leiUploadFields),
+  saveFilesToDatabase,
   orderController.submitleiForm
 );
 
@@ -178,6 +204,7 @@ router.post(
   '/:id/submit-lie-form',
   checkUser,
   upload.fields(leiUploadFields),
+  saveFilesToDatabase,
   orderController.submitleiForm
 );
 
@@ -188,6 +215,7 @@ router.post(
   upload.fields([
     { name: 'bankStatement', maxCount: 1 }
   ]),
+  saveFilesToDatabase,
   orderController.submitGstComplianceForm
 );
 
@@ -204,6 +232,7 @@ router.post(
     { name: 'salesInvoice', maxCount: 1 },
     { name: 'purchaseBills', maxCount: 1 }
   ]),
+  saveFilesToDatabase,
   orderController.submitMcaForm
 );
 
@@ -212,6 +241,7 @@ router.post(
   '/:id/submit-bis-form',
   checkUser,
   upload.fields(isoUploadFields),
+  saveFilesToDatabase,
   orderController.submitBisForm
 );
 
@@ -230,6 +260,7 @@ router.post(
   '/:id/submit-fssai-form',
   checkUser,
   upload.fields(fssaiUploadFields),
+  saveFilesToDatabase,
   orderController.submitFssaiForm
 );
 
@@ -254,6 +285,7 @@ router.post(
   '/:id/submit-dsc-form',
   checkUser,
   upload.fields(dscUploadFields),
+  saveFilesToDatabase,
   orderController.submitDscForm
 );
 
@@ -269,6 +301,7 @@ router.post(
   '/:id/submit-gst-compliance-form',
   checkUser,
   upload.fields(gstComplianceUploadFields),
+  saveFilesToDatabase,
   orderController.submitGstComplianceForm
 );
 
@@ -286,6 +319,7 @@ router.post(
   '/:id/submit-proprietorship-form',
   checkUser,
   upload.fields(proprietorshipUploadFields),
+  saveFilesToDatabase,
   orderController.submitProprietorshipForm
 );
 
@@ -302,6 +336,7 @@ router.post(
   '/:id/submit-tds-form',
   checkUser,
   upload.fields(tdsUploadFields),
+  saveFilesToDatabase,
   orderController.submitTdsForm
 );
 
@@ -319,6 +354,7 @@ router.post(
   '/:id/submit-pf-form',
   checkUser,
   upload.fields(pfUploadFields),
+  saveFilesToDatabase,
   orderController.submitPfForm
 );
 
@@ -336,6 +372,7 @@ router.post(
   '/:id/submit-patent-form',
   checkUser,
   upload.fields(patentUploadFields),
+  saveFilesToDatabase,
   orderController.submitPatentForm
 );
 
@@ -351,6 +388,7 @@ router.post(
   '/:id/submit-gst-cancellation-form',
   checkUser,
   upload.fields(gstCancellationUploadFields),
+  saveFilesToDatabase,
   orderController.submitGstCancellationForm
 );
 
@@ -366,6 +404,7 @@ router.post(
   '/:id/submit-gst-filing-form',
   checkUser,
   upload.fields(gstFilingUploadFields),
+  saveFilesToDatabase,
   orderController.submitGstFilingForm
 );
 
@@ -382,6 +421,7 @@ router.post(
   '/:id/submit-iec-form',
   checkUser,
   upload.fields(iecUploadFields),
+  saveFilesToDatabase,
   orderController.submitIecForm
 );
 

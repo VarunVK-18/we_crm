@@ -656,32 +656,18 @@ class _ServiceRequestSummarySheetState
               'message': 'This service is for registering a new entity. You have selected an entity that is already fully incorporated.\n\nPlease select "Add New Entity..." to provide the proposed company details.'
             };
           }
+
+          final incorporationTypes = ['Private Limited Company', 'LLP', 'Proprietorship', 'OPC'];
+          
+          if (incorporationTypes.contains(entityType)) {
+            return {
+              'type': 'error',
+              'header': 'Service Not Applicable',
+              'message': 'This entity is already registered or has an active request as a $entityType.\n\nYou cannot apply for another incorporation service for the same entity. Please select "Add New Entity..." if you want to register a different business structure.'
+            };
+          }
       }
 
-      if (entityType == 'Private Limited Company') {
-        if (reqService == 'OPC' || reqService.contains('Proprietorship')) {
-          return {
-            'type': 'error',
-            'header': 'Service Not Applicable',
-            'message': 'This entity is already registered as a Private Limited Company.\n\nOPC Registration and Proprietorship Registration are alternative business structures and cannot be applied to this entity.'
-          };
-        }
-        if (reqService.contains('LLP Incorporation') || reqService.contains('LLP Registration')) {
-          return {
-            'type': 'warning',
-            'header': 'Entity Conversion Required',
-            'message': 'This entity is already registered as a Private Limited Company. To proceed with LLP, you must either:\n\n• Convert the company into an LLP\nOR\n• Register a separate LLP entity'
-          };
-        }
-      } else if (entityType == 'LLP') {
-        if (reqService.contains('Private Limited Incorporation')) {
-          return {
-            'type': 'warning',
-            'header': 'Entity Conversion Required',
-            'message': 'This entity is already registered as an LLP. To proceed with Private Limited Incorporation, you must either:\n\n• Convert the LLP into a Private Limited Company\nOR\n• Register a separate Private Limited entity'
-          };
-        }
-      }
       return null;
     }
 
