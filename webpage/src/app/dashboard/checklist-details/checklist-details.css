@@ -53,8 +53,6 @@
   display: inline-flex;
   align-items: center;
   border-radius: 9999px;
-  background-color: var(--bg-active);
-  padding: 2px 12px;
   font-size: 12px;
   font-weight: 600;
   color: var(--accent-primary);

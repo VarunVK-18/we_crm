@@ -87,6 +87,7 @@ class UserModel {
   final String profileImage;
   final Map<String, dynamic>? manager;
   final List<ClientEntity> clientEntities;
+  final int directorCount;
 
   UserModel({
     required this.id,
@@ -100,6 +101,7 @@ class UserModel {
     this.profileImage = '',
     this.manager,
     this.clientEntities = const [],
+    this.directorCount = 0,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, [String? id]) {
@@ -181,6 +183,7 @@ class UserModel {
       profileImage: data['profile_image']?.toString() ?? '',
       manager: extractedManager,
       clientEntities: extractedEntities,
+      directorCount: data['director_count'] != null ? int.tryParse(data['director_count'].toString()) ?? 0 : 0,
     );
   }
 

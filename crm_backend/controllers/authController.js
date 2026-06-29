@@ -37,6 +37,7 @@ const registerUser = async (req, res) => {
       address,
       status,
       revenue,
+      director_count,
       company_id   // company scope passed from admin dashboard
     } = req.body;
 
@@ -130,6 +131,7 @@ const registerUser = async (req, res) => {
       address: address || '',
       status: status || 'active',
       revenue: revenue ? Number(revenue) : 0,
+      director_count: director_count ? Number(director_count) : 0,
       gstin_file,
       pan_file,
       services: parsedServices || [],

@@ -29,8 +29,9 @@ export class BucketComponent implements OnInit {
   isAcceptModalOpen = signal<boolean>(false);
   selectedBucketReq = signal<any>(null);
   selectedTeamId = signal<string>('');
-  dealClosedAmount = signal<string>('');
-  advanceAmountPaid = signal<string>('');
+  dealClosedAmount = signal<number | null>(null);
+  advanceAmountPaid = signal<number | null>(null);
+  directorCount = signal<number | null>(null);
 
   // OCR State
   isOcrProcessing = signal<boolean>(false);
@@ -106,8 +107,10 @@ export class BucketComponent implements OnInit {
   openAcceptModal(req: any) {
     this.selectedBucketReq.set(req);
     this.selectedTeamId.set('');
-    this.dealClosedAmount.set('');
-    this.advanceAmountPaid.set('');
+    this.dealClosedAmount.set(null);
+    this.advanceAmountPaid.set(null);
+    this.directorCount.set(null);
+    this.ocrMessage.set('');
     this.isAcceptModalOpen.set(true);
   }
 
@@ -127,7 +130,7 @@ export class BucketComponent implements OnInit {
       const details = await this.ocrService.extractPaymentDetails(file, this.systemBankSettings());
 
       if (details.amount) {
-        this.advanceAmountPaid.set(details.amount.toString());
+        this.advanceAmountPaid.set(Number(details.amount));
       }
       
       if (details.transactionId) {
@@ -178,7 +181,8 @@ export class BucketComponent implements OnInit {
     const payload = {
       team_id: teamId,
       dealClosedAmount: dealAmount,
-      advanceAmountPaid: advanceAmount
+      advanceAmountPaid: advanceAmount,
+      directorCount: this.directorCount()
     };
 
     this.api.post<any>(`bucket/requests/${req._id}/claim`, payload).subscribe({

@@ -1,0 +1,79 @@
+<div class="opportunities-container fade-in">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div>
+      <h1 class="page-title">Client Opportunities</h1>
+      <p class="page-subtitle">Discover and suggest new services to your clients to boost revenue.</p>
+    </div>
+    
+    <div class="header-actions">
+      <div class="search-bar">
+        <hugeicons-icon [icon]="Search01Icon" [size]="18" color="#64748b"></hugeicons-icon>
+        <input type="text" placeholder="Search clients..." [(ngModel)]="searchQuery">
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="content-section">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading opportunities...</p>
+      </div>
+    } @else if (filteredClients().length === 0) {
+      <div class="empty-state">
+        <hugeicons-icon [icon]="TrendingUpDownIcon" [size]="48" color="#94a3b8"></hugeicons-icon>
+        <h3>No Clients Found</h3>
+        <p>No clients match your search query.</p>
+      </div>
+    } @else {
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Client Name</th>
+              <th>Contact Info</th>
+              <th>Suggested Service</th>
+              <th>Category</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (client of filteredClients(); track client._id) {
+              @for (opp of client.opportunities; track opp.name) {
+                <tr [class.row-suggested]="opp.suggested">
+                  <td>
+                    <div class="client-name-cell">
+                      <div class="client-avatar-small">
+                        {{ (client.name || client.company_name || 'C').charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="client-name-text">{{ client.name || client.company_name || 'Unnamed Client' }}</span>
+                    </div>
+                  </td>
+                  <td class="text-secondary">{{ client.email || client.phone || 'N/A' }}</td>
+                  <td class="opp-name">{{ opp.name }}</td>
+                  <td>
+                    <span class="badge badge-category">{{ opp.category }}</span>
+                  </td>
+                  <td>
+                    @if (opp.suggested) {
+                      <div class="status-suggested">
+                        <hugeicons-icon [icon]="CheckmarkCircle02Icon" [size]="16" color="#059669"></hugeicons-icon>
+                        Suggested
+                      </div>
+                    } @else {
+                      <button class="btn-suggest-sm" (click)="suggestService(client, opp)">
+                        Suggest
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

@@ -107,6 +107,8 @@ const bucketRoutes = require('./routes/bucketRoutes');
 app.use('/api/bucket', bucketRoutes);
 const intakeRoutes = require('./routes/intakeRoutes');
 app.use('/api/intake', intakeRoutes);
+const ocrRoutes = require('./routes/ocrRoutes');
+app.use('/api/ocr', ocrRoutes);
 
 // Initialize Cron Jobs
 require('./utils/cronJobs');

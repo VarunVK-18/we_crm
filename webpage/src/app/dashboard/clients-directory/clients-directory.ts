@@ -57,12 +57,12 @@ export class ClientsDirectory implements OnInit {
     password: '',
     phone: '',
     company_name: '',
-    business_type: '',
     pan: '',
     gstin: '',
     address: '',
     status: 'active',
     revenue: 0,
+    director_count: 0,
     services: [] as string[]
   };
 
@@ -233,13 +233,13 @@ export class ClientsDirectory implements OnInit {
       password: '',
       phone: '',
       company_name: '',
-      business_type: '',
       pan: '',
       gstin: '',
       address: '',
       status: 'active',
       revenue: 0,
-      services: []
+      director_count: 0,
+      services: [] as string[]
     };
     this.isCreateModalOpen.set(true);
   }
@@ -287,12 +287,12 @@ export class ClientsDirectory implements OnInit {
     formData.append('password', this.newClient.password || '');
     formData.append('phone', this.newClient.phone || '');
     formData.append('company_name', this.newClient.company_name || '');
-    formData.append('business_type', this.newClient.business_type || '');
     formData.append('pan', this.newClient.pan || '');
     formData.append('gstin', this.newClient.gstin || '');
     formData.append('address', this.newClient.address || '');
     formData.append('status', this.newClient.status || 'active');
-    formData.append('revenue', String(this.newClient.revenue || 0));
+    formData.append('revenue', this.newClient.revenue?.toString() || '0');
+    formData.append('director_count', this.newClient.director_count?.toString() || '0');
     formData.append('role', 'customer');
     formData.append('services', JSON.stringify(this.newClient.services));
 

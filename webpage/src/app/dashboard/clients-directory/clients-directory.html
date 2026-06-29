@@ -246,17 +246,17 @@
               />
             </div>
 
-            <!-- Business Type -->
+            <!-- Director Count -->
             <div class="form-group-item">
-              <label class="form-input-label">Business Structure</label>
-              <select name="business_type" class="form-control-input" [(ngModel)]="newClient.business_type">
-                <option value="">-- Select Structure --</option>
-                <option value="Proprietorship">Proprietorship</option>
-                <option value="LLP">Limited Liability Partnership (LLP)</option>
-                <option value="Private Limited">Private Limited (Pvt Ltd)</option>
-                <option value="Partnership">Partnership Firm</option>
-                <option value="Individual">Individual</option>
-              </select>
+              <label class="form-input-label">Director Count</label>
+              <input 
+                type="number" 
+                name="director_count"
+                placeholder="Number of directors" 
+                class="form-control-input"
+                [(ngModel)]="newClient.director_count"
+                min="0"
+              />
             </div>
           </div>
 

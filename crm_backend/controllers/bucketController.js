@@ -46,7 +46,7 @@ const claimBucketRequest = async (req, res) => {
     const company_id = req.user.company_id;
     const managerId = req.user._id;
     const { id } = req.params;
-    const { team_id, dealClosedAmount, advanceAmountPaid } = req.body;
+    const { team_id, dealClosedAmount, advanceAmountPaid, directorCount } = req.body;
 
     const bucketReq = await BucketRequest.findOne({ _id: id, company_id, status: 'open' })
       .populate('client_id', 'custom_client_id owner_name _id company_id assigned_to');
@@ -111,9 +111,17 @@ const claimBucketRequest = async (req, res) => {
     await bucketReq.save();
 
     // If the client does not have a personal manager assigned yet, assign them to this manager
+    let userUpdateFields = {};
     if (!bucketReq.client_id.assigned_to) {
-      await User.findByIdAndUpdate(bucketReq.client_id._id, { assigned_to: managerId });
+      userUpdateFields.assigned_to = managerId;
       console.log(`Assigned client ${bucketReq.client_id._id} to manager ${managerId}`);
+    }
+    if (directorCount !== undefined && directorCount !== null && directorCount !== '') {
+      userUpdateFields.director_count = Number(directorCount) || 0;
+    }
+    
+    if (Object.keys(userUpdateFields).length > 0) {
+      await User.findByIdAndUpdate(bucketReq.client_id._id, userUpdateFields);
     }
 
     // Also update any matching ServiceOrder to remove it from the "New Requests" view

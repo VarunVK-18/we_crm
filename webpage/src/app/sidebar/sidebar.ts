@@ -1,7 +1,7 @@
 import { Component, input, output, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon, Search01Icon, Message02Icon, Settings01Icon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon, Search01Icon, Message02Icon, Settings01Icon, TrendingUpDownIcon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 
 @Component({
@@ -28,6 +28,7 @@ export class Sidebar implements OnInit, OnDestroy {
   readonly Search01Icon = Search01Icon;
   readonly Message02Icon = Message02Icon;
   readonly Settings01Icon = Settings01Icon;
+  readonly TrendingUpDownIcon = TrendingUpDownIcon;
 
   user = signal<any>(null);
   newRequestsCount = signal<number>(0);
@@ -84,7 +85,8 @@ export class Sidebar implements OnInit, OnDestroy {
         items: [
           { id: 'clients', label: 'Clients Directory', color: '#10B981' },
           { id: 'team', label: 'Employees & Team', color: '#8B5CF6' },
-          { id: 'team-service-track', label: 'Team Service Track', color: '#3B82F6' }
+          { id: 'team-service-track', label: 'Team Service Track', color: '#3B82F6' },
+          { id: 'opportunities', label: 'Opportunities', color: '#F59E0B' }
         ]
       });
       groups.push({
@@ -113,7 +115,8 @@ export class Sidebar implements OnInit, OnDestroy {
         header: 'Management',
         items: [
           { id: 'clients', label: 'My Clients', color: '#10B981' },
-          { id: 'team-service-track', label: 'Team Service Track', color: '#3B82F6' }
+          { id: 'team-service-track', label: 'Team Service Track', color: '#3B82F6' },
+          { id: 'opportunities', label: 'Opportunities', color: '#F59E0B' }
         ]
       });
     } else if (role === 'filling_staff' || role === 'account_manager') {
@@ -142,12 +145,12 @@ export class Sidebar implements OnInit, OnDestroy {
         console.error('Failed to parse user from local storage:', e);
       }
     }
-    
+
     const savedState = localStorage.getItem('sidebarCollapsed');
     if (savedState) {
       this.isCollapsed.set(savedState === 'true');
     }
-    
+
     this.fetchNewRequestsCount();
     this.fetchBucketCount();
     this.pollInterval = setInterval(() => {
@@ -174,7 +177,7 @@ export class Sidebar implements OnInit, OnDestroy {
   fetchNewRequestsCount() {
     const u = this.user();
     if (!u || (u.role !== 'admin' && u.role !== 'client_manager')) return;
-    
+
     const companyId = this.getCompanyId();
     if (!companyId) return;
 
@@ -191,7 +194,7 @@ export class Sidebar implements OnInit, OnDestroy {
           this.newRequestsCount.set(count);
         }
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -207,7 +210,7 @@ export class Sidebar implements OnInit, OnDestroy {
           this.bucketCount.set(res.count);
         }
       },
-      error: () => {}
+      error: () => { }
     });
   }
 

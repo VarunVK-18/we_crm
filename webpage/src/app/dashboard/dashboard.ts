@@ -29,6 +29,7 @@ import { BannerManagement } from './banner-management/banner-management';
 import { BucketComponent } from './bucket/bucket';
 import { ServiceTrackerTableComponent } from './service-tracker-table/service-tracker-table';
 import { TeamServiceTrackComponent } from './team-service-track/team-service-track';
+import { Opportunities } from './opportunities/opportunities';
 
 @Component({
   selector: 'app-dashboard',
@@ -56,7 +57,8 @@ import { TeamServiceTrackComponent } from './team-service-track/team-service-tra
     BannerManagement,
     BucketComponent,
     ServiceTrackerTableComponent,
-    TeamServiceTrackComponent
+    TeamServiceTrackComponent,
+    Opportunities
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',

@@ -59,6 +59,8 @@ export class LlpForm implements OnInit {
   officeProofFile?: File;
   ownerName = '';
   totalCapital = '';
+  
+  userDirectorCount: number | null = null;
 
   persons: Person[] = [];
 
@@ -141,6 +143,10 @@ export class LlpForm implements OnInit {
           }
         }
 
+        if (user.director_count) {
+          this.userDirectorCount = parseInt(user.director_count);
+        }
+
       } catch(e) {}
     }
 
@@ -154,8 +160,8 @@ export class LlpForm implements OnInit {
     this.api.get<any>('my-checklists').subscribe({
       next: (res) => {
         const order = res.checklists?.find((o: any) => o._id === this.orderId());
-        const countStr = order?.details?.assignedNumberOfDirectors || order?.details?.numberOfDirectors || '2';
-        const count = parseInt(countStr) || 2;
+        const countStr = order?.details?.assignedNumberOfDirectors || order?.details?.numberOfDirectors;
+        const count = parseInt(countStr) || this.userDirectorCount || 2;
         
         for (let i = 0; i < count; i++) {
           this.addPerson();

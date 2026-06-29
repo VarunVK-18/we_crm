@@ -74,6 +74,7 @@ export const routes: Routes = [
       { path: 'team-service-track', component: TeamServiceTrackComponent },
       { path: 'settings', component: SystemSettings },
       { path: 'staff-compliance', component: StaffCompliance },
+      { path: 'opportunities', loadComponent: () => import('./dashboard/opportunities/opportunities').then(m => m.Opportunities) },
       { path: 'banners', loadComponent: () => import('./dashboard/banner-management/banner-management').then(m => m.BannerManagement) },
       { path: '', redirectTo: 'overview', pathMatch: 'full' }
     ]

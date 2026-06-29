@@ -100,6 +100,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['active', 'inactive'],
     default: 'active'
   },
+  director_count: {
+    type: Number,
+    default: 0
+  },
   revenue: {
     type: Number,
     default: 0

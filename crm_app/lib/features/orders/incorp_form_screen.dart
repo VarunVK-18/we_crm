@@ -118,9 +118,19 @@ class _IncorpFormScreenState extends ConsumerState<IncorpFormScreen> {
   @override
   void initState() {
     super.initState();
+    final user = ref.read(userProfileProvider).value;
+    final int userCount = user?.directorCount ?? 0;
+    
     final assignedNumStr = widget.order.details['assignedNumberOfDirectors']?.toString();
-    final numStr = assignedNumStr ?? widget.order.details['numberOfDirectors']?.toString() ?? '1';
-    final int count = int.tryParse(numStr) ?? 1;
+    final numStr = assignedNumStr ?? widget.order.details['numberOfDirectors']?.toString();
+    
+    int count = 2;
+    if (numStr != null && int.tryParse(numStr) != null) {
+      count = int.tryParse(numStr)!;
+    } else if (userCount > 0) {
+      count = userCount;
+    }
+
     _directors = List.generate(count, (_) => DirectorFormData());
     
     // Defer loading draft to ensure providers are ready
