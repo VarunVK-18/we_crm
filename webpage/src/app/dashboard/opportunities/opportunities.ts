@@ -16,6 +16,7 @@ export class Opportunities implements OnInit {
   searchQuery = signal<string>('');
   clients = signal<any[]>([]);
   isLoading = signal<boolean>(true);
+  selectedClientIndex = signal<number>(0);
   
   readonly Search01Icon = Search01Icon;
   readonly PlusSignIcon = PlusSignIcon;

@@ -20,6 +20,25 @@ export class Api {
     return this.serverUrl + fileUrl.replace(/^\//, '');
   }
 
+  async downloadFile(fileUrl: string, fileName: string) {
+    const url = this.getFileUrl(fileUrl);
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = fileName || 'document';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(blobUrl);
+      document.body.removeChild(a);
+    } catch (err) {
+      console.error('Error downloading file:', err);
+      window.open(url, '_blank');
+    }
+  }
+
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {

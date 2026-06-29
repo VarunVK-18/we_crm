@@ -175,6 +175,7 @@ export class IncorpForm implements OnInit {
   }
 
   fetchOrderDetails() {
+    this.isLoading.set(true);
     this.api.get<any>('my-checklists').subscribe({
       next: (res) => {
         const order = res.checklists?.find((o: any) => o._id === this.orderId());
@@ -184,11 +185,13 @@ export class IncorpForm implements OnInit {
         for (let i = 0; i < count; i++) {
           this.addDirector();
         }
+        this.isLoading.set(false);
       },
       error: (err) => {
         console.error('Error fetching order details:', err);
         this.addDirector();
         this.addDirector();
+        this.isLoading.set(false);
       }
     });
   }
@@ -372,11 +375,15 @@ export class IncorpForm implements OnInit {
       next: (res) => {
         this.isSubmitting.set(false);
         if (res && res.success) {
-          this.isSuccess.set(true);
           this.draftService.clearDraft(this.orderId(), this.constructor.name);
-          setTimeout(() => {
+          this.confirmDialog.confirm({
+            title: 'Submit Incorporation Details',
+            message: 'Your incorporation details have been successfully submitted.',
+            confirmText: 'Continue',
+            hideCancel: true
+          }).then(() => {
             this.router.navigate(['/client/service', this.orderId()]);
-          }, 2000);
+          });
         }
       },
       error: (err) => {

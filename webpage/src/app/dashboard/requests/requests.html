@@ -139,7 +139,7 @@
             </select>
           </div>
 
-          @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(selectedOrderForApproval().serviceType || selectedOrderForApproval().service_name || '')) {
+          @if (requiresDirectorCount(selectedOrderForApproval())) {
             <div style="display: flex; flex-direction: column; gap: 8px;">
               <label style="font-size: 13px; font-weight: 600; color: #475569;">Number of Directors/Partners</label>
               <input type="number" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s;" placeholder="Enter count"

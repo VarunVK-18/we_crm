@@ -28,51 +28,59 @@
         <p>No clients match your search query.</p>
       </div>
     } @else {
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Client Name</th>
-              <th>Contact Info</th>
-              <th>Suggested Service</th>
-              <th>Category</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (client of filteredClients(); track client._id) {
-              @for (opp of client.opportunities; track opp.name) {
-                <tr [class.row-suggested]="opp.suggested">
-                  <td>
-                    <div class="client-name-cell">
-                      <div class="client-avatar-small">
-                        {{ (client.name || client.company_name || 'C').charAt(0).toUpperCase() }}
-                      </div>
-                      <span class="client-name-text">{{ client.name || client.company_name || 'Unnamed Client' }}</span>
+      <div class="opportunities-master-detail" style="display: grid; grid-template-columns: 280px 1fr; gap: 24px; margin-top: 16px;">
+        <!-- Left: Client List -->
+        <div class="clients-list" style="display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--border-color); padding-right: 16px; max-height: calc(100vh - 200px); overflow-y: auto;">
+          @for (client of filteredClients(); track $index) {
+            <div class="client-list-item" 
+                 [class.active]="selectedClientIndex() === $index"
+                 (click)="selectedClientIndex.set($index)"
+                 style="padding: 12px 16px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;"
+                 [style.background]="selectedClientIndex() === $index ? '#f8fafc' : 'transparent'"
+                 [style.border]="selectedClientIndex() === $index ? '1px solid #e2e8f0' : '1px solid transparent'">
+              <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--text-primary);">
+                {{ client.name || client.company_name || 'Unnamed Client' }}
+              </div>
+              <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">
+                {{ client.email || client.phone || 'No Contact Info' }}
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Right: Opportunities Details -->
+        <div class="client-detail" style="padding: 8px 16px;">
+          @if (filteredClients()[selectedClientIndex()]; as currentClient) {
+            <div style="margin-bottom: 24px; display: flex; flex-direction: column; gap: 4px;">
+              <h2 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin: 0;">Opportunities for {{ currentClient.name || currentClient.company_name || 'Unnamed Client' }}</h2>
+              <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">Select and suggest services to boost revenue from this client.</p>
+            </div>
+
+            <div class="opportunities-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+              @for (opp of currentClient.opportunities; track opp.name) {
+                <div class="opp-card" style="background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+                    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; background: #f1f5f9; color: #475569;">{{ opp.category }}</span>
+                  </div>
+                  <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">{{ opp.name }}</h3>
+                  <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 20px 0; line-height: 1.5; flex: 1;">{{ opp.desc }}</p>
+                  
+                  @if (opp.suggested) {
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600; color: #059669; padding: 10px; background: #ecfdf5; border-radius: 8px;">
+                      <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                      Suggested
                     </div>
-                  </td>
-                  <td class="text-secondary">{{ client.email || client.phone || 'N/A' }}</td>
-                  <td class="opp-name">{{ opp.name }}</td>
-                  <td>
-                    <span class="badge badge-category">{{ opp.category }}</span>
-                  </td>
-                  <td>
-                    @if (opp.suggested) {
-                      <div class="status-suggested">
-                        <hugeicons-icon [icon]="CheckmarkCircle02Icon" [size]="16" color="#059669"></hugeicons-icon>
-                        Suggested
-                      </div>
-                    } @else {
-                      <button class="btn-suggest-sm" (click)="suggestService(client, opp)">
-                        Suggest
-                      </button>
-                    }
-                  </td>
-                </tr>
+                  } @else {
+                    <button (click)="suggestService(currentClient, opp)" style="width: 100%; padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                      <span class="material-symbols-outlined" style="font-size: 18px;">lightbulb</span>
+                      Suggest Service
+                    </button>
+                  }
+                </div>
               }
-            }
-          </tbody>
-        </table>
+            </div>
+          }
+        </div>
       </div>
     }
   </div>

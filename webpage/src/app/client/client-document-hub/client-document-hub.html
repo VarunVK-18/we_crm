@@ -104,7 +104,7 @@
         <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0;">{{ docViewerName }}</p>
       </div>
       <div style="display: flex; gap: 8px; align-items: center;">
-        <a [href]="docViewerSrc" target="_blank" download
+        <a href="javascript:void(0)" (click)="forceDownload($event)"
           style="background: transparent; border: 1px solid var(--border-color); cursor: pointer; color: var(--text-secondary); padding: 6px 12px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s; text-decoration: none; font-size: 13px; font-weight: 500;"
           onmouseover="this.style.backgroundColor='var(--bg-secondary)'; this.style.color='var(--text-primary)'"
           onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--text-secondary)'">
@@ -133,7 +133,7 @@
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
           <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 16px;">description</span>
           <p>Preview not available for this file type.</p>
-          <a [href]="docViewerSrc" target="_blank" download style="color: var(--primary-color); text-decoration: underline;">Click here to download/open</a>
+          <a href="javascript:void(0)" (click)="forceDownload($event)" style="color: var(--primary-color); text-decoration: underline; cursor: pointer;">Click here to download</a>
         </div>
       }
     </div>

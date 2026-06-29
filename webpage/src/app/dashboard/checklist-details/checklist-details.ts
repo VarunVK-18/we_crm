@@ -135,6 +135,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.docViewerName = '';
   }
 
+  forceDownload(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.api.downloadFile(this.docViewerSrc, this.docViewerName || 'document');
+  }
+
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {

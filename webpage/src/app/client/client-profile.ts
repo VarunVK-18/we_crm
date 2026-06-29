@@ -7,11 +7,12 @@ import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon, Download04Icon, Upload04Icon, Loading02Icon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
 import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @Component({
   selector: 'app-client-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, PdfViewerModule],
   templateUrl: './client-profile.html',
   styleUrl: './client-profile.css',
 })
@@ -118,6 +119,11 @@ export class ClientProfile implements OnInit, OnDestroy {
                     c.entityName || c.companyName || ''
                   ).trim();
 
+                  // Evaluate payment status for this checklist
+                  const isDealClosed = c.dealClosedAmount !== undefined && c.dealClosedAmount > 0;
+                  const paidAmount = c.advanceAmountPaid || 0;
+                  const isPaymentPending = isDealClosed && paidAmount < c.dealClosedAmount;
+
                   if (c.requested_documents) {
                     for (const d of c.requested_documents) {
                       if (d.isUploaded && d.fileUrl) {
@@ -170,8 +176,21 @@ export class ClientProfile implements OnInit, OnDestroy {
                         }
                       }
 
+                      // Check incorpDocs if they came from the incorporation form directly
+                      if (c.details && c.details.incorpDocs) {
+                        const dirIdx = i + 1;
+                        const photoDoc = c.details.incorpDocs.find((doc: any) => doc.name === `Person ${dirIdx} - PHOTO`);
+                        if (photoDoc && !d.photo) {
+                          d.photo = photoDoc.fileUrl;
+                        }
+                        const sigDoc = c.details.incorpDocs.find((doc: any) => doc.name === `Person ${dirIdx} - SIGNATURE`);
+                        if (sigDoc && !d.signature) {
+                          d.signature = sigDoc.fileUrl;
+                        }
+                      }
+
                       // Prevent duplicates by checking PAN or DIN
-                      if (!directorsList.some(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || existing.fullName === d.fullName)) {
+                      if (!directorsList.some(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || (existing.fullName === d.fullName && d.fullName))) {
                         directorsList.push({
                           ...d,
                           serviceName: c.service_name,
@@ -186,10 +205,13 @@ export class ClientProfile implements OnInit, OnDestroy {
               // Merge with user.directors if any exist
               if (res.user.directors && Array.isArray(res.user.directors)) {
                 for (const d of res.user.directors) {
-                  const existingIndex = directorsList.findIndex(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || existing.fullName === d.fullName);
+                  const existingIndex = directorsList.findIndex(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || (existing.fullName === d.fullName && d.fullName));
                   if (existingIndex >= 0) {
                     // Update existing with newer user profile data
-                    directorsList[existingIndex] = { ...directorsList[existingIndex], ...d };
+                    const merged = { ...directorsList[existingIndex], ...d };
+                    if (!d.photo && directorsList[existingIndex].photo) merged.photo = directorsList[existingIndex].photo;
+                    if (!d.signature && directorsList[existingIndex].signature) merged.signature = directorsList[existingIndex].signature;
+                    directorsList[existingIndex] = merged;
                   } else {
                     directorsList.push(d);
                   }
@@ -237,6 +259,62 @@ export class ClientProfile implements OnInit, OnDestroy {
 
   goToDashboard() {
     this.router.navigate(['/client-dashboard']);
+  }
+
+  // Document Viewer State
+  isDocViewerOpen = signal(false);
+  docViewerSrc = '';
+  docViewerName = '';
+
+  async openDocViewer(url: string, name: string, event: Event, doc?: any) {
+    event.preventDefault();
+    
+    if (doc && doc.isPaymentPending) {
+      const choice = await this.confirmDialog.confirm({
+        title: 'Document Locked',
+        message: 'Almost there! Your document is ready, but there\'s a pending balance on this service. You can securely pay online now or contact your account manager for assistance.',
+        confirmText: 'Pay Online',
+        cancelText: 'Call Account Manager'
+      });
+      
+      if (choice === true) {
+        window.open('/client/wallet', '_self');
+      } else if (choice === false) {
+        window.open('/client/support', '_self');
+      }
+      return;
+    }
+
+    // Attempt to guess if url is PDF based on name if the url itself has no extension
+    let finalUrl = this.api.getFileUrl(url);
+    if (!finalUrl.includes('.pdf') && !finalUrl.includes('pdf')) {
+      if ((name || '').toLowerCase().includes('pdf') || url.includes('/documents/')) {
+        // We assume /api/documents/:id serves pdf if not image, let's trick the viewer
+        finalUrl += '&type=.pdf';
+      }
+    }
+
+    this.docViewerSrc = finalUrl;
+    this.docViewerName = name || 'Document';
+    this.isDocViewerOpen.set(true);
+  }
+
+  closeDocViewer() {
+    this.isDocViewerOpen.set(false);
+    this.docViewerSrc = '';
+    this.docViewerName = '';
+  }
+
+  forceDownload(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.api.downloadFile(this.docViewerSrc, this.docViewerName || 'document');
+  }
+
+  isImage(url: string): boolean {
+    if (!url) return false;
+    const lowerUrl = url.toLowerCase();
+    return lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.webp') || lowerUrl.endsWith('.gif');
   }
 
   isEditing = signal(false);
@@ -369,7 +447,23 @@ export class ClientProfile implements OnInit, OnDestroy {
     });
   }
 
-  async downloadImage(url: string, filename: string) {
+  async downloadImage(url: string, filename: string, doc?: any) {
+    if (doc && doc.isPaymentPending) {
+      const choice = await this.confirmDialog.confirm({
+        title: 'Document Locked',
+        message: 'Almost there! Your document is ready, but there\'s a pending balance on this service. You can securely pay online now or contact your account manager for assistance.',
+        confirmText: 'Pay Online',
+        cancelText: 'Call Account Manager'
+      });
+      
+      if (choice === true) {
+        window.open('/client/wallet', '_self');
+      } else if (choice === false) {
+        window.open('/client/support', '_self');
+      }
+      return;
+    }
+
     this.activeLoadingAction.set(`download-${filename}`);
     try {
       const response = await fetch(url);

@@ -62,6 +62,18 @@ export class RequestsComponent implements OnInit {
     return filtered;
   });
 
+  requiresDirectorCount(order: any): boolean {
+    if (!order) return false;
+    const name = (order.serviceType || order.serviceName || order.service_name || '').toLowerCase();
+    return name.includes('private limited') || 
+           name.includes('incorp') ||
+           name.includes('llp') || 
+           name.includes('opc') || 
+           name.includes('mca') || 
+           name.includes('digital signature') ||
+           name.includes('dsc');
+  }
+
 
 
   // Selected employee per order { orderId: employeeData }
@@ -351,7 +363,7 @@ export class RequestsComponent implements OnInit {
     this.isAssigningOrder.update(prev => ({ ...prev, [orderId]: true }));
 
     const order = this.orders().find(o => o._id === orderId);
-    const needsDirectors = ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(order?.serviceType || order?.serviceName || '');
+    const needsDirectors = this.requiresDirectorCount(order);
     let directors = this.numberOfDirectorsForOrder()[orderId];
     if (needsDirectors && !directors) {
       if (order?.details?.numberOfDirectors) {

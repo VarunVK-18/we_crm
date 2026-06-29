@@ -20,7 +20,12 @@
       </div>
     }
 
-    <form (ngSubmit)="submitForm()" ngNativeValidate #incorpForm="ngForm" class="incorp-form">
+    @if (isLoading()) {
+      <div style="display: flex; justify-content: center; align-items: center; min-height: 400px;">
+        <app-we-loader></app-we-loader>
+      </div>
+    } @else {
+      <form (ngSubmit)="submitForm()" ngNativeValidate #incorpForm="ngForm" class="incorp-form">
       
       <!-- Company Details -->
       <section class="form-section">
@@ -221,8 +226,8 @@
           }
         </button>
       </div>
-
     </form>
+    }
   </div>
 </div>
 

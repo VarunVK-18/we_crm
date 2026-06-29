@@ -161,6 +161,12 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
     this.docViewerName = '';
   }
 
+  forceDownload(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.api.downloadFile(this.docViewerSrc, this.docViewerName || 'document');
+  }
+
   formatTitleCase(text: string): string {
     if (!text) return text;
     const lowerWords = ['of', 'and', 'is', 'the', 'in', 'on', 'at', 'to', 'for', 'a', 'an'];

@@ -144,7 +144,7 @@
                     <span class="doc-name" title="PAN Card Document">PAN Card Document</span>
                   </div>
                     <div class="doc-actions">
-                      <a [href]="api.getFileUrl(user()?.pan_file)" target="_blank" class="action-btn" title="View Document">
+                      <a href="javascript:void(0)" (click)="openDocViewer(user()?.pan_file, 'PAN_Document', $event)" class="action-btn" title="View Document">
                         <hugeicons-icon [icon]="EyeIcon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
                       </a>
                       <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(user()?.pan_file), 'PAN_Document'); $event.preventDefault()" class="action-btn" title="Download Document">
@@ -167,7 +167,7 @@
                     <span class="doc-name" title="GSTIN Document">GSTIN Document</span>
                   </div>
                     <div class="doc-actions">
-                      <a [href]="api.getFileUrl(user()?.gstin_file)" target="_blank" class="action-btn" title="View Document">
+                      <a href="javascript:void(0)" (click)="openDocViewer(user()?.gstin_file, 'GSTIN_Document', $event)" class="action-btn" title="View Document">
                         <hugeicons-icon [icon]="EyeIcon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
                       </a>
                       <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(user()?.gstin_file), 'GSTIN_Document'); $event.preventDefault()" class="action-btn" title="Download Document">
@@ -196,10 +196,10 @@
                       }
                     </div>
                     <div class="doc-actions">
-                      <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="action-btn" title="View Document">
+                      <a href="javascript:void(0)" (click)="openDocViewer(doc.fileUrl, doc.name, $event, doc)" class="action-btn" title="View Document">
                         <hugeicons-icon [icon]="EyeIcon" [size]="18" color="currentColor" [strokeWidth]="1.5"></hugeicons-icon>
                       </a>
-                      <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(doc.fileUrl), doc.name); $event.preventDefault()" class="action-btn" title="Download Document">
+                      <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(doc.fileUrl), doc.name, doc); $event.preventDefault()" class="action-btn" title="Download Document">
                         @if (activeLoadingAction() === 'download-' + doc.name) {
                           <hugeicons-icon [icon]="Loading02Icon" [size]="18" color="currentColor" [strokeWidth]="1.5" style="animation: spin 1s linear infinite;"></hugeicons-icon>
                         } @else {
@@ -289,9 +289,16 @@
                           <div>
                             @if (currentDir.photo) {
                               <div class="image-preview-container">
-                                <img [src]="api.getFileUrl(currentDir.photo)" class="preview-img" alt="Photo" />
+                                @if (isImage(currentDir.photo)) {
+                                  <img [src]="api.getFileUrl(currentDir.photo)" class="preview-img" alt="Photo" />
+                                } @else {
+                                  <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--text-secondary);">description</span>
+                                    <span style="font-size: 11px; margin-top: 4px; font-weight: 500; color: var(--text-secondary);">Document</span>
+                                  </div>
+                                }
                                 <div class="image-overlay">
-                                  <a [href]="api.getFileUrl(currentDir.photo)" target="_blank" class="overlay-btn view-btn" title="View">
+                                  <a href="javascript:void(0)" (click)="openDocViewer(currentDir.photo, currentDir.fullName + '-Photo', $event)" class="overlay-btn view-btn" title="View">
                                     <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
                                   </a>
                                   <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(currentDir.photo), currentDir.fullName + '-Photo.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
@@ -309,9 +316,16 @@
                           <div>
                             @if (currentDir.signature) {
                               <div class="image-preview-container">
-                                <img [src]="api.getFileUrl(currentDir.signature)" class="preview-img" alt="Signature" />
+                                @if (isImage(currentDir.signature)) {
+                                  <img [src]="api.getFileUrl(currentDir.signature)" class="preview-img" alt="Signature" />
+                                } @else {
+                                  <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px;">
+                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--text-secondary);">description</span>
+                                    <span style="font-size: 11px; margin-top: 4px; font-weight: 500; color: var(--text-secondary);">Document</span>
+                                  </div>
+                                }
                                 <div class="image-overlay">
-                                  <a [href]="api.getFileUrl(currentDir.signature)" target="_blank" class="overlay-btn view-btn" title="View">
+                                  <a href="javascript:void(0)" (click)="openDocViewer(currentDir.signature, currentDir.fullName + '-Signature', $event)" class="overlay-btn view-btn" title="View">
                                     <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
                                   </a>
                                   <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(currentDir.signature), currentDir.fullName + '-Signature.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
@@ -404,3 +418,58 @@
         </div>
       }
     </div>
+
+<!-- Document Viewer Modal -->
+@if (isDocViewerOpen()) {
+<div
+  style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+  <div class="fade-in"
+    style="background: white; border-radius: 16px; width: 90%; max-width: 1000px; height: 90vh; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; overflow: hidden;">
+    
+    <!-- Header -->
+    <div
+      style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-primary);">
+      <div>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+          <span class="material-symbols-outlined" style="color: #3b82f6;">description</span>
+          Document Viewer
+        </h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin: 4px 0 0;">{{ docViewerName }}</p>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <a href="javascript:void(0)" (click)="forceDownload($event)"
+           style="background: white; border: 1px solid var(--border-color); color: var(--text-primary); text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: all 0.2s;"
+           onmouseover="this.style.backgroundColor='var(--bg-secondary)'"
+           onmouseout="this.style.backgroundColor='white'">
+          <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+          Download
+        </a>
+        <button (click)="closeDocViewer()"
+          style="background: transparent; border: none; cursor: pointer; color: var(--text-secondary); padding: 8px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s;"
+          onmouseover="this.style.backgroundColor='var(--bg-secondary)'; this.style.color='var(--text-primary)'"
+          onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--text-secondary)'">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+    </div>
+    <!-- Viewer Area -->
+    <div style="flex: 1; background: #e2e8f0; position: relative; overflow: auto; padding: 16px; display: flex; justify-content: center;">
+      @if (docViewerSrc.toLowerCase().endsWith('.pdf') || docViewerSrc.includes('pdf')) {
+        <pdf-viewer [src]="docViewerSrc"
+                    [render-text]="true"
+                    [original-size]="false"
+                    style="width: 100%; max-width: 800px; height: 100%;">
+        </pdf-viewer>
+      } @else if (docViewerSrc.toLowerCase().endsWith('.jpg') || docViewerSrc.toLowerCase().endsWith('.jpeg') || docViewerSrc.toLowerCase().endsWith('.png') || docViewerSrc.toLowerCase().endsWith('.webp') || docViewerSrc.toLowerCase().endsWith('.gif') || docViewerName.toLowerCase().includes('photo') || docViewerName.toLowerCase().includes('signature')) {
+        <img [src]="docViewerSrc" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+      } @else {
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary);">
+          <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 16px;">description</span>
+          <p>Preview not available for this file type.</p>
+          <a href="javascript:void(0)" (click)="forceDownload($event)" style="color: var(--primary-color); text-decoration: underline; cursor: pointer;">Click here to download</a>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+}
