@@ -120,7 +120,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   }
 
   void _initializeDefaults() {
-    if (widget.toolName == 'GST Calc') {
+    if (widget.toolName == 'GST Calculator') {
       _rateController.text = '18';
     } else if (widget.toolName == 'GST Interest') {
       _rateController.text = '18';
@@ -413,13 +413,13 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInputLabel(widget.toolName == 'GST Calc' ? 'Rate (%)' : 'Rate (%) p.a.'),
+                  _buildInputLabel(widget.toolName == 'GST Calculator' ? 'Rate (%)' : 'Rate (%) p.a.'),
                   _buildTextField(_rateController, 'e.g. 18', LucideIcons.percent, focusNode: _rateFocus),
                 ],
               ),
             ),
             const SizedBox(width: 16),
-            if (widget.toolName != 'GST Calc')
+            if (widget.toolName != 'GST Calculator')
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -914,7 +914,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                widget.toolName == 'GST Calc' ? 'Total Payable' : 'Interest Amount',
+                widget.toolName == 'GST Calculator' ? 'Total Payable' : 'Interest Amount',
                 style: GoogleFonts.outfit(
                   color: Colors.white.withOpacity(0.7),
                   fontWeight: FontWeight.w600,
@@ -939,7 +939,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            '₹${_primaryResult.toStringAsFixed(2)}',
+            '₹${_formatAmount(_primaryResult)}',
             style: GoogleFonts.outfit(
               color: Colors.white,
               fontSize: 40,
@@ -1015,11 +1015,11 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildOutputColumn('₹${_actualAmount.toStringAsFixed(0)}', 'Actual Amount', Colors.blue.shade700),
+                _buildOutputColumn('₹${_formatAmount(_actualAmount)}', 'Actual Amount', Colors.blue.shade700),
                 Text('+', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
-                _buildOutputColumn('₹${_gstAmount.toStringAsFixed(0)}', 'GST Amount', Colors.green),
+                _buildOutputColumn('₹${_formatAmount(_gstAmount)}', 'GST Amount', Colors.green),
                 Text('=', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey.shade400)),
-                _buildOutputColumn('₹${_totalAmount.toStringAsFixed(0)}', 'Total Amount', Colors.blue.shade700),
+                _buildOutputColumn('₹${_formatAmount(_totalAmount)}', 'Total Amount', Colors.blue.shade700),
               ],
             ),
           ),
@@ -1074,6 +1074,15 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         ),
       ),
     );
+  }
+
+  String _formatAmount(double value) {
+    if (value == value.toInt()) return value.toInt().toString();
+    String str = value.toStringAsFixed(2);
+    if (str.endsWith('0')) str = str.substring(0, str.length - 1);
+    if (str.endsWith('0')) str = str.substring(0, str.length - 1);
+    if (str.endsWith('.')) str = str.substring(0, str.length - 1);
+    return str;
   }
 
   Widget _buildOutputColumn(String amount, String label, Color color) {

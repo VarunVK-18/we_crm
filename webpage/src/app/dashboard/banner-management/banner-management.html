@@ -31,6 +31,26 @@
         </div>
       </div>
       <div class="form-group">
+        <label>Start Date (Optional)</label>
+        <input type="datetime-local" name="newBannerStartDate" [(ngModel)]="newBannerStartDate">
+      </div>
+      <div class="form-group">
+        <label>End Date (Optional)</label>
+        <input type="datetime-local" name="newBannerEndDate" [(ngModel)]="newBannerEndDate">
+      </div>
+      <div class="form-group">
+        <label>Target Audience</label>
+        <select name="newBannerTargetAudience" [(ngModel)]="newBannerTargetAudience">
+          <option value="All">All Users</option>
+          <option value="New">New Users</option>
+          <option value="Premium">Premium Subscribers</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Display Priority (Higher = First)</label>
+        <input type="number" name="newBannerPriority" [(ngModel)]="newBannerPriority" placeholder="0">
+      </div>
+      <div class="form-group">
         <label>Target URL (Optional)</label>
         <input type="text" name="newBannerTargetUrl" [(ngModel)]="newBannerTargetUrl" placeholder="e.g. https://example.com/promo">
       </div>
@@ -39,6 +59,21 @@
         <input type="file" name="newBannerImage" accept="image/*" (change)="onFileSelected($event)">
       </div>
     </div>
+    
+    <div class="live-preview-section" *ngIf="previewUrl || newBannerTitle">
+      <h4>Live Preview</h4>
+      <div class="banner-preview" [ngClass]="'theme-' + newBannerTheme">
+        <div class="preview-content">
+          <h5>{{ newBannerTitle || 'Banner Title' }}</h5>
+          <p>{{ newBannerSubtitle }}</p>
+          <button class="preview-btn" *ngIf="newBannerButtonText">{{ newBannerButtonText }}</button>
+        </div>
+        <div class="preview-image" *ngIf="previewUrl">
+          <img [src]="previewUrl" alt="Preview Image">
+        </div>
+      </div>
+    </div>
+
     <div class="form-actions">
       <button class="btn btn-primary" [disabled]="isUploading" (click)="createBanner()">
         {{ isUploading ? 'Uploading...' : 'Publish Banner' }}
@@ -63,6 +98,14 @@
           <h4>{{ banner.title }}</h4>
           <p *ngIf="banner.subtitle" style="font-size: 13px; color: #64748b; margin: 4px 0;">{{ banner.subtitle }}</p>
           <p style="font-size: 12px; margin: 4px 0;"><span style="font-weight: 600;">Theme:</span> {{ banner.theme || 'light' }} | <span style="font-weight: 600;">Button:</span> {{ banner.buttonText || 'Learn More' }}</p>
+          <p style="font-size: 12px; margin: 4px 0; color: #475569;">
+            <span style="font-weight: 600;">Audience:</span> {{ banner.targetAudience || 'All' }} | 
+            <span style="font-weight: 600;">Priority:</span> {{ banner.priority || 0 }} | 
+            <span style="font-weight: 600;">Clicks:</span> <span class="click-count">{{ banner.clickCount || 0 }}</span>
+          </p>
+          <p style="font-size: 12px; margin: 4px 0; color: #475569;" *ngIf="banner.startDate || banner.endDate">
+            <span style="font-weight: 600;">Schedule:</span> {{ banner.startDate | date:'short' }} - {{ banner.endDate | date:'short' }}
+          </p>
           <p class="target-url" *ngIf="banner.targetUrl">Link: <a [href]="banner.targetUrl" target="_blank">{{ banner.targetUrl }}</a></p>
           <div class="banner-actions">
             <button class="btn btn-toggle" (click)="toggleActive(banner)">

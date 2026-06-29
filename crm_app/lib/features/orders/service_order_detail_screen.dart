@@ -43,7 +43,7 @@ import 'patent_form_screen.dart';
 import 'pf_form_screen.dart';
 import 'proprietorship_form_screen.dart';
 import 'tds_form_screen.dart';
-import 'compliance_360_form_screen.dart';
+
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
   final ServiceOrder order;
@@ -1242,7 +1242,7 @@ class _StepTimeline extends StatelessWidget {
       children: List.generate(steps.length, (i) {
         final step = steps[i];
         final isLast = i == steps.length - 1;
-        final isCompleted = step.isCompleted;
+        final isCompleted = step.isCompleted || (step.isActionStep && order.details.isNotEmpty);
 
         // Determine connector color: green if the NEXT step is done, grey otherwise
         final connectorDone =
@@ -1907,8 +1907,7 @@ void _routeToForm(BuildContext context, ServiceOrder order) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase() == 'import export code' || order.serviceType.toLowerCase() == 'iec registration' || order.serviceType.toLowerCase().contains('iec')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => IecFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase() == '360° compliance') {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => Compliance360FormScreen(order: order)));
+
   } else {
     // Fallback if we haven't mapped the form yet
     ScaffoldMessenger.of(context).showSnackBar(

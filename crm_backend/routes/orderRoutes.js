@@ -233,14 +233,6 @@ router.post(
   orderController.submitFssaiForm
 );
 
-// @route   POST /api/orders/:id/submit-360-compliance-form
-// @desc    Submit 360° Compliance dynamic form
-router.post(
-  '/:id/submit-360-compliance-form',
-  checkUser,
-  upload.any(),
-  orderController.submit360ComplianceForm
-);
 
 
 // Define fields for DSC Registration form

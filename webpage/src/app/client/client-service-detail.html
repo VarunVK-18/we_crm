@@ -89,10 +89,10 @@
                 
                 <div class="checklist-items" #trackerScroll>
                   @for (item of order()?.items; track item._id) {
-                  <div class="checklist-item" [class.completed]="item.isChecked" style="cursor: default;">
+                  <div class="checklist-item" [class.completed]="isItemCompleted(item)" style="cursor: default;">
                     <div class="checkbox-wrapper">
                       <div class="custom-checkbox">
-                        @if (item.isChecked) {
+                        @if (isItemCompleted(item)) {
                         <span class="material-symbols-outlined check-icon">check</span>
                         }
                       </div>
@@ -100,7 +100,7 @@
                     <div class="item-content">
                       <h4>{{ item.title || item.label }}</h4>
                       @if (item.isActionStep) {
-                      @if (!item.isChecked) {
+                      @if (!isItemCompleted(item)) {
                       <p>{{ item.description || item.notes }}</p>
                       @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {
                       <button class="action-btn"

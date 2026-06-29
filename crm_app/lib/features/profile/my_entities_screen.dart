@@ -189,7 +189,49 @@ class _AllEntitiesCard extends ConsumerWidget {
     return InkWell(
       onTap: () {
         ref.read(selectedEntityProvider.notifier).state = 'All Entities';
+        final navContext = Navigator.of(context).context;
         Navigator.pop(context);
+        
+        showDialog(
+          context: navContext,
+          barrierColor: Colors.black12,
+          barrierDismissible: false,
+          builder: (dialogContext) {
+            Future.delayed(const Duration(milliseconds: 800), () {
+              Navigator.pop(dialogContext);
+            });
+            return Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.deepTeal,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.deepTeal.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      )
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(LucideIcons.checkCircle, color: Colors.white),
+                      SizedBox(width: 12),
+                      Text(
+                        'Selected All Entities',
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        );
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
@@ -306,7 +348,53 @@ class _EntityCard extends ConsumerWidget {
       onTap: () {
         // Store entityName as the canonical selector key
         ref.read(selectedEntityProvider.notifier).state = entityName;
+        final navContext = Navigator.of(context).context;
         Navigator.pop(context);
+        
+        showDialog(
+          context: navContext,
+          barrierColor: Colors.black12,
+          barrierDismissible: false,
+          builder: (dialogContext) {
+            Future.delayed(const Duration(milliseconds: 800), () {
+              Navigator.pop(dialogContext);
+            });
+            return Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppTheme.deepTeal,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.deepTeal.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      )
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(LucideIcons.checkCircle, color: Colors.white),
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Text(
+                          'Selected $entityName',
+                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        );
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(

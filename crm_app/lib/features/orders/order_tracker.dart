@@ -89,9 +89,9 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
     var activeList = fullActiveList;
     if (_activeFilter == 'Action Required') {
-      activeList = activeList.where((o) => o.actionRequired).toList();
+      activeList = activeList.where((o) => o.isReallyActionRequired).toList();
     } else if (_activeFilter == 'In Progress') {
-      activeList = activeList.where((o) => !o.actionRequired).toList();
+      activeList = activeList.where((o) => !o.isReallyActionRequired).toList();
     }
 
     if (_searchQuery.isNotEmpty) {
@@ -395,7 +395,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           ],
                         ),
                         child: Text(
-                          '${_tabLabels[tab]}  ${count.toString().padLeft(2, '0')}',
+                          '${_tabLabels[tab]}  ${count == 0 ? '0' : count.toString().padLeft(2, '0')}',
                           style: GoogleFonts.inter(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
@@ -531,6 +531,8 @@ class _ServiceCard extends StatelessWidget {
     OrderStage.documentRequested: 'Doc Requested',
     OrderStage.workInProgress: 'In Progress',
     OrderStage.completed: 'Completed',
+    OrderStage.reqReceived: 'Request Received',
+    OrderStage.testing: 'Testing',
   };
 
   ({Color bg, Color text}) get _badgeColors => switch (order.stage) {
@@ -647,7 +649,7 @@ class _ServiceCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    if (order.actionRequired && isActive)
+                    if (order.isReallyActionRequired && isActive)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,

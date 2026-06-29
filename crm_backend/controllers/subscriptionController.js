@@ -97,7 +97,7 @@ exports.activateSubscription = async (req, res) => {
     const dueDate = new Date();
     dueDate.setMonth(dueDate.getMonth() + 1); // Default due in 1 month for setup
 
-    if (sName.includes('mca') || sName.includes('360')) {
+    if (sName.includes('mca')) {
       if (eName.includes('private limited') || eName.includes('pvt') || eName.includes('opc') || eName.includes('public limited') || eName.includes('section 8')) {
         tasksToCreate.push({ title: 'AOC-4 Filing' }, { title: 'MGT-7 Filing' }, { title: 'DIR-3 KYC' });
       } else if (eName.includes('llp')) {
@@ -105,7 +105,7 @@ exports.activateSubscription = async (req, res) => {
       }
     }
     
-    if (sName.includes('gst') || sName.includes('360')) {
+    if (sName.includes('gst')) {
       tasksToCreate.push({ title: 'GSTR-1 Filing' }, { title: 'GSTR-3B Filing' }, { title: 'GSTR-9 Annual Return' });
     }
 

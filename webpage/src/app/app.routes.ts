@@ -19,7 +19,7 @@ import { TdsCalc } from './client/tools/tds-calc/tds-calc';
 import { NicFinder } from './client/tools/nic-finder/nic-finder';
 import { TrademarkFinder } from './client/tools/trademark-finder/trademark-finder';
 import { IncorpForm } from './client/forms/incorp-form/incorp-form';
-import { Compliance360Form } from './client/forms/compliance-360-form/compliance-360-form';
+
 import { LlpForm } from './client/forms/llp-form/llp-form';
 import { MsmeForm } from './client/forms/msme-form/msme-form';
 import { FssaiForm } from './client/forms/fssai-form/fssai-form';
@@ -101,7 +101,7 @@ export const routes: Routes = [
       { path: 'forms/mca/:id', component: McaFormComponent },
       { path: 'forms/proprietorship/:id', component: ProprietorshipForm },
       { path: 'fill-tds-form/:id', component: TdsForm },
-      { path: 'fill-360-compliance-form/:id', component: Compliance360Form },
+      
       { path: 'forms/pf/:id', component: PfForm },
       { path: 'forms/patent/:id', component: PatentForm },
       { path: 'forms/gst-cancellation/:id', component: GstCancellationForm },

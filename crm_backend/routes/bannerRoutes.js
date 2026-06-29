@@ -4,7 +4,8 @@ const {
   getBanners,
   createBanner,
   updateBanner,
-  deleteBanner
+  deleteBanner,
+  incrementClick
 } = require('../controllers/bannerController');
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
 const multer = require('multer');
@@ -24,5 +25,7 @@ router.route('/')
 router.route('/:id')
   .put(checkUser, preventAuditorWrite, permit('admin'), upload.any(), updateBanner)
   .delete(checkUser, preventAuditorWrite, permit('admin'), deleteBanner);
+
+router.post('/:id/click', checkUser, incrementClick);
 
 module.exports = router;

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import 'service_detail_screen.dart';
@@ -67,26 +68,12 @@ class _RegistrationServicesScreenState
 
     // --- Compliance ---
     {
-      'title': '360° Compliance',
-      'description': 'End-to-end statutory and regulatory lifecycle management.',
-      'icon': HugeIcons.strokeRoundedBriefcase01,
-      'color': const Color(0xFF6366F1),
-      'category': 'Compliance',
-      'features': [
-        'Annual Filing Support',
-        'Regulatory Impact Analysis',
-        'Compliance Health Check',
-        'Direct Access to Legal Experts',
-        'Automated Deadlines & Alerts',
-      ],
-    },
-    {
       'title': 'MCA Compliance',
       'description': 'Annual return filings and MCA statutory compliance.',
       'icon': HugeIcons.strokeRoundedTask01,
       'color': const Color(0xFF14B8A6),
       'category': 'Compliance',
-      'features': ['AOC-4 & MGT-7 Filing', 'Director KYC', 'Statutory Audit Support', 'Minutes of Meeting', 'Event Based Filings'],
+      'features': ['AOC-4 & MGT-7 Filing', 'Director KYC', 'Statutory Audit Support', 'Auditing and Book Keeping', 'Event Based Filings'],
     },
     {
       'title': 'TDS',
@@ -109,7 +96,7 @@ class _RegistrationServicesScreenState
     {
       'title': 'Trade Mark',
       'description': 'Brand protection and intellectual property rights.',
-      'icon': LucideIcons.tag,
+      'icon': HugeIcons.strokeRoundedTradeMark,
       'color': const Color(0xFFEC4899),
       'category': 'IP',
       'features': ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate'],
@@ -135,7 +122,7 @@ class _RegistrationServicesScreenState
     {
       'title': 'GST Registration',
       'description': 'GST Registration for your business! Thank you for choosing Wealth Empires.',
-      'icon': HugeIcons.strokeRoundedFile02,
+      'icon': HugeIcons.strokeRoundedLicenseDraft,
       'color': const Color(0xFF10B981),
       'category': 'Tax',
       'features': ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate'],
@@ -143,7 +130,7 @@ class _RegistrationServicesScreenState
     {
       'title': 'GST Compliance',
       'description': 'Monthly/Quarterly GST returns and reconciliations.',
-      'icon': HugeIcons.strokeRoundedFile02,
+      'icon': HugeIcons.strokeRoundedCalculate,
       'color': const Color(0xFF3B82F6),
       'category': 'Tax',
       'features': ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support'],
@@ -167,13 +154,21 @@ class _RegistrationServicesScreenState
     {
       'title': 'ITR',
       'description': 'Income Tax Return filing for individuals and businesses.',
-      'icon': LucideIcons.landmark,
+      'icon': 'assets/icons/itr.svg',
       'color': const Color(0xFF8B5CF6),
       'category': 'Tax',
       'features': ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support'],
     },
 
     // --- Licensing ---
+    {
+      'title': 'DPIIT',
+      'description': 'Startup India Certification for your startup! Please provide your details correctly.',
+      'icon': HugeIcons.strokeRoundedRocket,
+      'color': const Color(0xFF10B981),
+      'category': 'Licensing',
+      'features': ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track'],
+    },
     {
       'title': 'ISO',
       'description': 'Quality management certification (ISO 9001 and others).',
@@ -183,12 +178,20 @@ class _RegistrationServicesScreenState
       'features': ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training'],
     },
     {
-      'title': 'DPIIT',
-      'description': 'Startup India Certification for your startup! Please provide your details correctly.',
-      'icon': HugeIcons.strokeRoundedRocket,
-      'color': const Color(0xFF10B981),
+      'title': 'BIS',
+      'description': 'Bureau of Indian Standards product certification.',
+      'icon': LucideIcons.shieldCheck,
+      'color': const Color(0xFFF59E0B),
       'category': 'Licensing',
-      'features': ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track'],
+      'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
+    },
+    {
+      'title': 'CE & RoHS',
+      'description': 'European standard certifications for electronics and products.',
+      'icon': LucideIcons.checkCircle,
+      'color': const Color(0xFF14B8A6),
+      'category': 'Licensing',
+      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
     },
     {
       'title': 'FSSAI',
@@ -199,7 +202,7 @@ class _RegistrationServicesScreenState
       'features': ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping'],
     },
     {
-      'title': 'IE code',
+      'title': 'IE Code',
       'description': 'Import Export Code registration for cross-border trade.',
       'icon': LucideIcons.globe,
       'color': const Color(0xFF3B82F6),
@@ -214,30 +217,13 @@ class _RegistrationServicesScreenState
       'category': 'Licensing',
       'features': ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation'],
     },
-    {
-      'title': 'BIS',
-      'description': 'Bureau of Indian Standards product certification.',
-      'icon': LucideIcons.shieldCheck,
-      'color': const Color(0xFFF59E0B),
-      'category': 'Licensing',
-      'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
-    },
-    {
-      'title': 'ROSH & CE',
-      'description': 'European standard certifications for electronics and products.',
-      'icon': LucideIcons.checkCircle,
-      'color': const Color(0xFF14B8A6),
-      'category': 'Licensing',
-      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
-    },
 
-    // --- Others ---
     {
       'title': 'DSC',
       'description': 'Digital Signature Certificate for individuals & organizations.',
       'icon': LucideIcons.usb,
       'color': const Color(0xFF8B5CF6),
-      'category': 'Others',
+      'category': 'Licensing',
       'features': ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity'],
     }
   ];
@@ -461,7 +447,6 @@ class _RegistrationServicesScreenState
                           'IP',
                           'Tax',
                           'Licensing',
-                          'Others',
                         ].map((label) {
                           return _ServiceChip(
                             label: label,
@@ -641,9 +626,11 @@ class _ComplianceListCard extends StatelessWidget {
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: icon is IconData
-                      ? Icon(icon as IconData, color: color, size: 28.ip)
-                      : HugeIcon(icon: icon, color: color, size: 28.ip),
+                  child: icon is String
+                      ? SvgPicture.asset(icon as String, colorFilter: ColorFilter.mode(color, BlendMode.srcIn), width: 28.ip, height: 28.ip)
+                      : icon is IconData
+                          ? Icon(icon as IconData, color: color, size: 28.ip)
+                          : HugeIcon(icon: icon, color: color, size: 28.ip),
                 ),
                 SizedBox(width: 16.r),
                 Expanded(

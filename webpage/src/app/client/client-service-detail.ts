@@ -138,8 +138,6 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
       this.goToPatentForm();
     } else if (s.includes('iec')) {
       this.goToIecForm();
-    } else if (s.includes('360') && s.includes('compliance')) {
-      this.goTo360ComplianceForm();
     } else {
       console.warn('No form routing defined for service:', serviceName);
     }
@@ -223,10 +221,6 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   goToDpiitForm() {
     this.router.navigate(['/client/forms/dpiit', this.orderId()]);
-  }
-
-  goTo360ComplianceForm() {
-    this.router.navigate(['/client/fill-360-compliance-form', this.orderId()]);
   }
 
   fetchOrderDetails(silent = false) {
@@ -415,7 +409,16 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   getCompletedList(items: any[] | undefined): any[] {
     if (!items) return [];
-    return items.filter(i => i.isChecked);
+    return items.filter(i => this.isItemCompleted(i));
+  }
+
+  isItemCompleted(item: any): boolean {
+    if (item.isChecked) return true;
+    if (item.isActionStep) {
+      const details = this.order()?.details;
+      return details && Object.keys(details).length > 0;
+    }
+    return false;
   }
 
   isPaymentPending(): boolean {
