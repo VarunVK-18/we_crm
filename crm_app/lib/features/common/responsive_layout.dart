@@ -6,6 +6,7 @@ import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
+import '../../providers/navigation_provider.dart';
 
 class ResponsiveLayout extends ConsumerWidget {
   final Widget mobileBody;
@@ -59,6 +60,7 @@ class ResponsiveLayout extends ConsumerWidget {
     );
 
     if (confirmed == true) {
+      ref.read(navigationIndexProvider.notifier).state = 0;
       await ref.read(authRepositoryProvider).signOut();
     }
   }

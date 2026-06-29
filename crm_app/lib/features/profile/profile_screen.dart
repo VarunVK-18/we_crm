@@ -14,6 +14,7 @@ import 'chat_support_screen.dart';
 import 'subscriptions_screen.dart';
 import 'company_details_screen.dart';
 import '../../core/utils/responsive.dart';
+import '../../providers/navigation_provider.dart';
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 
@@ -52,106 +53,37 @@ class ProfileScreen extends ConsumerWidget {
             centerTitle: false,
             actions: [
               IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
                     context: context,
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-                    ),
-                    builder: (BuildContext context) {
-                      return Padding(
-                        padding: EdgeInsets.all(24.r),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 48.r,
-                              height: 5.r,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(3.r),
-                              ),
-                            ),
-                            SizedBox(height: 32.r),
-                            Container(
-                              padding: EdgeInsets.all(16.r),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(LucideIcons.logOut, color: Colors.red, size: 32.ip),
-                            ),
-                            SizedBox(height: 24.r),
-                            Text(
-                              'Sign Out',
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    color: AppTheme.deepTeal,
-                                  ),
-                            ),
-                            SizedBox(height: 12.r),
-                            Text(
-                              'Are you sure you want to sign out? You will need to enter your credentials to access your account again.',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.grey.shade600,
-                                    height: 1.5,
-                                  ),
-                            ),
-                            SizedBox(height: 32.r),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  ref.read(authRepositoryProvider).signOut();
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppTheme.deepTeal, // Changed from bright red to deep teal
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  padding: EdgeInsets.symmetric(vertical: 14.r), // Reduced from 18 to 14
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.r), // slightly smaller radius to match smaller height
-                                  ),
-                                ),
-                                child: Text(
-                                  'Yes, Sign Out',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14.sp, // Reduced from 16 to 14
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: 12.r),
-                            SizedBox(
-                              width: double.infinity,
-                              child: TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: 14.r), // Reduced from 18 to 14
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12.r),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 14.sp,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: MediaQuery.of(context).padding.bottom),
-                          ],
+                    builder: (context) => AlertDialog(
+                      title: const Text('Sign Out'),
+                      content: const Text(
+                          'Are you sure you want to sign out? You will need to enter your credentials to access your account again.'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: Text(
+                            'Cancel',
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
                         ),
-                      );
-                    },
+                        TextButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          child: Text(
+                            'OK',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: const Color.fromARGB(255, 6, 6, 6),
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
+                  if (confirm == true) {
+                    ref.read(navigationIndexProvider.notifier).state = 0;
+                    ref.read(authRepositoryProvider).signOut();
+                  }
                 },
                 icon: const Icon(LucideIcons.logOut, color: Colors.redAccent),
                 tooltip: 'Sign Out',
