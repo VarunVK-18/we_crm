@@ -3,13 +3,12 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Api } from '../../api';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Building04Icon, ArrowDown01Icon, ArrowUp01Icon, Copy01Icon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-company-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule],
   providers: [DatePipe],
   templateUrl: './client-company-details.html',
   styleUrl: './client-company-details.css'

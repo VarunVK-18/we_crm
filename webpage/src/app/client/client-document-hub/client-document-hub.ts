@@ -7,11 +7,12 @@ import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Search01Icon, File01Icon, Download04Icon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @Component({
   selector: 'app-client-document-hub',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, PdfViewerModule],
   templateUrl: './client-document-hub.html',
   styleUrl: './client-document-hub.css'
 })
@@ -25,6 +26,11 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
 
   searchQuery = signal<string>('');
   allDocuments = signal<any[]>([]);
+
+  // Document Viewer State
+  isDocViewerOpen = signal<boolean>(false);
+  docViewerSrc: string = '';
+  docViewerName: string = '';
 
   // Entity filter synced with topbar switcher
   selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
@@ -143,8 +149,16 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
 
     const baseUrl = (this.api as any).baseUrl || 'http://localhost:5001/api';
     if (doc.document_id) {
-      window.open(`${baseUrl}/documents/${doc.document_id}`, '_blank');
+      this.docViewerSrc = `${baseUrl}/documents/${doc.document_id}`;
+      this.docViewerName = doc.name || 'Document';
+      this.isDocViewerOpen.set(true);
     }
+  }
+
+  closeDocViewer() {
+    this.isDocViewerOpen.set(false);
+    this.docViewerSrc = '';
+    this.docViewerName = '';
   }
 
   formatTitleCase(text: string): string {

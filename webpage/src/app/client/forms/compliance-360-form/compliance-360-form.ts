@@ -22,7 +22,7 @@ interface Director360 {
 @Component({
   selector: 'app-compliance-360-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './compliance-360-form.html',
   styleUrl: '../forms-shared.css',
 })

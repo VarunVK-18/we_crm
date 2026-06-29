@@ -35,6 +35,10 @@ const ChecklistSchema = new mongoose.Schema({
     required: true,
     index: true
   },
+  custom_service_id: {
+    type: String,
+    default: null
+  },
   client_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

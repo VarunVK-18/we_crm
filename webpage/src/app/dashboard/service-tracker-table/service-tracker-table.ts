@@ -180,4 +180,11 @@ export class ServiceTrackerTableComponent implements OnInit {
     if (!status) return 'Unknown';
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   }
+
+  getNextTask(items: any[]): string {
+    if (!items || !items.length) return 'No tasks defined';
+    const nextTask = items.find(i => !i.isChecked);
+    if (!nextTask) return 'All tasks completed';
+    return nextTask.title || nextTask.label || 'Unnamed task';
+  }
 }

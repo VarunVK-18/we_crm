@@ -28,6 +28,7 @@ import { StaffChatComponent } from './staff-chat/staff-chat';
 import { BannerManagement } from './banner-management/banner-management';
 import { BucketComponent } from './bucket/bucket';
 import { ServiceTrackerTableComponent } from './service-tracker-table/service-tracker-table';
+import { TeamServiceTrackComponent } from './team-service-track/team-service-track';
 
 @Component({
   selector: 'app-dashboard',
@@ -54,7 +55,8 @@ import { ServiceTrackerTableComponent } from './service-tracker-table/service-tr
     StaffChatComponent,
     BannerManagement,
     BucketComponent,
-    ServiceTrackerTableComponent
+    ServiceTrackerTableComponent,
+    TeamServiceTrackComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',

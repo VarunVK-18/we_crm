@@ -143,7 +143,7 @@ const getTasks = async (req, res) => {
     // admin sees all tasks — no extra filter
 
     const tasks = await FilingTask.find(filter)
-      .populate('client_id', 'owner_name company_name email phone onboarding_documents gstin_file pan_file')
+      .populate('client_id', 'custom_client_id owner_name company_name email phone onboarding_documents gstin_file pan_file')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
       .sort({ createdAt: -1 });
@@ -162,7 +162,7 @@ const updateTask = async (req, res) => {
     const { id } = req.params;
     const { status, assigned_to, title, description } = req.body;
 
-    const task = await FilingTask.findById(id).populate('client_id', 'owner_name');
+    const task = await FilingTask.findById(id).populate('client_id', 'custom_client_id owner_name');
     if (!task) {
       return res.status(404).json({ success: false, message: 'Filing task not found' });
     }
@@ -218,7 +218,7 @@ const uploadTaskDocument = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Document name is required' });
     }
 
-    const task = await FilingTask.findById(id).populate('client_id', 'owner_name');
+    const task = await FilingTask.findById(id).populate('client_id', 'custom_client_id owner_name');
     if (!task) {
       return res.status(404).json({ success: false, message: 'Filing task not found' });
     }
@@ -381,7 +381,7 @@ const addTaskComment = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Comment text is required' });
     }
 
-    const task = await FilingTask.findById(id).populate('client_id', 'owner_name');
+    const task = await FilingTask.findById(id).populate('client_id', 'custom_client_id owner_name');
     if (!task) {
       return res.status(404).json({ success: false, message: 'Filing task not found' });
     }

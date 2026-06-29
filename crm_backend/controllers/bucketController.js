@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Checklist = require('../models/Checklist');
 const ChecklistTemplate = require('../models/ChecklistTemplate');
 const { logActivity } = require('../middleware/rbac');
+const { getNextServiceId } = require('../utils/counterHelper');
 
 // @desc    Get all OPEN bucket requests (for client_managers)
 // @route   GET /api/bucket/requests
@@ -16,17 +17,17 @@ const getBucketRequests = async (req, res) => {
     if (status === 'all') {
       filter.$or = [
         { status: { $ne: 'open' } },
-        { status: 'open', source: { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm'] } }
+        { status: 'open', source: { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm', 'we-crm-new'] } }
       ];
     } else if (status === 'open') {
       filter.status = 'open';
-      filter.source = { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm'] };
+      filter.source = { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm', 'we-crm-new'] };
     } else {
       filter.status = status;
     }
 
     const requests = await BucketRequest.find(filter)
-      .populate('client_id', 'owner_name email phone company_name')
+      .populate('client_id', 'custom_client_id owner_name email phone company_name')
       .populate('claimed_by', 'owner_name email _id')
       .populate('assigned_to', 'owner_name email _id')
       .sort({ createdAt: -1 })
@@ -48,7 +49,7 @@ const claimBucketRequest = async (req, res) => {
     const { team_id, dealClosedAmount, advanceAmountPaid } = req.body;
 
     const bucketReq = await BucketRequest.findOne({ _id: id, company_id, status: 'open' })
-      .populate('client_id', 'owner_name _id company_id assigned_to');
+      .populate('client_id', 'custom_client_id owner_name _id company_id assigned_to');
     if (!bucketReq || !bucketReq.client_id) {
       return res.status(404).json({ success: false, message: 'Bucket request not found, already claimed, or client was deleted.' });
     }
@@ -80,9 +81,15 @@ const claimBucketRequest = async (req, res) => {
       });
     }
 
+    let custom_service_id = null;
+    try {
+      custom_service_id = await getNextServiceId(company_id);
+    } catch (e) { console.error('Failed to generate custom_service_id', e); }
+
     // Create checklist assigned to the claiming client_manager
     const checklist = await Checklist.create({
       company_id,
+      custom_service_id,
       client_id: bucketReq.client_id._id,
       service_name: bucketReq.service_name,
       assigned_to: managerId,
@@ -160,7 +167,7 @@ const getAvailableJobs = async (req, res) => {
         { claimed_by: { $in: teams.map(t => t.manager_id).filter(Boolean) }, team_id: null }
       ]
     })
-      .populate('client_id', 'owner_name email phone company_name')
+      .populate('client_id', 'custom_client_id owner_name email phone company_name')
       .populate('claimed_by', 'owner_name email _id')
       .sort({ claimed_at: -1 })
       .lean();

@@ -1,21 +1,20 @@
 const mongoose = require('mongoose');
+require('dotenv').config();
+const BucketRequest = require('./models/BucketRequest');
 const User = require('./models/User');
 
-const MONGO_URI = 'mongodb+srv://kingkohli43255_db_user:UjMgPzVdBG9353yE@cluster0.bxb9nii.mongodb.net/';
-
-async function test() {
-  await mongoose.connect(MONGO_URI);
-  const users = await User.find({ "client_entities.0": { $exists: true } });
-  if (users.length > 0) {
-    console.log(`Found ${users.length} users with client_entities.`);
-    for (const u of users) {
-      console.log(`User: ${u.email}`);
-      console.log(JSON.stringify(u.client_entities, null, 2));
-    }
-  } else {
-    console.log("No users with client_entities found.");
-  }
-  mongoose.disconnect();
-}
-
-test().catch(console.error);
+mongoose.connect(process.env.MONGO_URI)
+  .then(async () => {
+    console.log('Connected');
+    const buckets = await BucketRequest.find().sort({createdAt: -1}).limit(5);
+    console.log('Buckets:', buckets);
+    
+    const admin = await User.findOne({role: 'admin'});
+    console.log('Admin company_id:', admin.company_id);
+    
+    process.exit(0);
+  })
+  .catch(err => {
+    console.error(err);
+    process.exit(1);
+  });

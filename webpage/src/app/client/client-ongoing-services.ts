@@ -4,13 +4,12 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../api';
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
-import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { ApartmentIcon } from '@hugeicons/core-free-icons';
 
 @Component({
   selector: 'app-client-ongoing-services',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './client-ongoing-services.html',
   styleUrl: './client-ongoing-services.css',
 })

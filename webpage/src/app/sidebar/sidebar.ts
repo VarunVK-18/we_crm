@@ -83,7 +83,8 @@ export class Sidebar implements OnInit, OnDestroy {
         header: 'Management',
         items: [
           { id: 'clients', label: 'Clients Directory', color: '#10B981' },
-          { id: 'team', label: 'Employees & Team', color: '#8B5CF6' }
+          { id: 'team', label: 'Employees & Team', color: '#8B5CF6' },
+          { id: 'team-service-track', label: 'Team Service Track', color: '#3B82F6' }
         ]
       });
       groups.push({
@@ -111,7 +112,8 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Management',
         items: [
-          { id: 'clients', label: 'My Clients', color: '#10B981' }
+          { id: 'clients', label: 'My Clients', color: '#10B981' },
+          { id: 'team-service-track', label: 'Team Service Track', color: '#3B82F6' }
         ]
       });
     } else if (role === 'filling_staff' || role === 'account_manager') {
