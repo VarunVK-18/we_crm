@@ -157,26 +157,30 @@ const registerUser = async (req, res) => {
 
       // Handle serviceName provided by DealVoice Lead conversion or other frontend
       const passedServiceName = req.body.serviceName || req.body.service_name;
-      if (passedServiceName) {
-        if (!user.services.includes(passedServiceName)) {
-          user.services.push(passedServiceName);
-          await user.save();
-        }
-        try {
-          await BucketRequest.create({
-            company_id: user.company_id || '000000000000000000000000',
-            client_id: user._id,
-            service_name: passedServiceName,
-            status: 'open',
-            source: 'we-crm-new',
-            client_name: user.owner_name || user.company_name || 'Client',
-            client_phone: user.phone || '',
-            client_email: user.email,
-            client_company_name: user.company_name || ''
-          });
-          console.log(`Created Bucket Request for newly registered client: ${passedServiceName}`);
-        } catch (e) {
-          console.error('Error creating Bucket Request in registerUser:', e);
+      if (passedServiceName && !user.services.includes(passedServiceName)) {
+        user.services.push(passedServiceName);
+        await user.save();
+      }
+
+      // Create Bucket Request for ALL services the user has
+      if (user.services && user.services.length > 0) {
+        for (const s of user.services) {
+          try {
+            await BucketRequest.create({
+              company_id: user.company_id || '000000000000000000000000',
+              client_id: user._id,
+              service_name: s,
+              status: 'open',
+              source: 'we-crm-new',
+              client_name: user.owner_name || user.company_name || 'Client',
+              client_phone: user.phone || '',
+              client_email: user.email,
+              client_company_name: user.company_name || ''
+            });
+            console.log(`Created Bucket Request for newly registered client: ${s}`);
+          } catch (e) {
+            console.error('Error creating Bucket Request in registerUser:', e);
+          }
         }
       }
 
