@@ -261,10 +261,11 @@ export class ClientProfile implements OnInit, OnDestroy {
     this.router.navigate(['/client-dashboard']);
   }
 
-  // Document Viewer State
   isDocViewerOpen = signal(false);
+  isDocViewerLoading = signal(false);
   docViewerSrc = '';
   docViewerName = '';
+  docViewerType = signal<'pdf' | 'image' | ''>('');
 
   async openDocViewer(url: string, name: string, event: Event, doc?: any) {
     event.preventDefault();
@@ -285,24 +286,56 @@ export class ClientProfile implements OnInit, OnDestroy {
       return;
     }
 
-    // Attempt to guess if url is PDF based on name if the url itself has no extension
     let finalUrl = this.api.getFileUrl(url);
-    if (!finalUrl.includes('.pdf') && !finalUrl.includes('pdf')) {
-      if ((name || '').toLowerCase().includes('pdf') || url.includes('/documents/')) {
-        // We assume /api/documents/:id serves pdf if not image, let's trick the viewer
-        finalUrl += '&type=.pdf';
+    this.docViewerName = name || 'Document';
+    this.docViewerType.set('');
+    this.isDocViewerLoading.set(true);
+    this.isDocViewerOpen.set(true);
+
+    // Detect file type via magic bytes (first 4 bytes) for guaranteed accuracy
+    try {
+      const res = await fetch(finalUrl, { headers: { 'Range': 'bytes=0-3' } });
+      const buffer = await res.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      // PDF magic: %PDF = 0x25, 0x50, 0x44, 0x46
+      if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+        this.docViewerType.set('pdf');
+      // JPEG magic: 0xFF, 0xD8, 0xFF
+      } else if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+        this.docViewerType.set('image');
+      // PNG magic: 0x89, P, N, G
+      } else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+        this.docViewerType.set('image');
+      // GIF magic: G, I, F
+      } else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+        this.docViewerType.set('image');
+      } else {
+        // Try Content-Type from response header as fallback
+        const cType = res.headers.get('content-type') || '';
+        if (cType.includes('pdf')) this.docViewerType.set('pdf');
+        else if (cType.includes('image')) this.docViewerType.set('image');
+      }
+    } catch (e) {
+      // If fetch fails completely, use URL/name-based heuristics
+      const lowerUrl = finalUrl.toLowerCase();
+      const lowerName = (name || '').toLowerCase();
+      if (lowerUrl.includes('.pdf') || lowerUrl.includes('pdf')) {
+        this.docViewerType.set('pdf');
+      } else if (lowerUrl.match(/\.(jpg|jpeg|png|gif|webp)/) || lowerName.includes('photo') || lowerName.includes('signature') || lowerName.includes('aadhar') || lowerName.includes('pan')) {
+        this.docViewerType.set('image');
       }
     }
 
     this.docViewerSrc = finalUrl;
-    this.docViewerName = name || 'Document';
-    this.isDocViewerOpen.set(true);
+    this.isDocViewerLoading.set(false);
   }
 
   closeDocViewer() {
     this.isDocViewerOpen.set(false);
+    this.isDocViewerLoading.set(false);
     this.docViewerSrc = '';
     this.docViewerName = '';
+    this.docViewerType.set('');
   }
 
   forceDownload(event: Event) {

@@ -29,8 +29,10 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
 
   // Document Viewer State
   isDocViewerOpen = signal<boolean>(false);
+  isDocViewerLoading = signal<boolean>(false);
   docViewerSrc: string = '';
   docViewerName: string = '';
+  docViewerType = signal<'pdf' | 'image' | ''>('');
 
   // Entity filter synced with topbar switcher
   selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
@@ -138,27 +140,64 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
       });
       
       if (choice === true) {
-        // Pay Online logic
-        window.open('/client/wallet', '_self'); // or wherever they should go to pay
+        window.open('/client/wallet', '_self');
       } else if (choice === false) {
-        // Call Account Manager logic
-        window.open('/client/support', '_self'); // or support route
+        window.open('/client/support', '_self');
       }
       return;
     }
 
     const baseUrl = (this.api as any).baseUrl || 'http://localhost:5001/api';
     if (doc.document_id) {
-      this.docViewerSrc = `${baseUrl}/documents/${doc.document_id}`;
+      const finalUrl = `${baseUrl}/documents/${doc.document_id}`;
       this.docViewerName = doc.name || 'Document';
+      this.docViewerType.set('');
+      this.isDocViewerLoading.set(true);
       this.isDocViewerOpen.set(true);
+
+      // Detect file type via magic bytes for guaranteed accuracy
+      try {
+        const res = await fetch(finalUrl, { headers: { 'Range': 'bytes=0-3' } });
+        const buffer = await res.arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+        // PDF magic: %PDF
+        if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+          this.docViewerType.set('pdf');
+        // JPEG magic
+        } else if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+          this.docViewerType.set('image');
+        // PNG magic
+        } else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+          this.docViewerType.set('image');
+        // GIF magic
+        } else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+          this.docViewerType.set('image');
+        } else {
+          const cType = res.headers.get('content-type') || '';
+          if (cType.includes('pdf')) this.docViewerType.set('pdf');
+          else if (cType.includes('image')) this.docViewerType.set('image');
+        }
+      } catch (e) {
+        // Fallback heuristics
+        const lowerName = (doc.name || '').toLowerCase();
+        if (lowerName.includes('pdf') || finalUrl.includes('pdf')) {
+          this.docViewerType.set('pdf');
+        } else if (lowerName.match(/\.(jpg|jpeg|png|gif|webp)/) || lowerName.includes('photo') || lowerName.includes('signature')) {
+          this.docViewerType.set('image');
+        }
+      }
+
+      this.docViewerSrc = finalUrl;
+      this.isDocViewerLoading.set(false);
     }
   }
 
   closeDocViewer() {
     this.isDocViewerOpen.set(false);
+    this.isDocViewerLoading.set(false);
     this.docViewerSrc = '';
     this.docViewerName = '';
+    this.docViewerType.set('');
   }
 
   forceDownload(event: Event) {

@@ -49,8 +49,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   // Document Viewer State
   isDocViewerOpen = signal<boolean>(false);
+  isDocViewerLoading = signal<boolean>(false);
   docViewerSrc: string = '';
   docViewerName: string = '';
+  docViewerType = signal<'pdf' | 'image' | ''>('');
 
   // Add Payment State
   isAddingPayment = signal<boolean>(false);
@@ -122,17 +124,57 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.sopPdfSrc = '';
   }
 
-  openDocViewer(url: string, name: string, event: Event) {
+  async openDocViewer(url: string, name: string, event: Event) {
     event.preventDefault();
-    this.docViewerSrc = this.api.getFileUrl(url);
+    const finalUrl = this.api.getFileUrl(url);
     this.docViewerName = name || 'Document';
+    this.docViewerType.set('');
+    this.isDocViewerLoading.set(true);
     this.isDocViewerOpen.set(true);
+
+    // Detect file type via magic bytes for guaranteed accuracy
+    try {
+      const res = await fetch(finalUrl, { headers: { 'Range': 'bytes=0-3' } });
+      const buffer = await res.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      // PDF magic: %PDF
+      if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+        this.docViewerType.set('pdf');
+      // JPEG magic
+      } else if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+        this.docViewerType.set('image');
+      // PNG magic
+      } else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+        this.docViewerType.set('image');
+      // GIF magic
+      } else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+        this.docViewerType.set('image');
+      } else {
+        const cType = res.headers.get('content-type') || '';
+        if (cType.includes('pdf')) this.docViewerType.set('pdf');
+        else if (cType.includes('image')) this.docViewerType.set('image');
+      }
+    } catch (e) {
+      // Fallback: heuristics
+      const lowerUrl = finalUrl.toLowerCase();
+      const lowerName = (name || '').toLowerCase();
+      if (lowerUrl.includes('.pdf') || lowerUrl.includes('pdf')) {
+        this.docViewerType.set('pdf');
+      } else if (lowerUrl.match(/\.(jpg|jpeg|png|gif|webp)/) || lowerName.includes('photo') || lowerName.includes('signature') || lowerName.includes('aadhar') || lowerName.includes('pan')) {
+        this.docViewerType.set('image');
+      }
+    }
+
+    this.docViewerSrc = finalUrl;
+    this.isDocViewerLoading.set(false);
   }
 
   closeDocViewer() {
     this.isDocViewerOpen.set(false);
+    this.isDocViewerLoading.set(false);
     this.docViewerSrc = '';
     this.docViewerName = '';
+    this.docViewerType.set('');
   }
 
   forceDownload(event: Event) {
@@ -369,12 +411,14 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   paymentOcrVerifiedToAdd: boolean = false;
   paymentTimestampToAdd: string = '';
   isOcrProcessingForPayment = signal<boolean>(false);
+  ocrMessageForPayment = signal<string>('');
 
   openAddPayment() {
     this.paymentAmountToAdd = 0;
     this.paymentTidToAdd = 'Manual Entry';
     this.paymentOcrVerifiedToAdd = false;
     this.paymentTimestampToAdd = new Date().toISOString();
+    this.ocrMessageForPayment.set('');
     this.isAddingPayment.set(true);
   }
 
@@ -387,6 +431,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (!file) return;
 
     this.isOcrProcessingForPayment.set(true);
+    this.ocrMessageForPayment.set('Processing image...');
 
     try {
       const details = await this.ocrService.extractPaymentDetails(file, this.systemBankSettings());
@@ -404,8 +449,15 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       }
 
       this.paymentOcrVerifiedToAdd = details.isVerified;
+
+      if (details.isVerified) {
+        this.ocrMessageForPayment.set('Verified: Bank match found!');
+      } else {
+        this.ocrMessageForPayment.set('Warning: Bank match not found.');
+      }
     } catch (err) {
       console.error('OCR Error:', err);
+      this.ocrMessageForPayment.set('OCR Failed. Please enter manually.');
     } finally {
       this.isOcrProcessingForPayment.set(false);
       // Reset input
