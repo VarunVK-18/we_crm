@@ -78,7 +78,24 @@ const updateSettings = async (req, res) => {
   }
 };
 
+const getBankSettings = async (req, res) => {
+  try {
+    const companyId = req.user.company_id;
+    if (!companyId) {
+      return res.status(400).json({ success: false, message: 'User is not linked to any company' });
+    }
+    const company = await Company.findById(companyId);
+    if (!company) {
+      return res.status(404).json({ success: false, message: 'Company not found' });
+    }
+    res.status(200).json({ success: true, settings: company.settings?.bank_details || {} });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getSettings,
-  updateSettings
+  updateSettings,
+  getBankSettings
 };

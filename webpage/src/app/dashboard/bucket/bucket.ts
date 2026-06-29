@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -33,13 +33,68 @@ export class BucketComponent implements OnInit {
   advanceAmountPaid = signal<number | null>(null);
   directorCount = signal<number | null>(null);
 
+  dealAmountStr = signal<string>('');
+  advanceAmountStr = signal<string>('');
+
+  onDealAmountChange(val: string) {
+    const numeric = val.replace(/[^0-9]/g, '');
+    if (numeric) {
+      this.dealClosedAmount.set(parseInt(numeric, 10));
+      this.dealAmountStr.set(new Intl.NumberFormat('en-IN').format(parseInt(numeric, 10)));
+    } else {
+      this.dealClosedAmount.set(null);
+      this.dealAmountStr.set('');
+    }
+  }
+
+  onAdvanceAmountChange(val: string) {
+    const numeric = val.replace(/[^0-9]/g, '');
+    if (numeric) {
+      this.advanceAmountPaid.set(parseInt(numeric, 10));
+      this.advanceAmountStr.set(new Intl.NumberFormat('en-IN').format(parseInt(numeric, 10)));
+    } else {
+      this.advanceAmountPaid.set(null);
+      this.advanceAmountStr.set('');
+    }
+  }
+
   // OCR State
   isOcrProcessing = signal<boolean>(false);
   ocrMessage = signal<string>('');
   isOcrVerified = signal<boolean>(false);
   transactionId = signal<string>('');
   paymentTimestamp = signal<string>('');
+
+  isAcceptFormValid = computed(() => {
+    if (!this.selectedTeamId()) return false;
+    if (this.requiresDirectorCount() && (!this.directorCount() || this.directorCount()! < 1)) return false;
+    
+    const dealAmount = Number(this.dealClosedAmount());
+    if (isNaN(dealAmount) || dealAmount <= 0) return false;
+
+    const advanceAmount = Number(this.advanceAmountPaid());
+    if (isNaN(advanceAmount) || advanceAmount <= 0) return false;
+
+    if (advanceAmount > dealAmount) return false;
+
+    if (!this.isOcrVerified()) return false;
+
+    return true;
+  });
   systemBankSettings = signal<any>(null);
+
+  requiresDirectorCount = computed(() => {
+    const req = this.selectedBucketReq();
+    if (!req) return false;
+    const name = req.service_name?.toLowerCase() || '';
+    return name.includes('private limited') || 
+           name.includes('incorp') ||
+           name.includes('llp') || 
+           name.includes('opc') || 
+           name.includes('mca') || 
+           name.includes('digital signature') ||
+           name.includes('dsc');
+  });
 
   ngOnInit() {
     const saved = localStorage.getItem('user');
@@ -117,6 +172,16 @@ export class BucketComponent implements OnInit {
   closeAcceptModal() {
     this.isAcceptModalOpen.set(false);
     this.selectedBucketReq.set(null);
+    this.selectedTeamId.set('');
+    this.dealClosedAmount.set(null);
+    this.advanceAmountPaid.set(null);
+    this.directorCount.set(null);
+    this.dealAmountStr.set('');
+    this.advanceAmountStr.set('');
+    this.ocrMessage.set('');
+    this.isOcrVerified.set(false);
+    this.transactionId.set('');
+    this.paymentTimestamp.set('');
   }
 
   async handleOcrUpload(event: any) {
@@ -130,7 +195,9 @@ export class BucketComponent implements OnInit {
       const details = await this.ocrService.extractPaymentDetails(file, this.systemBankSettings());
 
       if (details.amount) {
-        this.advanceAmountPaid.set(Number(details.amount));
+        const amt = Number(details.amount);
+        this.advanceAmountPaid.set(amt);
+        this.advanceAmountStr.set(new Intl.NumberFormat('en-IN').format(amt));
       }
       
       if (details.transactionId) {
@@ -167,8 +234,25 @@ export class BucketComponent implements OnInit {
       return;
     }
 
-    const dealAmount = Number(this.dealClosedAmount()) || 0;
-    const advanceAmount = Number(this.advanceAmountPaid()) || 0;
+    if (this.requiresDirectorCount()) {
+      const count = this.directorCount();
+      if (count === null || count === undefined || count < 1) {
+        alert('Please enter a valid Director/Partner Count.');
+        return;
+      }
+    }
+
+    const dealAmount = Number(this.dealClosedAmount());
+    if (isNaN(dealAmount) || dealAmount <= 0) {
+      alert('Please enter a valid Deal Closed Amount. It must be greater than 0.');
+      return;
+    }
+
+    const advanceAmount = Number(this.advanceAmountPaid());
+    if (isNaN(advanceAmount) || advanceAmount <= 0) {
+      alert('Please enter a valid Advance Amount Paid. It must be greater than 0.');
+      return;
+    }
 
     if (advanceAmount > dealAmount) {
       alert('Advance amount cannot exceed Deal Closed amount!');

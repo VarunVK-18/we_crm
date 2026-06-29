@@ -25,8 +25,9 @@ export class OcrService {
     const formData = new FormData();
     formData.append('image', file);
     
-    // We can also pass bankSettings if we want the backend prompt to use it,
-    // but the backend handles standard JSON extraction generically well.
+    if (bankSettings) {
+      formData.append('bankSettings', JSON.stringify(bankSettings));
+    }
 
     try {
       // Use the new backend Gemini OCR route

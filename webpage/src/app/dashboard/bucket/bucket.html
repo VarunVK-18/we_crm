@@ -231,24 +231,24 @@
         }
       </div>
 
-      <div class="form-row-grid">
-        <div class="form-group-item">
-          <label class="form-input-label">Deal Closed Amount (INR)</label>
-          <input type="number" class="form-control-input" placeholder="0" [(ngModel)]="dealClosedAmount" min="0" />
+      @if (requiresDirectorCount()) {
+        <div class="form-group-item" style="margin-top: 16px;">
+          <label class="form-input-label">Director/Partner Count *</label>
+          <input type="number" class="form-control-input" placeholder="1" [(ngModel)]="directorCount" min="1" />
         </div>
-        <div class="form-group-item">
-          <label class="form-input-label">Director Count (Optional)</label>
-          <input type="number" class="form-control-input" placeholder="0" [(ngModel)]="directorCount" min="0" />
-        </div>
+      }
+
+      <div class="form-group-item" style="margin-top: 16px;">
+        <label class="form-input-label">Deal Closed Amount (INR) *</label>
+        <input type="text" class="form-control-input" placeholder="0" [ngModel]="dealAmountStr()" (ngModelChange)="onDealAmountChange($event)" />
       </div>
 
-      <div class="form-row-grid">
-        <div class="form-group-item" style="grid-column: span 2;">
-          <label class="form-input-label">Advance Amount Paid (INR)</label>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; gap: 8px; width: 100%;">
-              <input type="number" class="form-control-input" placeholder="0" [(ngModel)]="advanceAmountPaid" min="0"
-                style="flex: 1; width: 100%;" />
+      <div class="form-group-item" style="margin-top: 16px;">
+        <label class="form-input-label">Advance Amount Paid (INR) *</label>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <input type="text" class="form-control-input" placeholder="0" [ngModel]="advanceAmountStr()" (ngModelChange)="onAdvanceAmountChange($event)"
+              style="flex: 1; width: 100%;" />
 
               <!-- OCR Upload Button -->
               <div
@@ -289,12 +289,11 @@
             </div>
           </div>
         </div>
-      </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
         <button class="btn-decline-sm" (click)="closeAcceptModal()">Cancel</button>
         <button class="btn-claim-sm" (click)="confirmAccept()"
-          [disabled]="claimingId() === selectedBucketReq()?._id || bucketTeams().length === 0">
+          [disabled]="claimingId() === selectedBucketReq()?._id || bucketTeams().length === 0 || !isAcceptFormValid()">
           {{ claimingId() === selectedBucketReq()?._id ? 'Accepting...' : 'Confirm & Accept' }}
         </button>
       </div>

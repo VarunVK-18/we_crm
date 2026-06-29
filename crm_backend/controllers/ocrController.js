@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const Company = require('../models/Company');
 
 // Utility to get the next working key
 const getWorkingKey = async (prompt, imagePart) => {
@@ -50,6 +51,27 @@ const extractPaymentDetails = async (req, res) => {
       },
     };
 
+    const bankSettingsRaw = req.body.bankSettings;
+    let parsedBankSettings = null;
+    if (bankSettingsRaw) {
+      try {
+        parsedBankSettings = JSON.parse(bankSettingsRaw);
+      } catch (e) { /* Handle gracefully */ }
+    }
+
+    // Fallback: fetch directly from DB if not passed from frontend
+    if (!parsedBankSettings && req.user && req.user.company_id) {
+      try {
+        const company = await Company.findById(req.user.company_id);
+        if (company && company.settings && company.settings.bank_details) {
+          parsedBankSettings = company.settings.bank_details;
+          console.log('[OCR] Loaded bank settings from DB:', JSON.stringify(parsedBankSettings));
+        }
+      } catch (e) { /* Handle gracefully */ }
+    } else if (parsedBankSettings) {
+      console.log('[OCR] Using bank settings from request body:', JSON.stringify(parsedBankSettings));
+    }
+
     const prompt = `You are an expert OCR AI that extracts payment details from receipts or screenshots. 
 Extract the following information and return ONLY a valid JSON object with no markdown formatting or extra text:
 {
@@ -73,6 +95,35 @@ If a field is not found, set it to null.`;
     let cleanJsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
     const details = JSON.parse(cleanJsonText);
 
+    let isBankMatched = false;
+    
+    console.log('[OCR] Extracted from receipt:', JSON.stringify({ upiId: details.upiId, accountLastFour: details.accountLastFour, transactionId: details.transactionId }));
+    console.log('[OCR] parsedBankSettings available:', !!parsedBankSettings);
+
+    if (parsedBankSettings && (details.upiId || details.accountLastFour)) {
+      const receiptUpi = (details.upiId || '').toLowerCase().trim();
+      const receiptAcc = (details.accountLastFour || '').trim();
+      
+      const savedSavingsUpi = (parsedBankSettings.savings_upi_id || '').toLowerCase().trim();
+      const savedCurrentUpi = (parsedBankSettings.current_upi_id || '').toLowerCase().trim();
+      const savedSavingsAcc = (parsedBankSettings.savings_account_last_four || '').trim();
+      const savedCurrentAcc = (parsedBankSettings.current_account_last_four || '').trim();
+      
+      if (receiptUpi) {
+        if ((savedSavingsUpi && receiptUpi.includes(savedSavingsUpi)) || 
+            (savedCurrentUpi && receiptUpi.includes(savedCurrentUpi))) {
+          isBankMatched = true;
+        }
+      }
+      
+      if (!isBankMatched && receiptAcc) {
+        if ((savedSavingsAcc && receiptAcc.includes(savedSavingsAcc)) || 
+            (savedCurrentAcc && receiptAcc.includes(savedCurrentAcc))) {
+          isBankMatched = true;
+        }
+      }
+    }
+
     res.json({
       success: true,
       data: {
@@ -82,7 +133,7 @@ If a field is not found, set it to null.`;
         upiId: details.upiId,
         accountLastFour: details.accountLastFour,
         rawText: cleanJsonText, // Kept for debugging/compatibility
-        isVerified: details.amount !== null && details.transactionId !== null
+        isVerified: details.amount !== null && details.transactionId !== null && isBankMatched
       }
     });
   } catch (error) {
