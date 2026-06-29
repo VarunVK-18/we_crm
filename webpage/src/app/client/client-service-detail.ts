@@ -409,7 +409,16 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   getCompletedList(items: any[] | undefined): any[] {
     if (!items) return [];
-    return items.filter(i => i.isChecked);
+    return items.filter(i => this.isItemCompleted(i));
+  }
+
+  isItemCompleted(item: any): boolean {
+    if (item.isChecked) return true;
+    if (item.isActionStep) {
+      const details = this.order()?.details;
+      return details && Object.keys(details).length > 0;
+    }
+    return false;
   }
 
   isPaymentPending(): boolean {

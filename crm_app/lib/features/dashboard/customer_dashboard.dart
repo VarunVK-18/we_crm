@@ -237,13 +237,10 @@ class CustomerDashboard extends ConsumerWidget {
                       'IE code',
                       'LEI',
                       'BIS',
-                      'ROSH & CE'
+                      'ROSH & CE',
+                      'Individual DSC',
+                      'Organization DSC'
                     ],
-                  },
-                  {
-                    'label': 'Others',
-                    'icon': HugeIcons.strokeRoundedMoreHorizontal,
-                    'subItems': ['Individual DSC', 'Organization DSC'],
                   },
                 ],
               ),
@@ -260,7 +257,7 @@ class CustomerDashboard extends ConsumerWidget {
                 items: [
                   {'label': 'NIC Finder', 'icon': LucideIcons.binary},
                   {'label': 'Trade Mark Class', 'icon': HugeIcons.strokeRoundedLicense},
-                  {'label': 'GST Calc', 'icon': LucideIcons.calculator},
+                  {'label': 'GST Calculator', 'icon': LucideIcons.calculator},
                   {'label': 'Compliance Calendar', 'icon': LucideIcons.calendar},
                 ],
               ),
@@ -686,7 +683,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
         ),
       ),
       child: Padding(
-        padding: EdgeInsets.all(20.r),
+        padding: EdgeInsets.all(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -739,7 +736,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                 ),
               ],
             ),
-            SizedBox(height: 16.r),
+            SizedBox(height: 12.r),
             Text(
               banner.subtitle.isNotEmpty ? banner.subtitle : 'Check out the latest updates and offers from Wealth Empires.',
               style: TextStyle(
@@ -751,9 +748,15 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
               overflow: TextOverflow.ellipsis,
             ),
             if (banner.targetUrl.isNotEmpty || banner.buttonText.isNotEmpty) ...[
-              SizedBox(height: 16.r),
+              SizedBox(height: 12.r),
               GestureDetector(
                 onTap: () async {
+                  try {
+                    http.post(Uri.parse('$kBaseUrl/api/banners/${banner.id}/click')).catchError((_) => http.Response('', 200));
+                  } catch (e) {
+                    // Ignore tracking errors
+                  }
+                  
                   if (banner.targetUrl.isNotEmpty) {
                     String url = banner.targetUrl;
                     if (url.startsWith('/')) {
@@ -775,7 +778,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                 },
                 child: Container(
                   width: double.infinity,
-                  padding: EdgeInsets.symmetric(vertical: 12.r),
+                  padding: EdgeInsets.symmetric(vertical: 10.r),
                   decoration: BoxDecoration(
                     color: banner.theme == 'light' || banner.theme == 'amber' ? const Color(0xFF1F2937) : Colors.white,
                     borderRadius: BorderRadius.circular(12.r),
@@ -1047,7 +1050,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              order.actionRequired ? 'ACTION REQUIRED' : (order.stage == OrderStage.reqReceived ? 'TO BE ASSIGNED' : 'ACTIVE SERVICE TRACKER'),
+                              order.isReallyActionRequired ? 'ACTION REQUIRED' : (order.stage == OrderStage.reqReceived ? 'TO BE ASSIGNED' : 'ACTIVE SERVICE TRACKER'),
                               style: Theme.of(context)
                                   .textTheme
                                   .labelLarge

@@ -160,11 +160,6 @@ class _SearchScreenState extends State<SearchScreen> {
       'icon': HugeIcons.strokeRoundedCalendar01,
       'category': 'Tools',
     },
-    {
-      'label': 'Income Tax Calculator',
-      'icon': HugeIcons.strokeRoundedCalculator,
-      'category': 'Tools',
-    },
   ];
 
   List<Map<String, dynamic>> get _filteredItems {

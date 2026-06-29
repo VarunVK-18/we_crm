@@ -89,9 +89,9 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
     var activeList = fullActiveList;
     if (_activeFilter == 'Action Required') {
-      activeList = activeList.where((o) => o.actionRequired).toList();
+      activeList = activeList.where((o) => o.isReallyActionRequired).toList();
     } else if (_activeFilter == 'In Progress') {
-      activeList = activeList.where((o) => !o.actionRequired).toList();
+      activeList = activeList.where((o) => !o.isReallyActionRequired).toList();
     }
 
     if (_searchQuery.isNotEmpty) {
@@ -649,7 +649,7 @@ class _ServiceCard extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    if (order.actionRequired && isActive)
+                    if (order.isReallyActionRequired && isActive)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 10,

@@ -567,49 +567,8 @@ const getMyChecklists = async (req, res) => {
       let modifiedItems = c.items || [];
 
       if (requiresForm) {
-        // Let's check if the form has been filled by looking at details
         let isFormFilled = false;
-        if (serviceNameLower.includes('dpiit') && c.details && c.details.dpiitForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('private limited') && c.details && c.details.companyName) {
-            isFormFilled = true;
-        } else if ((serviceNameLower.includes('trademark') || serviceNameLower.includes('trade mark') || serviceNameLower.includes('copyright')) && c.details && c.details.trademarkForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('llp') && c.details && c.details.llpForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('msme') && c.details && c.details.msmeForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('gst filing') && c.details && c.details.gstFilingForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('gst cancellation') && c.details && c.details.gstCancellationForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('gst compliance') && c.details && c.details.gstComplianceForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('gst') && c.details && c.details.gstForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('iso') && c.details && c.details.isoForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('fssai') && c.details && c.details.fssaiForm) {
-            isFormFilled = true;
-        } else if ((serviceNameLower.includes('one person company') || serviceNameLower.includes('opc')) && c.details && c.details.opcForm) {
-            isFormFilled = true;
-        } else if ((serviceNameLower.includes('lei') || serviceNameLower.includes('lie')) && c.details && (c.details.leiForm || c.details.lieForm)) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('bis') && c.details && c.details.bisForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('mca') && c.details && c.details.mcaForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('dsc') && c.details && c.details.dscForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('iec') && c.details && c.details.iecForm) {
-            isFormFilled = true;
-        } else if (serviceNameLower.includes('proprietorship') && c.details && c.details.proprietorshipForm) {
-            isFormFilled = true;
-        } else if ((serviceNameLower.includes('tds') || serviceNameLower.includes('pan, tan') || serviceNameLower.includes('itr')) && c.details && c.details.tdsForm) {
-            isFormFilled = true;
-        } else if ((serviceNameLower.includes('pf registration') || serviceNameLower.includes('pf')) && c.details && c.details.pfForm) {
-            isFormFilled = true;
-        } else if ((serviceNameLower.includes('patent registration') || serviceNameLower.includes('patent')) && c.details && c.details.patentForm) {
+        if (c.details && Object.keys(c.details).length > 0) {
             isFormFilled = true;
         }
 

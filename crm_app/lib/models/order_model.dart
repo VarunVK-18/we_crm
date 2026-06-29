@@ -195,6 +195,13 @@ class ServiceOrder {
     return done / steps.length;
   }
 
+  bool get isReallyActionRequired {
+    if (!actionRequired) return false;
+    final needsDocUpload = requestedDocuments.any((doc) => !doc.isUploaded);
+    if (details.isNotEmpty && !needsDocUpload) return false;
+    return true;
+  }
+
   bool get isPaymentPending {
     final isCompleted = status == ServiceStatus.complete ||
         (steps.isNotEmpty && steps.where((s) => s.isCompleted).length == steps.length);

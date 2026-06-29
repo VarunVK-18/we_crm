@@ -12,6 +12,11 @@ interface Banner {
   imageUrl: string;
   targetUrl: string;
   isActive: boolean;
+  startDate?: string;
+  endDate?: string;
+  targetAudience?: string;
+  priority?: number;
+  clickCount?: number;
   createdAt: string;
 }
 
@@ -32,8 +37,13 @@ export class BannerManagement implements OnInit {
   newBannerButtonText = '';
   newBannerTheme = 'purple';
   newBannerTargetUrl = '';
+  newBannerStartDate = '';
+  newBannerEndDate = '';
+  newBannerTargetAudience = 'All';
+  newBannerPriority = 0;
   newBannerImage: File | null = null;
   isUploading = false;
+  previewUrl: string | null = null;
 
   constructor(public api: Api) {}
 
@@ -60,6 +70,11 @@ export class BannerManagement implements OnInit {
     const file = event.target.files[0];
     if (file) {
       this.newBannerImage = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
   }
 
@@ -75,6 +90,10 @@ export class BannerManagement implements OnInit {
     formData.append('buttonText', this.newBannerButtonText);
     formData.append('theme', this.newBannerTheme);
     formData.append('targetUrl', this.newBannerTargetUrl);
+    if (this.newBannerStartDate) formData.append('startDate', this.newBannerStartDate);
+    if (this.newBannerEndDate) formData.append('endDate', this.newBannerEndDate);
+    formData.append('targetAudience', this.newBannerTargetAudience);
+    formData.append('priority', this.newBannerPriority.toString());
     formData.append('file', this.newBannerImage);
     
     this.api.post<any>('banners', formData).subscribe({
@@ -86,7 +105,12 @@ export class BannerManagement implements OnInit {
           this.newBannerButtonText = '';
           this.newBannerTheme = 'purple';
           this.newBannerTargetUrl = '';
+          this.newBannerStartDate = '';
+          this.newBannerEndDate = '';
+          this.newBannerTargetAudience = 'All';
+          this.newBannerPriority = 0;
           this.newBannerImage = null;
+          this.previewUrl = null;
           // Reset file input via DOM if needed, but Angular binding might handle it or we can ignore
         }
         this.isUploading = false;

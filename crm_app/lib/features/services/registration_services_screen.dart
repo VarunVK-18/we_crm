@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import 'service_detail_screen.dart';
@@ -153,7 +154,7 @@ class _RegistrationServicesScreenState
     {
       'title': 'ITR',
       'description': 'Income Tax Return filing for individuals and businesses.',
-      'icon': HugeIcons.strokeRoundedRupeeSquare,
+      'icon': 'assets/icons/itr.svg',
       'color': const Color(0xFF8B5CF6),
       'category': 'Tax',
       'features': ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support'],
@@ -217,13 +218,12 @@ class _RegistrationServicesScreenState
       'features': ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation'],
     },
 
-    // --- Others ---
     {
       'title': 'DSC',
       'description': 'Digital Signature Certificate for individuals & organizations.',
       'icon': LucideIcons.usb,
       'color': const Color(0xFF8B5CF6),
-      'category': 'Others',
+      'category': 'Licensing',
       'features': ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity'],
     }
   ];
@@ -447,7 +447,6 @@ class _RegistrationServicesScreenState
                           'IP',
                           'Tax',
                           'Licensing',
-                          'Others',
                         ].map((label) {
                           return _ServiceChip(
                             label: label,
@@ -627,9 +626,11 @@ class _ComplianceListCard extends StatelessWidget {
                     color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: icon is IconData
-                      ? Icon(icon as IconData, color: color, size: 28.ip)
-                      : HugeIcon(icon: icon, color: color, size: 28.ip),
+                  child: icon is String
+                      ? SvgPicture.asset(icon as String, colorFilter: ColorFilter.mode(color, BlendMode.srcIn), width: 28.ip, height: 28.ip)
+                      : icon is IconData
+                          ? Icon(icon as IconData, color: color, size: 28.ip)
+                          : HugeIcon(icon: icon, color: color, size: 28.ip),
                 ),
                 SizedBox(width: 16.r),
                 Expanded(

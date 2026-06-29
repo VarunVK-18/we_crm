@@ -120,7 +120,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   }
 
   void _initializeDefaults() {
-    if (widget.toolName == 'GST Calc') {
+    if (widget.toolName == 'GST Calculator') {
       _rateController.text = '18';
     } else if (widget.toolName == 'GST Interest') {
       _rateController.text = '18';
@@ -413,13 +413,13 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInputLabel(widget.toolName == 'GST Calc' ? 'Rate (%)' : 'Rate (%) p.a.'),
+                  _buildInputLabel(widget.toolName == 'GST Calculator' ? 'Rate (%)' : 'Rate (%) p.a.'),
                   _buildTextField(_rateController, 'e.g. 18', LucideIcons.percent, focusNode: _rateFocus),
                 ],
               ),
             ),
             const SizedBox(width: 16),
-            if (widget.toolName != 'GST Calc')
+            if (widget.toolName != 'GST Calculator')
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -914,7 +914,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                widget.toolName == 'GST Calc' ? 'Total Payable' : 'Interest Amount',
+                widget.toolName == 'GST Calculator' ? 'Total Payable' : 'Interest Amount',
                 style: GoogleFonts.outfit(
                   color: Colors.white.withOpacity(0.7),
                   fontWeight: FontWeight.w600,

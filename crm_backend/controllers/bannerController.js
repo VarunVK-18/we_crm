@@ -11,9 +11,16 @@ const getBanners = async (req, res) => {
     const filter = {};
     if (req.query.all !== 'true') {
       filter.isActive = true;
+      const now = new Date();
+      filter.$or = [
+        { startDate: null, endDate: null },
+        { startDate: { $lte: now }, endDate: { $gte: now } },
+        { startDate: { $lte: now }, endDate: null },
+        { startDate: null, endDate: { $gte: now } }
+      ];
     }
     
-    const banners = await Banner.find(filter).sort({ createdAt: -1 });
+    const banners = await Banner.find(filter).sort({ priority: -1, createdAt: -1 });
     res.json({ success: true, count: banners.length, banners });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -25,7 +32,7 @@ const getBanners = async (req, res) => {
 // @access  Private (Admin)
 const createBanner = async (req, res) => {
   try {
-    const { title, targetUrl, isActive, theme, subtitle, buttonText } = req.body;
+    const { title, targetUrl, isActive, theme, subtitle, buttonText, startDate, endDate, targetAudience, priority } = req.body;
     
     if (!title) {
       return res.status(400).json({ success: false, message: 'Title is required' });
@@ -51,6 +58,10 @@ const createBanner = async (req, res) => {
       theme: theme || 'light',
       subtitle: subtitle || '',
       buttonText: buttonText || 'Learn More',
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
+      targetAudience: targetAudience || 'All',
+      priority: priority ? parseInt(priority, 10) : 0,
       isActive: isActive !== undefined ? isActive === 'true' || isActive === true : true,
       imageUrl,
       createdBy: req.user._id
@@ -67,7 +78,7 @@ const createBanner = async (req, res) => {
 // @access  Private (Admin)
 const updateBanner = async (req, res) => {
   try {
-    const { title, targetUrl, isActive, theme, subtitle, buttonText } = req.body;
+    const { title, targetUrl, isActive, theme, subtitle, buttonText, startDate, endDate, targetAudience, priority } = req.body;
     const banner = await Banner.findById(req.params.id);
 
     if (!banner) {
@@ -80,6 +91,10 @@ const updateBanner = async (req, res) => {
     if (theme !== undefined) banner.theme = theme;
     if (subtitle !== undefined) banner.subtitle = subtitle;
     if (buttonText !== undefined) banner.buttonText = buttonText;
+    if (startDate !== undefined) banner.startDate = startDate ? new Date(startDate) : null;
+    if (endDate !== undefined) banner.endDate = endDate ? new Date(endDate) : null;
+    if (targetAudience !== undefined) banner.targetAudience = targetAudience;
+    if (priority !== undefined) banner.priority = parseInt(priority, 10);
 
     if (req.files && req.files.length > 0) {
       const f = req.files[0];
@@ -117,9 +132,27 @@ const deleteBanner = async (req, res) => {
   }
 };
 
+// @desc    Increment click count
+// @route   POST /api/banners/:id/click
+// @access  Public
+const incrementClick = async (req, res) => {
+  try {
+    const banner = await Banner.findById(req.params.id);
+    if (!banner) {
+      return res.status(404).json({ success: false, message: 'Banner not found' });
+    }
+    banner.clickCount = (banner.clickCount || 0) + 1;
+    await banner.save();
+    res.json({ success: true, clickCount: banner.clickCount });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getBanners,
   createBanner,
   updateBanner,
-  deleteBanner
+  deleteBanner,
+  incrementClick
 };
