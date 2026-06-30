@@ -221,9 +221,14 @@ export class DpiitForm implements OnInit {
   }
 
   submitForm() {
-    if (!this.website || !this.brief || !this.directorDetails || !this.industry || !this.sector || !this.address ||
+    if (!this.brief || !this.directorDetails || !this.industry || !this.sector || !this.address ||
         !this.authDetails || !this.employees || !this.ipr || !this.problem || !this.solution || !this.uniqueness || !this.revenue) {
       this.errorMessage.set('Please fill out all required fields.');
+      return;
+    }
+
+    if (this.brief && this.brief.length > 500) {
+      this.errorMessage.set('Brief about Company cannot exceed 500 characters.');
       return;
     }
 

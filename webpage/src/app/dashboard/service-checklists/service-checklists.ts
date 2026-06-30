@@ -140,6 +140,18 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     });
   }
 
+  hasPendingPayment(c: any): boolean {
+    const dealClosed = c.dealClosedAmount || 0;
+    const paid = c.advanceAmountPaid || 0;
+    return dealClosed > paid;
+  }
+
+  getPendingPaymentAmount(c: any): number {
+    const dealClosed = c.dealClosedAmount || 0;
+    const paid = c.advanceAmountPaid || 0;
+    return Math.max(0, dealClosed - paid);
+  }
+
   filteredChecklists() {
     const all = this.checklists();
     const tab = this.currentDirectoryTab();
@@ -154,7 +166,9 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     } else if (tab === 'in_progress') {
       filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress');
     } else if (tab === 'completed') {
-      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed');
+      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && this.hasPendingPayment(c));
+    } else if (tab === 'final_delivered') {
+      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && !this.hasPendingPayment(c));
     }
     
     if (query) {
@@ -249,6 +263,13 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   }
 
   toggleChecklistItem(checklistId: string, itemIndex: number) {
+    const cl = this.checklists().find((c: any) => c._id === checklistId);
+    if (cl && itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked) {
+      if (!cl.final_documents || cl.final_documents.length === 0) {
+        alert('Please upload the final document(s) before completing the final step.');
+        return;
+      }
+    }
     this.api.patch<any>(`checklists/${checklistId}/items/${itemIndex}`, {}).subscribe({
       next: (res) => {
         this.fetchChecklists();

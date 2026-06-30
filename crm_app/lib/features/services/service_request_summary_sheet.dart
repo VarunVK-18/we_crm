@@ -156,24 +156,7 @@ class _ServiceRequestSummarySheetState
   }
 
   bool get _isTwoStepForm {
-    final servicesWithCustomForms = [
-      'LLP Incorporation',
-      'Private Limited Incorporation',
-      'Trade Mark',
-      'Trademark Registration',
-      'DPIIT',
-      'DPIIT Startup India Certification',
-      'MSME',
-      'MSME Certification',
-      'GST',
-      'GST Registration',
-      'ISO',
-      'ISO Registration',
-      'FSSAI',
-      'FSSAI Registration'
-      '360° Compliance'
-    ];
-    return !servicesWithCustomForms.any((s) => widget.packageName.contains(s));
+    return false;
   }
 
   // Define required documents based on service
@@ -627,6 +610,20 @@ class _ServiceRequestSummarySheetState
           'type': 'error',
           'header': 'Service Already Requested',
           'message': 'Service request already done wait for manager approval'
+        };
+      }
+
+      bool isCompletedDuplicate = ordersState.value?.any((o) =>
+              o.serviceType == reqService &&
+              o.entityName == _selectedEntity &&
+              (o.status == 'completed' || o.status == 'complete')) ??
+          false;
+
+      if (isCompletedDuplicate) {
+        return {
+          'type': 'error',
+          'header': 'Service Already Completed',
+          'message': 'This service is already completed for your entity.'
         };
       }
 
@@ -1301,15 +1298,99 @@ class _ServiceRequestSummarySheetState
     return [
       if (widget.packageName == 'Private Limited Incorporation')
         ..._buildPrivateLimitedForm(),
-      if (widget.packageName == 'Trademark Registration')
+      if (widget.packageName == 'OPC')
+        ..._buildOpcForm(),
+      if (widget.packageName == 'Proprietorship')
+        ..._buildProprietorshipForm(),
+      if (widget.packageName == 'Trade Mark' || widget.packageName == 'Trademark Registration')
         ..._buildTrademarkForm(),
-      if (widget.packageName == 'MSME Certification') ..._buildMsmeForm(),
+      if (widget.packageName == 'MSME' || widget.packageName == 'MSME Certification') ..._buildMsmeForm(),
       if (widget.packageName == 'DUNS Number Registration') ..._buildDunsForm(),
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
-      if (widget.packageName == 'FSSAI Food License') ..._buildFssaiForm(),
+      if (widget.packageName == 'FSSAI' || widget.packageName == 'FSSAI Food License') ..._buildFssaiForm(),
       if (widget.packageName == 'GST Compliance' || widget.packageName == 'MCA Compliance') ..._buildComplianceForm(),
     ];
   }
+
+  List<Widget> _buildOpcForm() {
+    return [
+      Text('OPC Incorporation Details',
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Company name',
+          controller: _companyNameController,
+          icon: LucideIcons.building,
+          hint: 'Proposed Company Name',
+          isRequired: true,
+          validator: _validateCompanyName),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Company phone number',
+          controller: _companyPhoneController,
+          icon: LucideIcons.phone,
+          hint: '10 digit number',
+          keyboardType: TextInputType.phone,
+          maxLength: 10,
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Number of Partners',
+          controller: _numberOfDirectorsController,
+          icon: LucideIcons.users,
+          hint: 'Number of partners/members',
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Business Activities',
+          controller: _businessActivityController,
+          hint: 'Describe the main business activities your company will undertake.',
+          maxLines: 3,
+          isRequired: true),
+      const SizedBox(height: 24),
+    ];
+  }
+
+  List<Widget> _buildProprietorshipForm() {
+    return [
+      Text('Proprietorship Details',
+          style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepTeal)),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Business Name',
+          controller: _companyNameController,
+          icon: LucideIcons.building,
+          hint: 'Proposed Business Name',
+          isRequired: true,
+          validator: _validateCompanyName),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Company Phone Number',
+          controller: _companyPhoneController,
+          icon: LucideIcons.phone,
+          hint: '10 digit number',
+          keyboardType: TextInputType.phone,
+          maxLength: 10,
+          isRequired: true),
+      const SizedBox(height: 20),
+      _EditableField(
+          label: 'Business Activities',
+          controller: _businessActivityController,
+          hint: 'Describe the main business activities.',
+          maxLines: 3,
+          isRequired: true),
+      const SizedBox(height: 24),
+    ];
+  }
+
 
 
   List<Widget> _buildPrivateLimitedForm() {

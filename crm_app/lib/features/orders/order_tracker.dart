@@ -303,11 +303,12 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         return [
                           const Text(
                             'All Entities',
-                            style: TextStyle(fontSize: 14),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                           ),
                           ...entities.map((e) => Text(
                                 e,
-                                style: const TextStyle(fontSize: 14),
+                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               )),
                         ];
@@ -320,7 +321,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                             children: [
                               const Text(
                                 'All Entities',
-                                style: TextStyle(fontSize: 14),
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
                               ),
                               if (selectedEntity == 'All Entities')
                                 const Icon(LucideIcons.check, size: 16, color: AppTheme.deepTeal),
@@ -336,8 +337,9 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                                 Expanded(
                                   child: Text(
                                     e,
-                                    style: const TextStyle(fontSize: 14),
-                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.visible,
                                   ),
                                 ),
                                 if (selectedEntity == e)
@@ -744,7 +746,7 @@ class _ServiceCard extends StatelessWidget {
                     color: AppTheme.deepTeal,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     order.assignedExpert,
@@ -756,7 +758,6 @@ class _ServiceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                // Internal Chat button — visible for active orders
                 if (isActive) ...[
                   GestureDetector(
                     onTap: () => Navigator.push(
@@ -770,39 +771,22 @@ class _ServiceCard extends StatelessWidget {
                       ),
                     ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: AppTheme.corporateBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(30),
+                        shape: BoxShape.circle,
                         border: Border.all(
                           color: AppTheme.corporateBlue.withOpacity(0.3),
                         ),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          HugeIcon(
-                            icon: HugeIcons.strokeRoundedBubbleChat,
-                            size: 14,
-                            color: AppTheme.corporateBlue,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Chat',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.corporateBlue,
-                            ),
-                          ),
-                        ],
+                      child: const HugeIcon(
+                        icon: HugeIcons.strokeRoundedBubbleChat,
+                        size: 16,
+                        color: AppTheme.corporateBlue,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () async {
                       if (order.expertPhone.isNotEmpty) {
@@ -816,35 +800,18 @@ class _ServiceCard extends StatelessWidget {
                       }
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
-                      ),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(30),
+                        shape: BoxShape.circle,
                         border: Border.all(
                           color: Colors.green.withOpacity(0.3),
                         ),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            LucideIcons.phone,
-                            size: 14,
-                            color: Colors.green,
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            'Call',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.green,
-                            ),
-                          ),
-                        ],
+                      child: const Icon(
+                        LucideIcons.phone,
+                        size: 16,
+                        color: Colors.green,
                       ),
                     ),
                   ),
@@ -855,7 +822,7 @@ class _ServiceCard extends StatelessWidget {
                   style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
                 ),
                 if (isActive || isComplete) ...[
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 4),
                   Icon(
                     LucideIcons.chevronRight,
                     size: 16,

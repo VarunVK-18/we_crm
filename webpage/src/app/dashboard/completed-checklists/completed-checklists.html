@@ -12,6 +12,15 @@
     </div>
   </div>
 
+  <!-- Filters -->
+  <div class="filter-pill-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 16px;">
+    <div style="display: flex; gap: 8px;">
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_payment'" (click)="currentDirectoryTab.set('pending_payment')">Pending Payment</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered</button>
+    </div>
+  </div>
+
   <!-- Checklist Cards Grid -->
   @if (isLoading()) {
     <div class="loading-state" style="text-align: center; padding: 60px 0;">
@@ -74,7 +83,12 @@
                 </div>
               </td>
               <td>
-                <span class="status-pill" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
+                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                  <span class="status-pill" [ngClass]="getChecklistStatusClass(cl.status)">{{ cl.status | titlecase }}</span>
+                  @if (hasPendingPayment(cl)) {
+                    <span style="font-size: 11px; font-weight: 600; color: #ef4444; background: #fef2f2; padding: 2px 6px; border-radius: 4px; border: 1px solid #fca5a5;">Pending: ₹{{ getPendingPaymentAmount(cl) }}</span>
+                  }
+                </div>
               </td>
               <td>
                 <button class="action-btn-sm" title="View Details">

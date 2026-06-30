@@ -375,8 +375,8 @@ Widget build(BuildContext context) {
                     ),
                     const SizedBox(height: 16),
 
-                    _buildTextField('Website link *', _websiteCtrl),
-                    _buildTextField('Brief about Company *', _briefCtrl, maxLines: 3),
+                    _buildTextField('Website link (Optional)', _websiteCtrl),
+                    _buildTextField('Brief about Company *', _briefCtrl, maxLines: 3, maxLength: 500),
                     _buildTextField('Director details (Name, email ID, Mobile) *', _directorDetailsCtrl, maxLines: 2),
                     _buildTextField('Industry *', _industryCtrl),
                     _buildTextField('Sector *', _sectorCtrl),

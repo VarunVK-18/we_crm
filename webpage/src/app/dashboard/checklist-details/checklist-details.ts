@@ -373,6 +373,15 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   toggleChecklistItem(itemIndex: number) {
     const cl = this.checklist();
     if (!cl) return;
+
+    // Check if it's the last checkbox and we are trying to check it
+    if (itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked) {
+      // Allow only if there's at least one final document uploaded
+      if (!cl.final_documents || cl.final_documents.length === 0) {
+        alert('Please upload the final document(s) before completing the final step.');
+        return;
+      }
+    }
     this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, {}).subscribe({
       next: () => this.fetchChecklist(),
       error: (err) => alert(err.error?.message || 'Failed to update checklist item.')

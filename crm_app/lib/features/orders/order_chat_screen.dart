@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/orders_provider.dart';
@@ -237,9 +238,23 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
       }
     });
 
-    return Scaffold(
-      backgroundColor: _chatBackgroundColor,
-      appBar: AppBar(
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Container(
+            color: Colors.white,
+            child: Opacity(
+              opacity: 0.20,
+              child: Image.asset(
+                'assets/Chatbackground.png',
+                repeat: ImageRepeat.repeat,
+              ),
+            ),
+          ),
+        ),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         titleSpacing: 0,
@@ -366,10 +381,6 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
           ],
           if (!_isSearching) ...[
             IconButton(
-              icon: const Icon(LucideIcons.palette, color: AppTheme.deepTeal),
-              onPressed: _showThemePicker,
-            ),
-            IconButton(
               icon: const Icon(LucideIcons.search, color: AppTheme.deepTeal),
               onPressed: () {
                 setState(() {
@@ -387,9 +398,10 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
+      body: Container(
+        child: Column(
+          children: [
+            Expanded(
             child: chatState.isLoading && chatState.messages.isEmpty
                 ? const Center(
                     child: CircularProgressIndicator(
@@ -400,7 +412,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                     ? Center(child: Text(chatState.error!))
                     : SingleChildScrollView(
                         controller: _scrollController,
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 20),
                         child: Column(
                           children: [
                             for (int index = 0; index < chatState.messages.length; index++) ...() {
@@ -545,20 +557,26 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                       ),
                     ),
                   const SizedBox(width: 12),
-                  GestureDetector(
-                    onTap: _sendMessage,
-                    child: Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: const BoxDecoration(
-                        color: AppTheme.deepTeal,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        LucideIcons.send,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _messageController,
+                    builder: (context, value, child) {
+                      final isComposing = value.text.trim().isNotEmpty;
+                      return GestureDetector(
+                        onTap: isComposing ? _sendMessage : null,
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: isComposing ? AppTheme.deepTeal : Colors.grey.shade400,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            LucideIcons.send,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -566,9 +584,12 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
           ),
         ),
       ),
-    ],
-  ),
-);
+          ],
+        ),
+      ),
+        ),
+      ],
+    );
   }
 
   List<TextSpan> _buildHighlightedText(String text, String query) {
@@ -755,11 +776,18 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             ),
                             if (isMe) ...[
                               const SizedBox(width: 4),
-                              Icon(
-                                seen ? LucideIcons.checkCheck : LucideIcons.check,
-                                size: 14,
-                                color: seen ? Colors.green : Colors.white.withOpacity(0.7),
-                              ),
+                              seen
+                                  ? HugeIcon(
+                                      icon: HugeIcons.strokeRoundedTickDouble02,
+                                      size: 16,
+                                      color: Colors.green,
+                                    )
+                                  : HugeIcon(
+                                      icon: HugeIcons.strokeRoundedTick02,
+                                      size: 16,
+                                      color: Colors.white.withOpacity(0.7),
+                                    ),
+                              const SizedBox(width: 4),
                             ],
                           ],
                         ),
@@ -772,7 +800,6 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
           ],
         ),
       ),
-          if (isMe) const SizedBox(width: 20),
         ],
       ),
     );

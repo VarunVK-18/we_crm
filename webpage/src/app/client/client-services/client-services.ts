@@ -401,6 +401,20 @@ export class ClientServicesComponent implements OnInit {
       };
     }
 
+    const isCompleted = this.myChecklists().some(c =>
+      c.service_name === reqService &&
+      (c.details?.entityName === finalEntity || (!c.details?.entityName && finalEntity === 'Client')) &&
+      (c.status === 'completed' || c.status === 'complete')
+    );
+
+    if (isCompleted) {
+      return {
+        type: 'error',
+        header: 'Service Already Completed',
+        message: 'This service is already completed for your entity.'
+      };
+    }
+
     if (this.quoteForm.selectedEntity === 'Add New Entity...') return null;
 
     const entityType = this.entityTypesMap.get(this.quoteForm.selectedEntity) || 'Unknown';

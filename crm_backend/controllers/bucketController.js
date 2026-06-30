@@ -80,6 +80,14 @@ const claimBucketRequest = async (req, res) => {
         isChecked: false
       });
     }
+    if (finalItems.length === 1) {
+      finalItems.push({ 
+        title: 'Service Processing & Final Delivery', 
+        description: 'Process the service and upload final documents.', 
+        label: 'Service Processing', 
+        isChecked: false 
+      });
+    }
 
     let custom_service_id = null;
     try {

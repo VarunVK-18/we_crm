@@ -25,6 +25,7 @@ export class CompletedChecklists implements OnInit, OnDestroy {
   clients = signal<any[]>([]);
   pollInterval: any;
   searchQuery = signal<string>('');
+  currentDirectoryTab = signal<string>('all');
 
   // Icon assets
   readonly PlusSignIcon = PlusSignIcon;
@@ -126,8 +127,28 @@ export class CompletedChecklists implements OnInit, OnDestroy {
     });
   }
 
+  hasPendingPayment(c: any): boolean {
+    const dealClosed = c.dealClosedAmount || 0;
+    const paid = c.advanceAmountPaid || 0;
+    return dealClosed > paid;
+  }
+
+  getPendingPaymentAmount(c: any): number {
+    const dealClosed = c.dealClosedAmount || 0;
+    const paid = c.advanceAmountPaid || 0;
+    return Math.max(0, dealClosed - paid);
+  }
+
   filteredChecklists() {
     let list = this.checklists();
+    const tab = this.currentDirectoryTab();
+
+    if (tab === 'pending_payment') {
+      list = list.filter(c => this.hasPendingPayment(c));
+    } else if (tab === 'final_delivered') {
+      list = list.filter(c => !this.hasPendingPayment(c));
+    }
+
     const query = this.searchQuery().toLowerCase().trim();
     if (query) {
       list = list.filter(c => 
@@ -219,6 +240,13 @@ export class CompletedChecklists implements OnInit, OnDestroy {
   }
 
   toggleChecklistItem(checklistId: string, itemIndex: number) {
+    const cl = this.checklists().find((c: any) => c._id === checklistId);
+    if (cl && itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked) {
+      if (!cl.final_documents || cl.final_documents.length === 0) {
+        alert('Please upload the final document(s) before completing the final step.');
+        return;
+      }
+    }
     this.api.patch<any>(`checklists/${checklistId}/items/${itemIndex}`, {}).subscribe({
       next: (res) => {
         this.fetchChecklists();

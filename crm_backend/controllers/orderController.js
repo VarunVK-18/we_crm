@@ -1,6 +1,19 @@
 const ServiceOrder = require('../models/ServiceOrder');
 const User = require('../models/User');
 
+function markClientFormFilled(order) {
+  if (order.items && order.items.length > 0) {
+    if (order.items[0].title === 'Client Form Filling' && !order.items[0].isChecked) {
+      order.items[0].isChecked = true;
+      order.items[0].checkedAt = new Date();
+      if (order.client_id) {
+        order.items[0].checkedBy = order.client_id;
+      }
+      order.markModified('items');
+    }
+  }
+}
+
 // Get all service orders for a user
 exports.getUserOrders = async (req, res) => {
   try {
@@ -62,7 +75,9 @@ exports.updateOrder = async (req, res) => {
         assignedNumberOfDirectors: updateData.assignedNumberOfDirectors
       };
       order.markModified('details');
-      await order.save();
+    markClientFormFilled(order);
+
+    await order.save();
     }
 
     if (updateData.dealClosedAmount) {
@@ -118,6 +133,9 @@ exports.updateOrder = async (req, res) => {
 
         if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
           finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+        }
+        if (finalItems.length === 1) {
+          finalItems.push({ title: 'Service Processing & Final Delivery', description: 'Process the service and upload final documents.', label: 'Service Processing', isChecked: false });
         }
 
         let custom_service_id = null;
@@ -298,6 +316,7 @@ exports.submitDpiitForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -373,6 +392,7 @@ exports.submitIncorpForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -425,6 +445,7 @@ exports.submitTrademarkForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -516,6 +537,7 @@ exports.submitLlpForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -567,6 +589,7 @@ exports.submitMsmeForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -623,6 +646,7 @@ exports.submitGstForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -664,6 +688,7 @@ exports.submitIsoForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -718,6 +743,7 @@ exports.submitleiForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -760,6 +786,7 @@ exports.submitBisForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -816,6 +843,7 @@ exports.submitFssaiForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -892,6 +920,7 @@ exports.submitDscForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -963,6 +992,7 @@ exports.submitMcaForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1025,6 +1055,7 @@ exports.submitGstComplianceForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1072,6 +1103,7 @@ exports.submitProprietorshipForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1117,6 +1149,7 @@ exports.submitTdsForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1164,6 +1197,7 @@ exports.submitPfForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1211,6 +1245,7 @@ exports.submitPatentForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1254,6 +1289,7 @@ exports.submitGstCancellationForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1297,6 +1333,7 @@ exports.submitGstFilingForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
@@ -1342,6 +1379,7 @@ exports.submitIecForm = async (req, res) => {
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
+    markClientFormFilled(order);
 
     await order.save();
 
