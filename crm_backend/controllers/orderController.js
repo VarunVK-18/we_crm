@@ -1,5 +1,6 @@
 const ServiceOrder = require('../models/ServiceOrder');
 const User = require('../models/User');
+const { getNextServiceId } = require('../utils/counterHelper');
 
 function markClientFormFilled(order) {
   if (order.items && order.items.length > 0) {
@@ -207,6 +208,54 @@ exports.updateOrder = async (req, res) => {
             }
           );
           console.log(`Cascaded assignment to ${updated.modifiedCount} checklist(s) for ${order.serviceType}`);
+
+          if (updated.modifiedCount === 0) {
+            // Checklist doesn't exist yet, we must create it!
+            const BucketRequest = require('../models/BucketRequest');
+            const ChecklistTemplate = require('../models/ChecklistTemplate');
+
+            let custom_service_id = null;
+            try { custom_service_id = await getNextServiceId(order.companyId); } catch (e) {}
+
+            let finalItems = [{ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false }];
+            try {
+              const template = await ChecklistTemplate.findOne({ company_id: order.companyId, service_name: order.serviceType });
+              if (template && template.items && template.items.length > 0) {
+                finalItems = template.items.map(item => ({ title: item.title, description: item.description, label: item.title, isChecked: false }));
+                if (finalItems[0].title !== 'Client Form Filling') {
+                   finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+                }
+              }
+            } catch (e) {}
+
+            const checklist = await Checklist.create({
+              company_id: order.companyId,
+              custom_service_id,
+              client_id: order.clientUid,
+              service_name: order.serviceType,
+              assigned_to: assignedEmployee._id,
+              created_by: req.user ? req.user._id : assignedEmployee._id,
+              items: finalItems,
+              status: 'pending',
+              stage: updateData.stage || 'workAssigned',
+              notes: '',
+              dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
+              advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0,
+              details: {
+                entityName: order.entityName || '',
+                Status: 'Pending Client Form Submission',
+                'Next Step': 'Assign expert to unlock form for client',
+              },
+              recommended_plan: updateData.recommended_plan || undefined
+            });
+
+            // Also mark the bucket request as claimed by manager if it exists
+            await BucketRequest.updateOne(
+              { company_id: order.companyId, client_id: order.clientUid, service_name: order.serviceType, status: 'open' },
+              { $set: { status: 'claimed_by_manager', claimed_by: req.user ? req.user._id : assignedEmployee._id, checklist_id: checklist._id, claimed_at: new Date() } }
+            );
+            console.log(`[ORDER ASSIGN] Created new checklist for ${order.serviceType} and assigned to expert.`);
+          }
         }
       } catch (cascadeErr) {
         // Non-fatal — log but don't fail the order update

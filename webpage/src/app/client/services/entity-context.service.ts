@@ -45,13 +45,13 @@ export class EntityContextService {
    */
   resolveEntityName(order: any): string {
     return (
+      order.details?.entityName ||
+      order.details?.entity_name ||
       order.entityName ||
       order.companyName ||
-      order.details?.entityName ||
       order.details?.companyName ||
       order.details?.proposed_company_name ||
       order.details?.businessName ||
-      order.details?.entity_name ||
       ''
     ).trim();
   }

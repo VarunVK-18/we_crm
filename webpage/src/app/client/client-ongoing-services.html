@@ -54,9 +54,9 @@
                       <td>
                         <div style="display: flex; flex-direction: column; gap: 4px;">
                           <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
-                          @if (order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name) {
+                          @if (order.details?.entityName || order.details?.entity_name || order.entityName || order.companyName) {
                             <span style="font-size: 12px; font-weight: 500; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); display: flex; align-items: center; gap: 4px;">
-                              {{ order.entityName || order.companyName || order.details?.entityName || order.details?.entity_name }}
+                              {{ order.details?.entityName || order.details?.entity_name || order.entityName || order.companyName }}
                             </span>
                           }
                         </div>
