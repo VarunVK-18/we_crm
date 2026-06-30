@@ -17,6 +17,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   @Output() onBack = new EventEmitter<void>();
   checklistId = input.required<string>();
   teams = input<any[]>([]);
+  actualTeams = signal<any[]>([]);
   autoOpenChat = input<boolean>(false);
   private _chatOpenedLocally = false;
 
@@ -190,11 +191,40 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
     this.fetchChecklist();
     this.fetchSystemSettings();
+    
+    if (this.canManage()) {
+      this.api.get<any>('teams').subscribe({
+        next: (res: any) => {
+          let allTeams = res.teams || [];
+          const currentUser = this.user();
+          
+          if (currentUser && currentUser.role === 'client_manager') {
+            allTeams = allTeams.filter((t: any) => 
+              t.manager_id && (t.manager_id._id === currentUser._id || t.manager_id === currentUser._id)
+            );
+          }
+          this.actualTeams.set(allTeams);
+        },
+        error: (err: any) => console.error('Error fetching teams:', err)
+      });
+    }
 
     // Poll for changes
     this.pollInterval = setInterval(() => {
       this.fetchChecklist();
     }, 5000);
+  }
+
+  assignTeamChecklist(teamId: string) {
+    const cl = this.checklist();
+    if (!cl) return;
+    this.api.patch<any>(`checklists/${cl._id}`, { assigned_team: teamId || null, assigned_to: null }).subscribe({
+      next: () => {
+        this.fetchChecklist();
+        alert('Checklist assigned to team successfully!');
+      },
+      error: (err) => alert(err.error?.message || 'Failed to assign checklist to team.')
+    });
   }
 
   fetchSystemSettings() {

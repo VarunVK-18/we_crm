@@ -72,31 +72,26 @@
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <h4
               style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin: 0;">
-              Assigned To</h4>
+              Assign Team</h4>
             @if (canManage()) {
-            <select [ngModel]="checklist().assigned_to?._id || checklist().assigned_to || ''"
-              (ngModelChange)="assignChecklist($event)"
+            <select [ngModel]="checklist().assigned_team?._id || checklist().assigned_team || ''"
+              (ngModelChange)="assignTeamChecklist($event)"
               style="width: 100%; max-width: 300px; padding: 8px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
-              <option value="">-- Unassigned --</option>
-              @for (emp of getFlatEmployees(); track emp.id) {
-              @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
-              <option [value]="emp.id">{{ emp.name }} ({{ getRoleLabel(emp.role) }})</option>
-              }
+              <option value="">-- Select Team --</option>
+              @for (team of actualTeams(); track team._id) {
+                <option [value]="team._id">{{ team.name }}</option>
               }
             </select>
             } @else {
             <div style="display: flex; align-items: center; gap: 12px;">
               <div
                 style="width: 32px; height: 32px; border-radius: 9999px; background-color: var(--accent-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">
-                {{ (checklist().assigned_to?.owner_name || 'U').charAt(0).toUpperCase() }}
+                {{ (checklist().assigned_team?.name || 'U').charAt(0).toUpperCase() }}
               </div>
               <div style="display: flex; flex-direction: column;">
                 <span style="font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 20px;">{{
-                  checklist().assigned_to?.owner_name || 'Unassigned' }}</span>
-                @if (checklist().assigned_to?.role) {
-                <span style="font-size: 14px; color: var(--text-secondary); line-height: 20px;">{{
-                  getRoleLabel(checklist().assigned_to.role) }}</span>
-                }
+                  checklist().assigned_team?.name || 'Unassigned' }}</span>
+                <span style="font-size: 14px; color: var(--text-secondary); line-height: 20px;">Team</span>
               </div>
             </div>
             }

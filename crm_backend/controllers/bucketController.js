@@ -86,6 +86,9 @@ const claimBucketRequest = async (req, res) => {
       custom_service_id = await getNextServiceId(company_id);
     } catch (e) { console.error('Failed to generate custom_service_id', e); }
 
+    // Derive the entity name from the bucket request (client_name holds the requested entity name)
+    const entityName = bucketReq.client_name || bucketReq.client_id?.company_name || bucketReq.client_id?.owner_name || 'Client';
+
     // Create checklist assigned to the claiming client_manager
     const checklist = await Checklist.create({
       company_id,
@@ -99,7 +102,16 @@ const claimBucketRequest = async (req, res) => {
       stage: 'quotePending',
       notes: '',
       dealClosedAmount: Number(dealClosedAmount) || 0,
-      advanceAmountPaid: Number(advanceAmountPaid) || 0
+      advanceAmountPaid: Number(advanceAmountPaid) || 0,
+      details: {
+        entityName,
+        'Applicant Name': bucketReq.client_id?.owner_name || '',
+        'Applicant Email': bucketReq.client_email || '',
+        'Applicant Phone': bucketReq.client_phone || '',
+        Status: 'Pending Client Form Submission',
+        'Next Step': 'Assign expert to unlock form for client',
+        ...(directorCount ? { numberOfDirectors: Number(directorCount) } : {})
+      }
     });
 
     // Update bucket request

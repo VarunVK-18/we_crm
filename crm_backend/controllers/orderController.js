@@ -137,7 +137,12 @@ exports.updateOrder = async (req, res) => {
           stage: 'quotePending',
           notes: '',
           dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
-          advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0
+          advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0,
+          details: {
+            entityName: order.entityName || bucketReq.client_name || '',
+            Status: 'Pending Client Form Submission',
+            'Next Step': 'Assign expert to unlock form for client',
+          }
         });
 
         bucketReq.status = 'claimed_by_manager';

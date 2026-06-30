@@ -792,6 +792,18 @@ const subscribeService = async (req, res) => {
     
     const requestedEntityName = req.body.entity_name || req.body.company_name || user.company_name || user.owner_name || 'Client';
 
+    // If the user submitted a new entity name, add it to their client_entities if it doesn't exist yet
+    if (req.body.entity_name) {
+      const entityAlreadyExists = (user.client_entities || []).some(
+        (e) => e.entityName && e.entityName.toLowerCase() === req.body.entity_name.toLowerCase()
+      );
+      if (!entityAlreadyExists) {
+        if (!user.client_entities) user.client_entities = [];
+        user.client_entities.push({ entityName: req.body.entity_name });
+        console.log(`[subscribeService] Created new entity '${req.body.entity_name}' for user ${user._id}`);
+      }
+    }
+
     if (dealClosedAmount) {
       user.revenue = (user.revenue || 0) + Number(dealClosedAmount);
     }

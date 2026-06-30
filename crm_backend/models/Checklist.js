@@ -56,6 +56,12 @@ const ChecklistSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
+  // Team assigned to this checklist
+  assigned_team: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Team',
+    default: null
+  },
   // The Client Manager who created this checklist
   created_by: {
     type: mongoose.Schema.Types.ObjectId,

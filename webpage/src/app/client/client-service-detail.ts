@@ -416,7 +416,8 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (item.isChecked) return true;
     if (item.isActionStep) {
       const details = this.order()?.details;
-      return details && Object.keys(details).length > 0;
+      // Form is only considered filled if the client explicitly submitted it
+      return !!(details && details.clientFormSubmitted);
     }
     return false;
   }

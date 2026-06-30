@@ -1,5 +1,6 @@
 const Checklist = require('../models/Checklist');
 const User = require('../models/User');
+const Team = require('../models/Team');
 const { getNextServiceId } = require('../utils/counterHelper');
 const { logActivity } = require('../middleware/rbac');
 const Document = require('../models/Document');
@@ -147,8 +148,13 @@ const getChecklists = async (req, res) => {
 
     const role = req.user.role;
     if (role === 'filling_staff' || role === 'account_manager') {
-      // See only checklists assigned to them
-      filter.assigned_to = req.user._id;
+      // See only checklists assigned to them or their team
+      const myTeams = await Team.find({ members: req.user._id }).select('_id');
+      const myTeamIds = myTeams.map(t => t._id);
+      filter.$or = [
+        { assigned_to: req.user._id },
+        { assigned_team: { $in: myTeamIds } }
+      ];
     } else if (role === 'client_manager') {
       // See checklists for authorized clients OR checklists directly assigned to them
       const myClients = await User.find({
@@ -159,8 +165,11 @@ const getChecklists = async (req, res) => {
         ]
       }).select('_id');
       const myClientIds = myClients.map(c => c._id);
+      const myTeams = await Team.find({ members: req.user._id }).select('_id');
+      const myTeamIds = myTeams.map(t => t._id);
       filter.$or = [
         { assigned_to: req.user._id },
+        { assigned_team: { $in: myTeamIds } },
         { client_id: { $in: myClientIds } }
       ];
     }
@@ -174,6 +183,7 @@ const getChecklists = async (req, res) => {
     const checklists = await Checklist.find(filter)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name')
       .sort({ createdAt: -1 });
@@ -290,6 +300,7 @@ const toggleChecklistItem = async (req, res) => {
     const populated = await Checklist.findById(id)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
 
@@ -334,6 +345,7 @@ const addChecklistItem = async (req, res) => {
     const populated = await Checklist.findById(id)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
 
@@ -349,7 +361,7 @@ const addChecklistItem = async (req, res) => {
 const updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to, notes, stage, items, requested_documents, status, details, advanceAmountPaid } = req.body;
+    const { assigned_to, assigned_team, notes, stage, items, requested_documents, status, details, advanceAmountPaid } = req.body;
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -360,8 +372,14 @@ const updateChecklist = async (req, res) => {
       if (checklist.client_id.toString() !== req.user._id.toString()) {
         return res.status(403).json({ success: false, message: 'Not authorized to update this checklist' });
       }
-      if (details !== undefined) checklist.details = details;
+      if (details !== undefined) {
+        checklist.details = { ...details, clientFormSubmitted: true };
+        checklist.action_required = false;
+      }
     } else {
+      if (assigned_team !== undefined) {
+        checklist.assigned_team = assigned_team || null;
+      }
       if (assigned_to !== undefined) {
         const prevAssigned = checklist.assigned_to ? checklist.assigned_to.toString() : null;
         checklist.assigned_to = assigned_to || null;
@@ -472,6 +490,7 @@ const updateChecklist = async (req, res) => {
     const populated = await Checklist.findById(id)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
 
@@ -574,10 +593,8 @@ const getMyChecklists = async (req, res) => {
       let modifiedItems = c.items || [];
 
       if (requiresForm) {
-        let isFormFilled = false;
-        if (c.details && Object.keys(c.details).length > 0) {
-            isFormFilled = true;
-        }
+        // Use the explicit clientFormSubmitted flag as the single source of truth
+        const isFormFilled = !!(c.details && c.details.clientFormSubmitted);
 
         // Override action_required if form is not filled
         dynamicActionRequired = !isFormFilled;
@@ -808,8 +825,10 @@ const uploadFinalDocuments = async (req, res) => {
                 }
 
                 if (!foundEntity) {
-                  // Fallback: If only 1 entity and it's not incorporated yet, just rename it
-                  if (client.client_entities.length === 1 && !client.client_entities[0].cin) {
+                  // Fallback: Only rename the single entity if its name matches the originalName on this checklist
+                  if (client.client_entities.length === 1 && !client.client_entities[0].cin &&
+                      originalName && client.client_entities[0].entityName &&
+                      client.client_entities[0].entityName.toLowerCase() === originalName.toLowerCase()) {
                      const entityMatch = client.client_entities[0];
                      if (extractedCompany) entityMatch.entityName = extractedCompany;
                      if (extractedCin) entityMatch.cin = extractedCin;
@@ -948,6 +967,7 @@ const uploadFinalDocuments = async (req, res) => {
     const populated = await Checklist.findById(id)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
 
@@ -995,6 +1015,7 @@ const deleteFinalDocument = async (req, res) => {
     const populated = await Checklist.findById(id)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
 
@@ -1142,8 +1163,10 @@ const reuploadFinalDocument = async (req, res) => {
             }
 
             if (!foundEntity) {
-              // Fallback: If only 1 entity and it's not incorporated yet, just rename it
-              if (client.client_entities.length === 1 && !client.client_entities[0].cin) {
+              // Fallback: Only rename the single entity if its name matches the originalName on this checklist
+              if (client.client_entities.length === 1 && !client.client_entities[0].cin &&
+                  originalName && client.client_entities[0].entityName &&
+                  client.client_entities[0].entityName.toLowerCase() === originalName.toLowerCase()) {
                   const entityMatch = client.client_entities[0];
                   if (extractedCompany) entityMatch.entityName = extractedCompany;
                   if (extractedCin) entityMatch.cin = extractedCin;
@@ -1247,6 +1270,7 @@ const reuploadFinalDocument = async (req, res) => {
     const populated = await Checklist.findById(id)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
 
@@ -1411,6 +1435,7 @@ const addFinancialLog = async (req, res) => {
     const populated = await Checklist.findById(id)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name');
 
