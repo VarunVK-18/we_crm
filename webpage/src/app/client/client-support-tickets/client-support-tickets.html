@@ -134,8 +134,17 @@
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button class="cancel-btn" (click)="closeNewTicketModal()" [disabled]="isSubmitting()">Cancel</button>
+        <div class="modal-footer" style="flex-direction: column; align-items: stretch; gap: 16px;">
+          <div class="acknowledgment-alert" style="padding: 12px; background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; display: flex; align-items: flex-start; gap: 8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: #3b82f6; flex-shrink: 0; margin-top: 2px;">
+              <path d="M12 11V16M12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21ZM12.0498 8V8.1L11.9502 8.1002V8H12.0498Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span style="color: #1d4ed8; font-size: 13px; line-height: 1.4;">
+              <strong>Acknowledgment:</strong> Your ticket will be reviewed and resolved within 24 working hours.
+            </span>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 12px;">
+            <button class="cancel-btn" (click)="closeNewTicketModal()" [disabled]="isSubmitting()">Cancel</button>
           <button class="submit-btn" (click)="submitNewTicket()" [disabled]="isSubmitting()">
             @if (isSubmitting()) {
               <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
@@ -143,6 +152,7 @@
               <span>Submit</span>
             }
           </button>
+          </div>
         </div>
 
       </div>

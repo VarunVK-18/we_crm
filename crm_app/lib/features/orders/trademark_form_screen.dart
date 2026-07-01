@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/validation_utils.dart';
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -360,8 +361,8 @@ Widget build(BuildContext context) {
                           'Device mark (it includes any label, sticker, monogram, logo or any geometrical figure other than work mark)'
                         ], _categoryOfMark, (v) => setState(() => _categoryOfMark = v)),
                         
-                        _buildField('Company mobile number', '', _companyMobileController, isRequired: true, keyboardType: TextInputType.phone),
-                        _buildField('Company Mail ID', '', _companyEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
+                        _buildField('Company mobile number', '', _companyMobileController, isRequired: true, keyboardType: TextInputType.phone, validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number'),
+                        _buildField('Company Mail ID', '', _companyEmailController, isRequired: true, keyboardType: TextInputType.emailAddress, validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address'),
                         _buildField('Partners Name if Partnership Firm', 'Leave blank if not applicable.', _partnersNameController, isRequired: false),
                         _buildField('Business Description', '', _businessDescriptionController, isRequired: true),
                         _buildField('Date Of Trade/ Brand Name First Used / Date of Company Incorporation', 'e.g., DD/MM/YYYY', _dateFirstUsedController, isRequired: true, isDate: true),
@@ -475,7 +476,7 @@ Widget build(BuildContext context) {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false, String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -519,7 +520,7 @@ Widget build(BuildContext context) {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,
+            validator: validator ?? (isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null),
           ),
         ],
       ),

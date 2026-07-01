@@ -11,5 +11,6 @@ const upload = multer({ storage: storage });
 router.post('/upload', checkUser, permit('admin', 'manager'), upload.single('file'), calendarController.uploadCalendar);
 router.get('/latest', checkUser, calendarController.getLatestCalendar);
 router.get('/', checkUser, permit('admin', 'manager'), calendarController.getAllCalendars);
+router.delete('/:year', checkUser, permit('admin', 'manager'), calendarController.deleteCalendar);
 
 module.exports = router;

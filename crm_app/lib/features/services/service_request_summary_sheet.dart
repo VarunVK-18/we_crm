@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:crm_app/core/utils/validation_utils.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/ocr_service.dart';
@@ -20,10 +21,15 @@ import 'package:open_filex/open_filex.dart';
 
 class ServiceRequestSummarySheet extends ConsumerStatefulWidget {
   final String packageName;
+  /// If provided, the entity dropdown will be pre-selected to this entity.
+  /// Use this when opening the sheet for a renewal so the request goes to
+  /// the same entity as the original (completed) service.
+  final String? preselectedEntity;
 
   const ServiceRequestSummarySheet({
     super.key,
     required this.packageName,
+    this.preselectedEntity,
   });
 
   @override
@@ -213,6 +219,10 @@ class _ServiceRequestSummarySheetState
   @override
   void initState() {
     super.initState();
+    // Pre-select entity if provided (e.g., for renewal flow)
+    if (widget.preselectedEntity != null && widget.preselectedEntity!.isNotEmpty) {
+      _selectedEntity = widget.preselectedEntity;
+    }
     // Initialize with current profile info if available
     final userProfile = ref.read(userProfileProvider).value;
     _phoneController = TextEditingController(text: userProfile?.phone ?? '');
@@ -560,8 +570,15 @@ class _ServiceRequestSummarySheetState
     
     availableEntities.add('Add New Entity...');
 
+    // Only auto-select first entity if no entity is pre-selected yet
     if (_selectedEntity == null && availableEntities.isNotEmpty) {
-       _selectedEntity = availableEntities.first;
+      _selectedEntity = availableEntities.first;
+    }
+    // Ensure preselected entity is always in the list (even if not in orders yet)
+    if (widget.preselectedEntity != null &&
+        widget.preselectedEntity!.isNotEmpty &&
+        !availableEntities.contains(widget.preselectedEntity)) {
+      availableEntities.insert(0, widget.preselectedEntity!);
     }
 
     final Map<String, String> entityTypesMap = {};
@@ -623,9 +640,9 @@ class _ServiceRequestSummarySheetState
 
       if (isCompletedDuplicate) {
         return {
-          'type': 'error',
-          'header': 'Service Already Completed',
-          'message': 'This service is already completed for your entity.'
+          'type': 'warning',
+          'header': 'Service Previously Completed',
+          'message': 'This service was already completed for this entity. You can still submit a renewal/re-application request.'
         };
       }
 
@@ -766,6 +783,7 @@ class _ServiceRequestSummarySheetState
                         icon: LucideIcons.user,
                         hint: 'Enter your name',
                         isRequired: true,
+                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
                       ),
                       const SizedBox(height: 20),
                       _EditableField(
@@ -775,6 +793,7 @@ class _ServiceRequestSummarySheetState
                         hint: 'name@example.com',
                         keyboardType: TextInputType.emailAddress,
                         isRequired: true,
+                        validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address',
                       ),
                       const SizedBox(height: 20),
                       _EditableField(
@@ -790,6 +809,7 @@ class _ServiceRequestSummarySheetState
                         isPhoneField: true,
                         isPhoneValid: _isPhoneValid,
                         isRequired: true,
+                        validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number',
                       ),
                       // Always show the entity dropdown for all services
                       if (true) ...[
@@ -1068,14 +1088,22 @@ class _ServiceRequestSummarySheetState
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: Builder(builder: (context) {
+                          final warning = _getCompatibilityWarning();
+                          String label = 'Next';
+                          if (warning != null && warning['type'] == 'error' &&
+                              warning['header'] == 'Service Already Requested') {
+                            label = 'Waiting for Manager Approval';
+                          }
+                          return Text(
+                            label,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        }),
                     ),
                   )
                 else
@@ -1132,14 +1160,22 @@ class _ServiceRequestSummarySheetState
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Text(
-                              'Submit',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                          : Builder(builder: (context) {
+                              final warning = _getCompatibilityWarning();
+                              String label = 'Submit';
+                              if (warning != null && warning['type'] == 'error' &&
+                                  warning['header'] == 'Service Already Requested') {
+                                label = 'Waiting for Manager Approval';
+                              }
+                              return Text(
+                                label,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            }),
                     ),
                   ),
               ],

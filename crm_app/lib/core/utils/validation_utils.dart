@@ -16,4 +16,9 @@ class ValidationUtils {
     final regex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
     return regex.hasMatch(pan.toUpperCase());
   }
+  static bool isValidAadhaar(String? aadhaar) {
+    if (aadhaar == null || aadhaar.isEmpty) return false;
+    final cleaned = aadhaar.replaceAll(RegExp(r'\D'), '');
+    return cleaned.length == 12;
+  }
 }

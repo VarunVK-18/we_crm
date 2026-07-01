@@ -253,6 +253,45 @@ class _RegistrationServicesScreenState
     });
   }
 
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Incorporation':
+        return LucideIcons.building;
+      case 'Compliance':
+        return LucideIcons.fileCheck2;
+      case 'IP':
+        return LucideIcons.shieldCheck;
+      case 'Tax':
+        return LucideIcons.calculator;
+      case 'Licensing':
+        return LucideIcons.award;
+      default:
+        return LucideIcons.rocket;
+    }
+  }
+
+  String _getCategoryTitle(String category) {
+    if (category == 'All') return 'Registration Hub';
+    return '$category Services';
+  }
+
+  String _getCategorySubtitle(String category) {
+    switch (category) {
+      case 'Incorporation':
+        return 'Register your company and start your entrepreneurial journey.';
+      case 'Compliance':
+        return 'Stay compliant with annual filings and statutory requirements.';
+      case 'IP':
+        return 'Protect your brand, inventions, and creative works.';
+      case 'Tax':
+        return 'Manage GST, Income Tax, and other tax filings seamlessly.';
+      case 'Licensing':
+        return 'Obtain necessary licenses and certifications for your business.';
+      default:
+        return 'Launch and scale your business By Registering With Us..';
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -335,14 +374,14 @@ class _RegistrationServicesScreenState
                           ],
                         ),
                         child: Icon(
-                          LucideIcons.rocket,
+                          _getCategoryIcon(_selectedCategory),
                           color: Colors.white,
                           size: 28.ip,
                         ),
                       ),
                       SizedBox(height: 16.r),
                       Text(
-                        'Registration Hub',
+                        _getCategoryTitle(_selectedCategory),
                         style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 28.sp,
@@ -352,7 +391,7 @@ class _RegistrationServicesScreenState
                       ),
                       SizedBox(height: 6.r),
                       Text(
-                        'Launch and scale your business By Registering With Us..',
+                        _getCategorySubtitle(_selectedCategory),
                         style: GoogleFonts.inter(
                           color: Colors.white.withOpacity(0.8),
                           fontSize: 13.sp,

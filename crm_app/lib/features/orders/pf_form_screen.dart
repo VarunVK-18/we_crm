@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/validation_utils.dart';
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -58,12 +59,12 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
   ];
 
   @override
-    @override
   void initState() {
     super.initState();
     _loadDraft();
   }
 
+  @override
   void dispose() {
     _businessNameController.dispose();
     _panNumberController.dispose();
@@ -121,7 +122,7 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
         if (draft.containsKey('employeeDetails')) _empDetailsController.text = draft['employeeDetails'];
         if (draft.containsKey('entityType')) _entityType = draft['entityType'];
 
-                if (draft.containsKey('panCardPath')) _panCardPath = draft['panCardPath'];
+        if (draft.containsKey('panCardPath')) _panCardPath = draft['panCardPath'];
         if (draft.containsKey('businessAddressProofPath')) _businessAddressProofPath = draft['businessAddressProofPath'];
         if (draft.containsKey('incorpCertPath')) _incorpCertPath = draft['incorpCertPath'];
         if (draft.containsKey('cancelledChequePath')) _cancelledChequePath = draft['cancelledChequePath'];
@@ -148,7 +149,7 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
       'employeeDetails': _empDetailsController.text,
       'entityType': _entityType,
 
-          'panCardPath': _panCardPath,
+      'panCardPath': _panCardPath,
       'businessAddressProofPath': _businessAddressProofPath,
       'incorpCertPath': _incorpCertPath,
       'cancelledChequePath': _cancelledChequePath,
@@ -380,8 +381,9 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
                     children: [
                       _buildField('Full Name', '', _signatoryNameController, isRequired: true),
                       _buildField('Designation', '', _signatoryDesignationController, isRequired: true),
-                      _buildField('Mobile Number', '', _signatoryMobileController, isRequired: true, keyboardType: TextInputType.phone),
-                      _buildField('Email ID', '', _signatoryEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
+                      _buildField('PAN Number', '', _panNumberController, isRequired: true, validator: (v) => ValidationUtils.isValidPan(v) ? null : 'Enter a valid PAN'),
+                      _buildField('Mobile Number', '', _signatoryMobileController, isRequired: true, keyboardType: TextInputType.phone, validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number'),
+                      _buildField('Email ID', '', _signatoryEmailController, isRequired: true, keyboardType: TextInputType.emailAddress, validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address'),
                     ],
                   ),
 
@@ -443,7 +445,7 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false, String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -488,7 +490,7 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required field' : null : null,
+            validator: validator ?? (isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required field' : null : null),
           ),
         ],
       ),

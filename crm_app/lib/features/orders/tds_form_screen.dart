@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:http/http.dart' as http;
+import '../../core/utils/validation_utils.dart';
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -48,12 +49,12 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
   ];
 
   @override
-    @override
   void initState() {
     super.initState();
     _loadDraft();
   }
 
+  @override
   void dispose() {
     _businessNameController.dispose();
     _panNumberController.dispose();
@@ -318,9 +319,9 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
                         ),
                       ),
                       _buildField('Business Name', '', _businessNameController, isRequired: true),
-                      _buildField('PAN Number', '', _panNumberController, isRequired: true),
-                      _buildField('Mobile Number', '', _mobileNumberController, isRequired: true, keyboardType: TextInputType.phone),
-                      _buildField('Email ID', '', _emailIdController, isRequired: true, keyboardType: TextInputType.emailAddress),
+                      _buildField('PAN Number', '', _panNumberController, isRequired: true, validator: (v) => ValidationUtils.isValidPan(v) ? null : 'Enter a valid PAN'),
+                      _buildField('Mobile Number', '', _mobileNumberController, isRequired: true, keyboardType: TextInputType.phone, validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number'),
+                      _buildField('Email ID', '', _emailIdController, isRequired: true, keyboardType: TextInputType.emailAddress, validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address'),
                       _buildField('Business Address', '', _businessAddressController, isRequired: true, maxLines: 3),
                     ],
                   ),
@@ -373,7 +374,7 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -405,7 +406,7 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required field' : null : null,
+            validator: validator ?? (isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required field' : null : null),
           ),
         ],
       ),

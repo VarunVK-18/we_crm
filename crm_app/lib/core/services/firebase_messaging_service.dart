@@ -5,6 +5,13 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'package:crm_app/main.dart';
+import 'package:crm_app/features/orders/notification_sheet.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:crm_app/providers/orders_provider.dart';
+import 'package:crm_app/features/orders/service_order_detail_screen.dart';
+import 'package:crm_app/features/orders/order_chat_screen.dart';
 import '../constants/port.dart';
 
 /// Top-level function to handle background messages.
@@ -142,16 +149,86 @@ class FirebaseMessagingService {
     // B. Listen for when a user taps a notification that opened the app from the BACKGROUND.
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       log('Message clicked! App opened from background.', name: 'FCM Tap');
-      // Navigate to a specific screen based on message data if needed.
+      _handleNotificationClick(message);
     });
 
     // C. Check if the app was opened from a TERMINATED state via a notification tap.
-    _firebaseMessaging.getInitialMessage().then((RemoteMessage? message) {
+    _firebaseMessaging.getInitialMessage().then((RemoteMessage? message) async {
       if (message != null) {
+        // Prevent hot-restart from re-triggering the initial message indefinitely
+        final prefs = await SharedPreferences.getInstance();
+        final lastMessageId = prefs.getString('last_initial_message_id');
+        
+        if (message.messageId != null && lastMessageId == message.messageId) {
+          log('Ignored duplicate initial message on hot restart', name: 'FCM Tap');
+          return;
+        }
+        
+        if (message.messageId != null) {
+          await prefs.setString('last_initial_message_id', message.messageId!);
+        }
+
         log('App opened from terminated state via notification!', name: 'FCM Tap');
-        // Handle navigation or logic here.
+        // We use Future.delayed to ensure the app is fully mounted before navigating
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _handleNotificationClick(message);
+        });
       }
     });
+  }
+
+  void _handleNotificationClick(RemoteMessage message) {
+    // Access the global navigator key from main.dart
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+    
+    final type = message.data['type'];
+    final orderId = message.data['orderId'];
+
+    if (orderId != null && orderId.isNotEmpty) {
+      if (type == 'chat') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => OrderChatScreen(
+              orderId: orderId,
+              serviceName: 'Service Chat',
+              assignedExpert: 'Expert',
+            ),
+          ),
+        );
+        return;
+      } else if (type == 'document_request' || type == 'status_update') {
+        try {
+          final container = ProviderScope.containerOf(context);
+          final ordersState = container.read(serviceOrdersProvider);
+          final orders = ordersState.value ?? [];
+          final targetOrder = orders.where((o) => o.id == orderId).firstOrNull;
+          
+          if (targetOrder != null) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ServiceOrderDetailScreen(order: targetOrder),
+              ),
+            );
+            return;
+          } else {
+             log('Order not found in state for ID: $orderId', name: 'FCM Tap');
+          }
+        } catch (e) {
+          log('Error resolving order from provider: $e', name: 'FCM Tap');
+        }
+      }
+    }
+
+    // Default behavior: show the notification sheet
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const NotificationSheet(),
+    );
   }
 
   /// Helper to display a local notification.

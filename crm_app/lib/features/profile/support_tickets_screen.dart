@@ -392,7 +392,39 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                   ),
                 ),
               ),
+              contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
+              actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
               actions: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blue.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(LucideIcons.info, color: Colors.blue, size: 16),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Acknowledgment: Your ticket will be reviewed and resolved within 24 working hours.',
+                          style: TextStyle(
+                            color: Colors.blue.shade800,
+                            fontSize: 11,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
                 TextButton(
                   onPressed:
                       isSubmitting ? null : () => Navigator.pop(dialogContext),
@@ -451,6 +483,8 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                             fontSize: 14,
                           ),
                         ),
+                ),
+                  ],
                 ),
               ],
             );

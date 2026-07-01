@@ -103,6 +103,7 @@ export class SystemSettings implements OnInit {
   calendarYear = '2026-2027';
   calendarFile: File | null = null;
   isUploadingCalendar = false;
+  isCalendarUploaded = false;
 
   sopFile: File | null = null;
   isUploadingSop = false;
@@ -116,6 +117,23 @@ export class SystemSettings implements OnInit {
       this.user.set(JSON.parse(savedUser));
     }
     this.fetchSettings();
+    this.fetchLatestCalendar();
+  }
+
+  fetchLatestCalendar() {
+    this.api.get<any>('calendar/latest').subscribe({
+      next: (res) => {
+        if (res && res.calendar) {
+          this.calendarYear = res.calendar.year;
+          this.isCalendarUploaded = true;
+        } else {
+          this.isCalendarUploaded = false;
+        }
+      },
+      error: () => {
+        this.isCalendarUploaded = false;
+      }
+    });
   }
 
   fetchSettings() {
@@ -251,12 +269,34 @@ export class SystemSettings implements OnInit {
     this.api.post<any>('calendar/upload', formData).subscribe({
       next: (res) => {
         this.isUploadingCalendar = false;
+        this.isCalendarUploaded = true;
         alert('Compliance Calendar uploaded successfully!');
         this.calendarFile = null;
       },
       error: (err) => {
         this.isUploadingCalendar = false;
         alert(err.error?.message || 'Failed to upload calendar.');
+      }
+    });
+  }
+
+  deleteComplianceCalendar() {
+    if (!this.calendarYear) {
+      alert('Please enter a Financial Year to delete its calendar.');
+      return;
+    }
+    if (!confirm(`Are you sure you want to delete the Compliance Calendar for ${this.calendarYear}?`)) return;
+
+    const encodedYear = encodeURIComponent(this.calendarYear.trim());
+    this.api.delete<any>(`calendar/${encodedYear}`).subscribe({
+      next: (res) => {
+        this.isCalendarUploaded = false;
+        alert('Compliance Calendar deleted successfully!');
+      },
+      error: (err) => {
+        console.error('Delete Calendar Error:', err);
+        const errMsg = err.error?.message || err.message || 'Failed to delete calendar.';
+        alert(errMsg);
       }
     });
   }

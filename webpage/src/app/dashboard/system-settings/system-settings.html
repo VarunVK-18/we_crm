@@ -206,9 +206,13 @@
                        accept="application/pdf"
                        class="form-control-input" />
               </div>
-              <button type="button" class="btn-primary-save" (click)="uploadComplianceCalendar()" [disabled]="!calendarFile || !calendarYear || isUploadingCalendar" style="width: 100%; display: flex; justify-content: center; align-items: center;">
+              <button type="button" class="btn-primary-save" (click)="uploadComplianceCalendar()" [disabled]="!calendarFile || !calendarYear || isUploadingCalendar" style="width: 100%; display: flex; justify-content: center; align-items: center; margin-bottom: 8px;">
                 <span class="material-symbols-outlined" style="font-size: 20px;">{{ isUploadingCalendar ? 'sync' : 'upload_file' }}</span> 
                 {{ isUploadingCalendar ? 'Uploading...' : 'Upload Calendar' }}
+              </button>
+              <button type="button" class="btn-danger" (click)="deleteComplianceCalendar()" [disabled]="!calendarYear || !isCalendarUploaded" style="width: 100%; display: flex; justify-content: center; align-items: center; background-color: var(--danger-color, #ef4444); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 500; cursor: pointer;" [style.opacity]="(!calendarYear || !isCalendarUploaded) ? 0.6 : 1">
+                <span class="material-symbols-outlined" style="font-size: 20px; margin-right: 8px;">delete</span> 
+                Delete Calendar
               </button>
             </div>
             <div class="form-group-list">

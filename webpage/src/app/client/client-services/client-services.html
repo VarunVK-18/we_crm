@@ -140,13 +140,19 @@
                   </div>
                   <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" name="phone" [(ngModel)]="quoteForm.phone" required class="form-input">
+                    <input type="tel" name="phone" [(ngModel)]="quoteForm.phone" required pattern="^[0-9]{10}$" class="form-input" #phoneCtrl="ngModel">
+                    @if (phoneCtrl.invalid && (phoneCtrl.dirty || phoneCtrl.touched)) {
+                      <span class="error-text" style="color: #ef4444; font-size: 12px; margin-top: 4px;">Enter a valid 10-digit phone number</span>
+                    }
                   </div>
                 </div>
                 
                 <div class="form-group">
                   <label>Email Address</label>
-                  <input type="email" name="email" [(ngModel)]="quoteForm.email" required class="form-input">
+                  <input type="email" name="email" [(ngModel)]="quoteForm.email" required pattern="^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$" class="form-input" #emailCtrl="ngModel">
+                  @if (emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)) {
+                    <span class="error-text" style="color: #ef4444; font-size: 12px; margin-top: 4px;">Enter a valid email address</span>
+                  }
                 </div>
 
                 @if (showDirectorCount()) {
@@ -214,7 +220,11 @@
                 }
 
                 <button type="submit" class="btn-submit" [disabled]="formSubmitting() || !quoteFormRef.valid || getCompatibilityWarning()?.type === 'error'">
-                  {{ formSubmitting() ? 'Submitting...' : 'Request Quote' }}
+                  @if (getCompatibilityWarning()?.header === 'Service Already Requested') {
+                    Waiting for Manager Approval
+                  } @else {
+                    {{ formSubmitting() ? 'Submitting...' : 'Request Quote' }}
+                  }
                   <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" color="white" style="margin-left: 8px;"></hugeicons-icon>
                 </button>
               </form>

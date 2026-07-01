@@ -409,9 +409,9 @@ export class ClientServicesComponent implements OnInit {
 
     if (isCompleted) {
       return {
-        type: 'error',
-        header: 'Service Already Completed',
-        message: 'This service is already completed for your entity.'
+        type: 'warning',
+        header: 'Service Previously Completed',
+        message: 'This service was already completed for this entity. You can still submit a renewal/re-application request.'
       };
     }
 

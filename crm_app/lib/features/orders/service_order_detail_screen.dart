@@ -43,6 +43,7 @@ import 'patent_form_screen.dart';
 import 'pf_form_screen.dart';
 import 'proprietorship_form_screen.dart';
 import 'tds_form_screen.dart';
+import '../services/service_request_summary_sheet.dart';
 
 
 class ServiceOrderDetailScreen extends ConsumerWidget {
@@ -1645,6 +1646,38 @@ class _FinalDeliverySection extends StatelessWidget {
             ),
           );
         }),
+        // Apply Again Button (for completed services)
+        const SizedBox(height: 24),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => ServiceRequestSummarySheet(
+                  packageName: order.serviceType,
+                  preselectedEntity: order.entityName.isNotEmpty ? order.entityName : null,
+                ),
+              );
+            },
+            icon: const Icon(LucideIcons.refreshCw, size: 18),
+            label: const Text(
+              'Apply Again for Same Entity',
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+            ),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.corporateBlue,
+              side: const BorderSide(color: AppTheme.corporateBlue, width: 1.5),
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
