@@ -47,7 +47,9 @@ class FirebaseMessagingService {
     // 2. Retrieve the FCM token. This token can be sent to your Node.js backend.
     try {
       String? token = await _firebaseMessaging.getToken();
-      log('FCM Token: $token', name: 'FCM Token');
+      print('=================================');
+      print('FCM Token: $token');
+      print('=================================');
       if (token != null) {
         await _sendTokenToServer(token);
       }

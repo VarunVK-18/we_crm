@@ -82,7 +82,7 @@ const claimBucketRequest = async (req, res) => {
     }
     if (finalItems.length === 1) {
       finalItems.push({ 
-        title: 'Service Processing & Final Delivery', 
+        title: 'Final Delivery & Processing', 
         description: 'Process the service and upload final documents.', 
         label: 'Service Processing', 
         isChecked: false 

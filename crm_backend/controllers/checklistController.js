@@ -265,7 +265,21 @@ const toggleChecklistItem = async (req, res) => {
       }
     }
 
+    const prevStatus = checklist.status;
     await checklist.save();
+
+    if (checklist.status === 'completed' && prevStatus !== 'completed' && checklist.client_id) {
+      const Notification = require('../models/Notification');
+      await Notification.create({
+        client_id: checklist.client_id,
+        title: 'Service Completed 🎉',
+        message: `Your service '${checklist.service_name}' has been successfully completed!`,
+        type: 'status_update',
+        order_id: checklist._id
+      });
+
+
+    }
 
     if (checklist.status === 'completed' && checklist.recommended_plan) {
       const existingSub = await Subscription.findOne({ checklist_id: checklist._id });
@@ -411,7 +425,24 @@ const updateChecklist = async (req, res) => {
       }
       if (notes !== undefined) checklist.notes = notes;
       if (stage !== undefined) checklist.stage = stage;
-      if (status !== undefined) checklist.status = status;
+      if (status !== undefined) {
+        const prevStatus = checklist.status;
+        checklist.status = status;
+        
+        // Notify client if service is marked as completed
+        if (status === 'completed' && prevStatus !== 'completed' && checklist.client_id) {
+          const Notification = require('../models/Notification');
+          await Notification.create({
+            client_id: checklist.client_id,
+            title: 'Service Completed 🎉',
+            message: `Your service '${checklist.service_name}' has been successfully completed!`,
+            type: 'status_update',
+            order_id: checklist._id
+          });
+
+
+        }
+      }
       if (requested_documents !== undefined) {
         const oldDocs = checklist.requested_documents || [];
         const newDocs = requested_documents || [];
@@ -593,8 +624,9 @@ const getMyChecklists = async (req, res) => {
       let modifiedItems = c.items || [];
 
       if (requiresForm) {
-        // Use the explicit clientFormSubmitted flag as the single source of truth
-        const isFormFilled = !!(c.details && c.details.clientFormSubmitted);
+        // Check if explicit flag is set OR if the "Client Form Filling" step is actually checked
+        const clientFormFillingStep = c.items && c.items.find(i => i.title === 'Client Form Filling');
+        const isFormFilled = !!(c.details && c.details.clientFormSubmitted) || !!(clientFormFillingStep && clientFormFillingStep.isChecked);
 
         // Override action_required if form is not filled
         dynamicActionRequired = !isFormFilled;

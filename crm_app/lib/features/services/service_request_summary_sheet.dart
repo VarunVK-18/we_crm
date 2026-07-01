@@ -434,8 +434,10 @@ class _ServiceRequestSummarySheetState
       request.fields['phone'] = _phoneController.text;
       if (_companyNameController.text.isNotEmpty) {
         if (widget.packageName.contains('Incorporation')) {
+          // For Incorporation, only send company_name as proposed name.
+          // Do NOT send entity_name — entity creation happens later via OCR
+          // when the Certificate of Incorporation document is uploaded.
           request.fields['company_name'] = _companyNameController.text;
-          request.fields['entity_name'] = _companyNameController.text;
         } else if (widget.packageName == 'MSME Certification') {
           // MSME uses _companyNameController for "Name of Enterprise"
           request.fields['entity_name'] = _companyNameController.text;

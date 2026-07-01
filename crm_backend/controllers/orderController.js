@@ -13,6 +13,12 @@ function markClientFormFilled(order) {
       order.markModified('items');
     }
   }
+  
+  if (!order.details) {
+    order.details = {};
+  }
+  order.details = { ...order.details, clientFormSubmitted: true };
+  order.markModified('details');
 }
 
 // Get all service orders for a user
@@ -113,62 +119,92 @@ exports.updateOrder = async (req, res) => {
             client_id: order.clientUid,
             service_name: order.serviceType,
             status: 'open',
-            source: 'we-crm', // or 'we-crm-old', it will instantly be claimed anyway
+            source: 'we-crm',
             client_name: order.entityName || '',
           });
         }
 
         console.log(`[ORDER ASSIGN] Proceeding with BucketRequest ${bucketReq._id}`);
-        let finalItems = [];
-        try {
-          const template = await ChecklistTemplate.findOne({
+        
+        // Attempt to update existing checklist first
+        const updated = await Checklist.updateMany(
+          {
+            client_id: order.clientUid,
+            service_name: order.serviceType,
+            status: { $ne: 'completed' }
+          },
+          {
+            $set: {
+              assigned_team: updateData.team_id,
+              dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
+              advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0
+            }
+          }
+        );
+        
+        let checklistId = null;
+
+        if (updated.modifiedCount > 0) {
+           const existingChecklist = await Checklist.findOne({
+             client_id: order.clientUid,
+             service_name: order.serviceType,
+             status: { $ne: 'completed' }
+           });
+           checklistId = existingChecklist._id;
+        } else {
+          let finalItems = [];
+          try {
+            const template = await ChecklistTemplate.findOne({
+              company_id: order.companyId,
+              service_name: bucketReq.service_name
+            });
+            if (template && template.items && template.items.length > 0) {
+              finalItems = template.items.map(item => ({
+                title: item.title, description: item.description, label: item.title, isChecked: false
+              }));
+            }
+          } catch (e) { }
+
+          if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
+            finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+          }
+          if (finalItems.length === 1) {
+            finalItems.push({ title: 'Final Delivery & Processing', description: 'Process the service and upload final documents.', label: 'Service Processing', isChecked: false });
+          }
+
+          let custom_service_id = null;
+          try {
+            custom_service_id = await getNextServiceId(order.companyId);
+          } catch (e) { console.error('Failed to generate custom_service_id', e); }
+
+          const checklist = await Checklist.create({
             company_id: order.companyId,
-            service_name: bucketReq.service_name
+            custom_service_id,
+            client_id: bucketReq.client_id,
+            service_name: bucketReq.service_name,
+            assigned_to: req.user._id,
+            assigned_team: updateData.team_id,
+            created_by: req.user._id,
+            items: finalItems,
+            status: 'pending',
+            stage: 'quotePending',
+            notes: '',
+            dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
+            advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0,
+            details: {
+              entityName: order.entityName || bucketReq.client_name || '',
+              Status: 'Pending Client Form Submission',
+              'Next Step': 'Assign expert to unlock form for client',
+            }
           });
-          if (template && template.items && template.items.length > 0) {
-            finalItems = template.items.map(item => ({
-              title: item.title, description: item.description, label: item.title, isChecked: false
-            }));
-          }
-        } catch (e) { }
-
-        if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
-          finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+          checklistId = checklist._id;
         }
-        if (finalItems.length === 1) {
-          finalItems.push({ title: 'Service Processing & Final Delivery', description: 'Process the service and upload final documents.', label: 'Service Processing', isChecked: false });
-        }
-
-        let custom_service_id = null;
-        try {
-          custom_service_id = await getNextServiceId(order.companyId);
-        } catch (e) { console.error('Failed to generate custom_service_id', e); }
-
-        const checklist = await Checklist.create({
-          company_id: order.companyId,
-          custom_service_id,
-          client_id: bucketReq.client_id,
-          service_name: bucketReq.service_name,
-          assigned_to: req.user._id,
-          created_by: req.user._id,
-          items: finalItems,
-          status: 'pending',
-          stage: 'quotePending',
-          notes: '',
-          dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
-          advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0,
-          details: {
-            entityName: order.entityName || bucketReq.client_name || '',
-            Status: 'Pending Client Form Submission',
-            'Next Step': 'Assign expert to unlock form for client',
-          }
-        });
 
         bucketReq.status = 'claimed_by_manager';
         bucketReq.claimed_by = req.user._id;
         bucketReq.team_id = updateData.team_id;
         bucketReq.claimed_at = new Date();
-        bucketReq.checklist_id = checklist._id;
+        bucketReq.checklist_id = checklistId;
         await bucketReq.save();
         console.log(`[ORDER ASSIGN] Bucket Request assigned to team ${updateData.team_id}`);
       } catch (err) {

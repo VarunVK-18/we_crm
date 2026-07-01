@@ -792,8 +792,15 @@ const subscribeService = async (req, res) => {
     
     const requestedEntityName = req.body.entity_name || req.body.company_name || user.company_name || user.owner_name || 'Client';
 
-    // If the user submitted a new entity name, add it to their client_entities if it doesn't exist yet
-    if (req.body.entity_name) {
+    // If the user submitted a new entity name, add it to their client_entities if it doesn't exist yet.
+    // EXCEPTION: Incorporation services — entity is only created after the COI document is uploaded
+    // and the company name is extracted via OCR. Creating it here would cause a premature/duplicate entity.
+    const isIncorporationService = serviceName && (
+      serviceName.includes('Incorporation') || 
+      serviceName.includes('One Person Company') || 
+      serviceName.includes('Proprietorship')
+    );
+    if (req.body.entity_name && !isIncorporationService) {
       const entityAlreadyExists = (user.client_entities || []).some(
         (e) => e.entityName && e.entityName.toLowerCase() === req.body.entity_name.toLowerCase()
       );
@@ -885,7 +892,7 @@ const subscribeService = async (req, res) => {
         }
         if (finalItems.length === 1) {
           finalItems.push({ 
-            title: 'Service Processing & Final Delivery', 
+            title: 'Final Delivery & Processing', 
             description: 'Process the service and upload final documents.', 
             label: 'Service Processing', 
             isChecked: false 
@@ -926,6 +933,9 @@ const subscribeService = async (req, res) => {
 
 
         // Create a Bucket Request ONLY if the client does not have a personal manager yet
+        let managerName = 'To be assigned';
+        let managerPhone = '';
+
         if (!user.assigned_to) {
           const existingBucketReq = await BucketRequest.findOne({
             company_id: user.company_id,
@@ -948,6 +958,42 @@ const subscribeService = async (req, res) => {
             });
             console.log(`Created open Bucket Request for unassigned client: ${serviceName}`);
           }
+        } else {
+          const manager = await User.findById(user.assigned_to);
+          if (manager) {
+            managerName = manager.owner_name || manager.email;
+            managerPhone = manager.phone || '';
+
+            // Map turnoverCategory to Checklist valid enum if present
+            let checklistTurnover = '';
+            if (details.turnoverCategory) {
+              const tc = details.turnoverCategory.toLowerCase();
+              if (tc.includes('below') || tc.includes('less than ₹20') || tc.includes('less than 20')) {
+                checklistTurnover = 'Less than ₹20 Lakhs';
+              } else if (tc.includes('greater than ₹20') || tc.includes('between')) {
+                checklistTurnover = 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs';
+              } else if (tc.includes('above') || tc.includes('greater than ₹50')) {
+                checklistTurnover = 'Greater than ₹50 Lakhs';
+              }
+            }
+            
+            await Checklist.create({
+              company_id: user.company_id || '000000000000000000000000',
+              client_id: user._id,
+              service_name: serviceName,
+              assigned_to: manager._id,
+              created_by: manager._id,
+              items: finalItems,
+              details: details,
+              status: 'pending',
+              stage: 'quotePending',
+              action_required: true,
+              recommended_plan: calculatedPlan,
+              recommended_fee: calculatedFee,
+              turnover_category: checklistTurnover
+            });
+            console.log(`Auto-created Checklist for ${serviceName} assigned to existing manager ${managerName}`);
+          }
         }
 
         // Also create a ServiceOrder so it appears in the New Requests page
@@ -958,8 +1004,8 @@ const subscribeService = async (req, res) => {
           serviceType: serviceName,
           status: 'active',
           stage: 'reqReceived',
-          assignedExpert: 'To be assigned',
-          expertPhone: '',
+          assignedExpert: managerName,
+          expertPhone: managerPhone,
           documents: orderDocuments,
           details: details,
           steps: finalItems, // Assuming orderSteps was renamed or using finalItems

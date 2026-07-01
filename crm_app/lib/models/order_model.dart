@@ -36,7 +36,7 @@ class ServiceStep {
     return ServiceStep(
       title: map['title']?.toString() ?? '',
       description: map['description']?.toString() ?? '',
-      isCompleted: map['isCompleted'] == true,
+      isCompleted: map['isCompleted'] == true || map['isChecked'] == true,
       isActionStep: map['isActionStep'] == true,
       completedAt: map['completedAt'] != null
           ? DateTime.tryParse(map['completedAt'].toString())
@@ -197,8 +197,15 @@ class ServiceOrder {
 
   bool get isReallyActionRequired {
     if (!actionRequired) return false;
+    
+    // If the client has already submitted the form, action is no longer required
+    final clientFormSubmitted = details['clientFormSubmitted'] == true;
+    if (clientFormSubmitted) return false;
+    
+    // Check if there are still documents to upload
     final needsDocUpload = requestedDocuments.any((doc) => !doc.isUploaded);
-    if (details.isNotEmpty && !needsDocUpload) return false;
+    
+    // Action is required if: form not filled OR documents still needed
     return true;
   }
 

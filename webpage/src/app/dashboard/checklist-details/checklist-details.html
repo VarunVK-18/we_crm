@@ -464,8 +464,7 @@
       }
 
       <!-- Final Documents Section -->
-      @if (checklist().items && checklist().items.length > 0 && checklist().items[checklist().items.length -
-      1].isChecked) {
+      @if (checklist().items && checklist().items.length > 0 && (checklist().items.length === 1 || checklist().items[checklist().items.length - 2].isChecked)) {
       <section
         style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
         <h3 class="section-title">Final Delivery Documents</h3>

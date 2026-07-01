@@ -1243,7 +1243,7 @@ class _StepTimeline extends StatelessWidget {
       children: List.generate(steps.length, (i) {
         final step = steps[i];
         final isLast = i == steps.length - 1;
-        final isCompleted = step.isCompleted || (step.isActionStep && order.details.isNotEmpty);
+        final isCompleted = step.isCompleted;
 
         // Determine connector color: green if the NEXT step is done, grey otherwise
         final connectorDone =
