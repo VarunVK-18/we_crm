@@ -5,8 +5,18 @@ import 'core/theme/app_theme.dart';
 import 'core/widgets/network_overlay_wrapper.dart';
 import 'features/auth/auth_wrapper.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'core/services/firebase_messaging_service.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase (will use google-services.json for config on Android)
+  await Firebase.initializeApp();
+
+  // Initialize our custom messaging service
+  final messagingService = FirebaseMessagingService();
+  await messagingService.initialize();
 
   // Explicitly ensure status bar and system navigation are visible
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

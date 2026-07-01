@@ -101,8 +101,8 @@ export const routes: Routes = [
       { path: 'forms/bis/:id', component: BisForm },
       { path: 'forms/mca/:id', component: McaFormComponent },
       { path: 'forms/proprietorship/:id', component: ProprietorshipForm },
-      { path: 'fill-tds-form/:id', component: TdsForm },
-      
+      { path: 'forms/tds/:id', component: TdsForm },
+
       { path: 'forms/pf/:id', component: PfForm },
       { path: 'forms/patent/:id', component: PatentForm },
       { path: 'forms/gst-cancellation/:id', component: GstCancellationForm },

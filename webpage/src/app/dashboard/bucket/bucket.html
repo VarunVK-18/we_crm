@@ -26,9 +26,44 @@
   </div>
 
   @if (isLoading()) {
-  <div class="bucket-loading">
-    <div class="bucket-spinner"></div>
-    <p>Loading requests...</p>
+  <div class="bucket-table-container">
+    <table class="bucket-table">
+      <thead>
+        <tr>
+          <th>Client Name</th>
+          <th>Service</th>
+          <th>Contact Info</th>
+          <th>Time</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <tr>
+          <td>
+            <div class="employee-cell">
+              <div class="skeleton-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; animation: pulse 1.5s infinite;"></div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+                <div class="skeleton-text" style="width: 80px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+              </div>
+            </div>
+          </td>
+          <td><div class="skeleton-text" style="width: 150px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+              <div class="skeleton-text" style="width: 140px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+            </div>
+          </td>
+          <td><div class="skeleton-text" style="width: 60px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 80px; height: 24px; background: #e2e8f0; border-radius: 12px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 70px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
+        </tr>
+        }
+      </tbody>
+    </table>
   </div>
   } @else if (requests().length === 0) {
   <div class="bucket-empty">
@@ -127,9 +162,44 @@
   </div>
 
   @if (isLoading()) {
-  <div class="bucket-loading">
-    <div class="bucket-spinner"></div>
-    <p>Loading available jobs...</p>
+  <div class="bucket-table-container">
+    <table class="bucket-table">
+      <thead>
+        <tr>
+          <th>Client Name</th>
+          <th>Service</th>
+          <th>Contact Info</th>
+          <th>Available Since</th>
+          <th>Team</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <tr>
+          <td>
+            <div class="employee-cell">
+              <div class="skeleton-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; animation: pulse 1.5s infinite;"></div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+                <div class="skeleton-text" style="width: 80px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+              </div>
+            </div>
+          </td>
+          <td><div class="skeleton-text" style="width: 150px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+              <div class="skeleton-text" style="width: 140px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+            </div>
+          </td>
+          <td><div class="skeleton-text" style="width: 60px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 90px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
+        </tr>
+        }
+      </tbody>
+    </table>
   </div>
   } @else if (jobs().length === 0) {
   <div class="bucket-empty">

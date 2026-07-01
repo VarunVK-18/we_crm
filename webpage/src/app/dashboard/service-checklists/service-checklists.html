@@ -65,7 +65,9 @@
           <tr>
             <th>Service Name</th>
             <th>Client</th>
-            <th>Stage</th>
+            @if (currentDirectoryTab() !== 'completed' && currentDirectoryTab() !== 'final_delivered') {
+              <th>Stage</th>
+            }
             <th>Progress</th>
             <th>Assignee</th>
             <th>Status</th>
@@ -84,9 +86,11 @@
                   <span class="client-meta-sm">{{ cl.details?.entityName || cl.client_id?.company_name || 'Individual' }}</span>
                 </div>
               </td>
-              <td>
-                <span class="stage-text">{{ cl.stage || 'quotePending' }}</span>
-              </td>
+              @if (currentDirectoryTab() !== 'completed' && currentDirectoryTab() !== 'final_delivered') {
+                <td>
+                  <span class="stage-text">{{ cl.stage || 'quotePending' }}</span>
+                </td>
+              }
               <td>
                 <div class="progress-bar-container">
                   <div class="progress-bar-bg">
@@ -109,9 +113,11 @@
               </td>
               <td>
                 <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                  <span class="status-pill" [ngClass]="getChecklistStatusClass(getChecklistDisplayStatus(cl))">{{ getChecklistDisplayStatus(cl) }}</span>
+                  @if (currentDirectoryTab() !== 'completed' && currentDirectoryTab() !== 'final_delivered' || !hasPendingPayment(cl)) {
+                    <span class="status-pill" [ngClass]="getChecklistStatusClass(getChecklistDisplayStatus(cl))">{{ getChecklistDisplayStatus(cl) }}</span>
+                  }
                   @if (getChecklistDisplayStatus(cl) === 'Completed' && hasPendingPayment(cl)) {
-                    <span style="font-size: 11px; font-weight: 600; color: #ef4444; background: #fef2f2; padding: 2px 6px; border-radius: 4px; border: 1px solid #fca5a5;">Pending: ₹{{ getPendingPaymentAmount(cl) }}</span>
+                    <span style="font-size: 11px; font-weight: 500;">Pending: ₹{{ getPendingPaymentAmount(cl) }}</span>
                   }
                 </div>
               </td>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "263933107713",
+    "project_id": "we-crm-c4a7a",
+    "storage_bucket": "we-crm-c4a7a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:263933107713:android:328c2eb48415680fd3aa00",
+        "android_client_info": {
+          "package_name": "com.softrate.wecrm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0Pe6ologHuMwHHl9dVBy4hz9Osz0SYUA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

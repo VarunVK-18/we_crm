@@ -23,8 +23,7 @@ export class ServiceTrackComponent implements OnInit {
     compliance: [],
     ip: [],
     licensing: [],
-    tax: [],
-    other: []
+    tax: []
   });
 
   categoryOrder = [
@@ -32,19 +31,17 @@ export class ServiceTrackComponent implements OnInit {
     { id: 'compliance', label: 'Compliance' },
     { id: 'ip', label: 'IP' },
     { id: 'licensing', label: 'Licensing' },
-    { id: 'tax', label: 'Tax' },
-    { id: 'other', label: 'Other' }
+    { id: 'tax', label: 'Tax' }
   ];
 
   visibleCategories = signal<string[]>(this.categoryOrder.map(c => c.id));
 
   servicesDatabase: Record<string, string[]> = {
-    'incorporation': ['Proprietorship Registration', 'Partnership Firm Registration', 'Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'MSME Registration', 'Company Incorporation'],
-    'compliance': ['MCA Compliance', 'TDS', 'PF', 'DUNS Registration', 'PAN, TAN & Bank Setup', 'Compliance'],
-    'ip': ['Trademark Registration', 'Copyright Registration', 'Patent Registration', 'IP'],
-    'licensing': ['FSSAI Registration', 'ISO Certification', 'DPIIT Certification', 'IE code', 'LEI', 'BIS', 'ROSH & CE', 'Licensing'],
-    'tax': ['GST Onboarding', 'GST Compliance', 'GST Cancelation', 'GST filing', 'ITR', 'Tax'],
-    'other': ['Individual DSC', 'Organization DSC', 'Other']
+    'incorporation': ['Proprietorship', 'Partnership Firm Registration', 'Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'MSME', 'Company Incorporation'],
+    'compliance': ['MCA Compliance', 'TDS', 'PF', 'DUNS', 'PAN, TAN', 'Compliance'],
+    'ip': ['Copyright', 'IP'],
+    'licensing': ['Trade Mark', 'Trademark', 'Patent', 'GST Registration', 'DPIIT', 'ISO', 'FSSAI', 'DSC', 'IE code', 'LEI', 'BIS', 'ROSH', 'CE', 'Licensing'],
+    'tax': ['GST Compliance', 'GST Cancelation', 'GST filing', 'ITR', 'Tax']
   };
 
   constructor(private api: Api) {}
@@ -82,22 +79,24 @@ export class ServiceTrackComponent implements OnInit {
       compliance: [],
       ip: [],
       licensing: [],
-      tax: [],
-      other: []
+      tax: []
     };
 
     services.forEach(service => {
       const name = service.service_name || service.checklist_name;
       if (!name) return;
       
-      let foundCategory = 'other';
+      let foundCategory = null;
       for (const [category, names] of Object.entries(this.servicesDatabase)) {
         if (names.some(n => name.toLowerCase().includes(n.toLowerCase()))) {
           foundCategory = category;
           break;
         }
       }
-      groups[foundCategory].push(service);
+      
+      if (foundCategory && groups[foundCategory]) {
+        groups[foundCategory].push(service);
+      }
     });
 
     this.groupedServices.set(groups);

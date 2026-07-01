@@ -41,6 +41,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'customer'
   },
+  fcm_token: {
+    type: String,
+    default: null
+  },
   in_compliance_radar: {
     type: Boolean,
     default: true

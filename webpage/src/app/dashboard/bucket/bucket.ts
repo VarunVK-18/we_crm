@@ -4,6 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 import { OcrService } from '../../services/ocr.service';
 
+const bucketCache = {
+  requests: null as any[] | null,
+  jobs: null as any[] | null,
+  lastFetchTime: 0
+};
+
 @Component({
   selector: 'app-bucket',
   standalone: true,
@@ -133,12 +139,27 @@ export class BucketComponent implements OnInit {
   }
 
   loadData() {
+    if (Date.now() - bucketCache.lastFetchTime < 60000) {
+      if (this.isManager && bucketCache.requests) {
+        this.requests.set(bucketCache.requests);
+        this.isLoading.set(false);
+        return;
+      }
+      if (this.isFillingStaff && bucketCache.jobs) {
+        this.jobs.set(bucketCache.jobs);
+        this.isLoading.set(false);
+        return;
+      }
+    }
+
     this.isLoading.set(true);
     if (this.isManager) {
       const status = this.activeTab() === 'all' ? 'all' : this.activeTab();
       this.api.get<any>(`bucket/requests?status=${status}`).subscribe({
         next: (res) => {
           this.requests.set(res.requests || []);
+          bucketCache.requests = res.requests || [];
+          bucketCache.lastFetchTime = Date.now();
           this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false)
@@ -147,6 +168,8 @@ export class BucketComponent implements OnInit {
       this.api.get<any>('bucket/available').subscribe({
         next: (res) => {
           this.jobs.set(res.jobs || []);
+          bucketCache.jobs = res.jobs || [];
+          bucketCache.lastFetchTime = Date.now();
           this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false)

@@ -3,6 +3,15 @@ import { CommonModule } from '@angular/common';
 import { Api } from '../../api';
 import Chart from 'chart.js/auto';
 
+const homeOverviewCache = {
+  clients: null as any[] | null,
+  tasks: null as any[] | null,
+  checklists: null as any[] | null,
+  reminders: null as any[] | null,
+  orders: null as any[] | null,
+  lastFetchTime: 0
+};
+
 @Component({
   selector: 'app-home-overview',
   standalone: true,
@@ -156,14 +165,27 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         const parsedUser = JSON.parse(savedUser);
         this.user.set(parsedUser);
         
-        // Fetch all metrics data
-        this.fetchClients();
-        this.fetchTasks();
-        this.fetchChecklists();
-        
-        if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff') {
-          this.fetchCompanyComplianceReminders();
-          this.fetchCompanyOrders();
+        // Use cache if data is fresh (less than 1 minute old)
+        if (Date.now() - homeOverviewCache.lastFetchTime < 60000 && homeOverviewCache.clients) {
+          this.clients.set(homeOverviewCache.clients || []);
+          this.tasks.set(homeOverviewCache.tasks || []);
+          this.checklists.set(homeOverviewCache.checklists || []);
+          if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff') {
+            this.complianceReminders.set(homeOverviewCache.reminders || []);
+            this.orders.set(homeOverviewCache.orders || []);
+          }
+          this.updateStats();
+        } else {
+          // Fetch all metrics data
+          this.fetchClients();
+          this.fetchTasks();
+          this.fetchChecklists();
+          
+          if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff') {
+            this.fetchCompanyComplianceReminders();
+            this.fetchCompanyOrders();
+          }
+          homeOverviewCache.lastFetchTime = Date.now();
         }
       } catch (e) {
         console.error('Failed to parse user in HomeOverview:', e);
@@ -226,6 +248,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         if (res && res.clients) {
           this.clients.set(res.clients);
+          homeOverviewCache.clients = res.clients;
           this.updateStats();
           this.initOrUpdateCharts();
         }
@@ -238,6 +261,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         if (res && res.success) {
           this.tasks.set(res.tasks);
+          homeOverviewCache.tasks = res.tasks;
           this.updateStats();
           this.initOrUpdateCharts();
         }
@@ -250,6 +274,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         if (res && res.success) {
           this.checklists.set(res.checklists);
+          homeOverviewCache.checklists = res.checklists;
           this.updateStats();
           this.initOrUpdateCharts();
         }
@@ -276,6 +301,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
             }
           }));
           this.complianceReminders.set(mappedReminders);
+          homeOverviewCache.reminders = mappedReminders;
           this.updateStats();
           this.initOrUpdateCharts();
         }
@@ -290,6 +316,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         if (res && res.orders) {
           this.orders.set(res.orders);
+          homeOverviewCache.orders = res.orders;
           this.updateStats();
           this.initOrUpdateCharts();
         }

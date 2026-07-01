@@ -286,10 +286,10 @@
           @for (item of checklist().items; track $index) {
           <div class="list-item-card">
             <input type="checkbox" [checked]="item.isChecked"
-              [disabled]="(!isFillingStaff() && !isAccountManager() && !isAdmin()) || ($index > 0 && checklist().items.length > 0 && (checklist().items[0].title === 'Client Form Filling' || checklist().items[0].label === 'Client Form Filling') && !checklist().items[0].isChecked)"
-              (change)="toggleChecklistItem($index)"
+              [disabled]="(!isFillingStaff() && !isAccountManager() && !isAdmin()) || ($index > 0 && !checklist().items[$index - 1].isChecked) || item.isChecked"
+              (click)="toggleChecklistItem($index, $event)"
               style="width: 20px; height: 20px; accent-color: var(--accent-primary); cursor: pointer; flex-shrink: 0; margin-top: 2px;" />
-            <div style="display: flex; flex-direction: column; flex: 1;" [style.opacity]="($index > 0 && checklist().items.length > 0 && (checklist().items[0].title === 'Client Form Filling' || checklist().items[0].label === 'Client Form Filling') && !checklist().items[0].isChecked) ? 0.5 : 1">
+            <div style="display: flex; flex-direction: column; flex: 1;" [style.opacity]="($index > 0 && !checklist().items[$index - 1].isChecked) ? 0.5 : 1">
               <span [style.text-decoration]="item.isChecked ? 'line-through' : 'none'"
                 [style.color]="item.isChecked ? 'var(--text-secondary)' : 'var(--text-primary)'"
                 style="font-size: 18px; font-weight: 600; transition: color 0.2s;">{{ item.title || item.label }}</span>

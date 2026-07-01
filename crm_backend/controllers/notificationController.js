@@ -1,4 +1,23 @@
 const Notification = require('../models/Notification');
+const User = require('../models/User');
+
+// @desc    Save FCM Token for user
+// @route   POST /api/notifications/fcm-token
+// @access  Private
+exports.saveFCMToken = async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Token is required' });
+    }
+
+    await User.findByIdAndUpdate(req.user._id, { fcm_token: token });
+    res.status(200).json({ success: true, message: 'FCM Token saved successfully' });
+  } catch (error) {
+    console.error('Error saving FCM Token:', error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+};
 
 // @desc    Get all notifications for the logged-in client
 // @route   GET /api/notifications

@@ -12,6 +12,35 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Filter Pills */
+.filter-pill-bar {
+  margin-bottom: 24px;
+}
+
+.filter-pill {
+  padding: 8px 16px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.filter-pill:hover {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.filter-pill.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 /* Header Section */
 .header-section {
   display: flex;

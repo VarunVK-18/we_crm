@@ -7,6 +7,7 @@ const { checkUser } = require('../middleware/rbac');
 router.use(checkUser);
 
 router.get('/', notificationController.getNotifications);
+router.post('/fcm-token', notificationController.saveFCMToken);
 router.put('/read', notificationController.markAsRead);
 router.delete('/', notificationController.clearAll);
 router.delete('/:id', notificationController.clearNotification);

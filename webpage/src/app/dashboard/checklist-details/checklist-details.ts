@@ -5,6 +5,7 @@ import { Api } from '../../api';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 import { OcrService } from '../../services/ocr.service';
+import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-checklist-details',
@@ -105,7 +106,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   newChatMessage: string = '';
   chatPollingInterval: any;
 
-  constructor(public api: Api, private ocrService: OcrService) { }
+  constructor(public api: Api, private ocrService: OcrService, private confirmDialog: ConfirmDialogService) { }
 
   viewSop() {
     const cl = this.checklist();
@@ -370,21 +371,63 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     return flat;
   }
 
-  toggleChecklistItem(itemIndex: number) {
+  toggleChecklistItem(itemIndex: number, event?: any) {
     const cl = this.checklist();
     if (!cl) return;
 
+    const revertCheckbox = () => {
+      if (event && event.target) {
+        event.target.checked = false;
+        event.preventDefault();
+      }
+    };
+
+    // Prevent checking if previous step is not completed
+    if (itemIndex > 0 && !cl.items[itemIndex].isChecked && !cl.items[itemIndex - 1].isChecked) {
+      this.confirmDialog.confirm({
+        title: 'Action Denied',
+        message: 'Please complete the previous step first.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      revertCheckbox();
+      return;
+    }
+
+    // Prevent unchecking if step is already completed
+    if (cl.items[itemIndex].isChecked) {
+      this.confirmDialog.confirm({
+        title: 'Action Denied',
+        message: 'Once a step is completed, it cannot be undone.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      if (event && event.target) event.target.checked = true;
+      return;
+    }
+
     // Check if it's the last checkbox and we are trying to check it
-    if (itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked) {
-      // Allow only if there's at least one final document uploaded
+    const currentItem = cl.items[itemIndex];
+    const isSupportItem = currentItem && currentItem.title && currentItem.title.startsWith('[Support]');
+    
+    if (itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked && !isSupportItem) {
       if (!cl.final_documents || cl.final_documents.length === 0) {
-        alert('Please upload the final document(s) before completing the final step.');
+        this.confirmDialog.confirm({
+          title: 'Action Required',
+          message: 'Need to upload final delivery document',
+          confirmText: 'OK',
+          hideCancel: true
+        });
+        revertCheckbox();
         return;
       }
     }
     this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, {}).subscribe({
       next: () => this.fetchChecklist(),
-      error: (err) => alert(err.error?.message || 'Failed to update checklist item.')
+      error: (err) => {
+        alert(err.error?.message || 'Failed to update checklist item.');
+        revertCheckbox();
+      }
     });
   }
 
