@@ -20,3 +20,25 @@
   overflow: hidden;
   background-color: var(--background);
 }
+
+@media print {
+  :host {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  app-client-sidebar, app-client-topbar {
+    display: none !important;
+  }
+  .client-layout {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .client-main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+}

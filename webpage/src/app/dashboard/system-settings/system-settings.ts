@@ -124,6 +124,12 @@ export class SystemSettings implements OnInit {
       next: (res) => {
         if (res && res.success) {
           const fetchedSettings = res.settings || {};
+          if (res.company) {
+            fetchedSettings.company_name = res.company.company_name || '';
+            fetchedSettings.gstin = res.company.gstin || '';
+            fetchedSettings.phone = res.company.phone || '';
+            fetchedSettings.address = res.company.address || '';
+          }
           if (!fetchedSettings.bank_details) {
             fetchedSettings.bank_details = {
               savings_account_last_four: '',
