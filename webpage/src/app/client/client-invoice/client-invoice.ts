@@ -1,4 +1,5 @@
 import { Component, signal, OnInit } from '@angular/core';
+
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../api';
@@ -18,11 +19,14 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
   styleUrl: './client-invoice.css'
 })
 export class ClientInvoice implements OnInit {
+  qrDataUrl = signal<string>('');
   user = signal<any>(null);
   order = signal<any>(null);
   isLoading = signal(true);
   cgstRate = signal(9);  // default 9%
   sgstRate = signal(9);  // default 9%
+  companyDetails = signal<any>({});
+  bankDetails = signal<any>({});
 
   // Icons
   ArrowLeft01Icon = ArrowLeft01Icon;
@@ -42,10 +46,16 @@ export class ClientInvoice implements OnInit {
       // Fetch company settings for tax rates
       this.api.get<any>('settings').subscribe({
         next: (res) => {
-          if (res?.success && res.settings) {
-            const cgst = res.settings.cgst_percentage ?? 9;
-            this.cgstRate.set(cgst);
-            this.sgstRate.set(cgst); // SGST = CGST
+          if (res?.success) {
+            if (res.settings) {
+              const cgst = res.settings.cgst_percentage ?? 9;
+              this.cgstRate.set(cgst);
+              this.sgstRate.set(cgst); // SGST = CGST
+              this.bankDetails.set(res.settings.bank_details || {});
+            }
+            if (res.company) {
+              this.companyDetails.set(res.company);
+            }
           }
         },
         error: () => {} // Use defaults on error
@@ -89,10 +99,12 @@ export class ClientInvoice implements OnInit {
           console.error('Invoice not found');
         }
         this.isLoading.set(false);
+          this.generateQr();
       },
       error: (err) => {
         console.error('Error fetching invoice details', err);
         this.isLoading.set(false);
+          this.generateQr();
       }
     });
   }
@@ -133,6 +145,65 @@ export class ClientInvoice implements OnInit {
 
   goBack() {
     this.router.navigate(['/client/subscriptions']);
+  }
+
+  formatMoney(amount: number): string {
+    return '₹' + amount.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+  }
+
+  numberToWords(num: number): string {
+    if (num === 0) return 'Zero';
+    const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const inWords = (n: number): string => {
+      if (n < 20) return a[n];
+      const digit = n % 10;
+      if (n < 100) return b[Math.floor(n / 10)] + (digit ? '-' + a[digit] : ' ');
+      if (n < 1000) return a[Math.floor(n / 100)] + 'Hundred ' + (n % 100 === 0 ? '' : 'and ' + inWords(n % 100));
+      if (n < 100000) return inWords(Math.floor(n / 1000)) + 'Thousand ' + (n % 1000 === 0 ? '' : inWords(n % 1000));
+      if (n < 10000000) return inWords(Math.floor(n / 100000)) + 'Lakh ' + (n % 100000 === 0 ? '' : inWords(n % 100000));
+      return inWords(Math.floor(n / 10000000)) + 'Crore ' + (n % 10000000 === 0 ? '' : inWords(n % 10000000));
+    };
+    return inWords(Math.floor(num)).trim() + ' Rupees Only';
+  }
+
+  get items(): any[] {
+    const o = this.order();
+    if (!o) return [];
+    return [{
+      name: o.serviceName || 'Service / Product',
+      sacHsn: '9983', // Default SAC for professional services
+      rate: this.servicePrice,
+      quantity: 1,
+      taxableValue: this.servicePrice,
+      cgstAmount: this.cgst,
+      sgstAmount: this.sgst,
+      total: this.total
+    }];
+  }
+
+  get getTotalItemsQty(): number {
+    return this.items.length;
+  }
+
+  
+  generateQr() {
+    if (!this.invoiceNumber) return;
+    const url = 'https://wealthempires.com/invoice/' + this.invoiceNumber;
+    this.qrDataUrl.set(`https://api.qrserver.com/v1/create-qr-code/?size=256x256&margin=1&data=${encodeURIComponent(url)}`);
+  }
+
+  getGstBreakdown(): any[] {
+    if (!this.order() || this.order().isGstApplicable === false) return [];
+    return [{
+      hsnSac: '9983',
+      taxableValue: this.servicePrice,
+      cgstRate: this.cgstRate(),
+      cgstAmount: this.cgst,
+      sgstRate: this.sgstRate(),
+      sgstAmount: this.sgst,
+      totalTax: this.cgst + this.sgst
+    }];
   }
 
   downloadPdf() {

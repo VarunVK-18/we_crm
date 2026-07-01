@@ -40,6 +40,10 @@ const CompanySchema = new mongoose.Schema({
     require_document_verification: { type: Boolean, default: true },
     enable_document_extraction: { type: Boolean, default: false },
     bank_details: {
+      bank_name: { type: String, default: '' },
+      account_number: { type: String, default: '' },
+      ifsc: { type: String, default: '' },
+      branch_name: { type: String, default: '' },
       savings_account_last_four: { type: String, default: '' },
       current_account_last_four: { type: String, default: '' },
       savings_upi_id: { type: String, default: '' },
