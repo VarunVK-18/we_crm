@@ -1494,7 +1494,14 @@ class _HorizontalServiceList extends ConsumerWidget {
               }
 
               if (label == 'Compliance Calendar') {
-                _openComplianceCalendar(context, ref);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ToolDetailScreen(
+                      toolName: label, icon: null,
+                    ),
+                  ),
+                );
                 return;
               }
 

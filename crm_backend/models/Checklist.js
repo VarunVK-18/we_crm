@@ -25,6 +25,11 @@ const ChecklistItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
+  },
+  expense: {
+    amount: { type: Number, default: 0 },
+    billUrl: { type: String, default: null },
+    uploadedAt: { type: Date, default: null }
   }
 });
 

@@ -14,7 +14,15 @@ const complianceCalendarSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
-  }
+  },
+  events: [{
+    dueDate: String,
+    title: String,
+    description: String,
+    category: String,
+    formsOrSections: String,
+    applicableTo: String
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('ComplianceCalendar', complianceCalendarSchema);

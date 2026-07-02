@@ -143,6 +143,9 @@ export class ClientTopbarComponent implements OnInit {
     } else if (url.includes('/tools/nic-finder')) {
       this.pageTitle.set('NIC CODE FINDER');
       this.pageSubtitle.set('Search and find the correct National Industrial Classification (NIC) Code for your business.');
+    } else if (url.includes('/tools/compliance-calendar')) {
+      this.pageTitle.set('COMPLIANCE CALENDAR');
+      this.pageSubtitle.set('View upcoming compliance deadlines and forms.');
     } else if (url.includes('/tools/trademark-finder')) {
       this.pageTitle.set('TRADEMARK CLASSES FINDER');
       this.pageSubtitle.set('Search and find the correct TradeMark Class for your goods or services.');

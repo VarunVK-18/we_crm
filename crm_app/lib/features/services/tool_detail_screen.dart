@@ -7,8 +7,15 @@ import '../../core/theme/app_theme.dart';
 import '../../core/constants/nic_codes.dart';
 import '../../core/constants/tm_classes.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../core/constants/port.dart';
+import '../dashboard/customer_dashboard.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/auth_provider.dart';
+import '../../core/widgets/we_loader.dart';
 
-class ToolDetailScreen extends StatefulWidget {
+class ToolDetailScreen extends ConsumerStatefulWidget {
   final String toolName;
   final dynamic icon;
 
@@ -19,10 +26,10 @@ class ToolDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<ToolDetailScreen> createState() => _ToolDetailScreenState();
+  ConsumerState<ToolDetailScreen> createState() => _ToolDetailScreenState();
 }
 
-class _ToolDetailScreenState extends State<ToolDetailScreen> {
+class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
   // Input Controllers
   final _amountController = TextEditingController();
   final _rateController = TextEditingController();
@@ -54,6 +61,11 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   List<TmClass> _allTmClasses = [];
   List<TmClass> _filteredTmClasses = [];
   bool _isLoadingTm = false;
+
+  List<dynamic> _allComplianceEvents = [];
+  List<dynamic> _filteredComplianceEvents = [];
+  String _calendarYear = '';
+  bool _isLoadingCompliance = false;
 
   Timer? _debounce;
 
@@ -87,6 +99,10 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       Future.delayed(const Duration(milliseconds: 300), () {
         if (mounted) _loadTmData();
       });
+    } else if (widget.toolName == 'Compliance Calendar') {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) _loadComplianceData();
+      });
     }
 
     _scrollController.addListener(() {
@@ -117,6 +133,31 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       _groupNicCodes();
       _isLoadingNic = false;
     });
+  }
+
+  Future<void> _loadComplianceData() async {
+    setState(() => _isLoadingCompliance = true);
+    try {
+      final authState = ref.read(authStateProvider).value;
+      final uid = authState?.uid ?? '';
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/calendar/latest'),
+        headers: {'x-user-id': uid},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['calendar'] != null) {
+          setState(() {
+            _calendarYear = data['calendar']['year'] ?? '';
+            _allComplianceEvents = data['calendar']['events'] ?? [];
+            _filteredComplianceEvents = List.from(_allComplianceEvents);
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading compliance data: $e');
+    }
+    setState(() => _isLoadingCompliance = false);
   }
 
   void _initializeDefaults() {
@@ -226,19 +267,45 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
   void _searchNic(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
-      if (!mounted) return;
-      setState(() {
-        if (query.isEmpty) {
-          _filteredNicCodes = _allNicCodes;
-        } else {
-          _filteredNicCodes = _allNicCodes
-              .where((item) =>
-                  item.code.contains(query) ||
-                  item.description.toLowerCase().contains(query.toLowerCase()))
-              .toList();
-        }
-        _groupNicCodes();
-      });
+      if (mounted) {
+        setState(() {
+          if (query.isEmpty) {
+            _filteredNicCodes = List.from(_allNicCodes);
+          } else {
+            final lowercaseQuery = query.toLowerCase();
+            _filteredNicCodes = _allNicCodes.where((nic) {
+              return nic.code.toLowerCase().contains(lowercaseQuery) ||
+                  nic.description.toLowerCase().contains(lowercaseQuery);
+            }).toList();
+          }
+          _groupNicCodes();
+        });
+      }
+    });
+  }
+
+  void _searchCompliance(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          if (query.isEmpty) {
+            _filteredComplianceEvents = List.from(_allComplianceEvents);
+          } else {
+            final lowercaseQuery = query.toLowerCase();
+            _filteredComplianceEvents = _allComplianceEvents.where((event) {
+              final title = (event['title'] ?? '').toString().toLowerCase();
+              final category = (event['category'] ?? '').toString().toLowerCase();
+              final date = (event['dueDate'] ?? '').toString().toLowerCase();
+              final forms = (event['formsOrSections'] ?? '').toString().toLowerCase();
+              return title.contains(lowercaseQuery) ||
+                  category.contains(lowercaseQuery) ||
+                  date.contains(lowercaseQuery) ||
+                  forms.contains(lowercaseQuery);
+            }).toList();
+          }
+        });
+      }
     });
   }
 
@@ -314,12 +381,13 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
                   if (widget.toolName != 'NIC Finder' && 
                       widget.toolName != 'Trade Mark Class' &&
                       widget.toolName != 'TDS Interest' && 
+                      widget.toolName != 'Compliance Calendar' &&
                       !widget.toolName.contains('GST')) ...[
                     _buildHeaderWidget(),
                     const SizedBox(height: 32),
                   ],
                   _buildToolContent(),
-                  if (widget.toolName != 'NIC Finder' && widget.toolName != 'Trade Mark Class' && !widget.toolName.contains('GST Calc')) ...[
+                  if (widget.toolName != 'NIC Finder' && widget.toolName != 'Trade Mark Class' && widget.toolName != 'Compliance Calendar' && !widget.toolName.contains('GST Calc')) ...[
                     const SizedBox(height: 32),
                     _buildResultCard(),
                   ],
@@ -327,7 +395,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
               ),
             ),
           ),
-          if (widget.toolName != 'NIC Finder' && widget.toolName != 'Trade Mark Class' && widget.toolName != 'TDS Interest') _buildNumpad(),
+          if (widget.toolName != 'NIC Finder' && widget.toolName != 'Trade Mark Class' && widget.toolName != 'TDS Interest' && widget.toolName != 'Compliance Calendar') _buildNumpad(),
         ],
       ),
     );
@@ -382,6 +450,8 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
         return 'Search for the appropriate National Industrial Classification code.';
       case 'Trade Mark Class':
         return 'Search for the appropriate Trade Mark class for goods and services.';
+      case 'Compliance Calendar':
+        return 'View upcoming compliance deadlines, forms, and descriptions.';
       default:
         return 'Professional utility for business compliance management.';
     }
@@ -393,6 +463,9 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     }
     if (widget.toolName == 'Trade Mark Class') {
       return _buildTradeMarkClassFinder();
+    }
+    if (widget.toolName == 'Compliance Calendar') {
+      return _buildComplianceCalendar();
     }
     if (widget.toolName.contains('GST Calc')) {
       return _buildGstCalculator();
@@ -594,7 +667,7 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(40.0),
-          child: CircularProgressIndicator(color: AppTheme.corporateBlue),
+          child: const WeLoader(),
         ),
       );
     }
@@ -784,12 +857,211 @@ class _ToolDetailScreenState extends State<ToolDetailScreen> {
     );
   }
 
+  Widget _buildComplianceCalendar() {
+    if (_isLoadingCompliance) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: const WeLoader(),
+        ),
+      );
+    }
+
+    if (_allComplianceEvents.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40.0),
+          child: Text(
+            'Compliance Calendar is not uploaded yet.',
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (_calendarYear.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Text(
+              'Year: $_calendarYear',
+              style: GoogleFonts.outfit(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.deepTeal,
+              ),
+            ),
+          ),
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _searchCompliance,
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.deepTeal,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search by title, category, or date...',
+                    hintStyle: GoogleFonts.outfit(color: Colors.grey[400]),
+                    prefixIcon: Icon(LucideIcons.search, size: 20, color: Colors.grey[400]),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _filteredComplianceEvents.length,
+          itemBuilder: (context, index) {
+            final event = _filteredComplianceEvents[index];
+            final category = (event['category'] ?? '').toString();
+            final dueDate = (event['dueDate'] ?? '').toString();
+            final title = (event['title'] ?? '').toString();
+            final description = (event['description'] ?? '').toString();
+            final forms = (event['formsOrSections'] ?? '').toString();
+            final applicable = (event['applicableTo'] ?? '').toString();
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  )
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              dueDate,
+                              style: GoogleFonts.outfit(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.corporateBlue,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppTheme.corporateBlue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              category,
+                              style: GoogleFonts.outfit(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.corporateBlue,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: GoogleFonts.outfit(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepTeal,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            description,
+                            style: GoogleFonts.outfit(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey[700],
+                              height: 1.4,
+                            ),
+                          ),
+                          if (forms.isNotEmpty || applicable.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            const Divider(height: 1),
+                            const SizedBox(height: 12),
+                            if (forms.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4.0),
+                                child: Text(
+                                  'Form: $forms',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                              ),
+                            if (applicable.isNotEmpty)
+                              Text(
+                                'For: $applicable',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                          ]
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildTradeMarkClassFinder() {
     if (_isLoadingTm) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(40.0),
-          child: CircularProgressIndicator(color: AppTheme.corporateBlue),
+          child: const WeLoader(),
         ),
       );
     }

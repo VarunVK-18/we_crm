@@ -7,6 +7,7 @@ const Document = require('../models/Document');
 const Subscription = require('../models/Subscription');
 const pdfParse = require('pdf-parse');
 const complianceService = require('../services/complianceService');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 function parseWrittenDate(dateStr) {
   try {
@@ -1410,6 +1411,116 @@ const createSupportTicketForChecklist = async (req, res) => {
 // @desc    Add a financial log directly to a checklist
 // @route   POST /api/checklists/:id/financial-logs
 // @access  Private (Admin, Client Manager, Staff)
+const uploadExpenseBill = async (req, res) => {
+  try {
+    const { id, itemId } = req.params;
+    const checklist = await Checklist.findById(id);
+
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    // Must be admin, manager, or assigned filing staff
+    const isAdminOrManager = req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'client_manager' || req.user.role === 'account_manager';
+    const isAssignedStaff = checklist.assigned_to && checklist.assigned_to.toString() === req.user._id.toString();
+
+    if (!isAdminOrManager && !isAssignedStaff) {
+      return res.status(403).json({ success: false, message: 'Not authorized to upload expense bill' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No bill image provided' });
+    }
+
+    const item = checklist.items.id(itemId);
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Checklist item not found' });
+    }
+
+    // 1. Upload to Document model
+    const doc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer, // Using memory storage buffer
+      uploadedBy: req.user._id
+    });
+    
+    const billUrl = `/api/documents/${doc._id}`;
+
+    // 2. Extract amount via Gemini
+    const keys = [
+      process.env.GEMINI_API_KEY1,
+      process.env.GEMINI_API_KEY2,
+      process.env.GEMINI_API_KEY3
+    ].filter(Boolean);
+
+    if (keys.length === 0) {
+      return res.status(500).json({ success: false, message: 'No Gemini API keys found' });
+    }
+
+    const base64Data = req.file.buffer.toString('base64');
+    const imagePart = {
+      inlineData: {
+        data: base64Data,
+        mimeType: req.file.mimetype
+      },
+    };
+
+    const prompt = `You are an expert OCR AI that extracts the total paid amount from a receipt or bill screenshot.
+Find the final total amount paid and return ONLY a valid JSON object with no markdown formatting or extra text:
+{
+  "amount": <number or null>
+}
+Ensure the amount is a raw number (e.g., 5000, not "5,000" or "Rs 5000").
+If the amount is not found, set it to null.`;
+
+    let extractedAmount = 0;
+    let lastError = null;
+
+    for (const key of keys) {
+      try {
+        const genAI = new GoogleGenerativeAI(key);
+        const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
+        
+        const result = await model.generateContent([prompt, imagePart]);
+        const response = await result.response;
+        const jsonText = response.text();
+        
+        let cleanJsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+        const details = JSON.parse(cleanJsonText);
+        
+        if (details && typeof details.amount === 'number') {
+          extractedAmount = details.amount;
+        }
+        break; // Success, exit loop
+      } catch (error) {
+        console.warn(`Key failed for expense OCR, trying next... Error: ${error.message}`);
+        lastError = error;
+      }
+    }
+
+    // 3. Update the item
+    if (!item.expense) {
+      item.expense = {};
+    }
+    item.expense.billUrl = billUrl;
+    item.expense.amount = extractedAmount;
+    item.expense.uploadedAt = new Date();
+
+    await checklist.save();
+
+    res.json({
+      success: true,
+      message: 'Expense bill uploaded and amount extracted successfully',
+      data: item.expense
+    });
+
+  } catch (error) {
+    console.error('uploadExpenseBill Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to process expense bill' });
+  }
+};
+
 const addFinancialLog = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1492,5 +1603,6 @@ module.exports = {
   deleteFinalDocument,
   reuploadFinalDocument,
   createSupportTicketForChecklist,
-  addFinancialLog
+  addFinancialLog,
+  uploadExpenseBill
 };

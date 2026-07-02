@@ -60,6 +60,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   isAddingPayment = signal<boolean>(false);
   isSubmittingPayment = signal<boolean>(false);
   paymentAmountToAdd: number | null = null;
+  uploadingExpenseIndices = signal<number[]>([]);
 
   privateLimitedFinalDocs = [
     'Certificate of Incorporation (COI)',
@@ -370,6 +371,43 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       }
     });
     return flat;
+  }
+
+  uploadExpenseBill(itemIndex: number, event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const cl = this.checklist();
+    if (!cl) return;
+    const item = cl.items[itemIndex];
+    if (!item || !item._id) return;
+
+    const formData = new FormData();
+    formData.append('bill', file);
+
+    this.uploadingExpenseIndices.update(v => [...v, itemIndex]);
+
+    this.api.post<any>(`checklists/${cl._id}/items/${item._id}/expense`, formData).subscribe({
+      next: (res) => {
+        this.uploadingExpenseIndices.update(v => v.filter(i => i !== itemIndex));
+        this.fetchChecklist();
+        this.confirmDialog.confirm({
+          title: 'Success',
+          message: `Expense bill uploaded and amount extracted successfully! (Extracted: ₹${res.data?.amount || 0})`,
+          confirmText: 'OK',
+          hideCancel: true
+        });
+      },
+      error: (err) => {
+        this.uploadingExpenseIndices.update(v => v.filter(i => i !== itemIndex));
+        this.confirmDialog.confirm({
+          title: 'Error',
+          message: err.error?.message || 'Failed to upload expense bill',
+          confirmText: 'OK',
+          hideCancel: true
+        });
+      }
+    });
   }
 
   toggleChecklistItem(itemIndex: number, event?: any) {

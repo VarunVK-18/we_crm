@@ -226,29 +226,16 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.router.navigate(['/client/tools/nic-finder']);
   }
 
+  goToComplianceCalendar() {
+    this.router.navigate(['/client/tools/compliance-calendar']);
+  }
+
   goToTdsCalc() {
     this.router.navigate(['/client/tools/tds-calc']);
   }
 
   goToTrademarkFinder() {
     this.router.navigate(['/client/tools/trademark-finder']);
-  }
-
-  downloadComplianceCalendar() {
-    this.api.get<any>('calendar/latest').subscribe({
-      next: (res) => {
-        const docId = res?.calendar?.documentId?._id || res?.calendar?.documentId;
-        if (docId) {
-          const baseUrl = (this.api as any).baseUrl || 'http://localhost:5001/api';
-          window.open(`${baseUrl}/documents/${docId}`, '_blank');
-        } else {
-          alert('Compliance Calendar not found.');
-        }
-      },
-      error: (err) => {
-        alert('Compliance Calendar for this year is not uploaded yet.');
-      }
-    });
   }
 
   goToServiceCategory(categoryId: string) {
