@@ -58,7 +58,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   // Add Payment State
   isAddingPayment = signal<boolean>(false);
-  paymentAmountToAdd: number = 0;
+  isSubmittingPayment = signal<boolean>(false);
+  paymentAmountToAdd: number | null = null;
 
   privateLimitedFinalDocs = [
     'Certificate of Incorporation (COI)',
@@ -553,9 +554,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
        return;
     }
 
-    if (!this.paymentOcrVerifiedToAdd) {
+    if (!this.paymentOcrVerifiedToAdd || this.isSubmittingPayment()) {
        return;
     }
+
+    this.isSubmittingPayment.set(true);
 
     const cl = this.checklist();
     if (!cl) return;
@@ -579,8 +582,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
           this.fetchChecklist();
         }
         this.isAddingPayment.set(false);
+        this.isSubmittingPayment.set(false);
       },
       error: (err) => {
+         this.isSubmittingPayment.set(false);
          alert(err.error?.message || 'Failed to add payment.');
       }
     });
@@ -1116,8 +1121,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }).subscribe({
       next: (res: any) => {
         if (res && res.message) {
-          // Optimistically append the message
-          this.chatMessages.update(prev => [...prev, res.message]);
+          // Optimistically append the message, avoiding duplicates
+          this.chatMessages.update(prev => {
+            if (prev.some(m => m._id === res.message._id)) return prev;
+            return [...prev, res.message];
+          });
           this.scrollToBottomChat();
         }
       },

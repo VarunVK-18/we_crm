@@ -18,10 +18,10 @@
         } @else {
           <div class="filter-controls">
             <div class="tabs-container">
-              <button class="tab-btn" [class.active]="activeTab() === 'All'" (click)="setTab('All')">All</button>
-              <button class="tab-btn" [class.active]="activeTab() === 'Action Required'" (click)="setTab('Action Required')">Action Required</button>
-              <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')">In Progress</button>
-              <button class="tab-btn" [class.active]="activeTab() === 'Completed'" (click)="setTab('Completed')">Completed</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'All'" (click)="setTab('All')">All ({{ getTabCount('All') }})</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'Action Required'" (click)="setTab('Action Required')">Action Required ({{ getTabCount('Action Required') }})</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')">In Progress ({{ getTabCount('In Progress') }})</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'Completed'" (click)="setTab('Completed')">Completed ({{ getTabCount('Completed') }})</button>
             </div>
             <div class="search-container">
               <span class="material-symbols-outlined search-icon">search</span>

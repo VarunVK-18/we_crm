@@ -161,7 +161,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     if (tab === 'pending') {
       filtered = all.filter(c => {
         const ds = this.getChecklistDisplayStatus(c);
-        return ds === 'Pending' || ds === 'Action Required';
+        return ds === 'Action Required';
       });
     } else if (tab === 'in_progress') {
       filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress');

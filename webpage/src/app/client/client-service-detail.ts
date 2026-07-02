@@ -361,7 +361,13 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     }).subscribe({
       next: (res: any) => {
         if (res && res.message) {
-          this.chatMessages.update(prev => [...prev, res.message]);
+          this.chatMessages.update(prev => {
+            // Prevent pushing duplicate if polling already fetched it
+            if (prev.some(m => m._id === res.message._id)) {
+              return prev;
+            }
+            return [...prev, res.message];
+          });
           this.scrollToBottomChat();
         }
       }

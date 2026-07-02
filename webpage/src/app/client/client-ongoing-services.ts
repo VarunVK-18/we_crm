@@ -112,6 +112,38 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     this.activeTab.set(tab);
   }
 
+  getTabCount(tabName: string): number {
+    let orders = this.activeOrders();
+    
+    const sel = this.selectedEntity();
+    if (sel !== 'All') {
+      orders = orders.filter(o => {
+        const name = (
+          o.entityName || o.companyName ||
+          o.details?.entityName || o.details?.companyName ||
+          o.details?.proposed_company_name || o.details?.businessName ||
+          o.details?.entity_name || ''
+        ).trim();
+        return name.toLowerCase() === sel.toLowerCase();
+      });
+    }
+
+    const query = this.searchQuery().toLowerCase().trim();
+    if (query) {
+      orders = orders.filter(o => (o.service_name || o.checklist_name || '').toLowerCase().includes(query));
+    }
+
+    if (tabName === 'Action Required') {
+      return orders.filter(o => o.derivedStatus === 'action-required').length;
+    } else if (tabName === 'In Progress') {
+      return orders.filter(o => o.derivedStatus === 'in-progress' || o.derivedStatus === 'active').length;
+    } else if (tabName === 'Completed') {
+      return orders.filter(o => o.derivedStatus === 'completed').length;
+    } else {
+      return orders.length;
+    }
+  }
+
   getFilteredOrders() {
     let orders = this.activeOrders();
     const tab = this.activeTab();

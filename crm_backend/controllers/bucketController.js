@@ -94,8 +94,8 @@ const claimBucketRequest = async (req, res) => {
       custom_service_id = await getNextServiceId(company_id);
     } catch (e) { console.error('Failed to generate custom_service_id', e); }
 
-    // Derive the entity name from the bucket request (client_name holds the requested entity name)
-    const entityName = bucketReq.client_name || bucketReq.client_id?.company_name || bucketReq.client_id?.owner_name || 'Client';
+    // Derive the entity name from the bucket request (prefer company name)
+    const entityName = bucketReq.client_company_name || bucketReq.client_name || bucketReq.client_id?.company_name || bucketReq.client_id?.owner_name || 'Client';
 
     // Create checklist assigned to the claiming client_manager
     const checklist = await Checklist.create({
@@ -104,6 +104,7 @@ const claimBucketRequest = async (req, res) => {
       client_id: bucketReq.client_id._id,
       service_name: bucketReq.service_name,
       assigned_to: managerId,
+      assigned_team: team_id || null,
       created_by: managerId,
       items: finalItems,
       status: 'pending',
@@ -223,14 +224,30 @@ const selfAssignJob = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Job not found or already taken.' });
     }
 
-    // Verify staff is in a team managed by the claimer
-    const team = await Team.findOne({
-      company_id,
-      manager_id: bucketReq.claimed_by,
-      members: staffId
-    });
-    if (!team) {
-      return res.status(403).json({ success: false, message: 'This job is not available to your team.' });
+    // Verify staff is in a team managed by the claimer (or is the claimer themselves, or is admin/manager)
+    const isClaimer = bucketReq.claimed_by && bucketReq.claimed_by.toString() === staffId.toString();
+    const isAdminOrManager = req.user.role === 'admin' || req.user.role === 'client_manager';
+    let team = null;
+    if (!isClaimer && !isAdminOrManager) {
+      team = await Team.findOne({
+        company_id,
+        manager_id: bucketReq.claimed_by,
+        members: staffId
+      });
+    }
+
+    if (!isClaimer && !isAdminOrManager && !team) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'This job is not available to your team.',
+        debug: {
+          role: req.user.role,
+          staffId,
+          claimed_by: bucketReq.claimed_by,
+          isClaimer,
+          isAdminOrManager
+        }
+      });
     }
 
     // Update checklist to re-assign to this staff

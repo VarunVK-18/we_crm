@@ -400,8 +400,15 @@ export class StaffChatComponent implements OnInit, OnDestroy {
 
     this.api.post<any>(`chat/${orderId}`, payload).subscribe({
       next: (res) => {
-        this.fetchChatMessages();
-        this.fetchConversations(); // refresh the sidebar list order
+        if (res && res.message) {
+          // Replace temp message with real message from server
+          this.chatMessages.update(msgs => msgs.map(m => m._id === tempMsg._id ? res.message : m));
+        } else {
+          // If no message returned, just remove temp and fetch
+          this.chatMessages.update(msgs => msgs.filter(m => m._id !== tempMsg._id));
+          this.fetchChatMessages();
+        }
+        this.fetchConversations(false); // refresh the sidebar list order silently
       },
       error: (err) => {
         console.error('Failed to send message', err);

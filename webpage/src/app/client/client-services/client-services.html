@@ -140,9 +140,9 @@
                   </div>
                   <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="tel" name="phone" [(ngModel)]="quoteForm.phone" required pattern="^[0-9]{10}$" class="form-input" #phoneCtrl="ngModel">
+                    <input type="tel" name="phone" [(ngModel)]="quoteForm.phone" required pattern="^(\+?91[\-\s]?)?[0-9]{10}$" class="form-input" #phoneCtrl="ngModel">
                     @if (phoneCtrl.invalid && (phoneCtrl.dirty || phoneCtrl.touched)) {
-                      <span class="error-text" style="color: #ef4444; font-size: 12px; margin-top: 4px;">Enter a valid 10-digit phone number</span>
+                      <span class="error-text" style="color: #ef4444; font-size: 12px; margin-top: 4px;">Enter a valid 10-digit phone number (with or without +91)</span>
                     }
                   </div>
                 </div>

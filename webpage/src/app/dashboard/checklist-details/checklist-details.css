@@ -393,3 +393,12 @@ details.collapsible-card[open] summary .material-symbols-outlined:last-child {
 details.collapsible-card summary .material-symbols-outlined:last-child {
   transition: transform 0.3s ease;
 }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

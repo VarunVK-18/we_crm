@@ -32,6 +32,7 @@ import {
 export class ClientHelpSupport implements OnInit {
   user = signal<any>(null);
   clientManager = signal<any>(null);
+  isLoadingManager = signal<boolean>(true);
 
   // KPI State
   tickets = signal<any[]>([]);
@@ -65,8 +66,26 @@ export class ClientHelpSupport implements OnInit {
   }
 
   fetchClientManager() {
-    const uid = this.user()?._id || this.user()?.id;
-    if (!uid) return;
+    const u = this.user();
+    if (!u) return;
+
+    // Check if manager is already populated in the local user object
+    if (u.client_manager && typeof u.client_manager === 'object' && (u.client_manager.name || u.client_manager.owner_name)) {
+      this.clientManager.set(u.client_manager);
+      this.isLoadingManager.set(false);
+      return; // Skip fetch if we already have it
+    } else if (u.assigned_to && typeof u.assigned_to === 'object' && (u.assigned_to.name || u.assigned_to.owner_name)) {
+      this.clientManager.set(u.assigned_to);
+      this.isLoadingManager.set(false);
+      return; // Skip fetch if we already have it
+    }
+
+    this.isLoadingManager.set(true);
+    const uid = u._id || u.id;
+    if (!uid) {
+      this.isLoadingManager.set(false);
+      return;
+    }
     this.api.get<any>(`users/profile/${uid}`).subscribe({
       next: (res) => {
         if (res.user && res.user.client_manager) {
@@ -74,8 +93,12 @@ export class ClientHelpSupport implements OnInit {
         } else if (res.user && res.user.assigned_to) {
           this.clientManager.set(res.user.assigned_to);
         }
+        this.isLoadingManager.set(false);
       },
-      error: (err) => console.error('Failed to fetch client manager:', err)
+      error: (err) => {
+        console.error('Failed to fetch client manager:', err);
+        this.isLoadingManager.set(false);
+      }
     });
   }
 

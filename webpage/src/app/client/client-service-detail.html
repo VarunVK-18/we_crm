@@ -147,6 +147,37 @@
           </div>
           }
 
+          <!-- Final Deliverables Section -->
+          @if (!isPaymentPending() && (order()?.derivedStatus === 'completed' || filterFinalDocs(order()?.final_documents).length > 0)) {
+          <div class="final-deliverables-area">
+            <div class="progress-header">
+              <h3>Final Deliverables</h3>
+            </div>
+
+            <div class="deliverables-list">
+              <!-- Final Documents -->
+              @for (doc of filterFinalDocs(order()?.final_documents); track doc.document_id) {
+              <div class="deliverable-item" (click)="downloadDocument(doc)">
+                <div class="deliverable-icon doc-icon">
+                  <span class="material-symbols-outlined">description</span>
+                </div>
+                <div class="deliverable-content">
+                  <h4>{{ doc.name }}</h4>
+                  @if (doc.expiry_date) {
+                  <p class="expiry-text">Expires: {{ doc.expiry_date | date:'dd MMM yyyy' }}</p>
+                  } @else {
+                  <p>Final Document</p>
+                  }
+                </div>
+                <div class="deliverable-action">
+                  <span class="material-symbols-outlined">download</span>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+          }
+
           <!-- New Director Details Section -->
           @if (getParsedDirectors().length > 0) {
           <div class="director-details-area" style="margin-top: 32px;">
@@ -208,50 +239,6 @@
                   } @else {
                   <span class="material-symbols-outlined success-icon">check_circle</span>
                   }
-                </div>
-              </div>
-              }
-            </div>
-          </div>
-          }
-
-          @if (!isPaymentPending() && (order()?.derivedStatus === 'completed' || filterFinalDocs(order()?.final_documents).length > 0)) {
-          <div class="final-deliverables-area">
-            <div class="progress-header">
-              <h3>Final Deliverables</h3>
-            </div>
-
-            <div class="deliverables-list">
-              <!-- Invoice Button -->
-              <div class="deliverable-item" (click)="goToInvoice()">
-                <div class="deliverable-icon invoice-icon">
-                  <span class="material-symbols-outlined">receipt_long</span>
-                </div>
-                <div class="deliverable-content">
-                  <h4>Official Invoice</h4>
-                  <p>Click to view and download</p>
-                </div>
-                <div class="deliverable-action">
-                  <span class="material-symbols-outlined">download</span>
-                </div>
-              </div>
-
-              <!-- Final Documents -->
-              @for (doc of filterFinalDocs(order()?.final_documents); track doc.document_id) {
-              <div class="deliverable-item" (click)="downloadDocument(doc)">
-                <div class="deliverable-icon doc-icon">
-                  <span class="material-symbols-outlined">description</span>
-                </div>
-                <div class="deliverable-content">
-                  <h4>{{ doc.name }}</h4>
-                  @if (doc.expiry_date) {
-                  <p class="expiry-text">Expires: {{ doc.expiry_date | date:'dd MMM yyyy' }}</p>
-                  } @else {
-                  <p>Final Document</p>
-                  }
-                </div>
-                <div class="deliverable-action">
-                  <span class="material-symbols-outlined">download</span>
                 </div>
               </div>
               }
