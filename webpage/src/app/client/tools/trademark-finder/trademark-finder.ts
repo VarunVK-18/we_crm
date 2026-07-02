@@ -9,10 +9,12 @@ interface TrademarkClass {
   type: string;
 }
 
+import { RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-trademark-finder',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './trademark-finder.html',
   styleUrl: './trademark-finder.css',
 })

@@ -973,7 +973,7 @@ const uploadFinalDocuments = async (req, res) => {
               cert = new Certificate({
                 client_id: checklist.client_id,
                 entityName: checklist.details?.companyName || checklist.details?.proposed_company_name || checklist.details?.entityName || checklist.details?.businessName || client?.company_name || 'Individual',
-                serviceName: checklist.service_name,
+                serviceName: checklist.service_name.replace(/ Renewal$/i, '').trim(),
                 certificateNumber: req.body.certificateNumber || 'N/A',
                 issueDate: new Date(req.body.issueDate),
                 expiryDate: new Date(req.body.expiryDate),
@@ -984,6 +984,8 @@ const uploadFinalDocuments = async (req, res) => {
               cert.issueDate = new Date(req.body.issueDate);
               cert.expiryDate = new Date(req.body.expiryDate);
               if (req.body.certificateNumber) cert.certificateNumber = req.body.certificateNumber;
+              cert.renewalStatus = 'Active';
+              cert.latestRenewalChecklistId = undefined; // clear it so it doesn't get stuck
             }
             await cert.save();
             console.log(`[CERTIFICATE] Created/Updated Expiry Certificate for ${checklist.service_name}`);

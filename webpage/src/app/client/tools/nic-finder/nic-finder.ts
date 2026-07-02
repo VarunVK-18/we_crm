@@ -11,10 +11,12 @@ interface NicCode {
   sectionTitle: string;
 }
 
+import { RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-nic-finder',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './nic-finder.html',
   styleUrl: './nic-finder.css',
 })

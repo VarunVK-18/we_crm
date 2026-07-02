@@ -130,7 +130,6 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   updateTitle(url: string) {
-    this.breadcrumbs.set([]); // clear by default
     if (url.includes('/profile')) {
       this.pageTitle.set('My Profile');
       this.pageSubtitle.set('Account Details & Documents');
@@ -142,10 +141,10 @@ export class ClientTopbarComponent implements OnInit {
       const usr = this.user();
       this.pageSubtitle.set(usr?.company_name || usr?.name || 'Entity Compliance Management');
     } else if (url.includes('/tools/nic-finder')) {
-      this.breadcrumbs.set([{label: 'Dashboard', path: '/client/dashboard'}, {label: 'NIC CODE FINDER'}]);
+      this.pageTitle.set('NIC CODE FINDER');
       this.pageSubtitle.set('Search and find the correct National Industrial Classification (NIC) Code for your business.');
     } else if (url.includes('/tools/trademark-finder')) {
-      this.breadcrumbs.set([{label: 'Dashboard', path: '/client/dashboard'}, {label: 'TRADEMARK CLASSES FINDER'}]);
+      this.pageTitle.set('TRADEMARK CLASSES FINDER');
       this.pageSubtitle.set('Search and find the correct TradeMark Class for your goods or services.');
     } else {
       this.pageTitle.set('My Services');
