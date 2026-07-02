@@ -126,8 +126,15 @@ class FirebaseMessagingService {
     await _localNotificationsPlugin.initialize(
       settings: initSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Handle when a user taps on a local notification shown while the app was in the foreground.
         log('Local Notification Tapped with payload: ${response.payload}', name: 'FCM Tap');
+        if (response.payload != null) {
+          try {
+            final data = jsonDecode(response.payload!);
+            _handleNotificationClick(data);
+          } catch (e) {
+            log('Error parsing payload: $e', name: 'FCM Tap');
+          }
+        }
       },
     );
   }
@@ -149,7 +156,7 @@ class FirebaseMessagingService {
     // B. Listen for when a user taps a notification that opened the app from the BACKGROUND.
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
       log('Message clicked! App opened from background.', name: 'FCM Tap');
-      _handleNotificationClick(message);
+      _handleNotificationClick(message.data);
     });
 
     // C. Check if the app was opened from a TERMINATED state via a notification tap.
@@ -171,19 +178,19 @@ class FirebaseMessagingService {
         log('App opened from terminated state via notification!', name: 'FCM Tap');
         // We use Future.delayed to ensure the app is fully mounted before navigating
         Future.delayed(const Duration(milliseconds: 500), () {
-          _handleNotificationClick(message);
+          _handleNotificationClick(message.data);
         });
       }
     });
   }
 
-  void _handleNotificationClick(RemoteMessage message) {
+  void _handleNotificationClick(Map<String, dynamic> data) {
     // Access the global navigator key from main.dart
     final context = navigatorKey.currentContext;
     if (context == null) return;
     
-    final type = message.data['type'];
-    final orderId = message.data['orderId'];
+    final type = data['type'];
+    final orderId = data['orderId'];
 
     if (orderId != null && orderId.isNotEmpty) {
       if (type == 'chat') {
@@ -252,7 +259,7 @@ class FirebaseMessagingService {
       title: message.notification?.title,         // Notification Title
       body: message.notification?.body,          // Notification Body
       notificationDetails: platformDetails,
-      payload: message.data.toString(),    // Pass any additional data as a payload
+      payload: jsonEncode(message.data),    // Pass any additional data as a payload
     );
   }
 }

@@ -1,8 +1,8 @@
 .hub-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: calc(100vh - 80px);
+  height: calc(100vh - 80px);
+  overflow-y: auto;
   background-color: var(--background);
 }
 
@@ -23,6 +23,7 @@
   justify-content: center;
   padding: 60px 20px 40px;
   background-color: var(--surface);
+  flex-shrink: 0;
 }
 
 .logo-wrapper {

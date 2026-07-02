@@ -102,7 +102,7 @@
               </div>
               <div class="detail-item">
                 <span class="detail-label">Incorporation Date</span>
-                <span class="detail-value">{{ user()?.incorporation_date ? (user()?.incorporation_date | date:'longDate') : 'N/A' }}</span>
+                <span class="detail-value">{{ user()?.incorporation_date ? (user()?.incorporation_date | date:'dd/MM/yy') : 'N/A' }}</span>
               </div>
               <div class="detail-item full-width">
                 <span class="detail-label">Address</span>
@@ -192,7 +192,7 @@
                     <div class="doc-info">
                       <span class="doc-name" [title]="doc.name">{{ doc.name }}</span>
                       @if (doc.uploadedAt) {
-                        <span class="doc-date">{{ doc.uploadedAt | date:'mediumDate' }}</span>
+                        <span class="doc-date">{{ doc.uploadedAt | date:'dd/MM/yy' }}</span>
                       }
                     </div>
                     <div class="doc-actions">
