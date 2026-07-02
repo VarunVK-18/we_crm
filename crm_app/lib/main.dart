@@ -16,7 +16,7 @@ void main() async {
 
   // Initialize our custom messaging service
   final messagingService = FirebaseMessagingService();
-  await messagingService.initialize();
+  messagingService.initialize();
 
   // Explicitly ensure status bar and system navigation are visible
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

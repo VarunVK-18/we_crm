@@ -222,19 +222,7 @@
             </div>
 
             <div class="deliverables-list">
-              <!-- Invoice Button -->
-              <div class="deliverable-item" (click)="goToInvoice()">
-                <div class="deliverable-icon invoice-icon">
-                  <span class="material-symbols-outlined">receipt_long</span>
-                </div>
-                <div class="deliverable-content">
-                  <h4>Official Invoice</h4>
-                  <p>Click to view and download</p>
-                </div>
-                <div class="deliverable-action">
-                  <span class="material-symbols-outlined">download</span>
-                </div>
-              </div>
+
 
               <!-- Final Documents -->
               @for (doc of filterFinalDocs(order()?.final_documents); track doc.document_id) {

@@ -387,13 +387,33 @@
               </thead>
               <tbody>
                 @for (item of activeTemplateItems; track $index) {
-                  <tr>
-                    <td style="font-weight: 600; color: var(--text-primary);">{{ item.title }}</td>
-                    <td style="color: var(--text-secondary);">{{ item.description || 'No description provided' }}</td>
-                    <td>
-                      <button class="btn-text-action btn-text-danger" (click)="removeTemplateItem($index)">Remove</button>
-                    </td>
-                  </tr>
+                  @if (!item.isEditing) {
+                    <tr>
+                      <td style="font-weight: 600; color: var(--text-primary);">{{ item.title }}</td>
+                      <td style="color: var(--text-secondary);">{{ item.description || 'No description provided' }}</td>
+                      <td style="display: flex; align-items: center;">
+                        <button type="button" class="btn-text-action" style="color: var(--accent-primary); margin-right: 8px; display: inline-flex; align-items: center;" title="Edit" (click)="startEditing($index)">
+                          <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+                        </button>
+                        <button type="button" class="btn-text-action btn-text-danger" style="display: inline-flex; align-items: center;" title="Remove" (click)="removeTemplateItem($index)">
+                          <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                        </button>
+                      </td>
+                    </tr>
+                  } @else {
+                    <tr>
+                      <td>
+                        <input type="text" [(ngModel)]="item.editTitle" name="editTitle_{{$index}}" class="form-control-input" style="padding: 6px; font-size: 13px;" />
+                      </td>
+                      <td>
+                        <input type="text" [(ngModel)]="item.editDesc" name="editDesc_{{$index}}" class="form-control-input" style="padding: 6px; font-size: 13px;" />
+                      </td>
+                      <td>
+                        <button type="button" class="btn-text-action" style="color: green; margin-right: 8px;" (click)="saveEdit($index)">Save</button>
+                        <button type="button" class="btn-text-action" style="color: grey;" (click)="cancelEdit($index)">Cancel</button>
+                      </td>
+                    </tr>
+                  }
                 }
                 @if (activeTemplateItems.length === 0) {
                   <tr>

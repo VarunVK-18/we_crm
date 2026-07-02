@@ -379,8 +379,8 @@ Widget build(BuildContext context) {
                           _buildRadioGroup('Select your role in the company. You can be a Director, Shareholder, or both Director and Shareholder.', '', ['Director', 'Shareholder', 'Director & Shareholder'], data.role, (v) => setState(() => data.role = v)),
                           
                           _buildField('Share holding percentage', 'Enter the percentage of shares you will hold in the company. This should be between 0 and 100.', data.shareholdingController, isRequired: true, keyboardType: TextInputType.number),
-                          
-                          _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory for the company\'s bank accounts and official documents. Yes, I want to be the authorized signatory', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
+                          if (index == 0)
+                            _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory for the company\'s bank accounts and official documents. Yes, I want to be the authorized signatory', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
                           
                           const SizedBox(height: 24),
                           const Text('Document Uploads', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.deepTeal)),

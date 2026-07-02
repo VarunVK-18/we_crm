@@ -591,7 +591,26 @@ Widget build(BuildContext context) {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: (v) {
+              if (isRequired && (v == null || v.trim().isEmpty)) {
+                return 'This is a required question';
+              }
+              if (v != null && v.trim().isNotEmpty) {
+                final text = v.trim();
+                final labelLower = label.toLowerCase();
+                if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact')) {
+                  if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
+                } else if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
+                  if (!RegExp(r'^[0-9]{12}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
+                } else if (labelLower.contains('pan')) {
+                  if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
+                } else if (labelLower.contains('tan')) {
+                  if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
+                }
+              }
+              return null;
+            },
           ),
         ],
       ),

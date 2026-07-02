@@ -200,7 +200,7 @@ export class IncorpForm implements OnInit {
     this.directors.push({
       fullName: '', fatherName: '', dob: '', placeOfBirth: '', occupation: '',
       education: '', email: '', phone: '', address: '', pan: '', aadhaar: '',
-      din: '', shareholding: '', nationality: 'Indian', needDsc: 'Yes', role: 'Director', isAuthSignatory: 'Yes'
+      din: '', shareholding: '', nationality: 'Indian', needDsc: 'Yes', role: 'Director', isAuthSignatory: this.directors.length === 0 ? 'Yes' : 'No'
     });
   }
 

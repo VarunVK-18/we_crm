@@ -179,7 +179,7 @@ export class LlpForm implements OnInit {
     this.persons.push({
       fullName: '', fatherName: '', dob: '', placeOfBirth: '', occupation: 'Business',
       education: '', email: '', phone: '', address: '', pan: '', aadhaar: '',
-      din: '', capital: '', profitRatio: '', nationality: 'Indian', needDsc: 'Yes', designation: 'Designated Partner', isAuthorized: 'Yes'
+      din: '', capital: '', profitRatio: '', nationality: 'Indian', needDsc: 'Yes', designation: 'Designated Partner', isAuthorized: this.persons.length === 0 ? 'Yes' : 'No'
     });
   }
 

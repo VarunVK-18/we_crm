@@ -492,8 +492,8 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
                           _buildRadioGroup('Select your role', '', ['Director', 'Shareholder', 'Director & Shareholder'], data.role, (v) => setState(() => data.role = v)),
                           
                           _buildField('Share holding percentage', 'Enter the percentage of shares (0-100).', data.shareholdingController, isRequired: true, keyboardType: TextInputType.number),
-                          
-                          _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory.', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
+                          if (index == 0)
+                            _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory.', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
                           
                           const SizedBox(height: 24),
                           const Text('Document Uploads', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.deepTeal)),

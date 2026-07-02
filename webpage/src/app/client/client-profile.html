@@ -256,8 +256,13 @@
                         </div>
                         <div class="detail-item">
                           <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Role</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">
+                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark); display: flex; align-items: center; gap: 8px;">
                             <span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ currentDir.role || 'Director' }}</span>
+                            @if (selectedDirectorIndex() === 0 && (currentDir.isAuthSignatory === 'Yes' || currentDir.isAuthorized === 'Yes')) {
+                              <span style="background: #eff6ff; color: #3b82f6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #bfdbfe; display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined" style="font-size: 12px;">verified</span> Authorized Signatory
+                              </span>
+                            }
                           </div>
                         </div>
                         <div class="detail-item">

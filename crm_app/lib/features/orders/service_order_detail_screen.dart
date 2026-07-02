@@ -1509,74 +1509,6 @@ class _FinalDeliverySection extends StatelessWidget {
         ),
         const SizedBox(height: 16),
 
-        // Invoice Button
-        Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.3)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.03),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => InvoiceScreen(order: order),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppTheme.corporateBlue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(LucideIcons.receipt,
-                          color: AppTheme.corporateBlue, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Official Invoice',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w700, fontSize: 14),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Tap to view and download',
-                            style: TextStyle(
-                                color: Colors.grey.shade600, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(LucideIcons.download,
-                        color: AppTheme.corporateBlue, size: 20),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-
         // Final Documents
         ...order.finalDocuments
             .where((doc) => !doc.name.startsWith('director_'))
@@ -1646,38 +1578,7 @@ class _FinalDeliverySection extends StatelessWidget {
             ),
           );
         }),
-        // Apply Again Button (for completed services)
-        const SizedBox(height: 24),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useSafeArea: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => ServiceRequestSummarySheet(
-                  packageName: order.serviceType,
-                  preselectedEntity: order.entityName.isNotEmpty ? order.entityName : null,
-                ),
-              );
-            },
-            icon: const Icon(LucideIcons.refreshCw, size: 18),
-            label: const Text(
-              'Apply Again for Same Entity',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-            ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.corporateBlue,
-              side: const BorderSide(color: AppTheme.corporateBlue, width: 1.5),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-        ),
+
       ],
     );
   }
@@ -1767,9 +1668,32 @@ class _DirectorDetailsSection extends StatelessWidget {
                               style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              dir['name'] ?? 'Unknown',
-                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.deepTeal),
+                            Row(
+                              children: [
+                                Text(
+                                  dir['name'] ?? 'Unknown',
+                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.deepTeal),
+                                ),
+                                if (index == 0 && (dir['isAuthSignatory'] == 'Yes' || dir['isAuthorized'] == 'Yes')) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(LucideIcons.checkCircle2, size: 10, color: Colors.blue[700]),
+                                        const SizedBox(width: 4),
+                                        Text('Authorized Signatory', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.blue[700])),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),

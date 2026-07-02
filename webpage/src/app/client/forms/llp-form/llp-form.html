@@ -134,19 +134,21 @@
                     <label>Profit Sharing Ratio (%) *</label>
                     <input type="number" [(ngModel)]="d.profitRatio" name="profitRatio_{{$index}}" required placeholder="Percentage">
                   </div>
-                  <div class="form-group">
-                    <label>Authorized Signatory?</label>
-                    <div class="radio-group">
-                      <label class="radio-label">
-                        <input type="radio" name="isAuthSignatory_{{$index}}" value="Yes" [(ngModel)]="d.isAuthorized">
-                        <span>Yes</span>
-                      </label>
-                      <label class="radio-label">
-                        <input type="radio" name="isAuthSignatory_{{$index}}" value="No" [(ngModel)]="d.isAuthorized">
-                        <span>No</span>
-                      </label>
+                  @if ($index === 0) {
+                    <div class="form-group">
+                      <label>Authorized Signatory?</label>
+                      <div class="radio-group">
+                        <label class="radio-label">
+                          <input type="radio" name="isAuthSignatory_{{$index}}" value="Yes" [(ngModel)]="d.isAuthorized">
+                          <span>Yes</span>
+                        </label>
+                        <label class="radio-label">
+                          <input type="radio" name="isAuthSignatory_{{$index}}" value="No" [(ngModel)]="d.isAuthorized">
+                          <span>No</span>
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  }
                 
                 <div class="form-group">
                   <label>Date of Birth *</label>
@@ -188,7 +190,10 @@
                 </div>
                 <div class="form-group">
                   <label>Phone Number *</label>
-                  <input type="tel" [(ngModel)]="d.phone" name="d_phone_{{$index}}" required>
+                  <input type="tel" [(ngModel)]="d.phone" name="d_phone_{{$index}}" required pattern="^[0-9]{10}$" #phoneField="ngModel">
+                  @if (phoneField.invalid && (phoneField.dirty || phoneField.touched)) {
+                    <div style="color: red; font-size: 12px; margin-top: 4px;">Enter a valid 10-digit phone number</div>
+                  }
                 </div>
 
                 <div class="form-group full-width">
@@ -198,11 +203,17 @@
 
                 <div class="form-group">
                   <label>PAN Number *</label>
-                  <input type="text" [(ngModel)]="d.pan" name="d_pan_{{$index}}" required style="text-transform: uppercase;">
+                  <input type="text" [(ngModel)]="d.pan" name="d_pan_{{$index}}" required pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #panField="ngModel" style="text-transform: uppercase;">
+                  @if (panField.invalid && (panField.dirty || panField.touched)) {
+                    <div style="color: red; font-size: 12px; margin-top: 4px;">Enter a valid PAN (e.g. ABCDE1234F)</div>
+                  }
                 </div>
                 <div class="form-group">
                   <label>Aadhaar Number *</label>
-                  <input type="text" [(ngModel)]="d.aadhaar" name="d_aadhaar_{{$index}}" required>
+                  <input type="text" [(ngModel)]="d.aadhaar" name="d_aadhaar_{{$index}}" required pattern="^[0-9]{12}$" #aadhaarField="ngModel">
+                  @if (aadhaarField.invalid && (aadhaarField.dirty || aadhaarField.touched)) {
+                    <div style="color: red; font-size: 12px; margin-top: 4px;">Enter a valid 12-digit Aadhaar number</div>
+                  }
                 </div>
                 
                 <div class="form-group">

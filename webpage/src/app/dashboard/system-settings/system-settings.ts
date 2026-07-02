@@ -95,7 +95,7 @@ export class SystemSettings implements OnInit {
   ];
 
   selectedService = '';
-  activeTemplateItems: {title: string, description: string}[] = [];
+  activeTemplateItems: any[] = [];
   activeTemplateExtractEnabled = false;
   newItemTitle = '';
   newItemDesc = '';
@@ -246,14 +246,45 @@ export class SystemSettings implements OnInit {
     this.activeTemplateItems.splice(index, 1);
   }
 
+  startEditing(index: number) {
+    const item = this.activeTemplateItems[index];
+    item.isEditing = true;
+    item.oldTitle = item.title;
+    item.editTitle = item.title;
+    item.editDesc = item.description;
+  }
+
+  saveEdit(index: number) {
+    const item = this.activeTemplateItems[index];
+    item.title = item.editTitle;
+    item.description = item.editDesc;
+    item.isEditing = false;
+  }
+
+  cancelEdit(index: number) {
+    this.activeTemplateItems[index].isEditing = false;
+  }
+
   saveTemplate() {
     if (!this.selectedService) return;
+    
+    // Clean up temporary editing properties before saving
+    const cleanItems = this.activeTemplateItems.map(item => ({
+      title: item.title,
+      description: item.description,
+      oldTitle: item.oldTitle
+    }));
+
     this.api.post<any>('templates/checklists', {
       service_name: this.selectedService,
-      items: this.activeTemplateItems,
+      items: cleanItems,
       enable_document_extraction: this.activeTemplateExtractEnabled
     }).subscribe({
-      next: (res) => alert('Template saved successfully!'),
+      next: (res) => {
+        alert('Template saved successfully!');
+        // Clear oldTitle after successful save to reset state
+        this.activeTemplateItems.forEach(item => delete item.oldTitle);
+      },
       error: (err) => alert(err.error?.message || 'Failed to save template.')
     });
   }
