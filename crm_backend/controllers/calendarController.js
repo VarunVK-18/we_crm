@@ -71,3 +71,22 @@ exports.getAllCalendars = async (req, res) => {
     res.status(500).json({ message: 'Error fetching calendars', error: err.message });
   }
 };
+
+// Delete a calendar by year
+exports.deleteCalendar = async (req, res) => {
+  try {
+    const { year } = req.params;
+    const calendar = await ComplianceCalendar.findOneAndDelete({ year });
+    if (!calendar) {
+      return res.status(404).json({ message: 'Calendar not found' });
+    }
+    // Also delete the associated document
+    if (calendar.documentId) {
+      await Document.findByIdAndDelete(calendar.documentId);
+    }
+    res.status(200).json({ message: 'Calendar deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting calendar:', err);
+    res.status(500).json({ message: 'Error deleting calendar', error: err.message });
+  }
+};
