@@ -8,13 +8,13 @@
   </section>
 
   <ng-container *ngIf="!isLoading() && order()">
-    <header class="public-invoice-toolbar d-print-none">
-      <div>
-        <span>Invoice</span>
-        <strong>{{ invoiceNumber }}</strong>
+    <header class="public-invoice-toolbar d-print-none" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+      <button type="button" (click)="goBack()" style="background: white; color: #2563eb; border: 1px solid #2563eb; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Back</button>
+      <div style="text-align: center;">
+        <span style="font-size: 10px; color: #64748b; font-weight: bold; letter-spacing: 1.2px; text-transform: uppercase; display: block;">Invoice</span>
+        <strong style="font-size: 18px; color: #1e293b; font-weight: 900;">{{ invoiceNumber }}</strong>
       </div>
-      <button type="button" (click)="goBack()" style="margin-right: 10px; background: white; color: #2563eb;">Back</button>
-      <button type="button" (click)="downloadPdf()">Print</button>
+      <button type="button" (click)="downloadPdf()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer;">Print</button>
     </header>
 
     <article class="invoice-sheet" aria-label="Invoice document">
