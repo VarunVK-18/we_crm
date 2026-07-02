@@ -226,16 +226,18 @@
 
 .chat-side-panel {
   width: 380px;
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
   background: var(--surface);
   border-left: 1px solid #e2e8f0;
-  z-index: 100;
+  z-index: 9999;
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: -4px 0 15px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-side-panel.open {
@@ -484,7 +486,10 @@
   flex: 1;
   padding: 24px;
   overflow-y: auto;
-  background: var(--background);
+  background-color: var(--background);
+  background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.9)), url('/assets/chart/Chatbackground.png');
+  background-size: cover;
+  background-position: center;
   display: flex;
   flex-direction: column;
   gap: 16px;

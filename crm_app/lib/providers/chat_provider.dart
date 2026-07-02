@@ -108,10 +108,12 @@ class ChatNotifier extends StateNotifier<ChatState> {
         final newMessage = ChatMessage.fromJson(data['message']);
         
         if (mounted) {
-          // Optimistically add to state
-          state = state.copyWith(
-            messages: [...state.messages, newMessage],
-          );
+          // Prevent pushing duplicate if polling already fetched it
+          if (!state.messages.any((m) => m.id == newMessage.id)) {
+            state = state.copyWith(
+              messages: [...state.messages, newMessage],
+            );
+          }
         }
         return true;
       }

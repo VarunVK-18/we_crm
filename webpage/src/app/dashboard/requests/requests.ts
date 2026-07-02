@@ -581,8 +581,11 @@ export class RequestsComponent implements OnInit {
     }).subscribe({
       next: (res: any) => {
         if (res && res.message) {
-          // Optimistically append the message
-          this.chatMessages.update(prev => [...prev, res.message]);
+          // Optimistically append the message, avoiding duplicates
+          this.chatMessages.update(prev => {
+            if (prev.some(m => m._id === res.message._id)) return prev;
+            return [...prev, res.message];
+          });
           this.scrollToBottomChat();
         }
       },

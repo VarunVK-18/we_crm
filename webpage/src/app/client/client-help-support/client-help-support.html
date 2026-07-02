@@ -90,6 +90,21 @@
         
         <!-- Manager Card (Dark Theme) -->
         <div class="manager-card-dark">
+          <style>
+            @keyframes pulse {
+              0% { opacity: 1; }
+              50% { opacity: 0.5; }
+              100% { opacity: 1; }
+            }
+            .skeleton-text {
+              display: inline-block;
+              background: rgba(255,255,255,0.1);
+              border-radius: 4px;
+              animation: pulse 1.5s infinite;
+              color: transparent !important;
+            }
+          </style>
+          
           <div class="mcd-avatar">
             @if (clientManager()?.profile_image) {
               <img [src]="api.getFileUrl(clientManager()?.profile_image)" alt="Manager Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
@@ -98,7 +113,13 @@
             }
           </div>
           
-          <h3 class="mcd-name">{{ clientManager()?.owner_name || clientManager()?.name || 'varun' }}</h3>
+          <h3 class="mcd-name">
+            @if (isLoadingManager()) {
+              <span class="skeleton-text" style="width: 60%; height: 20px;"></span>
+            } @else {
+              {{ clientManager()?.owner_name || clientManager()?.name || 'Support Team' }}
+            }
+          </h3>
           
           <p class="mcd-desc">
             <strong>Your Client Manager</strong> is<br>
@@ -109,11 +130,19 @@
           <div class="mcd-contacts">
             <a href="tel:{{ clientManager()?.phone || '+918072286963' }}" class="mcd-contact-btn">
               <hugeicons-icon [icon]="CallIcon" [size]="20" color="#ffffff" [strokeWidth]="2"></hugeicons-icon>
-              <span>{{ clientManager()?.phone || '+918072286963' }}</span>
+              @if (isLoadingManager()) {
+                <span class="skeleton-text" style="width: 100px; height: 16px;"></span>
+              } @else {
+                <span>{{ clientManager()?.phone || '+918072286963' }}</span>
+              }
             </a>
-            <a href="mailto:{{ clientManager()?.email || 'varun@gmail.com' }}" class="mcd-contact-btn">
+            <a href="mailto:{{ clientManager()?.email || 'support@wealthempires.com' }}" class="mcd-contact-btn">
               <hugeicons-icon [icon]="Mail01Icon" [size]="20" color="#ffffff" [strokeWidth]="2"></hugeicons-icon>
-              <span>{{ clientManager()?.email || 'varun@gmail.com' }}</span>
+              @if (isLoadingManager()) {
+                <span class="skeleton-text" style="width: 150px; height: 16px;"></span>
+              } @else {
+                <span>{{ clientManager()?.email || 'support@wealthempires.com' }}</span>
+              }
             </a>
           </div>
         </div>

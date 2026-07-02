@@ -26,6 +26,6 @@ router.post('/requests/:id/decline', checkUser, permit('admin', 'client_manager'
 router.get('/available', checkUser, permit('filling_staff', 'account_manager'), getAvailableJobs);
 
 // Filling staff self-assigns a job
-router.post('/requests/:id/self-assign', checkUser, permit('filling_staff', 'account_manager'), selfAssignJob);
+router.post('/requests/:id/self-assign', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), selfAssignJob);
 
 module.exports = router;
