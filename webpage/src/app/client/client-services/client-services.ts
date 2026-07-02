@@ -547,6 +547,15 @@ export class ClientServicesComponent implements OnInit {
       return;
     }
 
+    if (this.showDirectorCount() && serviceName !== 'One Person Company') {
+      const numDirs = Number(this.quoteForm.numberOfDirectors);
+      if (!numDirs || isNaN(numDirs) || numDirs < 2) {
+        alert(`Minimum 2 directors are required for ${serviceName}.`);
+        this.formSubmitting.set(false);
+        return;
+      }
+    }
+
     const formData = new FormData();
     formData.append('serviceName', serviceName);
     formData.append('owner_name', this.quoteForm.name || this.user()?.owner_name || '');

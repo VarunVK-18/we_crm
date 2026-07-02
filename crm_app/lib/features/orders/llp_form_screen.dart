@@ -41,6 +41,7 @@ class PersonDetails {
   String needDsc = 'Yes';
   String designation = 'Designated Partner';
   String isAuthorized = 'Yes';
+  String alreadyDirector = 'No';
 
   String? photoPath;
   String? signaturePath;
@@ -252,6 +253,7 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
         request.fields['${prefix}needDsc'] = p.needDsc;
         request.fields['${prefix}designation'] = p.designation;
         request.fields['${prefix}isAuthorized'] = p.isAuthorized;
+        request.fields['${prefix}alreadyDirector'] = p.alreadyDirector;
       }
 
       // Add files
@@ -456,27 +458,63 @@ Widget build(BuildContext context) {
       title: 'Person ${index + 1} Registration',
       subtitle: 'Please provide the following information for registration',
       children: [
+        const SizedBox(height: 16),
+        _buildRadioGroup('Already a Director in another company?', '', ['Yes', 'No'], p.alreadyDirector, (v) => setState(() => p.alreadyDirector = v)),
+        
         _buildField('Full name', 'Include your first name, middle name (if any), and last name.', p.fullNameController, isRequired: true),
-        _buildField('Father\'s name', 'As it appears on your official documents.', p.fatherNameController, isRequired: true),
-        _buildField('DOB', 'DD/MM/YYYY format.', p.dobController, isRequired: true, isDate: true),
-        _buildField('Place of birth', 'City and state where you were born.', p.placeOfBirthController, isRequired: true),
-        
-        _buildRadioGroup('Nationality', '', ['Indian', 'Others'], p.nationality, (v) => setState(() => p.nationality = v)),
-        _buildRadioGroup('Occupation', '', ['Business', 'Employment', 'House wife', 'Student'], p.occupation, (v) => setState(() => p.occupation = v)),
-        
-        _buildField('Education', '', p.educationController, isRequired: true),
         _buildField('Email', '', p.emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
         _buildField('Phone number', '', p.phoneController, isRequired: true, keyboardType: TextInputType.phone),
-        _buildField('Address', 'Complete residential address with Pin code', p.addressController, isRequired: true),
-        _buildField('PAN', '10-character PAN', p.panController, isRequired: true),
-        _buildField('Aadhaar Number', '12-digit Aadhaar number', p.aadhaarController, isRequired: true),
-        _buildField('DIN Number', 'Leave blank if this is your first directorship.', p.dinController, isRequired: false),
         
-        _buildRadioGroup('I need DSC', '', ['Yes', 'No', 'Maybe'], p.needDsc, (v) => setState(() => p.needDsc = v)),
+        if (p.alreadyDirector == 'No') ...[
+          _buildField('Father\'s name', 'As it appears on your official documents.', p.fatherNameController, isRequired: true),
+          _buildField('DOB', 'DD/MM/YYYY format.', p.dobController, isRequired: true, isDate: true),
+          _buildField('Place of birth', 'City and state where you were born.', p.placeOfBirthController, isRequired: true),
+          
+          _buildRadioGroup('Nationality', '', ['Indian', 'Others'], p.nationality, (v) => setState(() => p.nationality = v)),
+          _buildRadioGroup('Occupation', '', ['Business', 'Employment', 'House wife', 'Student'], p.occupation, (v) => setState(() => p.occupation = v)),
+          
+          _buildField('Education', '', p.educationController, isRequired: true),
+          _buildField('Address', 'Complete residential address with Pin code', p.addressController, isRequired: true),
+          _buildField('PAN', '10-character PAN', p.panController, isRequired: true),
+          _buildField('Aadhaar Number', '12-digit Aadhaar number', p.aadhaarController, isRequired: true),
+        ],
+        
+        _buildField('DIN Number', 'Leave blank if this is your first directorship.', p.dinController, isRequired: p.alreadyDirector == 'Yes'),
+        
+        _buildRadioGroup('I need DSC', '', ['Yes', 'No'], p.needDsc, (v) => setState(() => p.needDsc = v)),
         _buildRadioGroup('Designation', '', ['Designated Partner', 'Partner'], p.designation, (v) => setState(() => p.designation = v)),
         
         _buildField('Fixed Capital Contribution', 'Amount you will contribute to the LLP', p.capitalController, isRequired: true),
-        _buildField('Profit sharing ratio (%)', 'Your profit sharing percentage in the LLP', p.profitRatioController, isRequired: true),
+        _buildField(
+          'Profit sharing ratio (%)', 
+          'Your profit sharing percentage in the LLP', 
+          p.profitRatioController, 
+          isRequired: true,
+          validator: (v) {
+            if (v == null || v.trim().isEmpty) return 'This is a required question';
+            
+            int totalSum = 0;
+            for (var partner in _persons) {
+              totalSum += int.tryParse(partner.profitRatioController.text) ?? 0;
+            }
+
+            if (_persons.length == 1 && v == '100') {
+              return 'A single partner cannot hold 100% in a Limited Liability Partnership.';
+            }
+            
+            if (totalSum > 100) {
+              return 'Total profit sharing cannot exceed 100%. Current total: $totalSum%';
+            }
+
+            if (index == _persons.length - 1) {
+              bool allFilled = _persons.every((partner) => partner.profitRatioController.text.isNotEmpty);
+              if (allFilled && totalSum != 100) {
+                return 'Total must be exactly 100%. Please enter the remaining percentage.';
+              }
+            }
+            return null;
+          },
+        ),
         if (index == 0)
         _buildRadioGroup('I\'m Authorized signatory', '', ['Yes', 'No'], p.isAuthorized, (v) => setState(() => p.isAuthorized = v)),
         
@@ -567,9 +605,9 @@ Widget build(BuildContext context) {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false, String? Function(String?)? validator}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -592,6 +630,12 @@ Widget build(BuildContext context) {
             controller: controller,
             keyboardType: keyboardType,
             readOnly: isDate,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            onChanged: (_) {
+              if (label.toLowerCase().contains('profit sharing') || label.toLowerCase().contains('share holding')) {
+                _formKey.currentState?.validate();
+              }
+            },
             onTap: isDate ? () async {
               final date = await showDatePicker(
                 context: context,
@@ -611,8 +655,11 @@ Widget build(BuildContext context) {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (v) {
+              if (validator != null) {
+                final customError = validator(v);
+                if (customError != null) return customError;
+              }
               if (isRequired && (v == null || v.trim().isEmpty)) {
                 return 'This is a required question';
               }

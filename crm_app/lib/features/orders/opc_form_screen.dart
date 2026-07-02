@@ -32,6 +32,7 @@ class DirectorFormData {
   String needDsc = 'Yes';
   String role = 'Director';
   String isAuthSignatory = 'Yes';
+  String alreadyDirector = 'No';
 
   String? photoPath;
   String? signaturePath;
@@ -58,6 +59,7 @@ class DirectorFormData {
       'needDsc': needDsc,
       'role': role,
       'isAuthSignatory': isAuthSignatory,
+      'alreadyDirector': alreadyDirector,
     };
   }
 
@@ -470,28 +472,44 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
                           const Text('Please provide the following information for registration (Later it can\'t be changed)', style: TextStyle(color: Colors.grey, fontSize: 13)),
                           const SizedBox(height: 24),
                           
+                          _buildRadioGroup('Already a Director in another company?', '', ['Yes', 'No'], data.alreadyDirector, (v) => setState(() => data.alreadyDirector = v)),
+                          
                           _buildField('Full name', 'Enter your complete name as it appears on your official documents.', data.fullNameController, isRequired: true),
-                          _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
-                          _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format.', data.dobController, isRequired: true, isDate: true),
-                          _buildField('Place of birth', 'Enter the city and state where you were born.', data.placeOfBirthController, isRequired: true),
-                          
-                          _buildRadioGroup('Nationality', 'Select your nationality.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
-                          
-                          _buildRadioGroup('Select the occupation', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
-
-                          _buildField('Education', '', data.educationController, isRequired: true),
                           _buildField('Email', 'Enter your personal email address.', data.emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                           _buildField('Phone number', 'Enter your mobile number.', data.phoneController, isRequired: true, keyboardType: TextInputType.phone),
-                          _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
-                          _buildField('PAN', 'Enter your 10-character PAN.', data.panController, isRequired: true),
-                          _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number.', data.aadhaarController, isRequired: true),
-                          _buildField('DIN Number', 'Enter your 8-digit DIN if you have one. Leave blank if not.', data.dinController, isRequired: false),
                           
-                          _buildRadioGroup('I need DSC', 'Select "Yes" if you need a Digital Signature Certificate.', ['Yes', 'No', 'Maybe'], data.needDsc, (v) => setState(() => data.needDsc = v)),
+                          if (data.alreadyDirector == 'No') ...[
+                            _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
+                            _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format.', data.dobController, isRequired: true, isDate: true),
+                            _buildField('Place of birth', 'Enter the city and state where you were born.', data.placeOfBirthController, isRequired: true),
+                            
+                            _buildRadioGroup('Nationality', 'Select your nationality.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
+                            
+                            _buildRadioGroup('Select the occupation', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
+
+                            _buildField('Education', '', data.educationController, isRequired: true),
+                            _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
+                            _buildField('PAN', 'Enter your 10-character PAN.', data.panController, isRequired: true),
+                            _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number.', data.aadhaarController, isRequired: true),
+                          ],
+                          
+                          _buildField('DIN Number', 'Enter your 8-digit DIN if you have one.', data.dinController, isRequired: data.alreadyDirector == 'Yes'),
+                          
+                          _buildRadioGroup('I need DSC', 'Select "Yes" if you need a Digital Signature Certificate.', ['Yes', 'No'], data.needDsc, (v) => setState(() => data.needDsc = v)),
                           
                           _buildRadioGroup('Select your role', '', ['Director', 'Shareholder', 'Director & Shareholder'], data.role, (v) => setState(() => data.role = v)),
                           
-                          _buildField('Share holding percentage', 'Enter the percentage of shares (0-100).', data.shareholdingController, isRequired: true, keyboardType: TextInputType.number),
+                          _buildField(
+                            'Share holding percentage', 
+                            'Enter the percentage of shares (0-100).', 
+                            data.shareholdingController, 
+                            isRequired: true, 
+                            keyboardType: TextInputType.number,
+                            customValidator: (v) {
+                              if (v != '100') return 'OPC must have exactly 100% shareholding for the single director.';
+                              return null;
+                            },
+                          ),
                           if (index == 0)
                             _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory.', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
                           
@@ -569,7 +587,7 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false, String? Function(String?)? customValidator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -594,6 +612,12 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
             controller: controller,
             keyboardType: keyboardType,
             readOnly: isDate,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            onChanged: (_) {
+              if (label.toLowerCase().contains('share holding')) {
+                _formKey.currentState?.validate();
+              }
+            },
             onTap: isDate ? () async {
               final date = await showDatePicker(
                 context: context,
@@ -613,7 +637,15 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.isEmpty ? 'This is a required question' : null : null,
+            validator: (v) {
+              if (isRequired && (v == null || v.trim().isEmpty)) {
+                return 'This is a required question';
+              }
+              if (customValidator != null) {
+                return customValidator(v);
+              }
+              return null;
+            },
           ),
         ],
       ),

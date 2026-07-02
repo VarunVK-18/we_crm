@@ -915,13 +915,13 @@ const subscribeService = async (req, res) => {
         if (details.turnoverCategory) {
           const tc = details.turnoverCategory.toLowerCase();
           if (tc.includes('below') || tc.includes('less than ₹20') || tc.includes('less than 20')) {
-            calculatedPlan = 'Silver Plan';
+            calculatedPlan = 'Basic Plan';
             calculatedFee = 25000;
           } else if (tc.includes('greater than ₹20') || tc.includes('between')) {
-            calculatedPlan = 'Gold Plan';
+            calculatedPlan = 'Business Plan';
             calculatedFee = 35000;
           } else if (tc.includes('above') || tc.includes('greater than ₹50')) {
-            calculatedPlan = 'Diamond Plan';
+            calculatedPlan = 'Corporate Plan';
             calculatedFee = 50000;
           }
         }

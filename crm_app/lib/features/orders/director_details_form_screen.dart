@@ -34,6 +34,7 @@ class DirectorFormData {
   String needDsc = 'Yes';
   String role = 'Director';
   String isAuthSignatory = 'Yes';
+  String alreadyDirector = 'No';
 
   String? photoPath;
   String? signaturePath;
@@ -60,6 +61,7 @@ class DirectorFormData {
       'needDsc': needDsc,
       'role': role,
       'isAuthSignatory': isAuthSignatory,
+      'alreadyDirector': alreadyDirector,
     };
   }
 
@@ -111,10 +113,10 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
     super.dispose();
   }
 
-  Future<void> _pickFile(DirectorFormData data, String field) async {
+  Future<void> _pickFile(DirectorFormData data, String field, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: allowedExtensions,
     );
     if (result != null && result.files.single.path != null) {
       if (result.files.single.size > 2 * 1024 * 1024) {
@@ -357,28 +359,64 @@ Widget build(BuildContext context) {
                           const Text('Please provide the following information for registration (Later it can\'t be changed)', style: TextStyle(color: Colors.grey, fontSize: 13)),
                           const SizedBox(height: 24),
                           
+                          _buildRadioGroup('Already a Director in another company?', '', ['Yes', 'No'], data.alreadyDirector, (v) => setState(() => data.alreadyDirector = v)),
+                          
                           _buildField('Full name', 'Enter your complete name as it appears on your official documents. Include your first name, middle name (if any), and last name.', data.fullNameController, isRequired: true),
-                          _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
-                          _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format. This should match the date on your official documents.', data.dobController, isRequired: true, isDate: true),
-                          _buildField('Place of birth', 'Enter the city and state where you were born. This should match your birth certificate or other official documents.', data.placeOfBirthController, isRequired: true),
-                          
-                          _buildRadioGroup('Nationality', 'Select your nationality. Choose "Indian" if you are an Indian citizen, or "Others" if you are a foreign national or NRI.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
-                          
-                          _buildRadioGroup('Select the occupation that best describes your current professional status.', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
-
-                          _buildField('Education', '', data.educationController, isRequired: true),
                           _buildField('Email', 'Enter your personal email address. This will be used for all communications related to your application.', data.emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                           _buildField('Phone number', 'Enter your mobile number. This should be a number that you can always be reached on.', data.phoneController, isRequired: true, keyboardType: TextInputType.phone),
-                          _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
-                          _buildField('PAN', 'Enter your 10-character PAN (Permanent Account Number) issued by the Income Tax Department.', data.panController, isRequired: true),
-                          _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number issued by UIDAI.', data.aadhaarController, isRequired: true),
-                          _buildField('DIN Number', 'Enter your 8-digit DIN (Director Identification Number) if you are already a director in another company. Leave blank if this is your first directorship.', data.dinController, isRequired: false),
                           
-                          _buildRadioGroup('I need DSC', 'Select "Yes" if you need a Digital Signature Certificate (DSC) for signing documents electronically.', ['Yes', 'No', 'Maybe'], data.needDsc, (v) => setState(() => data.needDsc = v)),
+                          if (data.alreadyDirector == 'No') ...[
+                            _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
+                            _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format. This should match the date on your official documents.', data.dobController, isRequired: true, isDate: true),
+                            _buildField('Place of birth', 'Enter the city and state where you were born. This should match your birth certificate or other official documents.', data.placeOfBirthController, isRequired: true),
+                            
+                            _buildRadioGroup('Nationality', 'Select your nationality. Choose "Indian" if you are an Indian citizen, or "Others" if you are a foreign national or NRI.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
+                            
+                            _buildRadioGroup('Select the occupation that best describes your current professional status.', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
+
+                            _buildField('Education', '', data.educationController, isRequired: true),
+                            _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
+                            _buildField('PAN', 'Enter your 10-character PAN (Permanent Account Number) issued by the Income Tax Department.', data.panController, isRequired: true),
+                            _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number issued by UIDAI.', data.aadhaarController, isRequired: true),
+                          ],
+                          
+                          _buildField('DIN Number', 'Enter your 8-digit DIN (Director Identification Number) if you are already a director in another company.', data.dinController, isRequired: data.alreadyDirector == 'Yes'),
+                          
+                          _buildRadioGroup('I need DSC', 'Select "Yes" if you need a Digital Signature Certificate (DSC) for signing documents electronically.', ['Yes', 'No'], data.needDsc, (v) => setState(() => data.needDsc = v)),
                           
                           _buildRadioGroup('Select your role in the company. You can be a Director, Shareholder, or both Director and Shareholder.', '', ['Director', 'Shareholder', 'Director & Shareholder'], data.role, (v) => setState(() => data.role = v)),
                           
-                          _buildField('Share holding percentage', 'Enter the percentage of shares you will hold in the company. This should be between 0 and 100.', data.shareholdingController, isRequired: true, keyboardType: TextInputType.number),
+                          _buildField(
+                            'Share holding percentage', 
+                            'Enter the percentage of shares you will hold in the company. This should be between 0 and 100.', 
+                            data.shareholdingController, 
+                            isRequired: true, 
+                            keyboardType: TextInputType.number,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) return 'This is a required question';
+                              
+                              int totalSum = 0;
+                              for (var d in _directors) {
+                                totalSum += int.tryParse(d.shareholdingController.text) ?? 0;
+                              }
+
+                              if (_directors.length == 1 && v == '100') {
+                                return 'A single director cannot hold 100% in a Private Limited Company.';
+                              }
+                              
+                              if (totalSum > 100) {
+                                return 'Total shareholding cannot exceed 100%. Current total: $totalSum%';
+                              }
+
+                              if (index == _directors.length - 1) {
+                                bool allFilled = _directors.every((d) => d.shareholdingController.text.isNotEmpty);
+                                if (allFilled && totalSum != 100) {
+                                  return 'Total must be exactly 100%. Please enter the remaining percentage.';
+                                }
+                              }
+                              return null;
+                            },
+                          ),
                           if (index == 0)
                             _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory for the company\'s bank accounts and official documents. Yes, I want to be the authorized signatory', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
                           
@@ -386,11 +424,11 @@ Widget build(BuildContext context) {
                           const Text('Document Uploads', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: AppTheme.deepTeal)),
                           const SizedBox(height: 16),
                           
-                          _buildFileRow('Photo', 'Upload a recent passport-size photograph (3.5cm x 4.5cm) with a white background.', data.photoPath, () => _pickFile(data, 'photo')),
-                          _buildFileRow('Signature', 'Upload a clear image of your signature. This is required if you are an authorized signatory.', data.signaturePath, () => _pickFile(data, 'signature')),
-                          _buildFileRow('Residential address proof', 'Upload proof of your residential address (utility bill, bank statement, etc.). This proof should be on the name of the person and should not be older than two months', data.addressProofPath, () => _pickFile(data, 'addressProof')),
-                          _buildFileRow('Aadhaar Card', 'Upload Aadhaar card with front and back side pdf. The system will verify the document using OCR and cross-check with the details provided above.', data.aadhaarPath, () => _pickFile(data, 'aadhaar')),
-                          _buildFileRow('PAN Card', 'Upload PAN card. The system will verify the document using OCR and cross-check with the details provided above.', data.panPath, () => _pickFile(data, 'pan')),
+                          _buildFileRow('Photo', 'Upload a recent passport-size photograph (3.5cm x 4.5cm) with a white background.', data.photoPath, () => _pickFile(data, 'photo', allowedExtensions: ['jpg', 'jpeg', 'png'])),
+                          _buildFileRow('Signature', 'Upload a clear image of your signature. This is required if you are an authorized signatory.', data.signaturePath, () => _pickFile(data, 'signature', allowedExtensions: ['jpg', 'jpeg', 'png'])),
+                          _buildFileRow('Residential address proof', 'Upload proof of your residential address (utility bill, bank statement, etc.). This proof should be on the name of the person and should not be older than two months', data.addressProofPath, () => _pickFile(data, 'addressProof', allowedExtensions: ['pdf'])),
+                          _buildFileRow('Aadhaar Card', 'Upload Aadhaar card with front and back side pdf. The system will verify the document using OCR and cross-check with the details provided above.', data.aadhaarPath, () => _pickFile(data, 'aadhaar', allowedExtensions: ['pdf'])),
+                          _buildFileRow('PAN Card', 'Upload PAN card. The system will verify the document using OCR and cross-check with the details provided above.', data.panPath, () => _pickFile(data, 'pan', allowedExtensions: ['pdf'])),
                         ],
                       ),
                     );
@@ -454,7 +492,7 @@ Widget build(BuildContext context) {
     );
   }
 
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false}) {
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false, String? Function(String?)? validator}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -498,7 +536,22 @@ Widget build(BuildContext context) {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.isEmpty ? 'This is a required question' : null : null,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            onChanged: (_) {
+              if (label.toLowerCase().contains('share holding')) {
+                _formKey.currentState?.validate();
+              }
+            },
+            validator: (v) {
+              if (validator != null) {
+                final customError = validator(v);
+                if (customError != null) return customError;
+              }
+              if (isRequired && (v == null || v.trim().isEmpty)) {
+                return 'This is a required question';
+              }
+              return null;
+            },
           ),
         ],
       ),

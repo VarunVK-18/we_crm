@@ -101,8 +101,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     }
 
     if (role === 'client_manager') {
-      const allowedClientIds = this.clients().filter(c => c.client_manager === userId || c.created_by === userId || (c.client_manager && c.client_manager._id === userId) || (c.created_by && c.created_by._id === userId)).map(c => c._id);
-      if (type === 'client') return data.filter(c => c.client_manager === userId || c.created_by === userId || (c.client_manager && c.client_manager._id === userId) || (c.created_by && c.created_by._id === userId));
+      const allowedClientIds = this.clients().filter(c => c.assigned_to === userId || c.client_manager === userId || c.created_by === userId || (c.assigned_to && c.assigned_to._id === userId) || (c.client_manager && c.client_manager._id === userId) || (c.created_by && c.created_by._id === userId)).map(c => c._id);
+      if (type === 'client') return data.filter(c => c.assigned_to === userId || c.client_manager === userId || c.created_by === userId || (c.assigned_to && c.assigned_to._id === userId) || (c.client_manager && c.client_manager._id === userId) || (c.created_by && c.created_by._id === userId));
       if (type === 'task') return data.filter(t => allowedClientIds.includes(typeof t.client_id === 'object' ? t.client_id?._id : t.client_id));
       if (type === 'checklist') return data.filter(c => allowedClientIds.includes(typeof c.client_id === 'object' ? c.client_id?._id : c.client_id));
       if (type === 'order') return data.filter(o => allowedClientIds.includes(typeof o.client_id === 'object' ? o.client_id?._id : o.client_id));
@@ -673,7 +673,14 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           const time = new Date(client.createdAt).getTime();
           if (time >= bounds.start && time <= bounds.end) {
             clientsCount++;
-            revSum += client.revenue || 0;
+          }
+        });
+
+        this.filteredRoleOrders().forEach(order => {
+          const time = (order.updatedAt ? new Date(order.updatedAt) : (order.createdAt ? new Date(order.createdAt) : new Date())).getTime();
+          if (time >= bounds.start && time <= bounds.end) {
+            const amt = Number(order.dealClosedAmount) || Number(order.deal_closed_amount) || 0;
+            revSum += amt;
           }
         });
 
@@ -722,12 +729,13 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       line2Data = completedTaskCountByMonth;
 
       const revenueByMonth = [0, 0, 0, 0, 0, 0];
-      this.filteredRoleClients().forEach(client => {
-        const createdDate = client.createdAt ? new Date(client.createdAt) : new Date();
+      this.filteredRoleOrders().forEach(order => {
+        const createdDate = order.updatedAt ? new Date(order.updatedAt) : (order.createdAt ? new Date(order.createdAt) : new Date());
         const diffMonths = (now.getMonth() - createdDate.getMonth()) + (now.getFullYear() - createdDate.getFullYear()) * 12;
         if (diffMonths >= 0 && diffMonths < 6) {
           const index = 5 - diffMonths;
-          revenueByMonth[index] += client.revenue || 0;
+          const amt = Number(order.dealClosedAmount) || Number(order.deal_closed_amount) || 0;
+          revenueByMonth[index] += amt;
         }
       });
       revenueDataPoints = revenueByMonth;

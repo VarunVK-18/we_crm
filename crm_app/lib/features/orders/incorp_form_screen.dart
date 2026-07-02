@@ -37,6 +37,7 @@ class DirectorFormData {
   String needDsc = 'Yes';
   String role = 'Director';
   String isAuthSignatory = 'Yes';
+  String alreadyDirector = 'No';
 
   String? photoPath;
   String? signaturePath;
@@ -63,6 +64,7 @@ class DirectorFormData {
       'needDsc': needDsc,
       'role': role,
       'isAuthSignatory': isAuthSignatory,
+      'alreadyDirector': alreadyDirector,
     };
   }
 
@@ -519,28 +521,65 @@ Widget build(BuildContext context) {
                           const Text('Please provide the following information for registration (Later it can\'t be changed)', style: TextStyle(color: Colors.grey, fontSize: 13)),
                           const SizedBox(height: 24),
                           
+                          _buildRadioGroup('Already a Director in another company?', '', ['Yes', 'No'], data.alreadyDirector, (v) => setState(() => data.alreadyDirector = v)),
+                          
                           _buildField('Full name', 'Enter your complete name as it appears on your official documents.', data.fullNameController, isRequired: true),
-                          _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
-                          _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format.', data.dobController, isRequired: true, isDate: true),
-                          _buildField('Place of birth', 'Enter the city and state where you were born.', data.placeOfBirthController, isRequired: true),
-                          
-                          _buildRadioGroup('Nationality', 'Select your nationality.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
-                          
-                          _buildRadioGroup('Select the occupation', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
-
-                          _buildField('Education', '', data.educationController, isRequired: true),
                           _buildField('Email', 'Enter your personal email address.', data.emailController, isRequired: true, keyboardType: TextInputType.emailAddress, focusNode: data.emailFocus, validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address'),
                           _buildField('Phone number', 'Enter your mobile number.', data.phoneController, isRequired: true, keyboardType: TextInputType.phone, focusNode: data.phoneFocus, validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number'),
-                          _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
-                          _buildField('PAN', 'Enter your 10-character PAN.', data.panController, isRequired: true, focusNode: data.panFocus, validator: (v) => ValidationUtils.isValidPan(v) ? null : 'Enter a valid PAN'),
-                          _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number.', data.aadhaarController, isRequired: true),
-                          _buildField('DIN Number', 'Enter your 8-digit DIN if you have one. Leave blank if not.', data.dinController, isRequired: false),
                           
-                          _buildRadioGroup('I need DSC', 'Select "Yes" if you need a Digital Signature Certificate.', ['Yes', 'No', 'Maybe'], data.needDsc, (v) => setState(() => data.needDsc = v)),
+                          if (data.alreadyDirector == 'No') ...[
+                            _buildField('Father\'s name', 'Enter your father\'s complete name as it appears on your official documents.', data.fatherNameController, isRequired: true),
+                            _buildField('DOB', 'Enter your date of birth in DD/MM/YYYY format.', data.dobController, isRequired: true, isDate: true),
+                            _buildField('Place of birth', 'Enter the city and state where you were born.', data.placeOfBirthController, isRequired: true),
+                            
+                            _buildRadioGroup('Nationality', 'Select your nationality.', ['Indian', 'Others'], data.nationality, (v) => setState(() => data.nationality = v)),
+                            
+                            _buildRadioGroup('Select the occupation', '', ['Business', 'Employment', 'House wife', 'Student'], data.occupationController.text, (v) => setState(() => data.occupationController.text = v)),
+
+                            _buildField('Education', '', data.educationController, isRequired: true),
+                            _buildField('Address', 'Enter your complete residential address where you currently live. with Pin code', data.addressController, isRequired: true),
+                            _buildField('PAN', 'Enter your 10-character PAN.', data.panController, isRequired: true, focusNode: data.panFocus, validator: (v) => ValidationUtils.isValidPan(v) ? null : 'Enter a valid PAN'),
+                            _buildField('Aadhaar Number', 'Enter your 12-digit Aadhaar number.', data.aadhaarController, isRequired: true),
+                          ],
+                          
+                          _buildField('DIN Number', 'Enter your 8-digit DIN if you have one.', data.dinController, isRequired: data.alreadyDirector == 'Yes'),
+                          
+                          _buildRadioGroup('I need DSC', 'Select "Yes" if you need a Digital Signature Certificate.', ['Yes', 'No'], data.needDsc, (v) => setState(() => data.needDsc = v)),
                           
                           _buildRadioGroup('Select your role', '', ['Director', 'Shareholder', 'Director & Shareholder'], data.role, (v) => setState(() => data.role = v)),
                           
-                          _buildField('Share holding percentage', 'Enter the percentage of shares (0-100).', data.shareholdingController, isRequired: true, keyboardType: TextInputType.number),
+                          _buildField(
+                            'Share holding percentage', 
+                            'Enter the percentage of shares (0-100).', 
+                            data.shareholdingController, 
+                            isRequired: true, 
+                            keyboardType: TextInputType.number,
+                            validator: (v) {
+                              if (v == null || v.trim().isEmpty) return 'This is a required question';
+                              
+                              int totalSum = 0;
+                              for (var d in _directors) {
+                                totalSum += int.tryParse(d.shareholdingController.text) ?? 0;
+                              }
+
+                              if (_directors.length == 1 && v == '100') {
+                                return 'A single director cannot hold 100% in a Private Limited Company.';
+                              }
+                              
+                              if (totalSum > 100) {
+                                return 'Total shareholding cannot exceed 100%. Current total: $totalSum%';
+                              }
+
+                              if (index == _directors.length - 1) {
+                                // For the last director, verify that all fields have some value, then check sum
+                                bool allFilled = _directors.every((d) => d.shareholdingController.text.isNotEmpty);
+                                if (allFilled && totalSum != 100) {
+                                  return 'Total must be exactly 100%. Please enter the remaining percentage.';
+                                }
+                              }
+                              return null;
+                            },
+                          ),
                           if (index == 0)
                             _buildRadioGroup('I\'m Authorized signatory', 'Select "Yes" if you will be an authorized signatory.', ['Yes', 'No'], data.isAuthSignatory, (v) => setState(() => data.isAuthSignatory = v)),
                           
@@ -642,6 +681,12 @@ Widget build(BuildContext context) {
             focusNode: focusNode,
             keyboardType: keyboardType,
             readOnly: isDate,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            onChanged: (_) {
+              if (label.toLowerCase().contains('share holding') || label.toLowerCase().contains('profit sharing')) {
+                _formKey.currentState?.validate();
+              }
+            },
             onTap: isDate ? () async {
               final date = await showDatePicker(
                 context: context,
