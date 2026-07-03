@@ -200,7 +200,7 @@
                   <tr>
                     <td style="color: #0f172a; font-weight: 600;">{{ cert.serviceName }}</td>
                     <td style="color: #475569; font-size: 13px;">{{ cert.certificateNumber }}</td>
-                    <td style="font-size: 13px; font-weight: 500; color: #334155;">{{ cert.expiryDate | date:'mediumDate' }}</td>
+                    <td style="font-size: 13px; font-weight: 500; color: #334155;">{{ cert.expiryDate | date:'dd/MM/yy' }}</td>
                     <td style="font-size: 13px;">
                       @if (cert.daysRemaining < 0) {
                         <span style="color: #ef4444; font-weight: 600;">Expired</span>

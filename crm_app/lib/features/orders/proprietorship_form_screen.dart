@@ -326,7 +326,7 @@ class _ProprietorshipFormScreenState extends ConsumerState<ProprietorshipFormScr
                       _buildField('Aadhaar Number', '', _aadhaarNumberController, isRequired: true),
                       _buildField('Applicant Mobile Number', '', _mobileNumberController, isRequired: true, keyboardType: TextInputType.phone, validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number'),
                       _buildField('Applicant Email ID', '', _emailIdController, isRequired: true, keyboardType: TextInputType.emailAddress, validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address'),
-                      _buildField('DOB', 'MM/DD/YYYY', _dobController, isRequired: true, isDate: true),
+                      _buildField('DOB', 'DD/MM/YYYY', _dobController, isRequired: true, isDate: true),
                     ],
                   ),
 

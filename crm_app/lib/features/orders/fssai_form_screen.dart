@@ -410,7 +410,7 @@ Widget build(BuildContext context) {
                       if (_selectedNature.contains('Other'))
                         _buildField('Specify Other Nature', '', _otherNatureController, isRequired: true),
                       
-                      _buildField('When did your business start?', 'MM/DD/YYYY', _startDateController, isRequired: true),
+                      _buildField('When did your business start?', 'DD/MM/YYYY', _startDateController, isRequired: true),
                       
                       _buildRadioGroup('Expected Annual Turnover', '', ['Below ₹12 Lakhs', '₹12 Lakhs – ₹20 Crores', 'Above ₹20 Crores'], _annualTurnover, (v) => setState(() => _annualTurnover = v)),
                       

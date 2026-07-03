@@ -84,7 +84,7 @@
           <th>Contact Info</th>
           <th>Time</th>
           <th>Status</th>
-          <th>Actions</th>
+          <th style="text-align: center;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -126,13 +126,12 @@
               }
             </div>
           </td>
-          <td>
+          <td style="text-align: center; vertical-align: middle;">
             @if (req.status === 'open') {
-            <div class="action-buttons">
+            <div class="action-buttons" style="display: flex; justify-content: center;">
               <button class="btn-claim-sm" [disabled]="claimingId() === req._id" (click)="openAcceptModal(req)">
                 {{ claimingId() === req._id ? 'Accepting...' : 'Accept' }}
               </button>
-              <button class="btn-decline-sm" (click)="declineRequest(req._id)">Decline</button>
             </div>
             }
           </td>

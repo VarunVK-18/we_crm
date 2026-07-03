@@ -104,7 +104,7 @@
             <span style="font-weight: 600;">Clicks:</span> <span class="click-count">{{ banner.clickCount || 0 }}</span>
           </p>
           <p style="font-size: 12px; margin: 4px 0; color: #475569;" *ngIf="banner.startDate || banner.endDate">
-            <span style="font-weight: 600;">Schedule:</span> {{ banner.startDate | date:'short' }} - {{ banner.endDate | date:'short' }}
+            <span style="font-weight: 600;">Schedule:</span> {{ banner.startDate | date:'dd/MM/yy, h:mm a' }} - {{ banner.endDate | date:'dd/MM/yy, h:mm a' }}
           </p>
           <p class="target-url" *ngIf="banner.targetUrl">Link: <a [href]="banner.targetUrl" target="_blank">{{ banner.targetUrl }}</a></p>
           <div class="banner-actions">

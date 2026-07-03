@@ -1366,7 +1366,7 @@ class _StepTimeline extends StatelessWidget {
                                     size: 12, color: Colors.green),
                                 const SizedBox(width: 4),
                                 Text(
-                                  'Completed',
+                                  'Completed on',
                                   style: TextStyle(
                                       fontSize: 11,
                                       color: Colors.green.shade600,

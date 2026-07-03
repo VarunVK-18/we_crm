@@ -596,8 +596,8 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
               children: [
                 Text(
                   selectedDate != null
-                      ? '${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.year}'
-                      : 'mm/dd/yyyy',
+                      ? '${selectedDate.day.toString().padLeft(2, '0')}/${selectedDate.month.toString().padLeft(2, '0')}/${selectedDate.year}'
+                      : 'dd/mm/yyyy',
                   style: GoogleFonts.outfit(
                     color: selectedDate != null ? AppTheme.deepTeal : Colors.grey[400],
                     fontWeight: selectedDate != null ? FontWeight.w600 : FontWeight.w400,

@@ -66,7 +66,7 @@
                 [class.badge-rejected]="task.status === 'Rejected'">
             {{ task.status }}
           </span>
-          <span class="task-date">{{ task.createdAt | date:'mediumDate' }}</span>
+          <span class="task-date">{{ task.createdAt | date:'dd/MM/yy' }}</span>
         </div>
 
         <h3 class="task-card-title">{{ task.title }}</h3>
@@ -308,7 +308,7 @@
                             </svg>
                             <div class="doc-text-meta">
                               <span class="doc-name">{{ doc.name }}</span>
-                              <span class="doc-date">{{ doc.uploadedAt | date:'short' }}</span>
+                              <span class="doc-date">{{ doc.uploadedAt | date:'dd/MM/yy, h:mm a' }}</span>
                             </div>
                           </div>
                           <a [href]="api.getFileUrl(doc.fileUrl)" target="_blank" class="doc-download-link">
@@ -351,7 +351,7 @@
                             <div class="comment-author-avatar">{{ getInitials(c.author) }}</div>
                             <div class="comment-author-meta">
                               <span class="comment-author-name">{{ c.author }}</span>
-                              <span class="comment-date">{{ c.createdAt || c.timestamp | date:'short' }}</span>
+                              <span class="comment-date">{{ c.createdAt || c.timestamp | date:'dd/MM/yy, h:mm a' }}</span>
                             </div>
                           </div>
                           <div class="comment-text-body">{{ c.text }}</div>
@@ -450,8 +450,8 @@
 
             <!-- Task Audit Info -->
             <div class="detail-side-section timeline-info-section">
-              <span class="timeline-date">Created: {{ selectedDetailTask().createdAt | date:'medium' }}</span>
-              <span class="timeline-date">Updated: {{ selectedDetailTask().updatedAt | date:'medium' }}</span>
+              <span class="timeline-date">Created: {{ selectedDetailTask().createdAt | date:'dd/MM/yy, h:mm a' }}</span>
+              <span class="timeline-date">Updated: {{ selectedDetailTask().updatedAt | date:'dd/MM/yy, h:mm a' }}</span>
             </div>
           </div>
 

@@ -289,6 +289,18 @@ const getUserProfile = async (req, res) => {
     }
 
     userObj.client_manager = clientManager;
+    
+    // Also find the Admin email for the company
+    let adminEmail = 'admin@example.com';
+    if (user.company_id) {
+      const companyId = userObj.company_id._id || userObj.company_id;
+      const adminUser = await User.findOne({ company_id: companyId, role: 'admin' }).select('email');
+      if (adminUser) adminEmail = adminUser.email;
+    } else {
+      const globalAdmin = await User.findOne({ role: 'admin' }).select('email');
+      if (globalAdmin) adminEmail = globalAdmin.email;
+    }
+    userObj.admin_email = adminEmail;
 
     res.json({
       user: userObj

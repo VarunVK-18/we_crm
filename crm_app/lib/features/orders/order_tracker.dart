@@ -40,9 +40,14 @@ class OrderTrackerScreen extends ConsumerStatefulWidget {
 
 class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
   _ServiceTab _selectedTab = _ServiceTab.active;
-  String _activeFilter = 'All';
+  final ValueNotifier<String> _activeFilter = ValueNotifier<String>('All');
   String _searchQuery = '';
 
+  @override
+  void dispose() {
+    _activeFilter.dispose();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(serviceOrdersProvider);
@@ -88,9 +93,9 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
         entityFiltered.where((o) => o.status == ServiceStatus.active).toList();
 
     var activeList = fullActiveList;
-    if (_activeFilter == 'Action Required') {
+    if (_activeFilter.value == 'Action Required') {
       activeList = activeList.where((o) => o.isReallyActionRequired).toList();
-    } else if (_activeFilter == 'In Progress') {
+    } else if (_activeFilter.value == 'In Progress') {
       activeList = activeList.where((o) => !o.isReallyActionRequired).toList();
     }
 
@@ -413,26 +418,30 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Container(
+                      child: SizedBox(
                         height: 42,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(color: Colors.grey.shade200, width: 2.0),
-                        ),
                         child: TextField(
                           onChanged: (val) => setState(() => _searchQuery = val),
                           style: const TextStyle(fontSize: 13, color: AppTheme.deepTeal),
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             hintText: 'Search services...',
-                            hintStyle: TextStyle(fontSize: 13, color: Colors.grey),
-                            prefixIcon: Icon(LucideIcons.search, size: 16, color: Colors.grey),
-                            border: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            errorBorder: InputBorder.none,
-                            disabledBorder: InputBorder.none,
-                            contentPadding: EdgeInsets.symmetric(vertical: 12),
+                            hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+                            prefixIcon: const Icon(LucideIcons.search, size: 16, color: Colors.grey),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              borderSide: BorderSide(color: Colors.grey.shade200, width: 2.0),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              borderSide: BorderSide(color: Colors.grey.shade200, width: 2.0),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(25),
+                              borderSide: BorderSide(color: Colors.grey.shade200, width: 2.0),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
                           ),
                         ),
                       ),
@@ -448,17 +457,33 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
                       ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _activeFilter,
-                          icon: const Icon(LucideIcons.chevronDown, size: 16, color: Colors.grey),
+                        child: DropdownButton2<String>(
+                          valueListenable: _activeFilter,
+                          buttonStyleData: const ButtonStyleData(
+                            height: 38,
+                            padding: EdgeInsets.zero,
+                          ),
+                          iconStyleData: const IconStyleData(
+                            icon: Icon(LucideIcons.chevronDown, size: 16, color: Colors.grey),
+                          ),
+                          dropdownStyleData: DropdownStyleData(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.white,
+                            ),
+                          ),
+                          menuItemStyleData: const MenuItemStyleData(),
                           style: const TextStyle(fontSize: 13, color: AppTheme.deepTeal, fontWeight: FontWeight.w700),
                           items: const [
-                            DropdownMenuItem(value: 'All', child: Text('All Active')),
-                            DropdownMenuItem(value: 'Action Required', child: Text('Action Required')),
-                            DropdownMenuItem(value: 'In Progress', child: Text('In Progress')),
+                            DropdownItem(value: 'All', child: Text('All Active')),
+                            DropdownItem(value: 'Action Required', child: Text('Action Required')),
+                            DropdownItem(value: 'In Progress', child: Text('In Progress')),
                           ],
                           onChanged: (val) {
-                            if (val != null) setState(() => _activeFilter = val);
+                            if (val != null) {
+                              _activeFilter.value = val;
+                              setState(() {});
+                            }
                           },
                         ),
                       ),

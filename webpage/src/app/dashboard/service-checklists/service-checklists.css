@@ -107,18 +107,18 @@
 }
 
 .icon-active {
-  background-color: #eceef0; /* surface-container */
-  color: var(--primary);
+  background-color: transparent;
+  color: #000000;
 }
 
 .icon-pending {
-  background-color: #fffbeb; /* amber-50 */
-  color: #d97706; /* amber-600 */
+  background-color: transparent;
+  color: #000000;
 }
 
 .icon-completed {
-  background-color: #ecfdf5; /* emerald-50 */
-  color: #059669; /* emerald-600 */
+  background-color: transparent;
+  color: #000000;
 }
 
 .stat-label {
@@ -148,7 +148,7 @@
   background-color: var(--surface-hover);
   padding: 6px;
   border-radius: 9999px;
-  width: fit-content;
+  width: 100%;
   margin-bottom: var(--spacing-lg);
   border: 1px solid var(--border);
   overflow-x: auto;

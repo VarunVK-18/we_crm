@@ -1090,3 +1090,31 @@
   text-align: center;
   padding: 8px;
 }
+
+.ho-email-badge {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #111827;
+  background: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  width: fit-content;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.ho-email-badge:hover {
+  background: #f9fafb;
+  box-shadow: 0 6px 8px -2px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.ho-email-badge:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}

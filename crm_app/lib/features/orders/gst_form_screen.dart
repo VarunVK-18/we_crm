@@ -365,7 +365,7 @@ Widget build(BuildContext context) {
                     title: 'Trade Details',
                     children: [
                       _buildField('Trade Name', '', _tradeNameController, isRequired: true),
-                      _buildField('Date of commencement of Business', 'MM/DD/YYYY', _commenceDateController, isRequired: true, isDate: true),
+                      _buildField('Date of commencement of Business', 'DD/MM/YYYY', _commenceDateController, isRequired: true, isDate: true),
                       _buildField('Business Email ID', 'All GST communications will be shared in this mail', _businessEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                       _buildField('Business Phone', 'All GST communications will be shared in this number', _businessPhoneController, isRequired: true, keyboardType: TextInputType.phone),
                     ],
@@ -377,7 +377,7 @@ Widget build(BuildContext context) {
                     children: [
                       _buildField('Full Name', '', _fullNameController, isRequired: true),
                       _buildField('Father name', '', _fatherNameController, isRequired: true),
-                      _buildField('DOB', 'MM/DD/YYYY', _dobController, isRequired: true, isDate: true),
+                      _buildField('DOB', 'DD/MM/YYYY', _dobController, isRequired: true, isDate: true),
                       _buildField('Phone number', '', _personalPhoneController, isRequired: true, keyboardType: TextInputType.phone),
                       _buildField('Mail ID', '', _personalEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                       

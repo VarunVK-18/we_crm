@@ -227,7 +227,7 @@
                     <div style="display: flex; flex-direction: column; gap: 2px; padding-right: 4px; text-align: right;">
                       <span style="font-size: 11px; font-weight: 600; color: #64748b; font-family: monospace; word-break: break-all;">TID: {{ paymentTidToAdd }}</span>
                       @if (paymentTimestampToAdd) {
-                        <span style="font-size: 10px; font-weight: 500; color: #94a3b8;">{{ paymentTimestampToAdd | date:'medium' }}</span>
+                        <span style="font-size: 10px; font-weight: 500; color: #94a3b8;">{{ paymentTimestampToAdd | date:'dd/MM/yy, h:mm a' }}</span>
                       }
                     </div>
                   }
@@ -255,12 +255,12 @@
                 <tr style="border-bottom: 1px solid var(--border-color); font-size: 14px; font-weight: 500; color: var(--text-primary);">
                   <td style="padding: 12px 16px; font-weight: 600;">₹{{ log.amount }}</td>
                   <td style="padding: 12px 16px; color: var(--text-secondary); font-family: monospace;">{{ log.transactionId || 'N/A' }}</td>
-                  <td style="padding: 12px 16px; color: var(--text-secondary);">{{ log.paymentTimestamp | date:'medium' }}</td>
+                  <td style="padding: 12px 16px; color: var(--text-secondary);">{{ log.paymentTimestamp | date:'dd/MM/yy, h:mm a' }}</td>
                   <td style="padding: 12px 16px;">
                     @if (log.isVerified) {
                       <div style="display: flex; align-items: center; gap: 6px;">
                         <span class="material-symbols-outlined" style="color: #10b981; font-size: 18px;" title="Verified by OCR">verified</span>
-                        <span style="font-size: 11px; color: #10b981; font-weight: 600;">{{ log.addedAt | date:'medium' }}</span>
+                        <span style="font-size: 11px; color: #10b981; font-weight: 600;">{{ log.addedAt | date:'dd/MM/yy, h:mm a' }}</span>
                       </div>
                     } @else {
                       <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 18px;" title="Manual Entry / Unverified">info</span>
@@ -301,9 +301,14 @@
               <p style="font-size: 14px; color: var(--text-secondary); margin: 4px 0 0 0;">{{ item.description }}</p>
               }
               @if (item.isChecked && item.checkedBy) {
-              <span
-                style="font-size: 12px; color: var(--color-success); font-weight: 500; margin-top: 8px; display: inline-block;">✓
-                Completed by {{ item.checkedBy.owner_name }}</span>
+              <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
+                <span
+                  style="font-size: 12px; color: var(--color-success); font-weight: 500; display: inline-block;">✓
+                  Completed by {{ item.checkedBy.owner_name }}</span>
+                @if (item.checkedAt) {
+                <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">• {{ item.checkedAt | date:'dd/MM/yy, h:mm a' }}</span>
+                }
+              </div>
               }
 
               <!-- Expense Details (Visible to internal staff only) -->
@@ -738,7 +743,7 @@
                 {{ doc.name }}</p>
               <p
                 style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--text-secondary); margin: 4px 0 0 0; text-transform: uppercase;">
-                {{ doc.uploadedAt | date:'mediumDate' }}</p>
+                {{ doc.uploadedAt | date:'dd/MM/yy' }}</p>
             </div>
             <a href="#" (click)="openDocViewer(doc.fileUrl, doc.name, $event)"
               style="color: var(--accent-primary); font-weight: 700; text-decoration: none; padding: 4px 8px;">View</a>
@@ -776,7 +781,7 @@
                   {{ doc.niceName || doc.name }}</p>
                 <p
                   style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--text-secondary); margin: 4px 0 0 0; text-transform: uppercase;">
-                  {{ doc.isUploaded ? (doc.uploadedAt | date:'mediumDate') : 'Pending' }}</p>
+                  {{ doc.isUploaded ? (doc.uploadedAt | date:'dd/MM/yy') : 'Pending' }}</p>
               </div>
               @if (doc.isUploaded) {
               <a href="#" (click)="openDocViewer(doc.fileUrl, doc.niceName || doc.name, $event)"

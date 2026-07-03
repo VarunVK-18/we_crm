@@ -323,7 +323,7 @@ class _GstCancellationFormScreenState extends ConsumerState<GstCancellationFormS
                     title: 'Step 2: Cancellation Details',
                     children: [
                       _buildField('Reason for Cancellation', 'Explain the reason...', _reasonForCancellationController, isRequired: true, maxLines: 3),
-                      _buildField('Effective Cancellation Date', 'MM/DD/YYYY', _effectiveCancellationDateController, isRequired: true, isDate: true),
+                      _buildField('Effective Cancellation Date', 'DD/MM/YYYY', _effectiveCancellationDateController, isRequired: true, isDate: true),
                     ],
                   ),
 

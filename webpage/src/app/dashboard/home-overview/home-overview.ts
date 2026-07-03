@@ -165,6 +165,19 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         const parsedUser = JSON.parse(savedUser);
         this.user.set(parsedUser);
         
+        // Fetch full profile to ensure manager and admin info is up to date
+        const userId = parsedUser._id || parsedUser.id || parsedUser.uid;
+        if (userId) {
+          this.api.get<any>(`users/profile/${userId}`).subscribe({
+            next: (res) => {
+              if (res && res.user) {
+                this.user.set(res.user);
+              }
+            },
+            error: (err) => console.error('Failed to fetch full user profile', err)
+          });
+        }
+        
         // Use cache if data is fresh (less than 1 minute old)
         if (Date.now() - homeOverviewCache.lastFetchTime < 60000 && homeOverviewCache.clients) {
           this.clients.set(homeOverviewCache.clients || []);
