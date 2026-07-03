@@ -89,15 +89,27 @@ const deleteTeam = async (req, res) => {
 const getTeamServiceStats = async (req, res) => {
   try {
     const company_id = req.user.company_id;
-    const { month, year } = req.query;
+    const { month, year, exactDate } = req.query;
 
-    // Default to current month and year if not provided
-    const now = new Date();
-    const targetMonth = month ? parseInt(month, 10) : now.getMonth() + 1; // 1-12
-    const targetYear = year ? parseInt(year, 10) : now.getFullYear();
+    let startDate, endDate;
+    let targetMonth, targetYear;
+    
+    if (exactDate) {
+      startDate = new Date(exactDate);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(exactDate);
+      endDate.setHours(23, 59, 59, 999);
+      targetMonth = startDate.getMonth() + 1;
+      targetYear = startDate.getFullYear();
+    } else {
+      // Default to current month and year if not provided
+      const now = new Date();
+      targetMonth = month ? parseInt(month, 10) : now.getMonth() + 1; // 1-12
+      targetYear = year ? parseInt(year, 10) : now.getFullYear();
 
-    const startDate = new Date(targetYear, targetMonth - 1, 1);
-    const endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59, 999);
+      startDate = new Date(targetYear, targetMonth - 1, 1);
+      endDate = new Date(targetYear, targetMonth, 0, 23, 59, 59, 999);
+    }
 
     let teamQuery = { company_id };
     if (req.user.role === 'client_manager') {

@@ -233,7 +233,7 @@
       <app-team-service-track></app-team-service-track>
       }
       @if (currentTab() === 'opportunities') {
-      <app-opportunities></app-opportunities>
+      <app-opportunities (onViewChecklist)="viewChecklist($event)"></app-opportunities>
       }
     </div>
   </div>

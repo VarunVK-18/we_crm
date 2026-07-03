@@ -39,6 +39,7 @@ export class TeamServiceTrackComponent implements OnInit {
 
   selectedMonth = signal<number>(new Date().getMonth() + 1);
   selectedYear = signal<number>(new Date().getFullYear());
+  selectedDate = signal<string>('');
   selectedManagerId = signal<string>('all');
 
   availableManagers = signal<{_id: string, name: string}[]>([]);
@@ -72,7 +73,14 @@ export class TeamServiceTrackComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    const url = `teams/service-stats?month=${this.selectedMonth()}&year=${this.selectedYear()}`;
+    const queryParams = new URLSearchParams();
+    if (this.selectedDate()) {
+      queryParams.append('exactDate', this.selectedDate());
+    } else {
+      queryParams.append('month', this.selectedMonth().toString());
+      queryParams.append('year', this.selectedYear().toString());
+    }
+    const url = `teams/service-stats?${queryParams.toString()}`;
     
     this.api.get(url).subscribe({
       next: (res: any) => {

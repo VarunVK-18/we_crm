@@ -8,8 +8,13 @@
     
     <div class="filters-container" style="display: flex; gap: 12px; align-items: center;">
       <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px;">
+        <label style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Exact Date</label>
+        <input type="date" class="form-select we-input" style="height: 38px; padding: 0 12px;" [(ngModel)]="selectedDate" (change)="onFilterChange()" />
+      </div>
+
+      <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px;">
         <label style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Month</label>
-        <select class="form-select we-input" style="width: 140px; height: 38px; padding: 0 12px;" [(ngModel)]="selectedMonth" (change)="onFilterChange()">
+        <select class="form-select we-input" style="width: 140px; height: 38px; padding: 0 12px;" [(ngModel)]="selectedMonth" (change)="selectedDate.set(''); onFilterChange()" [disabled]="!!selectedDate()">
           @for (m of months; track m.value) {
             <option [ngValue]="m.value">{{ m.label }}</option>
           }
@@ -18,7 +23,7 @@
 
       <div class="filter-group" style="display: flex; flex-direction: column; gap: 4px;">
         <label style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Year</label>
-        <select class="form-select we-input" style="width: 120px; height: 38px; padding: 0 12px;" [(ngModel)]="selectedYear" (change)="onFilterChange()">
+        <select class="form-select we-input" style="width: 120px; height: 38px; padding: 0 12px;" [(ngModel)]="selectedYear" (change)="selectedDate.set(''); onFilterChange()" [disabled]="!!selectedDate()">
           @for (y of years; track y) {
             <option [ngValue]="y">{{ y }}</option>
           }

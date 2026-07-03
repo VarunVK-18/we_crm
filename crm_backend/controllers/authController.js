@@ -351,11 +351,30 @@ const getClients = async (req, res) => {
       };
       
       const orders = await ServiceOrder.find({ clientUid: client._id.toString() }).select('serviceType status stage');
-      client.we_services = orders.map(o => ({
-        serviceName: o.serviceType,
-        status: o.status,
-        stage: o.stage
-      }));
+      const allChecklistsForClient = await Checklist.find({ client_id: client._id }).select('_id service_name status stage').lean();
+
+      client.we_services = orders.map(o => {
+        // Find matching checklist
+        const matchingChecklist = allChecklistsForClient.find(c => c.service_name === o.serviceType);
+        return {
+          serviceName: o.serviceType,
+          status: matchingChecklist ? matchingChecklist.status : o.status,
+          stage: matchingChecklist ? matchingChecklist.stage : o.stage,
+          checklistId: matchingChecklist ? matchingChecklist._id : null
+        };
+      });
+
+      // Add any checklists that were created directly without a matching ServiceOrder
+      allChecklistsForClient.forEach(c => {
+        if (!client.we_services.find(ws => ws.serviceName === c.service_name)) {
+          client.we_services.push({
+            serviceName: c.service_name,
+            status: c.status,
+            stage: c.stage,
+            checklistId: c._id
+          });
+        }
+      });
     }
 
     res.json({

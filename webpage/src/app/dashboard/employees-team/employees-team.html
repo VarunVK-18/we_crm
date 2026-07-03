@@ -48,7 +48,7 @@
               <td>
                 <div class="employee-cell">
                   <!-- Assign a consistent color class or random based on char if needed, using default for now or a method -->
-                  <div class="employee-avatar avatar-bg-s">
+                  <div class="employee-avatar" style="background-color: #000; color: #fff;">
                     {{ getInitials(member.name) }}
                   </div>
                   <div>
@@ -101,7 +101,7 @@
         <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;">Bucket Teams</h3>
         <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Define teams that link a Client Manager to Filing Staff for the job bucket system.</p>
       </div>
-      <button class="btn-add-user" (click)="openCreateTeamModal()" style="background: linear-gradient(135deg,#6366f1,#4f46e5)">
+      <button class="btn-add-user" (click)="openCreateTeamModal()" style="background: #000; color: #fff;">
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">group_add</span>
         Create Team
       </button>
@@ -325,8 +325,13 @@
         </div>
 
         <div class="form-group-item" style="margin-bottom: 22px;">
-          <label class="form-input-label">Team Members (Filing Staff)</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <label class="form-input-label" style="margin: 0;">Team Members (Filing Staff)</label>
+          </div>
           <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 10px;">Click to toggle. Selected members will see jobs claimed by this team's manager.</p>
+          
+          <input type="text" placeholder="Search Filing Staff..." class="form-control-input" style="margin-bottom: 12px; max-width: 300px;" [(ngModel)]="teamMemberSearch" name="teamMemberSearch" />
+
           @if (getFillingStaff().length === 0) {
             <p style="color: #cbd5e1; font-size: 13px;">No filing staff available.</p>
           } @else {
@@ -356,7 +361,7 @@
 
         <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="closeTeamModal()" [disabled]="teamSubmitting()">Cancel</button>
-          <button type="submit" class="btn-submit" [disabled]="teamSubmitting()" style="display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg,#6366f1,#4f46e5);">
+          <button type="submit" class="btn-submit" [disabled]="teamSubmitting()" style="display: flex; align-items: center; gap: 8px; background: #000; color: #fff;">
             @if (teamSubmitting()) {
               <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 18px;">progress_activity</span> Saving...
             } @else {
