@@ -55,9 +55,6 @@ class NicCodeService {
             
             for (var cls in grp['classes'] ?? []) {
               if (cls['code'] != null) {
-                // Fix for corrupted JSON: ignore concordance mappings under Section U
-                if (sectionCode == 'U' && cls['code'] != '9900') continue;
-
                 codes.add(NicCode(
                   code: cls['code'],
                   description: cls['description'] ?? '',
