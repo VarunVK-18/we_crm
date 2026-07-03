@@ -1344,15 +1344,7 @@ class _StepTimeline extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              if (isCompleted && step.completedAt != null) ...[
-                                const SizedBox(width: 8),
-                                Text(
-                                  DateFormat('dd MMM')
-                                      .format(step.completedAt!),
-                                  style: const TextStyle(
-                                      fontSize: 10, color: Colors.grey),
-                                ),
-                              ],
+                              // Removed top timestamp to match web (bottom only)
                             ],
                           ),
                           if (step.description.isNotEmpty) ...[
@@ -1380,6 +1372,15 @@ class _StepTimeline extends StatelessWidget {
                                       color: Colors.green.shade600,
                                       fontWeight: FontWeight.w700),
                                 ),
+                                const SizedBox(width: 6),
+                                if (step.completedAt != null || order.createdAt != null)
+                                  Text(
+                                    DateFormat('dd MMM yyyy, hh:mm a').format(step.completedAt ?? order.createdAt ?? DateTime.now()),
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.green.shade600,
+                                        fontWeight: FontWeight.w700),
+                                  ),
                               ],
                             ),
                           ] else if (step.isActionStep && order.stage != OrderStage.reqReceived) ...[

@@ -42,8 +42,15 @@ class InvoiceScreen extends ConsumerWidget {
   final ServiceOrder order;
   const InvoiceScreen({super.key, required this.order});
 
-  String get _invoiceNumber =>
-      '#WE${DateFormat('yyMMddHHmm').format(order.createdAt)}';
+  String get _invoiceNumber {
+    final customId = order.customServiceId;
+    if (customId.isNotEmpty) {
+      final numberPart = customId.replaceAll(RegExp(r'[^0-9]'), '');
+      final year = order.createdAt.toLocal().year.toString();
+      return '#WE$year$numberPart';
+    }
+    return '#WE${DateFormat('yyMMddHHmm').format(order.createdAt.toLocal())}';
+  }
 
   double get _servicePrice =>
       order.dealClosedAmount > 0 ? order.dealClosedAmount : 4999.00;
@@ -316,9 +323,9 @@ class InvoiceScreen extends ConsumerWidget {
                     border: TableBorder.all(color: const Color(0xFFCBD5E1), width: 1),
                     columnWidths: const {
                       0: FlexColumnWidth(1),
-                      1: FlexColumnWidth(4),
-                      2: FlexColumnWidth(1.5),
-                      3: FlexColumnWidth(1.5),
+                      1: FlexColumnWidth(3),
+                      2: FlexColumnWidth(2),
+                      3: FlexColumnWidth(2),
                       4: FlexColumnWidth(1),
                       5: FlexColumnWidth(2),
                       6: FlexColumnWidth(2),
@@ -330,20 +337,20 @@ class InvoiceScreen extends ConsumerWidget {
                         decoration: const BoxDecoration(color: Color(0xFFF8FAFC)),
                         children: [
                           _buildTh('#'),
-                          _buildTh('Item'),
-                          _buildTh('HSN'),
-                          _buildTh('Rate/Item'),
-                          _buildTh('Qty'),
-                          _buildTh('Taxable'),
-                          _buildTh('Tax'),
-                          _buildTh('Amount'),
+                          _buildTh('ITEM'),
+                          _buildTh('HSN/SAC'),
+                          _buildTh('RATE/ITEM'),
+                          _buildTh('QTY'),
+                          _buildTh('TAXABLE'),
+                          _buildTh('TAX'),
+                          _buildTh('AMOUNT'),
                         ],
                       ),
                       // Item Row
                       TableRow(
                         children: [
                           _buildTd('1', align: TextAlign.center),
-                          _buildTd('${order.serviceType}\nProfessional consultancy fee', bold: true),
+                          _buildTd(order.serviceType, bold: true),
                           _buildTd('998311', align: TextAlign.center),
                           _buildTd(fmt.format(_servicePrice), align: TextAlign.right),
                           _buildTd('1', align: TextAlign.center),
@@ -435,31 +442,29 @@ class InvoiceScreen extends ConsumerWidget {
                         horizontalInside: BorderSide(color: const Color(0xFFCBD5E1), width: 1),
                       ),
                       columnWidths: const {
-                        0: FlexColumnWidth(1.2),
+                        0: FlexColumnWidth(1.0),
                         1: FlexColumnWidth(1.5),
-                        2: FlexColumnWidth(1.2),
-                        3: FlexColumnWidth(1.2),
+                        2: FlexColumnWidth(2.4),
+                        3: FlexColumnWidth(2.4),
                         4: FlexColumnWidth(1.2),
-                        5: FlexColumnWidth(1.2),
-                        6: FlexColumnWidth(1.2),
                       },
                       children: [
                         TableRow(
                           decoration: const BoxDecoration(color: Color(0xFFF8FAFC)),
                           children: [
-                            const Padding(padding: EdgeInsets.all(6), child: Text('HSN/SAC', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold))),
-                            const Padding(padding: EdgeInsets.all(6), child: Text('TAXABLE VALUE', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold))),
+                            const Padding(padding: EdgeInsets.all(6), child: Text('HSN/SAC', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold))),
+                            const Padding(padding: EdgeInsets.all(6), child: Text('TAXABLE VALUE', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold))),
                             Padding(
                               padding: EdgeInsets.zero,
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  const Padding(padding: EdgeInsets.all(4), child: Text('CENTRAL TAX', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold))),
+                                  const Padding(padding: EdgeInsets.all(4), child: Text('CENTRAL TAX', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold))),
                                   Container(height: 1, color: const Color(0xFFCBD5E1)),
                                   Row(
                                     children: [
-                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold)))),
-                                      Expanded(child: Container(padding: const EdgeInsets.all(4), child: const Text('AMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold)))),
+                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
+                                      Expanded(child: Container(padding: const EdgeInsets.all(4), child: const Text('AMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
                                     ],
                                   ),
                                 ],
@@ -470,18 +475,18 @@ class InvoiceScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  const Padding(padding: EdgeInsets.all(4), child: Text('STATE TAX', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold))),
+                                  const Padding(padding: EdgeInsets.all(4), child: Text('STATE TAX', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold))),
                                   Container(height: 1, color: const Color(0xFFCBD5E1)),
                                   Row(
                                     children: [
-                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold)))),
-                                      Expanded(child: Container(padding: const EdgeInsets.all(4), child: const Text('AMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold)))),
+                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
+                                      Expanded(child: Container(padding: const EdgeInsets.all(4), child: const Text('AMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
                                     ],
                                   ),
                                 ],
                               ),
                             ),
-                            const Padding(padding: EdgeInsets.all(6), child: Text('TOTAL TAX\nAMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 3, fontWeight: FontWeight.bold))),
+                            const Padding(padding: EdgeInsets.all(6), child: Text('TOTAL TAX\nAMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold))),
                           ],
                         ),
                         // Data Row
@@ -835,9 +840,9 @@ class InvoiceScreen extends ConsumerWidget {
                   border: pw.TableBorder.all(color: PdfColor.fromHex("#CBD5E1"), width: 1),
                   columnWidths: const {
                     0: pw.FlexColumnWidth(1),
-                    1: pw.FlexColumnWidth(4),
-                    2: pw.FlexColumnWidth(1.5),
-                    3: pw.FlexColumnWidth(1.5),
+                    1: pw.FlexColumnWidth(3),
+                    2: pw.FlexColumnWidth(2),
+                    3: pw.FlexColumnWidth(2),
                     4: pw.FlexColumnWidth(1),
                     5: pw.FlexColumnWidth(2),
                     6: pw.FlexColumnWidth(2),
@@ -849,20 +854,20 @@ class InvoiceScreen extends ConsumerWidget {
                       decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
                       children: [
                         _pdfTh('#'),
-                        _pdfTh('Item'),
-                        _pdfTh('HSN'),
-                        _pdfTh('Rate/Item'),
-                        _pdfTh('Qty'),
-                        _pdfTh('Taxable'),
-                        _pdfTh('Tax'),
-                        _pdfTh('Amount'),
+                        _pdfTh('ITEM'),
+                        _pdfTh('HSN/SAC'),
+                        _pdfTh('RATE/ITEM'),
+                        _pdfTh('QTY'),
+                        _pdfTh('TAXABLE'),
+                        _pdfTh('TAX'),
+                        _pdfTh('AMOUNT'),
                       ],
                     ),
                     // Item Row
                     pw.TableRow(
                       children: [
                         _pdfTd('1', align: pw.TextAlign.center),
-                        _pdfTd('${order.serviceType}\nProfessional consultancy fee', bold: true),
+                        _pdfTd(order.serviceType, bold: true),
                         _pdfTd('998311', align: pw.TextAlign.center),
                         _pdfTd(fmt.format(_servicePrice), align: pw.TextAlign.right),
                         _pdfTd('1', align: pw.TextAlign.center),
@@ -952,8 +957,8 @@ class InvoiceScreen extends ConsumerWidget {
                       horizontalInside: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1),
                     ),
                     columnWidths: const {
-                      0: pw.FlexColumnWidth(1.2),
-                      1: pw.FlexColumnWidth(1.5),
+                      0: pw.FlexColumnWidth(1.0),
+                      1: pw.FlexColumnWidth(1.2),
                       2: pw.FlexColumnWidth(2.4),
                       3: pw.FlexColumnWidth(2.4),
                       4: pw.FlexColumnWidth(1.2),
@@ -962,22 +967,22 @@ class InvoiceScreen extends ConsumerWidget {
                       pw.TableRow(
                         decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
                         children: [
-                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('HSN/SAC', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
-                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('TAXABLE VALUE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('HSN/SAC', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('TAXABLE VALUE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
                           pw.Padding(
                             padding: pw.EdgeInsets.zero,
                             child: pw.Column(
                               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                               children: [
-                                pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('CENTRAL TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold))),
+                                pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('CENTRAL TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                 pw.Container(height: 1, color: PdfColor.fromHex("#CBD5E1")),
                                 pw.Table(
                                   columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()},
                                   children: [
                                     pw.TableRow(
                                       children: [
-                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold))),
-                                        pw.Container(padding: pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(padding: pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                       ],
                                     ),
                                   ],
@@ -990,15 +995,15 @@ class InvoiceScreen extends ConsumerWidget {
                             child: pw.Column(
                               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                               children: [
-                                pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('STATE TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold))),
+                                pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('STATE TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                 pw.Container(height: 1, color: PdfColor.fromHex("#CBD5E1")),
                                 pw.Table(
                                   columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()},
                                   children: [
                                     pw.TableRow(
                                       children: [
-                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold))),
-                                        pw.Container(padding: pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(padding: pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                       ],
                                     ),
                                   ],
@@ -1006,7 +1011,7 @@ class InvoiceScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('TOTAL TAX\nAMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('TOTAL TAX\nAMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
                         ],
                       ),
                       // Data Row
@@ -1138,7 +1143,7 @@ class InvoiceScreen extends ConsumerWidget {
   pw.Widget _pdfTh(String text) {
     return pw.Padding(
       padding: pw.EdgeInsets.all(6),
-      child: pw.Text(text, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold)),
+      child: pw.Text(text, textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold)),
     );
   }
 
@@ -1152,7 +1157,7 @@ class InvoiceScreen extends ConsumerWidget {
   pw.Widget _pdfSmallTd(String text, {pw.TextAlign align = pw.TextAlign.left, bool bold = false}) {
     return pw.Padding(
       padding: pw.EdgeInsets.all(4),
-      child: pw.Text(text, textAlign: align, style: pw.TextStyle(fontSize: 5, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+      child: pw.Text(text, textAlign: align, style: pw.TextStyle(fontSize: 7, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
     );
   }
 
@@ -1188,7 +1193,7 @@ class InvoiceScreen extends ConsumerWidget {
   Widget _buildTh(String text) {
     return Padding(
       padding: const EdgeInsets.all(6),
-      child: Text(text, style: const TextStyle(fontSize: 5, fontWeight: FontWeight.bold)),
+      child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 5, fontWeight: FontWeight.bold)),
     );
   }
 
@@ -1202,7 +1207,7 @@ class InvoiceScreen extends ConsumerWidget {
   Widget _buildSmallTd(String text, {TextAlign align = TextAlign.left, bool bold = false}) {
     return Padding(
       padding: const EdgeInsets.all(4),
-      child: Text(text, textAlign: align, style: TextStyle(fontSize: 4, fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
+      child: Text(text, textAlign: align, style: TextStyle(fontSize: 6, fontWeight: bold ? FontWeight.bold : FontWeight.normal)),
     );
   }
 

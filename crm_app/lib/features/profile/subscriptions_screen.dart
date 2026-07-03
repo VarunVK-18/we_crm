@@ -224,12 +224,17 @@ class SubscriptionsScreen extends ConsumerWidget {
                         : 'Paid';
 
                     String invoiceId = c.id.length > 6 ? c.id.substring(c.id.length - 6).toUpperCase() : c.id;
-                    if (c.updatedAt != null) {
-                      final yy = c.updatedAt!.year.toString().substring(2);
-                      final mm = c.updatedAt!.month.toString().padLeft(2, '0');
-                      final dd = c.updatedAt!.day.toString().padLeft(2, '0');
-                      final hh = c.updatedAt!.hour.toString().padLeft(2, '0');
-                      final min = c.updatedAt!.minute.toString().padLeft(2, '0');
+                    if (c.customServiceId.isNotEmpty) {
+                      final numberPart = c.customServiceId.replaceAll(RegExp(r'[^0-9]'), '');
+                      final year = (c.createdAt ?? c.updatedAt ?? DateTime.now()).toLocal().year.toString();
+                      invoiceId = 'WE$year$numberPart';
+                    } else if (c.createdAt != null || c.updatedAt != null) {
+                      final dt = (c.createdAt ?? c.updatedAt!).toLocal();
+                      final yy = dt.year.toString().substring(2);
+                      final mm = dt.month.toString().padLeft(2, '0');
+                      final dd = dt.day.toString().padLeft(2, '0');
+                      final hh = dt.hour.toString().padLeft(2, '0');
+                      final min = dt.minute.toString().padLeft(2, '0');
                       invoiceId = 'WE$yy$mm$dd$hh$min';
                     }
 
@@ -288,7 +293,8 @@ class SubscriptionsScreen extends ConsumerWidget {
                                 finalDocuments: const [],
                                 assignedExpert: 'Support Team',
                                 expertPhone: '',
-                                createdAt: c.updatedAt ?? DateTime.now(),
+                                customServiceId: c.customServiceId,
+                                createdAt: c.createdAt ?? c.updatedAt ?? DateTime.now(),
                                 dealClosedAmount: c.dealClosedAmount ?? 0.0,
                               ),
                             ),

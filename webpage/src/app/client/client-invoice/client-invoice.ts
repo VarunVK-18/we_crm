@@ -111,8 +111,14 @@ export class ClientInvoice implements OnInit {
 
   get invoiceNumber(): string {
     const o = this.order();
-    if (!o || !o.updatedAt) return '#WE-0000000000';
-    const d = new Date(o.updatedAt);
+    const d = o?.createdAt ? new Date(o.createdAt) : new Date();
+
+    if (o?.custom_service_id) {
+      const numberPart = String(o.custom_service_id).replace(/\D/g, '');
+      const year = d.getFullYear().toString();
+      return `#WE${year}${numberPart}`;
+    }
+    if (!o || !o.createdAt) return '#WE-0000000000';
     const yy = String(d.getFullYear()).slice(-2);
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
@@ -171,8 +177,8 @@ export class ClientInvoice implements OnInit {
     const o = this.order();
     if (!o) return [];
     return [{
-      name: o.serviceName || 'Service / Product',
-      sacHsn: '9983', // Default SAC for professional services
+      name: o.service_name || o.serviceName || 'Service / Product',
+      sacHsn: '998311', // Default SAC for professional services
       rate: this.servicePrice,
       quantity: 1,
       taxableValue: this.servicePrice,
@@ -196,7 +202,7 @@ export class ClientInvoice implements OnInit {
   getGstBreakdown(): any[] {
     if (!this.order() || this.order().isGstApplicable === false) return [];
     return [{
-      hsnSac: '9983',
+      hsnSac: '998311',
       taxableValue: this.servicePrice,
       cgstRate: this.cgstRate(),
       cgstAmount: this.cgst,

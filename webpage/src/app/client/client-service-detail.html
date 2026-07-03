@@ -123,6 +123,14 @@
                       <p>{{ item.description || item.notes }}</p>
                       }
                       }
+                      
+                      @if (isItemCompleted(item)) {
+                      <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px;">
+                        <span class="material-symbols-outlined" style="font-size: 14px; color: #16a34a;">task_alt</span>
+                        <span style="font-size: 11px; color: #16a34a; font-weight: 500;">Completed</span>
+                        <span style="font-size: 11px; color: #16a34a; font-weight: 500;">{{ (item.checkedAt || order()?.updatedAt) | date:'dd MMM yyyy, hh:mm a' }}</span>
+                      </div>
+                      }
                     </div>
                   </div>
                   }

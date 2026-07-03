@@ -24,6 +24,8 @@ class ChecklistModel {
   final double? dealClosedAmount;
   final double? advanceAmountPaid;
   final String entityName;
+  final String customServiceId;
+  final DateTime? createdAt;
 
   ChecklistModel({
     required this.id,
@@ -35,6 +37,8 @@ class ChecklistModel {
     this.dealClosedAmount,
     this.advanceAmountPaid,
     this.entityName = '',
+    this.customServiceId = '',
+    this.createdAt,
   });
 
   /// Progress as a value between 0.0 and 1.0
@@ -86,6 +90,11 @@ class ChecklistModel {
                         data['companyName'] ?? 
                         '').toString();
 
+    DateTime? createdAt;
+    if (data['createdAt'] != null) {
+      createdAt = DateTime.tryParse(data['createdAt'].toString());
+    }
+
     return ChecklistModel(
       id: id,
       serviceName: data['service_name']?.toString() ?? data['checklist_name']?.toString() ?? '',
@@ -96,6 +105,8 @@ class ChecklistModel {
       dealClosedAmount: (data['dealClosedAmount'] as num?)?.toDouble(),
       advanceAmountPaid: (data['advanceAmountPaid'] as num?)?.toDouble(),
       entityName: entityName,
+      customServiceId: data['custom_service_id']?.toString() ?? '',
+      createdAt: createdAt,
     );
   }
 }

@@ -119,6 +119,7 @@ class ServiceOrder {
   final String assignedExpert;
   final String
   expertPhone; // WhatsApp-capable number with country code, e.g. 919876543210
+  final String customServiceId;
   final DateTime createdAt;
   final double dealClosedAmount;
   final double advanceAmountPaid;
@@ -140,6 +141,7 @@ class ServiceOrder {
     required this.finalDocuments,
     required this.assignedExpert,
     required this.expertPhone,
+    this.customServiceId = '',
     required this.createdAt,
     this.dealClosedAmount = 0.0,
     this.advanceAmountPaid = 0.0,
@@ -177,6 +179,7 @@ class ServiceOrder {
           .toList(),
       assignedExpert: data['assignedExpert']?.toString() ?? 'To be assigned',
       expertPhone: data['expertPhone']?.toString() ?? '',
+      customServiceId: data['customServiceId']?.toString() ?? '',
       createdAt: data['createdAt'] != null
           ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
