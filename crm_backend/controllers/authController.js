@@ -342,19 +342,64 @@ const getClients = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .lean();
 
-    // Fetch stats for each client
+    // Fetch stats and WE services for each client
     for (const client of clients) {
       client.stats = {
         checklists: await Checklist.countDocuments({ client_id: client._id }),
         tasks: await FilingTask.countDocuments({ client_id: client._id }),
         documents: await Document.countDocuments({ uploadedBy: client._id })
       };
+      
+      const orders = await ServiceOrder.find({ clientUid: client._id.toString() }).select('serviceType status stage');
+      client.we_services = orders.map(o => ({
+        serviceName: o.serviceType,
+        status: o.status,
+        stage: o.stage
+      }));
     }
 
     res.json({
       success: true,
       clients
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Mark a service as outsourced for a client
+// @route   POST /api/auth/users/clients/:id/outsource-service
+// @access  Admin/Client Manager
+const outsourceService = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { serviceName } = req.body;
+    
+    if (!serviceName) {
+      return res.status(400).json({ message: 'Service name is required' });
+    }
+
+    const client = await User.findById(id);
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+
+    if (!client.outsourced_services) {
+      client.outsourced_services = [];
+    }
+
+    // Check if already outsourced
+    const alreadyOutsourced = client.outsourced_services.some(s => s.serviceName === serviceName);
+    if (!alreadyOutsourced) {
+      const newOutsourced = { serviceName, markedAt: new Date() };
+      await User.updateOne(
+        { _id: id }, 
+        { $push: { outsourced_services: newOutsourced } }
+      );
+      client.outsourced_services.push(newOutsourced); // update local copy for response
+    }
+
+    res.json({ success: true, outsourced_services: client.outsourced_services });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1353,6 +1398,7 @@ module.exports = {
   loginUser,
   getUserProfile,
   getClients,
+  outsourceService,
   registerDirect,
   getTeamGroups,
   deleteUser,

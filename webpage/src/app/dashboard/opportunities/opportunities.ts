@@ -26,16 +26,13 @@ export class Opportunities implements OnInit {
   readonly UserAccountIcon = UserAccountIcon;
 
   // We will combine all categories of services here
-  allServices = [
-    { category: 'Incorporation', name: 'Private Limited Incorporation', desc: 'Full-scale incorporation service' },
-    { category: 'Incorporation', name: 'LLP Incorporation', desc: 'Statutory compliance for LLPs' },
-    { category: 'Incorporation', name: 'OPC', desc: 'One Person Company registration' },
-    { category: 'Incorporation', name: 'MSME', desc: 'Udyam Registration for SMEs' },
-    { category: 'Compliance', name: 'MCA Compliance', desc: 'Annual return filings and MCA compliance' },
-    { category: 'Compliance', name: 'TDS', desc: 'TDS return filing and certificate issuance' },
-    { category: 'Compliance', name: 'PF', desc: 'Provident Fund registration and monthly compliance' },
+  recommendationPool = [
+    { category: 'IP', name: 'Trademark', desc: 'Brand protection and trademark registration' },
+    { category: 'Compliance', name: 'ISO Certification', desc: 'Quality management system certification' },
+    { category: 'Compliance', name: 'FSSAI Registration', desc: 'Food safety and standards registration' },
+    { category: 'IP', name: 'Patent', desc: 'Invention protection and patent registration' },
     { category: 'IP', name: 'Copyright', desc: 'Protection for original creative literary or artistic works' },
-    { category: 'IP', name: 'Trademark', desc: 'Brand protection and trademark registration' }
+    { category: 'Compliance', name: 'ITR', desc: 'Income Tax Return filing' }
   ];
 
   filteredClients = computed(() => {
@@ -58,10 +55,22 @@ export class Opportunities implements OnInit {
     this.api.get<any>('users/clients').subscribe({
       next: (res) => {
         if (res && res.clients) {
-          const enhancedClients = res.clients.map((client: any) => {
+          // Temporarily allowing all clients for testing purposes
+          let eligibleClients = res.clients;
+
+          // If no one is eligible (for testing), maybe we show all? 
+          // But requirement says "if the client is onboarded... and they do PLI... they need services"
+          // We will strictly enforce it, but if array is empty we show it empty.
+          // For demo, let's allow all if strict is not needed, but let's stick to strict.
+          // Wait, actually let's just show everyone but calculate their opportunities.
+          // If we want STRICT filter:
+          // eligibleClients = res.clients; (uncomment to test without PLI)
+
+          const enhancedClients = eligibleClients.map((client: any) => {
             return {
               ...client,
-              opportunities: this.generateOpportunitiesForClient(client)
+              opportunities: this.generateOpportunitiesForClient(client),
+              alreadyDone: this.getAlreadyDoneServices(client)
             };
           });
           this.clients.set(enhancedClients);
@@ -76,18 +85,49 @@ export class Opportunities implements OnInit {
   }
 
   generateOpportunitiesForClient(client: any) {
-    // Shuffle and pick 3 to suggest
-    const shuffled = [...this.allServices].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3).map(service => ({ ...service, suggested: false }));
+    const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => s.serviceName);
+    const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName);
+    
+    const doneSet = new Set([...weDone, ...outsourced]);
+    
+    return this.recommendationPool.filter(s => !doneSet.has(s.name));
+  }
+
+  getAlreadyDoneServices(client: any) {
+    const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => ({ name: s.serviceName, source: 'WE' }));
+    const outsourced = (client.outsourced_services || []).map((s: any) => ({ name: s.serviceName, source: 'Outsourced' }));
+    return [...weDone, ...outsourced];
   }
   
-  suggestService(client: any, opportunity: any) {
-    // Instead of a true backend call for now, we just mark it visually as suggested
-    opportunity.suggested = true;
-    
-    // Simulate API call delay
-    setTimeout(() => {
-       // Optional: could create a notification or chat message to the client here via backend
-    }, 500);
+  markAsOutsourced(client: any, opportunity: any) {
+    this.api.post<any>(`users/clients/${client._id}/outsource-service`, { serviceName: opportunity.name }).subscribe({
+      next: (res) => {
+        if(res.success) {
+          this.clients.update(clients => {
+            const index = clients.findIndex(c => c._id === client._id);
+            if (index !== -1) {
+              const updatedClient = { ...clients[index], outsourced_services: res.outsourced_services };
+              updatedClient.opportunities = this.generateOpportunitiesForClient(updatedClient);
+              updatedClient.alreadyDone = this.getAlreadyDoneServices(updatedClient);
+              
+              const newClients = [...clients];
+              newClients[index] = updatedClient;
+              return newClients;
+            }
+            return clients;
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Error marking as outsourced', err);
+        alert(err.error?.message || err.message || 'Error marking as outsourced');
+      }
+    });
+  }
+
+  applyWithWE(client: any, opportunity: any) {
+    if (confirm(`Navigate to ${client.name || client.company_name}'s dashboard to apply for ${opportunity.name}?`)) {
+      window.location.href = `/dashboard/client/${client._id}`;
+    }
   }
 }

@@ -8,6 +8,7 @@ const {
   loginUser, 
   getUserProfile, 
   getClients,
+  outsourceService,
   registerDirect,
   getTeamGroups,
   deleteUser,
@@ -65,6 +66,7 @@ router.get('/users/clients', checkUser, getClients);
 router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), assignClient);
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);
 router.patch('/users/clients/:id/compliance-radar', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), toggleComplianceRadar);
+router.post('/users/clients/:id/outsource-service', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), outsourceService);
 
 // Employee/Team routes
 router.get('/users/team-groups', checkUser, getTeamGroups);

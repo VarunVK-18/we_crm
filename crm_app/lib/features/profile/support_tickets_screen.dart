@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
@@ -291,9 +292,9 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const SizedBox(height: 8),
-                      DropdownButtonFormField<String>(
+                      DropdownButtonFormField2<String>(
                         isExpanded: true,
-                        initialValue: selectedCategory,
+                        value: selectedCategory,
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -315,7 +316,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           final label = entityName.isNotEmpty
                               ? '$entityName – $serviceName'
                               : serviceName;
-                          return DropdownMenuItem<String>(
+                          return DropdownItem<String>(
                             value: sMap['_id'],
                             child: Text(
                               label,
@@ -343,6 +344,18 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                             borderSide:
                                 BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
                           ),
+                        ),
+                        buttonStyleData: const FormFieldButtonStyleData(
+                          padding: EdgeInsets.zero,
+                        ),
+                        dropdownStyleData: DropdownStyleData(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        menuItemStyleData: const MenuItemStyleData(
+                          height: 48,
+                          padding: EdgeInsets.symmetric(horizontal: 16),
                         ),
                       ),
                       const SizedBox(height: 16),

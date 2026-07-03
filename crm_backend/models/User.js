@@ -139,6 +139,10 @@ const UserSchema = new mongoose.Schema({
     }],
     default: []
   },
+  outsourced_services: [{
+    serviceName: String,
+    markedAt: { type: Date, default: Date.now }
+  }],
   assigned_to: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
