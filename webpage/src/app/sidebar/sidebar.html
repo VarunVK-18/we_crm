@@ -187,6 +187,9 @@
               @if (item.id === 'bucket' && bucketCount() > 0 && !isCollapsed()) {
                 <span class="nav-badge" style="color: var(--text-secondary, #64748b); font-size: 13px; margin-left: 8px; font-weight: 500;">({{ bucketCount() }})</span>
               }
+              @if (item.id === 'staff-chat' && unreadChatCount() > 0 && !isCollapsed()) {
+                <span class="nav-badge" style="color: var(--text-secondary, #64748b); font-size: 13px; margin-left: 8px; font-weight: 500;">({{ unreadChatCount() }})</span>
+              }
             </div>
             @if (isCollapsed()) {
               <div class="nav-tooltip">{{ item.label }}</div>

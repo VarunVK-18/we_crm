@@ -92,6 +92,49 @@ exports.getConversations = async (req, res) => {
   }
 };
 
+exports.getUnreadCount = async (req, res) => {
+  try {
+    const userCompanyId = req.user.company_id;
+    const filter = {};
+    if (userCompanyId) {
+      filter.company_id = userCompanyId;
+    }
+
+    const role = req.user.role;
+    if (role === 'filling_staff' || role === 'account_manager') {
+      filter.assigned_to = req.user._id;
+    } else if (role === 'client_manager') {
+      const myClients = await User.find({
+        role: 'customer',
+        $or: [
+          { assigned_to: req.user._id },
+          { created_by: req.user._id, assigned_to: null }
+        ]
+      }).select('_id');
+      const myClientIds = myClients.map(c => c._id);
+      filter.$or = [
+        { assigned_to: req.user._id },
+        { client_id: { $in: myClientIds } }
+      ];
+    }
+
+    // Fetch checklists
+    const checklists = await Checklist.find(filter).select('_id').lean();
+    const checklistIds = checklists.map(c => c._id.toString());
+
+    const count = await Message.countDocuments({
+      orderId: { $in: checklistIds },
+      senderRole: { $in: ['customer', 'client'] },
+      seen: false
+    });
+
+    res.status(200).json({ success: true, count });
+  } catch (error) {
+    console.error('Error fetching unread chat count:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
 exports.sendMessage = async (req, res) => {
   try {
     const { orderId } = req.params;

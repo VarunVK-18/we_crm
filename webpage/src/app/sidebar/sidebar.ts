@@ -33,6 +33,7 @@ export class Sidebar implements OnInit, OnDestroy {
   user = signal<any>(null);
   newRequestsCount = signal<number>(0);
   bucketCount = signal<number>(0);
+  unreadChatCount = signal<number>(0);
   private pollInterval: any;
 
   constructor(private api: Api) {
@@ -156,9 +157,11 @@ export class Sidebar implements OnInit, OnDestroy {
 
     this.fetchNewRequestsCount();
     this.fetchBucketCount();
+    this.fetchUnreadChatCount();
     this.pollInterval = setInterval(() => {
       this.fetchNewRequestsCount();
       this.fetchBucketCount();
+      this.fetchUnreadChatCount();
     }, 15000);
   }
 
@@ -211,6 +214,20 @@ export class Sidebar implements OnInit, OnDestroy {
       next: (res) => {
         if (res && typeof res.count === 'number') {
           this.bucketCount.set(res.count);
+        }
+      },
+      error: () => { }
+    });
+  }
+
+  fetchUnreadChatCount() {
+    const u = this.user();
+    if (!u) return;
+    
+    this.api.get<any>('chat/conversations/unread-count').subscribe({
+      next: (res) => {
+        if (res && typeof res.count === 'number') {
+          this.unreadChatCount.set(res.count);
         }
       },
       error: () => { }

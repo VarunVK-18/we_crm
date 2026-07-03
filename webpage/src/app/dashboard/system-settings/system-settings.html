@@ -67,110 +67,121 @@
               </button>
             </div>
             
-            <div class="form-grid">
-              <div class="form-group-list">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                  <div>
-                    <label class="form-input-label">GST Percentage (%)</label>
-                    <input type="number" 
-                           [ngModel]="settings().gst_percentage" 
-                           (ngModelChange)="onGstChange($event)"
-                           name="gst_percentage" 
-                           [disabled]="user()?.role !== 'admin'"
-                           class="form-control-input" 
-                           min="0" max="100"
-                           placeholder="e.g. 18"
-                           required />
-                    <small style="color: #64748b; font-size: 12px;">Total GST applied on invoice (e.g. 18%)</small>
-                  </div>
-                  <div>
-                    <label class="form-input-label">CGST Percentage (%)</label>
-                    <input type="number" 
-                           [(ngModel)]="settings().cgst_percentage" 
-                           name="cgst_percentage" 
-                           [disabled]="user()?.role !== 'admin'"
-                           class="form-control-input" 
-                           min="0" max="100"
-                           placeholder="e.g. 9"
-                           required />
-                    <small style="color: #64748b; font-size: 12px;">CGST portion (SGST will be same). E.g. 9% CGST + 9% SGST = 18% GST</small>
-                  </div>
+            <div class="settings-section">
+              <h3 class="section-title">Tax Configuration</h3>
+              <div class="form-grid">
+                <div>
+                  <label class="form-input-label">GST Percentage (%)</label>
+                  <input type="number" 
+                         [ngModel]="settings().gst_percentage" 
+                         (ngModelChange)="onGstChange($event)"
+                         name="gst_percentage" 
+                         [disabled]="user()?.role !== 'admin'"
+                         class="form-control-input" 
+                         min="0" max="100"
+                         placeholder="e.g. 18"
+                         required />
+                  <small class="form-helper-text">Total GST applied on invoice (e.g. 18%)</small>
                 </div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-                  <input type="checkbox" id="allow_agent" [(ngModel)]="settings().allow_agent_registration" name="allow_agent_registration" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />
-                  <label for="allow_agent" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Allow Agents to register clients directly</label>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <input type="checkbox" id="req_doc" [(ngModel)]="settings().require_document_verification" name="require_document_verification" [disabled]="user()?.role !== 'admin'" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" />
-                  <label for="req_doc" style="font-size: 14px; font-weight: 600; color: var(--text-primary);">Force mandatory document verification</label>
+                <div>
+                  <label class="form-input-label">CGST Percentage (%)</label>
+                  <input type="number" 
+                         [(ngModel)]="settings().cgst_percentage" 
+                         name="cgst_percentage" 
+                         [disabled]="user()?.role !== 'admin'"
+                         class="form-control-input" 
+                         min="0" max="100"
+                         placeholder="e.g. 9"
+                         required />
+                  <small class="form-helper-text">CGST portion (SGST will be same). E.g. 9% CGST + 9% SGST = 18% GST</small>
                 </div>
               </div>
 
-              <div class="form-group-list" style="margin-top: 16px; grid-column: 1 / -1;">
-                <div style="margin-bottom: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 4px solid #0f172a; border-radius: 8px; padding: 20px;">
-                  <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0; display: flex; align-items: center; gap: 10px;">
-                    <span class="material-symbols-outlined" style="font-size: 24px; color: #0f172a;">account_balance</span> 
-                    Bank Account Settings (For OCR Verification)
-                  </h3>
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div>
-                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Savings Account (Last 4 Digits)</label>
-                      <input type="text" 
-                             [(ngModel)]="settings().bank_details.savings_account_last_four" 
-                             name="savings_last_4" 
-                             [disabled]="user()?.role !== 'admin'"
-                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
-                             placeholder="e.g. 1234" />
-                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
-                        <input type="checkbox" id="gst_savings" [(ngModel)]="settings().bank_details.add_gst_savings" name="add_gst_savings" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
-                        <label for="gst_savings" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>bank</label>
-                      </div>
-                    </div>
-                    <div>
-                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Current Account (Last 4 Digits)</label>
-                      <input type="text" 
-                             [(ngModel)]="settings().bank_details.current_account_last_four" 
-                             name="current_last_4" 
-                             [disabled]="user()?.role !== 'admin'"
-                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
-                             placeholder="e.g. 5678" />
-                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
-                        <input type="checkbox" id="gst_current" [(ngModel)]="settings().bank_details.add_gst_current" name="add_gst_current" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
-                        <label for="gst_current" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>bank</label>
-                      </div>
-                    </div>
-                    <div>
-                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Savings Account UPI ID</label>
-                      <input type="text" 
-                             [(ngModel)]="settings().bank_details.savings_upi_id" 
-                             name="savings_upi_id" 
-                             [disabled]="user()?.role !== 'admin'"
-                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
-                             placeholder="e.g. user@bank" />
-                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
-                        <input type="checkbox" id="gst_savings_upi" [(ngModel)]="settings().bank_details.add_gst_savings_upi" name="add_gst_savings_upi" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
-                        <label for="gst_savings_upi" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>UPI</label>
-                      </div>
-                    </div>
-                    <div>
-                      <label style="display: block; font-size: 14px; font-weight: 600; color: #475569; margin-bottom: 8px;">Current Account UPI ID</label>
-                      <input type="text" 
-                             [(ngModel)]="settings().bank_details.current_upi_id" 
-                             name="current_upi_id" 
-                             [disabled]="user()?.role !== 'admin'"
-                             style="width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 14px; color: #334155; outline: none; box-sizing: border-box; background: white;" 
-                             placeholder="e.g. user@bank" />
-                      <div style="display: flex; align-items: flex-start; gap: 10px; margin-top: 12px;">
-                        <input type="checkbox" id="gst_current_upi" [(ngModel)]="settings().bank_details.add_gst_current_upi" name="add_gst_current_upi" [disabled]="user()?.role !== 'admin'" style="width: 18px; height: 18px; accent-color: #0f172a; margin-top: 2px;" />
-                        <label for="gst_current_upi" style="font-size: 14px; font-weight: 700; color: #0f172a; cursor: pointer; line-height: 1.4;">Add GST for this<br>UPI</label>
-                      </div>
-                    </div>
+              <div class="checkbox-group">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="allow_agent" [(ngModel)]="settings().allow_agent_registration" name="allow_agent_registration" [disabled]="user()?.role !== 'admin'" />
+                  <label for="allow_agent">Allow Agents to register clients directly</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="req_doc" [(ngModel)]="settings().require_document_verification" name="require_document_verification" [disabled]="user()?.role !== 'admin'" />
+                  <label for="req_doc">Force mandatory document verification</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <div class="section-header">
+                <span class="material-symbols-outlined section-icon">account_balance</span>
+                <h3 class="section-title">Bank Account Settings (OCR)</h3>
+              </div>
+              <p class="section-subtitle">Configure bank details for automated payment verification.</p>
+              
+              <div class="form-grid">
+                <!-- Savings Account -->
+                <div class="bank-card">
+                  <label class="form-input-label">Savings Account (Last 4 Digits)</label>
+                  <input type="text" 
+                         [(ngModel)]="settings().bank_details.savings_account_last_four" 
+                         name="savings_last_4" 
+                         [disabled]="user()?.role !== 'admin'"
+                         class="form-control-input" 
+                         placeholder="e.g. 1234" />
+                  <div class="checkbox-item mt-2">
+                    <input type="checkbox" id="gst_savings" [(ngModel)]="settings().bank_details.add_gst_savings" name="add_gst_savings" [disabled]="user()?.role !== 'admin'" />
+                    <label for="gst_savings">Add GST for this bank</label>
+                  </div>
+                </div>
+                
+                <!-- Current Account -->
+                <div class="bank-card">
+                  <label class="form-input-label">Current Account (Last 4 Digits)</label>
+                  <input type="text" 
+                         [(ngModel)]="settings().bank_details.current_account_last_four" 
+                         name="current_last_4" 
+                         [disabled]="user()?.role !== 'admin'"
+                         class="form-control-input" 
+                         placeholder="e.g. 5678" />
+                  <div class="checkbox-item mt-2">
+                    <input type="checkbox" id="gst_current" [(ngModel)]="settings().bank_details.add_gst_current" name="add_gst_current" [disabled]="user()?.role !== 'admin'" />
+                    <label for="gst_current">Add GST for this bank</label>
+                  </div>
+                </div>
+
+                <!-- Savings UPI -->
+                <div class="bank-card">
+                  <label class="form-input-label">Savings Account UPI ID</label>
+                  <input type="text" 
+                         [(ngModel)]="settings().bank_details.savings_upi_id" 
+                         name="savings_upi_id" 
+                         [disabled]="user()?.role !== 'admin'"
+                         class="form-control-input" 
+                         placeholder="e.g. user@bank" />
+                  <div class="checkbox-item mt-2">
+                    <input type="checkbox" id="gst_savings_upi" [(ngModel)]="settings().bank_details.add_gst_savings_upi" name="add_gst_savings_upi" [disabled]="user()?.role !== 'admin'" />
+                    <label for="gst_savings_upi">Add GST for this UPI</label>
+                  </div>
+                </div>
+                
+                <!-- Current UPI -->
+                <div class="bank-card">
+                  <label class="form-input-label">Current Account UPI ID</label>
+                  <input type="text" 
+                         [(ngModel)]="settings().bank_details.current_upi_id" 
+                         name="current_upi_id" 
+                         [disabled]="user()?.role !== 'admin'"
+                         class="form-control-input" 
+                         placeholder="e.g. user@bank" />
+                  <div class="checkbox-item mt-2">
+                    <input type="checkbox" id="gst_current_upi" [(ngModel)]="settings().bank_details.add_gst_current_upi" name="add_gst_current_upi" [disabled]="user()?.role !== 'admin'" />
+                    <label for="gst_current_upi">Add GST for this UPI</label>
                   </div>
                 </div>
               </div>
+            </div>
               
+            <div class="form-grid">
               <div class="form-group-list">
-                                                <div class="info-box">
+                <div class="info-box">
                   <h3 class="info-box-title">Company Profile Details</h3>
                   <p class="info-box-desc">These details will be displayed on client invoices.</p>
                   
