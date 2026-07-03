@@ -9631,7 +9631,9 @@
                         "description": "Activities of extraterritorial organizations and bodies"
                       }
                     ]
-                  },
+                  }
+                ],
+                "garbage": [
                   {
                     "code": "0111",
                     "description": "0111(p)",
