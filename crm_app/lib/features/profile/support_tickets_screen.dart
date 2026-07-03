@@ -329,8 +329,13 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                         }).toList(),
                         decoration: InputDecoration(
                           labelText: 'Select Completed Service',
-                          prefixIcon: const Icon(LucideIcons.grid,
-                              size: 20, color: AppTheme.deepTeal),
+                          prefixIcon: Icon(
+                            selectedCategory != null 
+                              ? _getServiceIcon((filteredCompletedServices.firstWhere(
+                                  (s) => (s as Map)['_id'] == selectedCategory, 
+                                  orElse: () => {'service_name': ''}) as Map)['service_name']?.toString() ?? '')
+                              : LucideIcons.grid,
+                            size: 20, color: AppTheme.deepTeal),
                           filled: true,
                           fillColor: Colors.grey[50],
                           border: OutlineInputBorder(
@@ -370,8 +375,6 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                         decoration: InputDecoration(
                           labelText: 'Description',
                           hintText: 'Describe your issue in detail...',
-                          prefixIcon: const Icon(LucideIcons.alignLeft,
-                              size: 17, color: AppTheme.deepTeal),
                           filled: true,
                           fillColor: Colors.grey[50],
                           alignLabelWithHint: true,
@@ -710,5 +713,19 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
         ],
       ),
     );
+  }
+
+  IconData _getServiceIcon(String serviceName) {
+    final name = serviceName.toLowerCase();
+    if (name.contains('gst') || name.contains('tax')) return LucideIcons.fileText;
+    if (name.contains('dsc') || name.contains('digital signature')) return LucideIcons.key;
+    if (name.contains('msme') || name.contains('shop')) return LucideIcons.store;
+    if (name.contains('patent') || name.contains('copyright')) return LucideIcons.award;
+    if (name.contains('trademark')) return LucideIcons.stamp;
+    if (name.contains('company') || name.contains('incorporation') || name.contains('llp') || name.contains('opc')) return LucideIcons.building2;
+    if (name.contains('fssai') || name.contains('iso') || name.contains('compliance')) return LucideIcons.shieldCheck;
+    if (name.contains('pf') || name.contains('esi') || name.contains('labor')) return LucideIcons.briefcase;
+
+    return LucideIcons.fileText;
   }
 }

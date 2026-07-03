@@ -388,15 +388,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           color: isSelected ? AppTheme.deepTeal : Colors.white,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.shade200, width: 2.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: isSelected
-                                  ? AppTheme.deepTeal.withValues(alpha: 0.3)
-                                  : Colors.black.withValues(alpha: 0.06),
-                              blurRadius: isSelected ? 10 : 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
+
                         ),
                         child: Text(
                           '${_tabLabels[tab]}  ${count == 0 ? '0' : count.toString().padLeft(2, '0')}',
@@ -427,13 +419,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(25),
                           border: Border.all(color: Colors.grey.shade200, width: 2.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.06),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
                         ),
                         child: TextField(
                           onChanged: (val) => setState(() => _searchQuery = val),
@@ -460,13 +445,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
                         border: Border.all(color: Colors.grey.shade200, width: 2.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(

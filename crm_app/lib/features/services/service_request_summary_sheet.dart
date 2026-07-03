@@ -632,18 +632,53 @@ class _ServiceRequestSummarySheetState
         };
       }
 
-      bool isCompletedDuplicate = ordersState.value?.any((o) =>
+      final completedOrders = ordersState.value?.where((o) =>
               o.serviceType == reqService &&
               o.entityName == _selectedEntity &&
-              (o.status == 'completed' || o.status == 'complete')) ??
-          false;
+              (o.status == 'completed' || o.status == 'complete')) ?? [];
 
-      if (isCompletedDuplicate) {
-        return {
-          'type': 'warning',
-          'header': 'Service Previously Completed',
-          'message': 'This service was already completed for this entity. You can still submit a renewal/re-application request.'
-        };
+      if (completedOrders.isNotEmpty) {
+        final reqServiceLower = reqService.toLowerCase();
+        bool isRenewalService = reqServiceLower.contains('patent') ||
+                                reqServiceLower.contains('trademark') ||
+                                reqServiceLower.contains('bis') ||
+                                reqServiceLower.contains('fssai');
+
+        if (isRenewalService) {
+           bool canRenew = false;
+           for (final order in completedOrders) {
+             for (final doc in order.finalDocuments) {
+                if (doc.expiryDate != null) {
+                   final daysLeft = doc.expiryDate!.difference(DateTime.now()).inDays;
+                   if (daysLeft <= 10) {
+                      canRenew = true;
+                      break;
+                   }
+                }
+             }
+             if (canRenew) break;
+           }
+
+           if (canRenew) {
+             return {
+               'type': 'warning',
+               'header': 'Renewal Available',
+               'message': 'This service is expiring soon. You can submit a renewal request.'
+             };
+           } else {
+             return {
+               'type': 'error',
+               'header': 'Service Already Completed',
+               'message': 'The requested service is already completed for this entity. Renewal options will be available within 10 days of expiry.'
+             };
+           }
+        } else {
+           return {
+             'type': 'error',
+             'header': 'Service Already Completed',
+             'message': 'The requested service is already completed for this entity.'
+           };
+        }
       }
 
       final entityType = entityTypesMap[_selectedEntity] ?? 'Unknown';
@@ -1015,16 +1050,16 @@ class _ServiceRequestSummarySheetState
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(0, 56),
-                        side: BorderSide(color: Colors.grey[300]!),
+                        minimumSize: const Size(0, 52),
+                        side: BorderSide(color: Colors.grey[300]!, width: 1.5),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: Text(
                         'Cancel',
                         style: TextStyle(
-                          color: Colors.grey[700],
+                          color: Colors.grey[800],
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1043,16 +1078,16 @@ class _ServiceRequestSummarySheetState
                             curve: Curves.easeInOut);
                       },
                       style: OutlinedButton.styleFrom(
-                        minimumSize: const Size(0, 56),
-                        side: BorderSide(color: Colors.grey[300]!),
+                        minimumSize: const Size(0, 52),
+                        side: BorderSide(color: Colors.grey[300]!, width: 1.5),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: Text(
                         'Back',
                         style: TextStyle(
-                          color: Colors.grey[700],
+                          color: Colors.grey[800],
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -1081,29 +1116,21 @@ class _ServiceRequestSummarySheetState
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.corporateBlue,
-                        minimumSize: const Size(0, 56),
+                        backgroundColor: Colors.black,
+                        minimumSize: const Size(0, 52),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: Builder(builder: (context) {
-                          final warning = _getCompatibilityWarning();
-                          String label = 'Next';
-                          if (warning != null && warning['type'] == 'error' &&
-                              warning['header'] == 'Service Already Requested') {
-                            label = 'Waiting for Manager Approval';
-                          }
-                          return Text(
-                            label,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        }),
+                      child: const Text(
+                        'Next',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   )
                 else
@@ -1144,11 +1171,11 @@ class _ServiceRequestSummarySheetState
                               }
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.corporateBlue,
-                        minimumSize: const Size(0, 56),
+                        backgroundColor: Colors.black,
+                        minimumSize: const Size(0, 52),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: _isLoading
@@ -1160,22 +1187,14 @@ class _ServiceRequestSummarySheetState
                                 strokeWidth: 2,
                               ),
                             )
-                          : Builder(builder: (context) {
-                              final warning = _getCompatibilityWarning();
-                              String label = 'Submit';
-                              if (warning != null && warning['type'] == 'error' &&
-                                  warning['header'] == 'Service Already Requested') {
-                                label = 'Waiting for Manager Approval';
-                              }
-                              return Text(
-                                label,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              );
-                            }),
+                          : const Text(
+                              'Submit',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
               ],

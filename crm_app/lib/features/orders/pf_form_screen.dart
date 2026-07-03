@@ -368,7 +368,7 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
                         ),
                       ),
                       _buildField('PAN Number', '', _panNumberController, isRequired: true),
-                      _buildField('Date of Incorporation', 'MM/DD/YYYY', _doiController, isRequired: true, isDate: true),
+                      _buildField('Date of Incorporation', 'DD/MM/YYYY', _doiController, isRequired: true, isDate: true),
                       _buildField('Business Address', '', _businessAddressController, isRequired: true, maxLines: 3),
                       _buildField('State', '', _stateController, isRequired: true),
                       _buildField('PIN Code', '', _pinCodeController, isRequired: true, keyboardType: TextInputType.number),

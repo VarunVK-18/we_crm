@@ -34,11 +34,11 @@
   <!-- Filters -->
   <div class="filter-pill-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
     <div style="display: flex; gap: 8px;">
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists ({{ getTabCount('all') }})</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending ({{ getTabCount('pending') }})</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress ({{ getTabCount('in_progress') }})</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed ({{ getTabCount('completed') }})</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered ({{ getTabCount('final_delivered') }})</button>
     </div>
     <div class="search-box">
       <span class="material-symbols-outlined search-icon">search</span>

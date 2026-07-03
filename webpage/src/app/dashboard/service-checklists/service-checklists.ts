@@ -183,6 +183,21 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     return filtered;
   }
 
+  getTabCount(tab: string): number {
+    const all = this.checklists();
+    if (tab === 'all') return all.length;
+    if (tab === 'pending') {
+      return all.filter(c => this.getChecklistDisplayStatus(c) === 'Action Required').length;
+    } else if (tab === 'in_progress') {
+      return all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress').length;
+    } else if (tab === 'completed') {
+      return all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && this.hasPendingPayment(c)).length;
+    } else if (tab === 'final_delivered') {
+      return all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && !this.hasPendingPayment(c)).length;
+    }
+    return 0;
+  }
+
   fetchClients() {
     this.api.get<any>('users/clients').subscribe({
       next: (res) => {
