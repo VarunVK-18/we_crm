@@ -294,7 +294,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                       const SizedBox(height: 8),
                       DropdownButtonFormField2<String>(
                         isExpanded: true,
-                        value: selectedCategory,
+                        valueListenable: ValueNotifier(selectedCategory),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w400,
@@ -354,7 +354,6 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           ),
                         ),
                         menuItemStyleData: const MenuItemStyleData(
-                          height: 48,
                           padding: EdgeInsets.symmetric(horizontal: 16),
                         ),
                       ),
