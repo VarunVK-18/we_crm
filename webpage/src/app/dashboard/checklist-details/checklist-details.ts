@@ -62,6 +62,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   paymentAmountToAdd: number | null = null;
   uploadingExpenseIndices = signal<number[]>([]);
 
+
   privateLimitedFinalDocs = [
     'Certificate of Incorporation (COI)',
     'PAN',
@@ -393,7 +394,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         this.fetchChecklist();
         this.confirmDialog.confirm({
           title: 'Success',
-          message: `Expense bill uploaded and amount extracted successfully! (Extracted: ₹${res.data?.amount || 0})`,
+          message: `Expense bill uploaded successfully!\nExtracted Amount: ₹${res.data?.amount || 0}\nTransaction ID: ${res.data?.transactionId || 'Not found'}`,
           confirmText: 'OK',
           hideCancel: true
         });
@@ -445,8 +446,21 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       return;
     }
 
-    // Check if it's the last checkbox and we are trying to check it
     const currentItem = cl.items[itemIndex];
+
+    // Enforce getBill requirement
+    if (currentItem.getBill && !currentItem.expense?.billUrl) {
+      this.confirmDialog.confirm({
+        title: 'Action Required',
+        message: 'You must upload the bill before completing this step.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      revertCheckbox();
+      return;
+    }
+
+    // Check if it's the last checkbox and we are trying to check it
     const isSupportItem = currentItem && currentItem.title && currentItem.title.startsWith('[Support]');
     
     if (itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked && !isSupportItem) {

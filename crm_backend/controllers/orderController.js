@@ -174,7 +174,8 @@ exports.updateOrder = async (req, res) => {
 
           let custom_service_id = null;
           try {
-            custom_service_id = await getNextServiceId(order.companyId);
+            const compId = order.companyId._id || order.companyId;
+            custom_service_id = await getNextServiceId(compId);
           } catch (e) { console.error('Failed to generate custom_service_id', e); }
 
           const checklist = await Checklist.create({
@@ -251,7 +252,10 @@ exports.updateOrder = async (req, res) => {
             const ChecklistTemplate = require('../models/ChecklistTemplate');
 
             let custom_service_id = null;
-            try { custom_service_id = await getNextServiceId(order.companyId); } catch (e) {}
+            try { 
+              const compId = order.companyId._id || order.companyId;
+              custom_service_id = await getNextServiceId(compId); 
+            } catch (e) { console.error("Failed custom_service_id:", e); }
 
             let finalItems = [{ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false }];
             try {
@@ -262,7 +266,7 @@ exports.updateOrder = async (req, res) => {
                    finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
                 }
               }
-            } catch (e) {}
+            } catch (e) { console.error("Failed custom_service_id:", e); }
 
             const checklist = await Checklist.create({
               company_id: order.companyId,

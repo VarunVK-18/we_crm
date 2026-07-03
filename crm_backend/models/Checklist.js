@@ -13,6 +13,10 @@ const ChecklistItemSchema = new mongoose.Schema({
     maxlength: 200,
     default: ''
   },
+  getBill: {
+    type: Boolean,
+    default: false
+  },
   isChecked: {
     type: Boolean,
     default: false
@@ -29,7 +33,10 @@ const ChecklistItemSchema = new mongoose.Schema({
   expense: {
     amount: { type: Number, default: 0 },
     billUrl: { type: String, default: null },
-    uploadedAt: { type: Date, default: null }
+    transactionId: { type: String, default: '' },
+    paymentTimestamp: { type: Date, default: null },
+    uploadedAt: { type: Date, default: null },
+    reimbursementStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' }
   }
 });
 

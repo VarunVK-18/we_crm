@@ -14,7 +14,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 @Component({
   selector: 'app-client-invoice',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent, DatePipe, CurrencyPipe, WeLoaderComponent],
+  imports: [CommonModule, DatePipe],
   templateUrl: './client-invoice.html',
   styleUrl: './client-invoice.css'
 })

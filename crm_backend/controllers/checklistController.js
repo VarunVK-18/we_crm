@@ -92,7 +92,8 @@ const createChecklist = async (req, res) => {
 
     let custom_service_id = null;
     try {
-      custom_service_id = await getNextServiceId(req.user.company_id);
+      const compId = req.user.company_id._id || req.user.company_id;
+      custom_service_id = await getNextServiceId(compId);
     } catch (e) { console.error('Failed to generate custom_service_id', e); }
 
     const checklist = await Checklist.create({
@@ -1409,11 +1410,13 @@ const createSupportTicketForChecklist = async (req, res) => {
 };
 
 // @desc    Add a financial log directly to a checklist
-// @route   POST /api/checklists/:id/financial-logs
+// @desc    Upload an expense bill and extract amount/transaction ID
+// @route   POST /api/checklists/:id/items/:itemId/expense
 // @access  Private (Admin, Client Manager, Staff)
 const uploadExpenseBill = async (req, res) => {
   try {
     const { id, itemId } = req.params;
+    
     const checklist = await Checklist.findById(id);
 
     if (!checklist) {
@@ -1437,17 +1440,7 @@ const uploadExpenseBill = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Checklist item not found' });
     }
 
-    // 1. Upload to Document model
-    const doc = await Document.create({
-      filename: req.file.originalname,
-      contentType: req.file.mimetype,
-      data: req.file.buffer, // Using memory storage buffer
-      uploadedBy: req.user._id
-    });
-    
-    const billUrl = `/api/documents/${doc._id}`;
-
-    // 2. Extract amount via Gemini
+    // Extract amount and transaction ID via Gemini
     const keys = [
       process.env.GEMINI_API_KEY1,
       process.env.GEMINI_API_KEY2,
@@ -1466,15 +1459,18 @@ const uploadExpenseBill = async (req, res) => {
       },
     };
 
-    const prompt = `You are an expert OCR AI that extracts the total paid amount from a receipt or bill screenshot.
-Find the final total amount paid and return ONLY a valid JSON object with no markdown formatting or extra text:
+    const prompt = `You are an expert OCR AI that extracts the total paid amount and transaction ID from a receipt, bill, or payment screenshot.
+Return ONLY a valid JSON object with no markdown formatting or extra text:
 {
-  "amount": <number or null>
+  "amount": <number or null>,
+  "transactionId": "<string or null>"
 }
 Ensure the amount is a raw number (e.g., 5000, not "5,000" or "Rs 5000").
-If the amount is not found, set it to null.`;
+Extract the transaction ID (often labeled as UTR, Ref No, Transaction ID, UPI Ref, etc.).
+If a field is not found, set it to null.`;
 
     let extractedAmount = 0;
+    let extractedTransactionId = null;
     let lastError = null;
 
     for (const key of keys) {
@@ -1489,8 +1485,9 @@ If the amount is not found, set it to null.`;
         let cleanJsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
         const details = JSON.parse(cleanJsonText);
         
-        if (details && typeof details.amount === 'number') {
-          extractedAmount = details.amount;
+        if (details) {
+          if (typeof details.amount === 'number') extractedAmount = details.amount;
+          if (details.transactionId) extractedTransactionId = String(details.transactionId).trim();
         }
         break; // Success, exit loop
       } catch (error) {
@@ -1499,19 +1496,48 @@ If the amount is not found, set it to null.`;
       }
     }
 
-    // 3. Update the item
+    // Uniqueness validation if a transaction ID was found
+    if (extractedTransactionId) {
+      const existingTransaction = await Checklist.findOne({
+         $or: [
+             { 'items.expense.transactionId': extractedTransactionId },
+             { 'financialLogs.transactionId': extractedTransactionId }
+         ]
+      });
+      
+      if (existingTransaction) {
+         return res.status(400).json({ 
+           success: false, 
+           message: `Duplicate Transaction ID detected: ${extractedTransactionId}. This bill has already been uploaded.` 
+         });
+      }
+    }
+
+    // Upload to Document model
+    const doc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer, // Using memory storage buffer
+      uploadedBy: req.user._id
+    });
+    
+    const billUrl = `/api/documents/${doc._id}`;
+
+    // Update the item
     if (!item.expense) {
       item.expense = {};
     }
     item.expense.billUrl = billUrl;
     item.expense.amount = extractedAmount;
+    item.expense.transactionId = extractedTransactionId || '';
+    item.expense.paymentTimestamp = new Date(); // automatically use current time
     item.expense.uploadedAt = new Date();
 
     await checklist.save();
 
     res.json({
       success: true,
-      message: 'Expense bill uploaded and amount extracted successfully',
+      message: 'Expense bill uploaded successfully',
       data: item.expense
     });
 
@@ -1606,3 +1632,82 @@ module.exports = {
   addFinancialLog,
   uploadExpenseBill
 };
+
+// @desc    Get all expense claims for payment tracker
+// @route   GET /api/checklists/expenses
+// @access  Private
+const getExpenses = async (req, res) => {
+  try {
+    const compId = req.user.company_id._id || req.user.company_id;
+    let query = { company_id: compId, 'items.expense.billUrl': { $type: 'string' } };
+    
+    // If filing staff, only show checklists assigned to them where they might have uploaded expenses
+    // Ideally we should filter the specific items they uploaded, but for now filtering by checklist assignment is standard here.
+    if (req.user.role === 'filling_staff') {
+      query.assigned_to = req.user._id;
+    }
+
+    const checklists = await Checklist.find(query).populate('client_id', 'name custom_id');
+    
+    let expenses = [];
+    
+    checklists.forEach(cl => {
+      cl.items.forEach(item => {
+        if (item.expense && item.expense.billUrl) {
+          expenses.push({
+            checklistId: cl._id,
+            itemId: item._id,
+            custom_service_id: cl.custom_service_id,
+            client_name: cl.client_id ? cl.client_id.name : 'Unknown',
+            client_custom_id: cl.client_id ? cl.client_id.custom_id : 'Unknown',
+            service_name: cl.service_name,
+            item_title: item.title,
+            amount: item.expense.amount,
+            transactionId: item.expense.transactionId,
+            billUrl: item.expense.billUrl,
+            uploadedAt: item.expense.uploadedAt,
+            reimbursementStatus: item.expense.reimbursementStatus || 'pending'
+          });
+        }
+      });
+    });
+    
+    // Sort by uploadedAt descending
+    expenses.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+
+    res.status(200).json({ success: true, expenses });
+  } catch (error) {
+    console.error('getExpenses Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch expenses' });
+  }
+};
+
+// @desc    Mark an expense claim as paid
+// @route   POST /api/checklists/:id/items/:itemId/reimburse
+// @access  Private (Admin, Manager)
+const markExpensePaid = async (req, res) => {
+  try {
+    const { id, itemId } = req.params;
+    
+    const checklist = await Checklist.findById(id);
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    const item = checklist.items.id(itemId);
+    if (!item || !item.expense) {
+      return res.status(404).json({ success: false, message: 'Expense not found on this item' });
+    }
+
+    item.expense.reimbursementStatus = 'paid';
+    await checklist.save();
+
+    res.status(200).json({ success: true, message: 'Expense marked as paid' });
+  } catch (error) {
+    console.error('markExpensePaid Error:', error);
+    res.status(500).json({ success: false, message: 'Failed to update expense status' });
+  }
+};
+
+module.exports.getExpenses = getExpenses;
+module.exports.markExpensePaid = markExpensePaid;

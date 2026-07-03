@@ -162,7 +162,7 @@
     </div>
 
     <!-- Active Tab Screen Content -->
-    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track'">
+    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track' || currentTab() === 'payment-tracker'">
       @if (currentTab() === 'dashboard') {
       <app-home-overview (viewRequests)="handleTabChanged('requests')"
         [searchQuery]="globalSearchQuery()"></app-home-overview>
@@ -199,6 +199,9 @@
       }
       @if (currentTab() === 'completed-checklists') {
       <app-completed-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)"></app-completed-checklists>
+      }
+      @if (currentTab() === 'payment-tracker') {
+      <app-payment-tracker></app-payment-tracker>
       }
       @if (currentTab() === 'checklist-details' && selectedChecklistId()) {
       <app-checklist-details [checklistId]="selectedChecklistId()!" [teams]="teams()" [autoOpenChat]="openChatOnLoad()"

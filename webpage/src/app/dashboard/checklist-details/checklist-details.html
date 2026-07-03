@@ -312,7 +312,7 @@
               }
 
               <!-- Expense Details (Visible to internal staff only) -->
-              @if (user()?.role !== 'customer') {
+              @if (user()?.role !== 'customer' && item.getBill) {
                 <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 8px;">
                   @if (item.expense?.billUrl) {
                     <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); padding: 8px 12px; border-radius: 6px;">
@@ -328,13 +328,13 @@
                     </div>
                   } @else {
                     <div style="display: flex; align-items: center; gap: 12px;">
-                      <input type="file" #billUpload accept="image/*" style="display: none;" (change)="uploadExpenseBill($index, $event)">
+                      <input type="file" #billUpload accept="image/*,application/pdf" style="display: none;" (change)="uploadExpenseBill($index, $event)">
                       <button (click)="billUpload.click()" [disabled]="uploadingExpenseIndices().includes($index)"
                         style="background: none; border: 1px dashed var(--accent-primary); color: var(--accent-primary); padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
                         @if (uploadingExpenseIndices().includes($index)) {
                           <span class="material-symbols-outlined" style="font-size: 16px; animation: spin 1s linear infinite;">sync</span> Extracting Amount...
                         } @else {
-                          <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span> Attach Expense Bill (Optional)
+                          <span class="material-symbols-outlined" style="font-size: 16px;">upload_file</span> Attach Expense Bill (Required)
                         }
                       </button>
                     </div>
@@ -1113,3 +1113,5 @@
   </div>
 </div>
 }
+
+

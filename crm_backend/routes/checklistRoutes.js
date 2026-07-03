@@ -12,7 +12,9 @@ const {
   reuploadFinalDocument,
   createSupportTicketForChecklist,
   addFinancialLog,
-  uploadExpenseBill
+  uploadExpenseBill,
+  getExpenses,
+  markExpensePaid
 } = require('../controllers/checklistController');
 
 const { checkUser, permit } = require('../middleware/rbac');
@@ -31,6 +33,9 @@ const upload = multer({
 router.post('/checklists', checkUser, permit('admin', 'client_manager'), createChecklist);
 router.get('/checklists', checkUser, getChecklists);
 router.get('/my-checklists', checkUser, getMyChecklists); // For Flutter customer app
+
+// Payment Tracker / Expenses
+router.get('/checklists/expenses', checkUser, permit('admin', 'manager', 'client_manager', 'account_manager', 'filling_staff'), getExpenses);
 router.patch('/checklists/:id', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), updateChecklist);
 router.post('/checklists/:id/items', checkUser, permit('admin', 'client_manager'), addChecklistItem);
 router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
@@ -49,5 +54,7 @@ router.post('/checklists/:id/support-ticket', checkUser, createSupportTicketForC
 router.post('/checklists/:id/financial-logs', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), addFinancialLog);
 
 router.post('/checklists/:id/items/:itemId/expense', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.single('bill'), uploadExpenseBill);
+
+router.post('/checklists/:id/items/:itemId/reimburse', checkUser, permit('admin', 'manager'), markExpensePaid);
 
 module.exports = router;

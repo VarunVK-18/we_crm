@@ -77,6 +77,7 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
+          { id: 'payment-tracker', label: 'Payment Tracker', color: '#10B981' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
         ]
       });
@@ -108,6 +109,7 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
+          { id: 'payment-tracker', label: 'Payment Tracker', color: '#10B981' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
         ]
       });
@@ -128,6 +130,7 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
+          { id: 'payment-tracker', label: 'Payment Tracker', color: '#10B981' },
           { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
         ]
       });

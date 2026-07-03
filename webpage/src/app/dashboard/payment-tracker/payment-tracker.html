@@ -1,0 +1,141 @@
+<div class="page-container fade-in">
+  <div class="page-header">
+    <h1 class="page-title">Payment Tracker</h1>
+    <p class="page-subtitle">Track your uploaded expense bills and their reimbursement status.</p>
+  </div>
+
+  @if (isLoading()) {
+    <app-we-loader></app-we-loader>
+  } @else {
+    <div style="margin-bottom: 40px;">
+      <h2 style="font-size: 18px; margin-bottom: 16px; color: var(--text-primary);">Pending Payments</h2>
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Service Details</th>
+              <th>Client Name</th>
+              <th>Client Custom ID</th>
+              <th>Amount (₹)</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (expense of pendingExpenses(); track expense.itemId) {
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">{{ expense.service_name }}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">
+                    {{ expense.custom_service_id }}<br>
+                    {{ expense.item_title }}
+                  </div>
+                </td>
+                <td style="font-weight: 500;">{{ expense.client_name }}</td>
+                <td>{{ expense.client_custom_id }}</td>
+                <td style="font-weight: 600;">{{ expense.amount }}</td>
+                <td>
+                  <span class="status-badge" [ngClass]="expense.reimbursementStatus === 'paid' ? 'status-paid' : 'status-pending'">
+                    {{ expense.reimbursementStatus | titlecase }}
+                  </span>
+                </td>
+                <td>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="action-btn" style="background: white; color: var(--text-secondary); border: 1px solid var(--border-color);" (click)="openBill(expense.billUrl)">
+                      View Bill
+                    </button>
+                    
+                    @if (isManager() && expense.reimbursementStatus === 'pending') {
+                      <button class="action-btn" 
+                              (click)="markAsPaid(expense)" 
+                              [disabled]="processingIds().has(expense.checklistId + '-' + expense.itemId)">
+                        @if (processingIds().has(expense.checklistId + '-' + expense.itemId)) {
+                          Processing...
+                        } @else {
+                          Mark Paid
+                        }
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined empty-icon">receipt_long</span>
+                    <h3 style="margin: 0 0 8px 0; font-size: 18px; color: var(--text-primary);">No pending payments</h3>
+                    <p style="margin: 0; font-size: 14px;">All good! There are no pending claims.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-size: 18px; margin: 0; color: var(--text-primary);">Payment History</h2>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <label style="font-size: 14px; color: var(--text-secondary);">Date:</label>
+          <input type="date" [ngModel]="dateFilter()" (ngModelChange)="dateFilter.set($event); monthFilter.set('')" class="form-control" style="width: auto; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+          
+          <label style="font-size: 14px; color: var(--text-secondary); margin-left: 10px;">Or Month:</label>
+          <input type="month" [ngModel]="monthFilter()" (ngModelChange)="monthFilter.set($event); dateFilter.set('')" class="form-control" style="width: auto; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+        </div>
+      </div>
+      
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Service Details</th>
+              <th>Client Name</th>
+              <th>Amount (₹)</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (expense of historyExpenses(); track expense.itemId) {
+              <tr>
+                <td style="font-size: 13px; color: var(--text-secondary);">
+                  {{ expense.uploadedAt | date:'mediumDate' }}
+                </td>
+                <td>
+                  <div style="font-weight: 600;">{{ expense.service_name }}</div>
+                  <div style="font-size: 12px; color: var(--text-secondary);">
+                    {{ expense.item_title }}
+                  </div>
+                </td>
+                <td style="font-weight: 500;">{{ expense.client_name }}</td>
+                <td style="font-weight: 600;">{{ expense.amount }}</td>
+                <td>
+                  <span class="status-badge status-paid">Paid</span>
+                </td>
+                <td>
+                  <button class="action-btn" style="background: white; color: var(--text-secondary); border: 1px solid var(--border-color);" (click)="openBill(expense.billUrl)">
+                    View Bill
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                    <span class="material-symbols-outlined empty-icon">history</span>
+                    <h3 style="margin: 0 0 8px 0; font-size: 18px; color: var(--text-primary);">No payment history</h3>
+                    <p style="margin: 0; font-size: 14px;">No paid expenses found for the selected month.</p>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

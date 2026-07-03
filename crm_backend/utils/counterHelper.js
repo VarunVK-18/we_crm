@@ -6,7 +6,7 @@ const Counter = require('../models/Counter');
  * @param {string} entity - The entity name ('client', 'service', etc.)
  * @returns {Promise<number>} - The next sequence number
  */
-const getNextSequence = async (companyId, entity) => {
+const getNextSequence = async (companyId, entity) => { console.log("getNextSequence called with:", companyId, entity); 
   if (!companyId) {
     throw new Error('company_id is required to generate sequence');
   }

@@ -23,6 +23,7 @@ import { ClientDashboard } from './client-dashboard/client-dashboard';
 import { ChecklistDetails } from './checklist-details/checklist-details';
 import { StaffCompliance } from './staff-compliance/staff-compliance';
 import { EmployeeProfile } from './employee-profile/employee-profile';
+import { PaymentTrackerComponent } from './payment-tracker/payment-tracker';
 import { ServiceTrackComponent } from './service-track/service-track';
 import { StaffChatComponent } from './staff-chat/staff-chat';
 import { BannerManagement } from './banner-management/banner-management';
@@ -52,6 +53,7 @@ import { Opportunities } from './opportunities/opportunities';
     ChecklistDetails,
     StaffCompliance,
     EmployeeProfile,
+    PaymentTrackerComponent,
     ServiceTrackComponent,
     StaffChatComponent,
     BannerManagement,
@@ -242,9 +244,16 @@ export class Dashboard implements OnInit, OnDestroy {
     if (tab === 'team') this.selectedEmployeeObj.set(null);
     
     // Reset breadcrumb trail for top-level navigation
-    this.navigationTrail.set([
-      { label: this.getTabLabel(tab), action: () => this.handleTabChanged(tab) }
-    ]);
+    if (tab === 'dashboard') {
+      this.navigationTrail.set([
+        { label: this.getTabLabel(tab), action: () => this.handleTabChanged(tab) }
+      ]);
+    } else {
+      this.navigationTrail.set([
+        { label: this.getTabLabel('dashboard'), action: () => this.handleTabChanged('dashboard') },
+        { label: this.getTabLabel(tab), action: () => this.handleTabChanged(tab) }
+      ]);
+    }
   }
 
   viewClient(clientId: string) {
@@ -325,6 +334,13 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'settings': return 'System Settings';
       case 'banners': return 'Banner Management';
       case 'staff-compliance': return 'Staff Compliance Radar';
+      case 'bucket': return 'Bucket Requests';
+      case 'payment-tracker': return 'Payment Tracker';
+      case 'service-track': return 'Service Tracker';
+      case 'service-tracker-table': return 'Service Tracker';
+      case 'team-service-track': return 'Team Service Tracker';
+      case 'opportunities': return 'Opportunities';
+      case 'staff-chat': return 'Staff Chat';
       default: return 'Dashboard';
     }
   }

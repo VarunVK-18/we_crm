@@ -99,6 +99,7 @@ export class SystemSettings implements OnInit {
   activeTemplateExtractEnabled = false;
   newItemTitle = '';
   newItemDesc = '';
+  newItemGetBill = false;
 
   calendarYear = '2026-2027';
   calendarFile: File | null = null;
@@ -213,7 +214,11 @@ export class SystemSettings implements OnInit {
         if (res && res.success) {
           const tmpl = res.templates.find((t: any) => t.service_name === this.selectedService);
           if (tmpl) {
-            this.activeTemplateItems = (tmpl.items || []).map((i: any) => ({ title: i.title, description: i.description }));
+            this.activeTemplateItems = (tmpl.items || []).map((i: any) => ({ 
+              title: i.title, 
+              description: i.description,
+              getBill: i.getBill || false
+            }));
             this.activeTemplateExtractEnabled = !!tmpl.enable_document_extraction;
             this.activeTemplateSop.set(tmpl.sop_document || null);
           } else {
@@ -235,10 +240,12 @@ export class SystemSettings implements OnInit {
     if (this.newItemTitle.trim()) {
       this.activeTemplateItems.push({
         title: this.newItemTitle.trim(),
-        description: this.newItemDesc.trim()
+        description: this.newItemDesc.trim(),
+        getBill: this.newItemGetBill
       });
       this.newItemTitle = '';
       this.newItemDesc = '';
+      this.newItemGetBill = false;
     }
   }
 
@@ -252,12 +259,14 @@ export class SystemSettings implements OnInit {
     item.oldTitle = item.title;
     item.editTitle = item.title;
     item.editDesc = item.description;
+    item.editGetBill = item.getBill || false;
   }
 
   saveEdit(index: number) {
     const item = this.activeTemplateItems[index];
     item.title = item.editTitle;
     item.description = item.editDesc;
+    item.getBill = item.editGetBill;
     item.isEditing = false;
   }
 
@@ -272,6 +281,7 @@ export class SystemSettings implements OnInit {
     const cleanItems = this.activeTemplateItems.map(item => ({
       title: item.title,
       description: item.description,
+      getBill: item.getBill || false,
       oldTitle: item.oldTitle
     }));
 

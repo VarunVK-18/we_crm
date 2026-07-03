@@ -382,6 +382,7 @@
                 <tr>
                   <th>Requirement Name</th>
                   <th>Description</th>
+                  <th>Get Bill</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -391,13 +392,19 @@
                     <tr>
                       <td style="font-weight: 600; color: var(--text-primary);">{{ item.title }}</td>
                       <td style="color: var(--text-secondary);">{{ item.description || 'No description provided' }}</td>
-                      <td style="display: flex; align-items: center;">
-                        <button type="button" class="btn-text-action" style="color: var(--accent-primary); margin-right: 8px; display: inline-flex; align-items: center;" title="Edit" (click)="startEditing($index)">
-                          <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
-                        </button>
-                        <button type="button" class="btn-text-action btn-text-danger" style="display: inline-flex; align-items: center;" title="Remove" (click)="removeTemplateItem($index)">
-                          <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-                        </button>
+                      <td>
+                        <span *ngIf="item.getBill" class="material-symbols-outlined" style="color: var(--accent-primary); font-size: 20px;">check_circle</span>
+                        <span *ngIf="!item.getBill" class="material-symbols-outlined" style="color: var(--text-secondary); font-size: 20px;">cancel</span>
+                      </td>
+                      <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          <button type="button" class="btn-text-action" style="color: var(--accent-primary); display: inline-flex; align-items: center;" title="Edit" (click)="startEditing($index)">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+                          </button>
+                          <button type="button" class="btn-text-action btn-text-danger" style="display: inline-flex; align-items: center;" title="Remove" (click)="removeTemplateItem($index)">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   } @else {
@@ -407,6 +414,9 @@
                       </td>
                       <td>
                         <input type="text" [(ngModel)]="item.editDesc" name="editDesc_{{$index}}" class="form-control-input" style="padding: 6px; font-size: 13px;" />
+                      </td>
+                      <td>
+                        <input type="checkbox" [(ngModel)]="item.editGetBill" name="editGetBill_{{$index}}" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
                       </td>
                       <td>
                         <button type="button" class="btn-text-action" style="color: green; margin-right: 8px;" (click)="saveEdit($index)">Save</button>
@@ -431,6 +441,10 @@
                   </div>
                   <div style="flex: 2;">
                     <textarea [(ngModel)]="newItemDesc" placeholder="Item Description (max 200 chars)" maxlength="200" class="form-control-input" rows="1" style="resize: vertical;"></textarea>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px; height: 42px;">
+                    <input type="checkbox" id="newItemGetBill" [(ngModel)]="newItemGetBill" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
+                    <label for="newItemGetBill" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer;">Get Bill</label>
                   </div>
                 </div>
                 <button class="btn-add-item" (click)="addTemplateItem()">

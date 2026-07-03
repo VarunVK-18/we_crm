@@ -45,49 +45,6 @@ const upsertTemplate = async (req, res) => {
       });
     }
 
-    // Sync template updates to existing active checklists
-    const Checklist = require('../models/Checklist');
-    const activeChecklists = await Checklist.find({
-      company_id: req.user.company_id,
-      service_name: service_name,
-      status: { $ne: 'completed' }
-    });
-
-    for (let cl of activeChecklists) {
-      const oldItemsMap = new Map();
-      if (cl.items && cl.items.length > 0) {
-        cl.items.forEach(oldItem => {
-          oldItemsMap.set(oldItem.title, oldItem);
-        });
-      }
-
-      const newClItems = (items || []).map(tItem => {
-        const matchTitle = tItem.oldTitle || tItem.title;
-        const oldItem = oldItemsMap.get(matchTitle);
-
-        if (oldItem) {
-          return {
-            title: tItem.title,
-            description: tItem.description || '',
-            label: tItem.title,
-            isChecked: oldItem.isChecked,
-            checkedBy: oldItem.checkedBy,
-            checkedAt: oldItem.checkedAt
-          };
-        } else {
-          return {
-            title: tItem.title,
-            description: tItem.description || '',
-            label: tItem.title,
-            isChecked: false
-          };
-        }
-      });
-
-      cl.items = newClItems;
-      await cl.save();
-    }
-
     await logActivity(
       req.user._id,
       'template_updated',

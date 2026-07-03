@@ -10,6 +10,10 @@ const TemplateItemSchema = new mongoose.Schema({
     type: String,
     maxlength: 200,
     default: ''
+  },
+  getBill: {
+    type: Boolean,
+    default: false
   }
 });
 
