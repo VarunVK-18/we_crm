@@ -1,9 +1,12 @@
 <div class="page-container fade-in">
   <div class="header-section">
-    <div>
-      <h2 class="page-title">Completed Service</h2>
-      <p class="page-subtitle">Review your historical compliance and service records.</p>
+  <div class="filter-pill-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 8px;">
+    <div style="display: flex; gap: 8px;">
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_payment'" (click)="currentDirectoryTab.set('pending_payment')">Pending Payment</button>
+      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered</button>
     </div>
+  </div>
     <div class="header-actions">
       <div class="search-box">
         <span class="material-symbols-outlined search-icon">search</span>
@@ -13,13 +16,7 @@
   </div>
 
   <!-- Filters -->
-  <div class="filter-pill-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 16px;">
-    <div style="display: flex; gap: 8px;">
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_payment'" (click)="currentDirectoryTab.set('pending_payment')">Pending Payment</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered</button>
-    </div>
-  </div>
+
 
   <!-- Checklist Cards Grid -->
   @if (isLoading()) {

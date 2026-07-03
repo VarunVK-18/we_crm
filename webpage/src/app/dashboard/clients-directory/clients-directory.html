@@ -2,59 +2,11 @@
   <!-- Page Header -->
   <div class="cd-page-header">
     <div class="cd-header-text">
-      <h2>Clients Directory</h2>
-      <p>Manage corporate portfolios and certification lifecycles.</p>
+      <!-- <h2>Clients Directory</h2>
+      <p>Manage corporate portfolios and certification lifecycles.</p> -->
     </div>
   </div>
 
-  <!-- KPI Cards Bento Grid -->
-  <div class="cd-stats-grid">
-    <div class="cd-stat-card">
-      <div class="cd-stat-info">
-        <p class="cd-stat-label">Total Clients</p>
-        <h3 class="cd-stat-value">{{ clients().length }}</h3>
-        <p class="cd-stat-badge good">+12% vs last month</p>
-      </div>
-      <div class="cd-stat-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-      </div>
-    </div>
-    
-    <div class="cd-stat-card">
-      <div class="cd-stat-info">
-        <p class="cd-stat-label">Active Subscriptions</p>
-        <h3 class="cd-stat-value">{{ getTotalServicesCount() }}</h3>
-        <div class="cd-stat-progress">
-          <div class="cd-stat-progress-bar" [style.width.%]="clients().length ? (getTotalServicesCount() / (clients().length * 10)) * 100 : 0"></div>
-        </div>
-      </div>
-      <div class="cd-stat-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-          <polyline points="9 12 11 14 15 10"></polyline>
-        </svg>
-      </div>
-    </div>
-    
-    <div class="cd-stat-card">
-      <div class="cd-stat-info">
-        <p class="cd-stat-label">Corporate Share</p>
-        <h3 class="cd-stat-value">{{ getCorporateClientPercentage() }}</h3>
-        <p class="cd-stat-italic">Institutional Tiering</p>
-      </div>
-      <div class="cd-stat-icon">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-        </svg>
-      </div>
-    </div>
-  </div>
 
   <!-- Filter & Search Bar -->
   <div class="cd-filter-bar">
@@ -66,6 +18,9 @@
         [ngModel]="searchQuery()"
         (ngModelChange)="searchQuery.set($event)"
       >
+    </div>
+    <div style="font-size: 14px; font-weight: 500; color: var(--text-secondary); display: flex; align-items: center;">
+      <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; color: #475569;">Total Clients: {{ clients().length }}</span>
     </div>
     <div class="cd-filter-spacer"></div>
     <div class="cd-filter-actions">
