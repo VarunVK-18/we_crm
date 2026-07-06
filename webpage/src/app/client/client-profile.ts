@@ -142,20 +142,26 @@ export class ClientProfile implements OnInit, OnDestroy {
                     }
                   }
                   if (c.final_documents) {
-                    for (const f of c.final_documents) {
-                      if (f.document_id) {
-                        const docId = f.document_id._id || f.document_id;
-                        const fId = f._id || Math.random().toString();
-                        this.docEntityMap.set(fId, entityName);
-                        docs.push({
-                          _id: fId,
-                          name: `${c.service_name} - ${f.name} (Final)`,
-                          fileUrl: `api/documents/${docId}`,
-                          uploadedAt: f.uploadedAt,
-                          sourceType: 'final_document',
-                          checklistId: c._id,
-                          documentId: f._id
-                        });
+                    let isFinalBoxTicked = false;
+                    if (c.items && c.items.length > 0) {
+                      isFinalBoxTicked = !!c.items[c.items.length - 1].isChecked;
+                    }
+                    if (isFinalBoxTicked) {
+                      for (const f of c.final_documents) {
+                        if (f.document_id) {
+                          const docId = f.document_id._id || f.document_id;
+                          const fId = f._id || Math.random().toString();
+                          this.docEntityMap.set(fId, entityName);
+                          docs.push({
+                            _id: fId,
+                            name: `${c.service_name} - ${f.name} (Final)`,
+                            fileUrl: `api/documents/${docId}`,
+                            uploadedAt: f.uploadedAt,
+                            sourceType: 'final_document',
+                            checklistId: c._id,
+                            documentId: f._id
+                          });
+                        }
                       }
                     }
                   }
@@ -295,6 +301,11 @@ export class ClientProfile implements OnInit, OnDestroy {
     // Detect file type via magic bytes (first 4 bytes) for guaranteed accuracy
     try {
       const res = await fetch(finalUrl, { headers: { 'Range': 'bytes=0-3' } });
+      if (!res.ok) {
+        alert('Document not found or no longer available.');
+        this.closeDocViewer();
+        return;
+      }
       const buffer = await res.arrayBuffer();
       const bytes = new Uint8Array(buffer);
       // PDF magic: %PDF = 0x25, 0x50, 0x44, 0x46
@@ -341,7 +352,14 @@ export class ClientProfile implements OnInit, OnDestroy {
   forceDownload(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.api.downloadFile(this.docViewerSrc, this.docViewerName || 'document');
+    
+    let docName = this.docViewerName || 'document';
+    const clientName = this.user()?.owner_name || this.user()?.company_name || this.user()?.name || '';
+    if (clientName && !docName.toLowerCase().includes(clientName.toLowerCase())) {
+      docName = `${clientName.trim().replace(/\s+/g, '_')}_${docName}`;
+    }
+    
+    this.api.downloadFile(this.docViewerSrc, docName);
   }
 
   isImage(url: string): boolean {

@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class Api {
-  // private readonly baseUrl = 'http://localhost:5001/api';
-  private readonly baseUrl = 'https://wecrm.wealthempires.in/api';
+  // private readonly baseUrl = 'https://wecrm.wealthempires.in/api';
+  private readonly baseUrl = 'http://localhost:5001/api';
 
 
   get serverUrl(): string {
@@ -24,6 +24,10 @@ export class Api {
     const url = this.getFileUrl(fileUrl);
     try {
       const response = await fetch(url);
+      if (!response.ok) {
+        alert('Document not found or no longer available.');
+        return;
+      }
       const blob = await response.blob();
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -35,7 +39,7 @@ export class Api {
       document.body.removeChild(a);
     } catch (err) {
       console.error('Error downloading file:', err);
-      window.open(url, '_blank');
+      alert('Error downloading file. It might be missing on the server.');
     }
   }
 

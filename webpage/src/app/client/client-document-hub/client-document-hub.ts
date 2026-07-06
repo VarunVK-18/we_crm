@@ -43,14 +43,14 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
   filteredDocuments = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
     const sel = this.selectedEntity();
-    
+
     let docs = this.allDocuments();
-    
+
     // Filter by entity
     if (sel !== 'All') {
       docs = docs.filter(doc => (doc.entityName || '').toLowerCase() === sel.toLowerCase());
     }
-    
+
     // Filter by search query
     if (q) {
       docs = docs.filter(doc =>
@@ -58,12 +58,12 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
         doc.serviceName?.toLowerCase().includes(q)
       );
     }
-    
+
     return docs;
   });
 
   constructor(
-    private router: Router, 
+    private router: Router,
     private api: Api,
     private confirmDialog: ConfirmDialogService
   ) { }
@@ -94,7 +94,7 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
 
         for (const c of checklists) {
           const isPaymentPending = (c.dealClosedAmount || 0) > (c.advanceAmountPaid || 0);
-          
+
           const entityName = (
             c.details?.entityName ||
             c.details?.companyName ||
@@ -138,7 +138,7 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
         confirmText: 'Pay Online',
         cancelText: 'Call Account Manager'
       });
-      
+
       if (choice === true) {
         window.open('/client/wallet', '_self');
       } else if (choice === false) {
@@ -163,13 +163,13 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
         // PDF magic: %PDF
         if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
           this.docViewerType.set('pdf');
-        // JPEG magic
+          // JPEG magic
         } else if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
           this.docViewerType.set('image');
-        // PNG magic
+          // PNG magic
         } else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
           this.docViewerType.set('image');
-        // GIF magic
+          // GIF magic
         } else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
           this.docViewerType.set('image');
         } else {
@@ -203,7 +203,14 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
   forceDownload(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.api.downloadFile(this.docViewerSrc, this.docViewerName || 'document');
+
+    let docName = this.docViewerName || 'document';
+    const clientName = this.user()?.owner_name || this.user()?.company_name || this.user()?.name || '';
+    if (clientName && !docName.toLowerCase().includes(clientName.toLowerCase())) {
+      docName = `${clientName.trim().replace(/\s+/g, '_')}_${docName}`;
+    }
+
+    this.api.downloadFile(this.docViewerSrc, docName);
   }
 
   formatTitleCase(text: string): string {

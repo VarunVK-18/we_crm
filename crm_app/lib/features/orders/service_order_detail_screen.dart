@@ -197,8 +197,38 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              // Status chip
-                              _StatusChip(status: order.status),
+                              // Status chip and Application ID
+                              Row(
+                                children: [
+                                  _StatusChip(status: order.status),
+                                  if (order.details != null && order.details!['applicationId'] != null)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 8.0),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(LucideIcons.tag, color: Colors.white70, size: 12),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '${order.details!['applicationId']}',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
                               const SizedBox(height: 12),
                               Text(
                                 order.serviceType,
@@ -683,7 +713,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: _RequestedDocumentsSection(order: order),
                           ),
-                        if (order.status == ServiceStatus.complete) ...[
+                        if (order.status == ServiceStatus.complete && order.steps.isNotEmpty && order.steps.last.isCompleted) ...[
                           const SizedBox(height: 32),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),

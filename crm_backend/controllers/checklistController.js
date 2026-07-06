@@ -377,7 +377,7 @@ const addChecklistItem = async (req, res) => {
 const updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to, assigned_team, notes, stage, items, requested_documents, status, details, advanceAmountPaid } = req.body;
+    const { assigned_to, assigned_team, notes, stage, items, requested_documents, status, details, advanceAmountPaid, applicationId } = req.body;
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -481,6 +481,51 @@ const updateChecklist = async (req, res) => {
       
       if (advanceAmountPaid !== undefined) {
         checklist.advanceAmountPaid = advanceAmountPaid;
+      }
+    }
+
+    if (applicationId !== undefined) {
+      if (!checklist.details) checklist.details = {};
+      checklist.details.applicationId = applicationId;
+      checklist.markModified('details');
+      
+      // Sync the Application ID with the client's entity profile
+      if (checklist.client_id) {
+        const User = require('../models/User');
+        const user = await User.findById(checklist.client_id);
+        if (user && user.client_entities && user.client_entities.length > 0) {
+          // Find the entity that matches the checklist's entityName
+          const entityName = checklist.details.entityName || '';
+          let entityIndex = -1;
+          
+          if (entityName) {
+             entityIndex = user.client_entities.findIndex(e => e.entityName === entityName);
+          } else {
+             // If no entity name, just update the first one
+             entityIndex = 0;
+          }
+          
+          if (entityIndex !== -1) {
+            const svcLower = checklist.service_name ? checklist.service_name.toLowerCase() : '';
+            let modified = false;
+            
+            if (svcLower.includes('trademark') || svcLower.includes('trade mark')) {
+              user.client_entities[entityIndex].trademarkApplicationNumber = applicationId;
+              modified = true;
+            } else if (svcLower.includes('patent')) {
+              user.client_entities[entityIndex].patentApplicationNumber = applicationId;
+              modified = true;
+            } else if (svcLower.includes('copyright')) {
+              user.client_entities[entityIndex].copyrightRegistrationNumber = applicationId;
+              modified = true;
+            }
+            
+            if (modified) {
+              user.markModified('client_entities');
+              await user.save();
+            }
+          }
+        }
       }
     }
 

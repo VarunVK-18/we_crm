@@ -428,6 +428,12 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     return false;
   }
 
+  isFinalBoxTicked(): boolean {
+    const o = this.order();
+    if (!o || !o.items || o.items.length === 0) return false;
+    return !!o.items[o.items.length - 1].isChecked;
+  }
+
   isPaymentPending(): boolean {
     const o = this.order();
     if (!o) return false;

@@ -17,6 +17,12 @@
             {{ order()?.derivedStatus === 'action-required' ? 'Action Required' : (order()?.derivedStatus ===
             'in-progress' ? 'In Progress' : (order()?.derivedStatus | titlecase)) }}
           </span>
+          @if (order()?.details?.applicationId) {
+            <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; margin-left: 12px;">
+              <span style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Tracking ID:</span>
+              <span style="font-size: 13px; font-weight: 700; color: #0f172a;">{{ order()?.details?.applicationId }}</span>
+            </div>
+          }
           @if ((order()?.derivedStatus === 'in-progress' || order()?.derivedStatus === 'completed') && !isChatOpen()) {
           <button class="open-chat-btn" (click)="toggleChat()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -156,7 +162,7 @@
           }
 
           <!-- Final Deliverables Section -->
-          @if (!isPaymentPending() && (order()?.derivedStatus === 'completed' || filterFinalDocs(order()?.final_documents).length > 0)) {
+          @if (!isPaymentPending() && isFinalBoxTicked() && (order()?.derivedStatus === 'completed' || filterFinalDocs(order()?.final_documents).length > 0)) {
           <div class="final-deliverables-area">
             <div class="progress-header">
               <h3>Final Deliverables</h3>

@@ -62,6 +62,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   paymentAmountToAdd: number | null = null;
   uploadingExpenseIndices = signal<number[]>([]);
 
+  // Application Tracking State
+  isEditingApplicationId = signal<boolean>(false);
+  isSavingApplicationId = signal<boolean>(false);
+  applicationIdInput: string = '';
+
 
   privateLimitedFinalDocs = [
     'Certificate of Incorporation (COI)',
@@ -185,7 +190,17 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   forceDownload(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    this.api.downloadFile(this.docViewerSrc, this.docViewerName || 'document');
+    
+    let docName = this.docViewerName || 'document';
+    const client = this.checklist()?.client_id;
+    if (client) {
+      const clientName = client.owner_name || client.company_name || client.name || '';
+      if (clientName && !docName.toLowerCase().includes(clientName.toLowerCase())) {
+        docName = `${clientName.trim().replace(/\s+/g, '_')}_${docName}`;
+      }
+    }
+    
+    this.api.downloadFile(this.docViewerSrc, docName);
   }
 
   ngOnInit() {
@@ -464,6 +479,20 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const isSupportItem = currentItem && currentItem.title && currentItem.title.startsWith('[Support]');
     
     if (itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked && !isSupportItem) {
+      const svcLower = cl.service_name?.toLowerCase() || '';
+      if (svcLower.includes('trademark') || svcLower.includes('trade mark') || svcLower.includes('patent') || svcLower.includes('copyright')) {
+        if (!cl.details?.applicationId) {
+          this.confirmDialog.confirm({
+            title: 'Action Required',
+            message: 'Please fill and save the Application/Tracking ID first.',
+            confirmText: 'OK',
+            hideCancel: true
+          });
+          revertCheckbox();
+          return;
+        }
+      }
+
       if (!cl.final_documents || cl.final_documents.length === 0) {
         this.confirmDialog.confirm({
           title: 'Action Required',
@@ -668,6 +697,37 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       error: (err) => {
         alert(err.error?.message || 'Failed to update notes.');
         this.isEditingNotes.set(false);
+      }
+    });
+  }
+
+  startEditApplicationId() {
+    this.applicationIdInput = this.checklist()?.details?.applicationId || '';
+    this.isEditingApplicationId.set(true);
+  }
+
+  cancelEditApplicationId() {
+    this.isEditingApplicationId.set(false);
+  }
+
+  saveApplicationId() {
+    const cl = this.checklist();
+    if (!cl) return;
+
+    this.isSavingApplicationId.set(true);
+    this.api.patch<any>(`checklists/${cl._id}`, { applicationId: this.applicationIdInput }).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+        } else {
+          this.fetchChecklist();
+        }
+        this.isSavingApplicationId.set(false);
+        this.isEditingApplicationId.set(false);
+      },
+      error: (err) => {
+        this.isSavingApplicationId.set(false);
+        alert(err.error?.message || 'Failed to update Application ID.');
       }
     });
   }
@@ -881,11 +941,16 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.isFinalDocUploading = true;
     const formData = new FormData();
 
+    let otherCount = 1;
     for (const doc of this.finalDocsToUpload) {
       let finalName = doc.file.name;
+      const ext = doc.file.name.includes('.') ? doc.file.name.substring(doc.file.name.lastIndexOf('.')) : '';
+      
       if (doc.docType && doc.docType !== 'Other') {
-        const ext = doc.file.name.includes('.') ? doc.file.name.substring(doc.file.name.lastIndexOf('.')) : '';
         finalName = `${doc.docType}${ext}`;
+      } else {
+        finalName = `${cl.service_name} Final Document ${otherCount}${ext}`;
+        otherCount++;
       }
       const newFile = new File([doc.file], finalName, { type: doc.file.type });
       formData.append('final_files', newFile);
