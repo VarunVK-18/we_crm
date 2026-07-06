@@ -144,6 +144,7 @@ class _ServiceRequestSummarySheetState
     '₹20 Lakhs - ₹50 Lakhs',
     'Above ₹50 Lakhs'
   ];
+  bool _showTurnoverError = false;
 
   final _formKey = GlobalKey<FormState>();
   int _currentPage = 0;
@@ -225,7 +226,11 @@ class _ServiceRequestSummarySheetState
     }
     // Initialize with current profile info if available
     final userProfile = ref.read(userProfileProvider).value;
-    _phoneController = TextEditingController(text: userProfile?.phone ?? '');
+    String initialPhone = userProfile?.phone ?? '';
+    if (initialPhone.startsWith('+91')) {
+      initialPhone = initialPhone.replaceFirst('+91', '').trim();
+    }
+    _phoneController = TextEditingController(text: initialPhone);
     _nameController = TextEditingController(text: userProfile?.name ?? '');
     _emailController = TextEditingController(text: userProfile?.email ?? '');
     _gstPanController = TextEditingController();
@@ -909,13 +914,22 @@ class _ServiceRequestSummarySheetState
                         ),
                         if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Compliance') || widget.packageName.contains('360° Compliance')) ...[
                           const SizedBox(height: 24),
-                          Text(
-                            'Annual Turnover',
-                            style: GoogleFonts.outfit(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.deepTeal,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                'Annual Turnover',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.deepTeal,
+                                ),
+                              ),
+                              const Text(' *',
+                                  style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700)),
+                            ],
                           ),
                           const SizedBox(height: 8),
                           Column(
@@ -937,11 +951,24 @@ class _ServiceRequestSummarySheetState
                                 onChanged: (val) {
                                   setState(() {
                                     _selectedTurnover = val;
+                                    _showTurnoverError = false;
                                   });
                                 },
                               );
                             }).toList(),
                           ),
+                          if (_showTurnoverError)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4.0, left: 16.0),
+                              child: Text(
+                                'This field is required',
+                                style: TextStyle(
+                                  color: Colors.red.shade700,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
                         ],
                         if (_getCompatibilityWarning() != null) ...[
                           const SizedBox(height: 12),
@@ -1143,7 +1170,20 @@ class _ServiceRequestSummarySheetState
                               (_getCompatibilityWarning() != null && _getCompatibilityWarning()!['type'] == 'error')
                           ? null
                           : () async {
-                              if (_formKey.currentState!.validate()) {
+                              bool isTurnoverValid = true;
+                              if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Compliance') || widget.packageName.contains('360° Compliance')) {
+                                if (_selectedTurnover == null) {
+                                  isTurnoverValid = false;
+                                }
+                              }
+                              
+                              setState(() {
+                                _showTurnoverError = !isTurnoverValid;
+                              });
+
+                              bool isFormValid = _formKey.currentState!.validate();
+
+                              if (isFormValid && isTurnoverValid) {
                                 setState(() => _isLoading = true);
                                 final success = await _submitServiceRequest();
                                 if (mounted) {
@@ -1365,7 +1405,7 @@ class _ServiceRequestSummarySheetState
       if (widget.packageName == 'DUNS Number Registration') ..._buildDunsForm(),
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
       if (widget.packageName == 'FSSAI' || widget.packageName == 'FSSAI Food License') ..._buildFssaiForm(),
-      if (widget.packageName == 'GST Compliance' || widget.packageName == 'MCA Compliance') ..._buildComplianceForm(),
+      if (widget.packageName == 'GST Compliance') ..._buildComplianceForm(),
     ];
   }
 

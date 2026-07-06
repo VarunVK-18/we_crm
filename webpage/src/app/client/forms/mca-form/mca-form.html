@@ -56,7 +56,7 @@
             <div class="input-group">
                 <label>Certificate of Incorporation <span class="required">*</span></label>
                 <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="coiFile">{{ coiFile ? coiFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <span class="file-name" [class.selected]="coiFile">{{ coiFile ? coiFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
                     <label class="upload-btn" [class.change]="coiFile">
                         {{ coiFile ? 'Change' : 'Upload' }}
                         @if (existingDocs['coi']) {
@@ -79,7 +79,7 @@
             <div class="input-group">
                 <label>PAN Card of the Company <span class="required">*</span></label>
                 <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="panFile">{{ panFile ? panFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <span class="file-name" [class.selected]="panFile">{{ panFile ? panFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
                     <label class="upload-btn" [class.change]="panFile">
                         {{ panFile ? 'Change' : 'Upload' }}
                         @if (existingDocs['pan']) {
@@ -93,7 +93,7 @@
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('pan')">Change</button>
             </div>
           } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'pan')" accept=".jpg,.jpeg,.png,.pdf">
+            <input type="file" style="display: none;" (change)="onFileSelected($event, 'pan')" accept=".pdf">
           }
                     </label>
                 </div>
@@ -102,7 +102,7 @@
             <div class="input-group">
                 <label>Memorandum of Association (MOA) <span class="required">*</span></label>
                 <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="moaFile">{{ moaFile ? moaFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <span class="file-name" [class.selected]="moaFile">{{ moaFile ? moaFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
                     <label class="upload-btn" [class.change]="moaFile">
                         {{ moaFile ? 'Change' : 'Upload' }}
                         @if (existingDocs['moa']) {
@@ -125,7 +125,7 @@
             <div class="input-group">
                 <label>Articles of Association (AOA) <span class="required">*</span></label>
                 <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="aoaFile">{{ aoaFile ? aoaFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <span class="file-name" [class.selected]="aoaFile">{{ aoaFile ? aoaFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
                     <label class="upload-btn" [class.change]="aoaFile">
                         {{ aoaFile ? 'Change' : 'Upload' }}
                         @if (existingDocs['aoa']) {
@@ -148,7 +148,7 @@
             <div class="input-group">
                 <label>Last FY Bank statements <span class="required">*</span></label>
                 <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="bankStatementFile">{{ bankStatementFile ? bankStatementFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <span class="file-name" [class.selected]="bankStatementFile">{{ bankStatementFile ? bankStatementFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
                     <label class="upload-btn" [class.change]="bankStatementFile">
                         {{ bankStatementFile ? 'Change' : 'Upload' }}
                         @if (existingDocs['bankStatement']) {
@@ -171,7 +171,7 @@
             <div class="input-group">
                 <label>Sales Invoice copies of last FY <span class="required">*</span></label>
                 <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="salesInvoiceFile">{{ salesInvoiceFile ? salesInvoiceFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <span class="file-name" [class.selected]="salesInvoiceFile">{{ salesInvoiceFile ? salesInvoiceFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
                     <label class="upload-btn" [class.change]="salesInvoiceFile">
                         {{ salesInvoiceFile ? 'Change' : 'Upload' }}
                         @if (existingDocs['salesInvoice']) {
@@ -194,7 +194,7 @@
             <div class="input-group">
                 <label>Purchase bills of last FY <span class="required">*</span></label>
                 <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="purchaseBillsFile">{{ purchaseBillsFile ? purchaseBillsFile.name : 'Upload 1 supported file. Max 5 MB.' }}</span>
+                    <span class="file-name" [class.selected]="purchaseBillsFile">{{ purchaseBillsFile ? purchaseBillsFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
                     <label class="upload-btn" [class.change]="purchaseBillsFile">
                         {{ purchaseBillsFile ? 'Change' : 'Upload' }}
                         @if (existingDocs['purchaseBills']) {

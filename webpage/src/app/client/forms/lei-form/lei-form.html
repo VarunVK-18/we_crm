@@ -67,7 +67,7 @@
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('addressProof')">Change</button>
             </div>
           } @else {
-            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'addressProof')">
+            <input type="file" accept=".pdf" (change)="onFileSelected($event, 'addressProof')">
           }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>
@@ -101,7 +101,7 @@
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('panCard')">Change</button>
             </div>
           } @else {
-            <input type="file" accept=".pdf,.png,.jpg,.jpeg" (change)="onFileSelected($event, 'panCard')">
+            <input type="file" accept=".pdf" (change)="onFileSelected($event, 'panCard')">
           }
             <small>Max size: 2MB (PDF/JPG/PNG)</small>
           </div>

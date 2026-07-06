@@ -43,7 +43,7 @@
           </div>
           <div class="form-group">
             <label>PAN Number *</label>
-            <input type="text" [(ngModel)]="panNumber" name="panNumber" required style="text-transform: uppercase;" placeholder="ABCDE1234F">
+            <input appPanFormat type="text" [(ngModel)]="panNumber" name="panNumber" required style="text-transform: uppercase;" placeholder="ABCDE1234F">
           </div>
           <div class="form-group">
             <label>Date of Incorporation *</label>
@@ -120,7 +120,7 @@
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('panCard')">Change</button>
             </div>
           } @else {
-            <input type="file" (change)="onFileSelected($event, 'panCard')" accept=".pdf,.jpg,.jpeg,.png">
+            <input type="file" (change)="onFileSelected($event, 'panCard')" accept=".pdf">
           }
           </div>
           <div class="form-group file-group">
@@ -136,7 +136,7 @@
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('businessAddressProof')">Change</button>
             </div>
           } @else {
-            <input type="file" (change)="onFileSelected($event, 'businessAddressProof')" accept=".pdf,.jpg,.jpeg,.png">
+            <input type="file" (change)="onFileSelected($event, 'businessAddressProof')" accept=".pdf">
           }
             <small>EB Bill/Rent Agreement</small>
           </div>

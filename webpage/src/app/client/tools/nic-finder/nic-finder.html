@@ -30,27 +30,56 @@
           </tr>
         </thead>
         <tbody>
-          @for (code of filteredCodes(); track code.code) {
-            <tr>
+          @for (group of groupedCodes(); track group.parent.code) {
+            <tr (click)="group.parent.type === 'Class' ? toggleExpand(group.parent.code) : null" 
+                [style.cursor]="group.parent.type === 'Class' ? 'pointer' : 'default'">
               <td class="code-cell">
-                <span class="code-badge">{{ code.code }}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  @if (group.parent.type === 'Class') {
+                    <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b; transition: transform 0.2s;" 
+                          [style.transform]="isExpanded(group.parent.code) ? 'rotate(90deg)' : 'rotate(0)'">chevron_right</span>
+                  } @else {
+                    <span style="width: 18px; display: inline-block;"></span>
+                  }
+                  <span class="code-badge">{{ group.parent.code }}</span>
+                </div>
               </td>
               <td>
                 <span class="type-badge" 
-                      [class.division-type]="code.type === 'Division'"
-                      [class.group-type]="code.type === 'Group'"
-                      [class.class-type]="code.type === 'Class'" 
-                      [class.subclass-type]="code.type === 'Sub-class'">
-                  {{ code.type }}
+                      [class.division-type]="group.parent.type === 'Division'"
+                      [class.group-type]="group.parent.type === 'Group'"
+                      [class.class-type]="group.parent.type === 'Class'" 
+                      [class.subclass-type]="group.parent.type === 'Sub-class'">
+                  {{ group.parent.type }}
                 </span>
               </td>
               <td class="section-cell">
-                <strong>{{ code.section }}</strong> - {{ code.sectionTitle }}
+                <strong>{{ group.parent.section }}</strong> - {{ group.parent.sectionTitle }}
               </td>
-              <td class="desc-cell">{{ code.description }}</td>
+              <td class="desc-cell">{{ group.parent.description }}</td>
             </tr>
+
+            @if (isExpanded(group.parent.code)) {
+              @for (child of group.children; track child.code) {
+                <tr class="child-row">
+                  <td class="code-cell" style="padding-left: 40px;">
+                    <span class="code-badge child-badge">{{ child.code }}</span>
+                  </td>
+                  <td>
+                    <span class="type-badge subclass-type">Sub-class</span>
+                  </td>
+                  <td class="section-cell"></td>
+                  <td class="desc-cell">{{ child.description }}</td>
+                </tr>
+              }
+              @if (group.children.length === 0 && group.parent.type === 'Class') {
+                <tr class="child-row">
+                  <td colspan="4" style="padding-left: 40px; color: #64748b; font-size: 13px;">No specific sub-classes available.</td>
+                </tr>
+              }
+            }
           }
-          @if (filteredCodes().length === 0) {
+          @if (groupedCodes().length === 0) {
             <tr>
               <td colspan="4" class="empty-state">
                 No NIC codes found matching your search.

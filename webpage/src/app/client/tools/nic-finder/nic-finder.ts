@@ -25,16 +25,54 @@ export class NicFinder {
 
   allNicCodes = signal<NicCode[]>([]);
 
-  filteredCodes = computed(() => {
+  expandedStates: Record<string, boolean> = {};
+
+  toggleExpand(code: string) {
+    this.expandedStates[code] = !this.expandedStates[code];
+  }
+
+  isExpanded(code: string) {
+    return !!this.expandedStates[code];
+  }
+
+  groupedCodes = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const codes = this.allNicCodes();
-    if (!query) {
-      return codes;
+    
+    const classMap = new Map<string, NicCode>();
+    codes.forEach(c => {
+      if (c.type === 'Class') {
+        classMap.set(c.code, c);
+      }
+    });
+
+    const matchedSet = new Set<NicCode>();
+    
+    for (const item of codes) {
+      if (!query || item.code.toLowerCase().includes(query) || item.description.toLowerCase().includes(query)) {
+        if (item.type === 'Class') {
+          matchedSet.add(item);
+        } else if (item.type === 'Sub-class') {
+          const parentCode = item.code.length >= 4 ? item.code.substring(0, 4) : item.code;
+          const parent = classMap.get(parentCode) || { ...item, type: 'Class', description: 'Unknown Class', code: parentCode };
+          matchedSet.add(parent);
+        } else {
+          matchedSet.add(item);
+        }
+      }
     }
-    return codes.filter(c => 
-      c.code.toLowerCase().includes(query) || 
-      c.description.toLowerCase().includes(query)
-    );
+
+    const limited = Array.from(matchedSet).slice(0, 100);
+
+    const groups = limited.map(parent => {
+      let children: NicCode[] = [];
+      if (parent.type === 'Class') {
+        children = codes.filter(n => n.type === 'Sub-class' && n.code.startsWith(parent.code));
+      }
+      return { parent, children };
+    });
+
+    return groups;
   });
 
   showScrollTop = signal(false);

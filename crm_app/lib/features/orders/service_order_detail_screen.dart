@@ -465,14 +465,16 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                                 child: Row(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
                                                   children: [
-                                                    SizedBox(
-                                                      width: 100,
+                                                    Expanded(
+                                                      flex: 2,
                                                       child: Text(
                                                         'NAME',
                                                         style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
                                                       ),
                                                     ),
+                                                    const SizedBox(width: 12),
                                                     Expanded(
+                                                      flex: 3,
                                                       child: Text(
                                                         name,
                                                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
@@ -487,24 +489,32 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                                 final isBasicField = ['email', 'phone', 'phonenumber', 'mobile'].contains(e.key.toLowerCase());
                                                 if (!showAll && !isBasicField) return const SizedBox.shrink();
                                                 
-                                                final valStr = e.value?.toString() ?? '';
+                                                String valStr = e.value?.toString() ?? '';
                                                 if (valStr.isEmpty) return const SizedBox.shrink();
                                                 
                                                 String formattedKey = e.key.replaceAllMapped(RegExp(r'([a-z])([A-Z])'), (match) => '${match.group(1)} ${match.group(2)}').toUpperCase();
+                                                if (e.key.toLowerCase() == 'shareholding') {
+                                                  formattedKey = 'SHARE HOLDING PERCENTAGE';
+                                                  if (!valStr.contains('%')) {
+                                                    valStr += '%';
+                                                  }
+                                                }
                                                 
                                                 return Padding(
                                                   padding: const EdgeInsets.only(bottom: 16),
                                                   child: Row(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      SizedBox(
-                                                        width: 100,
+                                                      Expanded(
+                                                        flex: 2,
                                                         child: Text(
                                                           formattedKey,
                                                           style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
                                                         ),
                                                       ),
+                                                      const SizedBox(width: 12),
                                                       Expanded(
+                                                        flex: 3,
                                                         child: Text(
                                                           valStr,
                                                           style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),

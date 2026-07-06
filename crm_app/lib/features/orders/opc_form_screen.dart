@@ -688,6 +688,8 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  minimumSize: const Size(80, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
                 child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
               ),

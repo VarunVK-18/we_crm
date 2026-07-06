@@ -42,10 +42,10 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
     );
     if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 5 * 1024 * 1024) {
+      if (result.files.single.size > 2 * 1024 * 1024) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Upload a file less than 5 MB.'),
+          content: Text('Upload a file less than 2 MB.'),
           backgroundColor: Colors.red,
         ));
         return;
@@ -381,7 +381,7 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
             children: [
               Expanded(
                 child: Text(
-                  path == null ? 'Upload 1 supported file. Max 5 MB.' : path.split('/').last, 
+                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
                   style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -392,6 +392,8 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  minimumSize: const Size(80, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 ),
                 child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
               ),

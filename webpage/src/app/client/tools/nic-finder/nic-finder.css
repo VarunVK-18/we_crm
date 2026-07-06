@@ -189,6 +189,25 @@
   background-color: var(--background);
 }
 
+.nic-table tbody tr.expanded-parent {
+  background-color: var(--background);
+}
+
+.nic-table tbody tr.child-row {
+  background-color: #f8fafc;
+}
+
+.nic-table tbody tr.child-row:hover {
+  background-color: #f1f5f9;
+}
+
+.child-badge {
+  background: transparent !important;
+  color: #64748b !important;
+  font-size: 13px !important;
+  border: 1px dashed #cbd5e1;
+}
+
 .code-cell {
   width: 120px;
 }

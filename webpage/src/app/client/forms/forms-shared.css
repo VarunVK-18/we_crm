@@ -325,21 +325,24 @@
 }
 
 .upload-btn {
-  padding: 6px 16px;
-  background: white;
+  padding: 8px 16px;
+  background: var(--surface, white);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 8px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
   font-weight: 600;
   color: var(--palette-dark);
+  text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
 }
 
 .upload-btn:hover,
 .upload-btn.change {
   border-color: var(--palette-dark);
   color: var(--palette-dark);
+  background: #f8fafc;
 }
 
 /* ── Director / Person Cards ── */

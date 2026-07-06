@@ -132,36 +132,32 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: SafeArea(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Form(
-                          key: _formKey,
-                          child: AutofillGroup(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                  const SizedBox(height: 32),
+                  return CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Form(
+                            key: _formKey,
+                            child: AutofillGroup(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  SizedBox(height: constraints.maxHeight * 0.04),
                                   Center(
                                     child: Image.asset(
                                       'assets/WE CRM logo .png',
-                                      height: 130,
-                                      width: 130,
+                                      height: constraints.maxHeight < 700 ? 100 : 130,
+                                      width: constraints.maxHeight < 700 ? 100 : 130,
                                       fit: BoxFit.contain,
                                     ),
                                   ),
 
-                                  const SizedBox(height: 32),
+                                  SizedBox(height: constraints.maxHeight * 0.04),
 
                                   // Email Field
                                   Text(
-                                    'E-mail',
+                                    'Enter Your Email',
                                     style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
@@ -213,11 +209,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     },
                                   ),
 
-                                  const SizedBox(height: 24),
+                                  SizedBox(height: constraints.maxHeight * 0.025),
 
                                   // Password Field
                                   Text(
-                                    'Password',
+                                    'Enter Your Password',
                                     style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
@@ -283,7 +279,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     },
                                   ),
 
-                                  const SizedBox(height: 16),
+                                  SizedBox(height: constraints.maxHeight * 0.02),
 
                                   Align(
                                     alignment: Alignment.centerRight,
@@ -313,7 +309,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
 
-                                  const SizedBox(height: 24),
+                                  SizedBox(height: constraints.maxHeight * 0.03),
 
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -342,69 +338,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                                 letterSpacing: 0.5)),
                                   ),
 
-                                  const SizedBox(height: 2),
-
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 24),
-                                    child: SizedBox(
-                                      height: 190,
-                                      child: Image.asset(
-                                        'assets/Client/whatsapp_image.jpeg',
-                                        fit: BoxFit.contain,
-                                        color: const Color(0xFFFDFBF7),
-                                        colorBlendMode: BlendMode.darken,
-                                      ),
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 8),
-
-                                  _AutoScrollingLogos(logos: _clientLogos),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    const SizedBox(height: 22),
-
-                                    // Footer Sign Up Link
-                                    Padding(
-                                    padding: const EdgeInsets.only(bottom: 24),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          'New to Wealth Empires? ',
-                                          style: GoogleFonts.inter(
-                                              color: Colors.grey[600],
-                                              fontSize: 14),
-                                        ),
-                                        GestureDetector(
-                                          onTap: _contactSupport,
-                                          child: Text(
-                                            'Sign up',
-                                            style: GoogleFonts.inter(
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                              decoration:
-                                                  TextDecoration.underline,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                    const SizedBox(height: 2),
-                                  ],
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(height: constraints.maxHeight * 0.02),
+                              Container(
+                                constraints: const BoxConstraints(maxHeight: 180),
+                                padding: EdgeInsets.symmetric(vertical: constraints.maxHeight * 0.02),
+                                child: Image.asset(
+                                  'assets/Client/whatsapp_image.jpeg',
+                                  fit: BoxFit.contain,
+                                  color: const Color(0xFFFDFBF7),
+                                  colorBlendMode: BlendMode.darken,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+
+                              _AutoScrollingLogos(logos: _clientLogos),
+
+                              SizedBox(height: constraints.maxHeight * 0.04),
+
+                              // Footer Sign Up Link
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'New to Wealth Empires? ',
+                                      style: GoogleFonts.inter(
+                                          color: Colors.grey[600],
+                                          fontSize: 14),
+                                    ),
+                                    GestureDetector(
+                                      onTap: _contactSupport,
+                                      child: Text(
+                                        'Sign up',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          decoration:
+                                              TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),

@@ -282,7 +282,7 @@ export class ClientServicesComponent implements OnInit {
         const parsedUser = JSON.parse(savedUser);
         this.user.set(parsedUser);
         this.quoteForm.name = parsedUser.owner_name || parsedUser.name || '';
-        this.quoteForm.phone = parsedUser.phone || '';
+        this.quoteForm.phone = (parsedUser.phone || '').replace(/^\+91\s*/, '');
         this.quoteForm.email = parsedUser.email || '';
       } catch (e) {
         console.error('Failed to parse user', e);
@@ -597,7 +597,7 @@ export class ClientServicesComponent implements OnInit {
         this.formSubmitting.set(false);
         if (res && res.success) {
           this.formSuccess.set(true);
-          this.quoteForm = { name: this.user()?.owner_name || '', phone: this.user()?.phone || '', email: this.user()?.email || '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '', annualTurnover: 'Less than ₹20 Lakhs' };
+          this.quoteForm = { name: this.user()?.owner_name || '', phone: (this.user()?.phone || '').replace(/^\+91\s*/, ''), email: this.user()?.email || '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '', annualTurnover: 'Less than ₹20 Lakhs' };
           this.fetchEntities(); // Refetch checklists to update duplicate validation
         } else {
           alert('Failed to submit quote request.');

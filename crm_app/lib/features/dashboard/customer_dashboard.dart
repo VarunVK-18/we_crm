@@ -1007,8 +1007,8 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF562877), Color(0xFF3B1B5B)],
+          gradient: LinearGradient(
+            colors: [AppTheme.deepTeal, AppTheme.deepTeal.withOpacity(0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -1022,9 +1022,44 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
             ),
           ],
         ),
-        child: Stack(
-          children: [
-            Padding(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20.r),
+          child: Stack(
+            children: [
+              // Background organic floating blobs
+              Positioned(
+                top: -40.r,
+                right: -30.r,
+                child: FloatingWidget(
+                  duration: const Duration(seconds: 8),
+                  offset: 5,
+                  child: Container(
+                    width: 80.r,
+                    height: 80.r,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -50.r,
+                left: 10.r,
+                child: FloatingWidget(
+                  duration: const Duration(seconds: 10),
+                  offset: 4,
+                  child: Container(
+                    width: 100.r,
+                    height: 100.r,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.05),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
               padding: EdgeInsets.all(16.r),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1032,16 +1067,20 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        padding: EdgeInsets.all(10.r),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(10.r),
-                        ),
-                        child: HugeIcon(
-                          icon: HugeIcons.strokeRoundedTask01,
-                          size: 24.ip,
-                          color: Colors.white,
+                      FloatingWidget(
+                        duration: const Duration(seconds: 2),
+                        offset: 4,
+                        child: Container(
+                          padding: EdgeInsets.all(10.r),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                          child: HugeIcon(
+                            icon: HugeIcons.strokeRoundedTask01,
+                            size: 24.ip,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       SizedBox(width: 12.r),
@@ -1173,8 +1212,9 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildNoActiveTasksCard(BuildContext context) {
     return Card(
