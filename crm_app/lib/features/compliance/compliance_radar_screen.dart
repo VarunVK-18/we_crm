@@ -1682,7 +1682,7 @@ class _BentoRenewalsCard extends ConsumerWidget {
                   onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
                   child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.grey[600], fontWeight: FontWeight.bold)),
                 ),
-                ElevatedButton(
+                TextButton(
                   onPressed: isSubmitting ? null : () async {
                     setState(() => isSubmitting = true);
                     try {
@@ -1700,11 +1700,7 @@ class _BentoRenewalsCard extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to submit renewal')));
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.corporateBlue,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
-                  ),
-                  child: Text(isSubmitting ? 'Submitting...' : 'Submit Request', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                  child: Text(isSubmitting ? 'Submitting...' : 'Submit Request', style: GoogleFonts.outfit(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
                 ),
               ],
             );
@@ -1791,7 +1787,7 @@ class _BentoRenewalsCard extends ConsumerWidget {
                   Text('Expires: ${cert.expiryDate.split("T")[0]}', style: GoogleFonts.outfit(fontSize: 13.sp, color: Colors.grey[600])),
                   Text('${cert.daysRemaining} Days Remaining', style: GoogleFonts.outfit(fontSize: 13.sp, fontWeight: FontWeight.bold, color: cert.daysRemaining < 0 ? Colors.red : Colors.grey[800])),
                   if (cert.renewalRequired && cert.renewalStatus != 'Renewal Processing') ...[
-                    SizedBox(height: 12.r),
+                    SizedBox(height: 10.r),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -1800,7 +1796,7 @@ class _BentoRenewalsCard extends ConsumerWidget {
                           backgroundColor: AppTheme.deepTeal,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
                         ),
-                        child: Text('Renew Now', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13.sp)),
+                        child: Text('Renew Now', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.sp)),
                       ),
                     ),
                   ] else if (cert.renewalStatus == 'Renewal Processing') ...[
