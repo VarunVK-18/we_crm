@@ -68,11 +68,13 @@
           <div class="form-row">
             <div class="form-group">
               <label>Official Mobile Number *</label>
-              <input type="tel" [(ngModel)]="mobile" name="mobile" required>
+              <input type="tel" [(ngModel)]="mobile" name="mobile" required pattern="^[0-9]{10}$" #mobileField="ngModel">
+                  <div *ngIf="mobileField.invalid && mobileField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
             </div>
             <div class="form-group">
               <label>Official Mail ID *</label>
-              <input type="email" [(ngModel)]="email" name="email" required>
+              <input type="email" [(ngModel)]="email" name="email" required email #emailField="ngModel">
+                  <div *ngIf="emailField.invalid && emailField.touched" class="error-msg">Please enter a valid email address</div>
             </div>
           </div>
 
@@ -167,11 +169,13 @@
           <div class="form-row">
             <div class="form-group">
               <label>Personal WhatsApp number *</label>
-              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required>
+              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required pattern="^[0-9]{10}$" #whatsappField="ngModel">
+                  <div *ngIf="whatsappField.invalid && whatsappField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
             </div>
             <div class="form-group">
               <label>Personal Mail ID *</label>
-              <input type="email" [(ngModel)]="personalEmail" name="personalEmail" required>
+              <input type="email" [(ngModel)]="personalEmail" name="personalEmail" required email #personalEmailField="ngModel">
+                  <div *ngIf="personalEmailField.invalid && personalEmailField.touched" class="error-msg">Please enter a valid email address</div>
             </div>
           </div>
 

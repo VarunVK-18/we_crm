@@ -28,7 +28,8 @@
         <div class="form-grid">
           <div class="form-group full-width">
             <label>Proposed Company Name *</label>
-            <input type="text" [(ngModel)]="companyName" name="companyName" required placeholder="e.g. Softrate India Private Limited">
+            <input type="text" [(ngModel)]="companyName" name="companyName" required placeholder="e.g. Softrate India Private Limited" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #companyNameField="ngModel" style="text-transform: uppercase;">
+                  <div *ngIf="companyNameField.invalid && companyNameField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
           </div>
           <div class="form-group full-width">
             <label>Main Business Activity *</label>
@@ -64,7 +65,7 @@
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('officeProof')">Change</button>
             </div>
           } @else {
-            <input type="file" (change)="onFileSelected($event, 'officeProof')" accept=".jpg,.jpeg,.png,.pdf">
+            <input type="file" (change)="onFileSelected($event, 'officeProof')" accept=".pdf">
           }
             </div>
           </div>
@@ -185,7 +186,8 @@
 
                 <div class="form-group">
                   <label>Email ID *</label>
-                  <input type="email" [(ngModel)]="d.email" name="d_email_{{$index}}" required>
+                  <input type="email" [(ngModel)]="d.email" name="d_email_{{$index}}" required email #demailindexField="ngModel">
+                  <div *ngIf="demailindexField.invalid && demailindexField.touched" class="error-msg">Please enter a valid email address</div>
                 </div>
                 <div class="form-group">
                   <label>Phone Number *</label>

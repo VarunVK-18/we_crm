@@ -102,7 +102,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked) async {
+  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
@@ -442,10 +442,10 @@ Widget build(BuildContext context) {
                   _buildSectionContainer(
                     title: 'Document Upload',
                     children: [
-                      _buildFileRow('Upload Aadhaar Card', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _aadhaarPath, () => _pickFile((path) => _aadhaarPath = path)),
-                      _buildFileRow('Upload PAN Card', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _panPath, () => _pickFile((path) => _panPath = path)),
+                      _buildFileRow('Upload Aadhaar Card', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _aadhaarPath, () => _pickFile((path) => _aadhaarPath = path, allowedExtensions: const ['pdf'])),
+                      _buildFileRow('Upload PAN Card', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _panPath, () => _pickFile((path) => _panPath = path, allowedExtensions: const ['pdf'])),
                       _buildFileRow('Upload Passport Size Photo', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _photoPath, () => _pickFile((path) => _photoPath = path)),
-                      _buildFileRow('Upload Business Address Proof', '(Rental Agreement / Electricity Bill / NOC / Utility Bill). Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path)),
+                      _buildFileRow('Upload Business Address Proof', '(Rental Agreement / Electricity Bill / NOC / Utility Bill). Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path, allowedExtensions: const ['pdf'])),
                     ],
                   ),
 

@@ -75,7 +75,7 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
   Future<void> _pickFile(String field) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
     if (result != null && result.files.single.path != null) {
       if (result.files.single.size > 2 * 1024 * 1024) {

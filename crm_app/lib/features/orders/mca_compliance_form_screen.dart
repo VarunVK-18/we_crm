@@ -36,10 +36,10 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
   String? _salesInvoicePath;
   String? _purchaseBillsPath;
 
-  Future<void> _pickFile(Function(String) onPicked) async {
+  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: allowedExtensions,
     );
     if (result != null && result.files.single.path != null) {
       if (result.files.single.size > 2 * 1024 * 1024) {
@@ -272,7 +272,7 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
                     title: 'Documents Required',
                     children: [
                       _buildFileRow('Certificate of Incorporation', '', _coiPath, () => _pickFile((path) => _coiPath = path)),
-                      _buildFileRow('PAN Card of the Company', '', _panPath, () => _pickFile((path) => _panPath = path)),
+                      _buildFileRow('PAN Card of the Company', '', _panPath, () => _pickFile((path) => _panPath = path, allowedExtensions: const ['pdf'])),
                       _buildFileRow('Memorandum of Association (MOA)', '', _moaPath, () => _pickFile((path) => _moaPath = path)),
                       _buildFileRow('Articles of Association (AOA)', '', _aoaPath, () => _pickFile((path) => _aoaPath = path)),
                       _buildFileRow('Last FY Bank statements', '', _bankStatementPath, () => _pickFile((path) => _bankStatementPath = path)),
