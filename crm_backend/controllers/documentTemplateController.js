@@ -137,7 +137,8 @@ const generateDocumentFromTemplate = async (req, res) => {
       Object.assign(placeholders, custom_values);
     }
 
-    const filledHtml = applyPlaceholders(tmpl.html_content, placeholders);
+    const baseHtml = req.body.override_html || tmpl.html_content;
+    const filledHtml = applyPlaceholders(baseHtml, placeholders);
 
     // Wrap in a styled page for PDF rendering
     const fullHtml = `<!DOCTYPE html>

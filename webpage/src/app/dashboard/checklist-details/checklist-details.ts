@@ -1378,6 +1378,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   customInputs = signal<any[]>([]);
   isLoadingDocTemplates = signal<boolean>(false);
   isGeneratingDoc = signal<boolean>(false);
+  isEditingTemplate = signal<boolean>(false);
+  editorHtml = signal<string>('');
 
   openGenerateDocModal() {
     const cl = this.checklist();
@@ -1402,10 +1404,13 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.showGenerateDocModal.set(false);
     this.selectedDocTemplate.set(null);
     this.customInputs.set([]);
+    this.isEditingTemplate.set(false);
+    this.editorHtml.set('');
   }
 
   selectDocTemplate(tmpl: any) {
     this.selectedDocTemplate.set(tmpl);
+    this.editorHtml.set(tmpl ? (tmpl.html_content || '') : '');
     if (tmpl && tmpl.html_content) {
       const regex = /\{\{input:([^}]+)\}\}/g;
       const inputs: any[] = [];
@@ -1425,6 +1430,68 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
   }
 
+  toggleTemplateEditor() {
+    this.isEditingTemplate.set(!this.isEditingTemplate());
+    if (this.isEditingTemplate() && this.selectedDocTemplate()) {
+      setTimeout(() => {
+        const el = document.getElementById('generate-template-editor');
+        if (el) el.innerHTML = this.editorHtml();
+      }, 50);
+    }
+  }
+
+  onGenerateEditorInput(event: Event) {
+    const el = event.target as HTMLElement;
+    this.editorHtml.set(el.innerHTML);
+  }
+
+  generateEditorCmd(command: string) {
+    document.execCommand(command, false, '');
+    const el = document.getElementById('generate-template-editor');
+    if (el) {
+      el.focus();
+      this.editorHtml.set(el.innerHTML);
+    }
+  }
+
+  generateEditorFontSize(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    if (select.value) {
+      document.execCommand('fontSize', false, select.value);
+      const el = document.getElementById('generate-template-editor');
+      if (el) {
+        el.focus();
+        this.editorHtml.set(el.innerHTML);
+      }
+      select.value = "";
+    }
+  }
+
+  generateEditorFormat(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    if (select.value) {
+      document.execCommand('formatBlock', false, select.value);
+      const el = document.getElementById('generate-template-editor');
+      if (el) {
+        el.focus();
+        this.editorHtml.set(el.innerHTML);
+      }
+      select.value = "";
+    }
+  }
+
+  insertPlaceholder() {
+    const name = prompt("Enter placeholder name (e.g. company_name, client_name, or custom input like input:Amount):");
+    if (name) {
+      const el = document.getElementById('generate-template-editor');
+      if (el) {
+        el.focus();
+        document.execCommand('insertText', false, `{{${name}}}`);
+        this.editorHtml.set(el.innerHTML);
+      }
+    }
+  }
+
   generateDocumentFromTemplate() {
     const cl = this.checklist();
     const tmpl = this.selectedDocTemplate();
@@ -1436,10 +1503,22 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       customValues[inp.token] = inp.value || '';
     }
 
-    this.api.post<any>(`document-templates/${tmpl._id}/generate`, { 
+    const payload: any = { 
       checklist_id: cl._id,
       custom_values: customValues
-    }).subscribe({
+    };
+    
+    // Always send the latest HTML state if it was modified (or even if it wasn't, as it defaults to the template)
+    let currentHtml = this.editorHtml();
+    if (this.isEditingTemplate()) {
+      const el = document.getElementById('generate-template-editor');
+      if (el) currentHtml = el.innerHTML;
+    }
+    if (currentHtml) {
+      payload.override_html = currentHtml;
+    }
+
+    this.api.post<any>(`document-templates/${tmpl._id}/generate`, payload).subscribe({
       next: (res) => {
         this.isGeneratingDoc.set(false);
         if (res.success) {
