@@ -151,13 +151,15 @@
    ========================================================================== */
 .form-scroll-container {
   width: 100%;
-  min-height: 100%;
+  height: 100%;
+  max-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 1.5rem;
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .form-inner-wrapper {
@@ -181,6 +183,8 @@
 
 .login-box {
   width: 100%;
+  padding: 2rem;
+  border: 1px solid #6b6b6b;
 }
 
 .main-title {
@@ -250,7 +254,6 @@
   height: 48px;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 16px;
   padding: 12px 14px 12px 48px;
   color: var(--text-primary);
   font-family: var(--font-body);
@@ -339,7 +342,6 @@
   width: 100%;
   height: 48px;
   background: var(--premium-gradient);
-  border-radius: 16px;
   box-shadow: var(--card-shadow);
   padding: 0;
   overflow: hidden;
@@ -720,7 +722,6 @@
   object-fit: contain;
   opacity: 0.7;
   transition: opacity 0.2s ease, transform 0.2s ease;
-  filter: grayscale(100%);
 }
 
 .client-logos-grid img:hover {
