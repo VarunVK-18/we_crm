@@ -1,0 +1,15 @@
+FROM node:20-alpine
+WORKDIR /app
+
+# Copy package files
+COPY crm_backend/package.json crm_backend/package-lock.json* ./
+RUN npm install
+
+# Copy application files
+COPY crm_backend/ ./
+
+# Expose the backend port
+EXPOSE 5001
+
+# Start the server
+CMD ["npm", "start"]

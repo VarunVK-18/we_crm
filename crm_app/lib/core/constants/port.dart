@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-const bool useLocalBackend = true;
+const bool useLocalBackend = false;
 const bool isEmulator = false;
 String localHostIP ='192.168.29.105';
 
@@ -16,7 +16,7 @@ String getBaseUrl() {
     // For iOS simulator, iOS physical device, and Android physical device:
     return 'http://${localHostIP}:5001';
   }
-  return 'https://we-crm.onrender.com'; // Develop Backend
+  return 'http://wecrm.wealthempires.in/api'; // Develop Backend
 }
 
 final String kBaseUrl = getBaseUrl();
