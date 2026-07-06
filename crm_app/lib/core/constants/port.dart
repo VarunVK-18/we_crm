@@ -16,7 +16,7 @@ String getBaseUrl() {
     // For iOS simulator, iOS physical device, and Android physical device:
     return 'http://${localHostIP}:5001';
   }
-  return 'http://wecrm.wealthempires.in/api'; // Develop Backend
+  return 'https://wecrm.wealthempires.in/api'; // Develop Backend
 }
 
 final String kBaseUrl = getBaseUrl();
