@@ -64,10 +64,10 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked) async {
+  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: allowedExtensions,
     );
     if (result != null && result.files.single.path != null) {
       if (result.files.single.size > 2 * 1024 * 1024) {
@@ -331,7 +331,7 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
                     title: 'Document Uploads',
                     children: [
                       _buildFileRow('PAN Card', 'Entity / Proprietor PAN. Max 2 MB.', _panCardPath, () => _pickFile((path) => _panCardPath = path)),
-                      _buildFileRow('Address Proof', 'Authorized Signatory Proof. Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path)),
+                      _buildFileRow('Address Proof', 'Authorized Signatory Proof. Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path, allowedExtensions: const ['pdf'])),
                       _buildFileRow('Business Address Proof', 'EB Bill/Rent Agreement. Max 2 MB.', _businessAddressProofPath, () => _pickFile((path) => _businessAddressProofPath = path)),
                       _buildFileRow('Incorporation Certificate', 'Only for Company/LLP. Max 2 MB.', _incorpCertPath, () => _pickFile((path) => _incorpCertPath = path), isRequired: false),
                     ],

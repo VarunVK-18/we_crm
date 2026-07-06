@@ -78,7 +78,7 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked) async {
+  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
@@ -393,7 +393,7 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
                     title: 'Step 4: Document Uploads',
                     children: [
                       _buildFileRow('Identity Proof', 'Aadhaar/Passport/PAN. Max 2 MB.', _identityProofPath, () => _pickFile((path) => _identityProofPath = path)),
-                      _buildFileRow('Address Proof', 'Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path)),
+                      _buildFileRow('Address Proof', 'Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path, allowedExtensions: const ['pdf'])),
                       _buildFileRow('Invention Description', 'Detailed description file. Max 2 MB.', _inventionDescriptionDocPath, () => _pickFile((path) => _inventionDescriptionDocPath = path)),
                       _buildFileRow('Drawings / Diagrams', 'If applicable. Max 2 MB.', _drawingsDiagramsPath, () => _pickFile((path) => _drawingsDiagramsPath = path), isRequired: false),
                       _buildFileRow('Authorization Letter', 'If applicable. Max 2 MB.', _authLetterPath, () => _pickFile((path) => _authLetterPath = path), isRequired: false),

@@ -115,10 +115,10 @@ class _LlpFormScreenState extends ConsumerState<LlpFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked) async {
+  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: allowedExtensions,
     );
     if (result != null && result.files.single.path != null) {
       // User specifically requested Max 2 MB for documents
@@ -384,7 +384,7 @@ Widget build(BuildContext context) {
                         'Do you have address for your company',
                         'Do you want virtual office for your company'
                       ], _registeredOfficePreference, (v) => setState(() => _registeredOfficePreference = v)),
-                      _buildFileRow('Registered office proof', 'EB bill, wifi bill not less than 2 months old', _officeProofPath, () => _pickFile((path) => _officeProofPath = path)),
+                      _buildFileRow('Registered office proof', 'EB bill, wifi bill not less than 2 months old', _officeProofPath, () => _pickFile((path) => _officeProofPath = path, allowedExtensions: const ['pdf'])),
                       _buildField('Name of the Owner in the utility bill', '', _ownerNameController, isRequired: true),
                       _buildField('Total Capital Contribution', 'Enter total capital contributed by all partners', _totalCapitalController, isRequired: true),
                     ],

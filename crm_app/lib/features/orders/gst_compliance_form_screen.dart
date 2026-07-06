@@ -26,10 +26,10 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
   String? _bankStatementPath;
   String _annualTurnover = 'Less than ₹20 Lakhs';
 
-  Future<void> _pickFile(Function(String) onPicked) async {
+  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      allowedExtensions: allowedExtensions,
     );
     if (result != null && result.files.single.path != null) {
       if (result.files.single.size > 2 * 1024 * 1024) {

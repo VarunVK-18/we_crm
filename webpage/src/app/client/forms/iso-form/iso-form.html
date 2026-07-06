@@ -28,7 +28,8 @@
           
           <div class="form-group full-width">
             <label>Company Legal Name *</label>
-            <input type="text" [(ngModel)]="companyLegalName" name="companyLegalName" required>
+            <input type="text" [(ngModel)]="companyLegalName" name="companyLegalName" required pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #companyLegalNameField="ngModel" style="text-transform: uppercase;">
+                  <div *ngIf="companyLegalNameField.invalid && companyLegalNameField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
           </div>
 
           <div class="form-group full-width">
@@ -44,11 +45,13 @@
           <div class="form-row">
             <div class="form-group">
               <label>Email ID *</label>
-              <input type="email" [(ngModel)]="email" name="email" required>
+              <input type="email" [(ngModel)]="email" name="email" required email #emailField="ngModel">
+                  <div *ngIf="emailField.invalid && emailField.touched" class="error-msg">Please enter a valid email address</div>
             </div>
             <div class="form-group">
               <label>Whatsapp number *</label>
-              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required>
+              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required pattern="^[0-9]{10}$" #whatsappField="ngModel">
+                  <div *ngIf="whatsappField.invalid && whatsappField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
             </div>
           </div>
 
