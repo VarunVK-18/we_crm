@@ -27,6 +27,7 @@ export class EmployeesTeam implements OnInit {
   isEditTeamMode = signal<boolean>(false);
   teamSubmitting = signal<boolean>(false);
   teamError = signal<string>('');
+  teamMemberSearch = signal<string>('');
   editingTeamId = signal<string | null>(null);
 
   newTeam = {
@@ -215,9 +216,14 @@ export class EmployeesTeam implements OnInit {
   }
 
   getFillingStaff() {
-    return this.getFlatEmployees().filter((m: any) =>
-      m.role === 'filling_staff' || m.role === 'account_manager'
-    );
+    const search = this.teamMemberSearch().toLowerCase();
+    return this.getFlatEmployees().filter((m: any) => {
+      const isFillingStaff = m.role === 'filling_staff' || m.role === 'account_manager';
+      if (!isFillingStaff) return false;
+      if (!search) return true;
+      const name = m.name || m.owner_name || '';
+      return name.toLowerCase().includes(search);
+    });
   }
 
   getManagers() {

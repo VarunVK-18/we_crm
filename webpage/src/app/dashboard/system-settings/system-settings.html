@@ -68,7 +68,12 @@
             </div>
             
             <div class="settings-section">
-              <h3 class="section-title">Tax Configuration</h3>
+              <div class="section-header">
+                <h3 class="section-title">Tax Configuration & Global Rules</h3>
+              </div>
+              <p class="section-subtitle">
+                Base calculation for all requests. Changes apply only to new certifications; existing certificates retain their original fee structure.
+              </p>
               <div class="form-grid">
                 <div>
                   <label class="form-input-label">GST Percentage (%)</label>
@@ -225,6 +230,9 @@
                   </div>
                 </div>
 
+              </div>
+
+              <div class="form-group-list">
                 <div class="info-box">
                   <h3 class="info-box-title">Invoice Bank Details</h3>
                   <p class="info-box-desc">These details will be printed on all client invoices.</p>
@@ -267,15 +275,6 @@
                              placeholder="e.g. Kodihalli" />
                     </div>
                   </div>
-                </div>
-                
-                <div class="info-box">
-                  <h3 class="info-box-title">
-                    <span class="material-symbols-outlined" style="color: var(--accent-primary);">info</span> Global Tax Rules
-                  </h3>
-                  <p class="info-box-desc">
-                    These settings define the base calculation for all service requests. Changes made here will apply only to new certifications initiated after the update. Existing active certificates will retain their original fee structure.
-                  </p>
                 </div>
               </div>
             </div>

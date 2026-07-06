@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject, Output, EventEmitter } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -13,6 +14,8 @@ import { Search01Icon, PlusSignIcon, CheckmarkCircle02Icon, TrendingUpDownIcon, 
   styleUrl: './opportunities.css'
 })
 export class Opportunities implements OnInit {
+  @Output() onViewChecklist = new EventEmitter<string>();
+  private api = inject(Api);
   searchQuery = signal<string>('');
   clients = signal<any[]>([]);
   isLoading = signal<boolean>(true);
@@ -45,7 +48,7 @@ export class Opportunities implements OnInit {
     );
   });
 
-  constructor(private api: Api) {}
+  constructor() {}
 
   ngOnInit() {
     this.fetchClients();
@@ -94,9 +97,23 @@ export class Opportunities implements OnInit {
   }
 
   getAlreadyDoneServices(client: any) {
-    const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => ({ name: s.serviceName, source: 'WE' }));
+    const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => ({ name: s.serviceName, source: 'WE', checklistId: s.checklistId }));
     const outsourced = (client.outsourced_services || []).map((s: any) => ({ name: s.serviceName, source: 'Outsourced' }));
     return [...weDone, ...outsourced];
+  }
+  
+  getWeDone(client: any) {
+    return (client.alreadyDone || []).filter((d: any) => d.source === 'WE');
+  }
+
+  getOutsourcedDone(client: any) {
+    return (client.alreadyDone || []).filter((d: any) => d.source === 'Outsourced');
+  }
+
+  goToChecklist(checklistId: string) {
+    if (checklistId) {
+      this.onViewChecklist.emit(checklistId);
+    }
   }
   
   markAsOutsourced(client: any, opportunity: any) {
