@@ -16,6 +16,9 @@
         @if (!confirmService.options()?.hideCancel) {
           <button class="btn-cancel" (click)="confirmService.handleCancel()">
             {{ confirmService.options()?.cancelText }}
+            @if (confirmService.countdown() > 0) {
+              ({{ confirmService.countdown() }}s)
+            }
           </button>
         }
         <button class="btn-confirm" [class.destructive]="confirmService.options()?.isDestructive" (click)="confirmService.handleConfirm()">

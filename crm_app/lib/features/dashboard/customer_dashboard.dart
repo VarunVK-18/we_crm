@@ -44,11 +44,18 @@ class CustomerDashboard extends ConsumerWidget {
     Responsive.init(context);
     final user = ref.watch(userProfileProvider).value;
 
-    // Capitalize first letter of name
     final rawName = user?.name.split(' ')[0] ?? 'Explorer';
-    final name = rawName.isNotEmpty
-        ? rawName[0].toUpperCase() + rawName.substring(1)
+    final firstName = rawName.isNotEmpty
+        ? rawName[0].toUpperCase() + rawName.substring(1).toLowerCase()
         : rawName;
+    final displayNameRaw = (user?.companyName != null && user!.companyName.isNotEmpty)
+        ? user.companyName
+        : firstName;
+        
+    final displayName = displayNameRaw.split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
         
     final hour = DateTime.now().hour;
     String greeting;
@@ -85,12 +92,14 @@ class CustomerDashboard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Hello, $name',
+                  '$displayName',
                   style: GoogleFonts.poppins(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
                     fontSize: 18.sp,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   greeting,
@@ -135,7 +144,7 @@ class CustomerDashboard extends ConsumerWidget {
                     child: (user?.profileImage == null || user!.profileImage.isEmpty)
                         ? Center(
                             child: Text(
-                              name.isNotEmpty ? name[0] : 'U',
+                              displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
                               style: GoogleFonts.inter(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,

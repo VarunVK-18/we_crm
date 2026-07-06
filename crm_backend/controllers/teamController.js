@@ -118,7 +118,7 @@ const getTeamServiceStats = async (req, res) => {
 
     const teams = await Team.find(teamQuery)
       .populate('manager_id', 'owner_name email')
-      .populate('members', 'owner_name email role profile_image')
+      .populate('members', 'owner_name email role phone profile_image')
       .lean();
 
     const Checklist = require('../models/Checklist');

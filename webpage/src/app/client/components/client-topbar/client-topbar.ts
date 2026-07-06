@@ -277,11 +277,7 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   getInitials(name: string): string {
-    if (!name) return 'WY';
-    const words = name.trim().split(' ');
-    if (words.length >= 2) {
-      return (words[0][0] + words[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
+    if (!name || name.trim().length === 0) return 'C';
+    return name.trim().substring(0, 1).toUpperCase();
   }
 }

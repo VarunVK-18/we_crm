@@ -429,7 +429,7 @@ const outsourceService = async (req, res) => {
 // @access  Public (should be restricted in production)
 const registerDirect = async (req, res) => {
   try {
-    const { name, email, password, role, company_id } = req.body;
+    const { name, email, password, role, company_id, phone } = req.body;
     let user = await User.findOne({ email: email.trim() });
     if (user) {
       return res.status(400).json({ success: false, message: 'User already exists' });
@@ -443,6 +443,7 @@ const registerDirect = async (req, res) => {
     user = new User({ 
       owner_name: name, 
       email: email.trim(), 
+      phone: phone ? phone.trim() : undefined,
       password: password || 'Default@123', 
       role: assignedRole,
       company_id: finalCompanyId
@@ -542,12 +543,17 @@ const deleteUser = async (req, res) => {
 const editUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role } = req.body;
-    const user = await User.findByIdAndUpdate(id, { 
+    const { name, email, role, phone } = req.body;
+    const updateData = { 
       owner_name: name, 
       email: email.trim(), 
       role 
-    }, { new: true });
+    };
+    if (phone !== undefined) {
+      updateData.phone = phone.trim();
+    }
+    
+    const user = await User.findByIdAndUpdate(id, updateData, { new: true });
 
     if (user && req.user) {
       await logActivity(

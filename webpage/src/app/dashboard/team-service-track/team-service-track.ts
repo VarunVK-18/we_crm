@@ -9,6 +9,7 @@ interface TeamMember {
   owner_name: string;
   email: string;
   role: string;
+  phone?: string;
   profile_image?: string;
   ongoingCount: number;
   completedCount: number;

@@ -97,10 +97,10 @@
             <img [src]="api.getFileUrl(user().profile_image)" class="pill-avatar-img" alt="Profile" />
           } @else {
             <div class="pill-avatar">
-              {{ getInitials(user()?.owner_name || user()?.company_name || user()?.name || 'Client') }}
+              {{ getInitials(user()?.company_name || user()?.owner_name || user()?.name || 'Company') }}
             </div>
           }
-          <span class="pill-name">{{ user()?.owner_name || user()?.company_name || user()?.name || 'Client Name' }}</span>
+          <span class="pill-name">{{ (user()?.company_name || user()?.owner_name || user()?.name || 'Company Name') | titlecase }}</span>
           <hugeicons-icon [icon]="isDropdownOpen() ? ArrowUp01Icon : ArrowDown01Icon" [size]="16" color="currentColor" [strokeWidth]="2" class="pill-chevron"></hugeicons-icon>
         </button>
 
@@ -111,12 +111,12 @@
                 <img [src]="api.getFileUrl(user().profile_image)" class="dropdown-avatar-img" alt="Profile" />
               } @else {
                 <div class="dropdown-avatar">
-                  {{ getInitials(user()?.owner_name || user()?.company_name || user()?.name || 'Client') }}
+                  {{ getInitials(user()?.company_name || user()?.owner_name || user()?.name || 'Company') }}
                 </div>
               }
               <div class="dropdown-user-info">
-                <span class="d-name">{{ user()?.owner_name || user()?.company_name || user()?.name || 'Client Name' }}</span>
-                <span class="d-role">{{ user()?.business_type || 'Client Account' }}</span>
+                <span class="d-name">{{ (user()?.company_name || user()?.owner_name || user()?.name || 'Company Name') | titlecase }}</span>
+                <span class="d-role">{{ user()?.business_type || 'Company Account' }}</span>
               </div>
             </div>
             

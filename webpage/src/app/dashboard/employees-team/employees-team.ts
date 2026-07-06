@@ -48,6 +48,7 @@ export class EmployeesTeam implements OnInit {
   newEmployee = {
     name: '',
     email: '',
+    phone: '',
     password: '',
     role: 'filling_staff'
   };
@@ -56,8 +57,32 @@ export class EmployeesTeam implements OnInit {
     id: '',
     name: '',
     email: '',
+    phone: '',
     role: 'filling_staff'
   };
+
+  get phoneValidationError(): string {
+    return this.validatePhoneString(this.newEmployee.phone);
+  }
+
+  get editPhoneValidationError(): string {
+    return this.validatePhoneString(this.editEmployee.phone);
+  }
+
+  validatePhoneString(phoneStr: string): string {
+    if (!phoneStr) return '';
+    let p = phoneStr.trim();
+    if (p.startsWith('+91')) {
+      p = p.substring(3).trim();
+    } else if (p.startsWith('91') && p.length > 10) {
+      p = p.substring(2).trim();
+    }
+    
+    if (p.length > 0 && (p.length !== 10 || !/^\d+$/.test(p))) {
+      return 'Must be exactly 10 digits (excluding country code).';
+    }
+    return '';
+  }
 
   selectedEmployee = {
     id: '',
@@ -288,6 +313,7 @@ export class EmployeesTeam implements OnInit {
     this.newEmployee = {
       name: '',
       email: '',
+      phone: '',
       password: '',
       role: 'filling_staff'
     };
@@ -303,6 +329,24 @@ export class EmployeesTeam implements OnInit {
     this.employeeSuccessMessage.set('');
     if (!this.newEmployee.name || !this.newEmployee.email || !this.newEmployee.password) {
       this.employeeErrorMessage.set('All fields are required.');
+      return;
+    }
+
+    let phoneStr = (this.newEmployee.phone || '').trim();
+    if (!phoneStr) {
+      this.employeeErrorMessage.set('Phone number is required.');
+      return;
+    }
+    
+    // Remove +91 or 91 country code for validation
+    if (phoneStr.startsWith('+91')) {
+      phoneStr = phoneStr.substring(3).trim();
+    } else if (phoneStr.startsWith('91') && phoneStr.length > 10) {
+      phoneStr = phoneStr.substring(2).trim();
+    }
+    
+    if (phoneStr.length !== 10 || !/^\d+$/.test(phoneStr)) {
+      this.employeeErrorMessage.set('Please enter a valid 10-digit phone number.');
       return;
     }
 
@@ -335,6 +379,7 @@ export class EmployeesTeam implements OnInit {
       id: member.id || member._id,
       name: member.name || member.owner_name,
       email: member.email,
+      phone: member.phone || '',
       role: member.role
     };
     this.isEditEmployeeModalOpen.set(true);
@@ -350,6 +395,20 @@ export class EmployeesTeam implements OnInit {
     if (!this.editEmployee.name || !this.editEmployee.email) {
       this.employeeErrorMessage.set('Name and email are required.');
       return;
+    }
+
+    let phoneStr = (this.editEmployee.phone || '').trim();
+    if (phoneStr) {
+      if (phoneStr.startsWith('+91')) {
+        phoneStr = phoneStr.substring(3).trim();
+      } else if (phoneStr.startsWith('91') && phoneStr.length > 10) {
+        phoneStr = phoneStr.substring(2).trim();
+      }
+      
+      if (phoneStr.length !== 10 || !/^\d+$/.test(phoneStr)) {
+        this.employeeErrorMessage.set('Please enter a valid 10-digit phone number.');
+        return;
+      }
     }
     this.api.patch<any>(`edit_user/${this.editEmployee.id}`, this.editEmployee).subscribe({
       next: (res) => {

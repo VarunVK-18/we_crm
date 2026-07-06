@@ -93,6 +93,7 @@
           <thead>
             <tr>
               <th>Filing Staff / Member Name</th>
+              <th>Phone Number</th>
               <th class="text-center">Ongoing Tasks</th>
               <th class="text-center">Completed Tasks</th>
             </tr>
@@ -113,6 +114,9 @@
                       <span class="member-name">{{ member.owner_name }}</span>
                     </div>
                   </td>
+                  <td style="color: var(--text-muted); font-size: 13px;">
+                    {{ member.phone || 'N/A' }}
+                  </td>
                   <td class="text-center">
                     <span class="service-count-pill">{{ member.ongoingCount || 0 }}</span>
                   </td>
@@ -123,7 +127,7 @@
               }
             } @else {
               <tr>
-                <td colspan="3" class="text-muted text-center" style="font-style: italic; font-size: 13px;">
+                <td colspan="4" class="text-muted text-center" style="font-style: italic; font-size: 13px;">
                   No members in this team.
                 </td>
               </tr>

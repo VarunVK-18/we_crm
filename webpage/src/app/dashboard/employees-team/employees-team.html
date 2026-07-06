@@ -36,7 +36,7 @@
           <tr>
             <th>Name & Identification</th>
             <th>Role / Title</th>
-            <th>Department</th>
+            <th>Phone Number</th>
             <th>Last Active</th>
             <th>Status</th>
             <th style="text-align: right;">Actions</th>
@@ -58,7 +58,7 @@
                 </div>
               </td>
               <td style="color: var(--text-primary);">{{ getRoleLabel(member.role) }}</td>
-              <td style="color: var(--text-primary);">{{ getDepartment(member.role) }}</td>
+              <td style="color: var(--text-primary);">{{ member.phone || 'N/A' }}</td>
               <td style="color: var(--text-secondary);">Recently</td>
               <td>
                 <div class="status-active">
@@ -190,6 +190,13 @@
             <label class="form-input-label">Email Address *</label>
             <input type="text" name="emp_email" placeholder="akash@company.com" class="form-control-input" [(ngModel)]="newEmployee.email" required autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
+          <div class="form-group-item">
+            <label class="form-input-label">Phone Number *</label>
+            <input type="text" name="emp_phone" placeholder="e.g. +91 9876543210" class="form-control-input" [(ngModel)]="newEmployee.phone" [ngStyle]="{'border-color': phoneValidationError ? 'var(--color-danger)' : ''}" required />
+            @if (phoneValidationError) {
+              <div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ phoneValidationError }}</div>
+            }
+          </div>
           <div class="form-row-grid">
             <div class="form-group-item">
               <label class="form-input-label">Password *</label>
@@ -206,7 +213,7 @@
         </div>
         <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="closeCreateEmployeeModal()" [disabled]="isSubmitting()">Cancel</button>
-          <button type="submit" class="btn-submit" [disabled]="isSubmitting()" style="display: flex; align-items: center; gap: 8px;">
+          <button type="submit" class="btn-submit" [disabled]="isSubmitting() || phoneValidationError" style="display: flex; align-items: center; gap: 8px;">
             @if (isSubmitting()) {
               <span class="material-symbols-outlined" style="animation: spin 1s linear infinite; font-size: 18px;">progress_activity</span> Adding...
             } @else {
@@ -250,6 +257,13 @@
             <input type="text" name="edit_emp_email" placeholder="akash@company.com" class="form-control-input" [(ngModel)]="editEmployee.email" required autocapitalize="none" autocorrect="off" spellcheck="false" />
           </div>
           <div class="form-group-item">
+            <label class="form-input-label">Phone Number</label>
+            <input type="text" name="edit_emp_phone" placeholder="e.g. +91 9876543210" class="form-control-input" [(ngModel)]="editEmployee.phone" [ngStyle]="{'border-color': editPhoneValidationError ? 'var(--color-danger)' : ''}" />
+            @if (editPhoneValidationError) {
+              <div style="color: var(--color-danger); font-size: 12px; margin-top: 4px;">{{ editPhoneValidationError }}</div>
+            }
+          </div>
+          <div class="form-group-item">
             <label class="form-input-label">System Access Role *</label>
             <select name="edit_emp_role" class="form-control-input" [(ngModel)]="editEmployee.role" required>
               <option value="client_manager">Client Manager</option>
@@ -259,7 +273,7 @@
         </div>
         <div class="modal-footer-actions">
           <button type="button" class="btn-cancel" (click)="closeEditEmployeeModal()">Cancel</button>
-          <button type="submit" class="btn-submit">Save Updates</button>
+          <button type="submit" class="btn-submit" [disabled]="editPhoneValidationError">Save Changes</button>
         </div>
       </form>
     </div>

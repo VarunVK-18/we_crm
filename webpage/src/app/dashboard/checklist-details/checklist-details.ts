@@ -504,10 +504,22 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         return;
       }
     }
-    this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, {}).subscribe({
-      next: () => this.fetchChecklist(),
-      error: (err) => {
-        alert(err.error?.message || 'Failed to update checklist item.');
+    this.confirmDialog.confirm({
+      title: 'Confirm Completion',
+      message: 'Are you sure you want to complete this step? This cannot be undone.',
+      confirmText: 'Yes, Complete',
+      cancelText: 'Cancel',
+      autoCancelSeconds: 6
+    }).then((confirmed) => {
+      if (confirmed) {
+        this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, {}).subscribe({
+          next: () => this.fetchChecklist(),
+          error: (err) => {
+            alert(err.error?.message || 'Failed to update checklist item.');
+            revertCheckbox();
+          }
+        });
+      } else {
         revertCheckbox();
       }
     });
