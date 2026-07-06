@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/whatsapp_utils.dart';
+import '../orders/order_chat_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
 
 class ChatSupportScreen extends ConsumerWidget {
@@ -84,14 +87,57 @@ class ChatSupportScreen extends ConsumerWidget {
             const SizedBox(height: 32),
             _buildSupportAction(
               icon: HugeIcons.strokeRoundedBubbleChat,
-              title: 'Chat on WhatsApp',
+              title: 'Live Chat',
               subtitle: 'Connect with a support agent instantly',
-              color: const Color(0xFF25D366),
-              onTap: () => openWhatsApp(
-                context: context,
-                phone: waPhone,
-                message: 'Hi Wealth Empires Support, I need help with...',
-              ),
+              color: AppTheme.corporateBlue,
+              onTap: () async {
+                if (user != null) {
+                  // Show loading indicator
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (ctx) => const Center(child: CircularProgressIndicator(color: AppTheme.corporateBlue)),
+                  );
+
+                  try {
+                    final response = await http.post(
+                      Uri.parse('$kBaseUrl/api/chat/support/initiate'),
+                      headers: {'Content-Type': 'application/json'},
+                      body: jsonEncode({'userId': user.id}),
+                    );
+
+                    // Dismiss loading
+                    if (context.mounted) Navigator.pop(context);
+
+                    if (response.statusCode == 200) {
+                      final data = jsonDecode(response.body);
+                      final orderId = data['orderId'];
+                      
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OrderChatScreen(
+                              orderId: orderId,
+                              serviceName: 'Live Chat Support',
+                              assignedExpert: 'Support Team',
+                            ),
+                          ),
+                        );
+                      }
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${response.statusCode} - ${response.body}')));
+                      }
+                    }
+                  } catch (e) {
+                    if (context.mounted) Navigator.pop(context);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+                    }
+                  }
+                }
+              },
             ),
             const SizedBox(height: 16),
             _buildSupportAction(
