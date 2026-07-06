@@ -217,10 +217,17 @@ export class EmployeesTeam implements OnInit {
 
   getFillingStaff() {
     const search = this.teamMemberSearch().toLowerCase();
-    return this.getFlatEmployees().filter((m: any) => {
-      const isFillingStaff = m.role === 'filling_staff' || m.role === 'account_manager';
-      if (!isFillingStaff) return false;
-      if (!search) return true;
+    const allFilling = this.getFlatEmployees().filter((m: any) => m.role === 'filling_staff' || m.role === 'account_manager');
+
+    if (!search) {
+      // Prioritize already selected members, then pad with unselected to show up to 6
+      const selected = allFilling.filter((m: any) => this.isTeamMember(m.id || m._id));
+      const unselected = allFilling.filter((m: any) => !this.isTeamMember(m.id || m._id));
+      
+      return [...selected, ...unselected].slice(0, Math.max(6, selected.length));
+    }
+
+    return allFilling.filter((m: any) => {
       const name = m.name || m.owner_name || '';
       return name.toLowerCase().includes(search);
     });
