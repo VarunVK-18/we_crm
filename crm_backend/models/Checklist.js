@@ -103,6 +103,14 @@ const ChecklistSchema = new mongoose.Schema({
     expiry_date: { type: Date, required: false },
     uploadedAt: { type: Date, default: Date.now }
   }],
+  temporary_documents: [{
+    name: { type: String, required: true },
+    document_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Document' },
+    uploadedAt: { type: Date, default: Date.now },
+    status: { type: String, enum: ['sent', 'replied'], default: 'sent' },
+    reply_document_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Document', default: null },
+    reply_uploaded_at: { type: Date, default: null }
+  }],
   notes: {
     type: String,
     default: ''

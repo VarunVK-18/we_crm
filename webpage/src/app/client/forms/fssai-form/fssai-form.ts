@@ -1,4 +1,3 @@
-import { PanFormatDirective, AadhaarFormatDirective, PhoneFormatDirective } from '../../../utils/form-format.directives';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 import { Component, signal, OnInit } from '@angular/core';
 import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
@@ -11,7 +10,7 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-fssai-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent, PanFormatDirective, AadhaarFormatDirective, PhoneFormatDirective],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './fssai-form.html',
   styleUrl: '../forms-shared.css',
 })

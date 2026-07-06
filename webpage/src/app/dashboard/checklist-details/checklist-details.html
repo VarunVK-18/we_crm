@@ -509,6 +509,78 @@
       </section>
       }
 
+      <!-- Temporary / Action Required Documents Section -->
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
+        <h3 class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
+          Action Required / Temporary Documents
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-secondary" style="font-size: 13px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: white; border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px;" (click)="openGenerateDocModal()">
+              <span class="material-symbols-outlined" style="font-size: 16px;">auto_awesome</span> Generate from Template
+            </button>
+            <label class="btn-primary" style="font-size: 13px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <span class="material-symbols-outlined" style="font-size: 16px;">upload</span> Upload Document
+              <input type="file" (change)="uploadTemporaryDocument($event)" style="display: none;" multiple />
+            </label>
+          </div>
+        </h3>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-top: -8px;">These documents are instantly visible to the client (e.g., drafts for signature).</p>
+        
+        @if (checklist().temporary_documents && checklist().temporary_documents.length > 0) {
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
+            @for (doc of checklist().temporary_documents; track doc._id) {
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <span class="material-symbols-outlined" style="color: var(--accent-primary);">description</span>
+                  <div>
+                    <div style="font-weight: 500; font-size: 14px; color: var(--text-primary);">{{ doc.name }}</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">
+                      Uploaded: {{ doc.uploadedAt | date:'MMM d, y, h:mm a' }}
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                  @if (doc.status === 'replied') {
+                    <div style="display: flex; align-items: center; gap: 6px; background: var(--color-success-bg); color: var(--color-success); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+                      Client Replied
+                    </div>
+                  } @else {
+                    <div style="display: flex; align-items: center; gap: 6px; background: var(--color-warning-bg); color: var(--color-warning); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
+                      Pending Reply
+                    </div>
+                  }
+                  
+                  <div style="width: 1px; height: 24px; background: var(--border-color); margin: 0 4px;"></div>
+                  
+                  <a href="#" (click)="openDocViewer('api/documents/' + (doc.document_id?._id || doc.document_id), doc.name, $event)"
+                     style="display: flex; align-items: center; gap: 6px; color: var(--accent-primary); text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid var(--accent-primary-light); background: var(--bg-primary);"
+                     onmouseover="this.style.background='var(--accent-primary)'; this.style.color='white';" onmouseout="this.style.background='var(--bg-primary)'; this.style.color='var(--accent-primary)';">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span> View Original
+                  </a>
+
+                  @if (doc.status === 'replied' && doc.reply_document_id) {
+                    <a href="#" (click)="openDocViewer('api/documents/' + (doc.reply_document_id?._id || doc.reply_document_id), 'Reply: ' + doc.name, $event)"
+                       style="display: flex; align-items: center; gap: 6px; color: var(--color-success); text-decoration: none; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 6px; transition: all 0.2s; border: 1px solid var(--color-success-bg); background: var(--bg-primary);"
+                       onmouseover="this.style.background='var(--color-success)'; this.style.color='white';" onmouseout="this.style.background='var(--bg-primary)'; this.style.color='var(--color-success)';">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">visibility</span> View Reply
+                    </a>
+                  }
+
+                  <button (click)="deleteTemporaryDocument(doc)" style="background: none; border: none; color: var(--color-danger); cursor: pointer; display: flex; align-items: center; padding: 6px; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='var(--color-danger-bg)'" onmouseout="this.style.background='transparent'">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <div style="padding: 24px; text-align: center; background: var(--bg-secondary); border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-muted); font-size: 14px;">
+            No temporary documents uploaded yet.
+          </div>
+        }
+      </section>
+
       <!-- Final Documents Section -->
       @if (checklist().items && checklist().items.length > 0 && (checklist().items.length === 1 || checklist().items[checklist().items.length - 2].isChecked)) {
       <section
@@ -1163,3 +1235,74 @@
 }
 
 
+<!-- ══ Generate Document from Template Modal ══════════════════════════════ -->
+@if (showGenerateDocModal()) {
+  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;" (click)="closeGenerateDocModal()">
+    <div style="background:white;border-radius:12px;width:100%;max-width:600px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border-color);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <h3 style="margin:0;font-size:18px;font-weight:700;">Generate from Template</h3>
+          <p style="margin:4px 0 0;font-size:13px;color:var(--text-secondary);">Placeholders will be auto-filled with this client's data and sent as a PDF.</p>
+        </div>
+        <button (click)="closeGenerateDocModal()" style="background:none;border:none;cursor:pointer;"><span class="material-symbols-outlined">close</span></button>
+      </div>
+
+      <!-- Template List -->
+      <div style="flex:1;overflow-y:auto;padding:20px;">
+        @if (isLoadingDocTemplates()) {
+          <div style="text-align:center;padding:40px;"><app-we-loader></app-we-loader></div>
+        } @else if (availableDocTemplates().length === 0) {
+          <div style="text-align:center;padding:40px;color:var(--text-secondary);">
+            <span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;">edit_document</span>
+            No document templates found. Ask your admin to create one in Settings → Document Templates.
+          </div>
+        } @else {
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            @for (tmpl of availableDocTemplates(); track tmpl._id) {
+              <div (click)="selectDocTemplate(tmpl)" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid;border-color:{{selectedDocTemplate()?._id === tmpl._id ? 'var(--accent-primary)' : 'var(--border-color)'}};background:{{selectedDocTemplate()?._id === tmpl._id ? 'var(--accent-primary-light)' : 'white'}};border-radius:8px;cursor:pointer;transition:all 0.15s;">
+                <div style="width:38px;height:38px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <span class="material-symbols-outlined" style="color:#3b82f6;font-size:20px;">description</span>
+                </div>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--text-primary);">{{ tmpl.name }}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">{{ tmpl.description || 'No description' }}</div>
+                </div>
+                @if (selectedDocTemplate()?._id === tmpl._id) {
+                  <span class="material-symbols-outlined" style="margin-left:auto;color:var(--accent-primary);">check_circle</span>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (selectedDocTemplate() && customInputs().length > 0) {
+          <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+            <h4 style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 0 0 12px;">Fill Template Details</h4>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              @for (inp of customInputs(); track inp.token) {
+                <div>
+                  <label style="display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 4px;">{{ inp.label }}</label>
+                  <input type="text" [(ngModel)]="inp.value" placeholder="Enter {{ inp.label }}"
+                         style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: var(--text-primary); outline: none; box-sizing: border-box;" />
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:16px 24px;border-top:1px solid var(--border-color);display:flex;justify-content:flex-end;gap:12px;">
+        <button (click)="closeGenerateDocModal()" style="background:none;border:1px solid var(--border-color);padding:8px 20px;border-radius:6px;cursor:pointer;font-size:14px;">Cancel</button>
+        <button class="btn-primary" (click)="generateDocumentFromTemplate()" [disabled]="!selectedDocTemplate() || isGeneratingDoc()" style="padding:8px 20px;">
+          @if (isGeneratingDoc()) {
+            <span class="material-symbols-outlined" style="font-size:16px;animation:spin 1s linear infinite;">sync</span> Generating...
+          } @else {
+            <span class="material-symbols-outlined" style="font-size:16px;">auto_awesome</span> Generate & Send to Client
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

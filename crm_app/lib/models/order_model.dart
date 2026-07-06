@@ -76,6 +76,46 @@ class RequestedDocument {
   }
 }
 
+
+class TemporaryDocument {
+  final String id;
+  final String name;
+  final String documentId;
+  final String status;
+  final String? replyDocumentId;
+  final DateTime? uploadedAt;
+
+  const TemporaryDocument({
+    required this.id,
+    required this.name,
+    required this.documentId,
+    required this.status,
+    this.replyDocumentId,
+    this.uploadedAt,
+  });
+
+  factory TemporaryDocument.fromMap(Map<String, dynamic> map) {
+    String id = '';
+    final rawId = map['_id'];
+    if (rawId is Map && rawId['\$oid'] != null) {
+      id = rawId['\$oid'].toString();
+    } else if (rawId != null) {
+      id = rawId.toString();
+    }
+
+    return TemporaryDocument(
+      id: id,
+      name: map['name']?.toString() ?? '',
+      documentId: map['document_id']?.toString() ?? '',
+      status: map['status']?.toString() ?? 'sent',
+      replyDocumentId: map['reply_document_id']?.toString(),
+      uploadedAt: map['uploadedAt'] != null 
+          ? DateTime.tryParse(map['uploadedAt'].toString()) 
+          : null,
+    );
+  }
+}
+
 class FinalDocument {
   final String name;
   final String documentId;
@@ -116,6 +156,7 @@ class ServiceOrder {
   final List<ServiceStep> steps;
   final List<RequestedDocument> requestedDocuments;
   final List<FinalDocument> finalDocuments;
+  final List<TemporaryDocument> temporaryDocuments;
   final String assignedExpert;
   final String
   expertPhone; // WhatsApp-capable number with country code, e.g. 919876543210
@@ -139,6 +180,7 @@ class ServiceOrder {
     required this.steps,
     required this.requestedDocuments,
     required this.finalDocuments,
+    this.temporaryDocuments = const [],
     required this.assignedExpert,
     required this.expertPhone,
     this.customServiceId = '',
@@ -174,9 +216,14 @@ class ServiceOrder {
       requestedDocuments: (data['requestedDocuments'] as List<dynamic>? ?? [])
           .map((d) => RequestedDocument.fromMap(d as Map<String, dynamic>))
           .toList(),
+
       finalDocuments: (data['finalDocuments'] as List<dynamic>? ?? [])
           .map((d) => FinalDocument.fromMap(d as Map<String, dynamic>))
           .toList(),
+      temporaryDocuments: (data['temporaryDocuments'] as List<dynamic>? ?? [])
+          .map((d) => TemporaryDocument.fromMap(d as Map<String, dynamic>))
+          .toList(),
+
       assignedExpert: data['assignedExpert']?.toString() ?? 'To be assigned',
       expertPhone: data['expertPhone']?.toString() ?? '',
       customServiceId: data['customServiceId']?.toString() ?? '',

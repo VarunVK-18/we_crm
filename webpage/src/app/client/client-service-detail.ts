@@ -528,6 +528,33 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     return docs.filter(d => !d?.name?.startsWith('director_'));
   }
 
+  filterTemporaryDocs(docs: any[]) {
+    if (!docs) return [];
+    return docs;
+  }
+
+  uploadTemporaryReply(doc: any, event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('reply_file', file);
+
+    this.api.post<any>(`checklists/${this.orderId()}/temporary-documents/${doc._id}/reply`, formData).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          doc.status = 'replied';
+          this.fetchOrderDetails(true);
+          alert('Reply uploaded successfully!');
+        }
+      },
+      error: (err) => {
+        console.error('Failed to upload reply:', err);
+        alert(err.error?.message || 'Failed to upload reply document');
+      }
+    });
+  }
+
   uploadRequestedDocument(doc: any, event: any) {
     const file = event.target.files[0];
     if (!file) return;

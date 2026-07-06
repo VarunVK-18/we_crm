@@ -706,6 +706,13 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
+
+                        if (order.temporaryDocuments.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: _TemporaryDocumentsSection(order: order),
+                          ),
+                        const SizedBox(height: 20),
                         // Requested Documents
                         if (order.requestedDocuments.isNotEmpty &&
                             order.status != ServiceStatus.complete)
@@ -831,6 +838,272 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+
+// ─── Temporary Documents Section ──────────────────────────────────────────────
+
+class _TemporaryDocumentsSection extends ConsumerStatefulWidget {
+  final ServiceOrder order;
+  const _TemporaryDocumentsSection({required this.order});
+
+  @override
+  ConsumerState<_TemporaryDocumentsSection> createState() => _TemporaryDocumentsSectionState();
+}
+
+class _TemporaryDocumentsSectionState extends ConsumerState<_TemporaryDocumentsSection> {
+  bool _isUploading = false;
+
+  Future<void> _downloadDoc(String? docId, String docName) async {
+    if (docId == null) return;
+    try {
+      final url = Uri.parse('$kBaseUrl/api/documents/$docId');
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open document')));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error downloading document')));
+    }
+  }
+
+  Future<void> _uploadReply(String docId) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        if (file.path == null) return;
+
+        setState(() {
+          _isUploading = true;
+        });
+
+        final uid = ref.read(authStateProvider).value?.uid;
+        if (uid == null) throw Exception('Not authenticated');
+
+        var request = http.MultipartRequest(
+          'POST',
+          Uri.parse('$kBaseUrl/api/checklists/${widget.order.id}/temporary-documents/$docId/reply'),
+        );
+        request.headers['x-user-id'] = uid;
+        request.files.add(await http.MultipartFile.fromPath('reply_file', file.path!));
+
+        final response = await request.send();
+        final responseData = await response.stream.bytesToString();
+        final data = jsonDecode(responseData);
+
+        if (response.statusCode == 200 && data['success'] == true) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Reply uploaded successfully!')),
+            );
+          }
+        } else {
+          throw Exception(data['message'] ?? 'Failed to upload reply');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Action Required',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Please review the documents below and provide a signed copy if needed.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: widget.order.temporaryDocuments.map((doc) {
+                final isReplied = doc.status == 'replied';
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(LucideIcons.fileText, color: Colors.grey.shade700, size: 20),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              doc.name,
+                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15, color: Colors.black87),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: isReplied ? Colors.green.shade50 : Colors.yellow.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    isReplied ? LucideIcons.checkCircle2 : LucideIcons.moreHorizontal,
+                                    size: 12,
+                                    color: isReplied ? Colors.green.shade700 : Colors.black87,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      isReplied ? 'Replied' : 'Pending Review',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isReplied ? Colors.green.shade700 : Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                SizedBox(
+                                  height: 38,
+                                  child: OutlinedButton.icon(
+                                    icon: const Icon(LucideIcons.download, size: 16, color: Colors.black87),
+                                    label: const Text('View Original', style: TextStyle(color: Colors.black87, fontSize: 13)),
+                                    onPressed: () => _downloadDoc(doc.documentId, doc.name),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: Colors.grey.shade300),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                                    ),
+                                  ),
+                                ),
+                                if (isReplied && doc.replyDocumentId != null)
+                                  SizedBox(
+                                    height: 38,
+                                    child: OutlinedButton.icon(
+                                      icon: Icon(LucideIcons.download, size: 16, color: Colors.green.shade700),
+                                      label: Text('View Reply', style: TextStyle(color: Colors.green.shade700, fontSize: 13)),
+                                      onPressed: () => _downloadDoc(doc.replyDocumentId, 'Reply: ' + doc.name),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(color: Colors.green.shade200),
+                                        backgroundColor: Colors.green.shade50,
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                                      ),
+                                    ),
+                                  ),
+                                if (!isReplied)
+                                  _isUploading
+                                      ? const SizedBox(
+                                          width: 38,
+                                          height: 38,
+                                          child: Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black87),
+                                          ),
+                                        )
+                                      : SizedBox(
+                                          height: 38,
+                                          child: ElevatedButton.icon(
+                                            icon: const Icon(LucideIcons.upload, size: 16, color: Colors.white),
+                                            label: const Text('Reply', style: TextStyle(color: Colors.white, fontSize: 13)),
+                                            onPressed: () => _uploadReply(doc.id),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF0F172A),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+                                              elevation: 0,
+                                            ),
+                                          ),
+                                        ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -225,6 +225,58 @@
           </div>
           }
 
+          @if (filterTemporaryDocs(order()?.temporary_documents).length > 0) {
+            <div class="requested-docs-area" style="margin-top: 24px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+              <div class="progress-header" style="background: var(--bg-secondary); padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px;">
+                <div>
+                  <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary);">Action Required</h3>
+                  <p style="margin: 2px 0 0; font-size: 13px; color: var(--text-secondary);">Please review the documents below and provide a signed copy if needed.</p>
+                </div>
+              </div>
+              <div class="requested-docs-list" style="padding: 16px 20px;">
+                @for (doc of filterTemporaryDocs(order()?.temporary_documents); track doc._id) {
+                  <div class="req-doc-item" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px; transition: all 0.2s; background: var(--bg-primary);" onmouseover="this.style.borderColor='var(--accent-primary)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'" onmouseout="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'">
+                    <div class="req-doc-info" (click)="downloadDocument(doc)" style="cursor: pointer; display: flex; align-items: center; gap: 16px;">
+                      <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">description</span>
+                      </div>
+                      <div class="req-doc-text">
+                        <h4 style="margin: 0 0 4px; font-size: 15px; font-weight: 500; color: var(--text-primary);">{{ doc.name }}</h4>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                          @if (doc.status === 'replied') {
+                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; color: var(--color-success); background: var(--color-success-bg); padding: 2px 8px; border-radius: 12px;">
+                              <span class="material-symbols-outlined" style="font-size: 12px;">check_circle</span> Replied
+                            </span>
+                          } @else {
+                            <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; background: var(--color-warning-bg); padding: 2px 8px; border-radius: 12px;">
+                              <span class="material-symbols-outlined" style="font-size: 12px;">pending</span> Pending Review
+                            </span>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    <div class="req-doc-action" style="display: flex; gap: 12px; align-items: center;">
+                      <button (click)="downloadDocument(doc)" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-primary); font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">download</span> View Original
+                      </button>
+                      @if (doc.status === 'replied' && doc.reply_document_id) {
+                        <button (click)="downloadDocument({document_id: doc.reply_document_id, name: 'Reply: ' + doc.name})" style="background: transparent; border: 1px solid var(--color-success-bg); color: var(--color-success); font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='var(--color-success-bg)'" onmouseout="this.style.background='transparent'">
+                          <span class="material-symbols-outlined" style="font-size: 16px;">download</span> View Reply
+                        </button>
+                      }
+                      @if (doc.status !== 'replied') {
+                        <label style="background: var(--accent-primary); color: white; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s; border: none; box-shadow: 0 1px 2px rgba(0,0,0,0.1);" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+                          <input type="file" style="display: none;" (change)="uploadTemporaryReply(doc, $event)">
+                          <span class="material-symbols-outlined" style="font-size: 16px;">upload</span> Reply
+                        </label>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
           @if (filterRequestedDocs(order()?.requestedDocuments || order()?.requested_documents).length > 0) {
           <div class="requested-docs-area">
             <div class="progress-header">

@@ -1,4 +1,3 @@
-import { PanFormatDirective, AadhaarFormatDirective, PhoneFormatDirective } from '../../../utils/form-format.directives';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 import { Component, signal, OnInit } from '@angular/core';
 import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
@@ -37,7 +36,7 @@ interface Director {
 @Component({
   selector: 'app-opc-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent, PanFormatDirective, AadhaarFormatDirective, PhoneFormatDirective],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
   templateUrl: './opc-form.html',
   styleUrl: '../forms-shared.css',
 })

@@ -588,7 +588,7 @@ const getMyChecklists = async (req, res) => {
     const checklists = await Checklist.find({ client_id: clientId })
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
-      .select('service_name company_id custom_service_id status stage items requested_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount advanceAmountPaid details action_required')
+      .select('service_name company_id custom_service_id status stage items requested_documents temporary_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount advanceAmountPaid details action_required')
       .sort({ updatedAt: -1 });
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
@@ -1756,3 +1756,133 @@ const markExpensePaid = async (req, res) => {
 
 module.exports.getExpenses = getExpenses;
 module.exports.markExpensePaid = markExpensePaid;
+
+
+// @desc    Upload temporary documents to checklist
+// @route   POST /api/checklists/:id/temporary-documents
+// @access  Private (Staff/Admin)
+const uploadTemporaryDocuments = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const checklist = await Checklist.findById(id);
+    if (!checklist) return res.status(404).json({ success: false, message: 'Checklist not found' });
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ success: false, message: 'No files uploaded' });
+    }
+
+    for (const f of req.files) {
+      const docName = req.body.docName || f.fieldname;
+      const doc = await Document.create({
+        filename: f.originalname,
+        contentType: f.mimetype,
+        data: f.buffer,
+        uploadedBy: req.user._id
+      });
+      checklist.temporary_documents.push({
+        name: docName,
+        document_id: doc._id,
+        uploadedAt: new Date()
+      });
+    }
+
+    await checklist.save();
+    res.status(200).json({ success: true, message: 'Temporary documents uploaded' });
+  } catch (error) {
+    console.error('uploadTemporaryDocuments Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Delete a temporary document
+// @route   DELETE /api/checklists/:id/temporary-documents/:docId
+// @access  Private (Staff/Admin)
+const deleteTemporaryDocument = async (req, res) => {
+  try {
+    const { id, docId } = req.params;
+    const checklist = await Checklist.findById(id);
+    if (!checklist) return res.status(404).json({ success: false, message: 'Checklist not found' });
+
+    const docIndex = checklist.temporary_documents.findIndex(d => d._id.toString() === docId);
+    if (docIndex !== -1) {
+      const doc = checklist.temporary_documents[docIndex];
+      if (doc.document_id) {
+        await Document.findByIdAndDelete(doc.document_id);
+      }
+      if (doc.reply_document_id) {
+        await Document.findByIdAndDelete(doc.reply_document_id);
+      }
+      checklist.temporary_documents.splice(docIndex, 1);
+      await checklist.save();
+    }
+    res.status(200).json({ success: true, message: 'Document deleted' });
+  } catch (error) {
+    console.error('deleteTemporaryDocument Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Client reply to a temporary document
+// @route   POST /api/checklists/:id/temporary-documents/:docId/reply
+// @access  Private (Customer)
+const replyTemporaryDocument = async (req, res) => {
+  try {
+    const { id, docId } = req.params;
+    const checklist = await Checklist.findById(id);
+    if (!checklist) return res.status(404).json({ success: false, message: 'Checklist not found' });
+
+    const docIndex = checklist.temporary_documents.findIndex(d => d._id.toString() === docId);
+    if (docIndex === -1) return res.status(404).json({ success: false, message: 'Temporary document not found' });
+
+    if (!req.file) return res.status(400).json({ success: false, message: 'No reply file uploaded' });
+
+    const docObj = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      uploadedBy: req.user._id
+    });
+
+    checklist.temporary_documents[docIndex].reply_document_id = docObj._id;
+    checklist.temporary_documents[docIndex].reply_uploaded_at = new Date();
+    checklist.temporary_documents[docIndex].status = 'replied';
+
+    await checklist.save();
+    res.status(200).json({ success: true, message: 'Reply uploaded successfully' });
+  } catch (error) {
+    console.error('replyTemporaryDocument Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports.uploadTemporaryDocuments = uploadTemporaryDocuments;
+module.exports.deleteTemporaryDocument = deleteTemporaryDocument;
+module.exports.replyTemporaryDocument = replyTemporaryDocument;
+
+// @desc    Attach an already-saved Document (e.g. generated PDF) as a temporary document
+// @route   POST /api/checklists/:id/temporary-documents/from-document
+// @access  Private (Staff/Admin)
+const attachDocumentAsTemporary = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { document_id, name } = req.body;
+    if (!document_id || !name) {
+      return res.status(400).json({ success: false, message: 'document_id and name are required' });
+    }
+    const checklist = await Checklist.findById(id);
+    if (!checklist) return res.status(404).json({ success: false, message: 'Checklist not found' });
+
+    checklist.temporary_documents.push({
+      name,
+      document_id,
+      uploadedAt: new Date(),
+      status: 'sent'
+    });
+    await checklist.save();
+    res.status(200).json({ success: true, message: 'Document attached as temporary document' });
+  } catch (error) {
+    console.error('attachDocumentAsTemporary Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+module.exports.attachDocumentAsTemporary = attachDocumentAsTemporary;

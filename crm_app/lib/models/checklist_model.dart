@@ -26,6 +26,7 @@ class ChecklistModel {
   final String entityName;
   final String customServiceId;
   final DateTime? createdAt;
+  final List<Map<String, dynamic>> temporaryDocuments;
 
   ChecklistModel({
     required this.id,
@@ -39,6 +40,7 @@ class ChecklistModel {
     this.entityName = '',
     this.customServiceId = '',
     this.createdAt,
+    this.temporaryDocuments = const [],
   });
 
   /// Progress as a value between 0.0 and 1.0
@@ -95,6 +97,11 @@ class ChecklistModel {
       createdAt = DateTime.tryParse(data['createdAt'].toString());
     }
 
+    final rawTempDocs = data['temporary_documents'];
+    final temporaryDocs = rawTempDocs is List
+        ? rawTempDocs.map((e) => e as Map<String, dynamic>).toList()
+        : <Map<String, dynamic>>[];
+
     return ChecklistModel(
       id: id,
       serviceName: data['service_name']?.toString() ?? data['checklist_name']?.toString() ?? '',
@@ -107,6 +114,7 @@ class ChecklistModel {
       entityName: entityName,
       customServiceId: data['custom_service_id']?.toString() ?? '',
       createdAt: createdAt,
+      temporaryDocuments: temporaryDocs,
     );
   }
 }

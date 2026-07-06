@@ -7,7 +7,9 @@ const { logActivity } = require('../middleware/rbac');
 // @access  Private (Admin)
 const getTemplates = async (req, res) => {
   try {
-    const templates = await ChecklistTemplate.find({ company_id: req.user.company_id }).populate('sop_document', 'filename _id');
+    const templates = await ChecklistTemplate.find({ company_id: req.user.company_id })
+      .populate('sop_document', 'filename _id')
+      .populate('document_templates', 'name description _id');
     res.status(200).json({ success: true, templates });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -19,7 +21,7 @@ const getTemplates = async (req, res) => {
 // @access  Private (Admin)
 const upsertTemplate = async (req, res) => {
   try {
-    const { service_name, items, enable_document_extraction } = req.body;
+    const { service_name, items, enable_document_extraction, document_templates } = req.body;
 
     if (!service_name) {
       return res.status(400).json({ success: false, message: 'Service name is required' });
@@ -35,13 +37,17 @@ const upsertTemplate = async (req, res) => {
       if (enable_document_extraction !== undefined) {
         template.enable_document_extraction = enable_document_extraction;
       }
+      if (document_templates !== undefined) {
+        template.document_templates = document_templates;
+      }
       await template.save();
     } else {
       template = await ChecklistTemplate.create({
         company_id: req.user.company_id,
         service_name,
         items: items || [],
-        enable_document_extraction: enable_document_extraction || false
+        enable_document_extraction: enable_document_extraction || false,
+        document_templates: document_templates || []
       });
     }
 

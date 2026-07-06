@@ -63,6 +63,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
                 .toList(),
             'requestedDocuments': c['requested_documents'] ?? [],
             'finalDocuments': c['final_documents'] ?? [],
+            'temporaryDocuments': c['temporary_documents'] ?? [],
             'assignedExpert': isAssignedToExpert
                 ? (assignedTo['owner_name'] ?? 'To be assigned')
                 : 'To be assigned',

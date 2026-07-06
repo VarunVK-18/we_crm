@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 import { OcrService } from '../../services/ocr.service';
 import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
@@ -10,7 +11,7 @@ import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.servic
 @Component({
   selector: 'app-checklist-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, PdfViewerModule],
+  imports: [CommonModule, FormsModule, PdfViewerModule, WeLoaderComponent],
   templateUrl: './checklist-details.html',
   styleUrl: './checklist-details.css'
 })
@@ -890,6 +891,61 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  uploadTemporaryDocument(event: any) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    const cl = this.checklist();
+    if (!cl) return;
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('documents', files[i]);
+    }
+
+    this.api.post<any>(`checklists/${cl._id}/temporary-documents`, formData).subscribe({
+      next: (res) => {
+        if (res.success) {
+          alert('Temporary documents uploaded successfully!');
+          this.fetchChecklist();
+        } else {
+          alert(res.message || 'Failed to upload documents.');
+        }
+      },
+      error: (err) => {
+        console.error('Upload Error:', err);
+        alert(err.error?.message || 'Error uploading documents.');
+      }
+    });
+  }
+
+  deleteTemporaryDocument(doc: any) {
+    const cl = this.checklist();
+    if (!cl) return;
+
+    this.confirmDialog.confirm({
+      title: 'Confirm Delete',
+      message: `Are you sure you want to delete ${doc.name}?`,
+      confirmText: 'Delete',
+      isDestructive: true
+    }).then(confirmed => {
+      if (confirmed) {
+        this.api.delete<any>(`checklists/${cl._id}/temporary-documents/${doc._id}`).subscribe({
+          next: (res) => {
+            if (res.success) {
+              this.fetchChecklist();
+            } else {
+              alert(res.message || 'Failed to delete document.');
+            }
+          },
+          error: (err) => {
+            console.error('Delete Error:', err);
+            alert(err.error?.message || 'Error deleting document.');
+          }
+        });
+      }
+    });
+  }
+
   onFinalFilesSelected(event: any) {
     const files = event.target.files;
     const cl = this.checklist();
@@ -1312,5 +1368,104 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (role === 'filing_staff') return 'Filing Staff';
     if (role === 'staff') return 'Client Support';
     return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  }
+
+  // ─── Generate from Template ───────────────────────────────────────────────
+
+  showGenerateDocModal = signal<boolean>(false);
+  availableDocTemplates = signal<any[]>([]);
+  selectedDocTemplate = signal<any>(null);
+  customInputs = signal<any[]>([]);
+  isLoadingDocTemplates = signal<boolean>(false);
+  isGeneratingDoc = signal<boolean>(false);
+
+  openGenerateDocModal() {
+    const cl = this.checklist();
+    if (!cl) return;
+    this.selectedDocTemplate.set(null);
+    this.customInputs.set([]);
+    this.showGenerateDocModal.set(true);
+    this.isLoadingDocTemplates.set(true);
+    const encodedService = encodeURIComponent(cl.service_name || '');
+    this.api.get<any>(`document-templates/for-service/${encodedService}`).subscribe({
+      next: (res) => {
+        this.availableDocTemplates.set(res.templates || []);
+        this.isLoadingDocTemplates.set(false);
+      },
+      error: () => {
+        this.isLoadingDocTemplates.set(false);
+      }
+    });
+  }
+
+  closeGenerateDocModal() {
+    this.showGenerateDocModal.set(false);
+    this.selectedDocTemplate.set(null);
+    this.customInputs.set([]);
+  }
+
+  selectDocTemplate(tmpl: any) {
+    this.selectedDocTemplate.set(tmpl);
+    if (tmpl && tmpl.html_content) {
+      const regex = /\{\{input:([^}]+)\}\}/g;
+      const inputs: any[] = [];
+      let match;
+      const seen = new Set();
+      while ((match = regex.exec(tmpl.html_content)) !== null) {
+        const fullToken = match[0];
+        const label = match[1];
+        if (!seen.has(fullToken)) {
+          seen.add(fullToken);
+          inputs.push({ token: fullToken, label: label, value: '' });
+        }
+      }
+      this.customInputs.set(inputs);
+    } else {
+      this.customInputs.set([]);
+    }
+  }
+
+  generateDocumentFromTemplate() {
+    const cl = this.checklist();
+    const tmpl = this.selectedDocTemplate();
+    if (!cl || !tmpl) return;
+    this.isGeneratingDoc.set(true);
+
+    const customValues: any = {};
+    for (const inp of this.customInputs()) {
+      customValues[inp.token] = inp.value || '';
+    }
+
+    this.api.post<any>(`document-templates/${tmpl._id}/generate`, { 
+      checklist_id: cl._id,
+      custom_values: customValues
+    }).subscribe({
+      next: (res) => {
+        this.isGeneratingDoc.set(false);
+        if (res.success) {
+          // Now add it as a temporary document in the checklist
+          this.api.post<any>(`checklists/${cl._id}/temporary-documents/from-document`, {
+            document_id: res.document._id,
+            name: res.document.filename
+          }).subscribe({
+            next: () => {
+              this.closeGenerateDocModal();
+              this.fetchChecklist();
+              alert(`✅ "${tmpl.name}" generated and sent to the client!`);
+            },
+            error: (err) => {
+              this.isGeneratingDoc.set(false);
+              alert(err.error?.message || 'Generated PDF but failed to attach it. Please try again.');
+            }
+          });
+        } else {
+          alert(res.message || 'Failed to generate document.');
+        }
+      },
+      error: (err) => {
+        this.isGeneratingDoc.set(false);
+        alert(err.error?.message || 'Failed to generate document. Please try again.');
+      }
+    });
   }
 }

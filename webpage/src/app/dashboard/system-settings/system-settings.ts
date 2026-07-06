@@ -1,6 +1,7 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, ElementRef, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Api } from '../../api';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
@@ -36,6 +37,7 @@ export class SystemSettings implements OnInit {
 
   activeTab = signal<string>('system');
   searchQuery = signal<string>('');
+  mappedTemplateIds = signal<string[]>([]);
 
   filteredServices = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
@@ -110,7 +112,11 @@ export class SystemSettings implements OnInit {
   isUploadingSop = false;
   activeTemplateSop = signal<{filename: string, _id: string} | null>(null);
 
-  constructor(private api: Api) {}
+  constructor(private api: Api, private sanitizer: DomSanitizer) {}
+
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html || '');
+  }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -119,6 +125,7 @@ export class SystemSettings implements OnInit {
     }
     this.fetchSettings();
     this.fetchLatestCalendar();
+    this.fetchDocTemplates();
   }
 
   fetchLatestCalendar() {
@@ -195,7 +202,9 @@ export class SystemSettings implements OnInit {
 
   switchTab(tabName: string) {
     this.activeTab.set(tabName);
-    if (tabName !== 'system') {
+    if (tabName === 'doc-templates') {
+      this.fetchDocTemplates();
+    } else if (tabName !== 'system') {
       this.selectedService = tabName;
       this.onServiceChange();
     }
@@ -204,6 +213,7 @@ export class SystemSettings implements OnInit {
   onServiceChange() {
     this.activeTemplateItems = [];
     this.activeTemplateExtractEnabled = false;
+    this.mappedTemplateIds.set([]);
     
     if (!this.selectedService) {
       return;
@@ -221,10 +231,12 @@ export class SystemSettings implements OnInit {
             }));
             this.activeTemplateExtractEnabled = !!tmpl.enable_document_extraction;
             this.activeTemplateSop.set(tmpl.sop_document || null);
+            this.mappedTemplateIds.set((tmpl.document_templates || []).map((dt: any) => dt._id || dt));
           } else {
             this.activeTemplateItems = [];
             this.activeTemplateExtractEnabled = false;
             this.activeTemplateSop.set(null);
+            this.mappedTemplateIds.set([]);
           }
         }
         this.isTemplateLoading.set(false);
@@ -288,7 +300,8 @@ export class SystemSettings implements OnInit {
     this.api.post<any>('templates/checklists', {
       service_name: this.selectedService,
       items: cleanItems,
-      enable_document_extraction: this.activeTemplateExtractEnabled
+      enable_document_extraction: this.activeTemplateExtractEnabled,
+      document_templates: this.mappedTemplateIds()
     }).subscribe({
       next: (res) => {
         alert('Template saved successfully!');
@@ -297,6 +310,19 @@ export class SystemSettings implements OnInit {
       },
       error: (err) => alert(err.error?.message || 'Failed to save template.')
     });
+  }
+
+  isTemplateMapped(id: string): boolean {
+    return this.mappedTemplateIds().includes(id);
+  }
+
+  toggleTemplateMapping(id: string) {
+    const current = this.mappedTemplateIds();
+    if (current.includes(id)) {
+      this.mappedTemplateIds.set(current.filter(x => x !== id));
+    } else {
+      this.mappedTemplateIds.set([...current, id]);
+    }
   }
 
   onCalendarFileSelected(event: any) {
@@ -375,5 +401,151 @@ export class SystemSettings implements OnInit {
         alert(err.error?.message || 'Failed to upload SOP.');
       }
     });
+  }
+
+  // ─── Document Template State ──────────────────────────────────────────────
+
+  docTemplates = signal<any[]>([]);
+  isDocTemplateLoading = signal<boolean>(false);
+  showDocTemplateModal = signal<boolean>(false);
+  showDocTemplatePreview = signal<boolean>(false);
+  previewingDocTemplate = signal<any>(null);
+  isSavingDocTemplate = signal<boolean>(false);
+  editorHtml = signal<string>('');
+
+  editingDocTemplate: any = { name: '', description: '', html_content: '' };
+
+  availablePlaceholders = [
+    { token: '{{client_name}}', label: 'Client Name' },
+    { token: '{{company_name}}', label: 'Company Name' },
+    { token: '{{email}}', label: 'Email' },
+    { token: '{{phone}}', label: 'Phone' },
+    { token: '{{address}}', label: 'Address' },
+    { token: '{{pan}}', label: 'PAN' },
+    { token: '{{gstin}}', label: 'GSTIN' },
+    { token: '{{cin}}', label: 'CIN' },
+    { token: '{{tan}}', label: 'TAN' },
+    { token: '{{director_count}}', label: 'Director Count' },
+    { token: '{{business_type}}', label: 'Business Type' },
+    { token: '{{service_name}}', label: 'Service Name' },
+    { token: '{{service_id}}', label: 'Service ID' },
+    { token: '{{today_date}}', label: 'Today\'s Date' },
+    { token: '{{company_letterhead}}', label: 'Our Company Name' },
+    { token: '{{input:Label Name}}', label: 'Custom Input (Modify Label Name)' },
+  ];
+
+  fetchDocTemplates() {
+    this.isDocTemplateLoading.set(true);
+    this.api.get<any>('document-templates').subscribe({
+      next: (res) => {
+        this.docTemplates.set(res.templates || []);
+        this.isDocTemplateLoading.set(false);
+      },
+      error: () => this.isDocTemplateLoading.set(false)
+    });
+  }
+
+  openDocTemplateModal(tmpl: any) {
+    if (tmpl) {
+      this.editingDocTemplate = { ...tmpl };
+      this.editorHtml.set(tmpl.html_content || '');
+    } else {
+      this.editingDocTemplate = { name: '', description: '', html_content: '' };
+      this.editorHtml.set('');
+    }
+    this.showDocTemplateModal.set(true);
+    // Set editor content after DOM renders
+    setTimeout(() => {
+      const el = document.getElementById('doc-template-editor');
+      if (el) el.innerHTML = this.editorHtml();
+    }, 100);
+  }
+
+  closeDocTemplateModal() {
+    this.showDocTemplateModal.set(false);
+  }
+
+  onEditorInput(event: Event) {
+    const el = event.target as HTMLElement;
+    this.editingDocTemplate.html_content = el.innerHTML;
+  }
+
+  editorCmd(command: string) {
+    document.execCommand(command, false, undefined);
+    const el = document.getElementById('doc-template-editor');
+    if (el) this.editingDocTemplate.html_content = el.innerHTML;
+  }
+
+  editorFontSize(event: Event) {
+    const val = (event.target as HTMLSelectElement).value;
+    document.execCommand('fontSize', false, val);
+    const el = document.getElementById('doc-template-editor');
+    if (el) this.editingDocTemplate.html_content = el.innerHTML;
+  }
+
+  insertPlaceholder(event: Event) {
+    const token = (event.target as HTMLSelectElement).value;
+    if (!token) return;
+    (event.target as HTMLSelectElement).value = '';
+    document.getElementById('doc-template-editor')?.focus();
+    document.execCommand('insertText', false, token);
+    const el = document.getElementById('doc-template-editor');
+    if (el) this.editingDocTemplate.html_content = el.innerHTML;
+  }
+
+  copyPlaceholder(token: string) {
+    navigator.clipboard.writeText(token).then(() => {
+      alert(`Copied: ${token}`);
+    });
+  }
+
+  saveDocTemplate() {
+    if (!this.editingDocTemplate.name) {
+      alert('Template name is required.');
+      return;
+    }
+    const el = document.getElementById('doc-template-editor');
+    if (el) this.editingDocTemplate.html_content = el.innerHTML;
+
+    if (!this.editingDocTemplate.html_content || this.editingDocTemplate.html_content.trim() === '') {
+      alert('Template content cannot be empty.');
+      return;
+    }
+    this.isSavingDocTemplate.set(true);
+
+    const payload = {
+      name: this.editingDocTemplate.name,
+      description: this.editingDocTemplate.description,
+      html_content: this.editingDocTemplate.html_content
+    };
+
+    const req$ = this.editingDocTemplate._id
+      ? this.api.put<any>(`document-templates/${this.editingDocTemplate._id}`, payload)
+      : this.api.post<any>('document-templates', payload);
+
+    req$.subscribe({
+      next: (res) => {
+        this.isSavingDocTemplate.set(false);
+        this.closeDocTemplateModal();
+        this.fetchDocTemplates();
+      },
+      error: (err) => {
+        this.isSavingDocTemplate.set(false);
+        alert(err.error?.message || 'Failed to save template.');
+      }
+    });
+  }
+
+  deleteDocTemplate(id: string) {
+    if (!confirm('Are you sure you want to delete this template? This cannot be undone.')) return;
+    this.api.delete<any>(`document-templates/${id}`).subscribe({
+      next: () => this.fetchDocTemplates(),
+      error: (err) => alert(err.error?.message || 'Failed to delete template.')
+    });
+  }
+
+  previewDocTemplate(tmpl: any) {
+    this.previewingDocTemplate.set(tmpl);
+    this.showDocTemplatePreview.set(true);
   }
 }

@@ -43,6 +43,13 @@ router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'clien
 router.delete('/checklists/:id/final-documents/:docId', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), deleteFinalDocument);
 router.put('/checklists/:id/final-documents/:docId/reupload', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.single('final_file'), reuploadFinalDocument);
 
+// Temporary / Action Required Documents
+const { uploadTemporaryDocuments, deleteTemporaryDocument, replyTemporaryDocument, attachDocumentAsTemporary } = require('../controllers/checklistController');
+router.post('/checklists/:id/temporary-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadTemporaryDocuments);
+router.post('/checklists/:id/temporary-documents/from-document', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), attachDocumentAsTemporary);
+router.delete('/checklists/:id/temporary-documents/:docId', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), deleteTemporaryDocument);
+router.post('/checklists/:id/temporary-documents/:docId/reply', checkUser, permit('admin', 'customer', 'client_manager'), upload.single('reply_file'), replyTemporaryDocument);
+
 // Document upload route for Flutter customers
 const { uploadRequestedDocuments } = require('../controllers/checklistController');
 router.post('/checklists/:id/upload-documents', checkUser, upload.any(), uploadRequestedDocuments);

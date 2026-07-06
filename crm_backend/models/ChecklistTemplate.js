@@ -36,7 +36,12 @@ const ChecklistTemplateSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Document'
   },
-  items: [TemplateItemSchema]
+  items: [TemplateItemSchema],
+  // Document templates linked to this service (reusable across services)
+  document_templates: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DocumentTemplate'
+  }]
 }, { timestamps: true });
 
 // Ensure one template per service per company
