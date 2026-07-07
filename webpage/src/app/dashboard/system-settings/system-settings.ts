@@ -23,6 +23,7 @@ export class SystemSettings implements OnInit {
     allow_agent_registration: true,
     require_document_verification: true,
     enable_document_extraction: false,
+    require_payment_verification: true,
     bank_details: {
       savings_account_last_four: '',
       current_account_last_four: '',
@@ -99,6 +100,7 @@ export class SystemSettings implements OnInit {
   selectedService = '';
   activeTemplateItems: any[] = [];
   activeTemplateExtractEnabled = false;
+  activeTemplateNeedTemporary = false;
   newItemTitle = '';
   newItemDesc = '';
   newItemGetBill = false;
@@ -230,11 +232,13 @@ export class SystemSettings implements OnInit {
               getBill: i.getBill || false
             }));
             this.activeTemplateExtractEnabled = !!tmpl.enable_document_extraction;
+            this.activeTemplateNeedTemporary = !!tmpl.need_temporary;
             this.activeTemplateSop.set(tmpl.sop_document || null);
             this.mappedTemplateIds.set((tmpl.document_templates || []).map((dt: any) => dt._id || dt));
           } else {
             this.activeTemplateItems = [];
             this.activeTemplateExtractEnabled = false;
+            this.activeTemplateNeedTemporary = false;
             this.activeTemplateSop.set(null);
             this.mappedTemplateIds.set([]);
           }
@@ -301,7 +305,8 @@ export class SystemSettings implements OnInit {
       service_name: this.selectedService,
       items: cleanItems,
       enable_document_extraction: this.activeTemplateExtractEnabled,
-      document_templates: this.mappedTemplateIds()
+      document_templates: this.mappedTemplateIds(),
+      need_temporary: this.activeTemplateNeedTemporary
     }).subscribe({
       next: (res) => {
         alert('Template saved successfully!');

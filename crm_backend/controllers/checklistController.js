@@ -92,20 +92,22 @@ const createChecklist = async (req, res) => {
 
     let custom_service_id = null;
     try {
-      const compId = req.user.company_id._id || req.user.company_id;
+      const compId = (req.user.company_id && req.user.company_id._id) ? req.user.company_id._id : req.user.company_id;
       custom_service_id = await getNextServiceId(compId);
     } catch (e) { console.error('Failed to generate custom_service_id', e); }
 
-    const checklist = await Checklist.create({
+    const createPayload = {
       company_id: req.user.company_id,
-      custom_service_id,
       client_id,
       service_name,
       assigned_to: assigned_to || null,
       created_by: req.user._id,
       items: parsedItems,
       notes: notes || ''
-    });
+    };
+    if (custom_service_id) createPayload.custom_service_id = custom_service_id;
+
+    const checklist = await Checklist.create(createPayload);
 
     if (assigned_to) {
       const Notification = require('../models/Notification');

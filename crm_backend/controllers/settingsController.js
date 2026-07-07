@@ -25,7 +25,8 @@ const getSettings = async (req, res) => {
         cgst_percentage: 9,
         allow_agent_registration: true,
         require_document_verification: true,
-        enable_document_extraction: false
+        enable_document_extraction: false,
+        require_payment_verification: true
       },
       company: {
         company_name: company.company_name,
@@ -49,7 +50,7 @@ const updateSettings = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User is not linked to any company' });
     }
 
-    const { incorporation_fee, default_filing_tax, gst_percentage, cgst_percentage, allow_agent_registration, require_document_verification, enable_document_extraction, bank_details, company_name, gstin, phone, address } = req.body;
+    const { incorporation_fee, default_filing_tax, gst_percentage, cgst_percentage, allow_agent_registration, require_document_verification, enable_document_extraction, require_payment_verification, bank_details, company_name, gstin, phone, address } = req.body;
 
     const company = await Company.findById(companyId);
     if (!company) {
@@ -67,6 +68,7 @@ const updateSettings = async (req, res) => {
     if (allow_agent_registration !== undefined) company.settings.allow_agent_registration = Boolean(allow_agent_registration);
     if (require_document_verification !== undefined) company.settings.require_document_verification = Boolean(require_document_verification);
     if (enable_document_extraction !== undefined) company.settings.enable_document_extraction = Boolean(enable_document_extraction);
+    if (require_payment_verification !== undefined) company.settings.require_payment_verification = Boolean(require_payment_verification);
     if (bank_details !== undefined) company.settings.bank_details = bank_details;
 
         if (company_name !== undefined) company.company_name = company_name;

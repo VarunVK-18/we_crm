@@ -290,7 +290,7 @@
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <div style="display: flex; gap: 8px; width: 100%;">
             <input type="text" class="form-control-input" placeholder="0" [ngModel]="advanceAmountStr()" (ngModelChange)="onAdvanceAmountChange($event)"
-              style="flex: 1; width: 100%;" />
+              style="flex: 1; width: 100%;" [readonly]="systemSettings()?.require_payment_verification !== false" />
 
               <!-- OCR Upload Button -->
               <div

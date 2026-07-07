@@ -26,6 +26,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   user = signal<any>(null);
   checklist = signal<any>(null);
   systemBankSettings = signal<any>(null);
+  requirePaymentVerification = signal<boolean>(true);
   pollInterval: any;
 
   // Add Item Modal
@@ -249,9 +250,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   fetchSystemSettings() {
     this.api.get<any>('settings').subscribe({
-      next: (res: any) => {
-        if (res && res.settings && res.settings.bank_details) {
-          this.systemBankSettings.set(res.settings.bank_details);
+      next: (res) => {
+        if (res && res.settings) {
+          if (res.settings.bank_details) {
+            this.systemBankSettings.set(res.settings.bank_details);
+          }
+          this.requirePaymentVerification.set(res.settings.require_payment_verification !== false);
         }
       },
       error: (err: any) => console.error('Error fetching settings:', err)
@@ -648,7 +652,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
        return;
     }
 
-    if (!this.paymentOcrVerifiedToAdd || this.isSubmittingPayment()) {
+    const requireVerification = this.requirePaymentVerification();
+    if ((requireVerification && !this.paymentOcrVerifiedToAdd) || this.isSubmittingPayment()) {
        return;
     }
 
