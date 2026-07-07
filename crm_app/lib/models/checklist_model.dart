@@ -1,13 +1,25 @@
 class ChecklistItemModel {
   final String label;
   final bool isChecked;
+  final bool hasCustomInput;
+  final String customInputLabel;
+  final String customInputValue;
 
-  ChecklistItemModel({required this.label, required this.isChecked});
+  ChecklistItemModel({
+    required this.label,
+    required this.isChecked,
+    this.hasCustomInput = false,
+    this.customInputLabel = '',
+    this.customInputValue = '',
+  });
 
   factory ChecklistItemModel.fromMap(Map<String, dynamic> data) {
     return ChecklistItemModel(
-      label: data['label']?.toString() ?? '',
+      label: data['label']?.toString() ?? data['title']?.toString() ?? '',
       isChecked: data['isChecked'] == true,
+      hasCustomInput: data['has_custom_input'] == true,
+      customInputLabel: data['custom_input_label']?.toString() ?? '',
+      customInputValue: data['custom_input_value']?.toString() ?? '',
     );
   }
 }

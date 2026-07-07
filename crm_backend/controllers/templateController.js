@@ -9,7 +9,8 @@ const getTemplates = async (req, res) => {
   try {
     const templates = await ChecklistTemplate.find({ company_id: req.user.company_id })
       .populate('sop_document', 'filename _id')
-      .populate('document_templates', 'name description _id');
+      .populate('document_templates', 'name description _id')
+      .populate('items.linked_document_templates', 'name description _id');
     res.status(200).json({ success: true, templates });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

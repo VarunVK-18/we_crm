@@ -132,9 +132,7 @@
   align-items: flex-start;
   transition: border-color 0.2s ease;
 }
-.list-item-card:hover {
-  border-color: var(--accent-primary);
-}
+
 
 .notes-container {
   background-color: var(--bg-primary);

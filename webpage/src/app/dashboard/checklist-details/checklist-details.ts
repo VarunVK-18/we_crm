@@ -900,7 +900,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
-  uploadTemporaryDocument(event: any) {
+  uploadTemporaryDocument(event: any, item?: any) {
     const files = event.target.files;
     if (!files || files.length === 0) return;
     const cl = this.checklist();
@@ -910,11 +910,20 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     for (let i = 0; i < files.length; i++) {
       formData.append('documents', files[i]);
     }
+    if (item && item.title) {
+      formData.append('step_title', item.title);
+      formData.append('docName', item.title);
+    }
 
     this.api.post<any>(`checklists/${cl._id}/temporary-documents`, formData).subscribe({
       next: (res) => {
         if (res.success) {
-          alert('Temporary documents uploaded successfully!');
+          this.confirmDialog.confirm({
+            title: 'Success',
+            message: 'Temporary document uploaded successfully!',
+            confirmText: 'OK',
+            hideCancel: true
+          });
           this.fetchChecklist();
         } else {
           alert(res.message || 'Failed to upload documents.');
@@ -923,6 +932,76 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       error: (err) => {
         console.error('Upload Error:', err);
         alert(err.error?.message || 'Error uploading documents.');
+      }
+    });
+  }
+
+  getTemporaryDocsForStep(item: any): any[] {
+    const cl = this.checklist();
+    if (!cl || !cl.temporary_documents) return [];
+    return cl.temporary_documents.filter((doc: any) => doc.step_title === item.title);
+  }
+
+  getGlobalTemporaryDocs(): any[] {
+    const cl = this.checklist();
+    if (!cl || !cl.temporary_documents) return [];
+    return cl.temporary_documents.filter((doc: any) => !doc.step_title);
+  }
+
+  isStepDisabled(index: number): boolean {
+    const cl = this.checklist();
+    if (!cl || !cl.items) return true;
+    const item = cl.items[index];
+    if (!item) return true;
+
+    if (!this.isFillingStaff() && !this.isAccountManager() && !this.isAdmin()) {
+      return true;
+    }
+    if (this.isActionRequired(cl)) {
+      return true;
+    }
+    if (item.isChecked) {
+      return true;
+    }
+    if (index > 0 && !cl.items[index - 1].isChecked) {
+      return true;
+    }
+    return false;
+  }
+
+  customInputValues: { [key: number]: string } = {};
+
+  getCustomInputValue(index: number, defaultValue: string): string {
+    if (this.customInputValues[index] !== undefined) {
+      return this.customInputValues[index];
+    }
+    return defaultValue || '';
+  }
+
+  onCustomInputChange(index: number, event: any) {
+    this.customInputValues[index] = event.target.value;
+  }
+
+  saveCustomInputValue(index: number, defaultValue: string) {
+    const cl = this.checklist();
+    if (!cl) return;
+    const value = this.customInputValues[index] !== undefined ? this.customInputValues[index] : defaultValue;
+    this.api.patch<any>(`checklists/${cl._id}/items/${index}/value`, { value }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.checklist.set(res.checklist);
+          delete this.customInputValues[index];
+          this.confirmDialog.confirm({
+            title: 'Success',
+            message: 'Custom input value saved successfully!',
+            confirmText: 'OK',
+            hideCancel: true
+          });
+        }
+      },
+      error: (err) => {
+        console.error('Save Custom Value Error:', err);
+        alert(err.error?.message || 'Failed to save value.');
       }
     });
   }
@@ -1389,6 +1468,28 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   isGeneratingDoc = signal<boolean>(false);
   isEditingTemplate = signal<boolean>(false);
   editorHtml = signal<string>('');
+  selectedItemForDocTemplate = signal<any>(null);
+
+  availablePlaceholders = [
+    { token: '{{client_name}}', label: 'Client Name' },
+    { token: '{{company_name}}', label: 'Company Name' },
+    { token: '{{email}}', label: 'Email' },
+    { token: '{{phone}}', label: 'Phone' },
+    { token: '{{address}}', label: 'Address' },
+    { token: '{{pan}}', label: 'PAN' },
+    { token: '{{gstin}}', label: 'GSTIN' },
+    { token: '{{cin}}', label: 'CIN' },
+    { token: '{{tan}}', label: 'TAN' },
+    { token: '{{director_count}}', label: 'Director Count' },
+    { token: '{{director_name}}', label: 'Director Name(s)' },
+    { token: '{{din_number}}', label: 'DIN Number(s)' },
+    { token: '{{business_type}}', label: 'Business Type' },
+    { token: '{{service_name}}', label: 'Service Name' },
+    { token: '{{service_id}}', label: 'Service ID' },
+    { token: '{{today_date}}', label: 'Today\'s Date' },
+    { token: '{{company_letterhead}}', label: 'Our Company Name' },
+    { token: '{{input:Label Name}}', label: 'Custom Input (Modify Label Name)' },
+  ];
 
   openGenerateDocModal() {
     const cl = this.checklist();
@@ -1409,9 +1510,24 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  openGenerateDocModalForTemplate(tmpl: any, item?: any) {
+    if (!tmpl) return;
+    this.selectedDocTemplate.set(tmpl);
+    this.selectedItemForDocTemplate.set(item || null);
+    this.customInputs.set([]);
+    this.showGenerateDocModal.set(true);
+    
+    const html = tmpl.html_content || '';
+    this.editorHtml.set(html);
+    if (html) {
+      this.updateCustomInputsFromHtml(html);
+    }
+  }
+
   closeGenerateDocModal() {
     this.showGenerateDocModal.set(false);
     this.selectedDocTemplate.set(null);
+    this.selectedItemForDocTemplate.set(null);
     this.customInputs.set([]);
     this.isEditingTemplate.set(false);
     this.editorHtml.set('');
@@ -1506,17 +1622,28 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
   }
 
-  insertPlaceholder() {
-    const name = prompt("Enter placeholder name (e.g. company_name, client_name, or custom input like input:Amount):");
-    if (name) {
-      const el = document.getElementById('generate-template-editor');
-      if (el) {
-        el.focus();
-        document.execCommand('insertText', false, `{{${name}}}`);
-        this.editorHtml.set(el.innerHTML);
-        this.updateCustomInputsFromHtml(el.innerHTML);
+  insertPlaceholder(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    if (!select.value) return;
+
+    let token = select.value;
+    if (token === 'custom') {
+      const name = prompt("Enter custom placeholder label name (e.g. Amount):");
+      if (!name) {
+        select.value = "";
+        return;
       }
+      token = `{{input:${name}}}`;
     }
+
+    const el = document.getElementById('generate-template-editor');
+    if (el) {
+      el.focus();
+      document.execCommand('insertText', false, token);
+      this.editorHtml.set(el.innerHTML);
+      this.updateCustomInputsFromHtml(el.innerHTML);
+    }
+    select.value = "";
   }
 
   generateDocumentFromTemplate() {
@@ -1556,14 +1683,21 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         this.isGeneratingDoc.set(false);
         if (res.success) {
           // Now add it as a temporary document in the checklist
+          const item = this.selectedItemForDocTemplate();
           this.api.post<any>(`checklists/${cl._id}/temporary-documents/from-document`, {
             document_id: res.document._id,
-            name: res.document.filename
+            name: res.document.filename,
+            step_title: item ? item.title : null
           }).subscribe({
             next: () => {
               this.closeGenerateDocModal();
               this.fetchChecklist();
-              alert(`✅ "${tmpl.name}" generated and sent to the client!`);
+               this.confirmDialog.confirm({
+                 title: 'Success',
+                 message: `✅ "${tmpl.name}" generated and sent to the client!`,
+                 confirmText: 'OK',
+                 hideCancel: true
+               });
             },
             error: (err) => {
               this.isGeneratingDoc.set(false);

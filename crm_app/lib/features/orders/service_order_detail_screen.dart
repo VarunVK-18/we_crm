@@ -614,9 +614,89 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
 
                 Builder(
                   builder: (context) {
+                    final customInputSteps = order.steps.where((s) => s.hasCustomInput).toList();
+
                     final progressContent = Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (customInputSteps.isNotEmpty) ...[
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.02),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 5),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        'Service Information',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppTheme.deepTeal,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  ...customInputSteps.map((step) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${step.customInputLabel}:  ',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                        Expanded(
+                                          child: step.customInputValue.isNotEmpty
+                                              ? Align(
+                                                  alignment: Alignment.centerLeft,
+                                                  child: Container(
+                                                    child: Text(
+                                                      step.customInputValue,
+                                                      style: const TextStyle(
+                                                        fontSize: 13,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: Color(0xFF0369a1),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              : Text(
+                                                  'Awaiting details...',
+                                                  style: TextStyle(
+                                                    fontSize: 13,
+                                                    color: Colors.grey.shade500,
+                                                    fontStyle: FontStyle.italic,
+                                                  ),
+                                                ),
+                                        ),
+                                      ],
+                                    ),
+                                  )).toList(),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
                         // Section title
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1669,6 +1749,31 @@ class _StepTimeline extends StatelessWidget {
                                 color: Colors.grey.shade600,
                                 height: 1.4,
                               ),
+                            ),
+                          ],
+                          if (step.hasCustomInput) ...[
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(LucideIcons.info, size: 13, color: AppTheme.corporateBlue),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '${step.customInputLabel}: ',
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                                ),
+                                if (step.customInputValue.isNotEmpty)
+                                  Container(
+                                    child: Text(
+                                      step.customInputValue,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
+                                    ),
+                                  )
+                                else
+                                  Text(
+                                    'Awaiting details...',
+                                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500, fontStyle: FontStyle.italic),
+                                  ),
+                              ],
                             ),
                           ],
                           if (isCompleted) ...[
