@@ -326,8 +326,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     
     if (requiresForm) {
       let isFormFilled = false;
-      if (c.details && Object.keys(c.details).length > 0) {
-        isFormFilled = true;
+      if (c.details) {
+        // 'Status' and 'applicationId' are system-injected. If there are any other keys, the form is filled.
+        const userProvidedKeys = Object.keys(c.details).filter(k => k !== 'Status' && k !== 'applicationId');
+        if (userProvidedKeys.length > 0) {
+          isFormFilled = true;
+        }
       }
       return !isFormFilled;
     }
