@@ -59,6 +59,9 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
                       'description': i['description'] ?? i['notes'] ?? '',
                       'isCompleted': i['isChecked'] == true,
                       'isActionStep': i['isActionStep'] == true,
+                      'has_custom_input': i['has_custom_input'] == true,
+                      'custom_input_label': i['custom_input_label'] ?? '',
+                      'custom_input_value': i['custom_input_value'] ?? '',
                     })
                 .toList(),
             'requestedDocuments': c['requested_documents'] ?? [],

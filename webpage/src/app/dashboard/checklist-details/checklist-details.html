@@ -298,19 +298,131 @@
               Client action required. The client must submit the required form before you can begin the checklist.
             </div>
           }
-          @for (item of checklist().items; track $index) {
+          @for (item of checklist().items; track $index; let itemIndex = $index) {
           <div class="list-item-card">
             <input type="checkbox" [checked]="item.isChecked"
-              [disabled]="(!isFillingStaff() && !isAccountManager() && !isAdmin()) || ($index > 0 && !checklist().items[$index - 1].isChecked) || item.isChecked || isActionRequired(checklist())"
-              (click)="toggleChecklistItem($index, $event)"
+              [disabled]="isStepDisabled(itemIndex)"
+              (click)="toggleChecklistItem(itemIndex, $event)"
               style="width: 20px; height: 20px; accent-color: var(--accent-primary); cursor: pointer; flex-shrink: 0; margin-top: 2px;" />
-            <div style="display: flex; flex-direction: column; flex: 1;" [style.opacity]="($index > 0 && !checklist().items[$index - 1].isChecked) ? 0.5 : 1">
+            <div style="display: flex; flex-direction: column; flex: 1;" [style.opacity]="isStepDisabled(itemIndex) && !item.isChecked ? 0.5 : 1">
               <span [style.text-decoration]="item.isChecked ? 'line-through' : 'none'"
                 [style.color]="item.isChecked ? 'var(--text-secondary)' : 'var(--text-primary)'"
                 style="font-size: 18px; font-weight: 600; transition: color 0.2s;">{{ item.title || item.label }}</span>
-              @if (item.description) {
-              <p style="font-size: 14px; color: var(--text-secondary); margin: 4px 0 0 0;">{{ item.description }}</p>
+               @if (item.description) {
+               <p style="font-size: 14px; color: var(--text-secondary); margin: 4px 0 0 0;">{{ item.description }}</p>
+               }
+
+               <!-- Custom Input Field for Step -->
+               @if (item.has_custom_input) {
+                 @if (user()?.role !== 'customer') {
+                   <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px; max-width: 450px;">
+                     <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); min-width: 100px; white-space: nowrap;">{{ item.custom_input_label }}:</span>
+                     <input type="text" [value]="getCustomInputValue(itemIndex, item.custom_input_value)" (input)="onCustomInputChange(itemIndex, $event)" placeholder="Enter {{ item.custom_input_label }}" 
+                            [disabled]="isStepDisabled(itemIndex)"
+                            style="flex: 1; padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; color: var(--text-primary); outline: none;" />
+                     <button (click)="saveCustomInputValue(itemIndex, item.custom_input_value)" 
+                             [disabled]="isStepDisabled(itemIndex)"
+                             style="background: var(--accent-primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s; white-space: nowrap;"
+                             onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                       <span class="material-symbols-outlined" style="font-size: 16px;">save</span> Save
+                     </button>
+                   </div>
+                 } @else {
+                    <div style="margin-top: 8px; font-size: 14px; font-weight: 500; color: var(--text-primary);">
+                      <div style="color: var(--text-secondary); font-size: 12px; margin-bottom: 2px;">{{ item.custom_input_label }}:</div>
+                      @if (item.custom_input_value) {
+                        <div style="font-weight: 700; color: #000000; font-size: 14px;">{{ item.custom_input_value }}</div>
+                      } @else {
+                        <div style="color: var(--text-secondary); font-style: italic; font-size: 14px;">Awaiting details...</div>
+                      }
+                    </div>
+                  }
+               }
+               @if (item.linked_document_templates && item.linked_document_templates.length > 0) {
+                 <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px;">
+                   @for (tmpl of item.linked_document_templates; track tmpl._id) {
+                     <button (click)="openGenerateDocModalForTemplate(tmpl, item)" 
+                             [disabled]="isStepDisabled(itemIndex)"
+                             [style.opacity]="isStepDisabled(itemIndex) ? 0.5 : 1"
+                             [style.pointer-events]="isStepDisabled(itemIndex) ? 'none' : 'auto'"
+                             style="background: #f8fafc; border: 1px solid #cbd5e1; color: #0f172a; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;"
+                             onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd'; this.style.color='#1d4ed8';" 
+                             onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.color='#0f172a';">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">description</span>
+                        Generate {{ tmpl.name }}
+                     </button>
+                   }
+                 </div>
+               }
+              <!-- Temporary Documents for this step -->
+              @if (item.need_temporary || getTemporaryDocsForStep(item).length > 0) {
+                <div style="margin-top: 12px; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: #f8fafc;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="font-size: 13px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                      <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-primary);">drafts</span>
+                      Step Draft / Temporary Documents
+                    </div>
+                    @if (user()?.role !== 'customer') {
+                      <label [style.opacity]="isStepDisabled(itemIndex) ? 0.5 : 1"
+                             [style.pointer-events]="isStepDisabled(itemIndex) ? 'none' : 'auto'"
+                             style="background: white; border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" 
+                             onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd'; this.style.color='#1d4ed8';" 
+                             onmouseout="this.style.background='white'; this.style.borderColor='var(--border-color)'; this.style.color='var(--text-primary)';">
+                        <span class="material-symbols-outlined" style="font-size: 14px;">upload</span> Upload Draft
+                        <input type="file" [disabled]="isStepDisabled(itemIndex)" (change)="uploadTemporaryDocument($event, item)" style="display: none;" />
+                      </label>
+                    }
+                  </div>
+                  
+                  @if (getTemporaryDocsForStep(item).length === 0) {
+                    <div style="font-size: 12px; color: var(--text-secondary); padding: 4px 0;">No draft documents uploaded for this step yet.</div>
+                  } @else {
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                      @for (doc of getTemporaryDocsForStep(item); track doc._id) {
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: white; border: 1px solid var(--border-color); border-radius: 6px;">
+                          <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                            <span class="material-symbols-outlined" style="color: var(--accent-primary); font-size: 18px;">description</span>
+                            <div style="min-width: 0; flex: 1;">
+                              <div style="font-weight: 500; font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px;" title="{{ doc.name }}">{{ doc.name }}</div>
+                              <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px;">
+                                <span style="font-size: 11px; color: var(--text-muted);">
+                                  Uploaded: {{ doc.uploadedAt | date:'MMM d, y, h:mm a' }}
+                                </span>
+                                @if (doc.status === 'replied') {
+                                  <span style="background: #ecfdf5; color: #047857; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">
+                                    <span class="material-symbols-outlined" style="font-size: 12px;">check_circle</span> Signed / Replied
+                                  </span>
+                                } @else {
+                                  <span style="background: #fff7ed; color: #c2410c; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 2px;">
+                                    <span class="material-symbols-outlined" style="font-size: 12px;">pending</span> Pending Client Signature
+                                  </span>
+                                }
+                              </div>
+                            </div>
+                          </div>
+                          <div style="display: flex; align-items: center; gap: 12px;">
+                            <a href="#" (click)="openDocViewer('api/documents/' + (doc.document_id?._id || doc.document_id), doc.name, $event)" class="btn-text-action" style="color: var(--accent-primary); display: inline-flex; align-items: center; text-decoration: none;" title="View Original Draft">
+                              <span class="material-symbols-outlined" style="font-size: 18px;">download</span>
+                            </a>
+                            @if (doc.status === 'replied' && doc.reply_document_id) {
+                              <a href="#" (click)="openDocViewer('api/documents/' + (doc.reply_document_id?._id || doc.reply_document_id), 'Reply: ' + doc.name, $event)" class="btn-text-action" style="color: #059669; display: inline-flex; align-items: center; text-decoration: none; gap: 2px;" title="View Signed Copy">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">download_done</span>
+                                <span style="font-size: 11px; font-weight: 700;">Signed Copy</span>
+                              </a>
+                            }
+                            @if (user()?.role !== 'customer') {
+                              <button type="button" class="btn-text-action btn-text-danger" style="display: inline-flex; align-items: center;" title="Delete" (click)="deleteTemporaryDocument(doc)">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                              </button>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
               }
+
               @if (item.isChecked && item.checkedBy) {
               <div style="display: flex; align-items: center; gap: 6px; margin-top: 8px;">
                 <span
@@ -519,9 +631,6 @@
         <h3 class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
           Action Required / Temporary Documents
           <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
-            <button class="btn-secondary" style="font-size: 13px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: white; border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; white-space: nowrap;" (click)="openGenerateDocModal()">
-              <span class="material-symbols-outlined" style="font-size: 16px;">auto_awesome</span> Generate from Template
-            </button>
             @if (checklist().need_temporary) {
               <label class="btn-primary" style="font-size: 13px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
                 <span class="material-symbols-outlined" style="font-size: 16px;">upload</span> Upload Document
@@ -532,9 +641,9 @@
         </h3>
         <p style="font-size: 13px; color: var(--text-secondary); margin-top: -8px;">These documents are instantly visible to the client (e.g., drafts for signature).</p>
         
-        @if (checklist().temporary_documents && checklist().temporary_documents.length > 0) {
+        @if (getGlobalTemporaryDocs().length > 0) {
           <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px;">
-            @for (doc of checklist().temporary_documents; track doc._id) {
+            @for (doc of getGlobalTemporaryDocs(); track doc._id) {
               <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px;">
                 <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
                   <span class="material-symbols-outlined" style="color: var(--accent-primary); flex-shrink: 0;">description</span>
@@ -1288,39 +1397,61 @@
               </select>
           </div>
           <div style="padding:8px 12px;background:#f8fafc;border-left:1px solid var(--border-color);border-right:1px solid var(--border-color);display:flex;align-items:center;border-bottom:1px solid var(--border-color);border-radius:0;">
-              <button type="button" (click)="insertPlaceholder()" style="background:#eff6ff;color:#3b82f6;border:1px solid #bfdbfe;border-radius:4px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px;width:100%;">
-                <span class="material-symbols-outlined" style="font-size:16px;">add</span> Insert Placeholder
-              </button>
+              <select (change)="insertPlaceholder($event)" style="font-size:12px;border:1px solid var(--border-color);border-radius:4px;padding:6px;background:#eff6ff;color:#1d4ed8;cursor:pointer;font-weight:600;width:100%;outline:none;">
+                <option value="">+ Insert Placeholder</option>
+                @for (ph of availablePlaceholders; track ph.token) {
+                  <option [value]="ph.token">{{ ph.token }} ({{ ph.label }})</option>
+                }
+                <option value="custom">+ Custom Input...</option>
+              </select>
           </div>
           <div id="generate-template-editor" contenteditable="true"
                (input)="onGenerateEditorInput($event)"
                style="min-height:300px;padding:16px;border:1px solid var(--border-color);border-radius:0 0 8px 8px;outline:none;font-family:'Times New Roman',Times,serif;font-size:12pt;background:white;overflow-y:auto;max-height:50vh;">
           </div>
         } @else {
-          @if (isLoadingDocTemplates()) {
-          <div style="text-align:center;padding:40px;"><app-we-loader></app-we-loader></div>
-        } @else if (availableDocTemplates().length === 0) {
-          <div style="text-align:center;padding:40px;color:var(--text-secondary);">
-            <span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;">edit_document</span>
-            No document templates found. Ask your admin to create one in Settings → Document Templates.
-          </div>
-        } @else {
-          <div style="display:flex;flex-direction:column;gap:10px;">
-            @for (tmpl of availableDocTemplates(); track tmpl._id) {
-              <div (click)="selectDocTemplate(tmpl)" [style.borderColor]="selectedDocTemplate()?._id === tmpl._id ? 'var(--accent-primary)' : 'var(--border-color)'" [style.background]="selectedDocTemplate()?._id === tmpl._id ? 'var(--accent-primary-light)' : 'white'" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid;border-radius:8px;cursor:pointer;transition:all 0.15s;">
-                <div style="width:38px;height:38px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <span class="material-symbols-outlined" style="color:#3b82f6;font-size:20px;">description</span>
+          @if (selectedDocTemplate()) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: #eff6ff; border: 1.5px solid #3b82f6; border-radius: 8px; margin-bottom: 20px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 38px; height: 38px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #93c5fd;">
+                  <span class="material-symbols-outlined" style="color: #3b82f6; font-size: 20px;">description</span>
                 </div>
                 <div>
-                  <div style="font-size:14px;font-weight:600;color:var(--text-primary);">{{ tmpl.name }}</div>
-                  <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">{{ tmpl.description || 'No description' }}</div>
+                  <div style="font-size: 14px; font-weight: 700; color: #1e3a8a;">{{ selectedDocTemplate().name }}</div>
+                  <div style="font-size: 12px; color: #1d4ed8; margin-top: 2px;">Template selected for this step</div>
                 </div>
-                @if (selectedDocTemplate()?._id === tmpl._id) {
-                  <span class="material-symbols-outlined" style="margin-left:auto;color:var(--accent-primary);">check_circle</span>
+              </div>
+              <button (click)="toggleTemplateEditor()" style="background: white; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='white'">
+                <span class="material-symbols-outlined" style="font-size: 14px;">edit</span> Customize Content
+              </button>
+            </div>
+          } @else {
+            @if (isLoadingDocTemplates()) {
+              <div style="text-align:center;padding:40px;"><app-we-loader></app-we-loader></div>
+            } @else if (availableDocTemplates().length === 0) {
+              <div style="text-align:center;padding:40px;color:var(--text-secondary);">
+                <span class="material-symbols-outlined" style="font-size:40px;display:block;margin-bottom:8px;">edit_document</span>
+                No document templates found. Ask your admin to create one in Settings → Document Templates.
+              </div>
+            } @else {
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                @for (tmpl of availableDocTemplates(); track tmpl._id) {
+                  <div (click)="selectDocTemplate(tmpl)" [style.borderColor]="selectedDocTemplate()?._id === tmpl._id ? 'var(--accent-primary)' : 'var(--border-color)'" [style.background]="selectedDocTemplate()?._id === tmpl._id ? 'var(--accent-primary-light)' : 'white'" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid;border-radius:8px;cursor:pointer;transition:all 0.15s;">
+                    <div style="width:38px;height:38px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                      <span class="material-symbols-outlined" style="color:#3b82f6;font-size:20px;">description</span>
+                    </div>
+                    <div>
+                      <div style="font-size:14px;font-weight:600;color:var(--text-primary);">{{ tmpl.name }}</div>
+                      <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">{{ tmpl.description || 'No description' }}</div>
+                    </div>
+                    @if (selectedDocTemplate()?._id === tmpl._id) {
+                      <span class="material-symbols-outlined" style="margin-left:auto;color:var(--accent-primary);">check_circle</span>
+                    }
+                  </div>
                 }
               </div>
             }
-          </div>
+          }
         }
 
         @if (selectedDocTemplate() && customInputs().length > 0) {
@@ -1336,7 +1467,6 @@
               }
             </div>
           </div>
-        }
         }
       </div>
       <!-- Footer -->

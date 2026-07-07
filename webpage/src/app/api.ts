@@ -6,8 +6,12 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class Api {
-  baseUrl = 'http://localhost:5001/api';
-  // baseUrl = 'https://wecrm.wealthempires.in/api';
+
+
+
+  // private readonly baseUrl = 'http://localhost:5001/api';
+  private readonly baseUrl = 'https://wecrm.wealthempires.in/api';
+
 
 
   get serverUrl(): string {
@@ -43,7 +47,7 @@ export class Api {
     }
   }
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   private getHeaders(): HttpHeaders {
     const savedUser = localStorage.getItem('user');
@@ -52,7 +56,7 @@ export class Api {
       try {
         const u = JSON.parse(savedUser);
         userId = u._id || '';
-      } catch (e) {}
+      } catch (e) { }
     }
     return new HttpHeaders({
       'Content-Type': 'application/json',
@@ -79,7 +83,7 @@ export class Api {
       try {
         const u = JSON.parse(savedUser);
         userId = u._id || '';
-      } catch (e) {}
+      } catch (e) { }
     }
     if (userData instanceof FormData) {
       const headers = new HttpHeaders({ 'x-user-id': userId });
@@ -106,7 +110,7 @@ export class Api {
     if (isFormData) {
       const savedUser = localStorage.getItem('user');
       let userId = '';
-      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) {} }
+      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) { } }
       let headers = new HttpHeaders();
       if (userId) { headers = headers.set('x-user-id', userId); }
       return this.http.post<T>(url, body, { headers });
@@ -131,7 +135,7 @@ export class Api {
     if (isFormData) {
       const savedUser = localStorage.getItem('user');
       let userId = '';
-      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) {} }
+      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) { } }
       let headers = new HttpHeaders();
       if (userId) { headers = headers.set('x-user-id', userId); }
       return this.http.put<T>(url, body, { headers });
@@ -148,7 +152,7 @@ export class Api {
     if (isFormData) {
       const savedUser = localStorage.getItem('user');
       let userId = '';
-      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) {} }
+      if (savedUser) { try { userId = JSON.parse(savedUser)._id || ''; } catch (e) { } }
       let headers = new HttpHeaders();
       if (userId) { headers = headers.set('x-user-id', userId); }
       return this.http.patch<T>(url, body, { headers });

@@ -66,7 +66,11 @@ const claimBucketRequest = async (req, res) => {
           title: item.title,
           description: item.description,
           label: item.title,
-          isChecked: false
+          isChecked: false,
+          need_temporary: item.need_temporary || false,
+          has_custom_input: item.has_custom_input || false,
+          custom_input_label: item.custom_input_label || '',
+          linked_document_templates: item.linked_document_templates || []
         }));
       }
     } catch (e) { /* no template */ }

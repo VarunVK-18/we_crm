@@ -160,7 +160,14 @@ exports.updateOrder = async (req, res) => {
             });
             if (template && template.items && template.items.length > 0) {
               finalItems = template.items.map(item => ({
-                title: item.title, description: item.description, label: item.title, isChecked: false
+                title: item.title,
+                description: item.description,
+                label: item.title,
+                isChecked: false,
+                need_temporary: item.need_temporary || false,
+                has_custom_input: item.has_custom_input || false,
+                custom_input_label: item.custom_input_label || '',
+                linked_document_templates: item.linked_document_templates || []
               }));
             }
           } catch (e) { }
@@ -263,9 +270,18 @@ exports.updateOrder = async (req, res) => {
             let finalItems = [{ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false }];
             try {
               const template = await ChecklistTemplate.findOne({ company_id: order.companyId, service_name: order.serviceType });
-              if (template && template.items && template.items.length > 0) {
-                finalItems = template.items.map(item => ({ title: item.title, description: item.description, label: item.title, isChecked: false }));
-                if (finalItems[0].title !== 'Client Form Filling') {
+               if (template && template.items && template.items.length > 0) {
+                  finalItems = template.items.map(item => ({
+                    title: item.title,
+                    description: item.description,
+                    label: item.title,
+                    isChecked: false,
+                    need_temporary: item.need_temporary || false,
+                    has_custom_input: item.has_custom_input || false,
+                    custom_input_label: item.custom_input_label || '',
+                    linked_document_templates: item.linked_document_templates || []
+                  }));
+                 if (finalItems[0].title !== 'Client Form Filling') {
                    finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
                 }
               }

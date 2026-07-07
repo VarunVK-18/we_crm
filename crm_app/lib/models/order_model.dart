@@ -23,6 +23,9 @@ class ServiceStep {
   final bool isCompleted;
   final bool isActionStep;
   final DateTime? completedAt;
+  final bool hasCustomInput;
+  final String customInputLabel;
+  final String customInputValue;
 
   const ServiceStep({
     required this.title,
@@ -30,6 +33,9 @@ class ServiceStep {
     required this.isCompleted,
     this.isActionStep = false,
     this.completedAt,
+    this.hasCustomInput = false,
+    this.customInputLabel = '',
+    this.customInputValue = '',
   });
 
   factory ServiceStep.fromMap(Map<String, dynamic> map) {
@@ -39,8 +45,13 @@ class ServiceStep {
       isCompleted: map['isCompleted'] == true || map['isChecked'] == true,
       isActionStep: map['isActionStep'] == true,
       completedAt: map['completedAt'] != null
-          ? DateTime.tryParse(map['completedAt'].toString())
-          : null,
+          ? DateTime.tryParse(map['completedAt'].toString())?.toLocal()
+          : (map['checkedAt'] != null
+              ? DateTime.tryParse(map['checkedAt'].toString())?.toLocal()
+              : null),
+      hasCustomInput: map['has_custom_input'] == true,
+      customInputLabel: map['custom_input_label']?.toString() ?? '',
+      customInputValue: map['custom_input_value']?.toString() ?? '',
     );
   }
 
@@ -50,6 +61,9 @@ class ServiceStep {
     'isCompleted': isCompleted,
     'isActionStep': isActionStep,
     'completedAt': completedAt?.toIso8601String(),
+    'has_custom_input': hasCustomInput,
+    'custom_input_label': customInputLabel,
+    'custom_input_value': customInputValue,
   };
 }
 
@@ -110,7 +124,7 @@ class TemporaryDocument {
       status: map['status']?.toString() ?? 'sent',
       replyDocumentId: map['reply_document_id']?.toString(),
       uploadedAt: map['uploadedAt'] != null 
-          ? DateTime.tryParse(map['uploadedAt'].toString()) 
+          ? DateTime.tryParse(map['uploadedAt'].toString())?.toLocal() 
           : null,
     );
   }
@@ -134,10 +148,10 @@ class FinalDocument {
       name: map['name']?.toString() ?? '',
       documentId: map['document_id']?.toString() ?? '',
       expiryDate: map['expiry_date'] != null 
-          ? DateTime.tryParse(map['expiry_date'].toString()) 
+          ? DateTime.tryParse(map['expiry_date'].toString())?.toLocal() 
           : null,
       uploadedAt: map['uploadedAt'] != null 
-          ? DateTime.tryParse(map['uploadedAt'].toString()) 
+          ? DateTime.tryParse(map['uploadedAt'].toString())?.toLocal() 
           : null,
     );
   }
@@ -228,7 +242,7 @@ class ServiceOrder {
       expertPhone: data['expertPhone']?.toString() ?? '',
       customServiceId: data['customServiceId']?.toString() ?? '',
       createdAt: data['createdAt'] != null
-          ? DateTime.tryParse(data['createdAt'].toString()) ?? DateTime.now()
+          ? DateTime.tryParse(data['createdAt'].toString())?.toLocal() ?? DateTime.now()
           : DateTime.now(),
       dealClosedAmount: double.tryParse(data['dealClosedAmount']?.toString() ?? '0.0') ?? 0.0,
       advanceAmountPaid: double.tryParse(data['advanceAmountPaid']?.toString() ?? '0.0') ?? 0.0,

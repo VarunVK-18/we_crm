@@ -131,7 +131,8 @@ const createChecklist = async (req, res) => {
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     res.status(201).json({ success: true, checklist: populated });
   } catch (error) {
@@ -193,6 +194,7 @@ const getChecklists = async (req, res) => {
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
       .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content')
       .sort({ createdAt: -1 });
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
@@ -203,7 +205,9 @@ const getChecklists = async (req, res) => {
       const template = await ChecklistTemplate.findOne({
         company_id: cl.company_id,
         service_name: cl.service_name
-      });
+      }).populate('items.linked_document_templates', 'name html_content');
+
+      let clUpdated = false;
 
       if (!cl.items || cl.items.length === 0) {
         if (template && template.items && template.items.length > 0) {
@@ -211,11 +215,28 @@ const getChecklists = async (req, res) => {
             title: item.title,
             description: item.description,
             label: item.title,
-            isChecked: false
+            isChecked: false,
+            need_temporary: item.need_temporary || false,
+            has_custom_input: item.has_custom_input || false,
+            custom_input_label: item.custom_input_label || '',
+            linked_document_templates: item.linked_document_templates || []
           }));
-          await cl.save();
+          clUpdated = true;
           console.log(`[DEBUG] Dynamically populated ${cl.items.length} items from template for checklist ID ${cl._id} (${cl.service_name})`);
         }
+      }
+
+
+      if (clUpdated) {
+        await cl.save();
+        // Reload checklist with populated references
+        cl = await Checklist.findById(cl._id)
+          .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
+          .populate('assigned_to', 'owner_name email role')
+          .populate('assigned_team', 'name')
+          .populate('created_by', 'owner_name email role')
+          .populate('items.checkedBy', 'owner_name')
+          .populate('items.linked_document_templates', 'name html_content');
       }
 
       let clObj = cl.toObject();
@@ -398,7 +419,8 @@ const toggleChecklistItem = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     await logActivity(
       req.user._id,
@@ -443,7 +465,8 @@ const addChecklistItem = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     res.status(200).json({ success: true, checklist: populated });
   } catch (error) {
@@ -717,7 +740,8 @@ const updateChecklist = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     res.status(200).json({ success: true, checklist: populated });
   } catch (error) {
@@ -757,7 +781,8 @@ const getMyChecklists = async (req, res) => {
             title: item.title,
             description: item.description,
             label: item.title,
-            isChecked: false
+            isChecked: false,
+            linked_document_templates: item.linked_document_templates || []
           }));
           await cl.save();
           console.log(`[DEBUG] getMyChecklists: Dynamically populated ${cl.items.length} items from template for checklist ID ${cl._id} (${cl.service_name})`);
@@ -1203,7 +1228,8 @@ const uploadFinalDocuments = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     res.status(200).json({ success: true, checklist: populated });
   } catch (error) {
@@ -1251,7 +1277,8 @@ const deleteFinalDocument = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     res.status(200).json({ success: true, checklist: populated });
   } catch (error) {
@@ -1506,7 +1533,8 @@ const reuploadFinalDocument = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     res.status(200).json({ success: true, checklist: populated });
   } catch (error) {
@@ -1806,7 +1834,8 @@ const addFinancialLog = async (req, res) => {
       .populate('assigned_to', 'owner_name email role')
       .populate('assigned_team', 'name')
       .populate('created_by', 'owner_name email role')
-      .populate('items.checkedBy', 'owner_name');
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
 
     res.status(201).json({ success: true, checklist: populated });
   } catch (error) {
@@ -1935,7 +1964,8 @@ const uploadTemporaryDocuments = async (req, res) => {
       checklist.temporary_documents.push({
         name: docName,
         document_id: doc._id,
-        uploadedAt: new Date()
+        uploadedAt: new Date(),
+        step_title: req.body.step_title || null
       });
     }
 
@@ -2029,7 +2059,8 @@ const attachDocumentAsTemporary = async (req, res) => {
       name,
       document_id,
       uploadedAt: new Date(),
-      status: 'sent'
+      status: 'sent',
+      step_title: req.body.step_title || null
     });
     await checklist.save();
     res.status(200).json({ success: true, message: 'Document attached as temporary document' });
@@ -2038,4 +2069,37 @@ const attachDocumentAsTemporary = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+const updateChecklistItemValue = async (req, res) => {
+  try {
+    const { id, itemIndex } = req.params;
+    const { value } = req.body;
+    const idx = parseInt(itemIndex, 10);
+
+    const checklist = await Checklist.findById(id);
+    if (!checklist) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    if (idx < 0 || idx >= checklist.items.length) {
+      return res.status(400).json({ success: false, message: 'Invalid item index' });
+    }
+
+    checklist.items[idx].custom_input_value = value || '';
+    await checklist.save();
+
+    const populated = await Checklist.findById(id)
+      .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
+      .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
+      .populate('created_by', 'owner_name email role')
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
+
+    res.status(200).json({ success: true, checklist: populated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports.attachDocumentAsTemporary = attachDocumentAsTemporary;
+module.exports.updateChecklistItemValue = updateChecklistItemValue;

@@ -17,6 +17,22 @@ const ChecklistItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  need_temporary: {
+    type: Boolean,
+    default: false
+  },
+  has_custom_input: {
+    type: Boolean,
+    default: false
+  },
+  custom_input_label: {
+    type: String,
+    default: ''
+  },
+  custom_input_value: {
+    type: String,
+    default: ''
+  },
   isChecked: {
     type: Boolean,
     default: false
@@ -30,6 +46,10 @@ const ChecklistItemSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
+  linked_document_templates: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DocumentTemplate'
+  }],
   expense: {
     amount: { type: Number, default: 0 },
     billUrl: { type: String, default: null },
@@ -109,7 +129,8 @@ const ChecklistSchema = new mongoose.Schema({
     uploadedAt: { type: Date, default: Date.now },
     status: { type: String, enum: ['sent', 'replied'], default: 'sent' },
     reply_document_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Document', default: null },
-    reply_uploaded_at: { type: Date, default: null }
+    reply_uploaded_at: { type: Date, default: null },
+    step_title: { type: String, default: null }
   }],
   notes: {
     type: String,

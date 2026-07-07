@@ -1,9 +1,9 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-const bool useLocalBackend = true;
+const bool useLocalBackend = false;
 const bool isEmulator = false;
-String localHostIP ='192.168.29.105';
+String localHostIP = '192.168.29.13';
 
 String getBaseUrl() {
   if (useLocalBackend) {

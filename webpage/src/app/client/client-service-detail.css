@@ -423,7 +423,6 @@
 }
 
 .checkbox-wrapper {
-  padding: 0 8px;
   background: var(--surface);
   z-index: 2;
   position: relative;

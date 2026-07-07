@@ -425,6 +425,11 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     return items.filter(i => this.isItemCompleted(i));
   }
 
+  hasCustomInputs(items: any[] | undefined): boolean {
+    if (!items) return false;
+    return items.some(i => i.has_custom_input);
+  }
+
   isItemCompleted(item: any): boolean {
     if (item.isChecked) return true;
     if (item.isActionStep) {

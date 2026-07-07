@@ -14,7 +14,23 @@ const TemplateItemSchema = new mongoose.Schema({
   getBill: {
     type: Boolean,
     default: false
-  }
+  },
+  need_temporary: {
+    type: Boolean,
+    default: false
+  },
+  has_custom_input: {
+    type: Boolean,
+    default: false
+  },
+  custom_input_label: {
+    type: String,
+    default: ''
+  },
+  linked_document_templates: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DocumentTemplate'
+  }]
 });
 
 const ChecklistTemplateSchema = new mongoose.Schema({

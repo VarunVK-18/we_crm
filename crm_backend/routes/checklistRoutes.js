@@ -14,7 +14,8 @@ const {
   addFinancialLog,
   uploadExpenseBill,
   getExpenses,
-  markExpensePaid
+  markExpensePaid,
+  updateChecklistItemValue
 } = require('../controllers/checklistController');
 
 const { checkUser, permit } = require('../middleware/rbac');
@@ -39,6 +40,7 @@ router.get('/checklists/expenses', checkUser, permit('admin', 'manager', 'client
 router.patch('/checklists/:id', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), updateChecklist);
 router.post('/checklists/:id/items', checkUser, permit('admin', 'client_manager'), addChecklistItem);
 router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
+router.patch('/checklists/:id/items/:itemIndex/value', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), updateChecklistItemValue);
 router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadFinalDocuments);
 router.delete('/checklists/:id/final-documents/:docId', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), deleteFinalDocument);
 router.put('/checklists/:id/final-documents/:docId/reupload', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.single('final_file'), reuploadFinalDocument);

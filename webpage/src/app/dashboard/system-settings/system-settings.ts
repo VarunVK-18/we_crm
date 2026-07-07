@@ -104,6 +104,10 @@ export class SystemSettings implements OnInit {
   newItemTitle = '';
   newItemDesc = '';
   newItemGetBill = false;
+  newItemNeedTemporary = false;
+  newItemHasCustomInput = false;
+  newItemCustomInputLabel = '';
+  newItemLinkedTemplates: string[] = [];
 
   calendarYear = '2026-2027';
   calendarFile: File | null = null;
@@ -229,7 +233,11 @@ export class SystemSettings implements OnInit {
             this.activeTemplateItems = (tmpl.items || []).map((i: any) => ({ 
               title: i.title, 
               description: i.description,
-              getBill: i.getBill || false
+              getBill: i.getBill || false,
+              need_temporary: i.need_temporary || false,
+              has_custom_input: i.has_custom_input || false,
+              custom_input_label: i.custom_input_label || '',
+              linked_document_templates: (i.linked_document_templates || []).map((dt: any) => dt._id || dt)
             }));
             this.activeTemplateExtractEnabled = !!tmpl.enable_document_extraction;
             this.activeTemplateNeedTemporary = !!tmpl.need_temporary;
@@ -257,11 +265,19 @@ export class SystemSettings implements OnInit {
       this.activeTemplateItems.push({
         title: this.newItemTitle.trim(),
         description: this.newItemDesc.trim(),
-        getBill: this.newItemGetBill
+        getBill: this.newItemGetBill,
+        need_temporary: this.newItemNeedTemporary,
+        has_custom_input: this.newItemHasCustomInput,
+        custom_input_label: this.newItemCustomInputLabel.trim(),
+        linked_document_templates: [...this.newItemLinkedTemplates]
       });
       this.newItemTitle = '';
       this.newItemDesc = '';
       this.newItemGetBill = false;
+      this.newItemNeedTemporary = false;
+      this.newItemHasCustomInput = false;
+      this.newItemCustomInputLabel = '';
+      this.newItemLinkedTemplates = [];
     }
   }
 
@@ -276,6 +292,10 @@ export class SystemSettings implements OnInit {
     item.editTitle = item.title;
     item.editDesc = item.description;
     item.editGetBill = item.getBill || false;
+    item.editNeedTemporary = item.need_temporary || false;
+    item.editHasCustomInput = item.has_custom_input || false;
+    item.editCustomInputLabel = item.custom_input_label || '';
+    item.editLinkedTemplates = [...(item.linked_document_templates || [])];
   }
 
   saveEdit(index: number) {
@@ -283,6 +303,10 @@ export class SystemSettings implements OnInit {
     item.title = item.editTitle;
     item.description = item.editDesc;
     item.getBill = item.editGetBill;
+    item.need_temporary = item.editNeedTemporary || false;
+    item.has_custom_input = item.editHasCustomInput || false;
+    item.custom_input_label = item.editCustomInputLabel || '';
+    item.linked_document_templates = [...(item.editLinkedTemplates || [])];
     item.isEditing = false;
   }
 
@@ -298,6 +322,10 @@ export class SystemSettings implements OnInit {
       title: item.title,
       description: item.description,
       getBill: item.getBill || false,
+      need_temporary: item.need_temporary || false,
+      has_custom_input: item.has_custom_input || false,
+      custom_input_label: item.custom_input_label || '',
+      linked_document_templates: item.linked_document_templates || [],
       oldTitle: item.oldTitle
     }));
 
@@ -328,6 +356,57 @@ export class SystemSettings implements OnInit {
     } else {
       this.mappedTemplateIds.set([...current, id]);
     }
+  }
+
+  getLinkedTemplateName(id: string): string {
+    if (!id) return '';
+    const templates = this.docTemplates();
+    const found = templates.find(t => t._id === id);
+    return found ? found.name : '';
+  }
+
+  isItemTemplateMapped(item: any, tmplId: string, isEditingMode: boolean): boolean {
+    const list = isEditingMode ? item.editLinkedTemplates : item.linked_document_templates;
+    return (list || []).includes(tmplId);
+  }
+
+  toggleItemTemplateMapping(item: any, tmplId: string, isEditingMode: boolean) {
+    if (isEditingMode) {
+      if (!item.editLinkedTemplates) item.editLinkedTemplates = [];
+      if (item.editLinkedTemplates.includes(tmplId)) {
+        item.editLinkedTemplates = item.editLinkedTemplates.filter((x: string) => x !== tmplId);
+      } else {
+        item.editLinkedTemplates = [...item.editLinkedTemplates, tmplId];
+      }
+    } else {
+      if (!item.linked_document_templates) item.linked_document_templates = [];
+      if (item.linked_document_templates.includes(tmplId)) {
+        item.linked_document_templates = item.linked_document_templates.filter((x: string) => x !== tmplId);
+      } else {
+        item.linked_document_templates = [...item.linked_document_templates, tmplId];
+      }
+    }
+  }
+
+  isNewItemTemplateMapped(tmplId: string): boolean {
+    return this.newItemLinkedTemplates.includes(tmplId);
+  }
+
+  toggleNewItemTemplateMapping(tmplId: string) {
+    if (this.newItemLinkedTemplates.includes(tmplId)) {
+      this.newItemLinkedTemplates = this.newItemLinkedTemplates.filter(x => x !== tmplId);
+    } else {
+      this.newItemLinkedTemplates = [...this.newItemLinkedTemplates, tmplId];
+    }
+  }
+
+  getLinkedTemplatesSummary(templateIds: string[]): string {
+    if (!templateIds || templateIds.length === 0) return 'None';
+    const templates = this.docTemplates();
+    return templateIds.map(id => {
+      const found = templates.find(t => t._id === id);
+      return found ? found.name : '';
+    }).filter(name => !!name).join(', ');
   }
 
   onCalendarFileSelected(event: any) {
