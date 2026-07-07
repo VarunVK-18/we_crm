@@ -28,8 +28,8 @@
           
           <div class="form-group full-width">
             <label>Company Name *</label>
-            <input type="text" [(ngModel)]="companyName" name="companyName" required pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #companyNameField="ngModel" style="text-transform: uppercase;">
-                  <div *ngIf="companyNameField.invalid && companyNameField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
+            <input type="text" [(ngModel)]="companyName" name="companyName" required #companyNameField="ngModel">
+                  <div *ngIf="companyNameField.invalid && companyNameField.touched" class="error-msg">This field is required</div>
           </div>
 
           <div class="form-group file-upload-group full-width">
@@ -137,8 +137,8 @@
             </div>
             <div class="form-group">
               <label>Company Mail ID *</label>
-              <input type="email" [(ngModel)]="companyEmail" name="companyEmail" required pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #companyEmailField="ngModel" style="text-transform: uppercase;">
-                  <div *ngIf="companyEmailField.invalid && companyEmailField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
+              <input type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$" [(ngModel)]="companyEmail" name="companyEmail" required #companyEmailField="ngModel">
+                  <div *ngIf="companyEmailField.invalid && companyEmailField.touched" class="error-msg">Invalid email format</div>
             </div>
           </div>
 

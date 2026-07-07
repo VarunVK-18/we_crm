@@ -33,8 +33,8 @@
         <div class="form-grid">
           <div class="form-group full-width">
             <label>Proposed Company Name *</label>
-            <input type="text" [(ngModel)]="companyName" name="companyName" required placeholder="e.g. Softrate India Private Limited" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #companyNameField="ngModel" style="text-transform: uppercase;">
-                  <div *ngIf="companyNameField.invalid && companyNameField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
+            <input type="text" [(ngModel)]="companyName" name="companyName" required placeholder="e.g. Softrate India Private Limited" #companyNameField="ngModel">
+                  <div *ngIf="companyNameField.invalid && companyNameField.touched" class="error-msg">This field is required</div>
           </div>
           <div class="form-group full-width">
             <label>Main Business Activity *</label>
@@ -81,8 +81,8 @@
 
           <div class="form-group">
             <label>Company Email</label>
-            <input type="email" id="companyEmailInput" [(ngModel)]="companyEmail" name="companyEmail" placeholder="info@company.com" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #companyEmailField="ngModel" style="text-transform: uppercase;">
-                  <div *ngIf="companyEmailField.invalid && companyEmailField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
+            <input type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$" id="companyEmailInput" [(ngModel)]="companyEmail" name="companyEmail" placeholder="info@company.com" #companyEmailField="ngModel">
+                  <div *ngIf="companyEmailField.invalid && companyEmailField.touched" class="error-msg">Invalid email format</div>
           </div>
           <div class="form-group">
             <label>Company Phone</label>
