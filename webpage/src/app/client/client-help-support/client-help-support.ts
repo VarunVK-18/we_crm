@@ -37,6 +37,8 @@ export class ClientHelpSupport implements OnInit {
   // KPI State
   tickets = signal<any[]>([]);
   activeOrders = signal<any[]>([]);
+  completedOrders = signal<any[]>([]);
+  showCompletedServicesModal = signal(false);
 
   // Computed KPIs
   openTicketsCount = computed(() => this.tickets().filter(t => t.status === 'Pending' || t.status === 'In Progress').length);
@@ -122,12 +124,16 @@ export class ClientHelpSupport implements OnInit {
       next: (res: any) => {
         const checklists = res.checklists || [];
         const active: any[] = [];
+        const completed: any[] = [];
         for (const c of checklists) {
-          if (c.status !== 'completed' && c.assigned_to && c.assigned_to.role !== 'client_manager') {
+          if (c.status === 'completed') {
+            completed.push(c);
+          } else if (c.assigned_to && c.assigned_to.role !== 'client_manager') {
             active.push(c);
           }
         }
         this.activeOrders.set(active);
+        this.completedOrders.set(completed);
       },
       error: (err) => console.error('Failed to fetch orders:', err)
     });
@@ -209,6 +215,19 @@ export class ClientHelpSupport implements OnInit {
     const message = 'Hi Wealth Empires Support, I need help with...';
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
+  }
+
+  openLiveChat() {
+    this.showCompletedServicesModal.set(true);
+  }
+
+  closeLiveChatModal() {
+    this.showCompletedServicesModal.set(false);
+  }
+
+  goToServiceChat(order: any) {
+    this.showCompletedServicesModal.set(false);
+    this.router.navigate(['/client/service', order._id || order.id], { queryParams: { chat: 'open' } });
   }
 
   callSupport() {

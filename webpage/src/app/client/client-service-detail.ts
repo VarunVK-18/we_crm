@@ -59,6 +59,13 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         }
       }, 2000);
     });
+
+    this.route.queryParams.subscribe(q => {
+      if (q['chat'] === 'open') {
+        this.isChatOpen.set(true);
+        this.fetchChatMessages();
+      }
+    });
   }
 
   fetchClientManager() {

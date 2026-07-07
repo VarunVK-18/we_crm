@@ -182,6 +182,9 @@ const getChecklists = async (req, res) => {
       filter.client_id = req.query.client_id;
     }
 
+    // Filter out Live Chat Support so it doesn't appear in the Service Tracker table
+    filter.service_name = { $ne: 'Live Chat Support' };
+
     const checklists = await Checklist.find(filter)
       .populate('client_id', 'custom_client_id owner_name company_name email onboarding_documents')
       .populate('assigned_to', 'owner_name email role')
@@ -585,7 +588,13 @@ const getMyChecklists = async (req, res) => {
   try {
     const clientId = req.user._id;
 
-    const checklists = await Checklist.find({ client_id: clientId })
+    // Filter out Live Chat Support from the client's service list
+    const filter = { 
+      client_id: clientId,
+      service_name: { $ne: 'Live Chat Support' }
+    };
+
+    const checklists = await Checklist.find(filter)
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
       .select('service_name company_id custom_service_id status stage items requested_documents temporary_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount advanceAmountPaid details action_required')

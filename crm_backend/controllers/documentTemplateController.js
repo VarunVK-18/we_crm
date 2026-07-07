@@ -17,6 +17,9 @@ async function buildPlaceholderMap(checklist) {
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 
+  const directorNames = client?.directors?.map(d => d.fullName).filter(Boolean).join(', ') || '';
+  const dinNumbers = client?.directors?.map(d => d.din).filter(Boolean).join(', ') || '';
+
   return {
     '{{client_name}}': client?.owner_name || '',
     '{{company_name}}': client?.company_name || '',
@@ -28,6 +31,8 @@ async function buildPlaceholderMap(checklist) {
     '{{cin}}': client?.cin || '',
     '{{tan}}': client?.tan || '',
     '{{director_count}}': String(client?.director_count || ''),
+    '{{director_name}}': directorNames,
+    '{{din_number}}': dinNumbers,
     '{{business_type}}': client?.business_type || '',
     '{{service_name}}': checklist?.service_name || '',
     '{{service_id}}': checklist?.custom_service_id || '',

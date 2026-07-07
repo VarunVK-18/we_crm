@@ -31,13 +31,13 @@
               </div>
             </div>
 
-            <div class="action-card" (click)="openWhatsApp()">
+            <div class="action-card" (click)="openLiveChat()">
               <div class="action-icon-wrapper bg-emerald">
                 <hugeicons-icon [icon]="BubbleChatIcon" [size]="24" color="#10b981" [strokeWidth]="2"></hugeicons-icon>
               </div>
               <div class="action-details">
-                <h3>WhatsApp Support</h3>
-                <p>Instant chat. Response &lt; 5 mins.</p>
+                <h3>Live Chat</h3>
+                <p>Chat about your completed services.</p>
               </div>
             </div>
             
@@ -188,6 +188,51 @@
         </div>
 
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Completed Services -->
+<div class="modal-overlay" *ngIf="showCompletedServicesModal()">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h2>Select a Service</h2>
+      <button class="icon-btn" (click)="closeLiveChatModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body" style="padding: 24px;">
+      <p style="color: var(--text-secondary); margin-bottom: 24px;">Choose a completed service to continue your chat history or ask new questions.</p>
+      
+      @if (completedOrders().length === 0) {
+        <div style="text-align: center; padding: 32px 0;">
+          <p style="color: var(--text-secondary);">No completed services found.</p>
+          <p style="color: var(--text-secondary); margin-top: 8px;">For ongoing services, please use the Service Tracker.</p>
+        </div>
+      } @else {
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          @for (order of completedOrders(); track order._id || order.id) {
+            <div class="service-item" 
+                 style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+                 onmouseover="this.style.borderColor='var(--color-primary)'; this.style.backgroundColor='var(--bg-secondary)';"
+                 onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='transparent';"
+                 (click)="goToServiceChat(order)">
+              <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="background: rgba(99, 102, 241, 0.1); padding: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <span class="material-symbols-outlined" style="color: #6366f1;">check_circle</span>
+                </div>
+                <div>
+                  <h4 style="margin: 0; font-size: 15px; color: var(--text-primary); font-weight: 600;">{{ order.service_name }}</h4>
+                  <p style="margin: 4px 0 0; font-size: 13px; color: var(--text-secondary);">
+                    {{ order.details?.entityName || order.company_name || order.client_id?.company_name || 'Default Entity' }}
+                  </p>
+                </div>
+              </div>
+              <span class="material-symbols-outlined" style="color: var(--text-secondary);">chevron_right</span>
+            </div>
+          }
+        </div>
+      }
     </div>
   </div>
 </div>

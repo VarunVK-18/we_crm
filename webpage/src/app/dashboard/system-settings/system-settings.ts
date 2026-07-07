@@ -426,6 +426,8 @@ export class SystemSettings implements OnInit {
     { token: '{{cin}}', label: 'CIN' },
     { token: '{{tan}}', label: 'TAN' },
     { token: '{{director_count}}', label: 'Director Count' },
+    { token: '{{director_name}}', label: 'Director Name(s)' },
+    { token: '{{din_number}}', label: 'DIN Number(s)' },
     { token: '{{business_type}}', label: 'Business Type' },
     { token: '{{service_name}}', label: 'Service Name' },
     { token: '{{service_id}}', label: 'Service ID' },

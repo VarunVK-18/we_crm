@@ -1408,23 +1408,37 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.editorHtml.set('');
   }
 
+  updateCustomInputsFromHtml(html: string) {
+    const regex = /\{\{input:([^}]+)\}\}/g;
+    const currentInputs = this.customInputs();
+    const newInputs: any[] = [];
+    let match;
+    const seen = new Set();
+    
+    // First, temporarily clean HTML tags inside brackets to detect them properly
+    const cleanHtml = html.replace(/\{\{([\s\S]*?)\}\}/g, (m, p1) => {
+      const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+      return `{{${cleanContent}}}`;
+    });
+
+    while ((match = regex.exec(cleanHtml)) !== null) {
+      const fullToken = match[0];
+      const label = match[1];
+      if (!seen.has(fullToken)) {
+        seen.add(fullToken);
+        const existing = currentInputs.find(i => i.token === fullToken);
+        newInputs.push({ token: fullToken, label: label, value: existing ? existing.value : '' });
+      }
+    }
+    this.customInputs.set(newInputs);
+  }
+
   selectDocTemplate(tmpl: any) {
     this.selectedDocTemplate.set(tmpl);
-    this.editorHtml.set(tmpl ? (tmpl.html_content || '') : '');
-    if (tmpl && tmpl.html_content) {
-      const regex = /\{\{input:([^}]+)\}\}/g;
-      const inputs: any[] = [];
-      let match;
-      const seen = new Set();
-      while ((match = regex.exec(tmpl.html_content)) !== null) {
-        const fullToken = match[0];
-        const label = match[1];
-        if (!seen.has(fullToken)) {
-          seen.add(fullToken);
-          inputs.push({ token: fullToken, label: label, value: '' });
-        }
-      }
-      this.customInputs.set(inputs);
+    const html = tmpl ? (tmpl.html_content || '') : '';
+    this.editorHtml.set(html);
+    if (html) {
+      this.updateCustomInputsFromHtml(html);
     } else {
       this.customInputs.set([]);
     }
@@ -1443,6 +1457,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   onGenerateEditorInput(event: Event) {
     const el = event.target as HTMLElement;
     this.editorHtml.set(el.innerHTML);
+    this.updateCustomInputsFromHtml(el.innerHTML);
   }
 
   generateEditorCmd(command: string) {
@@ -1451,6 +1466,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (el) {
       el.focus();
       this.editorHtml.set(el.innerHTML);
+      this.updateCustomInputsFromHtml(el.innerHTML);
     }
   }
 
@@ -1475,6 +1491,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       if (el) {
         el.focus();
         this.editorHtml.set(el.innerHTML);
+        this.updateCustomInputsFromHtml(el.innerHTML);
       }
       select.value = "";
     }
@@ -1488,6 +1505,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         el.focus();
         document.execCommand('insertText', false, `{{${name}}}`);
         this.editorHtml.set(el.innerHTML);
+        this.updateCustomInputsFromHtml(el.innerHTML);
       }
     }
   }
@@ -1514,7 +1532,13 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       const el = document.getElementById('generate-template-editor');
       if (el) currentHtml = el.innerHTML;
     }
+    
     if (currentHtml) {
+      // Fix broken placeholders by removing HTML tags injected inside the curly braces
+      currentHtml = currentHtml.replace(/\{\{([\s\S]*?)\}\}/g, (match, p1) => {
+        const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+        return `{{${cleanContent}}}`;
+      });
       payload.override_html = currentHtml;
     }
 

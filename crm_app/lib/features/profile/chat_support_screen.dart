@@ -9,9 +9,118 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/orders_provider.dart';
 
 class ChatSupportScreen extends ConsumerWidget {
   const ChatSupportScreen({super.key});
+
+  void _showCompletedServices(BuildContext context, WidgetRef ref) {
+    final completedOrders = ref.read(completeOrdersProvider);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return Container(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Select a Service',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.deepTeal,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Text(
+                  'Choose a completed service to continue your chat history or ask new questions.',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (completedOrders.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  child: Center(
+                    child: Text(
+                      'No completed services found. For ongoing services, please use the Service Tracker.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.grey, fontSize: 15),
+                    ),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: completedOrders.length,
+                    separatorBuilder: (c, i) => const Divider(height: 1),
+                    itemBuilder: (c, i) {
+                      final order = completedOrders[i];
+                      return ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                        leading: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.corporateBlue.withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(LucideIcons.checkCircle, color: AppTheme.corporateBlue, size: 20),
+                        ),
+                        title: Text(
+                          order.serviceType,
+                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                        ),
+                        subtitle: Text(
+                          order.entityName,
+                          style: const TextStyle(fontSize: 13, color: Colors.grey),
+                        ),
+                        trailing: const Icon(LucideIcons.chevronRight, size: 20, color: Colors.grey),
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => OrderChatScreen(
+                                orderId: order.id,
+                                serviceName: order.serviceType,
+                                assignedExpert: order.assignedExpert,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -90,52 +199,9 @@ class ChatSupportScreen extends ConsumerWidget {
               title: 'Live Chat',
               subtitle: 'Connect with a support agent instantly',
               color: AppTheme.corporateBlue,
-              onTap: () async {
+              onTap: () {
                 if (user != null) {
-                  // Show loading indicator
-                  showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (ctx) => const Center(child: CircularProgressIndicator(color: AppTheme.corporateBlue)),
-                  );
-
-                  try {
-                    final response = await http.post(
-                      Uri.parse('$kBaseUrl/api/chat/support/initiate'),
-                      headers: {'Content-Type': 'application/json'},
-                      body: jsonEncode({'userId': user.id}),
-                    );
-
-                    // Dismiss loading
-                    if (context.mounted) Navigator.pop(context);
-
-                    if (response.statusCode == 200) {
-                      final data = jsonDecode(response.body);
-                      final orderId = data['orderId'];
-                      
-                      if (context.mounted) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OrderChatScreen(
-                              orderId: orderId,
-                              serviceName: 'Live Chat Support',
-                              assignedExpert: 'Support Team',
-                            ),
-                          ),
-                        );
-                      }
-                    } else {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed: ${response.statusCode} - ${response.body}')));
-                      }
-                    }
-                  } catch (e) {
-                    if (context.mounted) Navigator.pop(context);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
-                    }
-                  }
+                  _showCompletedServices(context, ref);
                 }
               },
             ),

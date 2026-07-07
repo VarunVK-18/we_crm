@@ -261,39 +261,3 @@ exports.markAsSeen = async (req, res) => {
   }
 };
 
-exports.initiateSupportChat = async (req, res) => {
-  try {
-    const { userId } = req.body;
-    if (!userId) return res.status(400).json({ success: false, message: 'userId is required' });
-
-    let chatOrder = await Checklist.findOne({
-      client_id: userId,
-      service_name: 'Live Chat Support'
-    });
-
-    if (!chatOrder) {
-      const user = await User.findById(userId);
-      if (!user) return res.status(404).json({ success: false, message: 'User not found' });
-
-      chatOrder = new Checklist({
-        company_id: user.company_id,
-        client_id: user._id,
-        service_name: 'Live Chat Support',
-        created_by: user.created_by || user._id,
-        assigned_to: user.assigned_to,
-        status: 'pending',
-        stage: 'quotePending',
-        details: {
-          requestType: 'Support Chat',
-          entityName: user.company_name || 'Individual'
-        }
-      });
-      await chatOrder.save();
-    }
-
-    res.status(200).json({ success: true, orderId: chatOrder._id.toString() });
-  } catch (error) {
-    console.error('Error initiating support chat:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-};

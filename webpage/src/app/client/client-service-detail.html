@@ -385,26 +385,45 @@
 
         <div class="message-row"
           [class.is-client]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_')">
-          @if (msg.senderRole.startsWith('director_')) {
-          <div class="sender-info" style="justify-content: flex-end; margin-bottom: 4px;">
-            <span class="sender-role" style="background: #ffedd5; color: #ea580c;">{{ formatRole(msg.senderRole)
-              }}</span>
-          </div>
-          }
-          <div class="message-bubble"
-            [class.is-client]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_')">
-            @if (msg.senderRole !== 'client' && !msg.senderRole.startsWith('director_')) {
-            <div class="bubble-sender-name">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</div>
-            }
-            <p>{{ msg.content }}</p>
-            <div class="message-meta">
-              <span>{{ msg.createdAt | date:'shortTime' }}</span>
-              @if (msg.senderRole === 'client' || msg.senderRole.startsWith('director_')) {
-              <span class="material-symbols-outlined tick-icon" [class.read]="msg.seen">{{ msg.seen ? 'done_all' :
-                'check' }}</span>
-              }
+          
+          @if (msg.senderRole !== 'client' && !msg.senderRole.startsWith('director_')) {
+          <div class="message-wrapper" style="display: flex; gap: 8px; align-items: flex-end; width: 100%;">
+            <div class="sender-avatar" style="width: 28px; height: 28px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-bottom: 8px;">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">person</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-start; max-width: calc(100% - 36px);">
+              <div class="sender-info-top" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; padding-left: 4px;">
+                <span style="color: #3b82f6; font-size: 13px; font-weight: 600;">{{ msg.senderId?.owner_name || msg.senderId?.name || 'Expert' }}</span>
+                <span style="font-size: 11px; padding: 2px 8px; background: #e0f2fe; color: #0369a1; border-radius: 12px; font-weight: 600;">{{ formatRole(msg.senderId?.role || msg.senderRole) }}</span>
+              </div>
+              <div class="message-bubble">
+                <p>{{ msg.content }}</p>
+                <div class="message-meta">
+                  <span>{{ msg.createdAt | date:'shortTime' }}</span>
+                </div>
+              </div>
             </div>
           </div>
+          } @else {
+          <div class="message-wrapper" style="display: flex; flex-direction: column; align-items: flex-end; width: 100%;">
+            @if (msg.senderRole.startsWith('director_')) {
+            <div class="sender-info-top" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; padding-right: 4px;">
+              <span style="font-size: 11px; padding: 2px 8px; background: #ffedd5; color: #ea580c; border-radius: 12px; font-weight: 600;">{{ formatRole(msg.senderRole) }}</span>
+            </div>
+            } @else {
+            <div class="sender-info-top" style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; padding-right: 4px;">
+              <span style="font-size: 11px; padding: 2px 8px; background: #f1f5f9; color: #475569; border-radius: 12px; font-weight: 600;">Client</span>
+            </div>
+            }
+            <div class="message-bubble is-client">
+              <p>{{ msg.content }}</p>
+              <div class="message-meta">
+                <span>{{ msg.createdAt | date:'shortTime' }}</span>
+                <span class="material-symbols-outlined tick-icon" [class.read]="msg.seen">{{ msg.seen ? 'done_all' : 'check' }}</span>
+              </div>
+            </div>
+          </div>
+          }
         </div>
         }
 
