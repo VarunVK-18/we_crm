@@ -1,9 +1,10 @@
-node_modules
-npm-debug.log
+**/node_modules
+**/dist
+**/build
 .DS_Store
 .git
 .idea
 .vscode
-dist
-build
 .env
+crm_app
+crm_backend/uploads

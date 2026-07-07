@@ -83,10 +83,12 @@ export class BucketComponent implements OnInit {
 
     if (advanceAmount > dealAmount) return false;
 
-    if (!this.isOcrVerified()) return false;
+    const requireVerification = this.systemSettings()?.require_payment_verification !== false;
+    if (requireVerification && !this.isOcrVerified()) return false;
 
     return true;
   });
+  systemSettings = signal<any>(null);
   systemBankSettings = signal<any>(null);
 
   requiresDirectorCount = computed(() => {
@@ -120,8 +122,9 @@ export class BucketComponent implements OnInit {
           this.bucketTeams.set(allTeams);
         }
       });
-      this.api.get<any>('settings/bank').subscribe(res => {
-        this.systemBankSettings.set(res.settings);
+      this.api.get<any>('settings').subscribe(res => {
+        this.systemSettings.set(res.settings || {});
+        this.systemBankSettings.set(res.settings?.bank_details || {});
       });
     }
 
@@ -307,6 +310,9 @@ export class BucketComponent implements OnInit {
           this.api.post('finance/logs', logPayload).subscribe();
         }
 
+        bucketCache.requests = null;
+        bucketCache.jobs = null;
+        bucketCache.lastFetchTime = 0;
         this.claimingId.set(null);
         this.selectedBucketReq.set(null);
         this.loadData();
@@ -321,7 +327,12 @@ export class BucketComponent implements OnInit {
   declineRequest(id: string) {
     if (!confirm('Decline this bucket request?')) return;
     this.api.post<any>(`bucket/requests/${id}/decline`, {}).subscribe({
-      next: () => this.loadData(),
+      next: () => {
+        bucketCache.requests = null;
+        bucketCache.jobs = null;
+        bucketCache.lastFetchTime = 0;
+        this.loadData();
+      },
       error: (err) => alert(err?.error?.message || 'Failed to decline.')
     });
   }
@@ -330,6 +341,9 @@ export class BucketComponent implements OnInit {
     this.assigningId.set(id);
     this.api.post<any>(`bucket/requests/${id}/self-assign`, {}).subscribe({
       next: () => {
+        bucketCache.requests = null;
+        bucketCache.jobs = null;
+        bucketCache.lastFetchTime = 0;
         this.assigningId.set(null);
         this.loadData();
       },

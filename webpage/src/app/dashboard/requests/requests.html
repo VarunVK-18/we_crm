@@ -173,7 +173,8 @@
               <label style="font-size: 13px; font-weight: 600; color: #475569;">Advance Amount Paid (INR)</label>
               <div style="display: flex; gap: 8px;">
                 <input type="text" style="flex: 1; width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-weight: 600; outline: none; box-sizing: border-box; min-width: 0;" placeholder="Amount"
-                  [value]="getFormattedAdvance(selectedOrderForApproval()._id)" (input)="onAdvanceChange(selectedOrderForApproval()._id, $event)">
+                  [value]="getFormattedAdvance(selectedOrderForApproval()._id)" (input)="onAdvanceChange(selectedOrderForApproval()._id, $event)"
+                  [readonly]="requirePaymentVerification()">
                 
                 <!-- OCR Button -->
                 <div style="position: relative; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: #eff6ff; border: 1px dashed #93c5fd; border-radius: 8px; cursor: pointer; flex-shrink: 0;" title="Upload Receipt for OCR">
@@ -210,7 +211,12 @@
           <button (click)="closeApproveModal()" style="padding: 10px 16px; background: white; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; font-weight: 600; color: #475569; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">
             Cancel
           </button>
-          <button (click)="assignEmployee(selectedOrderForApproval()._id)" [disabled]="isAssigningOrder()[selectedOrderForApproval()._id]" style="padding: 10px 24px; background: #0f172a; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; min-width: 140px; transition: all 0.2s;" [style.opacity]="isAssigningOrder()[selectedOrderForApproval()._id] ? '0.7' : '1'" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+          <button (click)="assignEmployee(selectedOrderForApproval()._id)" 
+                  [disabled]="!isApproveFormValid(selectedOrderForApproval()._id) || isAssigningOrder()[selectedOrderForApproval()._id]" 
+                  style="padding: 10px 24px; background: #0f172a; border: none; border-radius: 6px; font-size: 14px; font-weight: 600; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; min-width: 140px; transition: all 0.2s;" 
+                  [style.opacity]="(!isApproveFormValid(selectedOrderForApproval()._id) || isAssigningOrder()[selectedOrderForApproval()._id]) ? '0.5' : '1'" 
+                  onmouseover="this.style.background='#1e293b'" 
+                  onmouseout="this.style.background='#0f172a'">
             @if (isAssigningOrder()[selectedOrderForApproval()._id]) {
               <div class="dot-spinner" style="transform: scale(0.6);">
                 <span class="dot"></span><span class="dot"></span><span class="dot"></span>

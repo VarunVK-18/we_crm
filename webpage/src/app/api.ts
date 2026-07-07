@@ -6,8 +6,8 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class Api {
-  private readonly baseUrl = 'http://localhost:5001/api';
-  // private readonly baseUrl = 'https://wecrm.wealthempires.in/api';
+  // private readonly baseUrl = 'http://localhost:5001/api';
+  private readonly baseUrl = 'https://wecrm.wealthempires.in/api';
 
 
   get serverUrl(): string {

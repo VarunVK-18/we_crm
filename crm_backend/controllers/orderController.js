@@ -178,9 +178,8 @@ exports.updateOrder = async (req, res) => {
             custom_service_id = await getNextServiceId(compId);
           } catch (e) { console.error('Failed to generate custom_service_id', e); }
 
-          const checklist = await Checklist.create({
+          const checklistPayload = {
             company_id: order.companyId,
-            custom_service_id,
             client_id: bucketReq.client_id,
             service_name: bucketReq.service_name,
             assigned_to: req.user._id,
@@ -197,7 +196,11 @@ exports.updateOrder = async (req, res) => {
               Status: 'Pending Client Form Submission',
               'Next Step': 'Assign expert to unlock form for client',
             }
-          });
+          };
+          if (custom_service_id) {
+            checklistPayload.custom_service_id = custom_service_id;
+          }
+          const checklist = await Checklist.create(checklistPayload);
           checklistId = checklist._id;
         }
 
@@ -268,9 +271,8 @@ exports.updateOrder = async (req, res) => {
               }
             } catch (e) { console.error("Failed custom_service_id:", e); }
 
-            const checklist = await Checklist.create({
+            const checklistPayload = {
               company_id: order.companyId,
-              custom_service_id,
               client_id: order.clientUid,
               service_name: order.serviceType,
               assigned_to: assignedEmployee._id,
@@ -287,7 +289,11 @@ exports.updateOrder = async (req, res) => {
                 'Next Step': 'Assign expert to unlock form for client',
               },
               recommended_plan: updateData.recommended_plan || undefined
-            });
+            };
+            if (custom_service_id) {
+              checklistPayload.custom_service_id = custom_service_id;
+            }
+            const checklist = await Checklist.create(checklistPayload);
 
             // Also mark the bucket request as claimed by manager if it exists
             await BucketRequest.updateOne(

@@ -97,10 +97,8 @@ const claimBucketRequest = async (req, res) => {
     // Derive the entity name from the bucket request (prefer company name)
     const entityName = bucketReq.client_company_name || bucketReq.client_name || bucketReq.client_id?.company_name || bucketReq.client_id?.owner_name || 'Client';
 
-    // Create checklist assigned to the claiming client_manager
-    const checklist = await Checklist.create({
+    const checklistPayload = {
       company_id,
-      custom_service_id,
       client_id: bucketReq.client_id._id,
       service_name: bucketReq.service_name,
       assigned_to: managerId,
@@ -121,7 +119,11 @@ const claimBucketRequest = async (req, res) => {
         'Next Step': 'Assign expert to unlock form for client',
         ...(directorCount ? { numberOfDirectors: Number(directorCount) } : {})
       }
-    });
+    };
+    if (custom_service_id) {
+      checklistPayload.custom_service_id = custom_service_id;
+    }
+    const checklist = await Checklist.create(checklistPayload);
 
     // Update bucket request
     bucketReq.status = 'claimed_by_manager';

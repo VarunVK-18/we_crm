@@ -31,8 +31,12 @@
     <table class="we-table">
       <thead>
         <tr>
-          <th>Client Details</th>
-          <th>Service Details</th>
+          <th>Ser-ID</th>
+          <th>Service Name</th>
+          <th>Company Name</th>
+          <th>Client ID</th>
+          <th>Client Name</th>
+          <th>Upcoming Task</th>
           <th>Created On</th>
           <th>Updated On</th>
           <th>Handled By</th>
@@ -42,27 +46,33 @@
         @for (item of filteredChecklists(); track item._id) {
         <tr>
           <td>
-            <div style="font-weight: 600; font-size: 14px;">{{ item.client_id?.owner_name || 'Unknown Client' }}</div>
-            @if (item.details?.entityName || item.details?.entity_name || item.client_id?.company_name) {
-              <div style="font-size: 13px; color: #475569; margin-top: 2px;">{{ item.details?.entityName || item.details?.entity_name || item.client_id?.company_name }}</div>
-            }
-            <div style="font-size: 12px; color: #64748b; font-family: monospace; margin-top: 4px;" title="Client ID">{{
-              item.client_id?.custom_client_id || 'N/A' }}</div>
+            <div style="font-weight: 600; font-family: monospace; font-size: 13px; color: #475569;">
+              {{ item.custom_service_id || 'N/A' }}
+            </div>
           </td>
           <td>
-            <div style="font-weight: 600; color: #2563eb;">{{ item.service_name || item.checklist_name || 'Unknown Service' }}</div>
-            <div style="font-size: 13px; color: #f59e0b; margin-top: 4px; display: flex; align-items: center; gap: 4px;">
+            <div style="font-weight: 600; color: #2563eb; font-size: 14px;">{{ item.service_name || item.checklist_name || 'Unknown Service' }}</div>
+          </td>
+          <td>
+            <div style="font-size: 13px; font-weight: 500; color: #334155;">{{ item.details?.entityName || item.details?.entity_name || item.client_id?.company_name || 'N/A' }}</div>
+          </td>
+          <td>
+            <div style="font-size: 12px; color: #64748b; font-family: monospace;">{{ item.client_id?.custom_client_id || 'N/A' }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 500; font-size: 13px; color: #1e293b;">{{ item.client_id?.owner_name || 'Unknown Client' }}</div>
+          </td>
+          <td>
+            <div style="font-size: 13px; color: #f59e0b; font-weight: 500; display: flex; align-items: center; gap: 4px;">
               <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
               Next: {{ getNextTask(item.items) }}
             </div>
-            <div style="font-size: 12px; color: #64748b; font-family: monospace; margin-top: 4px;" title="Service ID">{{
-              item.custom_service_id || 'N/A' }}</div>
           </td>
           <td>
-            <div style="font-size: 13px;">{{ formatDate(item.createdAt) }}</div>
+            <div style="font-size: 13px; color: #475569;">{{ formatDate(item.createdAt) }}</div>
           </td>
           <td>
-            <div style="font-size: 13px;">{{ formatDate(item.updatedAt) }}</div>
+            <div style="font-size: 13px; color: #475569;">{{ formatDate(item.updatedAt) }}</div>
           </td>
           <td>
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -74,8 +84,7 @@
               <div>
                 <div style="font-size: 13px; font-weight: 500;">{{ item.assigned_to?.owner_name || 'Assigned User' }}
                 </div>
-                <div style="font-size: 11px; color: #64748b;">{{ item.assigned_to?.role === 'filling_staff' ? 'Filing
-                  Staff' : item.assigned_to?.role }}</div>
+                <div style="font-size: 11px; color: #64748b;">{{ item.assigned_to?.role === 'filling_staff' ? 'Filing Staff' : item.assigned_to?.role }}</div>
               </div>
               } @else {
               <span style="font-size: 13px; color: #94a3b8; font-style: italic;">Unassigned</span>

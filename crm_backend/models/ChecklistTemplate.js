@@ -32,6 +32,10 @@ const ChecklistTemplateSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  need_temporary: {
+    type: Boolean,
+    default: false
+  },
   sop_document: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Document'

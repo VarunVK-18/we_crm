@@ -69,6 +69,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
     }
     .we-table {
       width: 100%;
+      min-width: 1600px;
       border-collapse: collapse;
       text-align: left;
     }
@@ -89,6 +90,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
       color: #1e293b;
       font-size: 14px;
       vertical-align: middle;
+      white-space: nowrap;
     }
     .we-table tr:hover {
       background: #f8fafc;

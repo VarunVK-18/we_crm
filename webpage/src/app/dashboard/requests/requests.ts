@@ -49,7 +49,7 @@ export class RequestsComponent implements OnInit {
   filteredOrders = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     let filtered = this.orders().filter((o: any) => this.isNewOrder(o));
-    
+
     if (query) {
       filtered = filtered.filter((o: any) => {
         const clientName = (o.user?.name || o.user?.owner_name || '').toLowerCase();
@@ -65,13 +65,13 @@ export class RequestsComponent implements OnInit {
   requiresDirectorCount(order: any): boolean {
     if (!order) return false;
     const name = (order.serviceType || order.serviceName || order.service_name || '').toLowerCase();
-    return name.includes('private limited') || 
-           name.includes('incorp') ||
-           name.includes('llp') || 
-           name.includes('opc') || 
-           name.includes('mca') || 
-           name.includes('digital signature') ||
-           name.includes('dsc');
+    return name.includes('private limited') ||
+      name.includes('incorp') ||
+      name.includes('llp') ||
+      name.includes('opc') ||
+      name.includes('mca') ||
+      name.includes('digital signature') ||
+      name.includes('dsc');
   }
 
 
@@ -84,11 +84,11 @@ export class RequestsComponent implements OnInit {
   numberOfDirectorsForOrder = signal<{ [orderId: string]: number }>({});
   selectedPlanForOrder = signal<{ [orderId: string]: string }>({});
   isAssigningOrder = signal<Record<string, boolean>>({});
-  
+
   // Modal State
   selectedOrderForApproval = signal<any>(null);
   isApprovalModalOpen = signal<boolean>(false);
-  
+
   // OCR additions
   transactionIdForOrder = signal<Record<string, string>>({});
   paymentTimestampForOrder = signal<Record<string, string>>({});
@@ -97,6 +97,7 @@ export class RequestsComponent implements OnInit {
   isOcrVerifiedForOrder = signal<Record<string, boolean>>({});
   isGstApplicableForOrder = signal<Record<string, boolean>>({});
   systemBankSettings = signal<any>(null);
+  requirePaymentVerification = signal<boolean>(true);
 
   constructor(public api: Api, private ocrService: OcrService) { }
 
@@ -109,7 +110,7 @@ export class RequestsComponent implements OnInit {
         console.error('Error parsing user data', e);
       }
     }
-    
+
     this.fetchSystemSettings();
     this.fetchOrders();
     this.fetchTeam();
@@ -118,8 +119,11 @@ export class RequestsComponent implements OnInit {
   fetchSystemSettings() {
     this.api.get<any>('settings').subscribe({
       next: (res) => {
-        if (res && res.success && res.settings && res.settings.bank_details) {
-          this.systemBankSettings.set(res.settings.bank_details);
+        if (res && res.success && res.settings) {
+          if (res.settings.bank_details) {
+            this.systemBankSettings.set(res.settings.bank_details);
+          }
+          this.requirePaymentVerification.set(res.settings.require_payment_verification !== false);
         }
       },
       error: (err) => console.error('Error fetching settings:', err)
@@ -139,7 +143,7 @@ export class RequestsComponent implements OnInit {
       if (details.amount) {
         this.advanceAmountPaidForOrder.update(prev => ({ ...prev, [orderId]: details.amount! }));
       }
-      
+
       if (details.transactionId) {
         this.transactionIdForOrder.update(prev => ({ ...prev, [orderId]: details.transactionId! }));
       }
@@ -213,14 +217,14 @@ export class RequestsComponent implements OnInit {
       next: (res: any) => {
         let allTeams = res.teams || [];
         const currentUser = this.user();
-        
+
         // If user is a client manager, only show teams they manage
         if (currentUser && currentUser.role === 'client_manager') {
-          allTeams = allTeams.filter((t: any) => 
+          allTeams = allTeams.filter((t: any) =>
             t.manager_id && (t.manager_id._id === currentUser._id || t.manager_id === currentUser._id)
           );
         }
-        
+
         this.teams.set(allTeams);
       },
       error: (err: any) => console.error('Error fetching team:', err)
@@ -311,12 +315,38 @@ export class RequestsComponent implements OnInit {
     if (['MCA Compliance', 'GST Compliance'].includes(s)) {
       const selected = this.selectedPlanForOrder()[order._id];
       if (selected !== undefined) {
-         return !['Startup Plan', 'Business Plan', 'Corporate Plan'].includes(selected);
+        return !['Startup Plan', 'Business Plan', 'Corporate Plan'].includes(selected);
       }
       const dbPlan = order.recommended_plan || order.details?.recommended_plan;
       return !['Startup Plan', 'Business Plan', 'Corporate Plan'].includes(dbPlan);
     }
     return false;
+  }
+
+  isApproveFormValid(orderId: string): boolean {
+    if (!orderId) return false;
+    const emp = this.selectedEmployeeForOrder()[orderId];
+    if (!emp) return false;
+
+    const amount = this.dealClosedAmountForOrder()[orderId] || 0;
+    if (amount <= 0) return false;
+
+    const advance = this.advanceAmountPaidForOrder()[orderId] || 0;
+    if (advance <= 0) return false;
+    if (advance > amount) return false;
+
+    const requireVerification = this.requirePaymentVerification();
+    const isVerified = this.isOcrVerifiedForOrder()[orderId] || false;
+    if (requireVerification && advance > 0 && !isVerified) return false;
+
+    const order = this.orders().find(o => o._id === orderId);
+    if (order && this.requiresDirectorCount(order)) {
+      const directors = this.numberOfDirectorsForOrder()[orderId];
+      if (!directors && !order.details?.numberOfDirectors) {
+        return false;
+      }
+    }
+    return true;
   }
 
   openApproveModal(order: any) {
@@ -345,8 +375,9 @@ export class RequestsComponent implements OnInit {
     const isVerified = this.isOcrVerifiedForOrder()[orderId] || false;
     const isGstApplicable = this.isGstApplicableForOrder()[orderId] ?? true;
 
-    if (advance > 0 && tid && !isVerified) {
-      this.showToast('Cannot assign: OCR Bank Verification failed.', 'error');
+    const requireVerification = this.requirePaymentVerification();
+    if (requireVerification && advance > 0 && !isVerified) {
+      this.showToast('Cannot assign: OCR Bank Verification is required.', 'error');
       return;
     }
 
@@ -396,18 +427,18 @@ export class RequestsComponent implements OnInit {
     // Assign Employee and update deal closed amount
     this.api.put<any>(`orders/${orderId}`, updateData).subscribe({
       next: (res: any) => {
-        
+
         // After assigning, add financial log for the advance amount
         if (advance > 0) {
           let isoTimestamp = new Date().toISOString();
           if (ts) {
-             try {
-                // Check if extracted timestamp is a valid date
-                const extractedDate = new Date(ts);
-                if (!isNaN(extractedDate.getTime())) {
-                   isoTimestamp = extractedDate.toISOString();
-                }
-             } catch(e) {}
+            try {
+              // Check if extracted timestamp is a valid date
+              const extractedDate = new Date(ts);
+              if (!isNaN(extractedDate.getTime())) {
+                isoTimestamp = extractedDate.toISOString();
+              }
+            } catch (e) { }
           }
           const logData = {
             paymentType: 'advance',
@@ -460,7 +491,7 @@ export class RequestsComponent implements OnInit {
       const val = obj[key];
       // Hide null, undefined, empty string
       if (val === null || val === undefined || val === '') return false;
-      
+
       // Check if it's a stringified empty array or array with empty objects
       if (typeof val === 'string' && val.trim().startsWith('[')) {
         try {
@@ -476,7 +507,7 @@ export class RequestsComponent implements OnInit {
             });
             if (!hasData) return false;
           }
-        } catch (e) {}
+        } catch (e) { }
       }
       return true;
     });
@@ -489,7 +520,7 @@ export class RequestsComponent implements OnInit {
         if (Array.isArray(parsed)) {
           return 'Included in Client Form';
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     return val;
   }

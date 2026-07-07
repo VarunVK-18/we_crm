@@ -47,7 +47,26 @@ const ServiceOrderSchema = new mongoose.Schema({
   }],
   turnover_category: { type: String, default: '' },
   recommended_plan: { type: String, default: '' },
-  service_fee: { type: Number, default: 0 }
+  service_fee: { type: Number, default: 0 },
+  need_temporary: { type: Boolean, default: false }
 }, { timestamps: true });
+
+// Resolve need_temporary from template on creation
+ServiceOrderSchema.pre('save', async function () {
+  if (this.isNew) {
+    try {
+      const ChecklistTemplate = mongoose.model('ChecklistTemplate');
+      const template = await ChecklistTemplate.findOne({
+        company_id: this.companyId,
+        service_name: this.serviceType
+      });
+      if (template) {
+        this.need_temporary = template.need_temporary || false;
+      }
+    } catch (err) {
+      console.error('Error in ServiceOrder pre-save need_temporary:', err);
+    }
+  }
+});
 
 module.exports = mongoose.model('ServiceOrder', ServiceOrderSchema);

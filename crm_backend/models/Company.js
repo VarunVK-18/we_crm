@@ -39,6 +39,7 @@ const CompanySchema = new mongoose.Schema({
     allow_agent_registration: { type: Boolean, default: true },
     require_document_verification: { type: Boolean, default: true },
     enable_document_extraction: { type: Boolean, default: false },
+    require_payment_verification: { type: Boolean, default: true },
     bank_details: {
       bank_name: { type: String, default: '' },
       account_number: { type: String, default: '' },

@@ -179,9 +179,10 @@
                     <div style="display: flex; align-items: center; gap: 8px; margin-left: 8px; margin-right: 6px;">
                       <span style="font-size: 15px; font-weight: 700; color: var(--text-secondary);">₹{{ checklist().advanceAmountPaid || 0 }}</span>
                       <span style="font-size: 16px; font-weight: 600; color: var(--text-secondary); margin-top: -1px;">+</span>
-                      <span style="font-size: 15px; font-weight: 700; color: var(--text-secondary);">₹</span>
                     </div>
-                    <input type="number" [(ngModel)]="paymentAmountToAdd" style="width: 50px; padding: 0; border: none; background: transparent; font-size: 15px; font-weight: 700; color: var(--text-primary); outline: none; margin-right: 6px;" placeholder="0" (keyup.enter)="paymentOcrVerifiedToAdd ? submitAddPayment() : null">
+                    <input type="number" [(ngModel)]="paymentAmountToAdd" style="width: 50px; padding: 0; border: none; background: transparent; font-size: 15px; font-weight: 700; color: var(--text-primary); outline: none; margin-right: 6px;" placeholder="0" 
+                           (keyup.enter)="(requirePaymentVerification() ? paymentOcrVerifiedToAdd : true) ? submitAddPayment() : null"
+                           [readonly]="requirePaymentVerification()">
                     
                     <div style="width: 1px; height: 16px; background-color: var(--border-color); margin: 0 4px;"></div>
                     
@@ -193,9 +194,13 @@
                         <span class="material-symbols-outlined" style="color: var(--text-secondary); font-size: 16px; transition: color 0.2s;" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-secondary)'">document_scanner</span>
                       }
                     </div>
-
+ 
                     <div style="display: flex; align-items: center; gap: 6px;">
-                      <button (click)="submitAddPayment()" [disabled]="!paymentOcrVerifiedToAdd || isSubmittingPayment()" style="background: var(--accent-primary); color: white; border: none; border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" [style.opacity]="paymentOcrVerifiedToAdd && !isSubmittingPayment() ? '1' : '0.5'" [style.cursor]="paymentOcrVerifiedToAdd && !isSubmittingPayment() ? 'pointer' : 'not-allowed'">
+                      <button (click)="submitAddPayment()" 
+                              [disabled]="(requirePaymentVerification() ? !paymentOcrVerifiedToAdd : false) || isSubmittingPayment()" 
+                              style="background: var(--accent-primary); color: white; border: none; border-radius: 6px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" 
+                              [style.opacity]="((requirePaymentVerification() ? paymentOcrVerifiedToAdd : true) && !isSubmittingPayment()) ? '1' : '0.5'" 
+                              [style.cursor]="((requirePaymentVerification() ? paymentOcrVerifiedToAdd : true) && !isSubmittingPayment()) ? 'pointer' : 'not-allowed'">
                         @if (isSubmittingPayment()) {
                           <span class="material-symbols-outlined" style="font-size: 16px; display: inline-block; animation: spin 1s linear infinite;">progress_activity</span>
                         } @else {
@@ -517,10 +522,12 @@
             <button class="btn-secondary" style="font-size: 13px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; background: white; border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 6px; white-space: nowrap;" (click)="openGenerateDocModal()">
               <span class="material-symbols-outlined" style="font-size: 16px;">auto_awesome</span> Generate from Template
             </button>
-            <label class="btn-primary" style="font-size: 13px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
-              <span class="material-symbols-outlined" style="font-size: 16px;">upload</span> Upload Document
-              <input type="file" (change)="uploadTemporaryDocument($event)" style="display: none;" multiple />
-            </label>
+            @if (checklist().need_temporary) {
+              <label class="btn-primary" style="font-size: 13px; padding: 6px 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">upload</span> Upload Document
+                <input type="file" (change)="uploadTemporaryDocument($event)" style="display: none;" multiple />
+              </label>
+            }
           </div>
         </h3>
         <p style="font-size: 13px; color: var(--text-secondary); margin-top: -8px;">These documents are instantly visible to the client (e.g., drafts for signature).</p>
@@ -539,12 +546,7 @@
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
-                  @if (doc.status === 'replied') {
-                    <div style="display: flex; align-items: center; gap: 6px; background: var(--color-success-bg); color: var(--color-success); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap;">
-                      <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
-                      Client Replied
-                    </div>
-                  } @else {
+                  @if (doc.status !== 'replied') {
                     <div style="display: flex; align-items: center; gap: 6px; background: var(--color-warning-bg); color: var(--color-warning); padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap;">
                       <span class="material-symbols-outlined" style="font-size: 14px;">schedule</span>
                       Pending Reply

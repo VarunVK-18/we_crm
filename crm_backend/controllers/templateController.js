@@ -21,7 +21,7 @@ const getTemplates = async (req, res) => {
 // @access  Private (Admin)
 const upsertTemplate = async (req, res) => {
   try {
-    const { service_name, items, enable_document_extraction, document_templates } = req.body;
+    const { service_name, items, enable_document_extraction, document_templates, need_temporary } = req.body;
 
     if (!service_name) {
       return res.status(400).json({ success: false, message: 'Service name is required' });
@@ -40,6 +40,9 @@ const upsertTemplate = async (req, res) => {
       if (document_templates !== undefined) {
         template.document_templates = document_templates;
       }
+      if (need_temporary !== undefined) {
+        template.need_temporary = need_temporary;
+      }
       await template.save();
     } else {
       template = await ChecklistTemplate.create({
@@ -47,9 +50,23 @@ const upsertTemplate = async (req, res) => {
         service_name,
         items: items || [],
         enable_document_extraction: enable_document_extraction || false,
-        document_templates: document_templates || []
+        document_templates: document_templates || [],
+        need_temporary: need_temporary || false
       });
     }
+
+    // Sync need_temporary to existing checklists and service orders
+    const Checklist = require('../models/Checklist');
+    const ServiceOrder = require('../models/ServiceOrder');
+    
+    await Checklist.updateMany(
+      { company_id: req.user.company_id, service_name },
+      { $set: { need_temporary: template.need_temporary } }
+    );
+    await ServiceOrder.updateMany(
+      { companyId: req.user.company_id, serviceType: service_name },
+      { $set: { need_temporary: template.need_temporary } }
+    );
 
     await logActivity(
       req.user._id,

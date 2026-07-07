@@ -123,6 +123,10 @@ const ChecklistSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  need_temporary: {
+    type: Boolean,
+    default: false
+  },
   dealClosedAmount: {
     type: Number,
     default: 0
@@ -158,8 +162,8 @@ const ChecklistSchema = new mongoose.Schema({
   }]
 }, { timestamps: true });
 
-// Auto-update status based on item completion
-ChecklistSchema.pre('save', function () {
+// Auto-update status based on item completion and resolve need_temporary
+ChecklistSchema.pre('save', async function () {
   if (this.items && this.items.length > 0) {
     const total = this.items.length;
     const checked = this.items.filter(i => i.isChecked).length;
@@ -169,6 +173,30 @@ ChecklistSchema.pre('save', function () {
       this.status = 'completed';
     } else {
       this.status = 'in_progress';
+    }
+  }
+
+  if (this.isNew) {
+    try {
+      const ChecklistTemplate = mongoose.model('ChecklistTemplate');
+      const template = await ChecklistTemplate.findOne({
+        company_id: this.company_id,
+        service_name: this.service_name
+      });
+      if (template) {
+        this.need_temporary = template.need_temporary || false;
+      }
+    } catch (err) {
+      console.error('Error in Checklist pre-save need_temporary:', err);
+    }
+
+    if (!this.custom_service_id && this.company_id) {
+      try {
+        const { getNextServiceId } = require('../utils/counterHelper');
+        this.custom_service_id = await getNextServiceId(this.company_id);
+      } catch (err) {
+        console.error('Error generating custom_service_id in pre-save hook:', err);
+      }
     }
   }
 });
