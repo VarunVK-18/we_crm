@@ -520,7 +520,21 @@ Widget build(BuildContext context) {
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
-            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required question' : null : null,
+            validator: (v) {
+              if (isRequired && (v == null || v.trim().isEmpty)) return 'This is a required question';
+              if (v != null && v.trim().isNotEmpty) {
+                if (keyboardType == TextInputType.emailAddress) {
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                    return 'Enter a valid email address';
+                  }
+                } else if (keyboardType == TextInputType.phone) {
+                  if (!RegExp(r'^\d{10}$').hasMatch(v)) {
+                    return 'Enter a valid 10-digit phone number';
+                  }
+                }
+              }
+              return null;
+            },
           ),
         ],
       ),

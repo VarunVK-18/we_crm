@@ -54,6 +54,9 @@ import { EmployeesTeam } from './dashboard/employees-team/employees-team';
 import { SystemSettings } from './dashboard/system-settings/system-settings';
 import { StaffCompliance } from './dashboard/staff-compliance/staff-compliance';
 import { TeamServiceTrackComponent } from './dashboard/team-service-track/team-service-track';
+import { Opportunities } from './dashboard/opportunities/opportunities';
+import { BannerManagement } from './dashboard/banner-management/banner-management';
+import { DscTokens } from './dashboard/dsc-tokens/dsc-tokens';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -77,6 +80,7 @@ export const routes: Routes = [
       { path: 'staff-compliance', component: StaffCompliance },
       { path: 'opportunities', loadComponent: () => import('./dashboard/opportunities/opportunities').then(m => m.Opportunities) },
       { path: 'banners', loadComponent: () => import('./dashboard/banner-management/banner-management').then(m => m.BannerManagement) },
+      { path: 'dsc-tokens', component: DscTokens },
       { path: '', redirectTo: 'overview', pathMatch: 'full' }
     ]
   },

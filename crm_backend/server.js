@@ -87,11 +87,13 @@ const chatRoutes = require('./routes/chatRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
+const dscTokenRoutes = require('./routes/dscTokenRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/dsc', dscRoutes);
+app.use('/api/dsc-tokens', dscTokenRoutes);
 app.use('/api/compliance', complianceRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', settingsRoutes);

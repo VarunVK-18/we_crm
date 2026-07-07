@@ -1,0 +1,129 @@
+<div class="dsc-tokens-container">
+  <div class="header-section">
+    <h1>DSC Token Management</h1>
+    <p>Manage and audit DSC token inventory</p>
+  </div>
+
+  @if (status) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Total Purchased</span>
+          <hugeicons-icon [icon]="CreditCardIcon" size="24" color="#7c3aed"></hugeicons-icon>
+        </div>
+        <div class="stat-value">{{ status.totalPurchased }}</div>
+        <div class="stat-subtitle">Lifetime purchases</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Available Tokens</span>
+          <hugeicons-icon [icon]="Briefcase02Icon" size="24" color="#7c3aed"></hugeicons-icon>
+        </div>
+        <div class="stat-value">{{ status.availableTokens }}</div>
+        <div class="stat-subtitle">Ready to use</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Total Consumed</span>
+          <hugeicons-icon [icon]="Alert01Icon" size="24" color="#7c3aed"></hugeicons-icon>
+        </div>
+        <div class="stat-value">{{ status.totalConsumed }}</div>
+        <div class="stat-subtitle">Tokens used</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Individual DSC</span>
+          <hugeicons-icon [icon]="UserIcon" size="24" color="#7c3aed"></hugeicons-icon>
+        </div>
+        <div class="stat-value">{{ status.individualCount }}</div>
+        <div class="stat-subtitle">Personal signatures</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-header">
+          <span class="stat-label">Organizational DSC</span>
+          <hugeicons-icon [icon]="Building04Icon" size="24" color="#7c3aed"></hugeicons-icon>
+        </div>
+        <div class="stat-value">{{ status.organizationalCount }}</div>
+        <div class="stat-subtitle">Company signatures</div>
+      </div>
+    </div>
+  }
+
+  <div class="action-sections">
+    <div class="purchase-section">
+      <h2>Purchase Tokens</h2>
+      <div class="purchase-form">
+        <input type="number" [(ngModel)]="purchaseAmount" min="1" placeholder="Enter quantity" class="purchase-input" />
+        <button (click)="purchaseTokens()" [disabled]="purchaseAmount <= 0 || isPurchasing" class="btn-purchase">
+          {{ isPurchasing ? 'Purchasing...' : 'Purchase Tokens' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="purchase-section">
+      <h2>Warning Settings</h2>
+      <div class="purchase-form">
+        <input type="number" [(ngModel)]="warningLimit" min="0" placeholder="Low limit" class="purchase-input" />
+        <button (click)="updateWarningLimit()" [disabled]="warningLimit == null || warningLimit < 0 || isUpdatingLimit || warningLimit === originalWarningLimit" class="btn-purchase" style="background: #10b981;">
+          {{ isUpdatingLimit ? 'Saving...' : 'Set Limit' }}
+        </button>
+        @if (showLimitSuccess) {
+          <span class="text-success" style="font-size: 14px; font-weight: 600;">Successfully set!</span>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="audit-section">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="margin-bottom: 0;">Transaction Audit Log</h2>
+      <select [(ngModel)]="currentFilter" class="form-select form-select-sm" style="width: auto;">
+        <option value="All">All</option>
+        <option value="Purchase">Purchase</option>
+        <option value="Individual DSC">Individual DSC</option>
+        <option value="Organizational DSC">Organizational DSC</option>
+      </select>
+    </div>
+    <div class="table-responsive">
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>Client ID</th>
+            <th>Service ID</th>
+            <th>Applicant</th>
+            <th>Company</th>
+            <th>Date & Time</th>
+            <th>Processed By</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of filteredLogs; track log._id) {
+            <tr>
+              <td>{{ log.checklistId?.client_id?.custom_client_id || '-' }}</td>
+              <td>{{ log.checklistId?.custom_service_id || '-' }}</td>
+              <td>{{ log.applicantName || '-' }}</td>
+              <td>{{ log.companyName || '-' }}</td>
+              <td>{{ log.createdAt | date:'MMM d, y, h:mm a' }}</td>
+              <td>{{ log.processedBy?.name || log.processedBy?.owner_name || 'System' }}</td>
+              <td><span class="badge" [class.badge-purchase]="log.serviceType === 'Purchase'" [class.badge-consume]="log.serviceType !== 'Purchase'">{{ log.serviceType }}</span></td>
+            </tr>
+          }
+          @if (filteredLogs.length === 0) {
+            <tr>
+              <td colspan="7" class="text-center py-4">No transactions found.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    
+    @if (totalPages > 1) {
+      <div class="pagination">
+        <button (click)="fetchLogs(currentPage - 1)" [disabled]="currentPage === 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button (click)="fetchLogs(currentPage + 1)" [disabled]="currentPage === totalPages">Next</button>
+      </div>
+    }
+  </div>
+</div>

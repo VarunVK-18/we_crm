@@ -205,6 +205,18 @@ export class DscForm implements OnInit {
       return;
     }
 
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(this.applicantMail)) {
+      this.errorMessage.set('Please enter a valid email address.');
+      return;
+    }
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(this.applicantPhone)) {
+      this.errorMessage.set('Phone number must be exactly 10 digits.');
+      return;
+    }
+
     if (!this.applicantPanFile) {
       this.errorMessage.set('Please upload Applicant PAN Card.');
       return;

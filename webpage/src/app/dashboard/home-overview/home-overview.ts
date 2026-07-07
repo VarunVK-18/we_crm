@@ -870,6 +870,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   isActionRequired(c: any): boolean {
+    if (!c) return false;
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
       'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
@@ -879,9 +880,17 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
     
     if (requiresForm) {
+      // These are system-injected fields set at checklist creation time, NOT from client form submission
+      const SYSTEM_FIELDS = new Set([
+        'entityname', 'status', 'next step', 'applicant name', 'applicant email',
+        'applicant phone', 'badge', 'requesttype', 'recommended_plan', 'service_fee'
+      ]);
+
       let isFormFilled = false;
-      if (c.details && Object.keys(c.details).length > 0) {
-        isFormFilled = true;
+      if (c.details && typeof c.details === 'object') {
+        const clientKeys = Object.keys(c.details).filter(k => !SYSTEM_FIELDS.has(k.toLowerCase()));
+        // Consider form filled only if there are actual client-submitted keys beyond system fields
+        isFormFilled = clientKeys.length > 0;
       }
       return !isFormFilled;
     }

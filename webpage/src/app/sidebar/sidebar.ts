@@ -1,7 +1,7 @@
 import { Component, input, output, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon, Search01Icon, Message02Icon, Settings01Icon, TrendingUpDownIcon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon, Search01Icon, Message02Icon, Settings01Icon, TrendingUpDownIcon, Key01Icon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 
 @Component({
@@ -29,6 +29,7 @@ export class Sidebar implements OnInit, OnDestroy {
   readonly Message02Icon = Message02Icon;
   readonly Settings01Icon = Settings01Icon;
   readonly TrendingUpDownIcon = TrendingUpDownIcon;
+  readonly Key01Icon = Key01Icon;
 
   user = signal<any>(null);
   newRequestsCount = signal<number>(0);
@@ -94,6 +95,7 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'System',
         items: [
+          { id: 'dsc-tokens', label: 'DSC Tokens', color: '#10B981' },
           { id: 'banners', label: 'Banner Management', color: '#F59E0B' },
           { id: 'logs', label: 'Audit Logs', color: '#EC4899' },
           { id: 'settings', label: 'System Settings', color: '#6366F1' }

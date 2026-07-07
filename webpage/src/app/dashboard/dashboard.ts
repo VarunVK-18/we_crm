@@ -31,6 +31,7 @@ import { BucketComponent } from './bucket/bucket';
 import { ServiceTrackerTableComponent } from './service-tracker-table/service-tracker-table';
 import { TeamServiceTrackComponent } from './team-service-track/team-service-track';
 import { Opportunities } from './opportunities/opportunities';
+import { DscTokens } from './dsc-tokens/dsc-tokens';
 
 @Component({
   selector: 'app-dashboard',
@@ -60,7 +61,8 @@ import { Opportunities } from './opportunities/opportunities';
     BucketComponent,
     ServiceTrackerTableComponent,
     TeamServiceTrackComponent,
-    Opportunities
+    Opportunities,
+    DscTokens
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -76,6 +78,8 @@ export class Dashboard implements OnInit, OnDestroy {
   teams = signal<any[]>([]);
   navigationTrail = signal<{label: string, action: () => void}[]>([]);
   globalSearchQuery = signal<string>('');
+  dscTokenBalance = signal<number>(0);
+  lowDscTokenWarning = signal<boolean>(false);
 
   // Icon assets
   readonly Search01Icon = Search01Icon;
@@ -105,6 +109,13 @@ export class Dashboard implements OnInit, OnDestroy {
       this.user.set(parsedUser);
       this.fetchTeams();
       this.notifService.startPolling();
+      
+      if (parsedUser.role === 'admin') {
+        this.checkDscTokens();
+        // Set an interval to periodically check DSC tokens (e.g., every 5 minutes)
+        setInterval(() => this.checkDscTokens(), 300000);
+      }
+
       // Initialize breadcrumb for the first load
       this.navigationTrail.set([{ label: this.getTabLabel('dashboard'), action: () => this.handleTabChanged('dashboard') }]);
     } catch (e) {
@@ -115,6 +126,19 @@ export class Dashboard implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.notifService.stopPolling();
+  }
+
+  checkDscTokens() {
+    this.api.get<any>('dsc-tokens/status').subscribe({
+      next: (res) => {
+        if (res && typeof res.availableTokens === 'number') {
+          this.dscTokenBalance.set(res.availableTokens);
+          const limit = res.warningLimit !== undefined ? res.warningLimit : 10;
+          this.lowDscTokenWarning.set(res.availableTokens <= limit);
+        }
+      },
+      error: (err) => console.error('Error fetching DSC tokens for warning', err)
+    });
   }
 
   toggleMobileSidebar() {
