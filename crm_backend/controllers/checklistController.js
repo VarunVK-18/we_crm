@@ -273,6 +273,81 @@ const toggleChecklistItem = async (req, res) => {
     }
 
     const prevStatus = checklist.status;
+
+    // Pre-calculate new status to handle DSC tokens if needed
+    const totalItems = checklist.items.length;
+    const checkedItems = checklist.items.filter(i => i.isChecked).length;
+    let newStatus = checklist.status;
+    if (checkedItems === 0) newStatus = 'pending';
+    else if (checkedItems === totalItems) newStatus = 'completed';
+    else newStatus = 'in_progress';
+
+    // DSC Token Validation & Deduction
+    if (newStatus === 'completed' && prevStatus !== 'completed') {
+      const DscToken = require('../models/DscToken');
+      const DscTokenLog = require('../models/DscTokenLog');
+      const sName = checklist.service_name ? checklist.service_name.toLowerCase() : '';
+      
+      let isDSCService = false;
+      let requiredTokens = 0;
+      let serviceTypeStr = '';
+
+      if (sName === 'dsc' || sName.includes('dsc') || sName.includes('digital signature')) {
+         isDSCService = true;
+         if (sName.includes('organization') || checklist.details?.dscForm?.applyingFor === 'Organization DSC for DPIIT Certificate Purpose') {
+            requiredTokens = 1;
+            serviceTypeStr = 'Organizational DSC';
+         } else {
+            requiredTokens = 1;
+            serviceTypeStr = 'Individual DSC';
+         }
+      } else {
+         let numDirectorsWithDsc = 0;
+         if (checklist.details) {
+            for (let i = 0; i < 15; i++) {
+               const needDsc = checklist.details[`person_${i}_needDsc`];
+               if (needDsc === 'Yes' || needDsc === true || needDsc === 'true') {
+                  numDirectorsWithDsc++;
+               }
+            }
+         }
+         if (numDirectorsWithDsc > 0) {
+            isDSCService = true;
+            requiredTokens = numDirectorsWithDsc;
+            serviceTypeStr = 'Individual DSC';
+         }
+      }
+
+      if (isDSCService && requiredTokens > 0) {
+        let tokenDoc = await DscToken.findOne();
+        if (!tokenDoc) tokenDoc = await DscToken.create({});
+        if (tokenDoc.availableTokens < requiredTokens) {
+           return res.status(400).json({ success: false, message: 'Insufficient DSC tokens. Please purchase additional tokens to complete this service.' });
+        }
+        // Deduct tokens
+        tokenDoc.availableTokens -= requiredTokens;
+        tokenDoc.totalConsumed += requiredTokens;
+        if (serviceTypeStr === 'Organizational DSC') {
+           tokenDoc.organizationalCount += requiredTokens;
+        } else {
+           tokenDoc.individualCount += requiredTokens;
+        }
+        await tokenDoc.save();
+        
+        // Log transaction
+        const clientUser = await require('../models/User').findById(checklist.client_id);
+        await DscTokenLog.create({
+           serviceType: serviceTypeStr,
+           applicantName: clientUser ? clientUser.name : 'Unknown',
+           companyName: checklist.details?.companyName || checklist.details?.dscForm?.organizationName || checklist.details?.dscForm?.companyName || checklist.details?.companyLegalName || '',
+           tokensConsumed: requiredTokens,
+           remainingBalance: tokenDoc.availableTokens,
+           processedBy: checklist.assigned_to || req.user._id,
+           checklistId: checklist._id
+        });
+      }
+    }
+
     await checklist.save();
 
     if (checklist.status === 'completed' && prevStatus !== 'completed' && checklist.client_id) {
@@ -434,6 +509,73 @@ const updateChecklist = async (req, res) => {
       if (stage !== undefined) checklist.stage = stage;
       if (status !== undefined) {
         const prevStatus = checklist.status;
+        
+        // DSC Token Validation & Deduction
+        if (status === 'completed' && prevStatus !== 'completed') {
+          const DscToken = require('../models/DscToken');
+          const DscTokenLog = require('../models/DscTokenLog');
+          const sName = checklist.service_name ? checklist.service_name.toLowerCase() : '';
+          
+          let isDSCService = false;
+          let requiredTokens = 0;
+          let serviceTypeStr = '';
+
+          if (sName === 'dsc' || sName.includes('dsc') || sName.includes('digital signature')) {
+             isDSCService = true;
+             if (sName.includes('organization') || checklist.details?.dscForm?.applyingFor === 'Organization DSC for DPIIT Certificate Purpose') {
+                requiredTokens = 1;
+                serviceTypeStr = 'Organizational DSC';
+             } else {
+                requiredTokens = 1;
+                serviceTypeStr = 'Individual DSC';
+             }
+          } else {
+             let numDirectorsWithDsc = 0;
+             if (checklist.details) {
+                for (let i = 0; i < 15; i++) {
+                   const needDsc = checklist.details[`person_${i}_needDsc`];
+                   if (needDsc === 'Yes' || needDsc === true || needDsc === 'true') {
+                      numDirectorsWithDsc++;
+                   }
+                }
+             }
+             if (numDirectorsWithDsc > 0) {
+                isDSCService = true;
+                requiredTokens = numDirectorsWithDsc;
+                serviceTypeStr = 'Individual DSC';
+             }
+          }
+
+          if (isDSCService && requiredTokens > 0) {
+            let tokenDoc = await DscToken.findOne();
+            if (!tokenDoc) tokenDoc = await DscToken.create({});
+            if (tokenDoc.availableTokens < requiredTokens) {
+               return res.status(400).json({ success: false, message: 'Insufficient DSC tokens. Please purchase additional tokens.' });
+            }
+            // Deduct tokens
+            tokenDoc.availableTokens -= requiredTokens;
+            tokenDoc.totalConsumed += requiredTokens;
+            if (serviceTypeStr === 'Organizational DSC') {
+               tokenDoc.organizationalCount += requiredTokens;
+            } else {
+               tokenDoc.individualCount += requiredTokens;
+            }
+            await tokenDoc.save();
+            
+            // Log transaction
+            const clientUser = await require('../models/User').findById(checklist.client_id);
+            await DscTokenLog.create({
+               serviceType: serviceTypeStr,
+               applicantName: clientUser ? clientUser.name : 'Unknown',
+               companyName: checklist.details?.companyName || checklist.details?.dscForm?.organizationName || checklist.details?.dscForm?.companyName || checklist.details?.companyLegalName || '',
+               tokensConsumed: requiredTokens,
+               remainingBalance: tokenDoc.availableTokens,
+               processedBy: checklist.assigned_to || req.user._id,
+               checklistId: checklist._id
+            });
+          }
+        }
+
         checklist.status = status;
         
         // Notify client if service is marked as completed

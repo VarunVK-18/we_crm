@@ -325,13 +325,17 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
     
     if (requiresForm) {
+      // These are system-injected fields set at checklist creation time, NOT from client form submission
+      const SYSTEM_FIELDS = new Set([
+        'entityname', 'status', 'next step', 'applicant name', 'applicant email',
+        'applicant phone', 'badge', 'requesttype', 'recommended_plan', 'service_fee'
+      ]);
+
       let isFormFilled = false;
-      if (c.details) {
-        // 'Status' and 'applicationId' are system-injected. If there are any other keys, the form is filled.
-        const userProvidedKeys = Object.keys(c.details).filter(k => k !== 'Status' && k !== 'applicationId');
-        if (userProvidedKeys.length > 0) {
-          isFormFilled = true;
-        }
+      if (c.details && typeof c.details === 'object') {
+        const clientKeys = Object.keys(c.details).filter(k => !SYSTEM_FIELDS.has(k.toLowerCase()));
+        // Consider form filled only if there are actual client-submitted keys beyond system fields
+        isFormFilled = clientKeys.length > 0;
       }
       return !isFormFilled;
     }
