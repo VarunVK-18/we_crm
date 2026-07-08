@@ -67,6 +67,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   // Application Tracking State
   isEditingApplicationId = signal<boolean>(false);
   isSavingApplicationId = signal<boolean>(false);
+  isScanningApplicationReceipt = signal<boolean>(false);
   applicationIdInput: string = '';
 
 
@@ -1299,7 +1300,38 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
-  // --- Chat Feature Methods ---
+  uploadApplicationReceiptForOCR(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+    
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('document', file);
+
+    this.isScanningApplicationReceipt.set(true);
+    
+    this.api.post<any>('ocr/extract-application', formData).subscribe({
+      next: (response) => {
+        this.isScanningApplicationReceipt.set(false);
+        input.value = ''; // Reset input
+        
+        if (response.success && response.data?.applicationId) {
+          this.applicationIdInput = response.data.applicationId;
+          this.isEditingApplicationId.set(true);
+        } else {
+          alert('Could not extract Application ID from the provided receipt.');
+        }
+      },
+      error: (err) => {
+        this.isScanningApplicationReceipt.set(false);
+        input.value = ''; // Reset input
+        console.error('OCR Application Extraction Failed:', err);
+        alert('OCR processing failed. Please try again or enter manually.');
+      }
+    });
+  }
+
+  // --- Document Verification ---
   orderIdForChat: string | null = null;
 
   openChatModal() {

@@ -142,6 +142,56 @@ If a field is not found, set it to null.`;
   }
 };
 
+// @desc    Extract application details from an uploaded image/PDF using Gemini
+// @route   POST /api/ocr/extract-application
+// @access  Private
+const extractApplicationDetails = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No document provided for OCR.' });
+    }
+
+    const mimeType = req.file.mimetype;
+    const base64Data = req.file.buffer.toString('base64');
+
+    const imagePart = {
+      inlineData: {
+        data: base64Data,
+        mimeType
+      },
+    };
+
+    const prompt = `You are an expert OCR AI that extracts application details from legal/government acknowledgment receipts (like Trademarks, Patents, Copyrights).
+Extract the following information and return ONLY a valid JSON object with no markdown formatting or extra text:
+{
+  "applicationId": "<string or null>",
+  "dateOfFiling": "<string or null>"
+}
+
+Ensure the Application ID (or Registration Number, Acknowledgement Number) is extracted accurately as a string.
+Extract the date of filing or application date if visible.
+If a field is not found, set it to null.`;
+
+    const jsonText = await getWorkingKey(prompt, imagePart);
+    
+    // Parse the JSON (clean up markdown code blocks if the model ignored instructions)
+    let cleanJsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const details = JSON.parse(cleanJsonText);
+
+    res.json({
+      success: true,
+      data: {
+        applicationId: details.applicationId,
+        dateOfFiling: details.dateOfFiling
+      }
+    });
+  } catch (error) {
+    console.error('OCR Application Extraction Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
-  extractPaymentDetails
+  extractPaymentDetails,
+  extractApplicationDetails
 };

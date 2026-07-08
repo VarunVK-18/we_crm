@@ -43,30 +43,43 @@ export class DscTokens implements OnInit {
   currentPage: number = 1;
   totalPages: number = 1;
 
+  isLoadingStatus: boolean = true;
+  isLoadingLogs: boolean = true;
+
   ngOnInit() {
     this.fetchStatus();
     this.fetchLogs();
   }
 
   fetchStatus() {
+    this.isLoadingStatus = true;
     this.api.get<any>('dsc-tokens/status').subscribe({
       next: (res) => {
         this.status = res;
         this.warningLimit = res.warningLimit !== undefined ? res.warningLimit : 10;
         this.originalWarningLimit = this.warningLimit;
+        this.isLoadingStatus = false;
       },
-      error: (err) => console.error('Failed to fetch status', err)
+      error: (err) => {
+        console.error('Failed to fetch status', err);
+        this.isLoadingStatus = false;
+      }
     });
   }
 
   fetchLogs(page: number = 1) {
+    this.isLoadingLogs = true;
     this.api.get<any>(`dsc-tokens/logs?page=${page}&limit=20`).subscribe({
       next: (res) => {
         this.logs = res.logs;
         this.currentPage = res.currentPage;
         this.totalPages = res.totalPages;
+        this.isLoadingLogs = false;
       },
-      error: (err) => console.error('Failed to fetch logs', err)
+      error: (err) => {
+        console.error('Failed to fetch logs', err);
+        this.isLoadingLogs = false;
+      }
     });
   }
 

@@ -688,6 +688,12 @@ const updateChecklist = async (req, res) => {
             } else if (svcLower.includes('copyright')) {
               user.client_entities[entityIndex].copyrightRegistrationNumber = applicationId;
               modified = true;
+            } else if (svcLower.includes('dpiit') || svcLower.includes('startup india')) {
+              user.client_entities[entityIndex].dpiitApplicationId = applicationId;
+              modified = true;
+            } else if (svcLower.includes('fssai') || svcLower.includes('food license')) {
+              user.client_entities[entityIndex].fssaiApplicationId = applicationId;
+              modified = true;
             }
             
             if (modified) {
