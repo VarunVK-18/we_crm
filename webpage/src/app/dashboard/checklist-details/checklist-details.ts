@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Api } from '../../api';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
@@ -117,7 +118,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   newChatMessage: string = '';
   chatPollingInterval: any;
 
-  constructor(public api: Api, private ocrService: OcrService, private confirmDialog: ConfirmDialogService) { }
+  constructor(public api: Api, private ocrService: OcrService, private confirmDialog: ConfirmDialogService, private sanitizer: DomSanitizer) { }
 
   viewSop() {
     const cl = this.checklist();
@@ -1274,6 +1275,23 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.isRequestDocModalOpen.set(true);
   }
 
+  openRequestDocForStep(item: any) {
+    this.newDocRequestName = item.title || '';
+    this.checklistErrorMessage.set('');
+    this.requestDocSuccessMessage.set('');
+    this.isRequestDocModalOpen.set(true);
+  }
+
+  getAllRequestedDocsForStep(item: any) {
+    const cl = this.checklist();
+    if (!cl || !cl.requested_documents) return [];
+    const itemTitle = (item.title || '').trim().toLowerCase();
+    return cl.requested_documents.filter((doc: any) => 
+      (doc.name || '').trim().toLowerCase().includes(itemTitle) || 
+      itemTitle.includes((doc.name || '').trim().toLowerCase())
+    );
+  }
+
   closeRequestDocModal() {
     this.isRequestDocModalOpen.set(false);
     this.newDocRequestName = '';
@@ -1589,28 +1607,237 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   }
 
   updateCustomInputsFromHtml(html: string) {
-    const regex = /\{\{input:([^}]+)\}\}/g;
     const currentInputs = this.customInputs();
     const newInputs: any[] = [];
-    let match;
     const seen = new Set();
     
-    // First, temporarily clean HTML tags inside brackets to detect them properly
-    const cleanHtml = html.replace(/\{\{([\s\S]*?)\}\}/g, (m, p1) => {
+    // Clean HTML tags inside brackets
+    const cleanHtml = html.replace(/\{\{([\s\S]*?)\}\}/g, (m: string, p1: string) => {
       const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
       return `{{${cleanContent}}}`;
     });
 
+    // Find any pattern like {{something}}
+    const regex = /\{\{([^}]+)\}\}/g;
+    let match;
     while ((match = regex.exec(cleanHtml)) !== null) {
       const fullToken = match[0];
-      const label = match[1];
+      let rawLabel = match[1].trim();
+      
+      let label = rawLabel;
+      if (rawLabel.startsWith('input:')) {
+        label = rawLabel.substring(6).trim();
+      }
+
       if (!seen.has(fullToken)) {
         seen.add(fullToken);
         const existing = currentInputs.find(i => i.token === fullToken);
-        newInputs.push({ token: fullToken, label: label, value: existing ? existing.value : '' });
+        
+        let defaultValue = '';
+        if (existing) {
+          defaultValue = existing.value;
+        } else {
+          const cl = this.checklist();
+          const det = cl?.details || {};
+
+          // Universal detail lookup — tries all known key variants for each field
+          const getDetail = (...keys: string[]) => {
+            for (const k of keys) {
+              const v = det[k];
+              if (v && typeof v === 'string' && v.trim()) return v.trim();
+            }
+            return '';
+          };
+
+          const clientName = getDetail('ownerName', 'owner_name', 'Applicant Name', 'applicantName', 'fullName', 'name')
+            || cl?.client_id?.owner_name || cl?.client_id?.name || '';
+          const clientEmail = getDetail('companyEmail', 'email', 'Applicant Email', 'applicantEmail')
+            || cl?.client_id?.email || '';
+          const clientPhone = getDetail('companyPhone', 'phone', 'Applicant Phone', 'applicantPhone')
+            || cl?.client_id?.phone || '';
+          const companyName = getDetail('companyName', 'company_name', 'entityName', 'entity_name', 'Entity Name', 'Company Name')
+            || cl?.client_id?.company_name || '';
+          const address = getDetail('address', 'Address', 'Company Address', 'registeredAddress')
+            || cl?.client_id?.address || '';
+          const pan = getDetail('pan', 'PAN', 'Company PAN', 'companyPan')
+            || cl?.client_id?.pan || '';
+          const gstin = getDetail('gstin', 'GSTIN', 'GST Number', 'gstNumber')
+            || cl?.client_id?.gstin || '';
+          const cin = getDetail('cin', 'CIN', 'CIN Number')
+            || cl?.client_id?.cin || '';
+          const tan = getDetail('tan', 'TAN', 'TAN Number')
+            || cl?.client_id?.tan || '';
+          const serviceName = cl?.service_name || '';
+          const serviceId = cl?.custom_service_id || cl?._id || '';
+          const today = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+          // Parse directors list if present in cl.details
+          let directorsList: any[] = [];
+          if (cl?.details && typeof cl.details === 'object') {
+            const rawDirs = cl.details.directors || cl.details.partners || cl.details.members;
+            if (rawDirs) {
+              try {
+                if (typeof rawDirs === 'string') {
+                  directorsList = JSON.parse(rawDirs);
+                } else if (Array.isArray(rawDirs)) {
+                  directorsList = rawDirs;
+                }
+              } catch (e) {
+                console.error("Failed to parse directors:", e);
+              }
+            }
+          }
+
+          // Extract first director/partner name from cl.details dynamically as fallback
+          let directorNameVal = '';
+          if (directorsList && directorsList.length > 0) {
+            directorNameVal = directorsList[0]?.fullName || directorsList[0]?.name || '';
+          }
+          if (!directorNameVal && cl?.details && typeof cl.details === 'object') {
+            const keys = Object.keys(cl.details);
+            const directorKey = keys.find(k => {
+              const kl = k.toLowerCase();
+              return kl.includes('director') && (kl.includes('name') || kl.includes('1') || kl.includes('first'));
+            }) || keys.find(k => {
+              const kl = k.toLowerCase();
+              return kl.includes('partner') && (kl.includes('name') || kl.includes('1') || kl.includes('first'));
+            }) || keys.find(k => {
+              const kl = k.toLowerCase();
+              return kl.includes('director') || kl.includes('partner');
+            });
+            
+            if (directorKey) {
+              directorNameVal = cl.details[directorKey] || '';
+            }
+          }
+
+          const tokenLower = rawLabel.toLowerCase().replace(/[^a-z0-9_:]/g, '');
+          if (tokenLower === 'client_name' || tokenLower === 'clientname') {
+            defaultValue = clientName;
+          } else if (tokenLower === 'company_name' || tokenLower === 'companyname') {
+            defaultValue = companyName;
+          } else if (tokenLower === 'email') {
+            defaultValue = clientEmail;
+          } else if (tokenLower === 'phone') {
+            defaultValue = clientPhone;
+          } else if (tokenLower === 'address') {
+            defaultValue = cl?.client_id?.address || cl?.details?.address || cl?.details?.['Company Address'] || cl?.details?.['Address'] || '';
+          } else if (tokenLower === 'pan') {
+            defaultValue = cl?.details?.pan || cl?.details?.['PAN'] || cl?.details?.['Company PAN'] || cl?.client_id?.pan || '';
+          } else if (tokenLower === 'gstin') {
+            defaultValue = cl?.details?.gstin || cl?.details?.['GSTIN'] || cl?.details?.['GST Number'] || cl?.client_id?.gstin || '';
+          } else if (tokenLower === 'cin') {
+            defaultValue = cl?.details?.cin || cl?.details?.['CIN'] || cl?.details?.['CIN Number'] || cl?.client_id?.cin || '';
+          } else if (tokenLower === 'tan') {
+            defaultValue = cl?.details?.tan || cl?.details?.['TAN'] || cl?.details?.['TAN Number'] || cl?.client_id?.tan || '';
+          } else if (tokenLower === 'director_count' || tokenLower === 'directorcount') {
+            defaultValue = cl?.details?.director_count || (directorsList && directorsList.length > 0 ? String(directorsList.length) : '') || cl?.details?.['Director Count'] || cl?.details?.['No of Directors'] || '';
+          } else if (tokenLower === 'director_name' || tokenLower === 'directorname') {
+            defaultValue = directorNameVal || clientName;
+          } else if (tokenLower === 'din_number' || tokenLower === 'dinnumber' || tokenLower === 'din') {
+            defaultValue = cl?.details?.din_number || (directorsList && directorsList.length > 0 ? directorsList.map(d => d.din).filter(Boolean).join(', ') : '') || cl?.details?.['DIN Number'] || cl?.details?.['DIN'] || '';
+          } else if (tokenLower === 'business_type' || tokenLower === 'businesstype') {
+            defaultValue = cl?.details?.business_type || cl?.details?.['Business Type'] || cl?.details?.['Entity Type'] || '';
+          } else if (tokenLower === 'service_name' || tokenLower === 'servicename') {
+            defaultValue = serviceName;
+          } else if (tokenLower === 'service_id' || tokenLower === 'serviceid') {
+            defaultValue = serviceId;
+          } else if (tokenLower === 'today_date' || tokenLower === 'todaydate') {
+            defaultValue = today;
+          } else if (tokenLower === 'company_letterhead' || tokenLower === 'companyletterhead') {
+            defaultValue = 'Wealth Empires';
+          } else if (tokenLower.includes('director') || tokenLower.includes('partner') || tokenLower.includes('proprietor') || tokenLower.includes('member')) {
+            const numberMatch = tokenLower.match(/\d+/);
+            const numStr = numberMatch ? numberMatch[0] : '';
+            const idx = numStr ? parseInt(numStr, 10) - 1 : 0;
+            
+            // Try parsed directorsList first
+            if (directorsList && directorsList[idx]) {
+              const d = directorsList[idx];
+              const isDin = tokenLower.includes('din');
+              const isPan = tokenLower.includes('pan');
+              const isName = tokenLower.includes('name') || (!isDin && !isPan);
+              
+              if (isDin) defaultValue = d.din || d.dinNumber || '';
+              else if (isPan) defaultValue = d.pan || d.panNumber || '';
+              else if (isName) defaultValue = d.fullName || d.name || d.owner_name || '';
+            }
+
+            // Fallback to flat detail keys
+            if (!defaultValue && cl?.details && typeof cl.details === 'object') {
+              const keys = Object.keys(cl.details);
+              let matchedKey = '';
+              
+              if (numStr) {
+                const isDin = tokenLower.includes('din');
+                const isPan = tokenLower.includes('pan');
+                const isName = tokenLower.includes('name');
+                
+                matchedKey = keys.find(k => {
+                  const kl = k.toLowerCase();
+                  const hasNum = kl.includes(numStr) || (numStr === '1' && kl.includes('first')) || (numStr === '2' && kl.includes('second')) || (numStr === '3' && kl.includes('third'));
+                  const isRole = kl.includes('director') || kl.includes('partner') || kl.includes('proprietor');
+                  if (!hasNum || !isRole) return false;
+                  
+                  if (isDin && (kl.includes('din') || kl.includes('identification'))) return true;
+                  if (isPan && kl.includes('pan')) return true;
+                  if (isName && kl.includes('name')) return true;
+                  return false;
+                }) || '';
+              }
+              
+              if (!matchedKey) {
+                matchedKey = keys.find(k => {
+                  const kl = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+                  const tl = tokenLower.replace(/[^a-z0-9]/g, '');
+                  return kl.includes(tl) || tl.includes(kl);
+                }) || '';
+              }
+              
+              if (matchedKey) {
+                defaultValue = cl.details[matchedKey] || '';
+              }
+            }
+            
+            if (!defaultValue) {
+              if (!numStr) {
+                defaultValue = directorNameVal || clientName;
+              } else if (numStr === '1') {
+                defaultValue = directorNameVal;
+              } else {
+                defaultValue = '';
+              }
+            }
+          }
+        }
+
+        newInputs.push({ 
+          token: fullToken, 
+          label: label, 
+          value: defaultValue 
+        });
       }
     }
     this.customInputs.set(newInputs);
+  }
+
+  getLivePreviewContent(): SafeHtml {
+    const tmpl = this.selectedDocTemplate();
+    if (!tmpl) return '';
+    
+    let html = tmpl.html_content || '';
+    
+    html = html.replace(/\{\{([\s\S]*?)\}\}/g, (m: string, p1: string) => {
+      const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+      return `{{${cleanContent}}}`;
+    });
+
+    for (const inp of this.customInputs()) {
+      const val = inp.value || `<span style="color: #ef4444; font-weight: bold; background: #fee2e2; padding: 2px 4px; border-radius: 4px;">[${inp.label}]</span>`;
+      html = html.split(inp.token).join(val);
+    }
+    
+    return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
   selectDocTemplate(tmpl: any) {
@@ -1907,21 +2134,21 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       custom_values: customValues
     };
     
-    // Always send the latest HTML state if it was modified (or even if it wasn't, as it defaults to the template)
-    let currentHtml = this.editorHtml();
-    if (this.isEditingTemplate()) {
-      const el = document.getElementById('generate-template-editor');
-      if (el) currentHtml = el.innerHTML;
+    let compiledHtml = tmpl.html_content || '';
+    
+    // Fix broken placeholders by removing HTML tags injected inside the curly braces
+    compiledHtml = compiledHtml.replace(/\{\{([\s\S]*?)\}\}/g, (match: string, p1: string) => {
+      const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+      return `{{${cleanContent}}}`;
+    });
+    
+    // Substitute all placeholders with their current values
+    for (const inp of this.customInputs()) {
+      const val = inp.value || '';
+      compiledHtml = compiledHtml.split(inp.token).join(val);
     }
     
-    if (currentHtml) {
-      // Fix broken placeholders by removing HTML tags injected inside the curly braces
-      currentHtml = currentHtml.replace(/\{\{([\s\S]*?)\}\}/g, (match, p1) => {
-        const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-        return `{{${cleanContent}}}`;
-      });
-      payload.override_html = currentHtml;
-    }
+    payload.override_html = compiledHtml;
 
     this.api.post<any>(`document-templates/${tmpl._id}/generate`, payload).subscribe({
       next: (res) => {

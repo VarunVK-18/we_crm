@@ -40,7 +40,7 @@ export class Sidebar implements OnInit, OnDestroy {
   constructor(private api: Api) {
     effect(() => {
       const tab = this.currentTab();
-      if (tab === 'service-track' || tab === 'service-tracker-table' || tab === 'team-service-track') {
+      if (tab === 'service-track' || tab === 'service-tracker-table' || tab === 'team-service-track' || tab === 'settings') {
         if (!this.isCollapsed()) {
           this.isCollapsed.set(true);
           this.autoCollapsedForServiceTrack = true;

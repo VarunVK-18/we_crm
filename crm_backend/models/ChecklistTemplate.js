@@ -19,6 +19,10 @@ const TemplateItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  request_document: {
+    type: Boolean,
+    default: false
+  },
   has_custom_input: {
     type: Boolean,
     default: false

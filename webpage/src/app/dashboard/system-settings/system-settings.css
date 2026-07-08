@@ -443,3 +443,31 @@
   margin-top: 6px;
   display: block;
 }
+
+.checklist-config-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  min-width: 1200px;
+}
+
+.checklist-config-table th {
+  padding: 16px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--bg-active);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: 600;
+}
+
+.checklist-config-table td {
+  padding: 16px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.checklist-config-table tbody tr:hover {
+  background-color: var(--surface-hover);
+}

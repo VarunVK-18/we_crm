@@ -392,7 +392,7 @@
 
           <!-- Data Table for Checklist Items -->
           <div class="table-container">
-            <table class="checklist-table">
+            <table class="checklist-config-table">
               <thead>
                 <tr>
                   <th>Requirement Name</th>
@@ -400,6 +400,7 @@
                   <th>Get Bill</th>
                   <th>Need Temp</th>
                   <th>Custom Input</th>
+                  <th>Request Doc</th>
                   <th>Input Label</th>
                   <th>Linked Document Template</th>
                   <th>Actions</th>
@@ -422,6 +423,10 @@
                       <td>
                         <span *ngIf="item.has_custom_input" class="material-symbols-outlined" style="color: #1e3a8a; font-size: 20px;">check_circle</span>
                         <span *ngIf="!item.has_custom_input" class="material-symbols-outlined" style="color: #cbd5e1; font-size: 20px;">cancel</span>
+                      </td>
+                      <td>
+                        <span *ngIf="item.request_document" class="material-symbols-outlined" style="color: #1e3a8a; font-size: 20px;">check_circle</span>
+                        <span *ngIf="!item.request_document" class="material-symbols-outlined" style="color: #cbd5e1; font-size: 20px;">cancel</span>
                       </td>
                       <td style="color: var(--text-secondary);">{{ item.custom_input_label || '-' }}</td>
                       <td style="color: var(--text-secondary); font-weight: 500; font-size: 13px;">
@@ -456,6 +461,9 @@
                         <input type="checkbox" [(ngModel)]="item.editHasCustomInput" name="editHasCustomInput_{{$index}}" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
                       </td>
                       <td>
+                        <input type="checkbox" [(ngModel)]="item.editRequestDocument" name="editRequestDocument_{{$index}}" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
+                      </td>
+                      <td>
                         <input type="text" [(ngModel)]="item.editCustomInputLabel" name="editCustomInputLabel_{{$index}}" placeholder="e.g. License ID" class="form-control-input" style="padding: 6px; font-size: 13px;" [disabled]="!item.editHasCustomInput" />
                       </td>
                       <td>
@@ -480,7 +488,7 @@
                 }
                 @if (activeTemplateItems.length === 0) {
                   <tr>
-                    <td colspan="8" style="text-align: center; color: var(--text-secondary);">No default items configured. A blank checklist will be generated.</td>
+                    <td colspan="9" style="text-align: center; color: var(--text-secondary);">No default items configured. A blank checklist will be generated.</td>
                   </tr>
                 }
               </tbody>
@@ -515,6 +523,9 @@
                         </label>
                         <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0;">
                           <input type="checkbox" [(ngModel)]="newItemHasCustomInput" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" /> Custom Input
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0;">
+                          <input type="checkbox" [(ngModel)]="newItemRequestDocument" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" /> Request Doc
                         </label>
                       </div>
                     </div>
@@ -706,6 +717,15 @@
                 <option value="5">Large</option>
                 <option value="7">Huge</option>
               </select>
+              <div style="width:1px;height:20px;background:var(--border-color);margin:0 4px;"></div>
+              <!-- Remove highlight / background color -->
+              <button type="button" (click)="removeHighlight()" title="Remove Highlight Color" style="background:none;border:1px solid transparent;border-radius:4px;padding:4px 8px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#b45309;" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='none'">
+                <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'wght' 300;">format_color_reset</span> Remove Color
+              </button>
+              <!-- Strip all inline formatting -->
+              <button type="button" (click)="editorCmd('removeFormat')" title="Remove All Formatting" style="background:none;border:1px solid transparent;border-radius:4px;padding:4px 8px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#6b7280;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'">
+                <span class="material-symbols-outlined" style="font-size:16px;font-variation-settings:'wght' 300;">format_clear</span> Clear Format
+              </button>
               <div style="width:1px;height:20px;background:var(--border-color);margin:0 4px;"></div>
               <!-- Placeholder Insert Dropdown -->
               <select (change)="insertPlaceholder($event)" style="font-size:12px;border:1px solid var(--border-color);border-radius:4px;padding:3px 6px;background:#eff6ff;color:#1d4ed8;cursor:pointer;font-weight:600;">

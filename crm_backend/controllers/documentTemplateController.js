@@ -17,28 +17,122 @@ async function buildPlaceholderMap(checklist) {
   const today = new Date();
   const dateStr = today.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 
-  const directorNames = client?.directors?.map(d => d.fullName).filter(Boolean).join(', ') || '';
-  const dinNumbers = client?.directors?.map(d => d.din).filter(Boolean).join(', ') || '';
+  // Parse directors array from checklist.details
+  let directorsList = [];
+  if (checklist?.details && typeof checklist.details === 'object') {
+    const rawDirs = checklist.details.directors || checklist.details.partners || checklist.details.members;
+    if (rawDirs) {
+      try {
+        if (typeof rawDirs === 'string') {
+          directorsList = JSON.parse(rawDirs);
+        } else if (Array.isArray(rawDirs)) {
+          directorsList = rawDirs;
+        }
+      } catch (e) {
+        console.error("Failed to parse directors on backend:", e);
+      }
+    }
+  }
 
-  return {
-    '{{client_name}}': client?.owner_name || '',
-    '{{company_name}}': client?.company_name || '',
-    '{{email}}': client?.email || '',
-    '{{phone}}': client?.phone || '',
-    '{{address}}': client?.address || '',
-    '{{pan}}': client?.pan || '',
-    '{{gstin}}': client?.gstin || '',
-    '{{cin}}': client?.cin || '',
-    '{{tan}}': client?.tan || '',
-    '{{director_count}}': String(client?.director_count || ''),
+  let directorNames = client?.directors?.map(d => d.fullName).filter(Boolean).join(', ') || '';
+  if (!directorNames && directorsList && directorsList.length > 0) {
+    directorNames = directorsList.map(d => d.fullName || d.name || '').filter(Boolean).join(', ');
+  }
+
+  let dinNumbers = client?.directors?.map(d => d.din).filter(Boolean).join(', ') || '';
+  if (!dinNumbers && directorsList && directorsList.length > 0) {
+    dinNumbers = directorsList.map(d => d.din || '').filter(Boolean).join(', ');
+  }
+
+  // Fallback to checklist.details keys if empty
+  if (!directorNames && checklist?.details) {
+    const details = checklist.details;
+    const keys = Object.keys(details);
+    const nameKeys = keys.filter(k => {
+      const kl = k.toLowerCase();
+      return (kl.includes('director') || kl.includes('partner') || kl.includes('proprietor')) && kl.includes('name');
+    });
+    if (nameKeys.length > 0) {
+      directorNames = nameKeys.map(k => details[k]).filter(Boolean).join(', ');
+    } else {
+      const genKeys = keys.filter(k => {
+        const kl = k.toLowerCase();
+        return kl.includes('director') || kl.includes('partner') || kl.includes('proprietor');
+      });
+      if (genKeys.length > 0) {
+        directorNames = genKeys.map(k => details[k]).filter(Boolean).join(', ');
+      }
+    }
+  }
+
+  if (!dinNumbers && checklist?.details) {
+    const details = checklist.details;
+    const keys = Object.keys(details);
+    const dinKeys = keys.filter(k => {
+      const kl = k.toLowerCase();
+      return kl.includes('din') || kl.includes('director identification number');
+    });
+    if (dinKeys.length > 0) {
+      dinNumbers = dinKeys.map(k => details[k]).filter(Boolean).join(', ');
+    }
+  }
+
+  const placeholderMap = {
+    '{{client_name}}': checklist?.details?.ownerName || checklist?.details?.owner_name || client?.owner_name || client?.name || '',
+    '{{company_name}}': checklist?.details?.companyName || checklist?.details?.company_name || client?.company_name || '',
+    '{{email}}': checklist?.details?.companyEmail || client?.email || '',
+    '{{phone}}': checklist?.details?.companyPhone || client?.phone || '',
+    '{{address}}': checklist?.details?.address || checklist?.details?.['Company Address'] || client?.address || '',
+    '{{pan}}': checklist?.details?.pan || checklist?.details?.['PAN'] || client?.pan || '',
+    '{{gstin}}': checklist?.details?.gstin || checklist?.details?.['GSTIN'] || client?.gstin || '',
+    '{{cin}}': checklist?.details?.cin || checklist?.details?.['CIN'] || client?.cin || '',
+    '{{tan}}': checklist?.details?.tan || checklist?.details?.['TAN'] || client?.tan || '',
+    '{{director_count}}': String(checklist?.details?.director_count || (directorsList && directorsList.length > 0 ? directorsList.length : '') || client?.director_count || ''),
     '{{director_name}}': directorNames,
     '{{din_number}}': dinNumbers,
-    '{{business_type}}': client?.business_type || '',
+    '{{business_type}}': checklist?.details?.business_type || checklist?.details?.['Business Type'] || client?.business_type || '',
     '{{service_name}}': checklist?.service_name || '',
     '{{service_id}}': checklist?.custom_service_id || '',
     '{{today_date}}': dateStr,
     '{{company_letterhead}}': company?.company_name || 'WE CRM',
   };
+
+  // Dynamically map all checklist.details keys to placeholders
+  if (checklist?.details && typeof checklist.details === 'object') {
+    for (const [key, value] of Object.entries(checklist.details)) {
+      if (value) {
+        // e.g. "Director 1 Name" -> "{{director_1_name}}"
+        const snakeKey = key.toLowerCase()
+          .replace(/[^a-z0-9]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_+|_+$/g, '');
+        placeholderMap[`{{${snakeKey}}}`] = String(value);
+
+        // e.g. "Director 1 Name" -> "{{director 1 name}}"
+        const spaceKey = key.toLowerCase().trim();
+        placeholderMap[`{{${spaceKey}}}`] = String(value);
+      }
+    }
+  }
+
+  // Inject parsed directors list into placeholderMap
+  if (directorsList && directorsList.length > 0) {
+    directorsList.forEach((d, i) => {
+      const idx = i + 1;
+      const name = d.fullName || d.name || '';
+      const din = d.din || d.dinNumber || '';
+      const pan = d.pan || d.panNumber || '';
+      
+      placeholderMap[`{{director_${idx}_name}}`] = name;
+      placeholderMap[`{{director ${idx} name}}`] = name;
+      placeholderMap[`{{director_${idx}_din}}`] = din;
+      placeholderMap[`{{director ${idx} din}}`] = din;
+      placeholderMap[`{{director_${idx}_pan}}`] = pan;
+      placeholderMap[`{{director ${idx} pan}}`] = pan;
+    });
+  }
+
+  return placeholderMap;
 }
 
 /**

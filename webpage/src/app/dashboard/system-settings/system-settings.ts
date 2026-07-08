@@ -47,54 +47,30 @@ export class SystemSettings implements OnInit {
   });
 
   availableServices = [
-    '360° Compliance',
-    'Accounting & Tax',
-    'BIS',
-    'Capital Funding',
-    'Company Incorporation',
-    'Compliance Audit',
-    'Comprehensive MCA + GST + TDS',
-    'Copyright',
-    'DPIIT',
-    'DSC',
-    'DUNS Number Registration',
-    'FSSAI',
-    'FSSAI Food License',
-    'GST Cancelation',
-    'GST Compliance',
-    'GST Compliance Package',
-    'GST filing',
-    'GST Onboarding',
-    'GST Registration',
-    'GST Services',
-    'IE code',
-    'IEC Code Registration',
-    'ISO',
-    'ISO Certifications',
-    'ITR',
-    'LEI',
-    'LLP Incorporation',
-    'MCA Compliance',
-    'MCA Compliance Package (LLP)',
-    'MCA Compliance Package (Private Ltd)',
-    'MSME',
-    'MSME Certification',
-    'OPC',
-    'PAN, TAN & Bamk Setup',
-    'Partnership Firm Registration',
-    'Patent',
-    'PF',
     'Private Limited Incorporation',
+    'LLP Incorporation',
+    'OPC',
+    'MSME',
     'Proprietorship',
-    'Proprietorship Registration',
-    'Risk Management',
-    'ROSH & CE',
-    'Strategic Tax Planning',
-    'TAX filing',
-    'TAX Planning',
+    'MCA Compliance',
     'TDS',
+    'PF',
+    'Copyright',
+    'GST Compliance',
+    'GST Cancelation',
+    'GST filing',
+    'ITR',
+    'DPIIT',
     'Trade Mark',
-    'Trademark Registration'
+    'GST Registration',
+    'ISO',
+    'Patent',
+    'FSSAI',
+    'DSC',
+    'IE code',
+    'LEI',
+    'BIS',
+    'ROSH & CE'
   ];
 
   selectedService = '';
@@ -105,6 +81,7 @@ export class SystemSettings implements OnInit {
   newItemDesc = '';
   newItemGetBill = false;
   newItemNeedTemporary = false;
+  newItemRequestDocument = false;
   newItemHasCustomInput = false;
   newItemCustomInputLabel = '';
   newItemLinkedTemplates: string[] = [];
@@ -213,6 +190,7 @@ export class SystemSettings implements OnInit {
     } else if (tabName !== 'system') {
       this.selectedService = tabName;
       this.onServiceChange();
+      this.fetchTemplates();
     }
   }
 
@@ -220,10 +198,14 @@ export class SystemSettings implements OnInit {
     this.activeTemplateItems = [];
     this.activeTemplateExtractEnabled = false;
     this.mappedTemplateIds.set([]);
-    
+  }
+
+  fetchTemplates() {
     if (!this.selectedService) {
+      this.activeTemplateItems = [];
       return;
     }
+
     this.isTemplateLoading.set(true);
     this.api.get<any>('templates/checklists').subscribe({
       next: (res) => {
@@ -235,6 +217,7 @@ export class SystemSettings implements OnInit {
               description: i.description,
               getBill: i.getBill || false,
               need_temporary: i.need_temporary || false,
+              request_document: i.request_document || false,
               has_custom_input: i.has_custom_input || false,
               custom_input_label: i.custom_input_label || '',
               linked_document_templates: (i.linked_document_templates || []).map((dt: any) => dt._id || dt)
@@ -267,6 +250,7 @@ export class SystemSettings implements OnInit {
         description: this.newItemDesc.trim(),
         getBill: this.newItemGetBill,
         need_temporary: this.newItemNeedTemporary,
+        request_document: this.newItemRequestDocument,
         has_custom_input: this.newItemHasCustomInput,
         custom_input_label: this.newItemCustomInputLabel.trim(),
         linked_document_templates: [...this.newItemLinkedTemplates]
@@ -275,6 +259,7 @@ export class SystemSettings implements OnInit {
       this.newItemDesc = '';
       this.newItemGetBill = false;
       this.newItemNeedTemporary = false;
+      this.newItemRequestDocument = false;
       this.newItemHasCustomInput = false;
       this.newItemCustomInputLabel = '';
       this.newItemLinkedTemplates = [];
@@ -293,6 +278,7 @@ export class SystemSettings implements OnInit {
     item.editDesc = item.description;
     item.editGetBill = item.getBill || false;
     item.editNeedTemporary = item.need_temporary || false;
+    item.editRequestDocument = item.request_document || false;
     item.editHasCustomInput = item.has_custom_input || false;
     item.editCustomInputLabel = item.custom_input_label || '';
     item.editLinkedTemplates = [...(item.linked_document_templates || [])];
@@ -304,6 +290,7 @@ export class SystemSettings implements OnInit {
     item.description = item.editDesc;
     item.getBill = item.editGetBill;
     item.need_temporary = item.editNeedTemporary || false;
+    item.request_document = item.editRequestDocument || false;
     item.has_custom_input = item.editHasCustomInput || false;
     item.custom_input_label = item.editCustomInputLabel || '';
     item.linked_document_templates = [...(item.editLinkedTemplates || [])];
@@ -323,6 +310,7 @@ export class SystemSettings implements OnInit {
       description: item.description,
       getBill: item.getBill || false,
       need_temporary: item.need_temporary || false,
+      request_document: item.request_document || false,
       has_custom_input: item.has_custom_input || false,
       custom_input_label: item.custom_input_label || '',
       linked_document_templates: item.linked_document_templates || [],
@@ -560,6 +548,41 @@ export class SystemSettings implements OnInit {
     document.execCommand(command, false, undefined);
     const el = document.getElementById('doc-template-editor');
     if (el) this.editingDocTemplate.html_content = el.innerHTML;
+  }
+
+  removeHighlight() {
+    const el = document.getElementById('doc-template-editor');
+    if (!el) return;
+
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+      // Use execCommand to remove background color on selection
+      document.execCommand('hiliteColor', false, 'transparent');
+      document.execCommand('backColor', false, 'transparent');
+    }
+
+    // Also walk ALL elements inside the editor and strip any inline bg-color / highlight styles
+    // This handles cases where the whole doc needs cleanup
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT);
+    let node: Element | null = el;
+    while (node) {
+      const elem = node as HTMLElement;
+      if (elem.style) {
+        elem.style.backgroundColor = '';
+        elem.style.background = '';
+        // If the element has no other style left and it's just a span wrapper for color, unwrap it
+        if (elem.tagName === 'SPAN' && !elem.getAttribute('style')?.trim()) {
+          const parent = elem.parentNode;
+          if (parent) {
+            while (elem.firstChild) parent.insertBefore(elem.firstChild, elem);
+            parent.removeChild(elem);
+          }
+        }
+      }
+      node = walker.nextNode() as Element | null;
+    }
+
+    this.editingDocTemplate.html_content = el.innerHTML;
   }
 
   editorFontSize(event: Event) {

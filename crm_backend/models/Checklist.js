@@ -25,6 +25,10 @@ const ChecklistItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  request_document: {
+    type: Boolean,
+    default: false
+  },
   has_custom_input: {
     type: Boolean,
     default: false
@@ -232,6 +236,7 @@ ChecklistSchema.pre('save', async function () {
             isActionStep: item.isActionStep || false,
             getBill: item.getBill || false,
             need_temporary: item.need_temporary || false,
+            request_document: item.request_document || false,
             has_custom_input: item.has_custom_input || false,
             custom_input_label: item.custom_input_label || '',
             linked_document_templates: item.linked_document_templates || []
@@ -243,8 +248,8 @@ ChecklistSchema.pre('save', async function () {
           let tmplItemIndex = 0;
           for (let clItem of this.items) {
             if (clItem.title === 'Client Form Filling') {
-              clItem.isActionStep = true;
-              continue;
+               clItem.isActionStep = true;
+               continue;
             }
             
             const tmplItem = template.items && template.items[tmplItemIndex];
@@ -253,6 +258,7 @@ ChecklistSchema.pre('save', async function () {
               clItem.isActionStep = tmplItem.isActionStep || false;
               clItem.getBill = tmplItem.getBill || false;
               clItem.need_temporary = tmplItem.need_temporary || false;
+              clItem.request_document = tmplItem.request_document || false;
               clItem.has_custom_input = tmplItem.has_custom_input || false;
               clItem.custom_input_label = tmplItem.custom_input_label || '';
             }
