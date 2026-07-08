@@ -13,6 +13,7 @@
         <table class="data-table">
           <thead>
             <tr>
+              <th>Service ID</th>
               <th>Service Details</th>
               <th>Client Name</th>
               <th>Client Custom ID</th>
@@ -24,10 +25,10 @@
           <tbody>
             @for (expense of pendingExpenses(); track expense.itemId) {
               <tr>
+                <td style="font-weight: 600;">{{ expense.custom_service_id }}</td>
                 <td>
                   <div style="font-weight: 600;">{{ expense.service_name }}</div>
                   <div style="font-size: 12px; color: var(--text-secondary);">
-                    {{ expense.custom_service_id }}<br>
                     {{ expense.item_title }}
                   </div>
                 </td>
@@ -61,7 +62,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="6">
+                <td colspan="7">
                   <div class="empty-state">
                     <span class="material-symbols-outlined empty-icon">receipt_long</span>
                     <h3 style="margin: 0 0 8px 0; font-size: 18px; color: var(--text-primary);">No pending payments</h3>
@@ -92,6 +93,7 @@
           <thead>
             <tr>
               <th>Date</th>
+              <th>Service ID</th>
               <th>Service Details</th>
               <th>Client Name</th>
               <th>Amount (₹)</th>
@@ -105,6 +107,7 @@
                 <td style="font-size: 13px; color: var(--text-secondary);">
                   {{ expense.uploadedAt | date:'mediumDate' }}
                 </td>
+                <td style="font-weight: 600;">{{ expense.custom_service_id }}</td>
                 <td>
                   <div style="font-weight: 600;">{{ expense.service_name }}</div>
                   <div style="font-size: 12px; color: var(--text-secondary);">
@@ -124,7 +127,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="6">
+                <td colspan="7">
                   <div class="empty-state">
                     <span class="material-symbols-outlined empty-icon">history</span>
                     <h3 style="margin: 0 0 8px 0; font-size: 18px; color: var(--text-primary);">No payment history</h3>

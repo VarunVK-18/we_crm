@@ -9,6 +9,7 @@ const {
   generateDocumentFromTemplate,
   getTemplatesForService,
   mapTemplatesToService,
+  previewPopulatedTemplate,
 } = require('../controllers/documentTemplateController');
 
 router.use(checkUser);
@@ -18,6 +19,9 @@ router.get('/', permit('admin', 'client_manager', 'filing_staff', 'filling_staff
 router.post('/', permit('admin'), createDocumentTemplate);
 router.put('/:id', permit('admin'), updateDocumentTemplate);
 router.delete('/:id', permit('admin'), deleteDocumentTemplate);
+
+// Preview populated template with client data
+router.post('/:id/preview-populated', permit('admin', 'client_manager', 'filing_staff', 'filling_staff', 'account_manager', 'staff'), previewPopulatedTemplate);
 
 // Generate PDF from template — staff + admin
 router.post('/:id/generate', permit('admin', 'client_manager', 'filing_staff', 'filling_staff', 'account_manager', 'staff'), generateDocumentFromTemplate);

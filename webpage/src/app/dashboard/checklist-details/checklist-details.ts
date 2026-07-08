@@ -300,18 +300,9 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   }
 
   getAssigneeName(cl: any): string {
-    if (!cl) return 'Yet to Assign';
-    const stage = (cl.stage || '').toLowerCase();
-    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
-    
-    if (isNew || !cl.assigned_to) {
+    if (!cl || !cl.assigned_to) {
       return 'Yet to Assign';
     }
-    
-    if (cl.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress' && stage !== 'completed') {
-      return 'Yet to Assign';
-    }
-    
     return cl.assigned_to.owner_name || cl.assigned_to.name || 'Yet to Assign';
   }
 
@@ -477,6 +468,18 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
     const currentItem = cl.items[itemIndex];
 
+    // Enforce isActionStep requirement (client form filling)
+    if (currentItem.isActionStep && !cl.details?.clientFormSubmitted) {
+      this.confirmDialog.confirm({
+        title: 'Action Required',
+        message: 'Client needs to do form filling.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      revertCheckbox();
+      return;
+    }
+
     // Enforce getBill requirement
     if (currentItem.getBill && !currentItem.expense?.billUrl) {
       this.confirmDialog.confirm({
@@ -487,6 +490,22 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       });
       revertCheckbox();
       return;
+    }
+
+    // Enforce requires_customer_verification requirement
+    const needsVerification = currentItem.linked_document_templates && currentItem.linked_document_templates.some((t: any) => t.requires_customer_verification);
+    if (needsVerification) {
+      const tempDoc = cl.temporary_documents?.find((d: any) => d.step_title === currentItem.title);
+      if (!tempDoc || tempDoc.status !== 'replied') {
+        this.confirmDialog.confirm({
+          title: 'Action Required',
+          message: 'This step requires customer verification. The customer must sign/reply to the generated document before completing this step.',
+          confirmText: 'OK',
+          hideCancel: true
+        });
+        revertCheckbox();
+        return;
+      }
     }
 
     // Check if it's the last checkbox and we are trying to check it
@@ -1605,20 +1624,210 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
   }
 
+  editorUndoStack: string[] = [];
+  editorRedoStack: string[] = [];
+  lastPushedHtml = '';
+
   toggleTemplateEditor() {
-    this.isEditingTemplate.set(!this.isEditingTemplate());
-    if (this.isEditingTemplate() && this.selectedDocTemplate()) {
-      setTimeout(() => {
-        const el = document.getElementById('generate-template-editor');
-        if (el) el.innerHTML = this.editorHtml();
-      }, 50);
+    const nextState = !this.isEditingTemplate();
+    const cl = this.checklist();
+    const tmpl = this.selectedDocTemplate();
+
+    if (nextState && cl && tmpl) {
+      this.isGeneratingDoc.set(true);
+      this.api.post<any>(`document-templates/${tmpl._id}/preview-populated`, { checklist_id: cl._id }).subscribe({
+        next: (res) => {
+          this.isGeneratingDoc.set(false);
+          if (res.success && res.html) {
+            this.editorHtml.set(res.html);
+            this.editorUndoStack = [res.html];
+            this.editorRedoStack = [];
+            this.lastPushedHtml = res.html;
+            this.isEditingTemplate.set(true);
+            setTimeout(() => {
+              const el = document.getElementById('generate-template-editor');
+              if (el) el.innerHTML = res.html;
+            }, 50);
+          } else {
+            this.editorUndoStack = [this.editorHtml()];
+            this.editorRedoStack = [];
+            this.lastPushedHtml = this.editorHtml();
+            this.isEditingTemplate.set(true);
+            setTimeout(() => {
+              const el = document.getElementById('generate-template-editor');
+              if (el) el.innerHTML = this.editorHtml();
+            }, 50);
+          }
+        },
+        error: () => {
+          this.isGeneratingDoc.set(false);
+          this.editorUndoStack = [this.editorHtml()];
+          this.editorRedoStack = [];
+          this.lastPushedHtml = this.editorHtml();
+          this.isEditingTemplate.set(true);
+          setTimeout(() => {
+            const el = document.getElementById('generate-template-editor');
+            if (el) el.innerHTML = this.editorHtml();
+          }, 50);
+        }
+      });
+    } else {
+      this.isEditingTemplate.set(nextState);
     }
+  }
+
+  getPlaceholderValue(placeholderName: string): string {
+    const cl = this.checklist();
+    if (!cl) return '';
+    const key = placeholderName.trim().toLowerCase();
+    
+    if (key === 'client name' || key === 'client_name' || key === 'owner_name' || key === 'owner name') {
+      return cl.client_id?.owner_name || '';
+    }
+    if (key === 'company name' || key === 'company_name') {
+      return cl.client_id?.company_name || '';
+    }
+    if (key === 'email' || key === 'client_email' || key === 'client email') {
+      return cl.client_id?.email || '';
+    }
+    if (key === 'client_id' || key === 'client id' || key === 'custom_client_id') {
+      return cl.client_id?.custom_client_id || '';
+    }
+    if (key === 'service_id' || key === 'service id' || key === 'custom_service_id') {
+      return cl.custom_service_id || '';
+    }
+    if (key === 'service_name' || key === 'service name') {
+      return cl.service_name || '';
+    }
+    
+    if (cl.details && typeof cl.details === 'object') {
+      for (const dk of Object.keys(cl.details)) {
+        if (dk.toLowerCase() === key) {
+          return cl.details[dk] || '';
+        }
+      }
+      if (cl.details.mcaForm && typeof cl.details.mcaForm === 'object') {
+        for (const mk of Object.keys(cl.details.mcaForm)) {
+          if (mk.toLowerCase() === key) {
+            return cl.details.mcaForm[mk] || '';
+          }
+        }
+      }
+    }
+    
+    return '';
+  }
+
+  onEditorKeyDown(event: KeyboardEvent) {
+    const isUndo = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z' && !event.shiftKey;
+    const isRedo = (event.ctrlKey || event.metaKey) && (event.key.toLowerCase() === 'y' || (event.shiftKey && event.key.toLowerCase() === 'z'));
+
+    if (isUndo) {
+      event.preventDefault();
+      this.undoEditorChange();
+    } else if (isRedo) {
+      event.preventDefault();
+      this.redoEditorChange();
+    } else if (event.key === ' ' || event.key === 'Enter') {
+      this.pushEditorState();
+    }
+  }
+
+  pushEditorState() {
+    const el = document.getElementById('generate-template-editor');
+    if (el) {
+      const html = el.innerHTML;
+      if (html !== this.lastPushedHtml) {
+        this.editorUndoStack.push(html);
+        this.lastPushedHtml = html;
+        this.editorRedoStack = [];
+      }
+    }
+  }
+
+  undoEditorChange() {
+    if (this.editorUndoStack.length > 1) {
+      const current = this.editorUndoStack.pop();
+      if (current) this.editorRedoStack.push(current);
+
+      const previous = this.editorUndoStack[this.editorUndoStack.length - 1];
+      const el = document.getElementById('generate-template-editor');
+      if (el && previous !== undefined) {
+        el.innerHTML = previous;
+        this.editorHtml.set(previous);
+        this.lastPushedHtml = previous;
+        this.updateCustomInputsFromHtml(previous);
+        this.restoreCursorToEnd(el);
+      }
+    }
+  }
+
+  redoEditorChange() {
+    if (this.editorRedoStack.length > 0) {
+      const nextState = this.editorRedoStack.pop();
+      if (nextState !== undefined) {
+        this.editorUndoStack.push(nextState);
+        const el = document.getElementById('generate-template-editor');
+        if (el) {
+          el.innerHTML = nextState;
+          this.editorHtml.set(nextState);
+          this.lastPushedHtml = nextState;
+          this.updateCustomInputsFromHtml(nextState);
+          this.restoreCursorToEnd(el);
+        }
+      }
+    }
+  }
+
+  restoreCursorToEnd(el: HTMLElement) {
+    try {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      range.collapse(false);
+      if (selection) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    } catch (e) {}
   }
 
   onGenerateEditorInput(event: Event) {
     const el = event.target as HTMLElement;
-    this.editorHtml.set(el.innerHTML);
-    this.updateCustomInputsFromHtml(el.innerHTML);
+    let html = el.innerHTML;
+    const regex = /\{\{([^}]+)\}\}/g;
+    let hasReplaced = false;
+
+    html = html.replace(regex, (match, p1) => {
+      const val = this.getPlaceholderValue(p1);
+      if (val) {
+        hasReplaced = true;
+        return val;
+      }
+      return match;
+    });
+
+    if (hasReplaced) {
+      // Save state before replacing to allow undo
+      this.pushEditorState();
+      
+      el.innerHTML = html;
+      this.editorHtml.set(html);
+      
+      // Update pushed status
+      this.lastPushedHtml = html;
+      this.editorUndoStack.push(html);
+      this.editorRedoStack = [];
+
+      this.restoreCursorToEnd(el);
+    } else {
+      this.editorHtml.set(html);
+      // Auto push to undo stack periodically / simple throttling
+      if (html.length % 5 === 0) {
+        this.pushEditorState();
+      }
+    }
+    this.updateCustomInputsFromHtml(this.editorHtml());
   }
 
   generateEditorCmd(command: string) {

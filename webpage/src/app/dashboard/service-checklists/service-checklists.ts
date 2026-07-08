@@ -37,7 +37,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     service_name: '',
     assigned_to: '',
     notes: '',
-    items: [] as {title: string, description: string}[]
+    items: [] as { title: string, description: string }[]
   };
   newChecklistNewItemTitle = '';
   newChecklistNewItemDesc = '';
@@ -71,7 +71,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     'PAN, TAN & Bamk Setup'
   ];
 
-  constructor(public api: Api) {}
+  constructor(public api: Api) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -80,7 +80,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     }
     this.fetchChecklists();
     this.fetchClients();
-    
+
     // Poll for changes so admin updates reflect immediately for staff
     this.pollInterval = setInterval(() => {
       this.fetchChecklists();
@@ -156,12 +156,11 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     const all = this.checklists();
     const tab = this.currentDirectoryTab();
     const query = this.searchQuery().toLowerCase().trim();
-    
+
     let filtered = all;
     if (tab === 'pending') {
       filtered = all.filter(c => {
-        const ds = this.getChecklistDisplayStatus(c);
-        return ds === 'Action Required';
+        return this.isActionRequired(c) && c.status !== 'completed';
       });
     } else if (tab === 'in_progress') {
       filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress');
@@ -170,7 +169,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     } else if (tab === 'final_delivered') {
       filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && !this.hasPendingPayment(c));
     }
-    
+
     if (query) {
       filtered = filtered.filter(c => {
         const clientName = (c.client_id?.owner_name || '').toLowerCase();
@@ -179,7 +178,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
         return clientName.includes(query) || clientCompany.includes(query) || serviceName.includes(query);
       });
     }
-    
+
     return filtered;
   }
 
@@ -187,7 +186,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     const all = this.checklists();
     if (tab === 'all') return all.length;
     if (tab === 'pending') {
-      return all.filter(c => this.getChecklistDisplayStatus(c) === 'Action Required').length;
+      return all.filter(c => this.isActionRequired(c) && c.status !== 'completed').length;
     } else if (tab === 'in_progress') {
       return all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress').length;
     } else if (tab === 'completed') {
@@ -308,7 +307,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
 
   submitAddChecklistItem() {
     if (!this.newChecklistItemTitle.trim()) return;
-    this.api.post<any>(`checklists/${this.selectedChecklistId}/items`, { 
+    this.api.post<any>(`checklists/${this.selectedChecklistId}/items`, {
       title: this.newChecklistItemTitle,
       description: this.newChecklistItemDesc
     }).subscribe({
@@ -347,18 +346,9 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   }
 
   getAssigneeName(cl: any): string {
-    const stage = (cl.stage || '').toLowerCase();
-    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
-    
-    if (isNew || !cl.assigned_to) {
+    if (!cl || !cl.assigned_to) {
       return 'Yet to Assign';
     }
-    
-    // If it is assigned to a client manager but the work hasn't started, consider it unassigned
-    if (cl.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress' && stage !== 'completed') {
-      return 'Yet to Assign';
-    }
-    
     return cl.assigned_to.owner_name || cl.assigned_to.name || 'Yet to Assign';
   }
 
@@ -374,7 +364,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
 
   getChecklistDisplayStatus(c: any): string {
     if (c.status === 'completed') return 'Completed';
-    
+
     const assigneeName = this.getAssigneeName(c);
     const isAssigned = assigneeName !== 'Yet to Assign';
 
@@ -392,12 +382,12 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   isActionRequired(c: any): boolean {
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
-      'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
+      'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai',
       'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
     ];
-    
+
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
-    
+
     if (requiresForm) {
       // These are system-injected fields set at checklist creation time, NOT from client form submission
       const SYSTEM_FIELDS = new Set([
@@ -413,7 +403,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
       }
       return !isFormFilled;
     }
-    
+
     return false;
   }
 
@@ -515,9 +505,9 @@ export class ServiceChecklists implements OnInit, OnDestroy {
       isUploaded: false
     });
 
-    this.api.patch(`checklists/${this.selectedChecklistId}`, { 
+    this.api.patch(`checklists/${this.selectedChecklistId}`, {
       requested_documents,
-      stage: 'documentRequested' 
+      stage: 'documentRequested'
     }).subscribe({
       next: (res: any) => {
         if (res && res.success) {

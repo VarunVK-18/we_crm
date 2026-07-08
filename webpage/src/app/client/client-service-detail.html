@@ -107,7 +107,7 @@
                     </div>
                     <div class="item-content">
                       <h4>{{ item.title || item.label }}</h4>
-                      @if (item.isActionStep) {
+                      @if (shouldShowFillForm(item)) {
                       @if (!isItemCompleted(item)) {
                       <p>{{ item.description || item.notes }}</p>
                       @if (order()?.derivedStatus !== 'not-initialized' && order()?.assigned_to) {

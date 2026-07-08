@@ -164,6 +164,7 @@ exports.updateOrder = async (req, res) => {
                 description: item.description,
                 label: item.title,
                 isChecked: false,
+                isActionStep: item.isActionStep || false,
                 need_temporary: item.need_temporary || false,
                 has_custom_input: item.has_custom_input || false,
                 custom_input_label: item.custom_input_label || '',
@@ -173,7 +174,7 @@ exports.updateOrder = async (req, res) => {
           } catch (e) { }
 
           if (finalItems.length === 0 || finalItems[0].title !== 'Client Form Filling') {
-            finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+            finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false, isActionStep: true });
           }
           if (finalItems.length === 1) {
             finalItems.push({ title: 'Final Delivery & Processing', description: 'Process the service and upload final documents.', label: 'Service Processing', isChecked: false });
@@ -267,7 +268,7 @@ exports.updateOrder = async (req, res) => {
               custom_service_id = await getNextServiceId(compId); 
             } catch (e) { console.error("Failed custom_service_id:", e); }
 
-            let finalItems = [{ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false }];
+            let finalItems = [{ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false, isActionStep: true }];
             try {
               const template = await ChecklistTemplate.findOne({ company_id: order.companyId, service_name: order.serviceType });
                if (template && template.items && template.items.length > 0) {
@@ -276,13 +277,14 @@ exports.updateOrder = async (req, res) => {
                     description: item.description,
                     label: item.title,
                     isChecked: false,
+                    isActionStep: item.isActionStep || false,
                     need_temporary: item.need_temporary || false,
                     has_custom_input: item.has_custom_input || false,
                     custom_input_label: item.custom_input_label || '',
                     linked_document_templates: item.linked_document_templates || []
                   }));
                  if (finalItems[0].title !== 'Client Form Filling') {
-                   finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false });
+                   finalItems.unshift({ title: 'Client Form Filling', description: 'Ensure the client has submitted all necessary initial forms and details.', label: 'Client Form Filling', isChecked: false, isActionStep: true });
                 }
               }
             } catch (e) { console.error("Failed custom_service_id:", e); }
@@ -1111,6 +1113,39 @@ exports.submitMcaForm = async (req, res) => {
   } catch (error) {
     console.error('Error submitting MCA form:', error);
     res.status(500).json({ message: 'Server error while submitting MCA form.', error: error.message });
+  }
+};
+
+exports.getOrderFormDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        status: order.status,
+        formDetails: order.details?.mcaForm || null,
+        uploadedDocuments: order.details?.mcaDocs?.map(d => ({
+          documentType: 
+            d.name.includes("Incorporation") ? "coi" :
+            d.name.includes("PAN") ? "pan" :
+            d.name.includes("MOA") ? "moa" :
+            d.name.includes("AOA") ? "aoa" :
+            d.name.includes("Bank") ? "bankStatement" :
+            d.name.includes("Sales") ? "salesInvoice" :
+            d.name.includes("Purchase") ? "purchaseBills" : "other",
+          fileUrl: d.fileUrl
+        })) || []
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching form details:', error);
+    res.status(500).json({ message: 'Server error while fetching form details.', error: error.message });
   }
 };
 

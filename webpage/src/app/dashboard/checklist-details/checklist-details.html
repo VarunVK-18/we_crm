@@ -1417,6 +1417,7 @@
           </div>
           <div id="generate-template-editor" contenteditable="true"
                (input)="onGenerateEditorInput($event)"
+               (keydown)="onEditorKeyDown($event)"
                style="min-height:300px;padding:16px;border:1px solid var(--border-color);border-radius:0 0 8px 8px;outline:none;font-family:'Times New Roman',Times,serif;font-size:12pt;background:white;overflow-y:auto;max-height:50vh;">
           </div>
         } @else {

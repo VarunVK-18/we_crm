@@ -17,6 +17,10 @@ const ChecklistItemSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isActionStep: {
+    type: Boolean,
+    default: false
+  },
   need_temporary: {
     type: Boolean,
     default: false
@@ -206,6 +210,55 @@ ChecklistSchema.pre('save', async function () {
       });
       if (template) {
         this.need_temporary = template.need_temporary || false;
+
+        if (!this.items || this.items.length === 0) {
+          const formFillingItem = {
+            title: 'Client Form Filling',
+            label: 'Client Form Filling',
+            description: 'Ensure the client has submitted all necessary initial forms and details.',
+            isChecked: false,
+            isActionStep: true,
+            need_temporary: false,
+            has_custom_input: false,
+            custom_input_label: '',
+            linked_document_templates: []
+          };
+
+          const templateItems = (template.items || []).map(item => ({
+            title: item.title,
+            label: item.title,
+            description: item.description || '',
+            isChecked: false,
+            isActionStep: item.isActionStep || false,
+            getBill: item.getBill || false,
+            need_temporary: item.need_temporary || false,
+            has_custom_input: item.has_custom_input || false,
+            custom_input_label: item.custom_input_label || '',
+            linked_document_templates: item.linked_document_templates || []
+          }));
+
+          this.items = [formFillingItem, ...templateItems];
+        } else {
+          // If items were already partially initialized by a controller, sync their templates and config flags from the template
+          let tmplItemIndex = 0;
+          for (let clItem of this.items) {
+            if (clItem.title === 'Client Form Filling') {
+              clItem.isActionStep = true;
+              continue;
+            }
+            
+            const tmplItem = template.items && template.items[tmplItemIndex];
+            if (tmplItem) {
+              clItem.linked_document_templates = tmplItem.linked_document_templates || [];
+              clItem.isActionStep = tmplItem.isActionStep || false;
+              clItem.getBill = tmplItem.getBill || false;
+              clItem.need_temporary = tmplItem.need_temporary || false;
+              clItem.has_custom_input = tmplItem.has_custom_input || false;
+              clItem.custom_input_label = tmplItem.custom_input_label || '';
+            }
+            tmplItemIndex++;
+          }
+        }
       }
     } catch (err) {
       console.error('Error in Checklist pre-save need_temporary:', err);

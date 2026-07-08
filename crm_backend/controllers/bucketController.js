@@ -67,6 +67,7 @@ const claimBucketRequest = async (req, res) => {
           description: item.description,
           label: item.title,
           isChecked: false,
+          isActionStep: item.isActionStep || false,
           need_temporary: item.need_temporary || false,
           has_custom_input: item.has_custom_input || false,
           custom_input_label: item.custom_input_label || '',
@@ -81,7 +82,8 @@ const claimBucketRequest = async (req, res) => {
         title: 'Client Form Filling',
         description: 'Ensure the client has submitted all necessary initial forms and details.',
         label: 'Client Form Filling',
-        isChecked: false
+        isChecked: false,
+        isActionStep: true
       });
     }
     if (finalItems.length === 1) {

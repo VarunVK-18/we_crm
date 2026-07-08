@@ -20,26 +20,26 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   clientManager = signal<any>(null);
   orderId = signal<string>('');
   order = signal<any>(null);
-  
+
   // Chat
   chatMessages = signal<any[]>([]);
   newChatMessage: string = '';
   selectedSenderRole: string = 'client';
-  
+
   // UI State
   isChatOpen = signal(false);
   isLoading = signal(true);
-  
+
   @ViewChild('trackerScroll') trackerScroll!: ElementRef;
-  
+
   pollingInterval: any;
 
   constructor(
-    private route: ActivatedRoute, 
+    private route: ActivatedRoute,
     private router: Router,
     public location: Location,
     public api: Api
-  ) {}
+  ) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -47,11 +47,11 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
       this.user.set(JSON.parse(savedUser));
       this.fetchClientManager();
     }
-    
+
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
       this.fetchOrderDetails();
-      
+
       this.pollingInterval = setInterval(() => {
         this.fetchOrderDetails(true);
         if (this.isChatOpen()) {
@@ -232,7 +232,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   fetchOrderDetails(silent = false) {
     if (!silent) this.isLoading.set(true);
-    
+
     // We can fetch single order if we had an endpoint, but since the flutter app uses /my-checklists, we can filter it or we can try GET /orders/:id
     // Let's use GET /orders/:id if it works for clients, else we fetch my-checklists and filter
     const uid = this.user()?._id || this.user()?.id;
@@ -241,18 +241,18 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         const checklists = res.checklists || [];
         const found = checklists.find((c: any) => c._id === this.orderId());
         if (found) {
-          const isAssigned = this.isFormEnabled(found);
+          const isAssigned = !!found.assigned_to;
           let status = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'in-progress');
-          
+
           if (status === 'in-progress') {
             if (found.action_required) {
               status = 'action-required';
             }
           }
-          
+
           found.derivedStatus = status;
           this.order.set(found);
-          
+
           if (!silent) {
             setTimeout(() => {
               this.scrollToCurrentItem();
@@ -271,15 +271,6 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   isFormEnabled(order: any): boolean {
     if (!order || !order.assigned_to) return false;
     if (order.status === 'completed') return false;
-    
-    const stage = (order.stage || '').toLowerCase();
-    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
-    if (isNew) return false;
-    
-    if (order.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress') {
-      return false;
-    }
-    
     return true;
   }
 
@@ -302,9 +293,9 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (activeIndex !== -1) {
       // Assuming each item is ~250px wide, scroll so the active item is the second one visible
       // This shows the last completed task (activeIndex - 1) and the current active task
-      const itemWidth = 250; 
+      const itemWidth = 250;
       const scrollPosition = Math.max(0, (activeIndex - 1) * itemWidth);
-      
+
       this.trackerScroll.nativeElement.scrollTo({
         left: scrollPosition,
         behavior: 'smooth'
@@ -319,7 +310,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     const itemIndex = items.findIndex((i: any) => i._id === item._id);
     if (itemIndex > -1) {
       items[itemIndex].isChecked = updatedStatus;
-      
+
       this.api.put<any>(`checklists/${this.orderId()}`, { items }).subscribe({
         next: () => {
           this.order.update(o => ({ ...o, items }));
@@ -336,7 +327,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   fetchChatMessages(silent = false) {
     const id = this.orderId();
     if (!id) return;
-    
+
     this.api.get<any>(`chat/${id}`).subscribe({
       next: (res: any) => {
         if (res && res.messages) {
@@ -357,10 +348,10 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   sendChatMessage() {
     if (!this.newChatMessage.trim()) return;
-    
+
     const content = this.newChatMessage.trim();
     this.newChatMessage = '';
-    
+
     this.api.post<any>(`chat/${this.orderId()}`, {
       senderId: this.user()?._id || this.user()?.id,
       senderRole: this.selectedSenderRole,
@@ -386,10 +377,10 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     const currentMsg = this.chatMessages()[index];
     const prevMsg = this.chatMessages()[index - 1];
     if (!currentMsg || !prevMsg) return false;
-    
+
     const currDate = new Date(currentMsg.createdAt);
     const prevDate = new Date(prevMsg.createdAt);
-    
+
     return currDate.toDateString() !== prevDate.toDateString();
   }
 
@@ -398,7 +389,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (date.toDateString() === today.toDateString()) {
       return 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
@@ -451,11 +442,11 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (!o) return false;
     const dealClosed = o.dealClosedAmount || 0;
     const advancePaid = o.advanceAmountPaid || 0;
-    
+
     // Check if the service is fully completed from the checklist perspective
-    const isCompleted = o.derivedStatus === 'completed' || 
-                        (o.items && this.getCompletedList(o.items).length === o.items.length && o.items.length > 0);
-                        
+    const isCompleted = o.derivedStatus === 'completed' ||
+      (o.items && this.getCompletedList(o.items).length === o.items.length && o.items.length > 0);
+
     return isCompleted && (dealClosed > advancePaid);
   }
 
@@ -598,5 +589,13 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   getDirectorKeys(dir: any): string[] {
     if (!dir) return [];
     return Object.keys(dir).filter(k => !['directorName', 'name', 'fullName', '_id'].includes(k));
+  }
+
+  shouldShowFillForm(item: any): boolean {
+    if (!item.isActionStep) return false;
+    if (item.title !== 'Client Form Filling') return true;
+    const items = this.order()?.items || [];
+    const hasProvideDetails = items.some((i: any) => i.title === 'Provide Additional Details');
+    return !hasProvideDetails;
   }
 }

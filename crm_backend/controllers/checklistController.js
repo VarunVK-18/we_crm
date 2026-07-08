@@ -14,7 +14,7 @@ function parseWrittenDate(dateStr) {
     const monthMatch = dateStr.match(/(January|February|March|April|May|June|July|August|September|October|November|December)/i);
     if (!monthMatch) return null;
     const month = monthMatch[1];
-    
+
     let year = new Date().getFullYear();
     const yrStr = dateStr.toLowerCase().replace(/\s+/g, ' ');
     if (yrStr.includes('two thousand eighteen')) year = 2018;
@@ -140,6 +140,7 @@ const createChecklist = async (req, res) => {
   }
 };
 
+
 // @desc    Get checklists scoped by role
 // @route   GET /api/checklists
 // @access  Private
@@ -216,6 +217,7 @@ const getChecklists = async (req, res) => {
             description: item.description,
             label: item.title,
             isChecked: false,
+            isActionStep: item.isActionStep || false,
             need_temporary: item.need_temporary || false,
             has_custom_input: item.has_custom_input || false,
             custom_input_label: item.custom_input_label || '',
@@ -260,7 +262,7 @@ const toggleChecklistItem = async (req, res) => {
     const { id, itemIndex } = req.params;
     const idx = parseInt(itemIndex, 10);
 
-    const checklist = await Checklist.findById(id);
+    const checklist = await Checklist.findById(id).populate('items.linked_document_templates');
     if (!checklist) {
       return res.status(404).json({ success: false, message: 'Checklist not found' });
     }
@@ -270,6 +272,23 @@ const toggleChecklistItem = async (req, res) => {
     }
 
     const item = checklist.items[idx];
+
+    // Check if we are checking the item
+    if (!item.isChecked) {
+      // Enforce action step check
+      if (item.isActionStep && (!checklist.details || !checklist.details.clientFormSubmitted)) {
+        return res.status(400).json({ success: false, message: 'Client needs to do form filling.' });
+      }
+
+      const needsVerification = item.linked_document_templates && item.linked_document_templates.some(t => t.requires_customer_verification);
+      if (needsVerification) {
+        const tempDoc = checklist.temporary_documents.find(d => d.step_title === item.title);
+        if (!tempDoc || tempDoc.status !== 'replied') {
+          return res.status(400).json({ success: false, message: 'This step requires customer verification. The customer must sign/reply to the generated document first.' });
+        }
+      }
+    }
+
     item.isChecked = !item.isChecked;
     item.checkedAt = item.isChecked ? new Date() : null;
     item.checkedBy = item.isChecked ? req.user._id : null;
@@ -308,63 +327,63 @@ const toggleChecklistItem = async (req, res) => {
       const DscToken = require('../models/DscToken');
       const DscTokenLog = require('../models/DscTokenLog');
       const sName = checklist.service_name ? checklist.service_name.toLowerCase() : '';
-      
+
       let isDSCService = false;
       let requiredTokens = 0;
       let serviceTypeStr = '';
 
       if (sName === 'dsc' || sName.includes('dsc') || sName.includes('digital signature')) {
-         isDSCService = true;
-         if (sName.includes('organization') || checklist.details?.dscForm?.applyingFor === 'Organization DSC for DPIIT Certificate Purpose') {
-            requiredTokens = 1;
-            serviceTypeStr = 'Organizational DSC';
-         } else {
-            requiredTokens = 1;
-            serviceTypeStr = 'Individual DSC';
-         }
+        isDSCService = true;
+        if (sName.includes('organization') || checklist.details?.dscForm?.applyingFor === 'Organization DSC for DPIIT Certificate Purpose') {
+          requiredTokens = 1;
+          serviceTypeStr = 'Organizational DSC';
+        } else {
+          requiredTokens = 1;
+          serviceTypeStr = 'Individual DSC';
+        }
       } else {
-         let numDirectorsWithDsc = 0;
-         if (checklist.details) {
-            for (let i = 0; i < 15; i++) {
-               const needDsc = checklist.details[`person_${i}_needDsc`];
-               if (needDsc === 'Yes' || needDsc === true || needDsc === 'true') {
-                  numDirectorsWithDsc++;
-               }
+        let numDirectorsWithDsc = 0;
+        if (checklist.details) {
+          for (let i = 0; i < 15; i++) {
+            const needDsc = checklist.details[`person_${i}_needDsc`];
+            if (needDsc === 'Yes' || needDsc === true || needDsc === 'true') {
+              numDirectorsWithDsc++;
             }
-         }
-         if (numDirectorsWithDsc > 0) {
-            isDSCService = true;
-            requiredTokens = numDirectorsWithDsc;
-            serviceTypeStr = 'Individual DSC';
-         }
+          }
+        }
+        if (numDirectorsWithDsc > 0) {
+          isDSCService = true;
+          requiredTokens = numDirectorsWithDsc;
+          serviceTypeStr = 'Individual DSC';
+        }
       }
 
       if (isDSCService && requiredTokens > 0) {
         let tokenDoc = await DscToken.findOne();
         if (!tokenDoc) tokenDoc = await DscToken.create({});
         if (tokenDoc.availableTokens < requiredTokens) {
-           return res.status(400).json({ success: false, message: 'Insufficient DSC tokens. Please purchase additional tokens to complete this service.' });
+          return res.status(400).json({ success: false, message: 'Insufficient DSC tokens. Please purchase additional tokens to complete this service.' });
         }
         // Deduct tokens
         tokenDoc.availableTokens -= requiredTokens;
         tokenDoc.totalConsumed += requiredTokens;
         if (serviceTypeStr === 'Organizational DSC') {
-           tokenDoc.organizationalCount += requiredTokens;
+          tokenDoc.organizationalCount += requiredTokens;
         } else {
-           tokenDoc.individualCount += requiredTokens;
+          tokenDoc.individualCount += requiredTokens;
         }
         await tokenDoc.save();
-        
+
         // Log transaction
         const clientUser = await require('../models/User').findById(checklist.client_id);
         await DscTokenLog.create({
-           serviceType: serviceTypeStr,
-           applicantName: clientUser ? clientUser.name : 'Unknown',
-           companyName: checklist.details?.companyName || checklist.details?.dscForm?.organizationName || checklist.details?.dscForm?.companyName || checklist.details?.companyLegalName || '',
-           tokensConsumed: requiredTokens,
-           remainingBalance: tokenDoc.availableTokens,
-           processedBy: checklist.assigned_to || req.user._id,
-           checklistId: checklist._id
+          serviceType: serviceTypeStr,
+          applicantName: clientUser ? clientUser.name : 'Unknown',
+          companyName: checklist.details?.companyName || checklist.details?.dscForm?.organizationName || checklist.details?.dscForm?.companyName || checklist.details?.companyLegalName || '',
+          tokensConsumed: requiredTokens,
+          remainingBalance: tokenDoc.availableTokens,
+          processedBy: checklist.assigned_to || req.user._id,
+          checklistId: checklist._id
         });
       }
     }
@@ -390,14 +409,14 @@ const toggleChecklistItem = async (req, res) => {
         let planTier = 'Startup';
         if (checklist.recommended_plan === 'Business Plan') planTier = 'Business';
         if (checklist.recommended_plan === 'Corporate Plan') planTier = 'Corporate';
-        
+
         const activationDate = new Date();
         const expiryDate = new Date();
         const currentMonth = activationDate.getMonth();
         const targetYear = currentMonth > 2 ? activationDate.getFullYear() + 1 : activationDate.getFullYear();
         expiryDate.setFullYear(targetYear, 2, 31);
         expiryDate.setHours(23, 59, 59, 999);
-        
+
         await Subscription.create({
           client_id: checklist.client_id,
           company_id: checklist.company_id,
@@ -502,7 +521,7 @@ const updateChecklist = async (req, res) => {
       if (assigned_to !== undefined) {
         const prevAssigned = checklist.assigned_to ? checklist.assigned_to.toString() : null;
         checklist.assigned_to = assigned_to || null;
-        
+
         if (assigned_to && assigned_to.toString() !== prevAssigned) {
           const Notification = require('../models/Notification');
           await Notification.create({
@@ -513,7 +532,7 @@ const updateChecklist = async (req, res) => {
             order_id: checklist._id
           });
         }
-        
+
         // Set action_required for ALL services that have a form
         if (assigned_to) {
           const formServices = [
@@ -532,75 +551,75 @@ const updateChecklist = async (req, res) => {
       if (stage !== undefined) checklist.stage = stage;
       if (status !== undefined) {
         const prevStatus = checklist.status;
-        
+
         // DSC Token Validation & Deduction
         if (status === 'completed' && prevStatus !== 'completed') {
           const DscToken = require('../models/DscToken');
           const DscTokenLog = require('../models/DscTokenLog');
           const sName = checklist.service_name ? checklist.service_name.toLowerCase() : '';
-          
+
           let isDSCService = false;
           let requiredTokens = 0;
           let serviceTypeStr = '';
 
           if (sName === 'dsc' || sName.includes('dsc') || sName.includes('digital signature')) {
-             isDSCService = true;
-             if (sName.includes('organization') || checklist.details?.dscForm?.applyingFor === 'Organization DSC for DPIIT Certificate Purpose') {
-                requiredTokens = 1;
-                serviceTypeStr = 'Organizational DSC';
-             } else {
-                requiredTokens = 1;
-                serviceTypeStr = 'Individual DSC';
-             }
+            isDSCService = true;
+            if (sName.includes('organization') || checklist.details?.dscForm?.applyingFor === 'Organization DSC for DPIIT Certificate Purpose') {
+              requiredTokens = 1;
+              serviceTypeStr = 'Organizational DSC';
+            } else {
+              requiredTokens = 1;
+              serviceTypeStr = 'Individual DSC';
+            }
           } else {
-             let numDirectorsWithDsc = 0;
-             if (checklist.details) {
-                for (let i = 0; i < 15; i++) {
-                   const needDsc = checklist.details[`person_${i}_needDsc`];
-                   if (needDsc === 'Yes' || needDsc === true || needDsc === 'true') {
-                      numDirectorsWithDsc++;
-                   }
+            let numDirectorsWithDsc = 0;
+            if (checklist.details) {
+              for (let i = 0; i < 15; i++) {
+                const needDsc = checklist.details[`person_${i}_needDsc`];
+                if (needDsc === 'Yes' || needDsc === true || needDsc === 'true') {
+                  numDirectorsWithDsc++;
                 }
-             }
-             if (numDirectorsWithDsc > 0) {
-                isDSCService = true;
-                requiredTokens = numDirectorsWithDsc;
-                serviceTypeStr = 'Individual DSC';
-             }
+              }
+            }
+            if (numDirectorsWithDsc > 0) {
+              isDSCService = true;
+              requiredTokens = numDirectorsWithDsc;
+              serviceTypeStr = 'Individual DSC';
+            }
           }
 
           if (isDSCService && requiredTokens > 0) {
             let tokenDoc = await DscToken.findOne();
             if (!tokenDoc) tokenDoc = await DscToken.create({});
             if (tokenDoc.availableTokens < requiredTokens) {
-               return res.status(400).json({ success: false, message: 'Insufficient DSC tokens. Please purchase additional tokens.' });
+              return res.status(400).json({ success: false, message: 'Insufficient DSC tokens. Please purchase additional tokens.' });
             }
             // Deduct tokens
             tokenDoc.availableTokens -= requiredTokens;
             tokenDoc.totalConsumed += requiredTokens;
             if (serviceTypeStr === 'Organizational DSC') {
-               tokenDoc.organizationalCount += requiredTokens;
+              tokenDoc.organizationalCount += requiredTokens;
             } else {
-               tokenDoc.individualCount += requiredTokens;
+              tokenDoc.individualCount += requiredTokens;
             }
             await tokenDoc.save();
-            
+
             // Log transaction
             const clientUser = await require('../models/User').findById(checklist.client_id);
             await DscTokenLog.create({
-               serviceType: serviceTypeStr,
-               applicantName: clientUser ? clientUser.name : 'Unknown',
-               companyName: checklist.details?.companyName || checklist.details?.dscForm?.organizationName || checklist.details?.dscForm?.companyName || checklist.details?.companyLegalName || '',
-               tokensConsumed: requiredTokens,
-               remainingBalance: tokenDoc.availableTokens,
-               processedBy: checklist.assigned_to || req.user._id,
-               checklistId: checklist._id
+              serviceType: serviceTypeStr,
+              applicantName: clientUser ? clientUser.name : 'Unknown',
+              companyName: checklist.details?.companyName || checklist.details?.dscForm?.organizationName || checklist.details?.dscForm?.companyName || checklist.details?.companyLegalName || '',
+              tokensConsumed: requiredTokens,
+              remainingBalance: tokenDoc.availableTokens,
+              processedBy: checklist.assigned_to || req.user._id,
+              checklistId: checklist._id
             });
           }
         }
 
         checklist.status = status;
-        
+
         // Notify client if service is marked as completed
         if (status === 'completed' && prevStatus !== 'completed' && checklist.client_id) {
           const Notification = require('../models/Notification');
@@ -648,7 +667,7 @@ const updateChecklist = async (req, res) => {
           isChecked: item.isChecked || false
         }));
       }
-      
+
       if (advanceAmountPaid !== undefined) {
         checklist.advanceAmountPaid = advanceAmountPaid;
       }
@@ -658,7 +677,7 @@ const updateChecklist = async (req, res) => {
       if (!checklist.details) checklist.details = {};
       checklist.details.applicationId = applicationId;
       checklist.markModified('details');
-      
+
       // Sync the Application ID with the client's entity profile
       if (checklist.client_id) {
         const User = require('../models/User');
@@ -667,18 +686,18 @@ const updateChecklist = async (req, res) => {
           // Find the entity that matches the checklist's entityName
           const entityName = checklist.details.entityName || '';
           let entityIndex = -1;
-          
+
           if (entityName) {
-             entityIndex = user.client_entities.findIndex(e => e.entityName === entityName);
+            entityIndex = user.client_entities.findIndex(e => e.entityName === entityName);
           } else {
-             // If no entity name, just update the first one
-             entityIndex = 0;
+            // If no entity name, just update the first one
+            entityIndex = 0;
           }
-          
+
           if (entityIndex !== -1) {
             const svcLower = checklist.service_name ? checklist.service_name.toLowerCase() : '';
             let modified = false;
-            
+
             if (svcLower.includes('trademark') || svcLower.includes('trade mark')) {
               user.client_entities[entityIndex].trademarkApplicationNumber = applicationId;
               modified = true;
@@ -695,7 +714,7 @@ const updateChecklist = async (req, res) => {
               user.client_entities[entityIndex].fssaiApplicationId = applicationId;
               modified = true;
             }
-            
+
             if (modified) {
               user.markModified('client_entities');
               await user.save();
@@ -717,14 +736,14 @@ const updateChecklist = async (req, res) => {
         let planTier = 'Startup';
         if (checklist.recommended_plan === 'Business Plan') planTier = 'Business';
         if (checklist.recommended_plan === 'Corporate Plan') planTier = 'Corporate';
-        
+
         const activationDate = new Date();
         const expiryDate = new Date();
         const currentMonth = activationDate.getMonth();
         const targetYear = currentMonth > 2 ? activationDate.getFullYear() + 1 : activationDate.getFullYear();
         expiryDate.setFullYear(targetYear, 2, 31);
         expiryDate.setHours(23, 59, 59, 999);
-        
+
         await Subscription.create({
           client_id: checklist.client_id,
           company_id: checklist.company_id,
@@ -763,7 +782,7 @@ const getMyChecklists = async (req, res) => {
     const clientId = req.user._id;
 
     // Filter out Live Chat Support from the client's service list
-    const filter = { 
+    const filter = {
       client_id: clientId,
       service_name: { $ne: 'Live Chat Support' }
     };
@@ -783,11 +802,12 @@ const getMyChecklists = async (req, res) => {
           service_name: cl.service_name
         });
         if (template && template.items && template.items.length > 0) {
-          cl.items = template.items.map(item => ({
+           cl.items = template.items.map(item => ({
             title: item.title,
             description: item.description,
             label: item.title,
             isChecked: false,
+            isActionStep: item.isActionStep || false,
             linked_document_templates: item.linked_document_templates || []
           }));
           await cl.save();
@@ -1057,7 +1077,7 @@ const uploadFinalDocuments = async (req, res) => {
                 const originalName = checklist.details?.entityName || checklist.details?.entity_name || checklist.details?.companyName || checklist.details?.proposed_company_name;
 
                 if (originalName) {
-                  const entityMatch = client.client_entities.find(e => 
+                  const entityMatch = client.client_entities.find(e =>
                     e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
                   );
                   if (entityMatch) {
@@ -1071,9 +1091,9 @@ const uploadFinalDocuments = async (req, res) => {
                 }
 
                 if (!foundEntity && extractedCompany) {
-                  const entityMatch = client.client_entities.find(e => 
+                  const entityMatch = client.client_entities.find(e =>
                     e.entityName && (
-                      extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) || 
+                      extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) ||
                       e.entityName.toLowerCase().includes(extractedCompany.toLowerCase())
                     )
                   );
@@ -1090,29 +1110,29 @@ const uploadFinalDocuments = async (req, res) => {
                 if (!foundEntity) {
                   // Fallback: Only rename the single entity if its name matches the originalName on this checklist
                   if (client.client_entities.length === 1 && !client.client_entities[0].cin &&
-                      originalName && client.client_entities[0].entityName &&
-                      client.client_entities[0].entityName.toLowerCase() === originalName.toLowerCase()) {
-                     const entityMatch = client.client_entities[0];
-                     if (extractedCompany) entityMatch.entityName = extractedCompany;
-                     if (extractedCin) entityMatch.cin = extractedCin;
-                     if (extractedTan) entityMatch.tan = extractedTan;
-                     if (extractedPan) entityMatch.pan = extractedPan;
-                     if (extractedDate) entityMatch.incorporationDate = extractedDate;
-                     foundEntity = true;
-                  } 
+                    originalName && client.client_entities[0].entityName &&
+                    client.client_entities[0].entityName.toLowerCase() === originalName.toLowerCase()) {
+                    const entityMatch = client.client_entities[0];
+                    if (extractedCompany) entityMatch.entityName = extractedCompany;
+                    if (extractedCin) entityMatch.cin = extractedCin;
+                    if (extractedTan) entityMatch.tan = extractedTan;
+                    if (extractedPan) entityMatch.pan = extractedPan;
+                    if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                    foundEntity = true;
+                  }
                   // Another fallback: Find an entity with exactly the originalName
                   else {
-                     const entityMatch = client.client_entities.find(e => 
-                       !e.cin && originalName && e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
-                     );
-                     if (entityMatch) {
-                       if (extractedCompany) entityMatch.entityName = extractedCompany;
-                       if (extractedCin) entityMatch.cin = extractedCin;
-                       if (extractedTan) entityMatch.tan = extractedTan;
-                       if (extractedPan) entityMatch.pan = extractedPan;
-                       if (extractedDate) entityMatch.incorporationDate = extractedDate;
-                       foundEntity = true;
-                     }
+                    const entityMatch = client.client_entities.find(e =>
+                      !e.cin && originalName && e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
+                    );
+                    if (entityMatch) {
+                      if (extractedCompany) entityMatch.entityName = extractedCompany;
+                      if (extractedCin) entityMatch.cin = extractedCin;
+                      if (extractedTan) entityMatch.tan = extractedTan;
+                      if (extractedPan) entityMatch.pan = extractedPan;
+                      if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                      foundEntity = true;
+                    }
                   }
 
                   if (!foundEntity && (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name)) {
@@ -1148,7 +1168,7 @@ const uploadFinalDocuments = async (req, res) => {
                 }
               }
             }
-            
+
             // Trigger compliance generation
             if (checklist.service_name.includes('Private Limited') && extractedDate) {
               const entityName = checklist.details?.companyName || checklist.details?.proposed_company_name || 'Individual';
@@ -1194,13 +1214,13 @@ const uploadFinalDocuments = async (req, res) => {
           const Certificate = require('../models/Certificate');
           const sName = checklist.service_name.toLowerCase();
           const isExpiry = sName.includes('dsc') || sName.includes('digital signature') || sName.includes('fssai') || sName.includes('iso') || sName.includes('trademark') || sName.includes('trade mark') || sName.includes('copyright') || sName.includes('patent') || sName.includes('lei') || sName.includes('lie') || sName.includes('bis');
-          
+
           if (isExpiry) {
             let cert = await Certificate.findOne({ latestRenewalChecklistId: checklist._id });
             if (!cert) {
               const User = require('../models/User');
               const client = await User.findById(checklist.client_id);
-              
+
               cert = new Certificate({
                 client_id: checklist.client_id,
                 entityName: checklist.details?.companyName || checklist.details?.proposed_company_name || checklist.details?.entityName || checklist.details?.businessName || client?.company_name || 'Individual',
@@ -1258,7 +1278,7 @@ const deleteFinalDocument = async (req, res) => {
 
     // Find the document in the checklist's final_documents array
     const docIndex = checklist.final_documents.findIndex(d => d.document_id && d.document_id.toString() === docId);
-    
+
     if (docIndex === -1) {
       return res.status(404).json({ success: false, message: 'Document not found in this checklist' });
     }
@@ -1313,7 +1333,7 @@ const reuploadFinalDocument = async (req, res) => {
 
     // Find the document in the checklist's final_documents array
     const docIndex = checklist.final_documents.findIndex(d => d.document_id && d.document_id.toString() === docId);
-    
+
     if (docIndex === -1) {
       return res.status(404).json({ success: false, message: 'Document not found in this checklist' });
     }
@@ -1399,7 +1419,7 @@ const reuploadFinalDocument = async (req, res) => {
             const originalName = checklist.details?.entityName || checklist.details?.entity_name || checklist.details?.companyName || checklist.details?.proposed_company_name;
 
             if (originalName) {
-              const entityMatch = client.client_entities.find(e => 
+              const entityMatch = client.client_entities.find(e =>
                 e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
               );
               if (entityMatch) {
@@ -1413,9 +1433,9 @@ const reuploadFinalDocument = async (req, res) => {
             }
 
             if (!foundEntity && extractedCompany) {
-              const entityMatch = client.client_entities.find(e => 
+              const entityMatch = client.client_entities.find(e =>
                 e.entityName && (
-                  extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) || 
+                  extractedCompany.toLowerCase().includes(e.entityName.toLowerCase()) ||
                   e.entityName.toLowerCase().includes(extractedCompany.toLowerCase())
                 )
               );
@@ -1432,29 +1452,29 @@ const reuploadFinalDocument = async (req, res) => {
             if (!foundEntity) {
               // Fallback: Only rename the single entity if its name matches the originalName on this checklist
               if (client.client_entities.length === 1 && !client.client_entities[0].cin &&
-                  originalName && client.client_entities[0].entityName &&
-                  client.client_entities[0].entityName.toLowerCase() === originalName.toLowerCase()) {
-                  const entityMatch = client.client_entities[0];
+                originalName && client.client_entities[0].entityName &&
+                client.client_entities[0].entityName.toLowerCase() === originalName.toLowerCase()) {
+                const entityMatch = client.client_entities[0];
+                if (extractedCompany) entityMatch.entityName = extractedCompany;
+                if (extractedCin) entityMatch.cin = extractedCin;
+                if (extractedTan) entityMatch.tan = extractedTan;
+                if (extractedPan) entityMatch.pan = extractedPan;
+                if (extractedDate) entityMatch.incorporationDate = extractedDate;
+                foundEntity = true;
+              }
+              // Another fallback: Find an entity with exactly the originalName
+              else {
+                const entityMatch = client.client_entities.find(e =>
+                  !e.cin && originalName && e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
+                );
+                if (entityMatch) {
                   if (extractedCompany) entityMatch.entityName = extractedCompany;
                   if (extractedCin) entityMatch.cin = extractedCin;
                   if (extractedTan) entityMatch.tan = extractedTan;
                   if (extractedPan) entityMatch.pan = extractedPan;
                   if (extractedDate) entityMatch.incorporationDate = extractedDate;
                   foundEntity = true;
-              } 
-              // Another fallback: Find an entity with exactly the originalName
-              else {
-                  const entityMatch = client.client_entities.find(e => 
-                    !e.cin && originalName && e.entityName && e.entityName.toLowerCase() === originalName.toLowerCase()
-                  );
-                  if (entityMatch) {
-                    if (extractedCompany) entityMatch.entityName = extractedCompany;
-                    if (extractedCin) entityMatch.cin = extractedCin;
-                    if (extractedTan) entityMatch.tan = extractedTan;
-                    if (extractedPan) entityMatch.pan = extractedPan;
-                    if (extractedDate) entityMatch.incorporationDate = extractedDate;
-                    foundEntity = true;
-                  }
+                }
               }
 
               if (!foundEntity && (extractedCompany || checklist.details?.companyName || checklist.details?.proposed_company_name)) {
@@ -1471,7 +1491,7 @@ const reuploadFinalDocument = async (req, res) => {
             await client.save();
           }
         }
-        
+
         if (extractedCompany && typeof originalName !== 'undefined' && originalName) {
           if (checklist.details) {
             checklist.details.entityName = extractedCompany;
@@ -1571,19 +1591,19 @@ const createSupportTicketForChecklist = async (req, res) => {
     if (newItemTitle.length > 30) {
       newItemTitle = newItemTitle.substring(0, 27) + '...';
     }
-    
+
     checklist.items.push({
       title: newItemTitle,
       label: newItemTitle,
       description: description,
       isChecked: false
     });
-    
+
     // Only update status if checklist is not already completed
     if (checklist.status !== 'completed') {
       checklist.status = 'in_progress';
     }
-    
+
     await checklist.save();
 
     // 2. Create standard Ticket for the "Support Tickets" screen
@@ -1602,7 +1622,7 @@ const createSupportTicketForChecklist = async (req, res) => {
 
     // 3. Notify the assigned staff and client manager
     const Notification = require('../models/Notification');
-    
+
     // Notify Client Manager (ensure it's not the client themselves)
     if (
       checklist.created_by &&
@@ -1620,7 +1640,7 @@ const createSupportTicketForChecklist = async (req, res) => {
 
     // Notify Filing Staff (ensure it's not the client and not the same as created_by)
     if (
-      checklist.assigned_to && 
+      checklist.assigned_to &&
       checklist.client_id &&
       checklist.assigned_to.toString() !== checklist.client_id.toString() &&
       (!checklist.created_by || checklist.assigned_to.toString() !== checklist.created_by.toString())
@@ -1648,7 +1668,7 @@ const createSupportTicketForChecklist = async (req, res) => {
 const uploadExpenseBill = async (req, res) => {
   try {
     const { id, itemId } = req.params;
-    
+
     const checklist = await Checklist.findById(id);
 
     if (!checklist) {
@@ -1709,14 +1729,14 @@ If a field is not found, set it to null.`;
       try {
         const genAI = new GoogleGenerativeAI(key);
         const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
-        
+
         const result = await model.generateContent([prompt, imagePart]);
         const response = await result.response;
         const jsonText = response.text();
-        
+
         let cleanJsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
         const details = JSON.parse(cleanJsonText);
-        
+
         if (details) {
           if (typeof details.amount === 'number') extractedAmount = details.amount;
           if (details.transactionId) extractedTransactionId = String(details.transactionId).trim();
@@ -1731,17 +1751,17 @@ If a field is not found, set it to null.`;
     // Uniqueness validation if a transaction ID was found
     if (extractedTransactionId) {
       const existingTransaction = await Checklist.findOne({
-         $or: [
-             { 'items.expense.transactionId': extractedTransactionId },
-             { 'financialLogs.transactionId': extractedTransactionId }
-         ]
+        $or: [
+          { 'items.expense.transactionId': extractedTransactionId },
+          { 'financialLogs.transactionId': extractedTransactionId }
+        ]
       });
-      
+
       if (existingTransaction) {
-         return res.status(400).json({ 
-           success: false, 
-           message: `Duplicate Transaction ID detected: ${extractedTransactionId}. This bill has already been uploaded.` 
-         });
+        return res.status(400).json({
+          success: false,
+          message: `Duplicate Transaction ID detected: ${extractedTransactionId}. This bill has already been uploaded.`
+        });
       }
     }
 
@@ -1752,7 +1772,7 @@ If a field is not found, set it to null.`;
       data: req.file.buffer, // Using memory storage buffer
       uploadedBy: req.user._id
     });
-    
+
     const billUrl = `/api/documents/${doc._id}`;
 
     // Update the item
@@ -1814,9 +1834,9 @@ const addFinancialLog = async (req, res) => {
     // Try to sync with ServiceOrder
     try {
       const ServiceOrder = require('../models/ServiceOrder');
-      const order = await ServiceOrder.findOne({ 
-        clientUid: checklist.client_id, 
-        serviceType: checklist.service_name 
+      const order = await ServiceOrder.findOne({
+        clientUid: checklist.client_id,
+        serviceType: checklist.service_name
       }).sort({ createdAt: -1 });
 
       if (order) {
@@ -1831,7 +1851,7 @@ const addFinancialLog = async (req, res) => {
         order.advanceAmountPaid = (order.advanceAmountPaid || 0) + Number(amount);
         await order.save();
       }
-    } catch(e) {
+    } catch (e) {
       console.error('ServiceOrder sync error from checklist:', e);
     }
 
@@ -1873,7 +1893,7 @@ const getExpenses = async (req, res) => {
   try {
     const compId = req.user.company_id._id || req.user.company_id;
     let query = { company_id: compId, 'items.expense.billUrl': { $type: 'string' } };
-    
+
     // If filing staff, only show checklists assigned to them where they might have uploaded expenses
     // Ideally we should filter the specific items they uploaded, but for now filtering by checklist assignment is standard here.
     if (req.user.role === 'filling_staff') {
@@ -1881,9 +1901,9 @@ const getExpenses = async (req, res) => {
     }
 
     const checklists = await Checklist.find(query).populate('client_id', 'name custom_id');
-    
+
     let expenses = [];
-    
+
     checklists.forEach(cl => {
       cl.items.forEach(item => {
         if (item.expense && item.expense.billUrl) {
@@ -1904,7 +1924,7 @@ const getExpenses = async (req, res) => {
         }
       });
     });
-    
+
     // Sort by uploadedAt descending
     expenses.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
 
@@ -1921,7 +1941,7 @@ const getExpenses = async (req, res) => {
 const markExpensePaid = async (req, res) => {
   try {
     const { id, itemId } = req.params;
-    
+
     const checklist = await Checklist.findById(id);
     if (!checklist) {
       return res.status(404).json({ success: false, message: 'Checklist not found' });

@@ -1706,7 +1706,7 @@ class _StepTimeline extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.only(bottom: isLast ? 0 : 36),
                   child: InkWell(
-                    onTap: (step.isActionStep && 
+                    onTap: (_shouldShowFillForm(step, order) && 
                         !isCompleted && 
                         order.stage != OrderStage.reqReceived && 
                         order.status == ServiceStatus.active)
@@ -1801,7 +1801,7 @@ class _StepTimeline extends StatelessWidget {
                                   ),
                               ],
                             ),
-                          ] else if (step.isActionStep && order.stage != OrderStage.reqReceived) ...[
+                          ] else if (_shouldShowFillForm(step, order) && order.stage != OrderStage.reqReceived) ...[
                             const SizedBox(height: 12),
                             Row(
                               children: [
@@ -2235,6 +2235,13 @@ class _DirectorDetailsSection extends StatelessWidget {
       ),
     );
   }
+}
+
+bool _shouldShowFillForm(ServiceStep step, ServiceOrder order) {
+  if (!step.isActionStep) return false;
+  if (step.title != 'Client Form Filling') return true;
+  final hasProvideDetails = order.steps.any((s) => s.title == 'Provide Additional Details');
+  return !hasProvideDetails;
 }
 
 void _routeToForm(BuildContext context, ServiceOrder order) {

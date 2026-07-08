@@ -38,6 +38,7 @@ const upload = multer({
 
 router.get('/user/:userId', orderController.getUserOrders);
 router.get('/company/:companyId', checkUser, orderController.getCompanyOrders);
+router.get('/:id/form-details', checkUser, orderController.getOrderFormDetails);
 router.post('/', orderController.createOrder);
 router.put('/:id', checkUser, orderController.updateOrder);
 router.post('/:id/financial-logs', checkUser, orderController.addFinancialLog);

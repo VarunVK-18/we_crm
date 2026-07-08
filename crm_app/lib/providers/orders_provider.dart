@@ -32,8 +32,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
           final id = c['_id']?.toString() ?? '';
 
           final assignedTo = c['assigned_to'];
-          final isAssignedToExpert = assignedTo != null && 
-              (assignedTo['role'] == 'filling_staff' || assignedTo['role'] == 'account_manager');
+          final isAssignedToExpert = assignedTo != null;
 
           final String actualCompany = (c['details'] != null && c['details']['entityName'] != null)
               ? c['details']['entityName'].toString()

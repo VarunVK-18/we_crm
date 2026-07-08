@@ -63,6 +63,7 @@
       <table class="data-table">
         <thead>
           <tr>
+            <th>Service ID</th>
             <th>Service Name</th>
             <th>Client</th>
             @if (currentDirectoryTab() !== 'completed' && currentDirectoryTab() !== 'final_delivered') {
@@ -77,6 +78,9 @@
         <tbody>
           @for (cl of filteredChecklists(); track cl._id) {
             <tr (click)="viewDetails(cl._id)">
+              <td style="font-weight: 600; font-size: 13px;">
+                {{ cl.custom_service_id || '—' }}
+              </td>
               <td>
                 <span class="service-badge">{{ cl.service_name }}</span>
               </td>

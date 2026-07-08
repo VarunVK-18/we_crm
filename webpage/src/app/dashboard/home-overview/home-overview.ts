@@ -855,17 +855,9 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getAssigneeName(cl: any): string {
-    const stage = (cl.stage || '').toLowerCase();
-    const isNew = ['reqreceived', 'quot pending', 'quotepending'].includes(stage);
-    
-    if (isNew || !cl.assigned_to) {
+    if (!cl || !cl.assigned_to) {
       return 'Yet to Assign';
     }
-    
-    if (cl.assigned_to.role === 'client_manager' && stage !== 'workassigned' && stage !== 'inprogress' && stage !== 'completed') {
-      return 'Yet to Assign';
-    }
-    
     return cl.assigned_to.owner_name || cl.assigned_to.name || 'Yet to Assign';
   }
 

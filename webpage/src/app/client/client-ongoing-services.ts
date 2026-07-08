@@ -78,7 +78,7 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
         const active: any[] = [];
         
         for (const c of checklists) {
-          const isAssigned = c.assigned_to && c.assigned_to.role !== 'client_manager';
+          const isAssigned = !!c.assigned_to;
           if (isAssigned) {
             let status = c.status === 'completed' ? 'completed' : 'in-progress';
             

@@ -69,7 +69,7 @@ const listDocumentTemplates = async (req, res) => {
 // POST /api/document-templates
 const createDocumentTemplate = async (req, res) => {
   try {
-    const { name, description, html_content } = req.body;
+    const { name, description, html_content, requires_customer_verification } = req.body;
     if (!name || !html_content) {
       return res.status(400).json({ success: false, message: 'name and html_content are required' });
     }
@@ -78,7 +78,8 @@ const createDocumentTemplate = async (req, res) => {
       name,
       description: description || '',
       html_content,
-      created_by: req.user._id
+      created_by: req.user._id,
+      requires_customer_verification: !!requires_customer_verification
     });
     await logActivity(req.user._id, 'document_template_created', `Created document template '${name}'`, req.user.company_id);
     res.status(201).json({ success: true, template: tmpl });
@@ -263,6 +264,28 @@ const mapTemplatesToService = async (req, res) => {
   }
 };
 
+const previewPopulatedTemplate = async (req, res) => {
+  try {
+    const { checklist_id } = req.body;
+    if (!checklist_id) {
+      return res.status(400).json({ success: false, message: 'checklist_id is required' });
+    }
+
+    const tmpl = await DocumentTemplate.findOne({ _id: req.params.id, company_id: req.user.company_id });
+    if (!tmpl) return res.status(404).json({ success: false, message: 'Template not found' });
+
+    const checklist = await Checklist.findById(checklist_id).lean();
+    if (!checklist) return res.status(404).json({ success: false, message: 'Checklist not found' });
+
+    const placeholders = await buildPlaceholderMap(checklist);
+    const populatedHtml = applyPlaceholders(tmpl.html_content, placeholders);
+
+    res.json({ success: true, html: populatedHtml });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   listDocumentTemplates,
   createDocumentTemplate,
@@ -271,4 +294,5 @@ module.exports = {
   generateDocumentFromTemplate,
   getTemplatesForService,
   mapTemplatesToService,
+  previewPopulatedTemplate,
 };

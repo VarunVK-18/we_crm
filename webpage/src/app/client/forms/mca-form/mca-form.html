@@ -1,225 +1,264 @@
-<div class="form-container">
-    <div class="header-row">
-        <button class="back-btn" (click)="goBack()">
-            <span class="material-symbols-outlined">arrow_back</span>
-        </button>
-        <h2>MCA Compliance Form</h2>
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1 class="pf-title">MCA Compliance Form</h1>
+        <p class="pf-subtitle">Complete the credentials and documents for MCA Compliance.</p>
+      </div>
     </div>
+  </div>
 
+  <div class="form-container">
     @if (errorMessage()) {
-    <div class="error-alert">
+      <div class="error-banner">
         <span class="material-symbols-outlined">error</span>
-        {{ errorMessage() }}
-    </div>
+        <span>{{ errorMessage() }}</span>
+      </div>
     }
 
-    <form (ngSubmit)="submitDetails()">
-        <div class="form-section">
-            <h3 class="section-title">Credentials (Optional)</h3>
+    <form (ngSubmit)="submitDetails()" class="incorp-form">
+      <!-- Credentials Section -->
+      <section class="form-section">
+        <h3 class="section-title">Credentials (Optional)</h3>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>MCA Username</label>
+            <div class="hint-text" style="font-size: 12px; color: color-mix(in srgb, var(--palette-dark) 50%, transparent); margin-bottom: 6px;">Enter username if available</div>
+            <input type="text" [(ngModel)]="username" name="username" placeholder="Username">
+          </div>
 
-            <div class="input-group">
-                <label>MCA Username</label>
-                <div class="hint-text">Enter username if available</div>
-                <input type="text" class="form-input" [(ngModel)]="username" name="username" placeholder="Username">
-            </div>
-
-            <div class="input-group">
-                <label>MCA Password</label>
-                <div class="hint-text">Enter password if available</div>
-                <input type="text" class="form-input" [(ngModel)]="password" name="password" placeholder="Password">
-            </div>
+          <div class="form-group">
+            <label>MCA Password</label>
+            <div class="hint-text" style="font-size: 12px; color: color-mix(in srgb, var(--palette-dark) 50%, transparent); margin-bottom: 6px;">Enter password if available</div>
+            <input type="text" [(ngModel)]="password" name="password" placeholder="Password">
+          </div>
         </div>
+      </section>
 
-        <div class="form-section">
-            <h3 class="section-title">Annual Turnover <span class="required">*</span></h3>
-            <div class="input-group">
-                <div class="radio-group" style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
-                    <label class="radio-label" style="display: flex; align-items: center; gap: 8px;">
-                        <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Less than ₹20 Lakhs" required>
-                        Less than ₹20 Lakhs
-                    </label>
-                    <label class="radio-label" style="display: flex; align-items: center; gap: 8px;">
-                        <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Greater than ₹20 Lakhs and Less than ₹50 Lakhs" required>
-                        Greater than ₹20 Lakhs and Less than ₹50 Lakhs
-                    </label>
-                    <label class="radio-label" style="display: flex; align-items: center; gap: 8px;">
-                        <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Greater than ₹50 Lakhs" required>
-                        Greater than ₹50 Lakhs
-                    </label>
-                </div>
-            </div>
+      <!-- Annual Turnover Section -->
+      <section class="form-section">
+        <h3 class="section-title">Annual Turnover <span class="required">*</span></h3>
+        <div class="form-group">
+          <div class="radio-group" style="display: flex; flex-direction: column; gap: 12px; margin-top: 12px;">
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+              <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Less than ₹20 Lakhs" required>
+              Less than ₹20 Lakhs
+            </label>
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+              <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Greater than ₹20 Lakhs and Less than ₹50 Lakhs" required>
+              Greater than ₹20 Lakhs and Less than ₹50 Lakhs
+            </label>
+            <label class="radio-label" style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+              <input type="radio" [(ngModel)]="annualTurnover" name="annualTurnover" value="Greater than ₹50 Lakhs" required>
+              Greater than ₹50 Lakhs
+            </label>
+          </div>
         </div>
+      </section>
 
-        <div class="form-section">
-            <h3 class="section-title">Documents Required</h3>
-            
-            <div class="input-group">
-                <label>Certificate of Incorporation <span class="required">*</span></label>
-                <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="coiFile">{{ coiFile ? coiFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
-                    <label class="upload-btn" [class.change]="coiFile">
-                        {{ coiFile ? 'Change' : 'Upload' }}
-                        @if (existingDocs['coi']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['coi'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('coi')">Change</button>
-            </div>
-          } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'coi')" accept=".jpg,.jpeg,.png,.pdf">
-          }
-                    </label>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>PAN Card of the Company <span class="required">*</span></label>
-                <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="panFile">{{ panFile ? panFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
-                    <label class="upload-btn" [class.change]="panFile">
-                        {{ panFile ? 'Change' : 'Upload' }}
-                        @if (existingDocs['pan']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['pan'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('pan')">Change</button>
-            </div>
-          } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'pan')" accept=".pdf">
-          }
-                    </label>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Memorandum of Association (MOA) <span class="required">*</span></label>
-                <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="moaFile">{{ moaFile ? moaFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
-                    <label class="upload-btn" [class.change]="moaFile">
-                        {{ moaFile ? 'Change' : 'Upload' }}
-                        @if (existingDocs['moa']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['moa'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('moa')">Change</button>
-            </div>
-          } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'moa')" accept=".jpg,.jpeg,.png,.pdf">
-          }
-                    </label>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Articles of Association (AOA) <span class="required">*</span></label>
-                <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="aoaFile">{{ aoaFile ? aoaFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
-                    <label class="upload-btn" [class.change]="aoaFile">
-                        {{ aoaFile ? 'Change' : 'Upload' }}
-                        @if (existingDocs['aoa']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['aoa'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('aoa')">Change</button>
-            </div>
-          } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'aoa')" accept=".jpg,.jpeg,.png,.pdf">
-          }
-                    </label>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Last FY Bank statements <span class="required">*</span></label>
-                <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="bankStatementFile">{{ bankStatementFile ? bankStatementFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
-                    <label class="upload-btn" [class.change]="bankStatementFile">
-                        {{ bankStatementFile ? 'Change' : 'Upload' }}
-                        @if (existingDocs['bankStatement']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['bankStatement'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('bankStatement')">Change</button>
-            </div>
-          } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'bankStatement')" accept=".jpg,.jpeg,.png,.pdf">
-          }
-                    </label>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Sales Invoice copies of last FY <span class="required">*</span></label>
-                <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="salesInvoiceFile">{{ salesInvoiceFile ? salesInvoiceFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
-                    <label class="upload-btn" [class.change]="salesInvoiceFile">
-                        {{ salesInvoiceFile ? 'Change' : 'Upload' }}
-                        @if (existingDocs['salesInvoice']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['salesInvoice'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('salesInvoice')">Change</button>
-            </div>
-          } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'salesInvoice')" accept=".jpg,.jpeg,.png,.pdf">
-          }
-                    </label>
-                </div>
-            </div>
-
-            <div class="input-group">
-                <label>Purchase bills of last FY <span class="required">*</span></label>
-                <div class="file-upload-row">
-                    <span class="file-name" [class.selected]="purchaseBillsFile">{{ purchaseBillsFile ? purchaseBillsFile.name : 'Upload 1 supported file. Max 2 MB.' }}</span>
-                    <label class="upload-btn" [class.change]="purchaseBillsFile">
-                        {{ purchaseBillsFile ? 'Change' : 'Upload' }}
-                        @if (existingDocs['purchaseBills']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['purchaseBills'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('purchaseBills')">Change</button>
-            </div>
-          } @else {
-            <input type="file" style="display: none;" (change)="onFileSelected($event, 'purchaseBills')" accept=".jpg,.jpeg,.png,.pdf">
-          }
-                    </label>
-                </div>
-            </div>
-        </div>
-
+      <!-- Documents Required Section -->
+      <section class="form-section">
+        <h3 class="section-title">Documents Required</h3>
         
-        <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-            {{ isSubmitting() ? 'Submitting...' : 'Submit Details' }}
-        </button>
+        <!-- COI -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Certificate of Incorporation *</label>
+          <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
+            <span class="file-name" [class.selected]="coiFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
+              {{ coiFile ? coiFile.name : 'Upload 1 supported file. Max 2 MB.' }}
+            </span>
+            <label class="upload-btn" [class.change]="coiFile" style="padding: 6px 14px; background-color: var(--palette-purple); color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              {{ coiFile ? 'Change' : 'Upload' }}
+              @if (existingDocs['coi']) {
+                <div class="existing-doc-box" style="display: none;"></div>
+              } @else {
+                <input type="file" style="display: none;" (change)="onFileSelected($event, 'coi')" accept=".jpg,.jpeg,.png,.pdf">
+              }
+            </label>
+          </div>
+          @if (existingDocs['coi']) {
+            <div class="existing-doc-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--palette-purple) 8%, transparent); border-radius: 6px; border: 1px solid color-mix(in srgb, var(--palette-purple) 20%, transparent);">
+              <span style="font-size: 13px; font-weight: 500; color: var(--palette-purple); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                {{ existingDocs['coi'].name }} (From Profile)
+              </span>
+              <button type="button" (click)="existingDocs['coi'] = null" style="font-size: 12px; font-weight: 600; color: #ef4444; border: none; background: transparent; cursor: pointer;">Change</button>
+            </div>
+          }
+        </div>
+
+        <!-- PAN -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">PAN Card of the Company *</label>
+          <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
+            <span class="file-name" [class.selected]="panFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
+              {{ panFile ? panFile.name : 'Upload 1 supported file. Max 2 MB.' }}
+            </span>
+            <label class="upload-btn" [class.change]="panFile" style="padding: 6px 14px; background-color: var(--palette-purple); color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              {{ panFile ? 'Change' : 'Upload' }}
+              @if (existingDocs['pan']) {
+                <div class="existing-doc-box" style="display: none;"></div>
+              } @else {
+                <input type="file" style="display: none;" (change)="onFileSelected($event, 'pan')" accept=".pdf">
+              }
+            </label>
+          </div>
+          @if (existingDocs['pan']) {
+            <div class="existing-doc-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--palette-purple) 8%, transparent); border-radius: 6px; border: 1px solid color-mix(in srgb, var(--palette-purple) 20%, transparent);">
+              <span style="font-size: 13px; font-weight: 500; color: var(--palette-purple); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                {{ existingDocs['pan'].name }} (From Profile)
+              </span>
+              <button type="button" (click)="existingDocs['pan'] = null" style="font-size: 12px; font-weight: 600; color: #ef4444; border: none; background: transparent; cursor: pointer;">Change</button>
+            </div>
+          }
+        </div>
+
+        <!-- MOA -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Memorandum of Association (MOA) *</label>
+          <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
+            <span class="file-name" [class.selected]="moaFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
+              {{ moaFile ? moaFile.name : 'Upload 1 supported file. Max 2 MB.' }}
+            </span>
+            <label class="upload-btn" [class.change]="moaFile" style="padding: 6px 14px; background-color: var(--palette-purple); color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              {{ moaFile ? 'Change' : 'Upload' }}
+              @if (existingDocs['moa']) {
+                <div class="existing-doc-box" style="display: none;"></div>
+              } @else {
+                <input type="file" style="display: none;" (change)="onFileSelected($event, 'moa')" accept=".jpg,.jpeg,.png,.pdf">
+              }
+            </label>
+          </div>
+          @if (existingDocs['moa']) {
+            <div class="existing-doc-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--palette-purple) 8%, transparent); border-radius: 6px; border: 1px solid color-mix(in srgb, var(--palette-purple) 20%, transparent);">
+              <span style="font-size: 13px; font-weight: 500; color: var(--palette-purple); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                {{ existingDocs['moa'].name }} (From Profile)
+              </span>
+              <button type="button" (click)="existingDocs['moa'] = null" style="font-size: 12px; font-weight: 600; color: #ef4444; border: none; background: transparent; cursor: pointer;">Change</button>
+            </div>
+          }
+        </div>
+
+        <!-- AOA -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Articles of Association (AOA) *</label>
+          <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
+            <span class="file-name" [class.selected]="aoaFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
+              {{ aoaFile ? aoaFile.name : 'Upload 1 supported file. Max 2 MB.' }}
+            </span>
+            <label class="upload-btn" [class.change]="aoaFile" style="padding: 6px 14px; background-color: var(--palette-purple); color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              {{ aoaFile ? 'Change' : 'Upload' }}
+              @if (existingDocs['aoa']) {
+                <div class="existing-doc-box" style="display: none;"></div>
+              } @else {
+                <input type="file" style="display: none;" (change)="onFileSelected($event, 'aoa')" accept=".jpg,.jpeg,.png,.pdf">
+              }
+            </label>
+          </div>
+          @if (existingDocs['aoa']) {
+            <div class="existing-doc-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--palette-purple) 8%, transparent); border-radius: 6px; border: 1px solid color-mix(in srgb, var(--palette-purple) 20%, transparent);">
+              <span style="font-size: 13px; font-weight: 500; color: var(--palette-purple); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                {{ existingDocs['aoa'].name }} (From Profile)
+              </span>
+              <button type="button" (click)="existingDocs['aoa'] = null" style="font-size: 12px; font-weight: 600; color: #ef4444; border: none; background: transparent; cursor: pointer;">Change</button>
+            </div>
+          }
+        </div>
+
+        <!-- Bank Statement -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Last FY Bank statements *</label>
+          <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
+            <span class="file-name" [class.selected]="bankStatementFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
+              {{ bankStatementFile ? bankStatementFile.name : 'Upload 1 supported file. Max 2 MB.' }}
+            </span>
+            <label class="upload-btn" [class.change]="bankStatementFile" style="padding: 6px 14px; background-color: var(--palette-purple); color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              {{ bankStatementFile ? 'Change' : 'Upload' }}
+              @if (existingDocs['bankStatement']) {
+                <div class="existing-doc-box" style="display: none;"></div>
+              } @else {
+                <input type="file" style="display: none;" (change)="onFileSelected($event, 'bankStatement')" accept=".jpg,.jpeg,.png,.pdf">
+              }
+            </label>
+          </div>
+          @if (existingDocs['bankStatement']) {
+            <div class="existing-doc-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--palette-purple) 8%, transparent); border-radius: 6px; border: 1px solid color-mix(in srgb, var(--palette-purple) 20%, transparent);">
+              <span style="font-size: 13px; font-weight: 500; color: var(--palette-purple); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                {{ existingDocs['bankStatement'].name }} (From Profile)
+              </span>
+              <button type="button" (click)="existingDocs['bankStatement'] = null" style="font-size: 12px; font-weight: 600; color: #ef4444; border: none; background: transparent; cursor: pointer;">Change</button>
+            </div>
+          }
+        </div>
+
+        <!-- Sales Invoice -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Sales Invoice copies of last FY *</label>
+          <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
+            <span class="file-name" [class.selected]="salesInvoiceFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
+              {{ salesInvoiceFile ? salesInvoiceFile.name : 'Upload 1 supported file. Max 2 MB.' }}
+            </span>
+            <label class="upload-btn" [class.change]="salesInvoiceFile" style="padding: 6px 14px; background-color: var(--palette-purple); color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              {{ salesInvoiceFile ? 'Change' : 'Upload' }}
+              @if (existingDocs['salesInvoice']) {
+                <div class="existing-doc-box" style="display: none;"></div>
+              } @else {
+                <input type="file" style="display: none;" (change)="onFileSelected($event, 'salesInvoice')" accept=".jpg,.jpeg,.png,.pdf">
+              }
+            </label>
+          </div>
+          @if (existingDocs['salesInvoice']) {
+            <div class="existing-doc-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--palette-purple) 8%, transparent); border-radius: 6px; border: 1px solid color-mix(in srgb, var(--palette-purple) 20%, transparent);">
+              <span style="font-size: 13px; font-weight: 500; color: var(--palette-purple); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                {{ existingDocs['salesInvoice'].name }} (From Profile)
+              </span>
+              <button type="button" (click)="existingDocs['salesInvoice'] = null" style="font-size: 12px; font-weight: 600; color: #ef4444; border: none; background: transparent; cursor: pointer;">Change</button>
+            </div>
+          }
+        </div>
+
+        <!-- Purchase Bills -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Purchase bills of last FY *</label>
+          <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
+            <span class="file-name" [class.selected]="purchaseBillsFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
+              {{ purchaseBillsFile ? purchaseBillsFile.name : 'Upload 1 supported file. Max 2 MB.' }}
+            </span>
+            <label class="upload-btn" [class.change]="purchaseBillsFile" style="padding: 6px 14px; background-color: var(--palette-purple); color: white; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+              {{ purchaseBillsFile ? 'Change' : 'Upload' }}
+              @if (existingDocs['purchaseBills']) {
+                <div class="existing-doc-box" style="display: none;"></div>
+              } @else {
+                <input type="file" style="display: none;" (change)="onFileSelected($event, 'purchaseBills')" accept=".jpg,.jpeg,.png,.pdf">
+              }
+            </label>
+          </div>
+          @if (existingDocs['purchaseBills']) {
+            <div class="existing-doc-box" style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding: 8px 12px; background: color-mix(in srgb, var(--palette-purple) 8%, transparent); border-radius: 6px; border: 1px solid color-mix(in srgb, var(--palette-purple) 20%, transparent);">
+              <span style="font-size: 13px; font-weight: 500; color: var(--palette-purple); display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+                {{ existingDocs['purchaseBills'].name }} (From Profile)
+              </span>
+              <button type="button" (click)="existingDocs['purchaseBills'] = null" style="font-size: 12px; font-weight: 600; color: #ef4444; border: none; background: transparent; cursor: pointer;">Change</button>
+            </div>
+          }
+        </div>
+      </section>
+
+      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Submitting...' : 'Submit Details' }}
+      </button>
     </form>
+  </div>
 </div>
 
 <!-- Full page overlays -->

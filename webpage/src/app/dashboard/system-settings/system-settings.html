@@ -487,48 +487,67 @@
             </table>
             <div class="table-footer">
               <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 8px;">
-                <h4 style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0;">Add New Template Item</h4>
-                <div style="display: flex; gap: 12px; align-items: flex-start;">
-                  <div style="flex: 1;">
-                    <input type="text" [(ngModel)]="newItemTitle" placeholder="Item Title (max 30 chars)" maxlength="30" class="form-control-input" />
-                  </div>
-                  <div style="flex: 2;">
-                    <textarea [(ngModel)]="newItemDesc" placeholder="Item Description (max 200 chars)" maxlength="200" class="form-control-input" rows="1" style="resize: vertical;"></textarea>
-                  </div>
-                  <div style="display: flex; align-items: center; gap: 12px; height: 42px; flex-wrap: wrap;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <input type="checkbox" id="newItemGetBill" [(ngModel)]="newItemGetBill" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
-                      <label for="newItemGetBill" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer; white-space: nowrap;">Get Bill</label>
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0 0 12px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Add New Template Item</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 16px; text-align: left;">
+                  <!-- Left column: Title & Description -->
+                  <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Requirement Name</label>
+                      <input type="text" [(ngModel)]="newItemTitle" placeholder="Item Title (max 30 chars)" maxlength="30" class="form-control-input" style="width: 100%; box-sizing: border-box; height: 38px;" />
                     </div>
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <input type="checkbox" id="newItemNeedTemporary" [(ngModel)]="newItemNeedTemporary" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
-                      <label for="newItemNeedTemporary" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer; white-space: nowrap;">Need Temp</label>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <input type="checkbox" id="newItemHasCustomInput" [(ngModel)]="newItemHasCustomInput" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
-                      <label for="newItemHasCustomInput" style="font-size: 14px; font-weight: 500; color: var(--text-primary); cursor: pointer; white-space: nowrap;">Custom Input</label>
+                    <div>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Description</label>
+                      <textarea [(ngModel)]="newItemDesc" placeholder="Item Description (max 200 chars)" maxlength="200" class="form-control-input" rows="4" style="resize: none; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px; line-height: 1.5;"></textarea>
                     </div>
                   </div>
-                  @if (newItemHasCustomInput) {
-                    <div style="flex: 1; min-width: 130px;">
-                      <input type="text" [(ngModel)]="newItemCustomInputLabel" placeholder="Input Label (e.g. License ID)" class="form-control-input" style="height: 42px;" />
+
+                  <!-- Right column: Options & Templates -->
+                  <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 8px;">Step Properties</label>
+                      <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center; min-height: 38px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0;">
+                          <input type="checkbox" [(ngModel)]="newItemGetBill" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" /> Get Bill
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0;">
+                          <input type="checkbox" [(ngModel)]="newItemNeedTemporary" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" /> Need Temp
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-primary); margin: 0;">
+                          <input type="checkbox" [(ngModel)]="newItemHasCustomInput" style="width: 16px; height: 16px; accent-color: var(--accent-primary);" /> Custom Input
+                        </label>
+                      </div>
                     </div>
-                  }
-                  <div style="flex: 1.5; min-width: 150px; max-height: 80px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 6px; background: white; box-sizing: border-box;">
-                    @if (docTemplates().length === 0) {
-                      <span style="font-size: 11px; color: var(--text-secondary);">No templates available</span>
+
+                    @if (newItemHasCustomInput) {
+                      <div>
+                        <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Custom Input Label</label>
+                        <input type="text" [(ngModel)]="newItemCustomInputLabel" placeholder="e.g. Registered Name, License ID" class="form-control-input" style="width: 100%; box-sizing: border-box; height: 38px;" />
+                      </div>
                     }
-                    @for (tmpl of docTemplates(); track tmpl._id) {
-                      <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; margin-bottom: 4px; cursor: pointer; color: var(--text-primary);">
-                        <input type="checkbox" [checked]="isNewItemTemplateMapped(tmpl._id)" (change)="toggleNewItemTemplateMapping(tmpl._id)" style="accent-color: var(--accent-primary);" />
-                        {{ tmpl.name }}
-                      </label>
-                    }
+
+                    <div>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Linked Document Templates</label>
+                      <div style="max-height: 100px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background: #f8fafc; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
+                        @if (docTemplates().length === 0) {
+                          <span style="font-size: 12px; color: var(--text-secondary);">No templates available</span>
+                        }
+                        @for (tmpl of docTemplates(); track tmpl._id) {
+                          <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; cursor: pointer; color: var(--text-primary); margin: 0;">
+                            <input type="checkbox" [checked]="isNewItemTemplateMapped(tmpl._id)" (change)="toggleNewItemTemplateMapping(tmpl._id)" style="accent-color: var(--accent-primary);" />
+                            {{ tmpl.name }}
+                          </label>
+                        }
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <button class="btn-add-item" (click)="addTemplateItem()">
-                  <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span> Add Checklist Item
-                </button>
+                
+                <div style="display: flex; justify-content: flex-start; margin-top: 12px;">
+                  <button class="btn-add-item" (click)="addTemplateItem()" style="padding: 10px 20px; font-size: 14px; font-weight: 600; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 20px;">add_circle</span> Add Checklist Item
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -639,7 +658,7 @@
       <!-- Modal Body -->
       <div style="flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:16px;">
         <!-- Name & Description -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:16px;align-items:end;">
           <div>
             <label style="display:block;font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Template Name *</label>
             <input type="text" [(ngModel)]="editingDocTemplate.name" placeholder="e.g. NOC Letter" class="form-control-input" style="width:100%;" />
@@ -647,6 +666,11 @@
           <div>
             <label style="display:block;font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:6px;">Description</label>
             <input type="text" [(ngModel)]="editingDocTemplate.description" placeholder="Brief description" class="form-control-input" style="width:100%;" />
+          </div>
+          <div style="display:flex;align-items:center;height:38px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;margin:0;">
+              <input type="checkbox" [(ngModel)]="editingDocTemplate.requires_customer_verification" style="width:16px;height:16px;accent-color:var(--accent-primary);" /> Requires Client Verification
+            </label>
           </div>
         </div>
 

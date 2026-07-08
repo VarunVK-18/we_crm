@@ -12,7 +12,7 @@ import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
   standalone: true,
   imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './mca-form.html',
-  styleUrls: ['./mca-form.css']
+  styleUrls: ['../forms-shared.css', './mca-form.css']
 })
 export class McaFormComponent implements OnInit, OnDestroy {
   orderId = signal<string | null>(null);

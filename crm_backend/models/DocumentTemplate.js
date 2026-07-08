@@ -27,6 +27,10 @@ const DocumentTemplateSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  requires_customer_verification: {
+    type: Boolean,
+    default: false
   }
 }, { timestamps: true });
 
