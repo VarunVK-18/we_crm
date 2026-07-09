@@ -11,6 +11,10 @@ const TemplateItemSchema = new mongoose.Schema({
     maxlength: 200,
     default: ''
   },
+  staff_description: {
+    type: String,
+    default: ''
+  },
   getBill: {
     type: Boolean,
     default: false

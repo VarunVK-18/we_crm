@@ -13,6 +13,10 @@ const ChecklistItemSchema = new mongoose.Schema({
     maxlength: 200,
     default: ''
   },
+  staff_description: {
+    type: String,
+    default: ''
+  },
   getBill: {
     type: Boolean,
     default: false
@@ -220,6 +224,7 @@ ChecklistSchema.pre('save', async function () {
             title: 'Client Form Filling',
             label: 'Client Form Filling',
             description: 'Ensure the client has submitted all necessary initial forms and details.',
+            staff_description: '',
             isChecked: false,
             isActionStep: true,
             need_temporary: false,
@@ -232,6 +237,7 @@ ChecklistSchema.pre('save', async function () {
             title: item.title,
             label: item.title,
             description: item.description || '',
+            staff_description: item.staff_description || '',
             isChecked: false,
             isActionStep: item.isActionStep || false,
             getBill: item.getBill || false,
@@ -261,6 +267,7 @@ ChecklistSchema.pre('save', async function () {
               clItem.request_document = tmplItem.request_document || false;
               clItem.has_custom_input = tmplItem.has_custom_input || false;
               clItem.custom_input_label = tmplItem.custom_input_label || '';
+              clItem.staff_description = tmplItem.staff_description || '';
             }
             tmplItemIndex++;
           }

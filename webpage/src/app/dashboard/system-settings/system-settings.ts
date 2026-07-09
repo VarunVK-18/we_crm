@@ -79,6 +79,7 @@ export class SystemSettings implements OnInit {
   activeTemplateNeedTemporary = false;
   newItemTitle = '';
   newItemDesc = '';
+  newItemStaffDesc = '';
   newItemGetBill = false;
   newItemNeedTemporary = false;
   newItemRequestDocument = false;
@@ -215,6 +216,7 @@ export class SystemSettings implements OnInit {
             this.activeTemplateItems = (tmpl.items || []).map((i: any) => ({ 
               title: i.title, 
               description: i.description,
+              staff_description: i.staff_description || '',
               getBill: i.getBill || false,
               need_temporary: i.need_temporary || false,
               request_document: i.request_document || false,
@@ -248,6 +250,7 @@ export class SystemSettings implements OnInit {
       this.activeTemplateItems.push({
         title: this.newItemTitle.trim(),
         description: this.newItemDesc.trim(),
+        staff_description: this.newItemStaffDesc.trim(),
         getBill: this.newItemGetBill,
         need_temporary: this.newItemNeedTemporary,
         request_document: this.newItemRequestDocument,
@@ -257,6 +260,7 @@ export class SystemSettings implements OnInit {
       });
       this.newItemTitle = '';
       this.newItemDesc = '';
+      this.newItemStaffDesc = '';
       this.newItemGetBill = false;
       this.newItemNeedTemporary = false;
       this.newItemRequestDocument = false;
@@ -276,6 +280,7 @@ export class SystemSettings implements OnInit {
     item.oldTitle = item.title;
     item.editTitle = item.title;
     item.editDesc = item.description;
+    item.editStaffDesc = item.staff_description || '';
     item.editGetBill = item.getBill || false;
     item.editNeedTemporary = item.need_temporary || false;
     item.editRequestDocument = item.request_document || false;
@@ -288,6 +293,7 @@ export class SystemSettings implements OnInit {
     const item = this.activeTemplateItems[index];
     item.title = item.editTitle;
     item.description = item.editDesc;
+    item.staff_description = item.editStaffDesc || '';
     item.getBill = item.editGetBill;
     item.need_temporary = item.editNeedTemporary || false;
     item.request_document = item.editRequestDocument || false;
@@ -308,6 +314,7 @@ export class SystemSettings implements OnInit {
     const cleanItems = this.activeTemplateItems.map(item => ({
       title: item.title,
       description: item.description,
+      staff_description: item.staff_description || '',
       getBill: item.getBill || false,
       need_temporary: item.need_temporary || false,
       request_document: item.request_document || false,

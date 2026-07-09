@@ -96,6 +96,16 @@ export class ClientServicesComponent implements OnInit {
         title: 'Copyright',
         description: 'Protection for original creative literary or artistic works.',
         features: ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'Trade Mark',
+        description: 'Brand protection and intellectual property rights.',
+        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'Patent',
+        description: 'Exclusive rights for your inventions.',
+        features: ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant', 'Processing Time: 5-7 business days']
       }
     ],
     'tax': [
@@ -118,6 +128,11 @@ export class ClientServicesComponent implements OnInit {
         title: 'ITR',
         description: 'Income Tax Return filing for individuals and businesses.',
         features: ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'GST Registration',
+        description: 'GST Registration for your business! Thank you for choosing Wealth Empires.',
+        features: ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate', 'Processing Time: 5-7 business days']
       }
     ],
     'licensing': [
@@ -127,24 +142,9 @@ export class ClientServicesComponent implements OnInit {
         features: ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track', 'Processing Time: 5-7 business days']
       },
       {
-        title: 'Trade Mark',
-        description: 'Brand protection and intellectual property rights.',
-        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'GST Registration',
-        description: 'GST Registration for your business! Thank you for choosing Wealth Empires.',
-        features: ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate', 'Processing Time: 5-7 business days']
-      },
-      {
         title: 'ISO',
         description: 'Quality management certification (ISO 9001 and others).',
         features: ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'Patent',
-        description: 'Exclusive rights for your inventions.',
-        features: ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant', 'Processing Time: 5-7 business days']
       },
       {
         title: 'FSSAI',

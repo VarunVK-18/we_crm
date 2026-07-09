@@ -396,7 +396,8 @@
               <thead>
                 <tr>
                   <th>Requirement Name</th>
-                  <th>Description</th>
+                  <th>Client Description</th>
+                  <th>Staff Instructions</th>
                   <th>Get Bill</th>
                   <th>Need Temp</th>
                   <th>Custom Input</th>
@@ -412,6 +413,7 @@
                     <tr>
                       <td style="font-weight: 600; color: var(--text-primary);">{{ item.title }}</td>
                       <td style="color: var(--text-secondary);">{{ item.description || 'No description provided' }}</td>
+                      <td style="color: var(--text-secondary);">{{ item.staff_description || '-' }}</td>
                       <td>
                         <span *ngIf="item.getBill" class="material-symbols-outlined" style="color: #1e3a8a; font-size: 20px;">check_circle</span>
                         <span *ngIf="!item.getBill" class="material-symbols-outlined" style="color: #cbd5e1; font-size: 20px;">cancel</span>
@@ -452,6 +454,9 @@
                         <input type="text" [(ngModel)]="item.editDesc" name="editDesc_{{$index}}" class="form-control-input" style="padding: 6px; font-size: 13px;" />
                       </td>
                       <td>
+                        <input type="text" [(ngModel)]="item.editStaffDesc" name="editStaffDesc_{{$index}}" placeholder="Notes for filing staff..." class="form-control-input" style="padding: 6px; font-size: 13px;" />
+                      </td>
+                      <td>
                         <input type="checkbox" [(ngModel)]="item.editGetBill" name="editGetBill_{{$index}}" style="width: 18px; height: 18px; accent-color: var(--accent-primary);" />
                       </td>
                       <td>
@@ -488,7 +493,7 @@
                 }
                 @if (activeTemplateItems.length === 0) {
                   <tr>
-                    <td colspan="9" style="text-align: center; color: var(--text-secondary);">No default items configured. A blank checklist will be generated.</td>
+                    <td colspan="10" style="text-align: center; color: var(--text-secondary);">No default items configured. A blank checklist will be generated.</td>
                   </tr>
                 }
               </tbody>
@@ -505,8 +510,12 @@
                       <input type="text" [(ngModel)]="newItemTitle" placeholder="Item Title (max 30 chars)" maxlength="30" class="form-control-input" style="width: 100%; box-sizing: border-box; height: 38px;" />
                     </div>
                     <div>
-                      <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Description</label>
-                      <textarea [(ngModel)]="newItemDesc" placeholder="Item Description (max 200 chars)" maxlength="200" class="form-control-input" rows="4" style="resize: none; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px; line-height: 1.5;"></textarea>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Client Description</label>
+                      <textarea [(ngModel)]="newItemDesc" placeholder="Client-facing Description (max 200 chars)" maxlength="200" class="form-control-input" rows="4" style="resize: none; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px; line-height: 1.5;"></textarea>
+                    </div>
+                    <div>
+                      <label style="font-size: 12px; font-weight: 600; color: var(--text-secondary); display: block; margin-bottom: 6px;">Filing Staff Instructions</label>
+                      <textarea [(ngModel)]="newItemStaffDesc" placeholder="Internal instructions for filing staff" class="form-control-input" rows="3" style="resize: none; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px; line-height: 1.5;"></textarea>
                     </div>
                   </div>
 

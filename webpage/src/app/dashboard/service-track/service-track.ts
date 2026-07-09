@@ -39,9 +39,9 @@ export class ServiceTrackComponent implements OnInit {
   servicesDatabase: Record<string, string[]> = {
     'incorporation': ['Proprietorship', 'Partnership Firm Registration', 'Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'MSME', 'Company Incorporation'],
     'compliance': ['MCA Compliance', 'TDS', 'PF', 'DUNS', 'PAN, TAN', 'Compliance'],
-    'ip': ['Copyright', 'IP'],
-    'licensing': ['Trade Mark', 'Trademark', 'Patent', 'GST Registration', 'DPIIT', 'ISO', 'FSSAI', 'DSC', 'IE code', 'LEI', 'BIS', 'ROSH', 'CE', 'Licensing'],
-    'tax': ['GST Compliance', 'GST Cancelation', 'GST filing', 'ITR', 'Tax']
+    'ip': ['Copyright', 'IP', 'Trade Mark', 'Trademark', 'Patent'],
+    'licensing': ['DPIIT', 'ISO', 'FSSAI', 'DSC', 'IE code', 'LEI', 'BIS', 'ROSH', 'CE', 'Licensing'],
+    'tax': ['GST Registration', 'GST Compliance', 'GST Cancelation', 'GST filing', 'ITR', 'Tax']
   };
 
   constructor(private api: Api) {}
