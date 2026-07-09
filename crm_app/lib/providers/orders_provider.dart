@@ -61,6 +61,7 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
                       'has_custom_input': i['has_custom_input'] == true,
                       'custom_input_label': i['custom_input_label'] ?? '',
                       'custom_input_value': i['custom_input_value'] ?? '',
+                      'completedAt': i['checkedAt'] != null ? DateTime.tryParse(i['checkedAt'].toString()) : null,
                     })
                 .toList(),
             'requestedDocuments': c['requested_documents'] ?? [],

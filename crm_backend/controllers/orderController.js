@@ -454,7 +454,7 @@ exports.submitDpiitForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'DPIIT form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting DPIIT form:', error);
     res.status(500).json({ message: 'Server error while submitting DPIIT form.', error: error.message });
@@ -530,7 +530,7 @@ exports.submitIncorpForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'Incorporation form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting Incorp form:', error);
     res.status(500).json({ message: 'Server error while submitting Incorp form.', error: error.message });
@@ -583,7 +583,7 @@ exports.submitTrademarkForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'Trademark form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting Trademark form:', error);
     res.status(500).json({ message: 'Server error while submitting Trademark form.', error: error.message });
@@ -675,7 +675,7 @@ exports.submitLlpForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'LLP form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting LLP form:', error);
     res.status(500).json({ message: 'Server error while submitting LLP form.', error: error.message });
@@ -727,7 +727,7 @@ exports.submitMsmeForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'MSME form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting MSME form:', error);
     res.status(500).json({ message: 'Server error while submitting MSME form.', error: error.message });
@@ -784,7 +784,7 @@ exports.submitGstForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'GST form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting GST form:', error);
     res.status(500).json({ message: 'Server error while submitting GST form.', error: error.message });
@@ -826,7 +826,7 @@ exports.submitIsoForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'ISO form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting ISO form:', error);
     res.status(500).json({ message: 'Server error while submitting ISO form.', error: error.message });
@@ -881,7 +881,7 @@ exports.submitleiForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'LEI form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting LEI form:', error);
     res.status(500).json({ message: 'Server error while submitting LEI form.', error: error.message });
@@ -924,7 +924,7 @@ exports.submitBisForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'BIS form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting BIS form:', error);
     res.status(500).json({ message: 'Server error while submitting BIS form.', error: error.message });
@@ -981,7 +981,7 @@ exports.submitFssaiForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'FSSAI form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting FSSAI form:', error);
     res.status(500).json({ message: 'Server error while submitting FSSAI form.', error: error.message });
@@ -1058,7 +1058,7 @@ exports.submitDscForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'DSC form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting DSC form:', error);
     res.status(500).json({ message: 'Server error while submitting DSC form.', error: error.message });
@@ -1130,7 +1130,7 @@ exports.submitMcaForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'MCA form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting MCA form:', error);
     res.status(500).json({ message: 'Server error while submitting MCA form.', error: error.message });
@@ -1226,7 +1226,7 @@ exports.submitGstComplianceForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'GST Compliance form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting GST Compliance form:', error);
     res.status(500).json({ message: 'Server error while submitting GST Compliance form.', error: error.message });
@@ -1274,7 +1274,7 @@ exports.submitProprietorshipForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'Proprietorship form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting Proprietorship form:', error);
     res.status(500).json({ message: 'Server error while submitting Proprietorship form.', error: error.message });
@@ -1320,7 +1320,7 @@ exports.submitTdsForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'TDS form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting TDS form:', error);
     res.status(500).json({ message: 'Server error while submitting TDS form.', error: error.message });
@@ -1367,7 +1367,7 @@ exports.submitItrForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'ITR form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting ITR form:', error);
     res.status(500).json({ message: 'Server error while submitting ITR form.', error: error.message });
@@ -1422,7 +1422,7 @@ exports.submitCeRohsForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'CE & RoHS form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting CE & RoHS form:', error);
     res.status(500).json({ message: 'Server error while submitting CE & RoHS form.', error: error.message });
@@ -1470,7 +1470,7 @@ exports.submitPfForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'PF form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting PF form:', error);
     res.status(500).json({ message: 'Server error while submitting PF form.', error: error.message });
@@ -1518,7 +1518,7 @@ exports.submitPatentForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'Patent form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting Patent form:', error);
     res.status(500).json({ message: 'Server error while submitting Patent form.', error: error.message });
@@ -1562,7 +1562,7 @@ exports.submitGstCancellationForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'GST Cancellation form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting GST Cancellation form:', error);
     res.status(500).json({ message: 'Server error while submitting GST Cancellation form.', error: error.message });
@@ -1606,7 +1606,7 @@ exports.submitGstFilingForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'GST Filing form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting GST Filing form:', error);
     res.status(500).json({ message: 'Server error while submitting GST Filing form.', error: error.message });
@@ -1652,7 +1652,7 @@ exports.submitIecForm = async (req, res) => {
 
     await order.save();
 
-    res.status(200).json({ message: 'IEC form submitted successfully!', order });
+    res.status(200).json({ success: true, message: '', order });
   } catch (error) {
     console.error('Error submitting IEC form:', error);
     res.status(500).json({ message: 'Server error while submitting IEC form.', error: error.message });

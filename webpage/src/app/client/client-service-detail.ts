@@ -575,6 +575,20 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     return isCompleted && (dealClosed > advancePaid);
   }
 
+  hasOutstandingBalance(): boolean {
+    const o = this.order();
+    if (!o) return false;
+    const dealClosed = o.dealClosedAmount || 0;
+    const advancePaid = o.advanceAmountPaid || 0;
+    return dealClosed > advancePaid;
+  }
+
+  getOutstandingAmount(): number {
+    const o = this.order();
+    if (!o) return 0;
+    return (o.dealClosedAmount || 0) - (o.advanceAmountPaid || 0);
+  }
+
   getParsedDirectors(): any[] {
     const o = this.order();
     if (!o || !o.details || !o.details.directors) return [];

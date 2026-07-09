@@ -901,7 +901,8 @@ const getMyChecklists = async (req, res) => {
             title: "Provide Necessary Details & Documents",
             description: "Please fill out the required form to begin the process.",
             isChecked: isFormFilled, // Check details instead of action_required
-            isActionStep: true
+            isActionStep: true,
+            checkedAt: clientFormFillingStep ? clientFormFillingStep.checkedAt : null
           },
           ...modifiedItems
         ];

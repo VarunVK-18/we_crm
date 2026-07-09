@@ -147,6 +147,7 @@
       }
 
       <!-- Financial Details Section -->
+      @if (canManage()) {
       <section class="info-card" style="margin-top: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -279,6 +280,7 @@
         </div>
         }
       </section>
+      }
 
       <!-- Checklist Items Section -->
       <section style="display: flex; flex-direction: column; gap: 16px;">
@@ -311,7 +313,7 @@
                @if (item.description) {
                <p style="font-size: 14px; color: var(--text-secondary); margin: 4px 0 0 0;">{{ item.description }}</p>
                }
-               @if (item.staff_description && user()?.role !== 'customer') {
+               @if (item.staff_description && user() && user().role !== 'customer') {
                <div style="margin-top: 8px; padding: 8px 12px; background: #fefce8; border: 1px solid #fef08a; border-left: 3px solid #eab308; border-radius: 4px;">
                  <div style="font-size: 11px; font-weight: 700; color: #a16207; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px;">
                    <span class="material-symbols-outlined" style="font-size: 14px;">assignment</span> Staff Instructions
@@ -322,7 +324,7 @@
 
                <!-- Custom Input Field for Step -->
                @if (item.has_custom_input) {
-                 @if (user()?.role !== 'customer') {
+                 @if (user() && user().role !== 'customer') {
                    <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px; max-width: 450px;">
                      <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary); min-width: 100px; white-space: nowrap;">{{ item.custom_input_label }}:</span>
                      <input type="text" [value]="getCustomInputValue(itemIndex, item.custom_input_value)" (input)="onCustomInputChange(itemIndex, $event)" placeholder="Enter {{ item.custom_input_label }}" 
@@ -362,7 +364,7 @@
                    }
                  </div>
                }
-                @if (item.request_document && user()?.role !== 'customer') {
+                @if (item.request_document && user() && user().role !== 'customer') {
                   <div style="margin-top: 12px; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: #fafafa; display: flex; flex-direction: column; gap: 10px;">
                     
                     <!-- Header -->
@@ -429,7 +431,7 @@
                       <span class="material-symbols-outlined" style="font-size: 18px; color: var(--accent-primary);">drafts</span>
                       Step Draft / Temporary Documents
                     </div>
-                    @if (user()?.role !== 'customer') {
+                    @if (user() && user().role !== 'customer') {
                       <label [style.opacity]="isStepDisabled(itemIndex) ? 0.5 : 1"
                              [style.pointer-events]="isStepDisabled(itemIndex) ? 'none' : 'auto'"
                              style="background: white; border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;" 
@@ -477,7 +479,7 @@
                                 <span style="font-size: 11px; font-weight: 700;">Signed Copy</span>
                               </a>
                             }
-                            @if (user()?.role !== 'customer') {
+                            @if (user() && user().role !== 'customer') {
                               <button type="button" class="btn-text-action btn-text-danger" style="display: inline-flex; align-items: center;" title="Delete" (click)="deleteTemporaryDocument(doc)">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
                               </button>
@@ -502,7 +504,7 @@
               }
 
               <!-- Expense Details (Visible to internal staff only) -->
-              @if (user()?.role !== 'customer' && item.getBill) {
+              @if (user() && user().role !== 'customer' && item.getBill) {
                 <div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 8px;">
                   @if (item.expense?.billUrl) {
                     <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); padding: 8px 12px; border-radius: 6px;">
@@ -1002,7 +1004,7 @@
               } @else {
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="font-size: 16px; font-weight: 700; color: var(--accent-primary);">{{ checklist().details?.applicationId || 'Not Added' }}</span>
-                  @if (canManage() || user()?.role === 'filling_staff') {
+                  @if (canManage() || (user() && user().role === 'filling_staff')) {
                     <button (click)="startEditApplicationId()" 
                       style="background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 4px; transition: color 0.2s;" title="Edit ID" onmouseover="this.style.color='var(--accent-primary)'" onmouseout="this.style.color='var(--text-secondary)'">
                       <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
