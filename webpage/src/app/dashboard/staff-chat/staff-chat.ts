@@ -43,6 +43,38 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   chatMessages = this.chatCache.chatMessages;
   isLoadingChat = signal<boolean>(false);
   newChatMessage = signal<string>('');
+
+  // Smart Mentions logic
+  showMentionDropdown = signal<boolean>(false);
+  mentionSearch = signal<string>('');
+  
+  get currentMentionOptions(): {name: string, role: string, internalRole: string}[] {
+    const conv = this.activeConversation();
+    if (!conv || !conv.checklist) return [];
+    
+    const opts = [];
+    const cl = conv.checklist;
+    
+    if (cl.created_by?.owner_name) {
+      opts.push({ name: cl.created_by.owner_name, role: 'Client Manager', internalRole: 'client_manager' });
+    }
+    if (cl.assigned_to?.owner_name) {
+      opts.push({ name: cl.assigned_to.owner_name, role: 'Filing Staff', internalRole: 'filling_staff' });
+    }
+    if (cl.client_id?.owner_name) {
+      opts.push({ name: cl.client_id.owner_name, role: 'Client', internalRole: 'customer' });
+    }
+    return opts;
+  }
+  
+  get filteredMentionOptions() {
+    const search = this.mentionSearch();
+    if (!search) return this.currentMentionOptions;
+    return this.currentMentionOptions.filter(o => 
+      o.name.toLowerCase().includes(search) || 
+      o.role.toLowerCase().includes(search)
+    );
+  }
   chatPollingInterval: any;
 
   @Output() onViewService = new EventEmitter<string>();
@@ -374,17 +406,86 @@ export class StaffChatComponent implements OnInit, OnDestroy {
   extractMentions(message: string): string[] {
     const mentions: string[] = [];
     const lower = message.toLowerCase();
-    if (lower.includes('@client manager')) mentions.push('client_manager');
-    if (lower.includes('@filing staff') || lower.includes('@filling staff')) mentions.push('filling_staff');
-    if (lower.includes('@account manager')) mentions.push('account_manager');
-    if (lower.includes('@client') || lower.includes('@customer')) mentions.push('customer');
+    for (const opt of this.currentMentionOptions) {
+      if (lower.includes('@' + opt.name.toLowerCase())) {
+        if (!mentions.includes(opt.internalRole)) mentions.push(opt.internalRole);
+      }
+    }
     if (lower.includes('@admin')) mentions.push('admin');
     return mentions;
   }
 
-  addMention(text: string) {
-    const current = this.newChatMessage();
-    this.newChatMessage.set(current + (current && !current.endsWith(' ') ? ' ' : '') + text);
+  onChatInput(event: any) {
+    const val = event.target.value;
+    const cursor = event.target.selectionStart;
+    const valBeforeCursor = val.substring(0, cursor);
+    const lastAtIdx = valBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIdx !== -1) {
+      const search = valBeforeCursor.substring(lastAtIdx + 1);
+      if (!search.includes(' ')) {
+        this.showMentionDropdown.set(true);
+        this.mentionSearch.set(search.toLowerCase());
+        return;
+      }
+    }
+    this.showMentionDropdown.set(false);
+  }
+
+  onChatKeydown(event: KeyboardEvent) {
+    if (event.key === 'Backspace') {
+      const input = event.target as HTMLInputElement;
+      const val = input.value;
+      const cursor = input.selectionStart;
+      if (cursor === null) return;
+      
+      const beforeCursor = val.substring(0, cursor);
+      for (const opt of this.currentMentionOptions) {
+        const mentionStr = '@' + opt.name + ' ';
+        if (beforeCursor.endsWith(mentionStr)) {
+          event.preventDefault();
+          const newVal = beforeCursor.slice(0, -mentionStr.length) + val.substring(cursor);
+          this.newChatMessage.set(newVal);
+          setTimeout(() => { input.selectionStart = input.selectionEnd = cursor - mentionStr.length; }, 0);
+          this.showMentionDropdown.set(false);
+          return;
+        }
+        const mentionStrNoSpace = '@' + opt.name;
+        if (beforeCursor.endsWith(mentionStrNoSpace)) {
+          event.preventDefault();
+          const newVal = beforeCursor.slice(0, -mentionStrNoSpace.length) + val.substring(cursor);
+          this.newChatMessage.set(newVal);
+          setTimeout(() => { input.selectionStart = input.selectionEnd = cursor - mentionStrNoSpace.length; }, 0);
+          this.showMentionDropdown.set(false);
+          return;
+        }
+      }
+    }
+  }
+
+  insertMention(opt: any, event?: Event) {
+    if (event) event.preventDefault();
+    const inputEl = document.querySelector('.chat-input-area input') as HTMLInputElement;
+    const val = this.newChatMessage();
+    const cursor = inputEl ? inputEl.selectionStart : val.length;
+    
+    const beforeCursor = val.substring(0, cursor!);
+    const lastAtIdx = beforeCursor.lastIndexOf('@');
+    
+    if (lastAtIdx !== -1) {
+      const before = val.substring(0, lastAtIdx);
+      const after = val.substring(cursor!);
+      const mentionStr = '@' + opt.name + ' ';
+      this.newChatMessage.set(before + mentionStr + after);
+      
+      if (inputEl) {
+        setTimeout(() => {
+          inputEl.focus();
+          inputEl.selectionStart = inputEl.selectionEnd = before.length + mentionStr.length;
+        }, 0);
+      }
+    }
+    this.showMentionDropdown.set(false);
   }
 
   sendChatMessage() {

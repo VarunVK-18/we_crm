@@ -470,7 +470,20 @@
       </div>
 
       <div class="chat-input-area"
-        style="flex-direction: column; gap: 8px; padding-top: 12px; align-items: flex-start;">
+        style="flex-direction: column; gap: 8px; padding-top: 12px; align-items: flex-start; position: relative;">
+        @if (showMentionDropdown) {
+          <div class="mention-dropdown" style="position: absolute; bottom: 100%; left: 16px; margin-bottom: 8px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 4px; z-index: 50; width: 250px; max-height: 200px; overflow-y: auto;">
+            @for (opt of filteredMentionOptions; track opt.internalRole) {
+              <div class="mention-option" (click)="insertMention(opt, $event)" style="padding: 8px 12px; border-radius: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 2px;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                <span style="font-size: 13px; font-weight: 600; color: #1e293b;">{{ opt.name }}</span>
+                <span style="font-size: 11px; color: #64748b;">{{ opt.role }}</span>
+              </div>
+            }
+            @if (filteredMentionOptions.length === 0) {
+              <div style="padding: 8px 12px; font-size: 12px; color: #94a3b8; text-align: center;">No matches found</div>
+            }
+          </div>
+        }
         @if (getRoleOptions().length > 1) {
         <select [(ngModel)]="selectedSenderRole"
           style="padding: 6px 12px; border-radius: 20px; border: 1px solid #e2e8f0; font-size: 13px; font-weight: 600; color: #2563eb; background: #eff6ff; outline: none; width: fit-content; cursor: pointer; align-self: flex-start; margin-left: 16px;">
@@ -479,12 +492,10 @@
           }
         </select>
         }
-        <div class="mention-tags" style="display: flex; gap: 8px; flex-wrap: wrap; margin-left: 16px; margin-bottom: -4px;">
-          <button class="mention-tag" (click)="addMention('@Client Manager ')" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; transition: all 0.2s;">@Client Manager</button>
-          <button class="mention-tag" (click)="addMention('@Filing Staff ')" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; transition: all 0.2s;">@Filing Staff</button>
-        </div>
         <div class="chat-input-wrapper" style="width: 100%; margin: 0;">
           <input type="text" placeholder="Write a message..." [(ngModel)]="newChatMessage"
+            (input)="onChatInput($event)"
+            (keydown)="onChatKeydown($event)"
             (keyup.enter)="sendChatMessage()">
           <button [disabled]="!newChatMessage.trim()" (click)="sendChatMessage()">
             <span class="material-symbols-outlined">send</span>

@@ -88,7 +88,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
-  Future<bool> sendMessage(String content, {String senderRole = 'client'}) async {
+  Future<bool> sendMessage(String content, {String senderRole = 'client', List<String>? mentions}) async {
     final user = ref.read(authStateProvider).value;
     if (user == null) return false;
 
@@ -100,6 +100,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
           'senderId': user.uid,
           'senderRole': senderRole,
           'content': content,
+          if (mentions != null && mentions.isNotEmpty) 'mentions': mentions,
         }),
       );
 

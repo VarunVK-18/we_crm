@@ -118,6 +118,36 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   newChatMessage: string = '';
   chatPollingInterval: any;
 
+  // Smart Mentions logic
+  showMentionDropdown = false;
+  mentionSearch = '';
+  
+  get currentMentionOptions(): {name: string, role: string, internalRole: string}[] {
+    const cl = this.checklist();
+    if (!cl) return [];
+    
+    const opts = [];
+    if (cl.created_by?.owner_name) {
+      opts.push({ name: cl.created_by.owner_name, role: 'Client Manager', internalRole: 'client_manager' });
+    }
+    if (cl.assigned_to?.owner_name) {
+      opts.push({ name: cl.assigned_to.owner_name, role: 'Filing Staff', internalRole: 'filling_staff' });
+    }
+    if (cl.client_id?.owner_name) {
+      opts.push({ name: cl.client_id.owner_name, role: 'Client', internalRole: 'customer' });
+    }
+    return opts;
+  }
+  
+  get filteredMentionOptions() {
+    const search = this.mentionSearch;
+    if (!search) return this.currentMentionOptions;
+    return this.currentMentionOptions.filter(o => 
+      o.name.toLowerCase().includes(search) || 
+      o.role.toLowerCase().includes(search)
+    );
+  }
+
   constructor(public api: Api, private ocrService: OcrService, private confirmDialog: ConfirmDialogService, private sanitizer: DomSanitizer) { }
 
   viewSop() {
@@ -1449,6 +1479,91 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  extractMentions(message: string): string[] {
+    const mentions: string[] = [];
+    const lower = message.toLowerCase();
+    for (const opt of this.currentMentionOptions) {
+      if (lower.includes('@' + opt.name.toLowerCase())) {
+        if (!mentions.includes(opt.internalRole)) mentions.push(opt.internalRole);
+      }
+    }
+    if (lower.includes('@admin')) mentions.push('admin');
+    return mentions;
+  }
+
+  onChatInput(event: any) {
+    const val = event.target.value;
+    const cursor = event.target.selectionStart;
+    const valBeforeCursor = val.substring(0, cursor);
+    const lastAtIdx = valBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIdx !== -1) {
+      const search = valBeforeCursor.substring(lastAtIdx + 1);
+      if (!search.includes(' ')) {
+        this.showMentionDropdown = true;
+        this.mentionSearch = search.toLowerCase();
+        return;
+      }
+    }
+    this.showMentionDropdown = false;
+  }
+
+  onChatKeydown(event: KeyboardEvent) {
+    if (event.key === 'Backspace') {
+      const input = event.target as HTMLInputElement;
+      const val = input.value;
+      const cursor = input.selectionStart;
+      if (cursor === null) return;
+      
+      const beforeCursor = val.substring(0, cursor);
+      for (const opt of this.currentMentionOptions) {
+        const mentionStr = '@' + opt.name + ' ';
+        if (beforeCursor.endsWith(mentionStr)) {
+          event.preventDefault();
+          const newVal = beforeCursor.slice(0, -mentionStr.length) + val.substring(cursor);
+          this.newChatMessage = newVal;
+          setTimeout(() => { input.selectionStart = input.selectionEnd = cursor - mentionStr.length; }, 0);
+          this.showMentionDropdown = false;
+          return;
+        }
+        const mentionStrNoSpace = '@' + opt.name;
+        if (beforeCursor.endsWith(mentionStrNoSpace)) {
+          event.preventDefault();
+          const newVal = beforeCursor.slice(0, -mentionStrNoSpace.length) + val.substring(cursor);
+          this.newChatMessage = newVal;
+          setTimeout(() => { input.selectionStart = input.selectionEnd = cursor - mentionStrNoSpace.length; }, 0);
+          this.showMentionDropdown = false;
+          return;
+        }
+      }
+    }
+  }
+
+  insertMention(opt: any, event?: Event) {
+    if (event) event.preventDefault();
+    const inputEl = document.querySelector('.chat-input-area input') as HTMLInputElement;
+    const val = this.newChatMessage;
+    const cursor = inputEl ? inputEl.selectionStart : val.length;
+    
+    const beforeCursor = val.substring(0, cursor!);
+    const lastAtIdx = beforeCursor.lastIndexOf('@');
+    
+    if (lastAtIdx !== -1) {
+      const before = val.substring(0, lastAtIdx);
+      const after = val.substring(cursor!);
+      const mentionStr = '@' + opt.name + ' ';
+      this.newChatMessage = before + mentionStr + after;
+      
+      if (inputEl) {
+        setTimeout(() => {
+          inputEl.focus();
+          inputEl.selectionStart = inputEl.selectionEnd = before.length + mentionStr.length;
+        }, 0);
+      }
+    }
+    this.showMentionDropdown = false;
+  }
+
   sendChatMessage() {
     if (!this.newChatMessage.trim()) return;
 
@@ -1463,6 +1578,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.api.post<any>(`chat/${chatId}`, {
       senderId: this.user()?._id || this.user()?.id,
       senderRole: userRole,
+      mentions: this.extractMentions(content),
       content: content
     }).subscribe({
       next: (res: any) => {

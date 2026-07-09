@@ -8,6 +8,7 @@ import '../../core/theme/app_theme.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/orders_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 
 class OrderChatScreen extends ConsumerStatefulWidget {
   final String orderId;
@@ -45,11 +46,106 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
   int _currentMatchIndex = 0;
   List<int> _matchedMessageIndices = [];
   final Map<int, GlobalKey> _itemKeys = {};
+  
+  // Smart Mentions State
+  bool _showMentionDropdown = false;
+  String _mentionSearch = '';
+  List<Map<String, dynamic>> _mentionOptions = [];
+  List<Map<String, dynamic>> _allMentionOptions = [];
 
   @override
   void initState() {
     super.initState();
     _loadChatBackground();
+    _messageController.addListener(_onMessageChanged);
+  }
+
+  @override
+  void dispose() {
+    _messageController.removeListener(_onMessageChanged);
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _loadMentionOptions() {
+    final orders = ref.read(serviceOrdersProvider).value ?? [];
+    final order = orders.where((o) => o.id == widget.orderId).firstOrNull;
+    if (order == null) return;
+    
+    final opts = <Map<String, dynamic>>[];
+    
+    final createdBy = order.details['created_by'];
+    if (createdBy is Map && createdBy['owner_name'] != null) {
+      opts.add({'name': createdBy['owner_name'], 'role': 'Client Manager', 'internalRole': 'client_manager'});
+    }
+    final assignedTo = order.details['assigned_to'];
+    if (assignedTo is Map && assignedTo['owner_name'] != null) {
+      opts.add({'name': assignedTo['owner_name'], 'role': 'Filing Staff', 'internalRole': 'filling_staff'});
+    }
+    final clientId = order.details['client_id'];
+    if (clientId is Map && clientId['owner_name'] != null) {
+      opts.add({'name': clientId['owner_name'], 'role': 'Client', 'internalRole': 'customer'});
+    }
+    
+    _allMentionOptions = opts;
+  }
+
+  void _onMessageChanged() {
+    final text = _messageController.text;
+    final cursor = _messageController.selection.baseOffset;
+    if (cursor < 0 || cursor > text.length) return;
+    
+    final textBeforeCursor = text.substring(0, cursor);
+    final lastAtIdx = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIdx != -1) {
+      final search = textBeforeCursor.substring(lastAtIdx + 1);
+      if (!search.contains(' ')) {
+        _loadMentionOptions();
+        final filtered = _allMentionOptions.where((opt) => 
+          opt['name'].toString().toLowerCase().contains(search.toLowerCase()) || 
+          opt['role'].toString().toLowerCase().contains(search.toLowerCase())
+        ).toList();
+        
+        setState(() {
+          _showMentionDropdown = true;
+          _mentionSearch = search;
+          _mentionOptions = filtered;
+        });
+        return;
+      }
+    }
+    
+    if (_showMentionDropdown) {
+      setState(() {
+        _showMentionDropdown = false;
+      });
+    }
+  }
+
+  void _insertMention(Map<String, dynamic> opt) {
+    final text = _messageController.text;
+    final cursor = _messageController.selection.baseOffset;
+    if (cursor < 0) return;
+    
+    final textBeforeCursor = text.substring(0, cursor);
+    final lastAtIdx = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIdx != -1) {
+      final before = text.substring(0, lastAtIdx);
+      final after = text.substring(cursor);
+      final mentionStr = '@${opt['name']} ';
+      
+      _messageController.value = TextEditingValue(
+        text: before + mentionStr + after,
+        selection: TextSelection.collapsed(offset: before.length + mentionStr.length),
+      );
+    }
+    
+    setState(() {
+      _showMentionDropdown = false;
+    });
   }
 
   Future<void> _loadChatBackground() async {
@@ -176,11 +272,26 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
 
+    final lowerText = text.toLowerCase();
+    List<String> mentions = [];
+    if (_allMentionOptions.isEmpty) {
+      _loadMentionOptions(); // Ensure options are loaded
+    }
+    for (final opt in _allMentionOptions) {
+      if (lowerText.contains('@${opt['name'].toString().toLowerCase()}')) {
+        final role = opt['internalRole'].toString();
+        if (!mentions.contains(role)) {
+          mentions.add(role);
+        }
+      }
+    }
+    if (lowerText.contains('@admin')) mentions.add('admin');
+
     _messageController.clear();
     
     final success = await ref
         .read(chatProvider(widget.orderId).notifier)
-        .sendMessage(text, senderRole: _selectedSenderRole);
+        .sendMessage(text, senderRole: _selectedSenderRole, mentions: mentions);
         
     if (success) {
       Future.delayed(const Duration(milliseconds: 100), _scrollToBottom);
@@ -457,6 +568,50 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                       ),
           ),
           
+            // Mention Dropdown Overlay
+            if (_showMentionDropdown)
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, -5),
+                    )
+                  ],
+                ),
+                constraints: const BoxConstraints(maxHeight: 180),
+                child: _mentionOptions.isEmpty 
+                  ? const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Center(child: Text('No matches found', style: TextStyle(color: Colors.grey, fontSize: 13))),
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: _mentionOptions.length,
+                      itemBuilder: (context, index) {
+                        final opt = _mentionOptions[index];
+                        return InkWell(
+                          onTap: () => _insertMention(opt),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(opt['name'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                                const SizedBox(height: 2),
+                                Text(opt['role'], style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+              ),
+
             // Chat Input Area
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -552,6 +707,9 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                           ),
                         ),
                         textCapitalization: TextCapitalization.sentences,
+                        inputFormatters: [
+                          MentionDeletionFormatter(_allMentionOptions.map((e) => e['name'].toString()).toList()),
+                        ],
                         minLines: 1,
                         maxLines: 4,
                       ),
@@ -803,5 +961,54 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
         ],
       ),
     );
+  }
+}
+
+class MentionDeletionFormatter extends TextInputFormatter {
+  final List<String> currentMentionNames;
+
+  MentionDeletionFormatter(this.currentMentionNames);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.length < oldValue.text.length) {
+      final oldText = oldValue.text;
+      
+      final cursorOld = oldValue.selection.baseOffset;
+      final cursorNew = newValue.selection.baseOffset;
+      
+      if (cursorOld > 0 && cursorOld > cursorNew) {
+        for (final name in currentMentionNames) {
+          final mentionStr = '@$name ';
+          final mentionStrNoSpace = '@$name';
+          
+          if (cursorOld >= mentionStr.length) {
+            final possibleMention = oldText.substring(cursorOld - mentionStr.length, cursorOld);
+            if (possibleMention == mentionStr) {
+              final newTextUpdated = oldText.replaceRange(cursorOld - mentionStr.length, cursorOld, '');
+              return TextEditingValue(
+                text: newTextUpdated,
+                selection: TextSelection.collapsed(offset: cursorOld - mentionStr.length),
+              );
+            }
+          }
+          
+          if (cursorOld >= mentionStrNoSpace.length) {
+            final possibleMention = oldText.substring(cursorOld - mentionStrNoSpace.length, cursorOld);
+            if (possibleMention == mentionStrNoSpace) {
+              final newTextUpdated = oldText.replaceRange(cursorOld - mentionStrNoSpace.length, cursorOld, '');
+              return TextEditingValue(
+                text: newTextUpdated,
+                selection: TextSelection.collapsed(offset: cursorOld - mentionStrNoSpace.length),
+              );
+            }
+          }
+        }
+      }
+    }
+    return newValue;
   }
 }
