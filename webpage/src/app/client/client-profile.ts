@@ -65,6 +65,12 @@ export class ClientProfile implements OnInit, OnDestroy {
     });
   });
 
+  get shortCompanyName(): string {
+    const full = this.user()?.company_name;
+    if (!full) return '';
+    return full.replace(/\b(private limited|pvt\.?\s*ltd\.?|limited|ltd\.?|llp|opc|inc|corp)\b/gi, '').trim();
+  }
+
   constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) { }
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

@@ -720,7 +720,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (!item.isActionStep) return false;
     if (item.title !== 'Client Form Filling') return true;
     const items = this.order()?.items || [];
-    const hasProvideDetails = items.some((i: any) => i.title === 'Provide Additional Details');
+    const hasProvideDetails = items.some((i: any) => i.title === 'Provide Necessary Details & Documents');
     return !hasProvideDetails;
   }
 }

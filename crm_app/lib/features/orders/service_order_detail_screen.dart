@@ -2242,7 +2242,7 @@ class _DirectorDetailsSection extends StatelessWidget {
 bool _shouldShowFillForm(ServiceStep step, ServiceOrder order) {
   if (!step.isActionStep) return false;
   if (step.title != 'Client Form Filling') return true;
-  final hasProvideDetails = order.steps.any((s) => s.title == 'Provide Necessary Details And Documents');
+  final hasProvideDetails = order.steps.any((s) => s.title == 'Provide Necessary Details & Documents');
   return !hasProvideDetails;
 }
 

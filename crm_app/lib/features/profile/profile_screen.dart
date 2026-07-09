@@ -105,6 +105,7 @@ class ProfileScreen extends ConsumerWidget {
                     email: user?.email ?? '---',
                     phone: user?.phone ?? '---',
                     profileImage: user?.profileImage ?? '',
+                    companyName: user?.companyName ?? '',
                   ),
 
                   SizedBox(height: 24.r),
@@ -197,6 +198,7 @@ class _UserInfoCard extends ConsumerStatefulWidget {
   final String email;
   final String phone;
   final String profileImage;
+  final String companyName;
 
   const _UserInfoCard({
     required this.uid,
@@ -204,6 +206,7 @@ class _UserInfoCard extends ConsumerStatefulWidget {
     required this.email,
     required this.phone,
     required this.profileImage,
+    required this.companyName,
   });
 
   @override
@@ -454,6 +457,26 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
                         fontSize: 18.sp,
                       ),
                 ),
+                if (widget.companyName.isNotEmpty) ...[
+                  SizedBox(height: 6.r),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 4.r),
+                    decoration: BoxDecoration(
+                      color: AppTheme.corporateBlue.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                    child: Text(
+                      widget.companyName.replaceAll(RegExp(r'\b(private limited|pvt\.?\s*ltd\.?|limited|ltd\.?|llp|opc|inc|corp)\b', caseSensitive: false), '').trim(),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppTheme.corporateBlue,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11.sp,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
                 SizedBox(height: 12.r),
                 Row(
                   children: [

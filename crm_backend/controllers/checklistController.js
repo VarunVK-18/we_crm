@@ -513,6 +513,16 @@ const updateChecklist = async (req, res) => {
       if (details !== undefined) {
         checklist.details = { ...details, clientFormSubmitted: true };
         checklist.action_required = false;
+
+        if (checklist.items) {
+          const formFillingStep = checklist.items.find(i => i.title === 'Client Form Filling');
+          if (formFillingStep && !formFillingStep.isChecked) {
+            formFillingStep.isChecked = true;
+            formFillingStep.checkedAt = new Date();
+            formFillingStep.checkedBy = req.user._id;
+            checklist.markModified('items');
+          }
+        }
       }
     } else {
       if (assigned_team !== undefined) {
@@ -882,10 +892,13 @@ const getMyChecklists = async (req, res) => {
         // Override action_required if form is not filled
         dynamicActionRequired = !isFormFilled;
 
+        // Remove 'Client Form Filling' since we are replacing it with 'Provide Necessary Details & Documents' for the client
+        modifiedItems = modifiedItems.filter(i => i.title !== 'Client Form Filling');
+
         // Dynamically inject the form step at the beginning
         modifiedItems = [
           {
-            title: "Provide Additional Details",
+            title: "Provide Necessary Details & Documents",
             description: "Please fill out the required form to begin the process.",
             isChecked: isFormFilled, // Check details instead of action_required
             isActionStep: true

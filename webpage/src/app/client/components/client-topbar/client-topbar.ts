@@ -76,6 +76,17 @@ export class ClientTopbarComponent implements OnInit {
     this.notifService.startPolling();
   }
 
+  get displayName(): string {
+    const u = this.user();
+    if (!u) return 'Company Name';
+    
+    const sel = this.selectedEntity();
+    if (sel && sel !== 'All') {
+      return sel;
+    }
+    return u.company_name || u.owner_name || u.name || 'Company Name';
+  }
+
   fetchEntities() {
     this.api.get<any>('my-checklists').subscribe({
       next: (res: any) => {
