@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  width: 260px;
+  width: 240px;
   background-color: var(--surface);
   border-right: 1px solid var(--border);
   padding: 0;
@@ -170,12 +170,18 @@
 }
 
 .sidebar-container.collapsed .group-header {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0;
-  font-size: 6px;
-  letter-spacing: 0.02em;
-  margin-top: 4px;
-  margin-bottom: 0px;
+  margin: 12px 0;
+}
+
+.sidebar-divider {
+  width: 24px;
+  height: 1px;
+  background-color: var(--border);
+  border-radius: 2px;
 }
 
 .group-items {

@@ -374,7 +374,26 @@ exports.getCompanyOrders = async (req, res) => {
       ];
     }
 
-    const orders = await ServiceOrder.find(orderQuery).sort({ createdAt: -1 });
+    let orders = await ServiceOrder.find(orderQuery).sort({ createdAt: -1 }).lean();
+
+    // Attach user (client) info to each order
+    const allClientUids = [...new Set(orders.map(o => o.clientUid || o.cleintUid).filter(Boolean))];
+    if (allClientUids.length > 0) {
+      const clientsInfo = await User.find({ _id: { $in: allClientUids } })
+        .select('name owner_name company_name custom_client_id email phone').lean();
+      
+      const clientMap = {};
+      clientsInfo.forEach(c => clientMap[c._id.toString()] = c);
+      
+      orders = orders.map(o => {
+        const uid = o.clientUid || o.cleintUid;
+        if (uid && clientMap[uid.toString()]) {
+          o.user = clientMap[uid.toString()];
+        }
+        return o;
+      });
+    }
+
     res.status(200).json({ orders });
   } catch (error) {
     console.error('Error fetching company orders:', error);

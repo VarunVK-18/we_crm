@@ -49,18 +49,31 @@
             (ngModelChange)="globalSearchQuery.set($event)" />
         </div>
         }
-        <!-- Notification Container -->
-        <div class="notification-container">
-          <button class="notification-btn" title="Notifications" (click)="toggleNotifications()"
-            [class.active]="isNotificationOpen()">
-            <hugeicons-icon [icon]="Notification01Icon" [size]="20" color="currentColor"
+        <div class="icon-actions" style="display: flex; gap: 8px; align-items: center;">
+          <!-- Chat Notification Icon -->
+          <button class="notification-btn" title="Staff Chat" (click)="handleTabChanged('staff-chat')"
+            [class.active]="currentTab() === 'staff-chat'">
+            <hugeicons-icon [icon]="ChatNotificationIcon" [size]="20" color="currentColor"
               [strokeWidth]="2"></hugeicons-icon>
-            @if (notifService.notifications().length > 0) {
-            <span class="notification-dot">{{ notifService.notifications().length }}</span>
+            @if (unreadChatCount() > 0) {
+            <span class="notification-dot">{{ unreadChatCount() }}</span>
             }
           </button>
 
+          <!-- Notification Container -->
+          <div class="notification-container">
+            <button class="notification-btn" title="Notifications" (click)="toggleNotifications()"
+              [class.active]="isNotificationOpen()">
+              <hugeicons-icon [icon]="Notification01Icon" [size]="20" color="currentColor"
+                [strokeWidth]="2"></hugeicons-icon>
+              @if (notifService.notifications().length > 0) {
+              <span class="notification-dot">{{ notifService.notifications().length }}</span>
+              }
+            </button>
+
+
           @if (isNotificationOpen()) {
+
           <div (click)="isNotificationOpen.set(false)" style="position: fixed; inset: 0; z-index: 998;"></div>
           <div class="notification-dropdown-menu" style="z-index: 999; position: absolute;">
             <div class="notif-header">
@@ -111,6 +124,7 @@
             </div>
           </div>
           }
+        </div>
         </div>
 
         <!-- User Badge -->

@@ -297,8 +297,8 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            DropdownButtonFormField2<String>(
-                              valueListenable: ValueNotifier(_turnoverType),
+                            DropdownButtonFormField<String>(
+                              value: _turnoverType,
                               decoration: InputDecoration(
                                 hintText: 'Select Turnover Details',
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
@@ -306,14 +306,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
-                              dropdownStyleData: DropdownStyleData(
-                                elevation: 2,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.black26, width: 0.5),
-                                ),
-                              ),
-                              items: _turnoverOptions.map((type) => DropdownItem(value: type, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
+                              items: _turnoverOptions.map<DropdownMenuItem<String>>((String type) => DropdownMenuItem<String>(value: type, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
                               onChanged: (val) {
                                 setState(() {
                                   _turnoverType = val;

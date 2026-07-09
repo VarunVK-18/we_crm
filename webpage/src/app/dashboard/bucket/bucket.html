@@ -8,36 +8,31 @@
     <table class="bucket-table">
       <thead>
         <tr>
-          <th>Client Name</th>
+          <th>Client ID</th>
+          <th>Company Name</th>
           <th>Service</th>
-          <th>Contact Info</th>
+          <th>Client Name</th>
+          <th>Email ID</th>
+          <th>Phone Number</th>
           <th>Time</th>
-          <th>Status</th>
-          <th>Actions</th>
+          @if (role !== 'admin') {
+            <th>Actions</th>
+          }
         </tr>
       </thead>
       <tbody>
         @for (i of [1, 2, 3, 4, 5]; track i) {
         <tr>
-          <td>
-            <div class="employee-cell">
-              <div class="skeleton-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; animation: pulse 1.5s infinite;"></div>
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-                <div class="skeleton-text" style="width: 80px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-              </div>
-            </div>
-          </td>
+          <td><div class="skeleton-text" style="width: 80px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 150px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
-          <td>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-              <div class="skeleton-text" style="width: 140px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-            </div>
-          </td>
-          <td><div class="skeleton-text" style="width: 60px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
-          <td><div class="skeleton-text" style="width: 80px; height: 24px; background: #e2e8f0; border-radius: 12px; animation: pulse 1.5s infinite;"></div></td>
-          <td><div class="skeleton-text" style="width: 70px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 140px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          @if (role !== 'admin') {
+            <td><div class="skeleton-text" style="width: 70px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
+          }
         </tr>
         }
       </tbody>
@@ -57,67 +52,67 @@
     <table class="bucket-table">
       <thead>
         <tr>
-          <th>Client Name</th>
+          <th>Client ID</th>
+          <th>Company Name</th>
           <th>Service</th>
-          <th>Contact Info</th>
+          <th>Client Name</th>
+          <th>Email ID</th>
+          <th>Phone Number</th>
           <th>Time</th>
-          <th>Status</th>
-          <th style="text-align: center;">Actions</th>
+          @if (role !== 'admin') {
+            <th style="text-align: center;">Actions</th>
+          }
         </tr>
       </thead>
       <tbody>
         @for (req of requests(); track req._id) {
         <tr>
           <td>
-            <div class="employee-cell">
-              <div class="employee-avatar">{{ getClientName(req).charAt(0).toUpperCase() }}</div>
-              <div>
-                <h3 class="employee-name">{{ getClientName(req) }}</h3>
-                @if (req.client_company_name) {
-                <span class="employee-email">{{ req.client_company_name }}</span>
-                }
-              </div>
-            </div>
+            <span class="text-muted" style="font-family: monospace;">{{ req.dealvoice_client_id || req.client_id?.custom_client_id || '-' }}</span>
+          </td>
+          <td>
+            <span style="font-weight: 500; color: var(--text-primary);">{{ req.client_company_name || '-' }}</span>
           </td>
           <td>
             <span class="service-name">{{ req.service_name }}</span>
           </td>
           <td>
-            <div class="contact-info">
-              @if (req.client_phone) { <div>{{ req.client_phone }}</div> }
-              @if (req.client_email) { <div class="text-muted">{{ req.client_email }}</div> }
-            </div>
+            <span class="employee-name" style="font-weight: 500;">{{ getClientName(req) }}</span>
           </td>
           <td>
-            <span class="time-ago">{{ getTimeAgo(req.createdAt) }}</span>
+            <span class="text-muted">{{ req.client_email || '-' }}</span>
           </td>
           <td>
-            <div class="status-cell">
-              <span class="status-badge status-{{ req.status }}">
-                @if (req.status === 'open') { Open }
-                @else if (req.status === 'claimed_by_manager') { Claimed }
-                @else if (req.status === 'assigned') { Assigned }
-                @else if (req.status === 'declined') { Declined }
-              </span>
-              @if (req.claimed_by) {
-              <div class="claimed-by-text">{{ req.claimed_by?.owner_name || 'Manager' }}</div>
+            <span>{{ req.client_phone || '-' }}</span>
+          </td>
+          <td>
+            <span class="time-ago">{{ req.createdAt | date:'short' }}</span>
+          </td>
+          @if (role !== 'admin') {
+            <td style="text-align: center; vertical-align: middle;">
+              @if (req.status === 'open') {
+              <div class="action-buttons" style="display: flex; justify-content: center;">
+                <button class="btn-claim-sm" [disabled]="claimingId() === req._id" (click)="openAcceptModal(req)">
+                  {{ claimingId() === req._id ? 'Accepting...' : 'Accept' }}
+                </button>
+              </div>
               }
-            </div>
-          </td>
-          <td style="text-align: center; vertical-align: middle;">
-            @if (req.status === 'open') {
-            <div class="action-buttons" style="display: flex; justify-content: center;">
-              <button class="btn-claim-sm" [disabled]="claimingId() === req._id" (click)="openAcceptModal(req)">
-                {{ claimingId() === req._id ? 'Accepting...' : 'Accept' }}
-              </button>
-            </div>
-            }
-          </td>
+            </td>
+          }
         </tr>
         }
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination Controls (Manager) -->
+  @if (totalPages() > 1) {
+  <div class="pagination-controls">
+    <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+    <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
+    <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
+  </div>
+  }
   }
   }
 
@@ -138,9 +133,12 @@
     <table class="bucket-table">
       <thead>
         <tr>
-          <th>Client Name</th>
+          <th>Client ID</th>
+          <th>Company Name</th>
           <th>Service</th>
-          <th>Contact Info</th>
+          <th>Client Name</th>
+          <th>Email ID</th>
+          <th>Phone Number</th>
           <th>Available Since</th>
           <th>Team</th>
           <th>Actions</th>
@@ -149,23 +147,13 @@
       <tbody>
         @for (i of [1, 2, 3, 4, 5]; track i) {
         <tr>
-          <td>
-            <div class="employee-cell">
-              <div class="skeleton-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #e2e8f0; animation: pulse 1.5s infinite;"></div>
-              <div style="display: flex; flex-direction: column; gap: 8px;">
-                <div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-                <div class="skeleton-text" style="width: 80px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-              </div>
-            </div>
-          </td>
+          <td><div class="skeleton-text" style="width: 80px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 150px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
-          <td>
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              <div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-              <div class="skeleton-text" style="width: 140px; height: 12px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
-            </div>
-          </td>
-          <td><div class="skeleton-text" style="width: 60px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 140px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 90px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
         </tr>
@@ -187,9 +175,12 @@
     <table class="bucket-table">
       <thead>
         <tr>
-          <th>Client Name</th>
+          <th>Client ID</th>
+          <th>Company Name</th>
           <th>Service</th>
-          <th>Contact Info</th>
+          <th>Client Name</th>
+          <th>Email ID</th>
+          <th>Phone Number</th>
           <th>Available Since</th>
           <th>Team</th>
           <th>Actions</th>
@@ -199,27 +190,25 @@
         @for (job of jobs(); track job._id) {
         <tr>
           <td>
-            <div class="employee-cell">
-              <div class="employee-avatar">{{ getClientName(job).charAt(0).toUpperCase() }}</div>
-              <div>
-                <h3 class="employee-name">{{ getClientName(job) }}</h3>
-                @if (job.client_company_name) {
-                <span class="employee-email">{{ job.client_company_name }}</span>
-                }
-              </div>
-            </div>
+            <span class="text-muted" style="font-family: monospace;">{{ job.dealvoice_client_id || job.client_id?.custom_client_id || '-' }}</span>
+          </td>
+          <td>
+            <span style="font-weight: 500; color: var(--text-primary);">{{ job.client_company_name || '-' }}</span>
           </td>
           <td>
             <span class="service-name">{{ job.service_name }}</span>
           </td>
           <td>
-            <div class="contact-info">
-              @if (job.client_phone) { <div>{{ job.client_phone }}</div> }
-              @if (job.client_email) { <div class="text-muted">{{ job.client_email }}</div> }
-            </div>
+            <span class="employee-name" style="font-weight: 500;">{{ getClientName(job) }}</span>
           </td>
           <td>
-            <span class="time-ago">{{ getTimeAgo(job.claimed_at) }}</span>
+            <span class="text-muted">{{ job.client_email || '-' }}</span>
+          </td>
+          <td>
+            <span>{{ job.client_phone || '-' }}</span>
+          </td>
+          <td>
+            <span class="time-ago">{{ job.claimed_at | date:'short' }}</span>
           </td>
           <td>
             @if (job.claimed_by) {
@@ -242,6 +231,15 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Pagination Controls (Staff) -->
+  @if (totalPages() > 1) {
+  <div class="pagination-controls">
+    <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+    <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
+    <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
+  </div>
+  }
   }
   }
 

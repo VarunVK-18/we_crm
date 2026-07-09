@@ -30,6 +30,15 @@ export class RequestsComponent implements OnInit {
   // Filter state
   searchQuery = signal<string>('');
 
+  // Pagination state
+  currentPage = signal<number>(1);
+  limit = signal<number>(15);
+
+  get role(): string {
+    const u = this.user();
+    return u ? u.role : '';
+  }
+
   readonly NEW_STATUSES = ['new', 'pending'];
   readonly NEW_STAGES = ['reqreceived', 'quot pending', 'quotepending'];
 
@@ -62,6 +71,26 @@ export class RequestsComponent implements OnInit {
     return filtered;
   });
 
+  totalPages = computed(() => Math.max(1, Math.ceil(this.filteredOrders().length / this.limit())));
+
+  paginatedOrders = computed(() => {
+    const start = (this.currentPage() - 1) * this.limit();
+    const end = start + this.limit();
+    return this.filteredOrders().slice(start, end);
+  });
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
   requiresDirectorCount(order: any): boolean {
     if (!order) return false;
     const name = (order.serviceType || order.serviceName || order.service_name || '').toLowerCase();
@@ -88,6 +117,16 @@ export class RequestsComponent implements OnInit {
   // Modal State
   selectedOrderForApproval = signal<any>(null);
   isApprovalModalOpen = signal<boolean>(false);
+  openDetailsId = signal<string | null>(null);
+
+  toggleDetails(orderId: string, event: Event) {
+    event.stopPropagation();
+    if (this.openDetailsId() === orderId) {
+      this.openDetailsId.set(null);
+    } else {
+      this.openDetailsId.set(orderId);
+    }
+  }
 
   // OCR additions
   transactionIdForOrder = signal<Record<string, string>>({});

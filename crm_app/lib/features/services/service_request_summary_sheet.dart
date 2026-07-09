@@ -1399,10 +1399,8 @@ class _ServiceRequestSummarySheetState
         ..._buildProprietorshipForm(),
       if (widget.packageName == 'Trade Mark' || widget.packageName == 'Trademark Registration')
         ..._buildTrademarkForm(),
-      if (widget.packageName == 'MSME' || widget.packageName == 'MSME Certification') ..._buildMsmeForm(),
       if (widget.packageName == 'DUNS Number Registration') ..._buildDunsForm(),
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
-      if (widget.packageName == 'FSSAI' || widget.packageName == 'FSSAI Food License') ..._buildFssaiForm(),
       if (widget.packageName == 'GST Compliance') ..._buildComplianceForm(),
     ];
   }

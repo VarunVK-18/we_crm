@@ -358,6 +358,21 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     this.api.put(`chat/${orderId}/seen`, { viewerRole: 'client' }).subscribe();
   }
 
+  extractMentions(message: string): string[] {
+    const mentions: string[] = [];
+    const lower = message.toLowerCase();
+    if (lower.includes('@client manager')) mentions.push('client_manager');
+    if (lower.includes('@filing staff') || lower.includes('@filling staff')) mentions.push('filling_staff');
+    if (lower.includes('@account manager')) mentions.push('account_manager');
+    if (lower.includes('@client') || lower.includes('@customer')) mentions.push('customer');
+    if (lower.includes('@admin')) mentions.push('admin');
+    return mentions;
+  }
+
+  addMention(text: string) {
+    this.newChatMessage += (this.newChatMessage && !this.newChatMessage.endsWith(' ') ? ' ' : '') + text;
+  }
+
   sendChatMessage() {
     if (!this.newChatMessage.trim()) return;
 
@@ -367,7 +382,8 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     this.api.post<any>(`chat/${this.orderId()}`, {
       senderId: this.user()?._id || this.user()?.id,
       senderRole: this.selectedSenderRole,
-      content: content
+      content: content,
+      mentions: this.extractMentions(content)
     }).subscribe({
       next: (res: any) => {
         if (res && res.message) {

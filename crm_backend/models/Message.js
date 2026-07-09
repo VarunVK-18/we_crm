@@ -19,6 +19,10 @@ const MessageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  mentions: {
+    type: [String],
+    default: []
+  },
   seen: {
     type: Boolean,
     default: false

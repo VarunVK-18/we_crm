@@ -4,7 +4,7 @@
   <div class="stats-grid">
     <div class="stat-card">
       <div class="stat-icon-wrapper icon-active">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">grid_view</span>
+        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">grid_view</span>
       </div>
       <div>
         <p class="stat-label">Active Checklists</p>
@@ -12,8 +12,17 @@
       </div>
     </div>
     <div class="stat-card">
+      <div class="stat-icon-wrapper icon-in-progress">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">sync</span>
+      </div>
+      <div>
+        <p class="stat-label">In Progress</p>
+        <p class="stat-value">{{ getInProgressCount() }}</p>
+      </div>
+    </div>
+    <div class="stat-card">
       <div class="stat-icon-wrapper icon-pending">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">pending_actions</span>
+        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">pending_actions</span>
       </div>
       <div>
         <p class="stat-label">Pending Action</p>
@@ -22,7 +31,7 @@
     </div>
     <div class="stat-card">
       <div class="stat-icon-wrapper icon-completed">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">check_circle</span>
+        <span class="material-symbols-outlined" style="font-variation-settings: 'wght' 400;">check_circle</span>
       </div>
       <div>
         <p class="stat-label">Completed This Week</p>
@@ -59,42 +68,35 @@
       <p>{{ canCreate() ? 'Create a new checklist to get started.' : 'You have no checklists assigned to this view.' }}</p>
     </div>
   } @else {
-    <div class="table-container">
-      <table class="data-table">
+    <div class="bucket-table-container" style="margin-top: 16px;">
+      <table class="bucket-table">
         <thead>
           <tr>
-            <th>Service ID</th>
-            <th>Service Name</th>
-            <th>Client</th>
-            @if (currentDirectoryTab() !== 'completed' && currentDirectoryTab() !== 'final_delivered') {
-              <th>Stage</th>
-            }
-            <th>Progress</th>
-            <th>Assignee</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th>SERVICE ID</th>
+            <th>SERVICE NAME</th>
+            <th>COMPANY NAME</th>
+            <th>CLIENT</th>
+            <th>PROGRESS</th>
+            <th>ASSIGNEE</th>
+            <th>STATUS</th>
+            <th style="text-align: center;">ACTION</th>
           </tr>
         </thead>
         <tbody>
-          @for (cl of filteredChecklists(); track cl._id) {
-            <tr (click)="viewDetails(cl._id)">
-              <td style="font-weight: 600; font-size: 13px;">
+          @for (cl of paginatedChecklists(); track cl._id) {
+            <tr (click)="viewDetails(cl._id)" style="cursor: pointer;">
+              <td style="font-family: monospace; color: #64748b;">
                 {{ cl.custom_service_id || '—' }}
               </td>
               <td>
-                <span class="service-badge">{{ cl.service_name }}</span>
+                <span class="service-name" style="font-weight: 500;">{{ cl.service_name }}</span>
               </td>
               <td>
-                <div class="client-details-table">
-                  <span class="client-name-sm">{{ cl.client_id?.owner_name || 'Unknown' }}</span>
-                  <span class="client-meta-sm">{{ cl.details?.entityName || cl.client_id?.company_name || 'Individual' }}</span>
-                </div>
+                <div style="font-weight: 500; color: var(--text-primary); font-size: 14px;">{{ cl.details?.entityName || cl.client_id?.company_name || '-' }}</div>
               </td>
-              @if (currentDirectoryTab() !== 'completed' && currentDirectoryTab() !== 'final_delivered') {
-                <td>
-                  <span class="stage-text">{{ cl.stage || 'quotePending' }}</span>
-                </td>
-              }
+              <td>
+                <span class="employee-name" style="font-weight: 500;">{{ cl.client_id?.owner_name || cl.client_id?.name || '-' }}</span>
+              </td>
               <td>
                 <div class="progress-bar-container">
                   <div class="progress-bar-bg">
@@ -125,9 +127,9 @@
                   }
                 </div>
               </td>
-              <td>
-                <button class="action-btn-sm" title="View Details">
-                  <span class="material-symbols-outlined">arrow_forward</span>
+              <td style="text-align: center;">
+                <button class="btn-action-view" title="View Details">
+                  View
                 </button>
               </td>
             </tr>
@@ -135,6 +137,14 @@
         </tbody>
       </table>
     </div>
+
+    @if (totalPages() > 1) {
+      <div class="pagination-controls">
+        <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+        <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
+        <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
+      </div>
+    }
   }
 </div>
 

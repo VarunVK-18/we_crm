@@ -31,6 +31,11 @@ export class BucketComponent implements OnInit {
   claimingId = signal<string | null>(null);
   assigningId = signal<string | null>(null);
 
+  // Pagination State
+  currentPage = signal<number>(1);
+  totalPages = signal<number>(1);
+  limit = signal<number>(15);
+
   // Modal State
   isAcceptModalOpen = signal<boolean>(false);
   selectedBucketReq = signal<any>(null);
@@ -142,37 +147,25 @@ export class BucketComponent implements OnInit {
   }
 
   loadData() {
-    if (Date.now() - bucketCache.lastFetchTime < 60000) {
-      if (this.isManager && bucketCache.requests) {
-        this.requests.set(bucketCache.requests);
-        this.isLoading.set(false);
-        return;
-      }
-      if (this.isFillingStaff && bucketCache.jobs) {
-        this.jobs.set(bucketCache.jobs);
-        this.isLoading.set(false);
-        return;
-      }
-    }
-
     this.isLoading.set(true);
+    const page = this.currentPage();
+    const limit = this.limit();
+
     if (this.isManager) {
       const status = this.activeTab() === 'all' ? 'all' : this.activeTab();
-      this.api.get<any>(`bucket/requests?status=${status}`).subscribe({
+      this.api.get<any>(`bucket/requests?status=${status}&page=${page}&limit=${limit}`).subscribe({
         next: (res) => {
           this.requests.set(res.requests || []);
-          bucketCache.requests = res.requests || [];
-          bucketCache.lastFetchTime = Date.now();
+          this.totalPages.set(res.totalPages || 1);
           this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false)
       });
     } else if (this.isFillingStaff) {
-      this.api.get<any>('bucket/available').subscribe({
+      this.api.get<any>(`bucket/available?page=${page}&limit=${limit}`).subscribe({
         next: (res) => {
           this.jobs.set(res.jobs || []);
-          bucketCache.jobs = res.jobs || [];
-          bucketCache.lastFetchTime = Date.now();
+          this.totalPages.set(res.totalPages || 1);
           this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false)
@@ -182,7 +175,22 @@ export class BucketComponent implements OnInit {
 
   setTab(tab: string) {
     this.activeTab.set(tab);
+    this.currentPage.set(1);
     this.loadData();
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+      this.loadData();
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+      this.loadData();
+    }
   }
 
   openAcceptModal(req: any) {

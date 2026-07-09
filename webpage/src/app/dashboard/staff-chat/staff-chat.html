@@ -245,6 +245,15 @@
         }
         <!-- Chat Input Area -->
         <div class="chat-input-area">
+          <div class="mention-tags" style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+            @if (user()?.role !== 'client_manager') {
+            <button class="mention-tag" (click)="addMention('@Client Manager ')" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; transition: all 0.2s;">@Client Manager</button>
+            }
+            @if (user()?.role !== 'filling_staff') {
+            <button class="mention-tag" (click)="addMention('@Filing Staff ')" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; transition: all 0.2s;">@Filing Staff</button>
+            }
+            <button class="mention-tag" (click)="addMention('@Client ')" style="background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 12px; padding: 4px 10px; font-size: 12px; font-weight: 500; color: #475569; cursor: pointer; transition: all 0.2s;">@Client</button>
+          </div>
           <div class="input-wrapper">
             <input type="text" 
                    placeholder="Type a message..." 

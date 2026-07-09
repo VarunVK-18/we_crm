@@ -103,6 +103,7 @@
   width: 100%;
   text-align: left;
   border-collapse: collapse;
+  white-space: nowrap;
 }
 
 .bucket-table th {
@@ -117,7 +118,7 @@
 }
 
 .bucket-table td {
-  padding: 16px 24px;
+  padding: 8px 24px;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -212,7 +213,7 @@
 }
 
 .employee-name {
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
   margin: 0;
@@ -321,11 +322,11 @@
 .btn-claim-sm {
   background-color: var(--accent-primary);
   color: white;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border: none;
   border-radius: 4px;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 500;
+  font-size: 13px;
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
@@ -344,6 +345,22 @@
   transition: background-color 0.2s ease;
 }
 .btn-decline-sm:hover { background-color: var(--bg-secondary); }
+
+/* Pagination */
+.pagination-controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  margin-top: 8px;
+}
+
+.pagination-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
 
 /* Modal styles */
 .modal-overlay {

@@ -31,7 +31,13 @@
     @for (group of getNavGroups(); track group.header) {
       <div class="nav-group">
         @if (group.header) {
-          <div class="group-header">{{ group.header }}</div>
+          <div class="group-header">
+            @if (isCollapsed()) {
+              <div class="sidebar-divider"></div>
+            } @else {
+              {{ group.header }}
+            }
+          </div>
         }
         <div class="group-items">
           @for (item of group.items; track item.id) {

@@ -309,8 +309,8 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            DropdownButtonFormField2<String>(
-                              valueListenable: ValueNotifier(_entityType),
+                            DropdownButtonFormField<String>(
+                              value: _entityType,
                               decoration: InputDecoration(
               hintText: 'Select Entity Type',
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
@@ -318,14 +318,7 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
-                              dropdownStyleData: DropdownStyleData(
-                                elevation: 2,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.black26, width: 0.5),
-                                ),
-                              ),
-                              items: _entityTypes.map((type) => DropdownItem(value: type, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
+                              items: _entityTypes.map<DropdownMenuItem<String>>((String type) => DropdownMenuItem<String>(value: type, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
                               onChanged: (val) {
                                 setState(() {
                                   _entityType = val;

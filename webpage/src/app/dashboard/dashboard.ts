@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { NotificationService } from '../client/services/notification.service';
-import { Notification01Icon, Search01Icon, Message02Icon } from '@hugeicons/core-free-icons';
+import { Notification01Icon, Search01Icon, Message02Icon, ChatNotificationIcon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 import { FormsModule } from '@angular/forms';
 import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
@@ -80,11 +80,13 @@ export class Dashboard implements OnInit, OnDestroy {
   globalSearchQuery = signal<string>('');
   dscTokenBalance = signal<number>(0);
   lowDscTokenWarning = signal<boolean>(false);
+  unreadChatCount = signal<number>(0);
 
   // Icon assets
   readonly Search01Icon = Search01Icon;
   readonly Notification01Icon = Notification01Icon;
   readonly Message02Icon = Message02Icon;
+  readonly ChatNotificationIcon = ChatNotificationIcon;
 
   // Mobile sidebar navigation drawer state
   isMobileSidebarOpen = signal<boolean>(false);
@@ -116,6 +118,9 @@ export class Dashboard implements OnInit, OnDestroy {
         setInterval(() => this.checkDscTokens(), 300000);
       }
 
+      this.fetchUnreadChatCount();
+      setInterval(() => this.fetchUnreadChatCount(), 15000);
+
       // Initialize breadcrumb for the first load
       this.navigationTrail.set([{ label: this.getTabLabel('dashboard'), action: () => this.handleTabChanged('dashboard') }]);
     } catch (e) {
@@ -138,6 +143,23 @@ export class Dashboard implements OnInit, OnDestroy {
         }
       },
       error: (err) => console.error('Error fetching DSC tokens for warning', err)
+    });
+  }
+
+  fetchUnreadChatCount() {
+    const u = this.user();
+    if (!u) return;
+    
+    this.api.get<any>('chat/conversations/unread-count').subscribe({
+      next: (res) => {
+        if (res && typeof res.mentionCount === 'number') {
+          this.unreadChatCount.set(res.mentionCount);
+        } else if (res && typeof res.count === 'number') {
+          // Fallback if backend doesn't support mentionCount yet
+          this.unreadChatCount.set(res.count);
+        }
+      },
+      error: () => { }
     });
   }
 
@@ -323,7 +345,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.currentTab.set('checklist-details');
     this.navigationTrail.update(trail => [
       ...trail,
-      { label: 'Checklist Details', action: () => this.viewChecklist(checklistId, openChat) }
+      { label: 'Service Details', action: () => this.viewChecklist(checklistId, openChat) }
     ]);
   }
 
@@ -350,7 +372,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'team': return 'Employees & Team';
       case 'employee-profile': return 'Employee Profile';
       case 'tasks': return 'Custom Task';
-      case 'checklists': return 'Compliance';
+      case 'checklists': return 'Ongoing Service';
       case 'completed-checklists': return 'Completed Service';
       case 'checklist-details': return 'Service Details';
       case 'requests': return 'New Requests';
@@ -360,7 +382,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'staff-compliance': return 'Staff Compliance Radar';
       case 'bucket': return 'Bucket Requests';
       case 'payment-tracker': return 'Payment Tracker';
-      case 'service-track': return 'Service Tracker';
+      case 'service-track': return 'Service Kanban';
       case 'service-tracker-table': return 'Service Tracker';
       case 'team-service-track': return 'Team Service Tracker';
       case 'opportunities': return 'Opportunities';

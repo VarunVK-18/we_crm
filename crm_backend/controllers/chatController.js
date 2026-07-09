@@ -128,7 +128,14 @@ exports.getUnreadCount = async (req, res) => {
       seen: false
     });
 
-    res.status(200).json({ success: true, count });
+    const mentionCount = await Message.countDocuments({
+      orderId: { $in: checklistIds },
+      senderRole: { $in: ['customer', 'client'] },
+      seen: false,
+      mentions: { $in: [req.user.role, req.user._id.toString()] }
+    });
+
+    res.status(200).json({ success: true, count, mentionCount });
   } catch (error) {
     console.error('Error fetching unread chat count:', error);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -138,7 +145,7 @@ exports.getUnreadCount = async (req, res) => {
 exports.sendMessage = async (req, res) => {
   try {
     const { orderId } = req.params;
-    const { senderId, senderRole, content } = req.body;
+    const { senderId, senderRole, content, mentions } = req.body;
 
     if (!senderId || !content) {
       return res.status(400).json({ success: false, message: 'senderId and content are required' });
@@ -148,7 +155,8 @@ exports.sendMessage = async (req, res) => {
       orderId,
       senderId,
       senderRole: senderRole || 'client',
-      content
+      content,
+      mentions: mentions || []
     });
 
     await newMessage.save();
@@ -156,67 +164,41 @@ exports.sendMessage = async (req, res) => {
     // Populate sender details before returning
     await newMessage.populate('senderId', 'owner_name role profile_image');
 
-    // Handle notifications
+    // Handle notifications based on mentions
     const order = await Checklist.findById(orderId);
-    if (order) {
-      const isClientSender = (order.client_id && order.client_id.toString() === senderId.toString()) || senderRole === 'customer' || senderRole === 'client';
+    if (order && mentions && mentions.length > 0) {
+      let notifiedUserIds = new Set();
+      const User = require('../models/User');
 
-      if (isClientSender) {
-        let notifiedUserIds = new Set();
-
-        // Sent by client, notify assigned filing staff
-        if (order.assigned_to && order.assigned_to.toString() !== senderId.toString()) {
-          await Notification.create({
-            client_id: order.assigned_to,
-            title: 'New Message from Client',
-            message: `Client sent a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
-            type: 'chat',
-            order_id: orderId,
-            related_data: { messageId: newMessage._id }
-          });
-          notifiedUserIds.add(order.assigned_to.toString());
-        }
-        
-        // Notify client manager (creator)
-        if (order.created_by && order.created_by.toString() !== senderId.toString() && !notifiedUserIds.has(order.created_by.toString())) {
-          await Notification.create({
-            client_id: order.created_by,
-            title: 'New Message from Client',
-            message: `Client sent a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
-            type: 'chat',
-            order_id: orderId,
-            related_data: { messageId: newMessage._id }
-          });
-          notifiedUserIds.add(order.created_by.toString());
-        }
-
-        // Also notify all admins and client managers
-        const User = require('../models/User');
-        const managers = await User.find({ role: { $in: ['admin', 'client_manager'] } });
-        for (const mgr of managers) {
-          if (mgr._id.toString() !== senderId.toString() && !notifiedUserIds.has(mgr._id.toString())) {
+      for (const mention of mentions) {
+        if (mention === 'customer' || mention === 'client') {
+          if (order.client_id && order.client_id.toString() !== senderId.toString() && !notifiedUserIds.has(order.client_id.toString())) {
             await Notification.create({
-              client_id: mgr._id,
-              title: 'New Message from Client',
-              message: `Client sent a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+              client_id: order.client_id,
+              title: 'New Mention in Chat',
+              message: `You were mentioned: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
               type: 'chat',
               order_id: orderId,
               related_data: { messageId: newMessage._id }
             });
-            notifiedUserIds.add(mgr._id.toString());
+            notifiedUserIds.add(order.client_id.toString());
           }
-        }
-      } else {
-        // Sent by staff/admin, notify client
-        if (order.client_id && order.client_id.toString() !== senderId.toString()) {
-          await Notification.create({
-            client_id: order.client_id,
-            title: 'New Message from Expert',
-            message: `Your expert sent you a message: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
-            type: 'chat',
-            order_id: orderId,
-            related_data: { messageId: newMessage._id }
-          });
+        } else {
+          // mention is a staff role (admin, client_manager, filling_staff, etc.)
+          const staffMembers = await User.find({ role: mention });
+          for (const staff of staffMembers) {
+            if (staff._id.toString() !== senderId.toString() && !notifiedUserIds.has(staff._id.toString())) {
+              await Notification.create({
+                client_id: staff._id,
+                title: 'New Mention in Chat',
+                message: `You were mentioned: "${content.substring(0, 50)}${content.length > 50 ? '...' : ''}"`,
+                type: 'chat',
+                order_id: orderId,
+                related_data: { messageId: newMessage._id }
+              });
+              notifiedUserIds.add(staff._id.toString());
+            }
+          }
         }
       }
     }

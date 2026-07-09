@@ -26,14 +26,23 @@ const getBucketRequests = async (req, res) => {
       filter.status = status;
     }
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const skip = (page - 1) * limit;
+
+    const total = await BucketRequest.countDocuments(filter);
+    const totalPages = Math.ceil(total / limit) || 1;
+
     const requests = await BucketRequest.find(filter)
       .populate('client_id', 'custom_client_id owner_name email phone company_name')
       .populate('claimed_by', 'owner_name email _id')
       .populate('assigned_to', 'owner_name email _id')
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .lean();
 
-    res.json({ success: true, requests });
+    res.json({ success: true, requests, total, page, totalPages });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -194,22 +203,32 @@ const getAvailableJobs = async (req, res) => {
 
     const teamIds = teams.map(t => t._id);
 
-    // Find claimed_by_manager bucket requests where the request is assigned to staff's team
-    const jobs = await BucketRequest.find({
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const skip = (page - 1) * limit;
+
+    const filter = {
       company_id,
       status: 'claimed_by_manager',
       $or: [
         { team_id: { $in: teamIds } },
-        // Fallback for older requests that don't have team_id set yet
         { claimed_by: { $in: teams.map(t => t.manager_id).filter(Boolean) }, team_id: null }
       ]
-    })
+    };
+
+    const total = await BucketRequest.countDocuments(filter);
+    const totalPages = Math.ceil(total / limit) || 1;
+
+    // Find claimed_by_manager bucket requests where the request is assigned to staff's team
+    const jobs = await BucketRequest.find(filter)
       .populate('client_id', 'custom_client_id owner_name email phone company_name')
       .populate('claimed_by', 'owner_name email _id')
       .sort({ claimed_at: -1 })
+      .skip(skip)
+      .limit(limit)
       .lean();
 
-    res.json({ success: true, jobs });
+    res.json({ success: true, jobs, total, page, totalPages });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

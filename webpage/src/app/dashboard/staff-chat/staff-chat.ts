@@ -371,6 +371,22 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     });
   }
 
+  extractMentions(message: string): string[] {
+    const mentions: string[] = [];
+    const lower = message.toLowerCase();
+    if (lower.includes('@client manager')) mentions.push('client_manager');
+    if (lower.includes('@filing staff') || lower.includes('@filling staff')) mentions.push('filling_staff');
+    if (lower.includes('@account manager')) mentions.push('account_manager');
+    if (lower.includes('@client') || lower.includes('@customer')) mentions.push('customer');
+    if (lower.includes('@admin')) mentions.push('admin');
+    return mentions;
+  }
+
+  addMention(text: string) {
+    const current = this.newChatMessage();
+    this.newChatMessage.set(current + (current && !current.endsWith(' ') ? ' ' : '') + text);
+  }
+
   sendChatMessage() {
     const message = this.newChatMessage().trim();
     if (!message) return;
@@ -381,7 +397,8 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     const payload = {
       senderId: this.user()?._id,
       senderRole: this.user()?.role,
-      content: message
+      content: message,
+      mentions: this.extractMentions(message)
     };
 
     // Optimistic UI update

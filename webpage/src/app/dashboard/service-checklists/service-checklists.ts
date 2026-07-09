@@ -180,6 +180,31 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     return filtered;
   }
 
+  currentPage = signal<number>(1);
+  itemsPerPage = 15;
+
+  paginatedChecklists() {
+    const filtered = this.filteredChecklists();
+    const start = (this.currentPage() - 1) * this.itemsPerPage;
+    return filtered.slice(start, start + this.itemsPerPage);
+  }
+
+  totalPages() {
+    return Math.max(1, Math.ceil(this.filteredChecklists().length / this.itemsPerPage));
+  }
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
+  }
+
+  prevPage() {
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
+  }
+
   getTabCount(tab: string): number {
     const all = this.checklists();
     if (tab === 'all') return all.length;
@@ -333,7 +358,11 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   }
 
   getActiveCount(): number {
-    return this.checklists().filter(c => this.getChecklistDisplayStatus(c) !== 'Completed').length;
+    return this.checklists().filter(c => c.status !== 'completed').length;
+  }
+
+  getInProgressCount(): number {
+    return this.checklists().filter(c => this.getChecklistDisplayStatus(c) === 'In Progress').length;
   }
 
   getPendingActionCount(): number {

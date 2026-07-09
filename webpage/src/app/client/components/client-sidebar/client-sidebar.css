@@ -58,7 +58,7 @@
   cursor: pointer;
   z-index: 110;
   color: var(--text-primary);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
   padding: 0;
 }
@@ -199,7 +199,7 @@
   background-color: #f8fafc;
   color: #000000;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   border: 1px solid transparent;
 }
 
@@ -314,7 +314,8 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 140px; /* Increased to accommodate larger logo and multiline text */
+  min-height: 140px;
+  /* Increased to accommodate larger logo and multiline text */
   overflow: hidden;
   position: relative;
 }
