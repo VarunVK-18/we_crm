@@ -76,7 +76,12 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
             'dealClosedAmount': c['dealClosedAmount'] ?? 0,
             'advanceAmountPaid': c['advanceAmountPaid'] ?? 0,
             'notes': c['notes'] ?? '',
-            'details': c['details'] ?? {},
+            'details': {
+              if (c['details'] is Map) ...c['details'],
+              'created_by': c['created_by'],
+              'assigned_to': c['assigned_to'],
+              'client_id': c['client_id'],
+            },
             'actionRequired': c['action_required'] ?? false,
           };
 

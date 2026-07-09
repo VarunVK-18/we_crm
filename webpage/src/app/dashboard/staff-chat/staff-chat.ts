@@ -54,14 +54,15 @@ export class StaffChatComponent implements OnInit, OnDestroy {
     
     const opts = [];
     const cl = conv.checklist;
+    const currentUser = this.user();
     
-    if (cl.created_by?.owner_name) {
+    if (cl.created_by?.owner_name && cl.created_by._id !== currentUser?._id) {
       opts.push({ name: cl.created_by.owner_name, role: 'Client Manager', internalRole: 'client_manager' });
     }
-    if (cl.assigned_to?.owner_name) {
+    if (cl.assigned_to?.owner_name && cl.assigned_to._id !== currentUser?._id) {
       opts.push({ name: cl.assigned_to.owner_name, role: 'Filing Staff', internalRole: 'filling_staff' });
     }
-    if (cl.client_id?.owner_name) {
+    if (cl.client_id?.owner_name && cl.client_id._id !== currentUser?._id) {
       opts.push({ name: cl.client_id.owner_name, role: 'Client', internalRole: 'customer' });
     }
     return opts;
