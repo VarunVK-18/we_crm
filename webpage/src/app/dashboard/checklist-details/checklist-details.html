@@ -314,10 +314,10 @@
                <p style="font-size: 14px; color: var(--text-secondary); margin: 4px 0 0 0;">{{ item.description }}</p>
                }
                @if (item.staff_description && user() && user().role !== 'customer') {
-               <div style="margin-top: 8px; padding: 8px 12px; background: #fefce8; border: 1px solid #fef08a; border-left: 3px solid #eab308; border-radius: 4px;">
+               <div style="margin-top: 8px;">
                 @if (user()?.role !== 'filling_staff') {
-                 <div style="font-size: 11px; font-weight: 700; color: #a16207; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px;">
-                   <span class="material-symbols-outlined" style="font-size: 14px;">assignment</span> Staff Instructions
+                 <div style="font-size: 11px; font-weight: 700;  margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 4px;">
+                    Staff Instructions
                  </div>
                 }
                  <div style="font-size: 13px; color: #64748b; white-space: pre-wrap;">{{ item.staff_description }}</div>
