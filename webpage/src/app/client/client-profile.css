@@ -417,10 +417,23 @@
 }
 
 .phc-info h1 {
-  font-size: 28px;
-  font-weight: 800;
-  margin: 0 0 4px 0;
-  letter-spacing: -0.02em;
+  margin: 0;
+  font-size: 24px;
+  color: var(--text-dark);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.short-company-badge {
+  display: inline-block;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  margin-bottom: 6px;
 }
 
 .phc-info p {

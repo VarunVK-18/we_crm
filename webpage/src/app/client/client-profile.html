@@ -16,6 +16,9 @@
             }
             <div class="phc-info">
               <h1>{{ (user()?.owner_name || user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
+              @if (shortCompanyName) {
+                <span class="short-company-badge">{{ shortCompanyName }}</span>
+              }
               <p>{{ user()?.email || 'N/A' }} &bull; {{ user()?.business_type || 'Business' }}</p>
             </div>
           </div>

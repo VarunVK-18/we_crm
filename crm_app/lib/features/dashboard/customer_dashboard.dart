@@ -44,18 +44,16 @@ class CustomerDashboard extends ConsumerWidget {
     Responsive.init(context);
     final user = ref.watch(userProfileProvider).value;
 
-    final rawName = user?.name.split(' ')[0] ?? 'Explorer';
-    final firstName = rawName.isNotEmpty
-        ? rawName[0].toUpperCase() + rawName.substring(1).toLowerCase()
-        : rawName;
-    final displayNameRaw = (user?.companyName != null && user!.companyName.isNotEmpty)
+    final selectedEntity = ref.watch(selectedEntityProvider);
+
+    final rawName = user?.name ?? 'Explorer'; // Get full name
+    final primaryCompanyName = (user?.companyName != null && user!.companyName.isNotEmpty)
         ? user.companyName
-        : firstName;
-        
-    final displayName = displayNameRaw.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
+        : rawName;
+
+    final displayName = (selectedEntity != 'All Entities' && selectedEntity.isNotEmpty)
+        ? selectedEntity
+        : primaryCompanyName;
         
     final hour = DateTime.now().hour;
     String greeting;
@@ -96,9 +94,10 @@ class CustomerDashboard extends ConsumerWidget {
                   style: GoogleFonts.poppins(
                     color: Colors.black87,
                     fontWeight: FontWeight.w600,
-                    fontSize: 18.sp,
+                    fontSize: 16.sp, // slightly smaller to fit better
                   ),
-                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
@@ -1164,14 +1163,12 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                             widthFactor: progress,
                             child: Container(
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFA78BFA), Color(0xFFF472B6)],
-                                ),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(4.r),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFFF472B6).withOpacity(0.5),
-                                    blurRadius: 8,
+                                    color: Colors.white.withOpacity(0.3),
+                                    blurRadius: 4,
                                     spreadRadius: 0,
                                   ),
                                 ],
