@@ -38,14 +38,47 @@ export class Opportunities implements OnInit {
     { category: 'Compliance', name: 'ITR', desc: 'Income Tax Return filing' }
   ];
 
+  filterCount = signal<string>('any');
+  filterCategory = signal<string>('all');
+
+  availableCategories = computed(() => {
+    const cats = new Set<string>();
+    this.recommendationPool.forEach(p => cats.add(p.category));
+    return Array.from(cats);
+  });
+
   filteredClients = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    if (!query) return this.clients();
-    return this.clients().filter(c => 
-      (c.name && c.name.toLowerCase().includes(query)) ||
-      (c.company_name && c.company_name.toLowerCase().includes(query)) ||
-      (c.email && c.email.toLowerCase().includes(query))
-    );
+    const fCount = this.filterCount();
+    const fCat = this.filterCategory();
+
+    if (!this.clients()) return [];
+
+    return this.clients().filter(c => {
+      const matchSearch = !query || 
+        (c.name && c.name.toLowerCase().includes(query)) ||
+        (c.company_name && c.company_name.toLowerCase().includes(query)) ||
+        (c.email && c.email.toLowerCase().includes(query));
+      
+      if (!matchSearch) return false;
+
+      const oppsCount = c.opportunities ? c.opportunities.length : 0;
+      let matchCount = true;
+      if (fCount === '>0') matchCount = oppsCount > 0;
+      else if (fCount === '1') matchCount = oppsCount === 1;
+      else if (fCount === '2') matchCount = oppsCount === 2;
+      else if (fCount === '3+') matchCount = oppsCount >= 3;
+
+      if (!matchCount) return false;
+
+      let matchCat = true;
+      if (fCat !== 'all') {
+        matchCat = c.opportunities && c.opportunities.some((o: any) => o.category === fCat);
+      }
+      if (!matchCat) return false;
+
+      return true;
+    });
   });
 
   constructor() {}
