@@ -107,7 +107,7 @@ const claimBucketRequest = async (req, res) => {
       company_id,
       client_id: bucketReq.client_id._id,
       service_name: bucketReq.service_name,
-      assigned_to: managerId,
+      assigned_to: null, // Keep null so filing staff can claim it ("Yet to Assign")
       assigned_team: team_id || null,
       created_by: managerId,
       items: finalItems,

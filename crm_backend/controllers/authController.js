@@ -1063,7 +1063,7 @@ const subscribeService = async (req, res) => {
               company_id: user.company_id || '000000000000000000000000',
               client_id: user._id,
               service_name: serviceName,
-              assigned_to: manager._id,
+              assigned_to: null, // Set to null ("Yet to Assign") instead of manager._id
               created_by: manager._id,
               items: finalItems,
               details: details,

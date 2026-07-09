@@ -190,7 +190,7 @@ exports.updateOrder = async (req, res) => {
             company_id: order.companyId,
             client_id: bucketReq.client_id,
             service_name: bucketReq.service_name,
-            assigned_to: req.user._id,
+            assigned_to: null, // Keep null so filing staff can claim it ("Yet to Assign")
             assigned_team: updateData.team_id,
             created_by: req.user._id,
             items: finalItems,
