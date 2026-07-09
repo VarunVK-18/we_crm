@@ -316,8 +316,13 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.router.navigate([`/client/service/${order._id}`]);
   }
 
-  getCompletedCount(items: any[] | undefined): number {
+  getCompletedCount(items: any[]): number {
     if (!items) return 0;
     return items.filter(i => i.isChecked).length;
+  }
+
+  getProgressPercentage(order: any): number {
+    if (!order || !order.items || order.items.length === 0) return 0;
+    return Math.round((this.getCompletedCount(order.items) / order.items.length) * 100);
   }
 }

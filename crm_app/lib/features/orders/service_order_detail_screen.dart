@@ -621,6 +621,35 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                     final progressContent = Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (order.dealClosedAmount > order.advanceAmountPaid && !order.isPaymentPending)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24).copyWith(bottom: 16),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFFBEB),
+                                border: Border.all(color: const Color(0xFFFDE68A)),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded, color: Color(0xFFD97706)),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Outstanding Balance Notice', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFB45309))),
+                                        const SizedBox(height: 4),
+                                        Text('You have a remaining balance of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please note that the final deliverables will be locked upon service completion until the balance is settled.', style: const TextStyle(fontSize: 13, color: Color(0xFF92400E))),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         if (customInputSteps.isNotEmpty) ...[
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -813,7 +842,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                             order.status != ServiceStatus.notInitialized &&
                             order.details['directors'] != null &&
                             order.details['directors'] != '[]' &&
-                            order.details['directors'] is String &&
+                            (order.details['directors'] is String || order.details['directors'] is List) &&
                             order.details['directors'] != 'submitted') ...[
                           const SizedBox(height: 32),
                           Padding(
