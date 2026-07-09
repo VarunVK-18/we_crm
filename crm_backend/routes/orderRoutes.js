@@ -341,6 +341,43 @@ router.post(
   orderController.submitTdsForm
 );
 
+// Define fields for ITR form
+const itrUploadFields = [
+  { name: 'bankStatements', maxCount: 1 },
+  { name: 'purchaseBills', maxCount: 1 },
+  { name: 'salesInvoices', maxCount: 1 },
+  { name: 'companyPan', maxCount: 1 },
+  { name: 'additionalDocs', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-itr-form
+router.post(
+  '/:id/submit-itr-form',
+  checkUser,
+  upload.fields(itrUploadFields),
+  saveFilesToDatabase,
+  orderController.submitItrForm
+);
+
+// Define fields for CE & RoHS form
+const ceRohsUploadFields = [
+  { name: 'productDatasheet', maxCount: 1 },
+  { name: 'userManual', maxCount: 1 },
+  { name: 'circuitDiagram', maxCount: 1 },
+  { name: 'bom', maxCount: 1 },
+  { name: 'testReports', maxCount: 1 },
+  { name: 'productImages', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-ce-rohs-form
+router.post(
+  '/:id/submit-ce-rohs-form',
+  checkUser,
+  upload.fields(ceRohsUploadFields),
+  saveFilesToDatabase,
+  orderController.submitCeRohsForm
+);
+
 // Define fields for PF form
 const pfUploadFields = [
   { name: 'panCard', maxCount: 1 },

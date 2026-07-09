@@ -35,6 +35,8 @@ import { BisForm } from './client/forms/bis-form/bis-form';
 import { McaFormComponent } from './client/forms/mca-form/mca-form';
 import { ProprietorshipForm } from './client/forms/proprietorship-form/proprietorship-form';
 import { TdsForm } from './client/forms/tds-form/tds-form';
+import { ItrForm } from './client/forms/itr-form/itr-form';
+import { CeRohsForm } from './client/forms/ce-rohs-form/ce-rohs-form';
 import { PfForm } from './client/forms/pf-form/pf-form';
 import { PatentForm } from './client/forms/patent-form/patent-form';
 import { GstCancellationForm } from './client/forms/gst-cancellation-form/gst-cancellation-form';
@@ -107,6 +109,8 @@ export const routes: Routes = [
       { path: 'forms/mca/:id', component: McaFormComponent },
       { path: 'forms/proprietorship/:id', component: ProprietorshipForm },
       { path: 'forms/tds/:id', component: TdsForm },
+      { path: 'forms/itr/:id', component: ItrForm },
+      { path: 'forms/ce-rohs/:id', component: CeRohsForm },
 
       { path: 'forms/pf/:id', component: PfForm },
       { path: 'forms/patent/:id', component: PatentForm },

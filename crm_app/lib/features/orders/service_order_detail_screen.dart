@@ -25,6 +25,8 @@ import '../profile/chat_support_screen.dart';
 import 'incorp_form_screen.dart';
 import 'dpiit_form_screen.dart';
 import 'trademark_form_screen.dart';
+import 'itr_form_screen.dart';
+import 'ce_rohs_form_screen.dart';
 import 'llp_form_screen.dart';
 import 'msme_form_screen.dart';
 import 'gst_form_screen.dart';
@@ -2240,7 +2242,7 @@ class _DirectorDetailsSection extends StatelessWidget {
 bool _shouldShowFillForm(ServiceStep step, ServiceOrder order) {
   if (!step.isActionStep) return false;
   if (step.title != 'Client Form Filling') return true;
-  final hasProvideDetails = order.steps.any((s) => s.title == 'Provide Additional Details');
+  final hasProvideDetails = order.steps.any((s) => s.title == 'Provide Necessary Details And Documents');
   return !hasProvideDetails;
 }
 
@@ -2281,8 +2283,12 @@ void _routeToForm(BuildContext context, ServiceOrder order) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => DscFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('proprietorship')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => ProprietorshipFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('tds') || order.serviceType.toLowerCase().contains('pan') || order.serviceType.toLowerCase().contains('itr')) {
+  } else if (order.serviceType.toLowerCase().contains('tds') || order.serviceType.toLowerCase().contains('pan')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => TdsFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('itr')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ItrFormScreen(order: order)));
+  } else if (order.serviceType.toLowerCase().contains('ce') || order.serviceType.toLowerCase().contains('rohs')) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => CeRohsFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('pf')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => PfFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('patent')) {

@@ -1306,6 +1306,108 @@ exports.submitTdsForm = async (req, res) => {
   }
 };
 
+// Submit ITR Registration Form
+exports.submitItrForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.bankStatements) uploadedDocs.push({ name: "Bank Statements", fileUrl: files.bankStatements[0].path });
+    else if (req.body.bankStatements_existing) uploadedDocs.push({ name: "Bank Statements", fileUrl: req.body.bankStatements_existing });
+    if (files.purchaseBills) uploadedDocs.push({ name: "Purchase Bills", fileUrl: files.purchaseBills[0].path });
+    else if (req.body.purchaseBills_existing) uploadedDocs.push({ name: "Purchase Bills", fileUrl: req.body.purchaseBills_existing });
+    if (files.salesInvoices) uploadedDocs.push({ name: "Sales Invoice copies", fileUrl: files.salesInvoices[0].path });
+    else if (req.body.salesInvoices_existing) uploadedDocs.push({ name: "Sales Invoice copies", fileUrl: req.body.salesInvoices_existing });
+    if (files.companyPan) uploadedDocs.push({ name: "Company PAN Card", fileUrl: files.companyPan[0].path });
+    else if (req.body.companyPan_existing) uploadedDocs.push({ name: "Company PAN Card", fileUrl: req.body.companyPan_existing });
+    if (files.additionalDocs) uploadedDocs.push({ name: "Additional Documents", fileUrl: files.additionalDocs[0].path });
+    else if (req.body.additionalDocs_existing) uploadedDocs.push({ name: "Additional Documents", fileUrl: req.body.additionalDocs_existing });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      itrForm: formData,
+      itrDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+    markClientFormFilled(order);
+
+    await order.save();
+
+    res.status(200).json({ message: 'ITR form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting ITR form:', error);
+    res.status(500).json({ message: 'Server error while submitting ITR form.', error: error.message });
+  }
+};
+
+// Submit CE & RoHS Registration Form
+exports.submitCeRohsForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.productDatasheet) uploadedDocs.push({ name: "Product Datasheet", fileUrl: files.productDatasheet[0].path });
+    else if (req.body.productDatasheet_existing) uploadedDocs.push({ name: "Product Datasheet", fileUrl: req.body.productDatasheet_existing });
+    
+    if (files.userManual) uploadedDocs.push({ name: "User Manual", fileUrl: files.userManual[0].path });
+    else if (req.body.userManual_existing) uploadedDocs.push({ name: "User Manual", fileUrl: req.body.userManual_existing });
+    
+    if (files.circuitDiagram) uploadedDocs.push({ name: "Circuit Diagram / PCB Details", fileUrl: files.circuitDiagram[0].path });
+    else if (req.body.circuitDiagram_existing) uploadedDocs.push({ name: "Circuit Diagram / PCB Details", fileUrl: req.body.circuitDiagram_existing });
+    
+    if (files.bom) uploadedDocs.push({ name: "Bill of Materials (BOM)", fileUrl: files.bom[0].path });
+    else if (req.body.bom_existing) uploadedDocs.push({ name: "Bill of Materials (BOM)", fileUrl: req.body.bom_existing });
+    
+    if (files.testReports) uploadedDocs.push({ name: "Existing Test Reports", fileUrl: files.testReports[0].path });
+    else if (req.body.testReports_existing) uploadedDocs.push({ name: "Existing Test Reports", fileUrl: req.body.testReports_existing });
+    
+    if (files.productImages) uploadedDocs.push({ name: "Product Images", fileUrl: files.productImages[0].path });
+    else if (req.body.productImages_existing) uploadedDocs.push({ name: "Product Images", fileUrl: req.body.productImages_existing });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      ceRohsForm: formData,
+      ceRohsDocs: uploadedDocs,
+      companyName: formData.manufacturerName, // Ensure business name shows up in tracking
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+    markClientFormFilled(order);
+
+    await order.save();
+
+    res.status(200).json({ message: 'CE & RoHS form submitted successfully!', order });
+  } catch (error) {
+    console.error('Error submitting CE & RoHS form:', error);
+    res.status(500).json({ message: 'Server error while submitting CE & RoHS form.', error: error.message });
+  }
+};
+
 // Submit PF Registration Form
 exports.submitPfForm = async (req, res) => {
   try {

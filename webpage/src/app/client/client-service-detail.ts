@@ -137,8 +137,12 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
       this.goToDscForm();
     } else if (s.includes('proprietorship')) {
       this.goToProprietorshipForm();
-    } else if (s.includes('tds') || s.includes('pan') || s.includes('itr')) {
+    } else if (s.includes('tds') || s.includes('pan')) {
       this.goToTdsForm();
+    } else if (s.includes('itr')) {
+      this.goToItrForm();
+    } else if (s.includes('ce') || s.includes('rohs')) {
+      this.goToCeRohsForm();
     } else if (s.includes('pf')) {
       this.goToPfForm();
     } else if (s.includes('patent')) {
@@ -204,6 +208,14 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   goToTdsForm() {
     this.router.navigate(['/client/forms/tds', this.order()?._id || this.order()?.id]);
+  }
+
+  goToItrForm() {
+    this.router.navigate(['/client/forms/itr', this.order()?._id || this.order()?.id]);
+  }
+
+  goToCeRohsForm() {
+    this.router.navigate(['/client/forms/ce-rohs', this.order()?._id || this.order()?.id]);
   }
 
   goToPfForm() {

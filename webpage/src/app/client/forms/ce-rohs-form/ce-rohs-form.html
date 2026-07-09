@@ -1,0 +1,213 @@
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1>CE & RoHS Registration Form</h1>
+      </div>
+      <p class="subtitle">Please provide the product details and required documents for CE/RoHS certification.</p>
+    </div>
+  </div>
+
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="submitForm()" ngNativeValidate #ceRohsForm="ngForm" class="incorp-form">
+      
+      <!-- Product Details -->
+      <section class="form-section">
+        <h2>Product Details</h2>
+        <div class="form-grid">
+          
+          <div class="form-group full-width">
+            <label>Certification Type *</label>
+            <select [(ngModel)]="certificationType" name="certificationType" required>
+              <option value="" disabled>Select Certification Type</option>
+              <option value="CE">CE</option>
+              <option value="RoHS">RoHS</option>
+              <option value="CE & RoHS">CE & RoHS</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Product Name *</label>
+            <input type="text" [(ngModel)]="productName" name="productName" required placeholder="Enter product name">
+          </div>
+          
+          <div class="form-group">
+            <label>Model Number *</label>
+            <input type="text" [(ngModel)]="modelNumber" name="modelNumber" required placeholder="Enter model number">
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Manufacturer Name *</label>
+            <input type="text" [(ngModel)]="manufacturerName" name="manufacturerName" required placeholder="Enter manufacturer name">
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Company Address *</label>
+            <textarea [(ngModel)]="companyAddress" name="companyAddress" required rows="2" placeholder="Full address of the company"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Contact Person Details *</label>
+            <input type="text" [(ngModel)]="contactPerson" name="contactPerson" required placeholder="Name and phone">
+          </div>
+          
+          <div class="form-group full-width">
+            <label>Product Specifications (Voltage, Power, etc.) *</label>
+            <textarea [(ngModel)]="productSpecs" name="productSpecs" required rows="3" placeholder="Enter product specifications"></textarea>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- Document Uploads -->
+      <section class="form-section">
+        <h2>Document Uploads</h2>
+        <p class="section-help">Please upload all required documents (Max 2MB per file).</p>
+        <div class="form-grid">
+          
+          <!-- Required Documents -->
+          <div class="form-group file-group">
+            <label>Product Datasheet *</label>
+            @if (existingDocs['productDatasheet']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['productDatasheet'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('productDatasheet')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'productDatasheet')" accept=".pdf,.jpg,.jpeg,.png">
+          }
+          </div>
+
+          <div class="form-group file-group">
+            <label>User Manual *</label>
+            @if (existingDocs['userManual']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['userManual'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('userManual')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'userManual')" accept=".pdf,.jpg,.jpeg,.png">
+          }
+          </div>
+
+          <div class="form-group file-group">
+            <label>Bill of Materials (BOM) *</label>
+            @if (existingDocs['bom']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['bom'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('bom')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'bom')" accept=".pdf,.jpg,.jpeg,.png">
+          }
+          </div>
+
+          <div class="form-group file-group">
+            <label>Product Images *</label>
+            @if (existingDocs['productImages']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['productImages'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('productImages')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'productImages')" accept=".pdf,.jpg,.jpeg,.png">
+          }
+          </div>
+          
+          <!-- Optional Documents -->
+          <div class="form-group file-group">
+            <label>Circuit Diagram / PCB Details (Optional)</label>
+            @if (existingDocs['circuitDiagram']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['circuitDiagram'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('circuitDiagram')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'circuitDiagram')" accept=".pdf,.jpg,.jpeg,.png">
+          }
+          </div>
+          
+          <div class="form-group file-group">
+            <label>Existing Test Reports/Certificates (Optional)</label>
+            @if (existingDocs['testReports']) {
+            <div class="existing-doc-box">
+              <div class="existing-doc-info">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {{ existingDocs['testReports'].name }} (From Profile)
+              </div>
+              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('testReports')">Change</button>
+            </div>
+          } @else {
+            <input type="file" (change)="onFileSelected($event, 'testReports')" accept=".pdf,.jpg,.jpeg,.png">
+          }
+          </div>
+          
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="goBack()">Cancel</button>
+        <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+          @if(isSubmitting()) {
+            <app-we-loader size="20px" color="#fff"></app-we-loader>
+            <span>Submitting...</span>
+          } @else {
+            <span>Submit Details</span>
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  @if (isSuccess()) {
+    <div class="success-overlay fade-in">
+      <div class="success-card">
+        <div class="success-icon">
+          <span class="material-symbols-outlined">check_circle</span>
+        </div>
+        <h3>Submission Successful!</h3>
+        <p>Your details have been successfully submitted for the CE & RoHS Certification.</p>
+        <p class="redirect-msg">Redirecting to your order...</p>
+      </div>
+    </div>
+  }
+</div>

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/network_overlay_wrapper.dart';
 import 'features/auth/auth_wrapper.dart';
+import 'features/splash/splash_screen.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'core/services/firebase_messaging_service.dart';
@@ -50,7 +51,7 @@ class MainApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      home: const AuthWrapper(),
+      home: const SplashScreen(),
       builder: (context, child) {
         final mediaQueryData = MediaQuery.of(context);
         return NetworkOverlayWrapper(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
@@ -82,8 +83,12 @@ class ServiceDetailScreen extends StatelessWidget {
                                   child: icon is IconData
                                       ? Icon(icon as IconData,
                                           color: Colors.white, size: 28)
-                                      : HugeIcon(
-                                          icon: icon, color: Colors.white, size: 28),
+                                      : icon is String
+                                          ? (icon.endsWith('.svg') 
+                                              ? SvgPicture.asset(icon, colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn), width: 28, height: 28)
+                                              : Image.asset(icon, color: Colors.white, width: 28, height: 28))
+                                          : HugeIcon(
+                                              icon: icon, color: Colors.white, size: 28),
                                 ),
                                 const SizedBox(width: 16),
                                 Expanded(
