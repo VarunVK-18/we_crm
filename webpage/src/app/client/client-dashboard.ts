@@ -135,8 +135,26 @@ export class ClientDashboard implements OnInit, OnDestroy {
     }, 3500);
   }
 
+  stopSlider() {
+    if (this.sliderInterval) clearInterval(this.sliderInterval);
+  }
+
   setSlide(index: number) {
     this.currentSlideIndex.set(index);
+    this.startSlider(); // reset timer
+  }
+
+  nextSlide(event?: Event) {
+    if (event) event.stopPropagation();
+    this.currentSlideIndex.set((this.currentSlideIndex() + 1) % this.totalSlides());
+    this.startSlider(); // reset timer
+  }
+
+  prevSlide(event?: Event) {
+    if (event) event.stopPropagation();
+    const current = this.currentSlideIndex();
+    const total = this.totalSlides();
+    this.currentSlideIndex.set((current - 1 + total) % total);
     this.startSlider(); // reset timer
   }
 

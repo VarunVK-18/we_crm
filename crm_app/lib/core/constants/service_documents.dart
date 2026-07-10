@@ -10,7 +10,7 @@
   'Compliance Audit': ['Company PAN', 'Previous Audit Reports', 'Statutory Registers', 'GST & TDS Filings'],
   'MCA Compliance Package (Private Ltd)': ['Company PAN', 'AOC-4 & MGT-7', 'DSC & DIN of Directors', 'Bank Statements'],
   'MCA Compliance Package (LLP)': ['LLP PAN', 'Form 8 & Form 11', 'DSC of Partners', 'Bank Statements'],
-  'GST Compliance Package': ['GST Certificate', 'Invoices List', 'Bank Statements', 'Purchase/Sales Register'],
+  'GST filing': ['GST Certificate', 'Invoices List', 'Bank Statements', 'Purchase/Sales Register'],
   'Comprehensive MCA + GST + TDS': ['Company PAN', 'GST Certificate', 'TDS Records', 'Annual Audit Report'],
   
   // Business Licenses

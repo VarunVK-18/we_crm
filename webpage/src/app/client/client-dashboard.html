@@ -87,7 +87,7 @@
     </header>
 
     <!-- Promotional Slider (1.5/4 width) -->
-    <div class="ho-slider-container">
+    <div class="ho-slider-container" (mouseenter)="stopSlider()" (mouseleave)="startSlider()">
       <div class="ho-slider-track" [style.transform]="'translateX(-' + (currentSlideIndex() * 100) + '%)'">
         <!-- Default Slide 1: Get Started (always show first) -->
         <div class="ho-slide slide-purple">
@@ -185,8 +185,8 @@
               </span>
             </div>
             
-            <div style="height: 6px; background: rgba(255,255,255,0.15); border-radius: 4px; overflow: hidden;">
-              <div style="height: 100%; background: linear-gradient(90deg, #ffffff, #bae9bf); border-radius: 4px; transition: width 0.4s ease; box-shadow: 0 0 8px rgba(244, 114, 182, 0.5);"
+            <div style="height: 8px; background: rgba(255,255,255,0.15); border-radius: 6px; overflow: hidden;">
+              <div style="height: 100%; background: #ffffff; border-radius: 6px; transition: width 0.4s ease; box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);"
                    [style.width.%]="getProgressPercentage(order)">
               </div>
             </div>
@@ -248,6 +248,14 @@
           </div>
         </div>
         }
+      </div>
+
+      <!-- Slider Navigation Arrows -->
+      <div class="slider-arrow prev" (click)="prevSlide($event)">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </div>
+      <div class="slider-arrow next" (click)="nextSlide($event)">
+        <span class="material-symbols-outlined">chevron_right</span>
       </div>
 
       <!-- Slider Pagination Dots -->

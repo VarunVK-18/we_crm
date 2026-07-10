@@ -119,7 +119,7 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Tax',
     },
     {
-      'label': 'GST Compliance',
+      'label': 'GST filing',
       'icon': HugeIcons.strokeRoundedFile02,
       'category': 'Tax',
     },

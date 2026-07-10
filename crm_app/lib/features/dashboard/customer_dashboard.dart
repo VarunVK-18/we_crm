@@ -229,10 +229,9 @@ class CustomerDashboard extends ConsumerWidget {
                     'icon': HugeIcons.strokeRoundedCalculator,
                     'subItems': [
                       'GST Registration',
-                      'GST Compliance',
                       'GST Cancelation',
                       'GST filing',
-                      'ITR'
+                      'ITR',
                     ],
                   },
                   {

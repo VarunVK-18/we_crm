@@ -41,7 +41,7 @@ export class ServiceTrackComponent implements OnInit {
     'compliance': ['MCA Compliance', 'TDS', 'PF', 'DUNS', 'PAN, TAN', 'Compliance'],
     'ip': ['Copyright', 'IP', 'Trade Mark', 'Trademark', 'Patent'],
     'licensing': ['DPIIT', 'ISO', 'FSSAI', 'DSC', 'IE code', 'LEI', 'BIS', 'ROSH', 'CE', 'Licensing'],
-    'tax': ['GST Registration', 'GST Compliance', 'GST Cancelation', 'GST filing', 'ITR', 'Tax']
+    'tax': ['GST Registration', 'GST Cancelation', 'GST filing', 'ITR', 'Tax']
   };
 
   constructor(private api: Api) {}

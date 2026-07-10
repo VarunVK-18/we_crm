@@ -481,7 +481,7 @@ class _ServiceRequestSummarySheetState
         if (widget.packageName.contains('Incorporation') || widget.packageName == '360° Compliance') {
            details['numberOfDirectors'] = _numberOfDirectorsController.text;
         }
-        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Compliance') || widget.packageName.contains('360° Compliance')) {
+        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST filing') || widget.packageName.contains('360° Compliance')) {
           if (_selectedTurnover != null) {
             details['turnoverCategory'] = _selectedTurnover!;
           }
@@ -515,7 +515,7 @@ class _ServiceRequestSummarySheetState
         details['duns_trade_name'] = _dunsTradeNameController.text;
         details['duns_year'] = _dunsYearController.text;
         details['duns_employees'] = _fssaiEmployeesController.text;
-      } else if (widget.packageName == 'GST Compliance' || widget.packageName == 'MCA Compliance') {
+      } else if (widget.packageName == 'GST filing' || widget.packageName == 'MCA Compliance') {
         details['annualTurnover'] = _annualTurnover;
       }
 
@@ -910,7 +910,7 @@ class _ServiceRequestSummarySheetState
                             });
                           },
                         ),
-                        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Compliance') || widget.packageName.contains('360° Compliance')) ...[
+                        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST filing') || widget.packageName.contains('360° Compliance')) ...[
                           const SizedBox(height: 24),
                           Row(
                             children: [
@@ -1169,7 +1169,7 @@ class _ServiceRequestSummarySheetState
                           ? null
                           : () async {
                               bool isTurnoverValid = true;
-                              if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Compliance') || widget.packageName.contains('360° Compliance')) {
+                              if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST filing') || widget.packageName.contains('360° Compliance')) {
                                 if (_selectedTurnover == null) {
                                   isTurnoverValid = false;
                                 }
@@ -1401,7 +1401,7 @@ class _ServiceRequestSummarySheetState
         ..._buildTrademarkForm(),
       if (widget.packageName == 'DUNS Number Registration') ..._buildDunsForm(),
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
-      if (widget.packageName == 'GST Compliance') ..._buildComplianceForm(),
+      if (widget.packageName == 'GST filing') ..._buildComplianceForm(),
     ];
   }
 

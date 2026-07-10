@@ -78,7 +78,7 @@ export class ClientServicesComponent implements OnInit {
       {
         title: 'MCA Compliance',
         description: 'Annual return filings and MCA statutory compliance.',
-        features: ['AOC-4 & MGT-7 Filing', 'Director KYC', 'Statutory Audit Support', 'Minutes of Meeting', 'Event Based Filings', 'Processing Time: 5-7 business days']
+        features: ['Auditor appointment', '360° Accounting & Bookkeeping', 'Statutory Auditing', 'AOC 4 & MGT 7 filing', 'Director KYC', 'AGM & Notice', 'ITR filing', 'Processing Time: 5-7 business days']
       },
       {
         title: 'TDS',
@@ -110,7 +110,7 @@ export class ClientServicesComponent implements OnInit {
     ],
     'tax': [
       {
-        title: 'GST Compliance',
+        title: 'GST filing',
         description: 'Monthly/Quarterly GST returns and reconciliations.',
         features: ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support', 'Processing Time: 5-7 business days']
       },
@@ -118,11 +118,6 @@ export class ClientServicesComponent implements OnInit {
         title: 'GST Cancelation',
         description: 'Surrender and cancel your GST registration.',
         features: ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'GST filing',
-        description: 'Seamless filing of standard GST returns.',
-        features: ['Monthly Returns', 'Data Validation', 'Challan Payment', 'Error Correction', 'Filing Acknowledgment', 'Processing Time: 5-7 business days']
       },
       {
         title: 'ITR',
@@ -139,7 +134,7 @@ export class ClientServicesComponent implements OnInit {
       {
         title: 'DPIIT',
         description: 'Startup India Certification for your startup! Please provide your details correctly.',
-        features: ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track', 'Processing Time: 5-7 business days']
+        features: ['Pitch deck preparation', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Government approval', 'IPR Fast Track', 'Processing Time: 5-7 business days']
       },
       {
         title: 'ISO',

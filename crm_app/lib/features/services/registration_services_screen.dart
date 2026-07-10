@@ -73,7 +73,7 @@ class _RegistrationServicesScreenState
       'icon': HugeIcons.strokeRoundedTask01,
       'color': const Color(0xFF14B8A6),
       'category': 'Compliance',
-      'features': ['AOC-4 & MGT-7 Filing', 'Director KYC', 'Statutory Audit Support', 'Auditing and Book Keeping', 'Event Based Filings'],
+      'features': ['Auditor appointment', '360° Accounting & Bookkeeping', 'Statutory Auditing', 'AOC 4 & MGT 7 filing', 'Director KYC', 'AGM & Notice', 'ITR filing'],
     },
     {
       'title': 'TDS',
@@ -128,7 +128,7 @@ class _RegistrationServicesScreenState
       'features': ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate'],
     },
     {
-      'title': 'GST Compliance',
+      'title': 'GST filing',
       'description': 'Monthly/Quarterly GST returns and reconciliations.',
       'icon': HugeIcons.strokeRoundedCalculate,
       'color': const Color(0xFF3B82F6),
@@ -142,14 +142,6 @@ class _RegistrationServicesScreenState
       'color': const Color(0xFFEF4444),
       'category': 'Tax',
       'features': ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order'],
-    },
-    {
-      'title': 'GST filing',
-      'description': 'Seamless filing of standard GST returns.',
-      'icon': HugeIcons.strokeRoundedTask01,
-      'color': const Color(0xFF10B981),
-      'category': 'Tax',
-      'features': ['Monthly Returns', 'Data Validation', 'Challan Payment', 'Error Correction', 'Filing Acknowledgment'],
     },
     {
       'title': 'ITR',
@@ -167,7 +159,7 @@ class _RegistrationServicesScreenState
       'icon': HugeIcons.strokeRoundedRocket,
       'color': const Color(0xFF10B981),
       'category': 'Licensing',
-      'features': ['Govt Subsidy Assistance', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IPR Fast Track'],
+      'features': ['Pitch deck preparation', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Government approval', 'IPR Fast Track'],
     },
     {
       'title': 'ISO',
