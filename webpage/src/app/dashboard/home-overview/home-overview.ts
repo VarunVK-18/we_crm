@@ -32,6 +32,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   private activityChartInstance: any = null;
 
   user = signal<any>(null);
+  isLoading = signal<boolean>(true);
   revenueGrowth = signal<string>('+0.0%');
   revenueTrendUp = signal<boolean>(true);
   complianceReminders = signal<any[]>([]);
@@ -188,21 +189,40 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
             this.orders.set(homeOverviewCache.orders || []);
           }
           this.updateStats();
+          this.isLoading.set(false);
         } else {
           // Fetch all metrics data
-          this.fetchClients();
-          this.fetchTasks();
-          this.fetchChecklists();
+          let expectedCalls = 3;
+          let completedCalls = 0;
           
-          if (parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff') {
-            this.fetchCompanyComplianceReminders();
-            this.fetchCompanyOrders();
+          const isAdminOrManager = parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff';
+          if (isAdminOrManager) {
+            expectedCalls = 5;
           }
-          homeOverviewCache.lastFetchTime = Date.now();
+
+          const checkDone = () => {
+            completedCalls++;
+            if (completedCalls >= expectedCalls) {
+              this.isLoading.set(false);
+              homeOverviewCache.lastFetchTime = Date.now();
+            }
+          };
+
+          this.fetchClients(checkDone);
+          this.fetchTasks(checkDone);
+          this.fetchChecklists(checkDone);
+          
+          if (isAdminOrManager) {
+            this.fetchCompanyComplianceReminders(checkDone);
+            this.fetchCompanyOrders(checkDone);
+          }
         }
       } catch (e) {
         console.error('Failed to parse user in HomeOverview:', e);
+        this.isLoading.set(false);
       }
+    } else {
+      this.isLoading.set(false);
     }
   }
 
@@ -256,7 +276,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     return this.filteredRoleClients().reduce((acc, c) => acc + (c.services?.length || 0), 0);
   }
 
-  fetchClients() {
+  fetchClients(callback?: () => void) {
     this.api.get<any>('users/clients').subscribe({
       next: (res) => {
         if (res && res.clients) {
@@ -265,11 +285,13 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           this.updateStats();
           this.initOrUpdateCharts();
         }
-      }
+        if (callback) callback();
+      },
+      error: () => { if (callback) callback(); }
     });
   }
 
-  fetchTasks() {
+  fetchTasks(callback?: () => void) {
     this.api.get<any>('tasks').subscribe({
       next: (res) => {
         if (res && res.success) {
@@ -278,11 +300,13 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           this.updateStats();
           this.initOrUpdateCharts();
         }
-      }
+        if (callback) callback();
+      },
+      error: () => { if (callback) callback(); }
     });
   }
 
-  fetchChecklists() {
+  fetchChecklists(callback?: () => void) {
     this.api.get<any>('checklists').subscribe({
       next: (res) => {
         if (res && res.success) {
@@ -291,11 +315,13 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           this.updateStats();
           this.initOrUpdateCharts();
         }
-      }
+        if (callback) callback();
+      },
+      error: () => { if (callback) callback(); }
     });
   }
 
-  fetchCompanyComplianceReminders() {
+  fetchCompanyComplianceReminders(callback?: () => void) {
     this.api.get<any>('compliance/tasks/all').subscribe({
       next: (res) => {
         if (res && res.tasks) {
@@ -318,13 +344,18 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           this.updateStats();
           this.initOrUpdateCharts();
         }
-      }
+        if (callback) callback();
+      },
+      error: () => { if (callback) callback(); }
     });
   }
 
-  fetchCompanyOrders() {
+  fetchCompanyOrders(callback?: () => void) {
     const companyId = this.getCompanyId();
-    if (!companyId) return;
+    if (!companyId) {
+      if (callback) callback();
+      return;
+    }
     this.api.get<any>(`orders/company/${companyId}`).subscribe({
       next: (res) => {
         if (res && res.orders) {
@@ -333,7 +364,9 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           this.updateStats();
           this.initOrUpdateCharts();
         }
-      }
+        if (callback) callback();
+      },
+      error: () => { if (callback) callback(); }
     });
   }
 
