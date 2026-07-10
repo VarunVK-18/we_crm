@@ -274,7 +274,7 @@
               </div>
               <div class="requested-docs-list" style="padding: 16px 20px;">
                 @for (doc of filterTemporaryDocs(order()?.temporary_documents); track doc._id) {
-                  <div class="req-doc-item" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px; transition: all 0.2s; background: var(--bg-primary);" onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.04)'" onmouseout="this.style.boxShadow='none'">
+                  <div class="req-doc-item" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 12px; transition: all 0.2s; background: var(--bg-primary);" >
                     <div class="req-doc-info" (click)="downloadDocument(doc)" style="cursor: pointer; display: flex; align-items: center; gap: 16px;">
                       <div style="width: 40px; height: 40px; border-radius: 8px; background: var(--bg-secondary); display: flex; align-items: center; justify-content: center; color: var(--text-secondary);">
                         <span class="material-symbols-outlined" style="font-size: 20px;">description</span>

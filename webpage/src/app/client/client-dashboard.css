@@ -452,12 +452,7 @@
   flex: 2.5;
   min-width: 0;
   position: relative;
-  background: linear-gradient(135deg, #bae9bf, #aad7b0);
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(31, 40, 35, 0.08), transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.3), transparent 50%),
-    radial-gradient(rgba(31, 40, 35, 0.06) 1.5px, transparent 1.5px),
-    linear-gradient(135deg, #bae9bf, #aad7b0);
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   background-size: 100% 100%, 100% 100%, 24px 24px, 100% 100%;
   border-radius: 1.25rem;
   padding: 32px 48px;
@@ -610,17 +605,17 @@
   transform: translateY(-2px);
 }
 
-.slide-theme-dark .register-btn, 
-.slide-theme-purple .register-btn, 
-.slide-theme-emerald .register-btn, 
+.slide-theme-dark .register-btn,
+.slide-theme-purple .register-btn,
+.slide-theme-emerald .register-btn,
 .slide-theme-rose .register-btn {
   background-color: #ffffff;
   color: #1f2937;
 }
 
-.slide-theme-dark .register-btn:hover, 
-.slide-theme-purple .register-btn:hover, 
-.slide-theme-emerald .register-btn:hover, 
+.slide-theme-dark .register-btn:hover,
+.slide-theme-purple .register-btn:hover,
+.slide-theme-emerald .register-btn:hover,
 .slide-theme-rose .register-btn:hover {
   background-color: #f8fafc;
 }
@@ -912,6 +907,7 @@
   z-index: 5;
   pointer-events: none;
 }
+
 .ho-hero-illustration svg {
   width: 100%;
   height: 100%;
@@ -924,7 +920,7 @@
   font-weight: 800;
   line-height: 1.15;
   margin: 0 0 16px 0;
-  color: #1f2823;
+  color: #1F2937;
 }
 
 .ho-hero-subtitle {
@@ -933,7 +929,7 @@
   line-height: 1.6;
   opacity: 0.9;
   margin: 0 0 16px 0;
-  color: #1f2823;
+  color: #4B5563;
 }
 
 /* Decorative waves */
@@ -1320,6 +1316,7 @@ a.eab-value:hover {
   display: flex;
   align-items: baseline;
   gap: 6px;
+  margin-top: auto;
 }
 
 .metric-value .number {
@@ -1328,13 +1325,15 @@ a.eab-value:hover {
   color: #0f172a;
   line-height: 1;
 }
+
 .number {
-  font-size: 26px;
+  font-size: 32px;
   font-weight: 600;
   color: #0f172a;
   line-height: 1;
   margin-bottom: 4px;
 }
+
 .metric-value .trend {
   font-size: 11px;
   font-weight: 600;
@@ -1706,7 +1705,7 @@ a.eab-value:hover {
 }
 
 .skeleton-text {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -1806,15 +1805,14 @@ a.eab-value:hover {
 }
 
 .metric-card .number {
-  font-size: 32px;
+  font-size: 42px;
   font-weight: 800;
   color: var(--palette-dark);
-  margin-bottom: 8px;
   line-height: 1;
 }
 
 .skeleton-number {
-  height: 32px;
+  height: 48px;
   width: 60px;
   background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
@@ -1827,6 +1825,7 @@ a.eab-value:hover {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -1921,7 +1920,7 @@ a.eab-value:hover {
   visibility: hidden;
   transition: all 0.2s ease;
   z-index: 50;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   pointer-events: none;
 }
 

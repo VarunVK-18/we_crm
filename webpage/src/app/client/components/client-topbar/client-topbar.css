@@ -561,3 +561,37 @@
   color: #7e22ce;
   font-weight: 600;
 }
+.appbar-breadcrumb-trail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.breadcrumb-item {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  letter-spacing: -0.5px;
+}
+
+.breadcrumb-item:hover {
+  color: var(--palette-dark);
+}
+
+.breadcrumb-item.active {
+  font-weight: 700;
+  color: var(--text-primary);
+  cursor: default;
+}
+
+.breadcrumb-separator {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  opacity: 0.5;
+}

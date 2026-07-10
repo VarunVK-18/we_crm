@@ -100,9 +100,14 @@
           </td>
           @if (role !== 'admin') {
             <td style="text-align: center;">
-              <button class="btn-claim-sm" (click)="openApproveModal(order)">
-                Approve
-              </button>
+              <div style="display: flex; gap: 8px; justify-content: center;">
+                <button class="btn-claim-sm" (click)="openApproveModal(order)">
+                  Approve
+                </button>
+                <button class="btn-decline-sm" (click)="deleteOrder(order, $event)" title="Delete Request" style="background: #fee2e2; color: #dc2626; border-color: #fca5a5; padding: 4px; display: inline-flex; align-items: center; justify-content: center;">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                </button>
+              </div>
             </td>
           }
         </tr>

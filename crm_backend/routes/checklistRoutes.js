@@ -15,7 +15,8 @@ const {
   uploadExpenseBill,
   getExpenses,
   markExpensePaid,
-  updateChecklistItemValue
+  updateChecklistItemValue,
+  deleteChecklist
 } = require('../controllers/checklistController');
 
 const { checkUser, permit } = require('../middleware/rbac');
@@ -32,6 +33,7 @@ const upload = multer({
 
 // Checklist Management Routes
 router.post('/checklists', checkUser, permit('admin', 'client_manager'), createChecklist);
+router.delete('/checklists/:id', checkUser, permit('admin', 'client_manager'), deleteChecklist);
 router.get('/checklists', checkUser, getChecklists);
 router.get('/my-checklists', checkUser, getMyChecklists); // For Flutter customer app
 

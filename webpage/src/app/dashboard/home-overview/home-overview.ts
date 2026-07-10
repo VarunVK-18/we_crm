@@ -550,7 +550,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const monthStrFilter = this.financialMonth();
     const ordersList = this.filteredRoleOrders() || [];
     
-    let csvContent = 'Client Name,Service Name,Total Revenue,Amount Received,Pending Amount\n';
+    let csvContent = 'Client Name,Service Name,Total Revenue,Amount Received,Pending Amount,Installment Details\n';
 
     ordersList.forEach(o => {
       if (!o.createdAt) return;
@@ -562,10 +562,21 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         const recv = o.advanceAmountPaid || 0;
         const pend = rev - recv;
         
+        let instDetails = '';
+        if (o.financialLogs && Array.isArray(o.financialLogs)) {
+          const logs = o.financialLogs.map((log: any) => {
+            const dt = log.paymentTimestamp ? new Date(log.paymentTimestamp) : (log.addedAt ? new Date(log.addedAt) : null);
+            const dateStr = dt ? dt.toLocaleDateString() : 'N/A';
+            return `${log.paymentType || 'Payment'}: ${log.amount} on ${dateStr}`;
+          });
+          instDetails = logs.join(' | ');
+        }
+        
         const safeClientName = `"${clientName.replace(/"/g, '""')}"`;
         const safeServiceName = `"${serviceName.replace(/"/g, '""')}"`;
+        const safeInstDetails = `"${instDetails.replace(/"/g, '""')}"`;
         
-        csvContent += `${safeClientName},${safeServiceName},${rev},${recv},${pend}\n`;
+        csvContent += `${safeClientName},${safeServiceName},${rev},${recv},${pend},${safeInstDetails}\n`;
       }
     });
 

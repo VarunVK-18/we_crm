@@ -18,19 +18,41 @@
 .screen-layout {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   height: 100vh;
   width: 100%;
-  background-color: var(--bg-secondary);
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   position: relative;
   overflow: hidden;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+.bg-shape-ring {
+  position: absolute;
+  bottom: -150px;
+  left: -150px;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  border: 60px solid rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .split-layout-top {
   display: flex;
   flex: 1;
+  position: relative;
+  z-index: 10;
   width: 100%;
+  max-width: 1200px;
   min-height: 0;
   overflow: hidden;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 /* Left side panel: Branding */
@@ -89,7 +111,7 @@
 }
 
 .custom-brand-logo {
-  max-width: 350px;
+  max-width: 300px;
   width: 100%;
   height: auto;
   object-fit: contain;
@@ -113,7 +135,7 @@
 /* Right side panel: Auth Form */
 .form-side {
   flex: 1;
-  background-color: var(--bg-secondary);
+  background-color: transparent;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -184,7 +206,6 @@
 .login-box {
   width: 100%;
   padding: 2rem;
-  border: 1px solid #6b6b6b;
 }
 
 .main-title {

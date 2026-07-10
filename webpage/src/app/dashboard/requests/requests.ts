@@ -6,6 +6,7 @@ import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { UserIcon, CheckmarkBadge01Icon, Time01Icon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 import { OcrService } from '../../services/ocr.service';
+import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-requests',
@@ -138,7 +139,7 @@ export class RequestsComponent implements OnInit {
   systemBankSettings = signal<any>(null);
   requirePaymentVerification = signal<boolean>(true);
 
-  constructor(public api: Api, private ocrService: OcrService) { }
+  constructor(public api: Api, private ocrService: OcrService, private confirmDialog: ConfirmDialogService) { }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -398,6 +399,34 @@ export class RequestsComponent implements OnInit {
     setTimeout(() => {
       this.selectedOrderForApproval.set(null);
     }, 300); // Wait for transition
+  }
+
+  async deleteOrder(order: any, event: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Delete Request',
+      message: `Are you sure you want to delete the request for ${order.serviceType || 'this service'}?`,
+      confirmText: 'Delete',
+      isDestructive: true
+    });
+    
+    if (!confirmed) {
+      return;
+    }
+
+    this.api.delete(`orders/${order._id}`).subscribe({
+      next: () => {
+        this.showToast('Request deleted successfully.', 'success');
+        this.fetchOrders();
+      },
+      error: (err: any) => {
+        console.error('Error deleting request:', err);
+        this.showToast('Failed to delete request.', 'error');
+      }
+    });
   }
 
   assignEmployee(orderId: string) {
