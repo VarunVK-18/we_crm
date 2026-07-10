@@ -77,10 +77,8 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'service-track', label: 'Service Kanban', color: '#8B5CF6' },
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
-          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
-          { id: 'payment-tracker', label: 'Payment Tracker', color: '#10B981' },
-          { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
+          { id: 'payment-tracker', label: 'Reimbursement', color: '#10B981' }
         ]
       });
       groups.push({
@@ -110,10 +108,8 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
-          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
-          { id: 'payment-tracker', label: 'Payment Tracker', color: '#10B981' },
-          { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
+          { id: 'payment-tracker', label: 'Reimbursement', color: '#10B981' }
         ]
       });
       groups.push({
@@ -128,13 +124,11 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Operations',
         items: [
-          { id: 'bucket', label: 'Available Jobs', color: '#6366f1' },
+          { id: 'bucket', label: 'Available SR', color: '#6366f1' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
-          { id: 'tasks', label: 'Custom Task', color: '#F59E0B' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
-          { id: 'payment-tracker', label: 'Payment Tracker', color: '#10B981' },
-          { id: 'completed-checklists', label: 'Completed Service', color: '#10B981' }
+          { id: 'payment-tracker', label: 'Reimbursement', color: '#10B981' }
         ]
       });
     }

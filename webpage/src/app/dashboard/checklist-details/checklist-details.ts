@@ -927,6 +927,24 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       .trim();
   }
 
+  copyToClipboard(text: string, event: Event) {
+    event.stopPropagation();
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+    }
+  }
+
+  getDirectorContact(director: any, type: 'phone' | 'email'): string {
+    if (!director) return '';
+    for (const key of Object.keys(director)) {
+      const lower = String(key).toLowerCase();
+      if (lower.includes(type) && director[key]) {
+        return String(director[key]);
+      }
+    }
+    return '';
+  }
+
   getGeneralDetails(): { key: string, value: any, rawKey: string }[] {
     const cl = this.checklist();
     if (!cl || !cl.details) return [];

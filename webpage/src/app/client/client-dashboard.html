@@ -203,59 +203,47 @@
       </div>
     } -->
     <div class="metric-card">
-      <div class="metric-header">
-        <div class="metric-title">COMPLETED SERVICES</div>
+      <div class="metric-header" style="align-items: flex-start; justify-content: space-between; display: flex;">
+        @if (isLoading()) {
+        <div class="skeleton-number" style="margin: 0;"></div>
+        } @else {
+        <span class="number" style="margin: 0; line-height: 1;">{{ filteredCompletedOrders().length }}</span>
+        }
       </div>
-      @if (isLoading()) {
-      <div class="skeleton-number"></div>
-      } @else {
-      <span class="number">{{ filteredCompletedOrders().length }}</span>
-      }
-      <div class="metric-value">
-        <span class="trend positive">All clear</span>
-      </div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">COMPLETED SERVICES</div>
     </div>
 
     <div class="metric-card">
-      <div class="metric-header">
-        <div class="metric-title">ACTIVE SERVICES</div>
+      <div class="metric-header" style="align-items: flex-start; justify-content: space-between; display: flex;">
+        @if (isLoading()) {
+        <div class="skeleton-number" style="margin: 0;"></div>
+        } @else {
+        <span class="number" style="margin: 0; line-height: 1;">{{ filteredActiveOrders().length }}</span>
+        }
       </div>
-      @if (isLoading()) {
-      <div class="skeleton-number"></div>
-      } @else {
-      <span class="number">{{ filteredActiveOrders().length }}</span>
-      }
-      <div class="metric-value">
-        <span class="trend positive">In progress</span>
-      </div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">ACTIVE SERVICES</div>
     </div>
 
     <div class="metric-card">
-      <div class="metric-header">
-        <div class="metric-title">NOT INITIALIZED</div>
+      <div class="metric-header" style="align-items: flex-start; justify-content: space-between; display: flex;">
+        @if (isLoading()) {
+        <div class="skeleton-number" style="margin: 0;"></div>
+        } @else {
+        <span class="number" style="margin: 0; line-height: 1;">{{ filteredPendingOrders().length }}</span>
+        }
       </div>
-      @if (isLoading()) {
-      <div class="skeleton-number"></div>
-      } @else {
-      <span class="number">{{ filteredPendingOrders().length }}</span>
-      }
-      <div class="metric-value">
-        <span class="trend positive">Awaiting setup</span>
-      </div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">NOT INITIALIZED</div>
     </div>
 
     <div class="metric-card">
-      <div class="metric-header">
-        <div class="metric-title">OPEN TICKETS</div>
+      <div class="metric-header" style="align-items: flex-start; justify-content: space-between; display: flex;">
+        @if (isLoading()) {
+        <div class="skeleton-number" style="margin: 0;"></div>
+        } @else {
+        <span class="number" style="margin: 0; line-height: 1;">{{ pendingTicketsCount() }}</span>
+        }
       </div>
-      @if (isLoading()) {
-      <div class="skeleton-number"></div>
-      } @else {
-      <span class="number">{{ pendingTicketsCount() }}</span>
-      }
-      <div class="metric-value">
-        <span class="trend positive">{{ pendingTicketsCount() === 0 ? 'All clear' : 'Action Required' }}</span>
-      </div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">OPEN TICKETS</div>
     </div>
   </div>
 

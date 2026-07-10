@@ -381,7 +381,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'banners': return 'Banner Management';
       case 'staff-compliance': return 'Staff Compliance Radar';
       case 'bucket': return 'Bucket Requests';
-      case 'payment-tracker': return 'Payment Tracker';
+      case 'payment-tracker': return 'Reimbursement';
       case 'service-track': return 'Service Kanban';
       case 'service-tracker-table': return 'Service Tracker';
       case 'team-service-track': return 'Team Service Tracker';

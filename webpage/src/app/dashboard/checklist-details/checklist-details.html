@@ -58,11 +58,19 @@
           </div>
           <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
             <span class="status-badge" [ngClass]="getChecklistStatusClass(getChecklistDisplayStatus(checklist()))">{{ getChecklistDisplayStatus(checklist()) }}</span>
-            <div class="stage-badge">
-              <span
-                style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">Stage:</span>
-              <span style="font-size: 12px; font-weight: 700; color: var(--text-primary);">{{ checklist().stage ||
-                'quotePending' }}</span>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+              @if (checklist().client_id?.phone) {
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); font-weight: 600;">
+                  <span class="material-symbols-outlined" style="font-size: 16px; color: var(--text-secondary);">call</span>
+                  {{ checklist().client_id.phone }}
+                </div>
+              }
+              @if (checklist().client_id?.email) {
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); font-weight: 600;">
+                  <span class="material-symbols-outlined" style="font-size: 16px; color: var(--text-secondary);">mail</span>
+                  {{ checklist().client_id.email }}
+                </div>
+              }
             </div>
           </div>
         </div>
@@ -114,7 +122,7 @@
       </section>
 
       <!-- Director Assignment Section (Manager Only) -->
-      @if (['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(checklist().service_name)) {
+      @if (user()?.role !== 'filling_staff' && ['Private Limited Incorporation', 'LLP Incorporation', 'One Person Company', '360° Compliance'].includes(checklist().service_name)) {
         <section class="info-card" style="margin-top: 16px;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -144,6 +152,124 @@
             }
           </div>
         </section>
+      }
+
+      <!-- General Details Section -->
+      @if (getGeneralDetails().length > 0) {
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+        <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card" open>
+          <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 600; color: var(--text-primary); list-style: none; user-select: none;">
+            <span class="material-symbols-outlined" style="font-size: 24px; color: var(--accent-primary);">description</span>
+            Application Details
+            <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
+          </summary>
+          <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+            @for (field of getGeneralDetails(); track field.key) {
+              <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
+                  {{ field.key }}
+                </span>
+                <span style="font-size: 15px; font-weight: 500;"
+                      [style.color]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#0369a1' : 'var(--text-primary)'"
+                      [style.background]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#f0f9ff' : 'transparent'"
+                      [style.padding]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '4px 10px' : '0'"
+                      [style.border-radius]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '6px' : '0'"
+                      [style.border]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '1px solid #bae6fd' : 'none'">
+                  {{ field.value }}
+                </span>
+              </div>
+            }
+          </div>
+        </details>
+      </section>
+      }
+
+      <!-- Director Details Section -->
+      @if (getParsedDirectors().length > 0) {
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+        <h3 class="section-title">Director Details</h3>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          @for (director of getParsedDirectors(); track $index) {
+          <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card" [attr.open]="$index === 0 ? '' : null">
+            <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 16px; font-size: 16px; font-weight: 600; color: var(--accent-primary); list-style: none; user-select: none;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 200px;">
+                <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
+                Director {{ $index + 1 }}: {{ director.fullName || 'Unnamed' }}
+              </div>
+              
+              <div style="display: flex; align-items: center; gap: 24px; flex: 1; flex-wrap: wrap;">
+                @if (getDirectorContact(director, 'phone')) {
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 500;" (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">call</span>
+                    {{ getDirectorContact(director, 'phone') }}
+                    <button (click)="copyToClipboard(getDirectorContact(director, 'phone'), $event)" style="background: none; border: none; cursor: pointer; color: #0284c7; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='rgba(2,132,199,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Copy Phone">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
+                    </button>
+                  </div>
+                }
+                @if (getDirectorContact(director, 'email')) {
+                  <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 500;" (click)="$event.stopPropagation()">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">mail</span>
+                    {{ getDirectorContact(director, 'email') }}
+                    <button (click)="copyToClipboard(getDirectorContact(director, 'email'), $event)" style="background: none; border: none; cursor: pointer; color: #0284c7; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s;" onmouseover="this.style.backgroundColor='rgba(2,132,199,0.1)'" onmouseout="this.style.backgroundColor='transparent'" title="Copy Email">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
+                    </button>
+                  </div>
+                }
+              </div>
+              <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
+            </summary>
+            <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+              @for (field of (director | keyvalue); track field.key) {
+                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                  <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
+                    {{ formatLabel(field.key) }}
+                  </span>
+                  <span style="font-size: 14px; font-weight: 500; word-break: break-word;"
+                        [style.color]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#0369a1' : 'var(--text-primary)'"
+                        [style.background]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#f0f9ff' : 'transparent'"
+                        [style.padding]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '4px 10px' : '0'"
+                        [style.border-radius]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '6px' : '0'"
+                        [style.border]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '1px solid #bae6fd' : 'none'">
+                    {{ field.value }}
+                  </span>
+                </div>
+              }
+            </div>
+          </details>
+          }
+        </div>
+      </section>
+      }
+
+      <!-- DPIIT Form Details Section -->
+      @if (checklist().details?.dpiitForm) {
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+        <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card">
+          <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 600; color: var(--text-primary); list-style: none; user-select: none;">
+            <span class="material-symbols-outlined" style="font-size: 24px; color: var(--accent-primary);">account_balance</span>
+            DPIIT Application Details
+            <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
+          </summary>
+          <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+            @for (field of (checklist().details.dpiitForm | keyvalue); track field.key) {
+              <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
+                  {{ formatLabel(field.key) }}
+                </span>
+                <span style="font-size: 15px; font-weight: 500;"
+                      [style.color]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#0369a1' : 'var(--text-primary)'"
+                      [style.background]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#f0f9ff' : 'transparent'"
+                      [style.padding]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '4px 10px' : '0'"
+                      [style.border-radius]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '6px' : '0'"
+                      [style.border]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '1px solid #bae6fd' : 'none'">
+                  {{ field.value }}
+                </span>
+              </div>
+            }
+          </div>
+        </details>
+      </section>
       }
 
       <!-- Financial Details Section -->
@@ -629,121 +755,8 @@
         </div>
       </section>
 
-      <!-- Requested Documents Section -->
-      <section style="display: flex; flex-direction: column; gap: 16px;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <h3 class="section-title">Requested Documents</h3>
-          <button (click)="openRequestDocModal()"
-            style="background-color: var(--text-primary); color: #ffffff; border: none; font-weight: 600; padding: 8px 24px; border-radius: 8px; cursor: pointer; transition: opacity 0.2s;">
-            Request Doc
-          </button>
-        </div>
 
-        @if (getOtherRequestedDocuments().length > 0) {
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
-          @for (doc of getOtherRequestedDocuments(); track $index) {
-          <div
-            style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 16px; font-weight: 500; color: var(--text-primary);">{{ doc.name }}</span>
-            @if (doc.isUploaded) {
-            <a href="#" (click)="openDocViewer(doc.fileUrl, doc.name, $event)"
-              style="color: var(--color-success); font-weight: 600; text-decoration: none;">View File</a>
-            } @else {
-            <span
-              style="background-color: rgba(245, 158, 11, 0.1); color: #F59E0B; font-weight: 500; font-size: 12px; padding: 4px 8px; border-radius: 4px;">Pending</span>
-            }
-          </div>
-          }
-        </div>
-        } @else {
-        <div
-          style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px; background-color: var(--bg-secondary); border: 1px dashed var(--border-color); border-radius: 8px;">
-          <span class="material-symbols-outlined"
-            style="font-size: 40px; color: var(--text-secondary); margin-bottom: 8px;">drafts</span>
-          <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">No documents requested yet.</p>
-        </div>
-        }
-      </section>
 
-      <!-- General Details Section -->
-      @if (getGeneralDetails().length > 0) {
-      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
-        <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card">
-          <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 600; color: var(--text-primary); list-style: none; user-select: none;">
-            <span class="material-symbols-outlined" style="font-size: 24px; color: var(--accent-primary);">description</span>
-            Application Details
-            <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
-          </summary>
-          <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
-            @for (field of getGeneralDetails(); track field.key) {
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
-                  {{ field.key }}
-                </span>
-                <span style="font-size: 15px; font-weight: 500; color: var(--text-primary);">
-                  {{ field.value }}
-                </span>
-              </div>
-            }
-          </div>
-        </details>
-      </section>
-      }
-
-      <!-- Director Details Section -->
-      @if (getParsedDirectors().length > 0) {
-      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
-        <h3 class="section-title">Director Details</h3>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          @for (director of getParsedDirectors(); track $index) {
-          <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card">
-            <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; color: var(--accent-primary); list-style: none; user-select: none;">
-              <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
-              Director {{ $index + 1 }}: {{ director.fullName || 'Unnamed' }}
-              <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
-            </summary>
-            <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
-              @for (field of (director | keyvalue); track field.key) {
-                <div style="display: flex; flex-direction: column; gap: 4px;">
-                  <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
-                    {{ formatLabel(field.key) }}
-                  </span>
-                  <span style="font-size: 14px; font-weight: 500; color: var(--text-primary); word-break: break-word;">
-                    {{ field.value }}
-                  </span>
-                </div>
-              }
-            </div>
-          </details>
-          }
-        </div>
-      </section>
-      }
-
-      <!-- DPIIT Form Details Section -->
-      @if (checklist().details?.dpiitForm) {
-      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
-        <details style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;" class="collapsible-card">
-          <summary style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 600; color: var(--text-primary); list-style: none; user-select: none;">
-            <span class="material-symbols-outlined" style="font-size: 24px; color: var(--accent-primary);">account_balance</span>
-            DPIIT Application Details
-            <span class="material-symbols-outlined" style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
-          </summary>
-          <div style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
-            @for (field of (checklist().details.dpiitForm | keyvalue); track field.key) {
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
-                  {{ formatLabel(field.key) }}
-                </span>
-                <span style="font-size: 15px; font-weight: 500; color: var(--text-primary);">
-                  {{ field.value }}
-                </span>
-              </div>
-            }
-          </div>
-        </details>
-      </section>
-      }
 
       <!-- Temporary / Action Required Documents Section -->
       <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
