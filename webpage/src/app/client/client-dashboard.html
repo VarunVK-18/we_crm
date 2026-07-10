@@ -3,15 +3,15 @@
     <!-- Main Welcome Banner (2.5/4 width) -->
     <header class="ho-hero">
       <div class="ho-hero-content">
-        <h1 class="ho-hero-title" style="margin-bottom: 4px; font-size: 32px;">Welcome,</h1>
-        <h2 style="font-size: 20px; font-weight: 600; margin-top: 0; margin-bottom: 12px; color: #374151;">
+        <h1 class="ho-hero-title" style="font-size: 32px; margin: 0;">Welcome,</h1>
+        <h2 style="font-size: 24px; font-weight: 600; color: #374151; margin: 0;">
           @if (selectedEntity() !== 'All') {
             {{ selectedEntity() | titlecase }}
           } @else {
             {{ (user()?.company_name || user()?.owner_name || user()?.name || 'Client') | titlecase }}
           }
         </h2>
-        <p class="ho-hero-subtitle" style="margin: 0; font-size: 14px;">Track the progress of your active services and requests from one place.</p>
+        <p class="ho-hero-subtitle" style="font-size: 14px; margin: 0;">Track the progress of your active services and requests from one place.</p>
       </div>
       <div class="ho-hero-illustration" style="opacity: 0.8; z-index: 5; right: -40px; bottom: -100px;">
         <img src="rangoli.webp" alt="Rangoli" style="width: 120%; height: auto; object-fit: contain;">
