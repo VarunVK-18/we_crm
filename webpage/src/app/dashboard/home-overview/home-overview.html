@@ -1,4 +1,5 @@
 <div class="ho-container fade-in">
+
   <!-- Hero Banner -->
   <section class="ho-hero" [style.display]="isSearching() ? 'none' : 'flex'">
     <div class="ho-hero-content">
@@ -19,7 +20,11 @@
     <!-- Card 1 -->
     <div class="metric-card">
       <div class="metric-header" style="align-items: flex-start;">
-        <span class="number" style="margin: 0; line-height: 1;">{{ stats[0].value }}</span>
+        @if (isLoading()) {
+          <div class="skeleton-box skeleton-number" style="height: 32px; width: 40px; margin: 0;"></div>
+        } @else {
+          <span class="number" style="margin: 0; line-height: 1;">{{ stats[0].value }}</span>
+        }
       </div>
       <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stats[0].title }}</div>
     </div>
@@ -35,7 +40,11 @@
     <!-- Card 3 -->
     <div class="metric-card">
       <div class="metric-header" style="align-items: flex-start;">
-        <span class="number" style="margin: 0; line-height: 1;">{{ stats[2].value }}</span>
+        @if (isLoading()) {
+          <div class="skeleton-box skeleton-number" style="height: 32px; width: 40px; margin: 0;"></div>
+        } @else {
+          <span class="number" style="margin: 0; line-height: 1;">{{ stats[2].value }}</span>
+        }
       </div>
       <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stats[2].title }}</div>
     </div>
@@ -43,7 +52,11 @@
     <!-- Card 4 -->
     <div class="metric-card">
       <div class="metric-header" style="align-items: flex-start;">
-        <span class="number" style="margin: 0; line-height: 1;">{{ stats[3].value }}</span>
+        @if (isLoading()) {
+          <div class="skeleton-box skeleton-number" style="height: 32px; width: 40px; margin: 0;"></div>
+        } @else {
+          <span class="number" style="margin: 0; line-height: 1;">{{ stats[3].value }}</span>
+        }
       </div>
       <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stats[3].title }}</div>
     </div>
@@ -100,7 +113,11 @@
             </div>
           </div>
         </div>
-        <span class="number">₹{{ financialTotals().totalRevenue | number:'1.0-0' }}</span>
+        @if (isLoading()) {
+          <div class="skeleton-box skeleton-number" style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
+        } @else {
+          <span class="number">₹{{ financialTotals().totalRevenue | number:'1.0-0' }}</span>
+        }
         <div class="metric-value">
           <span class="trend">For selected month</span>
         </div>
@@ -124,7 +141,11 @@
             </div>
           </div>
         </div>
-        <span class="number">₹{{ financialTotals().amountReceived | number:'1.0-0' }}</span>
+        @if (isLoading()) {
+          <div class="skeleton-box skeleton-number" style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
+        } @else {
+          <span class="number">₹{{ financialTotals().amountReceived | number:'1.0-0' }}</span>
+        }
         <div class="metric-value">
           <span class="trend positive">Received safely</span>
         </div>
@@ -148,7 +169,11 @@
             </div>
           </div>
         </div>
-        <span class="number">₹{{ financialTotals().pendingAmount | number:'1.0-0' }}</span>
+        @if (isLoading()) {
+          <div class="skeleton-box skeleton-number" style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
+        } @else {
+          <span class="number">₹{{ financialTotals().pendingAmount | number:'1.0-0' }}</span>
+        }
         <div class="metric-value">
           <span class="trend negative" *ngIf="financialTotals().pendingAmount > 0">Awaiting payment</span>
           <span class="trend positive" *ngIf="financialTotals().pendingAmount <= 0">All cleared</span>

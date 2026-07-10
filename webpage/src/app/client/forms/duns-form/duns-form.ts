@@ -9,7 +9,7 @@ import { Location } from '@angular/common';
 @Component({
   selector: 'app-duns-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './duns-form.html',
   styleUrl: '../forms-shared.css'
 })

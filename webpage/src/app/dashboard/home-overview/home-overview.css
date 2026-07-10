@@ -34,7 +34,7 @@
   position: relative;
   background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   border-radius: 1.25rem;
-  padding: 48px;
+  padding: 32px;
   color: #1f2823;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,0.03);
@@ -498,10 +498,9 @@
   background-color: rgba(242, 244, 246, 0.6);
   border-bottom: 1px solid var(--border-color);
   padding: 16px 24px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--text-primary);
 }
 
@@ -1107,4 +1106,42 @@
 .ho-email-badge:active {
   transform: translateY(0);
   box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-box {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+.skeleton-text {
+  height: 24px;
+  margin-bottom: 12px;
+}
+
+.skeleton-number {
+  height: 48px;
+  width: 60px;
+  margin-bottom: 8px;
+}
+
+.skeleton-banner {
+  height: 160px;
+  width: 100%;
+  border-radius: 1.25rem;
+}
+
+.skeleton-chart {
+  height: 250px;
+  width: 100%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
