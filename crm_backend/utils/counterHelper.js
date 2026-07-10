@@ -25,7 +25,7 @@ const getNextSequence = async (companyId, entity) => { console.log("getNextSeque
  */
 const getNextClientId = async (companyId) => {
   const seq = await getNextSequence(companyId, 'client');
-  return `CLI-${1000 + seq}`;
+  return `CL-${1000 + seq}`;
 };
 
 /**
@@ -33,7 +33,7 @@ const getNextClientId = async (companyId) => {
  */
 const getNextServiceId = async (companyId) => {
   const seq = await getNextSequence(companyId, 'service');
-  return `SRV-${1000 + seq}`;
+  return `SR-${10000 + seq}`;
 };
 
 module.exports = {

@@ -76,6 +76,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
   filteredActiveOrders = computed(() => this.activeOrders().filter(o => this.matchesEntity(o)));
   filteredCompletedOrders = computed(() => this.completedOrders().filter(o => this.matchesEntity(o)));
   filteredPendingOrders = computed(() => this.pendingOrders().filter(o => this.matchesEntity(o)));
+  filteredActionRequiredOrders = computed(() => this.activeOrders().filter(o => this.matchesEntity(o) && o.derivedStatus === 'action-required'));
   
   // UI State
   activeTab = signal<'active' | 'completed' | 'pending-request'>('active');
@@ -103,12 +104,27 @@ export class ClientDashboard implements OnInit, OnDestroy {
 
   constructor(private router: Router, public api: Api) {}
 
+  actionRequiredSlideIndex = signal<number>(0);
+  actionRequiredInterval: any;
+
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (!savedUser) {
       this.router.navigate(['/login']);
       return;
     }
+    
+    this.fetchBanners();
+
+    const userData = JSON.parse(savedUser);
+    
+    this.actionRequiredInterval = setInterval(() => {
+      const len = this.filteredActionRequiredOrders().length;
+      if (len > 1) {
+        this.actionRequiredSlideIndex.set((this.actionRequiredSlideIndex() + 1) % len);
+      }
+    }, 4000);
+
     const parsedUser = JSON.parse(savedUser);
     if (parsedUser.role !== 'customer') {
       this.router.navigate(['/dashboard']);
@@ -266,24 +282,14 @@ export class ClientDashboard implements OnInit, OnDestroy {
     const notInit: any[] = [];
     
     for (const c of checklists) {
-      const isAssigned = c.assigned_to && c.assigned_to.role !== 'client_manager';
+      const isAssigned = !!c.assigned_to;
       let status = 'in-progress';
       if (c.status === 'completed') {
         status = 'completed';
       } else if (!isAssigned) {
         status = 'pending-request';
       } else {
-        const isPrivateLimited = c.service_name === 'Private Limited Incorporation';
-        const isLLP = c.service_name === 'LLP Incorporation';
-        const isFSSAI = c.service_name === 'FSSAI Food License';
-        
-        if (isPrivateLimited && (!c.details || !c.details.companyName)) {
-          status = 'action-required';
-        } else if (isLLP && (!c.details || !c.details.llpName)) {
-          status = 'action-required';
-        } else if (isFSSAI && (!c.details || !c.details.fssai_business_type)) {
-          status = 'action-required';
-        } else if (c.action_required) {
+        if (c.action_required) {
           status = 'action-required';
         }
       }

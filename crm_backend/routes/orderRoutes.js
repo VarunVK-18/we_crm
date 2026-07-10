@@ -41,6 +41,7 @@ router.get('/company/:companyId', checkUser, orderController.getCompanyOrders);
 router.get('/:id/form-details', checkUser, orderController.getOrderFormDetails);
 router.post('/', orderController.createOrder);
 router.put('/:id', checkUser, orderController.updateOrder);
+router.delete('/:id', checkUser, orderController.deleteOrder);
 router.post('/:id/financial-logs', checkUser, orderController.addFinancialLog);
 
 // Define fields for DPIIT form uploads

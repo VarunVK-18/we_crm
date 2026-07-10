@@ -123,12 +123,11 @@
         <div class="detail-card-bottom">
           <div class="quote-section">
             <div class="quote-header">
-              <h3>Request Quote</h3>
+              <h3>Request Service</h3>
               <p>Fill in the details below and our experts will reach out to you within 24 hours.</p>
             </div>
             @if (formSuccess()) {
               <div class="success-message">
-                <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="24" color="#4c1d95"></hugeicons-icon>
                 <p>Your request has been submitted successfully! We will contact you soon.</p>
               </div>
             } @else {
@@ -223,7 +222,7 @@
                   @if (getCompatibilityWarning()?.header === 'Service Already Requested') {
                     Waiting for Manager Approval
                   } @else {
-                    {{ formSubmitting() ? 'Submitting...' : 'Request Quote' }}
+                    {{ formSubmitting() ? 'Submitting...' : 'Request Service' }}
                   }
                   <hugeicons-icon [icon]="ArrowRight01Icon" [size]="18" color="white" style="margin-left: 8px;"></hugeicons-icon>
                 </button>
@@ -233,7 +232,7 @@
         </div>
       } @else {
         <div class="empty-detail">
-          <p>Select a service from the list to view details and request a quote.</p>
+          <p>Select a service from the list to view details and request a service.</p>
         </div>
       }
     </div>

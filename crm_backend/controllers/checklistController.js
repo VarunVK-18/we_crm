@@ -2165,3 +2165,20 @@ const updateChecklistItemValue = async (req, res) => {
 
 module.exports.attachDocumentAsTemporary = attachDocumentAsTemporary;
 module.exports.updateChecklistItemValue = updateChecklistItemValue;
+
+// @desc    Delete a checklist (request)
+// @route   DELETE /api/checklists/:id
+const deleteChecklist = async (req, res) => {
+  try {
+    const checklist = await Checklist.findById(req.params.id);
+    if (!checklist) {
+      return res.status(404).json({ message: 'Checklist not found' });
+    }
+    await Checklist.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, message: 'Checklist deleted successfully' });
+  } catch (error) {
+    console.error('Delete Checklist Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+module.exports.deleteChecklist = deleteChecklist;

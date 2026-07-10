@@ -26,6 +26,7 @@ export class ClientTopbarComponent implements OnInit {
   user = signal<any>(null);
   pageTitle = signal('My Services');
   pageSubtitle = signal('Client Portal Dashboard');
+  navigationTrail = signal<{label: string, path?: string}[]>([]);
   breadcrumbs = signal<{label: string, path?: string}[]>([]);
   isDropdownOpen = signal(false);
   isNotificationOpen = signal(false);
@@ -50,6 +51,8 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.fetchEntities();
+    this.notifService.startPolling();
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
@@ -67,13 +70,18 @@ export class ClientTopbarComponent implements OnInit {
           },
           error: (err) => console.error('Failed to sync profile', err)
         });
-
-        // Fetch checklists to build entity list
-        this.fetchEntities();
       }
     }
+    
+    // Listen for cross-component entity changes
+    window.addEventListener('entityChanged', (e: any) => {
+      if (e.detail && e.detail !== this.selectedEntity()) {
+        this.selectedEntity.set(e.detail);
+      }
+    });
+
+    // Initialize title based on current url
     this.updateTitle(this.router.url);
-    this.notifService.startPolling();
   }
 
   get displayName(): string {
@@ -141,29 +149,61 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   updateTitle(url: string) {
-    if (url.includes('/profile')) {
-      this.pageTitle.set('My Profile');
-      this.pageSubtitle.set('Account Details & Documents');
-    } else if (url.includes('/service/')) {
-      this.pageTitle.set('Service Details');
-      this.pageSubtitle.set('Track your request progress');
-    } else if (url.includes('/compliance')) {
-      this.pageTitle.set('Compliance Center');
-      const usr = this.user();
-      this.pageSubtitle.set(usr?.company_name || usr?.name || 'Entity Compliance Management');
-    } else if (url.includes('/tools/nic-finder')) {
-      this.pageTitle.set('NIC CODE FINDER');
-      this.pageSubtitle.set('Search and find the correct National Industrial Classification (NIC) Code for your business.');
-    } else if (url.includes('/tools/compliance-calendar')) {
-      this.pageTitle.set('COMPLIANCE CALENDAR');
-      this.pageSubtitle.set('View upcoming compliance deadlines and forms.');
-    } else if (url.includes('/tools/trademark-finder')) {
-      this.pageTitle.set('TRADEMARK CLASSES FINDER');
-      this.pageSubtitle.set('Search and find the correct TradeMark Class for your goods or services.');
-    } else {
-      this.pageTitle.set('My Services');
+    let trail: {label: string, path?: string}[] = [];
+    
+    if (url.includes('/dashboard')) {
+      trail = [{ label: 'Dashboard' }];
       this.pageSubtitle.set('Client Portal Dashboard');
+    } else {
+      trail.push({ label: 'Dashboard', path: '/client/dashboard' });
+      
+      if (url.includes('/profile')) {
+        trail.push({ label: 'My Profile' });
+        this.pageSubtitle.set('Account Details & Documents');
+      } else if (url.includes('/service/')) {
+        trail.push({ label: 'Service Details' });
+        this.pageSubtitle.set('Track your request progress');
+      } else if (url.includes('/compliance')) {
+        trail.push({ label: 'Compliance Center' });
+        const usr = this.user();
+        this.pageSubtitle.set(usr?.company_name || usr?.name || 'Entity Compliance Management');
+      } else if (url.includes('/tools/nic-finder')) {
+        trail.push({ label: 'NIC CODE FINDER' });
+        this.pageSubtitle.set('Search and find the correct National Industrial Classification (NIC) Code for your business.');
+      } else if (url.includes('/tools/compliance-calendar')) {
+        trail.push({ label: 'COMPLIANCE CALENDAR' });
+        this.pageSubtitle.set('View upcoming compliance deadlines and forms.');
+      } else if (url.includes('/tools/trademark-finder')) {
+        trail.push({ label: 'TRADEMARK CLASSES FINDER' });
+        this.pageSubtitle.set('Search and find the correct TradeMark Class for your goods or services.');
+      } else if (url.includes('/ongoing-services')) {
+        trail.push({ label: 'My Services' });
+        this.pageSubtitle.set('Track your active requests');
+      } else if (url.includes('/services')) {
+        trail.push({ label: 'Services' });
+        this.pageSubtitle.set('Explore available services');
+      } else if (url.includes('/subscriptions')) {
+        trail.push({ label: 'Subscriptions' });
+        this.pageSubtitle.set('Manage your subscription plans');
+      } else if (url.includes('/support-tickets')) {
+        trail.push({ label: 'Support Tickets' });
+        this.pageSubtitle.set('View and manage your support requests');
+      } else if (url.includes('/document-hub')) {
+        trail.push({ label: 'Document Hub' });
+        this.pageSubtitle.set('Manage and securely share your files');
+      } else if (url.includes('/company-details')) {
+        trail.push({ label: 'Company Details' });
+        this.pageSubtitle.set('View and edit your company information');
+      } else if (url.includes('/support')) {
+        trail.push({ label: 'Help & Support' });
+        this.pageSubtitle.set('Get assistance and find answers');
+      } else {
+        trail.push({ label: 'Overview' });
+        this.pageSubtitle.set('Client Portal Dashboard');
+      }
     }
+    
+    this.navigationTrail.set(trail);
   }
 
   navigateTo(path?: string) {

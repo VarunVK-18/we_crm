@@ -1,6 +1,19 @@
 <div class="premium-appbar">
   <div class="appbar-title-section">
-    <h1 class="appbar-title">{{ pageTitle() }}</h1>
+    <div class="appbar-breadcrumb-trail">
+      @for (crumb of navigationTrail(); track crumb.label; let i = $index) {
+        <span class="breadcrumb-item" [class.active]="i === navigationTrail().length - 1" (click)="navigateTo(crumb.path)">
+          {{ crumb.label }}
+        </span>
+        @if (i < navigationTrail().length - 1) {
+          <span class="breadcrumb-separator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </span>
+        }
+      }
+    </div>
     <span class="appbar-subtitle">{{ pageSubtitle() }}</span>
   </div>
 

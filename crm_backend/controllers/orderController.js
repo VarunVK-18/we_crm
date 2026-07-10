@@ -1716,3 +1716,17 @@ exports.addFinancialLog = async (req, res) => {
   }
 };
 
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const order = await ServiceOrder.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    await ServiceOrder.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, message: 'Order deleted successfully' });
+  } catch (error) {
+    console.error('Delete Order Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

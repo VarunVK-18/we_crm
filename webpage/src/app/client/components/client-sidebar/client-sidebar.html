@@ -41,22 +41,6 @@
         }
       </div>
 
-      <div class="nav-item-wrapper" routerLink="/client/services" routerLinkActive="selected">
-        <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="DashboardSquare01Icon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
-            [strokeWidth]="1.5">
-          </hugeicons-icon>
-          <span class="nav-item-label">Services</span>
-        </div>
-        @if (isCollapsed()) {
-          <div class="nav-tooltip">Services</div>
-        }
-      </div>
-
       <div class="nav-item-wrapper" routerLink="/client/ongoing-services" routerLinkActive="selected">
         <div class="nav-item-content">
           <hugeicons-icon 
@@ -89,19 +73,35 @@
         }
       </div>
 
-      <div class="nav-item-wrapper" routerLink="/client/support-tickets" routerLinkActive="selected">
+      <div class="nav-item-wrapper" routerLink="/client/document-hub" routerLinkActive="selected">
         <div class="nav-item-content">
           <hugeicons-icon 
-            [icon]="MentoringIcon" 
+            [icon]="File01Icon" 
             [size]="18" 
             color="currentColor"
             class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
-          <span class="nav-item-label">Support Tickets</span>
+          <span class="nav-item-label">Document Hub</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Support Tickets</div>
+          <div class="nav-tooltip">Document Hub</div>
+        }
+      </div>
+
+      <div class="nav-item-wrapper" routerLink="/client/services" routerLinkActive="selected">
+        <div class="nav-item-content">
+          <hugeicons-icon 
+            [icon]="DashboardSquare01Icon" 
+            [size]="18" 
+            color="currentColor"
+            class="nav-item-icon"
+            [strokeWidth]="1.5">
+          </hugeicons-icon>
+          <span class="nav-item-label">Services</span>
+        </div>
+        @if (isCollapsed()) {
+          <div class="nav-tooltip">Services</div>
         }
       </div>
 
@@ -118,22 +118,6 @@
         </div>
         @if (isCollapsed()) {
           <div class="nav-tooltip">Subscriptions</div>
-        }
-      </div>
-
-      <div class="nav-item-wrapper" routerLink="/client/document-hub" routerLinkActive="selected">
-        <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="File01Icon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
-            [strokeWidth]="1.5">
-          </hugeicons-icon>
-          <span class="nav-item-label">Document Hub</span>
-        </div>
-        @if (isCollapsed()) {
-          <div class="nav-tooltip">Document Hub</div>
         }
       </div>
 
@@ -166,6 +150,22 @@
         </div>
         @if (isCollapsed()) {
           <div class="nav-tooltip">Company Details</div>
+        }
+      </div>
+
+      <div class="nav-item-wrapper" routerLink="/client/support-tickets" routerLinkActive="selected">
+        <div class="nav-item-content">
+          <hugeicons-icon 
+            [icon]="MentoringIcon" 
+            [size]="18" 
+            color="currentColor"
+            class="nav-item-icon"
+            [strokeWidth]="1.5">
+          </hugeicons-icon>
+          <span class="nav-item-label">Support Tickets</span>
+        </div>
+        @if (isCollapsed()) {
+          <div class="nav-tooltip">Support Tickets</div>
         }
       </div>
 
