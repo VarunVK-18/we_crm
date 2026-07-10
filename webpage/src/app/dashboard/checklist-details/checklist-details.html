@@ -29,6 +29,7 @@
     </div>
   </div>
 
+
   @if (checklist()) {
   <div class="details-layout-container">
     <!-- Left Column: Main Content -->
@@ -693,6 +694,51 @@
                   </div>
                 </div>
               }
+              <!-- Manager Review Banners for the Last Item -->
+              @if (itemIndex === checklist().items.length - 1) {
+                @if (checklist()?.status !== 'completed' && checklist()?.status !== 'under_review') {
+                  <div style="margin-top: 12px; font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
+                    <span class="material-symbols-outlined" style="font-size: 16px; color: var(--accent-primary);">info</span>
+                    Checking this final item will automatically submit the service for manager review.
+                  </div>
+                }
+                
+                @if (user()?.role === 'filling_staff' && checklist()?.status === 'under_review') {
+                  <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px; display: flex; align-items: center; gap: 10px;">
+                    <span class="material-symbols-outlined" style="color: var(--text-secondary); font-size: 20px;">hourglass_top</span>
+                    <div>
+                      <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">Awaiting Manager Review</div>
+                      <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">This service has been submitted automatically. Your manager will review and mark it as Completed.</div>
+                    </div>
+                  </div>
+                }
+
+                @if ((user()?.role === 'admin' || user()?.role === 'client_manager') && checklist()?.status === 'under_review') {
+                  <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-top: 16px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                      <span class="material-symbols-outlined" style="color: var(--text-secondary); font-size: 20px;">manage_search</span>
+                      <div>
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">Manager Review Required</div>
+                        <div style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Filing staff has completed this service. Please verify the work before marking it as Completed.</div>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-shrink: 0;">
+                      <button (click)="viewOpportunitiesForClient()"
+                        style="background: transparent; color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 7px 14px; font-weight: 500; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;"
+                        onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">trending_up</span>
+                        View Opportunities
+                      </button>
+                      <button (click)="markAsCompleted()"
+                        style="background: var(--text-primary); color: white; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 500; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;"
+                        onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">check</span>
+                        Mark as Completed
+                      </button>
+                    </div>
+                  </div>
+                }
+              }
             </div>
           </div>
           }
@@ -703,8 +749,6 @@
           }
         </div>
       </section>
-
-
 
       <!-- Bank Details Section (Only for Incorporation Services) -->
       @if (isIncorporationService()) {
@@ -1627,6 +1671,125 @@
             <span class="material-symbols-outlined" style="font-size:16px;">auto_awesome</span> Generate & Send to Client
           }
         </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (isOpportunitiesModalOpen()) {
+  <div style="position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; width: 90vw; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+      <!-- Header -->
+      <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+        <div>
+          <h2 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">Opportunities for {{ opportunitiesClient()?.name || opportunitiesClient()?.company_name || 'Client' }}</h2>
+          <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">Suggest new services to boost revenue.</p>
+        </div>
+        <button (click)="isOpportunitiesModalOpen.set(false)" style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='none'">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <!-- Body -->
+      <div style="padding: 24px; overflow-y: auto; flex: 1;">
+        <!-- 1. Service Orders (WE) -->
+        @if (getWeDone(opportunitiesClient()).length > 0) {
+        <div style="margin-bottom: 32px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Completed Service Orders (WE)</h3>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            @for (done of getWeDone(opportunitiesClient()); track done.name) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="material-symbols-outlined" style="color: #059669; font-size: 18px;">check_circle</span>
+                <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">{{ done.name }}</span>
+              </div>
+              <span style="font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: #e0f2fe; color: #0369a1;">#WE</span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- 2. Outsourced Data -->
+        @if (getOutsourcedDone(opportunitiesClient()).length > 0) {
+        <div style="margin-bottom: 32px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Outsourced Services</h3>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            @for (done of getOutsourcedDone(opportunitiesClient()); track done.name) {
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">{{ done.name }}</span>
+              </div>
+              <span style="font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: #f1f5f9; color: #475569;">Outsourced</span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- 3. Suggestions (Opportunities) -->
+        <!-- Compliance Radar Banner -->
+        <div style="margin-bottom: 24px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div>
+            <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 700; color: #166534; display: flex; align-items: center; gap: 8px;">
+              <span class="material-symbols-outlined" style="font-size: 20px;">radar</span>
+              Compliance Radar
+            </h3>
+            @if (opportunitiesClient()?.in_compliance_radar) {
+              <p style="margin: 0; font-size: 13px; color: #15803d; font-weight: 600;">This client is already enrolled in the Compliance Radar program.</p>
+            } @else {
+              <p style="margin: 0; font-size: 13px; color: #15803d;">This client is currently not enrolled in the Compliance Radar program. Enable it to generate recurring compliance tracking.</p>
+            }
+          </div>
+          
+          @if (!opportunitiesClient()?.in_compliance_radar) {
+          <div style="display: flex; gap: 12px; align-items: flex-end;">
+            <div style="flex: 1;">
+              <label style="display: block; font-size: 11px; font-weight: 700; color: #166534; margin-bottom: 4px; text-transform: uppercase;">Amount Paid (₹)</label>
+              <input type="number" [(ngModel)]="radarAmount" placeholder="Min ₹15,000" min="15000" style="width: 100%; padding: 10px 12px; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 14px; outline: none; background: white; color: #166534; font-weight: 600;">
+            </div>
+            <button (click)="enableComplianceRadar()" [disabled]="(radarAmount() || 0) < 15000" [style.opacity]="(radarAmount() || 0) < 15000 ? '0.5' : '1'" style="padding: 10px 20px; background: #166534; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; height: 40px; gap: 6px;">
+              <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+              Enable Radar
+            </button>
+          </div>
+          @if (radarAmount() !== null && radarAmount()! < 15000) {
+            <span style="font-size: 11px; color: #dc2626; font-weight: 600;">Minimum amount required is ₹15,000.</span>
+          }
+          }
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Suggestions</h3>
+        </div>
+        @if (opportunitiesClient()?.opportunities?.length > 0) {
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-bottom: 32px;">
+          @for (opp of opportunitiesClient().opportunities; track opp.name) {
+          <div style="background: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); display: flex; flex-direction: column;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+              <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; background: #f1f5f9; color: #475569;">{{ opp.category }}</span>
+            </div>
+            <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0;">{{ opp.name }}</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 20px 0; line-height: 1.5; flex: 1;">{{ opp.desc }}</p>
+
+            <div style="display: flex; gap: 8px;">
+              <button (click)="applyWithWE(opportunitiesClient(), opp)" style="flex: 1; padding: 8px; background: #006a61; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">add_circle</span>
+                Apply #WE
+              </button>
+              <button (click)="markAsOutsourced(opportunitiesClient(), opp)" style="flex: 1; padding: 8px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                Outsourced
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+        } @else {
+        <div style="margin-bottom: 32px; padding: 32px; text-align: center; background: #f8fafc; border-radius: 12px; border: 1px dashed #cbd5e1;">
+          <span class="material-symbols-outlined" style="font-size: 32px; color: #94a3b8; margin-bottom: 8px;">task_alt</span>
+          <p style="margin: 0; color: #475569; font-weight: 600;">No remaining recommendations. Client has completed all suggested services.</p>
+        </div>
+        }
       </div>
     </div>
   </div>

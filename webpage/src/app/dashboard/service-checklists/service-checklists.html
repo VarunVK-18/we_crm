@@ -42,12 +42,21 @@
 
   <!-- Filters -->
   <div class="filter-pill-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-    <div style="display: flex; gap: 8px;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
       <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Checklists ({{ getTabCount('all') }})</button>
       <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending'" (click)="currentDirectoryTab.set('pending')">Pending ({{ getTabCount('pending') }})</button>
       <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress ({{ getTabCount('in_progress') }})</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed ({{ getTabCount('completed') }})</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered ({{ getTabCount('final_delivered') }})</button>
+      <!-- Filing Staff sees "Submitted for Review" tab -->
+      @if (user()?.role === 'filling_staff') {
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'under_review'" (click)="currentDirectoryTab.set('under_review')" style="border-color: #f59e0b; color: #b45309;">Submitted for Review ({{ getTabCount('under_review') }})</button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed ({{ getTabCount('completed') }})</button>
+      }
+      <!-- Managers/Admins see Pending Review, Completed (payment split), Final Delivered -->
+      @if (user()?.role !== 'filling_staff') {
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'under_review'" (click)="currentDirectoryTab.set('under_review')" style="border-color: #f59e0b; color: #b45309;">Pending Review ({{ getTabCount('under_review') }})</button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed ({{ getTabCount('completed') }})</button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered ({{ getTabCount('final_delivered') }})</button>
+      }
     </div>
     <div class="search-box">
       <span class="material-symbols-outlined search-icon">search</span>
@@ -77,9 +86,10 @@
             <th>COMPANY NAME</th>
             <th>CLIENT</th>
             <th>PROGRESS</th>
-            <th>ASSIGNEE</th>
+            @if (user()?.role !== 'filling_staff') {
+              <th>ASSIGNEE</th>
+            }
             <th>STATUS</th>
-            <th style="text-align: center;">ACTION</th>
           </tr>
         </thead>
         <tbody>
@@ -105,18 +115,20 @@
                   <span class="progress-text-sm">{{ getChecklistProgress(cl) }}%</span>
                 </div>
               </td>
-              <td>
-                <div class="assignee-info">
-                  @if (getAssigneeName(cl) !== 'Yet to Assign') {
-                    <div class="assignee-avatar has-user">
-                      {{ getAssigneeInitial(cl) }}
-                    </div>
-                  } @else {
-                    <div class="assignee-avatar no-user" style="background-color: #f1f5f9; color: #64748b; font-size: 13px; font-weight: 600;">Y</div>
-                  }
-                  <span class="assignee-name" [ngStyle]="{'color': getAssigneeName(cl) === 'Yet to Assign' ? '#94a3b8' : 'inherit', 'font-style': getAssigneeName(cl) === 'Yet to Assign' ? 'italic' : 'normal'}">{{ getAssigneeName(cl) }}</span>
-                </div>
-              </td>
+              @if (user()?.role !== 'filling_staff') {
+                <td>
+                  <div class="assignee-info">
+                    @if (getAssigneeName(cl) !== 'Yet to Assign') {
+                      <div class="assignee-avatar has-user">
+                        {{ getAssigneeInitial(cl) }}
+                      </div>
+                    } @else {
+                      <div class="assignee-avatar no-user" style="background-color: #f1f5f9; color: #64748b; font-size: 13px; font-weight: 600;">Y</div>
+                    }
+                    <span class="assignee-name" [ngStyle]="{'color': getAssigneeName(cl) === 'Yet to Assign' ? '#94a3b8' : 'inherit', 'font-style': getAssigneeName(cl) === 'Yet to Assign' ? 'italic' : 'normal'}">{{ getAssigneeName(cl) }}</span>
+                  </div>
+                </td>
+              }
               <td>
                 <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
                   @if (currentDirectoryTab() !== 'completed' && currentDirectoryTab() !== 'final_delivered' || !hasPendingPayment(cl)) {
@@ -126,11 +138,6 @@
                     <span style="font-size: 11px; font-weight: 500;">Pending: ₹{{ getPendingPaymentAmount(cl) }}</span>
                   }
                 </div>
-              </td>
-              <td style="text-align: center;">
-                <button class="btn-action-view" title="View Details">
-                  View
-                </button>
               </td>
             </tr>
           }

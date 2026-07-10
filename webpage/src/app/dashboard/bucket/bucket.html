@@ -140,7 +140,9 @@
           <th>Email ID</th>
           <th>Phone Number</th>
           <th>Available Since</th>
-          <th>Team</th>
+          @if (user()?.role !== 'filling_staff') {
+            <th>Team</th>
+          }
           <th>Actions</th>
         </tr>
       </thead>
@@ -154,7 +156,9 @@
           <td><div class="skeleton-text" style="width: 140px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
-          <td><div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          @if (user()?.role !== 'filling_staff') {
+            <td><div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          }
           <td><div class="skeleton-text" style="width: 90px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
         </tr>
         }
@@ -182,7 +186,9 @@
           <th>Email ID</th>
           <th>Phone Number</th>
           <th>Available Since</th>
-          <th>Team</th>
+          @if (user()?.role !== 'filling_staff') {
+            <th>Team</th>
+          }
           <th>Actions</th>
         </tr>
       </thead>
@@ -210,11 +216,13 @@
           <td>
             <span class="time-ago">{{ job.claimed_at | date:'short' }}</span>
           </td>
-          <td>
-            @if (job.claimed_by) {
-            <div class="claimed-by-text">{{ job.claimed_by?.owner_name || 'Your Manager' }}</div>
-            }
-          </td>
+          @if (user()?.role !== 'filling_staff') {
+            <td>
+              @if (job.claimed_by) {
+              <div class="claimed-by-text">{{ job.claimed_by?.owner_name || 'Your Manager' }}</div>
+              }
+            </td>
+          }
           <td>
             <div class="table-actions">
               <button class="btn-claim-sm" (click)="selfAssign(job._id)" [disabled]="assigningId() === job._id">

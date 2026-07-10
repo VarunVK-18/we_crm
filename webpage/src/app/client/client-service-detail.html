@@ -201,7 +201,7 @@
           }
 
           <!-- Final Deliverables Section -->
-          @if (!isPaymentPending() && isFinalBoxTicked() && (order()?.derivedStatus === 'completed' || filterFinalDocs(order()?.final_documents).length > 0)) {
+          @if (!isPaymentPending() && isFinalBoxTicked() && order()?.derivedStatus === 'completed') {
           <div class="final-deliverables-area">
             <div class="progress-header">
               <h3>Final Deliverables</h3>

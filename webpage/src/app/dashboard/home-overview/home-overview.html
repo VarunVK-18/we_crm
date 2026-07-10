@@ -9,7 +9,9 @@
 
     </div>
     <!-- Abstract wave decorations -->
-
+    <div class="ho-hero-illustration" style="position: absolute; opacity: 0.8; z-index: 5; right: -40px; bottom: -100px; width: 400px; top: 0; pointer-events: none;">
+      <img src="rangoli.webp" alt="Rangoli" style="width: 120%; height: auto; object-fit: contain;">
+    </div>
   </section>
 
   <!-- KPI Cards Grid -->
@@ -18,57 +20,32 @@
     <div class="metric-card">
       <div class="metric-header" style="align-items: flex-start;">
         <span class="number" style="margin: 0; line-height: 1;">{{ stats[0].value }}</span>
-        <div class="metric-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2 14C2 11.1911 2 9.78661 2.67412 8.77772C2.96596 8.34096 3.34096 7.96596 3.77772 7.67412C4.78661 7 6.19108 7 9 7H15C17.8089 7 19.2134 7 20.2223 7.67412C20.659 7.96596 21.034 8.34096 21.3259 8.77772C22 9.78661 22 11.1911 22 14C22 16.8089 22 18.2134 21.3259 19.2223C21.034 19.659 20.659 20.034 20.2223 20.3259C19.2134 21 17.8089 21 15 21H9C6.19108 21 4.78661 21 3.77772 20.3259C3.34096 20.034 2.96596 19.659 2.67412 19.2223C2 18.2134 2 16.8089 2 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M16 7C16 5.11438 16 4.17157 15.4142 3.58579C14.8284 3 13.8856 3 12 3C10.1144 3 9.17157 3 8.58579 3.58579C8 4.17157 8 5.11438 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M6 11L6.65197 11.202C10.0851 12.266 13.9149 12.266 17.348 11.202L18 11M12 12V14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
       </div>
-      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">{{ stats[0].title }}</div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stats[0].title }}</div>
     </div>
 
     <!-- Card 2 -->
     <div class="metric-card">
       <div class="metric-header" style="align-items: flex-start;">
         <span class="number" style="margin: 0; line-height: 1;">{{ stats[1].value }}</span>
-        <div class="metric-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.67 14H4C2.9 14 2 14.9 2 16V22H8.67V14Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M13.3302 10H10.6602C9.56016 10 8.66016 10.9 8.66016 12V22H15.3302V12C15.3302 10.9 14.4402 10 13.3302 10Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M20.0001 17H15.3301V22H22.0001V19C22.0001 17.9 21.1001 17 20.0001 17Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12.5202 2.06982L13.0502 3.12982C13.1202 3.27982 13.3102 3.41982 13.4702 3.43982L14.4302 3.59982C15.0402 3.69982 15.1902 4.1498 14.7502 4.5798L14.0002 5.3298C13.8702 5.4598 13.8002 5.69981 13.8402 5.86981L14.0502 6.78982C14.2202 7.51982 13.8302 7.79983 13.1902 7.41983L12.2902 6.88983C12.1302 6.78983 11.8602 6.78983 11.7002 6.88983L10.8002 7.41983C10.1602 7.79983 9.77023 7.51982 9.94023 6.78982L10.1502 5.86981C10.1902 5.69981 10.1202 5.4498 9.99023 5.3298L9.25023 4.58981C8.81023 4.14981 8.95023 3.7098 9.57023 3.6098L10.5302 3.44983C10.6902 3.41983 10.8802 3.27983 10.9502 3.13983L11.4802 2.0798C11.7702 1.4998 12.2302 1.49982 12.5202 2.06982Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </div>
       </div>
-      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">{{ stats[1].title }}</div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stats[1].title }}</div>
     </div>
 
     <!-- Card 3 -->
     <div class="metric-card">
       <div class="metric-header" style="align-items: flex-start;">
         <span class="number" style="margin: 0; line-height: 1;">{{ stats[2].value }}</span>
-        <div class="metric-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M7.2626 3.26045C7.38219 2.13044 8.33828 1.25 9.5 1.25H14.5C15.6617 1.25 16.6178 2.13044 16.7374 3.26045C17.5005 3.27599 18.1603 3.31546 18.7236 3.41895C19.4816 3.55818 20.1267 3.82342 20.6517 4.34835C21.2536 4.95027 21.5125 5.70814 21.6335 6.60825C21.75 7.47522 21.75 8.57754 21.75 9.94513V16.0549C21.75 17.4225 21.75 18.5248 21.6335 19.3918C21.5125 20.2919 21.2536 21.0497 20.6517 21.6517C20.0497 22.2536 19.2919 22.5125 18.3918 22.6335C17.5248 22.75 16.4225 22.75 15.0549 22.75H8.94513C7.57754 22.75 6.47522 22.75 5.60825 22.6335C4.70814 22.5125 3.95027 22.2536 3.34835 21.6517C2.74643 21.0497 2.48754 20.2919 2.36652 19.3918C2.24996 18.5248 2.24998 17.4225 2.25 16.0549V9.94513C2.24998 8.57754 2.24996 7.47522 2.36652 6.60825C2.48754 5.70814 2.74643 4.95027 3.34835 4.34835C3.87328 3.82342 4.51836 3.55818 5.27635 3.41895C5.83973 3.31546 6.49952 3.27599 7.2626 3.26045ZM7.26496 4.76087C6.54678 4.7762 5.99336 4.81234 5.54735 4.89426C4.98054 4.99838 4.65246 5.16556 4.40901 5.40901C4.13225 5.68577 3.9518 6.07435 3.85315 6.80812C3.75159 7.56347 3.75 8.56458 3.75 10V16C3.75 17.4354 3.75159 18.4365 3.85315 19.1919C3.9518 19.9257 4.13225 20.3142 4.40901 20.591C4.68577 20.8678 5.07435 21.0482 5.80812 21.1469C6.56347 21.2484 7.56458 21.25 9 21.25H15C16.4354 21.25 17.4365 21.2484 18.1919 21.1469C18.9257 21.0482 19.3142 20.8678 19.591 20.591C19.8678 20.3142 20.0482 19.9257 20.1469 19.1919C20.2484 18.4365 20.25 17.4354 20.25 16V10C20.25 8.56458 20.2484 7.56347 20.1469 6.80812C20.0482 6.07434 19.8678 5.68577 19.591 5.40901C19.3475 5.16556 19.0195 4.99838 18.4527 4.89426C18.0066 4.81234 17.4532 4.7762 16.735 4.76087C16.6058 5.88062 15.6544 6.75 14.5 6.75H9.5C8.34559 6.75 7.39424 5.88062 7.26496 4.76087ZM9.5 2.75C9.08579 2.75 8.75 3.08579 8.75 3.5V4.5C8.75 4.91421 9.08579 5.25 9.5 5.25H14.5C14.9142 5.25 15.25 4.91421 15.25 4.5V3.5C15.25 3.08579 14.9142 2.75 14.5 2.75H9.5ZM6.25 10.5C6.25 10.0858 6.58579 9.75 7 9.75H7.5C7.91421 9.75 8.25 10.0858 8.25 10.5C8.25 10.9142 7.91421 11.25 7.5 11.25H7C6.58579 11.25 6.25 10.9142 6.25 10.5ZM9.75 10.5C9.75 10.0858 10.0858 9.75 10.5 9.75H17C17.4142 9.75 17.75 10.0858 17.75 10.5C17.75 10.9142 17.4142 11.25 17 11.25H10.5C10.0858 11.25 9.75 10.9142 9.75 10.5ZM6.25 14C6.25 13.5858 6.58579 13.25 7 13.25H7.5C7.91421 13.25 8.25 13.5858 8.25 14C8.25 14.4142 7.91421 14.75 7.5 14.75H7C6.58579 14.75 6.25 14.4142 6.25 14ZM9.75 14C9.75 13.5858 10.0858 13.25 10.5 13.25H17C17.4142 13.25 17.75 13.5858 17.75 14C17.75 14.4142 17.4142 14.75 17 14.75H10.5C10.0858 14.75 9.75 14.4142 9.75 14ZM6.25 17.5C6.25 17.0858 6.58579 16.75 7 16.75H7.5C7.91421 16.75 8.25 17.0858 8.25 17.5C8.25 17.9142 7.91421 18.25 7.5 18.25H7C6.58579 18.25 6.25 17.9142 6.25 17.5ZM9.75 17.5C9.75 17.0858 10.0858 16.75 10.5 16.75H17C17.4142 16.75 17.75 17.0858 17.75 17.5C17.75 17.9142 17.4142 18.25 17 18.25H10.5C10.0858 18.25 9.75 17.9142 9.75 17.5Z" fill="currentColor"/>
-          </svg>
-        </div>
       </div>
-      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">{{ stats[2].title }}</div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stats[2].title }}</div>
     </div>
 
     <!-- Card 4 -->
     <div class="metric-card">
       <div class="metric-header" style="align-items: flex-start;">
         <span class="number" style="margin: 0; line-height: 1;">{{ stats[3].value }}</span>
-        <div class="metric-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path fill-rule="evenodd" clip-rule="evenodd" d="M7.09872 1.25004C7.14677 1.25006 7.19553 1.25008 7.24502 1.25008H16.755C16.8045 1.25008 16.8532 1.25006 16.9013 1.25004C17.918 1.2496 18.6178 1.24929 19.2071 1.45435C20.3201 1.84161 21.1842 2.73726 21.5546 3.86559L20.8421 4.09954L21.5546 3.86559C21.7507 4.46271 21.7504 5.17254 21.75 6.22655C21.75 6.27372 21.75 6.32158 21.75 6.37014V20.3743C21.75 21.8395 20.023 22.7118 18.8856 21.671C18.8061 21.5983 18.6939 21.5983 18.6144 21.671L18.1313 22.1131C17.2031 22.9624 15.7969 22.9624 14.8687 22.1131C14.5137 21.7882 13.9863 21.7882 13.6313 22.1131C12.7031 22.9624 11.2969 22.9624 10.3687 22.1131C10.0137 21.7882 9.48631 21.7882 9.13132 22.1131C8.20313 22.9624 6.79688 22.9624 5.86869 22.1131L5.3856 21.671C5.30612 21.5983 5.19389 21.5983 5.11442 21.671C3.97699 22.7118 2.25001 21.8395 2.25001 20.3743V6.37014C2.25001 6.32158 2.24999 6.27372 2.24997 6.22655C2.24959 5.17255 2.24933 4.46271 2.44539 3.86559C2.81585 2.73726 3.67996 1.84161 4.79292 1.45435C5.38224 1.24929 6.08197 1.2496 7.09872 1.25004ZM7.24502 2.75008C6.02394 2.75008 5.60334 2.76057 5.28587 2.87103C4.62649 3.10047 4.09913 3.63728 3.87054 4.3335C3.75945 4.67183 3.75001 5.11796 3.75001 6.37014V20.3743C3.75001 20.4933 3.80993 20.5661 3.88511 20.6009C3.92427 20.619 3.96258 20.6237 3.99449 20.6194C4.02263 20.6156 4.05904 20.6035 4.10179 20.5644C4.75447 19.9671 5.74555 19.9671 6.39822 20.5644L6.88132 21.0065C7.23631 21.3313 7.76371 21.3313 8.11869 21.0065C9.04688 20.1571 10.4531 20.1571 11.3813 21.0065C11.7363 21.3313 12.2637 21.3313 12.6187 21.0065C13.5469 20.1571 14.9531 20.1571 15.8813 21.0065C16.2363 21.3313 16.7637 21.3313 17.1187 21.0065L17.6018 20.5644C18.2545 19.9671 19.2455 19.9671 19.8982 20.5644C19.941 20.6035 19.9774 20.6156 20.0055 20.6194C20.0374 20.6237 20.0757 20.619 20.1149 20.6009C20.1901 20.5661 20.25 20.4934 20.25 20.3743V6.37014C20.25 5.11797 20.2406 4.67183 20.1295 4.3335C19.9009 3.63728 19.3735 3.10047 18.7141 2.87103C18.3967 2.76057 17.9761 2.75008 16.755 2.75008H7.24502ZM6.25001 7.50008C6.25001 7.08587 6.58579 6.75008 7.00001 6.75008H7.50001C7.91422 6.75008 8.25001 7.08587 8.25001 7.50008C8.25001 7.9143 7.91422 8.25008 7.50001 8.25008H7.00001C6.58579 8.25008 6.25001 7.9143 6.25001 7.50008ZM9.75001 7.50008C9.75001 7.08587 10.0858 6.75008 10.5 6.75008H17C17.4142 6.75008 17.75 7.08587 17.75 7.50008C17.75 7.9143 17.4142 8.25008 17 8.25008H10.5C10.0858 8.25008 9.75001 7.9143 9.75001 7.50008ZM6.25001 11.0001C6.25001 10.5859 6.58579 10.2501 7.00001 10.2501H7.50001C7.91422 10.2501 8.25001 10.5859 8.25001 11.0001C8.25001 11.4143 7.91422 11.7501 7.50001 11.7501H7.00001C6.58579 11.7501 6.25001 11.4143 6.25001 11.0001ZM9.75001 11.0001C9.75001 10.5859 10.0858 10.2501 10.5 10.2501H17C17.4142 10.2501 17.75 10.5859 17.75 11.0001C17.75 11.4143 17.4142 11.7501 17 11.7501H10.5C10.0858 11.7501 9.75001 11.4143 9.75001 11.0001ZM6.25001 14.5001C6.25001 14.0859 6.58579 13.7501 7.00001 13.7501H7.50001C7.91422 13.7501 8.25001 14.0859 8.25001 14.5001C8.25001 14.9143 7.91422 15.2501 7.50001 15.2501H7.00001C6.58579 15.2501 6.25001 14.9143 6.25001 14.5001ZM9.75001 14.5001C9.75001 14.0859 10.0858 13.7501 10.5 13.7501H17C17.4142 13.7501 17.75 14.0859 17.75 14.5001C17.75 14.9143 17.4142 15.2501 17 15.2501H10.5C10.0858 15.2501 9.75001 14.9143 9.75001 14.5001Z" fill="currentColor"/>
-          </svg>
-        </div>
       </div>
-      <div class="metric-title" style="margin-top: 12px; font-size: 13px;">{{ stats[3].title }}</div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stats[3].title }}</div>
     </div>
   </section>
 
@@ -274,7 +251,9 @@
           <thead>
             <tr>
               <th>Task / Entity</th>
-              <th>Assigned To</th>
+              @if (user()?.role !== 'filling_staff') {
+                <th>Assigned To</th>
+              }
               <th>Status</th>
               <th>Created At</th>
             </tr>
@@ -290,14 +269,16 @@
                     </div>
                   </div>
                 </td>
-                <td>
-                  <div class="ho-text-sm">{{ item.assignedTo }}</div>
-                </td>
+                @if (user()?.role !== 'filling_staff') {
+                  <td>
+                    <div class="ho-text-sm">{{ item.assignedTo }}</div>
+                  </td>
+                }
                 <td>
                   <span class="ho-status-badge" 
                         [class.certified]="item.isCompleted"
                         [class.pending]="!item.isCompleted">
-                    <span class="ho-status-dot"></span>
+
                     {{ item.status }}
                   </span>
                 </td>
@@ -328,11 +309,11 @@
                    [class.urgent]="rem.status === 'urgent'"
                    [class.active]="rem.status !== 'expired' && rem.status !== 'urgent'">
                 @if (rem.status === 'expired') {
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 } @else if (rem.status === 'urgent') {
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="12" x2="12" y2="16"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="12" x2="12" y2="16"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
                 } @else {
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="color: #ffffff;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 }
               </div>
               <p class="ho-timeline-time">{{ rem.dueDate | date:'MMM dd, y' }}</p>

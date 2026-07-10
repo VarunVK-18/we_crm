@@ -349,6 +349,17 @@ export class Dashboard implements OnInit, OnDestroy {
     ]);
   }
 
+  preselectedOpportunityClientId = signal<string>('');
+
+  handleViewOpportunities(clientId: string) {
+    this.preselectedOpportunityClientId.set(clientId);
+    this.currentTab.set('opportunities');
+    this.navigationTrail.set([
+      { label: this.getTabLabel('dashboard'), action: () => this.handleTabChanged('dashboard') },
+      { label: 'Opportunities', action: () => this.handleTabChanged('opportunities') }
+    ]);
+  }
+
   navigateToBreadcrumb(index: number) {
     const trail = this.navigationTrail();
     if (index >= 0 && index < trail.length) {

@@ -210,12 +210,16 @@ ChecklistSchema.pre('save', async function () {
   if (this.items && this.items.length > 0) {
     const total = this.items.length;
     const checked = this.items.filter(i => i.isChecked).length;
-    if (checked === 0) {
-      this.status = 'pending';
-    } else if (checked === total) {
-      this.status = 'completed';
-    } else {
-      this.status = 'in_progress';
+    
+    // Only auto-update if status isn't already set to a terminal/review state
+    if (!this.isModified('status') && this.status !== 'completed' && this.status !== 'cancelled') {
+      if (checked === 0) {
+        this.status = 'pending';
+      } else if (checked === total) {
+        this.status = 'under_review';
+      } else {
+        this.status = 'in_progress';
+      }
     }
   }
 

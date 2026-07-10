@@ -39,13 +39,14 @@ router.get('/my-checklists', checkUser, getMyChecklists); // For Flutter custome
 
 // Payment Tracker / Expenses
 router.get('/checklists/expenses', checkUser, permit('admin', 'manager', 'client_manager', 'account_manager', 'filling_staff'), getExpenses);
-router.patch('/checklists/:id', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), updateChecklist);
-router.post('/checklists/:id/items', checkUser, permit('admin', 'client_manager'), addChecklistItem);
-router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
-router.patch('/checklists/:id/items/:itemIndex/value', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), updateChecklistItemValue);
-router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadFinalDocuments);
-router.delete('/checklists/:id/final-documents/:docId', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), deleteFinalDocument);
-router.put('/checklists/:id/final-documents/:docId/reupload', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.single('final_file'), reuploadFinalDocument);
+router.patch('/checklists/:id', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager', 'customer'), updateChecklist);
+router.post('/checklists/:id/items', checkUser, permit('admin', 'manager', 'client_manager'), addChecklistItem);
+router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
+router.patch('/checklists/:id/items/:itemIndex/value', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), updateChecklistItemValue);
+router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadFinalDocuments);
+router.delete('/checklists/:id/final-documents/:docId', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), deleteFinalDocument);
+router.put('/checklists/:id/final-documents/:docId/reupload', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.single('final_file'), reuploadFinalDocument);
+
 
 // Temporary / Action Required Documents
 const { uploadTemporaryDocuments, deleteTemporaryDocument, replyTemporaryDocument, attachDocumentAsTemporary } = require('../controllers/checklistController');
@@ -62,9 +63,10 @@ router.post('/checklists/:id/upload-documents', checkUser, upload.any(), uploadR
 router.post('/checklists/:id/support-ticket', checkUser, createSupportTicketForChecklist);
 
 // Financial log for a checklist
-router.post('/checklists/:id/financial-logs', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), addFinancialLog);
+router.post('/checklists/:id/financial-logs', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), addFinancialLog);
 
-router.post('/checklists/:id/items/:itemId/expense', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.single('bill'), uploadExpenseBill);
+router.post('/checklists/:id/items/:itemId/expense', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.single('bill'), uploadExpenseBill);
+
 
 router.post('/checklists/:id/items/:itemId/reimburse', checkUser, permit('admin', 'manager'), markExpensePaid);
 

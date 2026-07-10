@@ -32,14 +32,12 @@
 /* 1. Hero Banner */
 .ho-hero {
   position: relative;
-  background-color: var(--palette-dark);
-  background-image: radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 40%),
-                    radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-blue) 10%, transparent) 0%, transparent 60%);
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   border-radius: 1.25rem;
   padding: 48px;
-  color: var(--palette-light);
+  color: #1f2823;
   overflow: hidden;
-  box-shadow: 0 12px 35px color-mix(in srgb, var(--palette-dark) 20%, transparent);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
 .ho-hero::before {
@@ -49,12 +47,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: 1;
+  opacity: 0;
 }
 
 .ho-hero-content {
@@ -76,7 +69,6 @@
   font-size: 16px;
   line-height: 1.6;
   opacity: 0.9;
-  margin: 0 0 28px 0;
 }
 
 .ho-hero-actions {
@@ -509,7 +501,6 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-primary);
 }
@@ -589,7 +580,6 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
   border-radius: 9999px;
   font-size: 11px;
   font-weight: 700;
@@ -604,7 +594,6 @@
 }
 
 .ho-status-badge.certified {
-  background-color: var(--color-emerald-bg);
   color: #065f46;
 }
 
@@ -613,12 +602,10 @@
 }
 
 .ho-status-badge.pending {
-  background-color: var(--color-amber-bg);
   color: #92400e;
 }
 
 .ho-status-badge.pending .ho-status-dot {
-  background-color: var(--color-amber);
   animation: pulse 2s infinite;
 }
 
@@ -682,15 +669,18 @@
 }
 
 .ho-timeline-dot.expired {
-  background-color: var(--color-red);
+  background-color: var(--color-red-bg);
+  color: var(--color-red);
 }
 
 .ho-timeline-dot.urgent {
-  background-color: var(--color-amber);
+  background-color: var(--color-amber-bg);
+  color: var(--color-amber);
 }
 
 .ho-timeline-dot.active {
-  background-color: var(--secondary-color);
+  background-color: var(--color-emerald-bg);
+  color: var(--color-emerald);
 }
 
 .ho-timeline-time {
@@ -933,8 +923,8 @@
 }
 
 .metric-title {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 8px;
+  font-weight: 400;
   color: #64748b;
   margin-bottom: 0;
   letter-spacing: 0.04em;

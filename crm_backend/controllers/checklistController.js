@@ -319,7 +319,7 @@ const toggleChecklistItem = async (req, res) => {
     const checkedItems = checklist.items.filter(i => i.isChecked).length;
     let newStatus = checklist.status;
     if (checkedItems === 0) newStatus = 'pending';
-    else if (checkedItems === totalItems) newStatus = 'completed';
+    else if (checkedItems === totalItems) newStatus = 'under_review';
     else newStatus = 'in_progress';
 
     // DSC Token Validation & Deduction
@@ -563,8 +563,27 @@ const updateChecklist = async (req, res) => {
       if (status !== undefined) {
         const prevStatus = checklist.status;
 
+        // Notify manager when filing staff submits for review
+        if (status === 'under_review' && prevStatus !== 'under_review') {
+          const Notification = require('../models/Notification');
+          const User = require('../models/User');
+          // Notify all client_managers and admins in the same company
+          const managers = await User.find({ company_id: checklist.company_id, role: { $in: ['admin', 'client_manager'] } }).select('_id');
+          for (const mgr of managers) {
+            await Notification.create({
+              user_id: mgr._id,
+              title: 'Service Ready for Review',
+              message: `Service '${checklist.service_name}' has been submitted for your review.`,
+              type: 'status_update',
+              order_id: checklist._id
+            });
+          }
+          checklist.status = status;
+        }
+
         // DSC Token Validation & Deduction
         if (status === 'completed' && prevStatus !== 'completed') {
+
           const DscToken = require('../models/DscToken');
           const DscTokenLog = require('../models/DscTokenLog');
           const sName = checklist.service_name ? checklist.service_name.toLowerCase() : '';
@@ -1692,7 +1711,7 @@ const uploadExpenseBill = async (req, res) => {
     }
 
     // Must be admin, manager, or assigned filing staff
-    const isAdminOrManager = req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'client_manager' || req.user.role === 'account_manager';
+    const isAdminOrManager = req.user.role === 'admin' || req.user.role === 'manager' || req.user.role === 'client_manager' || req.user.role === 'account_manager' || req.user.role === 'filling_staff';
     const isAssignedStaff = checklist.assigned_to && checklist.assigned_to.toString() === req.user._id.toString();
 
     if (!isAdminOrManager && !isAssignedStaff) {

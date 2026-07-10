@@ -354,7 +354,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
   selectedPeriod = signal<string>('last6Months');
 
-  financialMonth = signal<string>(new Date().toISOString().slice(0, 7));
+  financialMonth = signal<string>(`${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`);
   availableMonths: { value: string, label: string }[] = [];
 
   generateAvailableMonths() {
@@ -362,7 +362,9 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const now = new Date();
     for (let i = 0; i < 24; i++) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const val = d.toISOString().slice(0, 7);
+      const year = d.getFullYear();
+      const monthStr = (d.getMonth() + 1).toString().padStart(2, '0');
+      const val = `${year}-${monthStr}`;
       const lbl = d.toLocaleString('default', { month: 'short', year: 'numeric' });
       months.push({ value: val, label: lbl });
     }
@@ -390,7 +392,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
     ordersList.forEach(o => {
       if (!o.createdAt) return;
-      const oMonthStr = new Date(o.createdAt).toISOString().slice(0, 7);
+      const d = new Date(o.createdAt);
+      const oMonthStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
       if (oMonthStr === monthStr) {
         const rev = o.dealClosedAmount || 0;
         const recv = o.advanceAmountPaid || 0;
@@ -550,35 +553,57 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const monthStrFilter = this.financialMonth();
     const ordersList = this.filteredRoleOrders() || [];
     
-    let csvContent = 'Client Name,Service Name,Total Revenue,Amount Received,Pending Amount,Installment Details\n';
+    let csvContent = 'Client Name,Service Name,Total Amount,Amount Received,Pending Amount,Inst 1 Amount,Inst 1 Date,Inst 2 Amount,Inst 2 Date,Inst 3 Amount,Inst 3 Date,Inst 4 Amount,Inst 4 Date,Inst 5 Amount,Inst 5 Date\n';
+
+    let totalRevenueSum = 0;
+    let totalReceivedSum = 0;
+    let totalPendingSum = 0;
 
     ordersList.forEach(o => {
       if (!o.createdAt) return;
-      const oMonthStr = new Date(o.createdAt).toISOString().slice(0, 7);
+      const d = new Date(o.createdAt);
+      const oMonthStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
       if (oMonthStr === monthStrFilter) {
         const clientName = o.entityName || o.companyName || 'Unknown Client';
         const serviceName = o.serviceType || 'Service';
         const rev = o.dealClosedAmount || 0;
         const recv = o.advanceAmountPaid || 0;
         const pend = rev - recv;
+
+        totalRevenueSum += rev;
+        totalReceivedSum += recv;
+        totalPendingSum += pend;
         
-        let instDetails = '';
-        if (o.financialLogs && Array.isArray(o.financialLogs)) {
-          const logs = o.financialLogs.map((log: any) => {
+        let instCols = [];
+        let logs = (o.financialLogs && Array.isArray(o.financialLogs)) ? o.financialLogs : [];
+        
+        for (let i = 0; i < 5; i++) {
+          if (i < logs.length) {
+            const log = logs[i];
             const dt = log.paymentTimestamp ? new Date(log.paymentTimestamp) : (log.addedAt ? new Date(log.addedAt) : null);
             const dateStr = dt ? dt.toLocaleDateString() : 'N/A';
-            return `${log.paymentType || 'Payment'}: ${log.amount} on ${dateStr}`;
-          });
-          instDetails = logs.join(' | ');
+            instCols.push(`${log.amount || 0}`);
+            instCols.push(`"${dateStr}"`);
+          } else {
+            instCols.push('0');
+            instCols.push('""');
+          }
         }
         
         const safeClientName = `"${clientName.replace(/"/g, '""')}"`;
         const safeServiceName = `"${serviceName.replace(/"/g, '""')}"`;
-        const safeInstDetails = `"${instDetails.replace(/"/g, '""')}"`;
+        const instDetailsCsv = instCols.join(',');
         
-        csvContent += `${safeClientName},${safeServiceName},${rev},${recv},${pend},${safeInstDetails}\n`;
+        csvContent += `${safeClientName},${safeServiceName},${rev},${recv},${pend},${instDetailsCsv}\n`;
       }
     });
+
+    // Add 2 blank rows
+    csvContent += `,,,,,,,,,,,,,,\n`;
+    csvContent += `,,,,,,,,,,,,,,\n`;
+
+    // Add totals row at the bottom
+    csvContent += `TOTAL,"",${totalRevenueSum},${totalReceivedSum},${totalPendingSum},,,,,,,,,,\n`;
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');

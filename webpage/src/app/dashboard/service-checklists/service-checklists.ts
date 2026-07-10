@@ -154,16 +154,22 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     const all = this.checklists();
     const tab = this.currentDirectoryTab();
     const query = this.searchQuery().toLowerCase().trim();
+    const role = this.user()?.role;
 
     let filtered = all;
     if (tab === 'pending') {
-      filtered = all.filter(c => {
-        return this.isActionRequired(c) && c.status !== 'completed';
-      });
+      filtered = all.filter(c => this.isActionRequired(c) && c.status !== 'completed' && c.status !== 'under_review');
     } else if (tab === 'in_progress') {
-      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress');
+      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review');
+    } else if (tab === 'under_review') {
+      filtered = all.filter(c => c.status === 'under_review');
     } else if (tab === 'completed') {
-      filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && this.hasPendingPayment(c));
+      if (role === 'filling_staff') {
+        // Filing staff sees all completed regardless of payment
+        filtered = all.filter(c => c.status === 'completed');
+      } else {
+        filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && this.hasPendingPayment(c));
+      }
     } else if (tab === 'final_delivered') {
       filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && !this.hasPendingPayment(c));
     }
@@ -207,12 +213,18 @@ export class ServiceChecklists implements OnInit, OnDestroy {
 
   getTabCount(tab: string): number {
     const all = this.checklists();
+    const role = this.user()?.role;
     if (tab === 'all') return all.length;
     if (tab === 'pending') {
-      return all.filter(c => this.isActionRequired(c) && c.status !== 'completed').length;
+      return all.filter(c => this.isActionRequired(c) && c.status !== 'completed' && c.status !== 'under_review').length;
     } else if (tab === 'in_progress') {
-      return all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress').length;
+      return all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review').length;
+    } else if (tab === 'under_review') {
+      return all.filter(c => c.status === 'under_review').length;
     } else if (tab === 'completed') {
+      if (role === 'filling_staff') {
+        return all.filter(c => c.status === 'completed').length;
+      }
       return all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && this.hasPendingPayment(c)).length;
     } else if (tab === 'final_delivered') {
       return all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && !this.hasPendingPayment(c)).length;

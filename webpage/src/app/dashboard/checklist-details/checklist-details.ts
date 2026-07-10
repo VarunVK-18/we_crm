@@ -18,6 +18,7 @@ import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.servic
 })
 export class ChecklistDetails implements OnInit, OnDestroy {
   @Output() onBack = new EventEmitter<void>();
+  @Output() onViewOpportunities = new EventEmitter<string>();
   checklistId = input.required<string>();
   teams = input<any[]>([]);
   actualTeams = signal<any[]>([]);
@@ -171,6 +172,199 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.sopPdfSrc = '';
   }
 
+  submitForReview() {
+    const cl = this.checklist();
+    if (!cl) return;
+    this.confirmDialog.confirm({
+      title: 'Submit for Review',
+      message: `Are you sure you want to submit "${cl.service_name}" for manager review? You won't be able to make changes after this.`,
+      confirmText: 'Submit for Review',
+      cancelText: 'Cancel'
+    }).then(confirmed => {
+      if (!confirmed) return;
+      this.api.patch<any>(`checklists/${cl._id}`, { status: 'under_review' }).subscribe({
+        next: () => this.fetchChecklist(),
+        error: (err) => console.error('Failed to submit for review', err)
+      });
+    });
+  }
+
+  markAsCompleted() {
+    const cl = this.checklist();
+    if (!cl) return;
+    this.confirmDialog.confirm({
+      title: 'Mark as Completed',
+      message: `Mark "${cl.service_name}" as Completed? This confirms that you have reviewed and approved the work.`,
+      confirmText: 'Mark as Completed',
+      cancelText: 'Cancel'
+    }).then(confirmed => {
+      if (!confirmed) return;
+      this.api.patch<any>(`checklists/${cl._id}`, { status: 'completed' }).subscribe({
+        next: () => this.fetchChecklist(),
+        error: (err) => console.error('Failed to mark as completed', err)
+      });
+    });
+  }
+  isOpportunitiesModalOpen = signal(false);
+  opportunitiesClient = signal<any>(null);
+  
+  recommendationPool = [
+    // Incorporation
+    { category: 'Incorporation', name: 'Private Limited Incorporation', desc: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.' },
+    { category: 'Incorporation', name: 'LLP Incorporation', desc: 'Statutory compliance for Limited Liability Partnerships.' },
+    { category: 'Incorporation', name: 'OPC', desc: 'One Person Company registration for solo entrepreneurs.' },
+    { category: 'Incorporation', name: 'MSME', desc: 'Official Udyam Registration for small and medium enterprises.' },
+    { category: 'Incorporation', name: 'Proprietorship', desc: 'Sole vendor formation with business identification.' },
+    
+    // Compliance
+    { category: 'Compliance', name: 'MCA Compliance', desc: 'Annual return filings and MCA statutory compliance.' },
+    { category: 'Compliance', name: 'TDS', desc: 'TDS return filing and certificate issuance.' },
+    { category: 'Compliance', name: 'PF', desc: 'Provident Fund registration and monthly compliance.' },
+
+    // IP
+    { category: 'IP', name: 'Copyright', desc: 'Protection for original creative literary or artistic works.' },
+    { category: 'IP', name: 'Trade Mark', desc: 'Brand protection and intellectual property rights.' },
+    { category: 'IP', name: 'Patent', desc: 'Exclusive rights for your inventions.' },
+
+    // Tax
+    { category: 'Tax', name: 'GST filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
+    { category: 'Tax', name: 'GST Cancelation', desc: 'Surrender and cancel your GST registration.' },
+    { category: 'Tax', name: 'ITR', desc: 'Income Tax Return filing for individuals and businesses.' },
+    { category: 'Tax', name: 'GST Registration', desc: 'GST Registration for your business! Thank you for choosing Wealth Empires.' },
+
+    // Licensing
+    { category: 'Licensing', name: 'DPIIT', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
+    { category: 'Licensing', name: 'ISO', desc: 'Quality management certification (ISO 9001 and others).' },
+    { category: 'Licensing', name: 'FSSAI', desc: 'Registration for food business operators, manufacturers, and startups.' },
+    { category: 'Licensing', name: 'DSC', desc: 'Digital Signature Certificate for individuals & organizations.' },
+    { category: 'Licensing', name: 'IE code', desc: 'Import Export Code registration for cross-border trade.' },
+    { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
+    { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
+    { category: 'Licensing', name: 'ROSH & CE', desc: 'European standard certifications for electronics and products.' },
+    
+    // Fallback original pool ones just in case naming was different
+    { category: 'Compliance', name: 'ISO Certification', desc: 'Quality management system certification' },
+    { category: 'Compliance', name: 'FSSAI Registration', desc: 'Food safety and standards registration' }
+  ];
+
+  viewOpportunitiesForClient() {
+    const cl = this.checklist();
+    if (!cl) return;
+    const clientId = cl.client_id?._id || cl.client_id;
+    if (clientId) {
+      this.api.get<any>('users/clients').subscribe({
+        next: (res) => {
+          if (res && res.clients) {
+            let clientData = res.clients.find((c: any) => c._id === clientId);
+            if (clientData) {
+              clientData.opportunities = this.generateOpportunitiesForClient(clientData);
+              clientData.alreadyDone = this.getAlreadyDoneServices(clientData);
+              this.opportunitiesClient.set(clientData);
+              this.isOpportunitiesModalOpen.set(true);
+            }
+          }
+        },
+        error: (err) => console.error('Error fetching client for opportunities', err)
+      });
+    }
+  }
+
+  generateOpportunitiesForClient(client: any) {
+    const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => s.serviceName);
+    const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName);
+    const doneSet = new Set([...weDone, ...outsourced]);
+    
+    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+    const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
+
+    return this.recommendationPool.filter(s => {
+      if (doneSet.has(s.name)) return false;
+      
+      // Do not suggest other entity incorporation types if one is already completed
+      if (hasPrimaryIncorp && primaryIncorpServices.includes(s.name)) {
+        return false;
+      }
+      
+      return true;
+    });
+  }
+
+  getAlreadyDoneServices(client: any) {
+    const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => ({ name: s.serviceName, source: 'WE', checklistId: s.checklistId }));
+    const outsourced = (client.outsourced_services || []).map((s: any) => ({ name: s.serviceName, source: 'Outsourced' }));
+    return [...weDone, ...outsourced];
+  }
+  
+  getWeDone(client: any) {
+    return (client.alreadyDone || []).filter((d: any) => d.source === 'WE');
+  }
+
+  getOutsourcedDone(client: any) {
+    return (client.alreadyDone || []).filter((d: any) => d.source === 'Outsourced');
+  }
+
+  radarAmount = signal<number | null>(null);
+
+  enableComplianceRadar() {
+    const amount = this.radarAmount();
+    if (!amount || amount < 15000) return;
+
+    const client = this.opportunitiesClient();
+    if (!client) return;
+    const clientId = client._id;
+
+    // 1. Update the client profile to enable radar
+    this.api.patch<any>(`users/clients/${clientId}/compliance-radar`, {
+      in_compliance_radar: true
+    }).subscribe({
+      next: (res) => {
+        if (res.success || res.message) {
+          // 2. Generate a ServiceOrder silently for financial analytics
+          const orderPayload = {
+            cleintUid: clientId,
+            entityName: client.company_name || client.owner_name || 'Individual',
+            serviceType: "Compliance Radar",
+            companyName: client.company_name || client.owner_name,
+            status: "complete",
+            stage: "completed",
+            dealClosedAmount: amount,
+            advanceAmountPaid: amount
+          };
+          this.api.post<any>('orders', orderPayload).subscribe({
+            next: () => {
+              this.opportunitiesClient.update((c: any) => ({ ...c, in_compliance_radar: true }));
+              this.radarAmount.set(null);
+            },
+            error: (err) => console.error('Radar enabled, but failed to log order: ', err)
+          });
+        }
+      },
+      error: (err) => alert('Failed to enable Compliance Radar: ' + (err.message || 'Unknown error'))
+    });
+  }
+
+  markAsOutsourced(client: any, opportunity: any) {
+    this.api.post<any>(`users/clients/${client._id}/outsource-service`, { serviceName: opportunity.name }).subscribe({
+      next: (res) => {
+        if(res.success) {
+          const updatedClient = { ...client, outsourced_services: res.outsourced_services };
+          updatedClient.opportunities = this.generateOpportunitiesForClient(updatedClient);
+          updatedClient.alreadyDone = this.getAlreadyDoneServices(updatedClient);
+          this.opportunitiesClient.set(updatedClient);
+        }
+      },
+      error: (err) => {
+        console.error('Error marking as outsourced', err);
+        alert(err.error?.message || err.message || 'Error marking as outsourced');
+      }
+    });
+  }
+
+  applyWithWE(client: any, opportunity: any) {
+    if (confirm(`Navigate to ${client.name || client.company_name}'s dashboard to apply for ${opportunity.name}?`)) {
+      window.location.href = `/dashboard/client/${client._id}`;
+    }
+  }
   async openDocViewer(url: string, name: string, event: Event) {
     event.preventDefault();
     const finalUrl = this.api.getFileUrl(url);
@@ -586,14 +780,28 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
     this.confirmDialog.confirm({
       title: 'Confirm Completion',
-      message: 'Are you sure you want to complete this step? This cannot be undone.',
+      message: (itemIndex === cl.items.length - 1) ? 
+               'Are you sure you want to complete this final step? Doing so will automatically submit this service for manager review.' : 
+               'Are you sure you want to complete this step? This cannot be undone.',
       confirmText: 'Yes, Complete',
       cancelText: 'Cancel',
       autoCancelSeconds: 6
     }).then((confirmed) => {
       if (confirmed) {
         this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, {}).subscribe({
-          next: () => this.fetchChecklist(),
+          next: () => {
+            if (itemIndex === cl.items.length - 1) {
+              this.api.patch<any>(`checklists/${cl._id}`, { status: 'under_review' }).subscribe({
+                next: () => this.fetchChecklist(),
+                error: (err) => {
+                  console.error('Failed to auto-submit for review', err);
+                  this.fetchChecklist();
+                }
+              });
+            } else {
+              this.fetchChecklist();
+            }
+          },
           error: (err) => {
             alert(err.error?.message || 'Failed to update checklist item.');
             revertCheckbox();

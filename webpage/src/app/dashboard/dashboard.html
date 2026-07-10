@@ -230,7 +230,8 @@
       }
       @if (currentTab() === 'checklist-details' && selectedChecklistId()) {
       <app-checklist-details [checklistId]="selectedChecklistId()!" [teams]="teams()" [autoOpenChat]="openChatOnLoad()"
-        (onBack)="handleTabChanged('checklists')">
+        (onBack)="handleTabChanged('checklists')"
+        (onViewOpportunities)="handleViewOpportunities($event)">
       </app-checklist-details>
       }
       @if (currentTab() === 'logs') {
@@ -258,7 +259,7 @@
       <app-team-service-track></app-team-service-track>
       }
       @if (currentTab() === 'opportunities') {
-      <app-opportunities (onViewChecklist)="viewChecklist($event)"></app-opportunities>
+      <app-opportunities (onViewChecklist)="viewChecklist($event)" [preselectedClientId]="preselectedOpportunityClientId()"></app-opportunities>
       }
       @if (currentTab() === 'dsc-tokens') {
       <app-dsc-tokens (limitUpdated)="checkDscTokens()"></app-dsc-tokens>

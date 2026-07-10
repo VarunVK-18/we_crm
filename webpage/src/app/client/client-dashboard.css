@@ -455,7 +455,7 @@
   background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   background-size: 100% 100%, 100% 100%, 24px 24px, 100% 100%;
   border-radius: 1.25rem;
-  padding: 32px 48px;
+  padding: 16px 32px;
   color: #1f2823;
   overflow: hidden;
 }
@@ -495,7 +495,7 @@
   min-width: 100%;
   height: 100%;
   position: relative;
-  padding: 32px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;

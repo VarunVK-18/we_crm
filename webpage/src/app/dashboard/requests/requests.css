@@ -801,7 +801,7 @@
 
 .btn-decline-sm {
   background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid white;
   color: var(--text-primary);
   padding: 8px 16px;
   border-radius: 4px;

@@ -39,14 +39,16 @@ exports.getUserOrders = async (req, res) => {
 // Create a service order (for admin/testing)
 exports.createOrder = async (req, res) => {
   try {
-    const { cleintUid, entityName, serviceType, companyName, status, stage, steps, assignedExpert, expertPhone } = req.body;
+    const { cleintUid, clientUid, entityName, serviceType, companyName, status, stage, steps, assignedExpert, expertPhone, dealClosedAmount, advanceAmountPaid, companyId } = req.body;
     
-    if (!cleintUid || !serviceType) {
-      return res.status(400).json({ message: 'cleintUid and serviceType are required.' });
+    const uid = cleintUid || clientUid;
+    if (!uid || !serviceType) {
+      return res.status(400).json({ message: 'clientUid and serviceType are required.' });
     }
 
     const order = new ServiceOrder({
-      cleintUid,
+      clientUid: uid,
+      companyId,
       entityName,
       serviceType,
       companyName,
@@ -54,7 +56,9 @@ exports.createOrder = async (req, res) => {
       stage,
       steps,
       assignedExpert,
-      expertPhone
+      expertPhone,  
+      dealClosedAmount,
+      advanceAmountPaid
     });
 
     await order.save();

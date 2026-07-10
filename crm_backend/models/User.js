@@ -47,7 +47,7 @@ const UserSchema = new mongoose.Schema({
   },
   in_compliance_radar: {
     type: Boolean,
-    default: true
+    default: false
   },
   company_code: {
     type: String,
