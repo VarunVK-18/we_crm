@@ -56,7 +56,7 @@ export class ClientServicesComponent implements OnInit {
       {
         title: 'LLP Incorporation',
         description: 'Statutory compliance for Limited Liability Partnerships.',
-        features: ['Name Reservation (RUN)', 'PAN & TAN', 'LLP Incorporation Certificate', 'DIN Approval Letters', 'Corporate Bank Account', 'Processing Time: 5-7 business days']
+        features: ['Name Reservation (RUN)', 'Digital Signature Certificate (DSC)', 'PAN & TAN', 'LLP Incorporation Certificate', 'DIN Approval Letters', 'Corporate Bank Account', 'Processing Time: 5-7 business days']
       },
       {
         title: 'OPC',
@@ -66,12 +66,12 @@ export class ClientServicesComponent implements OnInit {
       {
         title: 'MSME',
         description: 'Official Udyam Registration for small and medium enterprises.',
-        features: ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'ISO Reimbursement Advisory', 'Processing Time: 5-7 business days']
+        features: ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'IP Reimbursement Advisory', 'Processing Time: 5-7 business days']
       },
       {
         title: 'Proprietorship',
         description: 'Sole vendor formation with business identification.',
-        features: ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support', 'Processing Time: 5-7 business days']
+        features: ['Document support', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Processing Time: 5-7 business days']
       }
     ],
     'compliance': [
@@ -100,7 +100,7 @@ export class ClientServicesComponent implements OnInit {
       {
         title: 'Trade Mark',
         description: 'Brand protection and intellectual property rights.',
-        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Processing Time: 5-7 business days']
+        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Reimbursement Advisory', 'Processing Time: 5-7 business days']
       },
       {
         title: 'Patent',
@@ -131,6 +131,11 @@ export class ClientServicesComponent implements OnInit {
       }
     ],
     'licensing': [
+      {
+        title: 'DUNS',
+        description: 'Data Universal Numbering System for global business identity.',
+        features: ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing', 'Processing Time: 5-7 business days']
+      },
       {
         title: 'DPIIT',
         description: 'Startup India Certification for your startup! Please provide your details correctly.',

@@ -401,7 +401,33 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
-            validator: isRequired ? (v) => v == null || v.trim().isEmpty ? 'This is a required field' : null : null,
+            validator: (v) {
+  if (isRequired && (v == null || v.trim().isEmpty)) {
+    return 'This is a required question';
+  }
+  if (v != null && v.trim().isNotEmpty) {
+    final text = v.trim();
+    final labelLower = label.toLowerCase();
+    if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact') || labelLower.contains('number')) {
+      if (labelLower.contains('company') || labelLower.contains('whatsapp') || labelLower.contains('director') || labelLower.contains('business') || labelLower == 'phone number' || labelLower == 'mobile number' || labelLower == 'contact number' || labelLower == 'company number') {
+         if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
+      }
+    }
+    if (labelLower.contains('mail') || labelLower.contains('email')) {
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) return 'Enter a valid email address';
+    }
+    if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
+      if (!RegExp(r'^[2-9]{1}[0-9]{11}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
+    }
+    if (labelLower.contains('pan ') || labelLower == 'pan' || labelLower.contains('pan number')) {
+      if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
+    }
+    if (labelLower.contains('tan ') || labelLower == 'tan' || labelLower.contains('tan number')) {
+      if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
+    }
+  }
+  return null;
+},
           ),
         ],
       ),

@@ -656,28 +656,33 @@ Widget build(BuildContext context) {
               suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
             ),
             validator: (v) {
-              if (validator != null) {
-                final customError = validator(v);
-                if (customError != null) return customError;
-              }
-              if (isRequired && (v == null || v.trim().isEmpty)) {
-                return 'This is a required question';
-              }
-              if (v != null && v.trim().isNotEmpty) {
-                final text = v.trim();
-                final labelLower = label.toLowerCase();
-                if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact')) {
-                  if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
-                } else if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
-                  if (!RegExp(r'^[0-9]{12}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
-                } else if (labelLower.contains('pan')) {
-                  if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
-                } else if (labelLower.contains('tan')) {
-                  if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
-                }
-              }
-              return null;
-            },
+  if (isRequired && (v == null || v.trim().isEmpty)) {
+    return 'This is a required question';
+  }
+  if (v != null && v.trim().isNotEmpty) {
+    final text = v.trim();
+    final labelLower = label.toLowerCase();
+    if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact') || labelLower.contains('number')) {
+      if (labelLower.contains('company') || labelLower.contains('whatsapp') || labelLower.contains('director') || labelLower.contains('business') || labelLower == 'phone number' || labelLower == 'mobile number' || labelLower == 'contact number' || labelLower == 'company number') {
+         if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
+      }
+    }
+    if (labelLower.contains('mail') || labelLower.contains('email')) {
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) return 'Enter a valid email address';
+    }
+    if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
+      if (!RegExp(r'^[2-9]{1}[0-9]{11}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
+    }
+    if (labelLower.contains('pan ') || labelLower == 'pan' || labelLower.contains('pan number')) {
+      if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
+    }
+    if (labelLower.contains('tan ') || labelLower == 'tan' || labelLower.contains('tan number')) {
+      if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
+    }
+  }
+  if (validator != null) return validator(v);
+  return null;
+},
           ),
         ],
       ),

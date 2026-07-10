@@ -24,6 +24,7 @@ import 'order_chat_screen.dart';
 import '../profile/chat_support_screen.dart';
 import 'incorp_form_screen.dart';
 import 'dpiit_form_screen.dart';
+import 'duns_form_screen.dart';
 import 'trademark_form_screen.dart';
 import 'itr_form_screen.dart';
 import 'ce_rohs_form_screen.dart';
@@ -616,7 +617,7 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
 
                 Builder(
                   builder: (context) {
-                    final customInputSteps = order.steps.where((s) => s.hasCustomInput).toList();
+                    final customInputSteps = order.steps.where((s) => s.hasCustomInput && s.customInputValue.isNotEmpty).toList();
 
                     final progressContent = Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -2278,7 +2279,9 @@ bool _shouldShowFillForm(ServiceStep step, ServiceOrder order) {
 void _routeToForm(BuildContext context, ServiceOrder order) {
   final WidgetRef? ref = null; // Note: In a real app, retrieve ref via context or ConsumerState
 
-  if (order.serviceType.toLowerCase().contains('dpiit')) {
+  if (order.serviceType.toLowerCase().contains('duns')) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => DunsFormScreen(order: order)));
+    } else if (order.serviceType.toLowerCase().contains('dpiit')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => DpiitFormScreen(order: order)));
   } else if (order.serviceType.toLowerCase().contains('opc') || order.serviceType.toLowerCase().contains('one person company')) {
     Navigator.push(context, MaterialPageRoute(builder: (_) => OpcFormScreen(order: order)));

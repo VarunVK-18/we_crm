@@ -32,7 +32,7 @@
           </div>
           <div class="form-group">
             <label>Mobile Number *</label>
-            <input type="tel" [(ngModel)]="mobile" name="mobile" required pattern="^[0-9]{10}$" #mobileField="ngModel">
+            <input type="tel" [(ngModel)]="mobile" name="mobile" required pattern="^[0-9]{10}$" #mobileField="ngModel" >
                   <div *ngIf="mobileField.invalid && mobileField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
           </div>
           <div class="form-group">

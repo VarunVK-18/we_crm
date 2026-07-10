@@ -56,7 +56,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     'GST Cancelation',
     'GST filing',
     'ITR',
-    'DPIIT',
+    'DPIIT', 'DUNS',
     'Trade Mark',
     'GST Registration',
     'ISO',
@@ -409,7 +409,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   isActionRequired(c: any): boolean {
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
-      'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai',
+      'dpiit', 'duns', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai',
       'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
     ];
 

@@ -242,6 +242,38 @@
       </section>
       }
 
+      
+      <!-- DUNS Form Details Section -->
+      @if (checklist().details?.dunsForm) {
+        <div class="service-details-section">
+          <div class="section-header">
+            <i class="lucide-globe"></i>
+            DUNS Registration Details
+          </div>
+          <div class="details-grid">
+            @for (field of (checklist().details.dunsForm | keyvalue); track field.key) {
+              <div class="detail-item">
+                <span class="detail-label">{{ formatLabel(field.key) }}</span>
+                <span class="detail-value">{{ field.value }}</span>
+              </div>
+            }
+          </div>
+          
+          @if (checklist().details?.dunsDocs?.length) {
+            <div class="docs-section">
+              <h4><i class="lucide-file-text"></i> DUNS Documents</h4>
+              <div class="docs-grid">
+                @for (doc of checklist().details.dunsDocs; track doc.name) {
+                  <div class="doc-card" (click)="openDocViewer(doc.fileUrl, doc.name, $event)">
+                    <i class="lucide-download"></i>
+                    <span>{{ doc.name }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
       <!-- DPIIT Form Details Section -->
       @if (checklist().details?.dpiitForm) {
       <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">

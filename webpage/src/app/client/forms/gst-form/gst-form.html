@@ -38,13 +38,13 @@
             <div class="form-group">
               <label>Business Email ID *</label>
               <span class="file-hint">All GST communications will be shared in this mail</span>
-              <input type="email" [(ngModel)]="businessEmail" name="businessEmail" required email #businessEmailField="ngModel">
+              <input type="email" [(ngModel)]="businessEmail" name="businessEmail" required email #businessEmailField="ngModel" required>
                   <div *ngIf="businessEmailField.invalid && businessEmailField.touched" class="error-msg">Please enter a valid email address</div>
             </div>
             <div class="form-group">
               <label>Business Phone *</label>
               <span class="file-hint">All GST communications will be shared in this number</span>
-              <input type="tel" [(ngModel)]="businessPhone" name="businessPhone" required pattern="^[0-9]{10}$" #businessPhoneField="ngModel">
+              <input type="tel" [(ngModel)]="businessPhone" name="businessPhone" required pattern="^[0-9]{10}$" #businessPhoneField="ngModel" required >
                   <div *ngIf="businessPhoneField.invalid && businessPhoneField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
             </div>
           </div>
@@ -72,7 +72,7 @@
             </div>
             <div class="form-group">
               <label>Phone number *</label>
-              <input type="tel" [(ngModel)]="personalPhone" name="personalPhone" required pattern="^[0-9]{10}$" #personalPhoneField="ngModel">
+              <input type="tel" [(ngModel)]="personalPhone" name="personalPhone" required pattern="^[0-9]{10}$" #personalPhoneField="ngModel" >
                   <div *ngIf="personalPhoneField.invalid && personalPhoneField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
             </div>
           </div>
@@ -101,7 +101,7 @@
             </div>
             <div class="form-group">
               <label>PAN number *</label>
-              <input type="text" [(ngModel)]="pan" name="pan" required pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #panField="ngModel" style="text-transform: uppercase;">
+              <input type="text" [(ngModel)]="pan" name="pan" required pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #panField="ngModel" style="text-transform: uppercase;" >
                   <div *ngIf="panField.invalid && panField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
             </div>
           </div>

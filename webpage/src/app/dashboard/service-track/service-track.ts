@@ -40,7 +40,7 @@ export class ServiceTrackComponent implements OnInit {
     'incorporation': ['Proprietorship', 'Partnership Firm Registration', 'Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'MSME', 'Company Incorporation'],
     'compliance': ['MCA Compliance', 'TDS', 'PF', 'DUNS', 'PAN, TAN', 'Compliance'],
     'ip': ['Copyright', 'IP', 'Trade Mark', 'Trademark', 'Patent'],
-    'licensing': ['DPIIT', 'ISO', 'FSSAI', 'DSC', 'IE code', 'LEI', 'BIS', 'ROSH', 'CE', 'Licensing'],
+    'licensing': ['DPIIT', 'ISO', 'FSSAI', 'DSC', 'IE code', 'LEI', 'BIS', 'ROSH', 'CE', 'Licensing', 'DUNS'],
     'tax': ['GST Registration', 'GST Cancelation', 'GST filing', 'ITR', 'Tax']
   };
 

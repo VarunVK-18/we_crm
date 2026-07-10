@@ -238,6 +238,7 @@ class CustomerDashboard extends ConsumerWidget {
                     'label': 'Licensing',
                     'icon': HugeIcons.strokeRoundedProfile02,
                     'subItems': [
+                      'DUNS',
                       'ISO',
                       'DPIIT',
                       'FSSAI',

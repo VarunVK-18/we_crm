@@ -43,6 +43,7 @@ import { GstCancellationForm } from './client/forms/gst-cancellation-form/gst-ca
 import { GstFilingForm } from './client/forms/gst-filing-form/gst-filing-form';
 import { IecForm } from './client/forms/iec-form/iec-form';
 import { DpiitForm } from './client/forms/dpiit-form/dpiit-form';
+import { DunsForm } from './client/forms/duns-form/duns-form';
 import { HomeOverview } from './dashboard/home-overview/home-overview';
 import { ClientsDirectory } from './dashboard/clients-directory/clients-directory';
 import { RequestsComponent } from './dashboard/requests/requests';
@@ -118,6 +119,7 @@ export const routes: Routes = [
       { path: 'forms/gst-filing/:id', component: GstFilingForm },
       { path: 'forms/iec/:id', component: IecForm },
       { path: 'forms/dpiit/:id', component: DpiitForm },
+      { path: 'forms/duns/:id', component: DunsForm },
       { path: 'service/:id', component: ClientServiceDetail },
       { path: 'ongoing-services', component: ClientOngoingServices },
       { path: 'company-details', component: ClientCompanyDetails },

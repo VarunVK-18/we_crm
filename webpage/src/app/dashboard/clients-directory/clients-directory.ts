@@ -80,7 +80,7 @@ export class ClientsDirectory implements OnInit {
     'GST Cancelation',
     'GST filing',
     'ITR',
-    'DPIIT',
+    'DPIIT', 'DUNS',
     'Trade Mark',
     'GST Registration',
     'ISO',

@@ -139,6 +139,53 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Tax',
     },
 
+    // --- Licensing ---
+    {
+      'label': 'DUNS',
+      'icon': LucideIcons.globe,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'DPIIT',
+      'icon': LucideIcons.award,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'ISO',
+      'icon': LucideIcons.checkCircle,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'FSSAI',
+      'icon': LucideIcons.coffee,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'DSC',
+      'icon': LucideIcons.key,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'IE code',
+      'icon': LucideIcons.plane,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'LEI',
+      'icon': LucideIcons.fileText,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'BIS',
+      'icon': LucideIcons.shield,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'ROSH & CE',
+      'icon': LucideIcons.globe,
+      'category': 'Licensing',
+    },
+
     // Tools & Calculators
     {
       'label': 'NIC Finder',

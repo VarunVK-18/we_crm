@@ -344,7 +344,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (!c) return false;
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
-      'dpiit', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
+      'dpiit', 'duns', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
       'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
     ];
     
@@ -887,7 +887,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
 
     if (cl && cl.details) {
-      const docArrays = ['dpiitDocs', 'incorpDocs', 'trademarkDocs', 'llpDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs'];
+      const docArrays = ['dunsDocs', 'dpiitDocs', 'incorpDocs', 'trademarkDocs', 'llpDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs'];
       for (const key of docArrays) {
         if (cl.details[key] && Array.isArray(cl.details[key])) {
           const formDocs = cl.details[key]
@@ -950,7 +950,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (!cl || !cl.details) return [];
     const entries = [];
     const ignoredKeys = [
-      'directors', 'dpiitForm', 'dpiitDocs', 'entityName',
+      'directors', 'dunsForm', 'dunsDocs', 'dpiitForm', 'dpiitDocs', 'entityName',
       'incorpDocs', 'llpDocs', 'trademarkDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs'
     ];
     for (const key of Object.keys(cl.details)) {

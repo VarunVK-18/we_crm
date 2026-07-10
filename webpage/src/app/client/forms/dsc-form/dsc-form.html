@@ -55,7 +55,7 @@
             <div class="form-group">
               <label>Applicant Phone Number *</label>
               <span class="file-hint">For OTPs</span>
-              <input type="tel" [(ngModel)]="applicantPhone" name="applicantPhone" required pattern="^[0-9]{10}$" #applicantPhoneField="ngModel">
+              <input type="tel" [(ngModel)]="applicantPhone" name="applicantPhone" required pattern="^[0-9]{10}$" #applicantPhoneField="ngModel" >
                   <div *ngIf="applicantPhoneField.invalid && applicantPhoneField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
             </div>
           </div>

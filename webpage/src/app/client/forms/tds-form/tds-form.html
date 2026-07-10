@@ -45,12 +45,12 @@
           </div>
           <div class="form-group">
             <label>PAN Number *</label>
-            <input appPanFormat type="text" [(ngModel)]="panNumber" name="panNumber" required style="text-transform: uppercase;" placeholder="ABCDE1234F" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #panNumberField="ngModel" style="text-transform: uppercase;">
+            <input appPanFormat type="text" [(ngModel)]="panNumber" name="panNumber" required style="text-transform: uppercase;" placeholder="ABCDE1234F" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #panNumberField="ngModel" style="text-transform: uppercase;" >
                   <div *ngIf="panNumberField.invalid && panNumberField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
           </div>
           <div class="form-group">
             <label>Mobile Number *</label>
-            <input type="tel" [(ngModel)]="mobileNumber" name="mobileNumber" required placeholder="+91" pattern="^[0-9]{10}$" #mobileNumberField="ngModel">
+            <input type="tel" [(ngModel)]="mobileNumber" name="mobileNumber" required placeholder="+91" pattern="^[0-9]{10}$" #mobileNumberField="ngModel" >
                   <div *ngIf="mobileNumberField.invalid && mobileNumberField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
           </div>
           <div class="form-group">

@@ -28,7 +28,7 @@
           
           <div class="form-group full-width">
             <label>Company Legal Name *</label>
-            <input type="text" [(ngModel)]="companyLegalName" name="companyLegalName" required #companyLegalNameField="ngModel">
+            <input type="text" [(ngModel)]="companyLegalName" name="companyLegalName" required #companyLegalNameField="ngModel" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" style="text-transform: uppercase;">
                   <div *ngIf="companyLegalNameField.invalid && companyLegalNameField.touched" class="error-msg">This field is required</div>
           </div>
 
@@ -50,7 +50,7 @@
             </div>
             <div class="form-group">
               <label>Whatsapp number *</label>
-              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required pattern="^[0-9]{10}$" #whatsappField="ngModel">
+              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required pattern="^[0-9]{10}$" #whatsappField="ngModel" >
                   <div *ngIf="whatsappField.invalid && whatsappField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
             </div>
           </div>

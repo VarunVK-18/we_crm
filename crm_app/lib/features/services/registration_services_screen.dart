@@ -39,7 +39,7 @@ class _RegistrationServicesScreenState
       'icon': HugeIcons.strokeRoundedBriefcase01,
       'color': const Color(0xFFF59E0B),
       'category': 'Incorporation',
-      'features': ['Form 8 Statement of Account', 'Form 11 Annual Return', 'DIR-3 KYC of Partners', 'Income Tax Return Filing', 'LLP Agreement Maintenance'],
+      'features': ['Digital Signature Certificate (DSC)', 'Form 8 Statement of Account', 'Form 11 Annual Return', 'DIR-3 KYC of Partners', 'Income Tax Return Filing', 'LLP Agreement Maintenance'],
     },
     {
       'title': 'OPC',
@@ -55,7 +55,7 @@ class _RegistrationServicesScreenState
       'icon': HugeIcons.strokeRoundedUser,
       'color': const Color(0xFF3B82F6),
       'category': 'Incorporation',
-      'features': ['PAN Card Application', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Trade License Support'],
+      'features': ['Document support', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance'],
     },
     {
       'title': 'MSME',
@@ -63,7 +63,7 @@ class _RegistrationServicesScreenState
       'icon': LucideIcons.medal,
       'color': const Color(0xFFF59E0B),
       'category': 'Incorporation',
-      'features': ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'ISO Reimbursement Advisory'],
+      'features': ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'IP Reimbursement Advisory'],
     },
 
     // --- Compliance ---
@@ -99,7 +99,7 @@ class _RegistrationServicesScreenState
       'icon': HugeIcons.strokeRoundedTradeMark,
       'color': const Color(0xFFEC4899),
       'category': 'IP',
-      'features': ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate'],
+      'features': ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Reimbursement Advisory'],
     },
     {
       'title': 'Copyright',
@@ -153,6 +153,14 @@ class _RegistrationServicesScreenState
     },
 
     // --- Licensing ---
+    {
+      'title': 'DUNS',
+      'description': 'Data Universal Numbering System for global business identity.',
+      'icon': LucideIcons.globe,
+      'color': const Color(0xFF10B981),
+      'category': 'Licensing',
+      'features': ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing'],
+    },
     {
       'title': 'DPIIT',
       'description': 'Startup India Certification for your startup! Please provide your details correctly.',

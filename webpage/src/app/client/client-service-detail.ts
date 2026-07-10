@@ -132,6 +132,9 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     const s = serviceName.toLowerCase();
     if (s.includes('dpiit')) {
       this.goToDpiitForm();
+    }
+    if (s.includes('duns')) {
+      this.goToDunsForm();
     } else if (s.includes('opc') || s.includes('one person company')) {
       this.goToOpcForm();
     } else if (s.includes('private limited')) {
@@ -267,6 +270,9 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   goToDpiitForm() {
     this.router.navigate(['/client/forms/dpiit', this.orderId()]);
+  }
+  goToDunsForm() {
+    this.router.navigate(['/client/forms/duns', this.orderId()]);
   }
 
   fetchOrderDetails(silent = false) {
@@ -543,7 +549,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   hasCustomInputs(items: any[] | undefined): boolean {
     if (!items) return false;
-    return items.some(i => i.has_custom_input);
+    return items.some(i => i.has_custom_input && i.custom_input_value);
   }
 
   isItemCompleted(item: any): boolean {

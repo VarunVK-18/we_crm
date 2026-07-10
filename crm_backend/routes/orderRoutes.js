@@ -463,4 +463,23 @@ router.post(
   orderController.submitIecForm
 );
 
+
+// Define fields for DUNS form uploads
+const dunsUploadFields = [
+  { name: 'incorpCert', maxCount: 1 },
+  { name: 'panCard', maxCount: 1 },
+  { name: 'addressProof', maxCount: 1 }
+];
+
+// @route   POST /api/orders/:id/submit-duns-form
+// @desc    Submit DUNS form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-duns-form',
+  checkUser,
+  upload.fields(dunsUploadFields),
+  saveFilesToDatabase,
+  orderController.submitDunsForm
+);
+
 module.exports = router;

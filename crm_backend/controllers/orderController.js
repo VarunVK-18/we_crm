@@ -1716,3 +1716,60 @@ exports.addFinancialLog = async (req, res) => {
   }
 };
 
+
+// Submit DUNS Form
+exports.submitDunsForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+    
+    // Process uploaded files if any
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.incorpCert) {
+      uploadedDocs.push({ name: 'Incorporation Certificate', fileUrl: files.incorpCert[0].path });
+    } else if (req.body.incorpCert_existing) {
+      uploadedDocs.push({ name: 'Incorporation Certificate', fileUrl: req.body.incorpCert_existing });
+    }
+    
+    if (files.panCard) {
+      uploadedDocs.push({ name: 'PAN Card', fileUrl: files.panCard[0].path });
+    } else if (req.body.panCard_existing) {
+      uploadedDocs.push({ name: 'PAN Card', fileUrl: req.body.panCard_existing });
+    }
+    
+    if (files.addressProof) {
+      uploadedDocs.push({ name: 'Address Proof', fileUrl: files.addressProof[0].path });
+    } else if (req.body.addressProof_existing) {
+      uploadedDocs.push({ name: 'Address Proof', fileUrl: req.body.addressProof_existing });
+    }
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      dunsForm: formData,
+      dunsDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.action_required = false; // Form submitted, action no longer required
+    order.markModified('details');
+    if (typeof markClientFormFilled === 'function') {
+      markClientFormFilled(order);
+    }
+
+    await order.save();
+
+    res.status(200).json({ success: true, message: 'DUNS form submitted successfully.', order });
+  } catch (error) {
+    console.error('Error submitting DUNS form:', error);
+    res.status(500).json({ message: 'Server error while submitting DUNS form.', error: error.message });
+  }
+};

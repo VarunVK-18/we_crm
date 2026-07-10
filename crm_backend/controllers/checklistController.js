@@ -546,7 +546,7 @@ const updateChecklist = async (req, res) => {
         // Set action_required for ALL services that have a form
         if (assigned_to) {
           const formServices = [
-            'dpiit', 'private limited', 'trademark', 'trade mark', 'llp', 'msme',
+            'duns', 'dpiit', 'private limited', 'trademark', 'trade mark', 'llp', 'msme',
             'gst', 'iso', 'fssai', 'one person company', 'opc', 'lei', 'lie', 'bis',
             'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'pf', 'patent',
             'copyright', 'itr'
@@ -837,6 +837,7 @@ const getMyChecklists = async (req, res) => {
     // Services that require a custom form screen before processing
     const SERVICES_WITH_FORMS = [
       'DPIIT',
+      'DUNS',
       'Private Limited',
       'Trade mark',
       'Trademark',

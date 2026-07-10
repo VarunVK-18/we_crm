@@ -59,7 +59,7 @@
           
           <div class="form-group">
             <label>Contact Person Details *</label>
-            <input type="text" [(ngModel)]="contactPerson" name="contactPerson" required placeholder="Name and phone">
+            <input type="text" [(ngModel)]="contactPerson" name="contactPerson" required placeholder="Name and phone" pattern="^[0-9]{10}$">
           </div>
           
           <div class="form-group full-width">
