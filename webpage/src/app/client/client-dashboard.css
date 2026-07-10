@@ -899,7 +899,7 @@
 .ho-hero-content {
   position: relative;
   z-index: 10;
-  max-width: 60%;
+  max-width: 100%;
 }
 
 .ho-hero-illustration {

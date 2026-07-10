@@ -162,6 +162,7 @@ exports.updateOrder = async (req, res) => {
               finalItems = template.items.map(item => ({
                 title: item.title,
                 description: item.description,
+                staff_description: item.staff_description || '',
                 label: item.title,
                 isChecked: false,
                 isActionStep: item.isActionStep || false,
@@ -275,6 +276,7 @@ exports.updateOrder = async (req, res) => {
                   finalItems = template.items.map(item => ({
                     title: item.title,
                     description: item.description,
+                    staff_description: item.staff_description || '',
                     label: item.title,
                     isChecked: false,
                     isActionStep: item.isActionStep || false,

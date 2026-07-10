@@ -44,6 +44,9 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   isEditingNotes = signal<boolean>(false);
   editNotesText = '';
 
+  isEditingBankDetails = signal<boolean>(false);
+  editBankDetailsData = { account_name: '', account_number: '', ifsc_code: '', bank_name: '', branch_name: '' };
+
   // Final Documents Upload State
   finalDocsToUpload: { file: File, docType?: string }[] = [];
   isFinalDocUploading = false;
@@ -512,10 +515,23 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
 
     // Enforce getBill requirement
-    if (currentItem.getBill && !currentItem.expense?.billUrl) {
+    if (currentItem.getBill && !(currentItem.expenses?.length > 0 || currentItem.expense?.billUrl)) {
       this.confirmDialog.confirm({
         title: 'Action Required',
         message: 'You must upload the bill before completing this step.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      revertCheckbox();
+      return;
+    }
+
+    const stepDocs = this.getTemporaryDocsForStep(currentItem);
+    const hasPendingDoc = stepDocs.some(doc => doc.status !== 'replied');
+    if (hasPendingDoc) {
+      this.confirmDialog.confirm({
+        title: 'Client Signature Pending',
+        message: 'A document for this step is pending client signature. You can complete this step once the client signs or replies.',
         confirmText: 'OK',
         hideCancel: true
       });
@@ -778,6 +794,49 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  isIncorporationService(): boolean {
+    const serviceNameLower = (this.checklist()?.service_name || '').toLowerCase();
+    const incorpServices = ['incorporation', 'private limited', 'opc', 'one person company', 'llp', 'proprietorship'];
+    return incorpServices.some(s => serviceNameLower.includes(s));
+  }
+
+  startEditBankDetails() {
+    const cl = this.checklist();
+    const bd = cl?.bank_details || {};
+    this.editBankDetailsData = {
+      account_name: bd.account_name || '',
+      account_number: bd.account_number || '',
+      ifsc_code: bd.ifsc_code || '',
+      bank_name: bd.bank_name || '',
+      branch_name: bd.branch_name || ''
+    };
+    this.isEditingBankDetails.set(true);
+  }
+
+  cancelEditBankDetails() {
+    this.isEditingBankDetails.set(false);
+  }
+
+  saveBankDetails() {
+    const cl = this.checklist();
+    if (!cl) return;
+
+    this.api.patch<any>(`checklists/${cl._id}`, { bank_details: this.editBankDetailsData }).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.checklist.set(res.checklist);
+        } else {
+          this.fetchChecklist();
+        }
+        this.isEditingBankDetails.set(false);
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to update bank details.');
+        this.isEditingBankDetails.set(false);
+      }
+    });
+  }
+
   startEditApplicationId() {
     this.applicationIdInput = this.checklist()?.details?.applicationId || '';
     this.isEditingApplicationId.set(true);
@@ -1018,6 +1077,13 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (item.isChecked) {
       return true;
     }
+
+    const stepDocs = this.getTemporaryDocsForStep(item);
+    const hasPendingDoc = stepDocs.some(doc => doc.status !== 'replied');
+    if (hasPendingDoc) {
+      return true;
+    }
+
     if (index > 0 && !cl.items[index - 1].isChecked) {
       return true;
     }

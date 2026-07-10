@@ -11,6 +11,23 @@
         <hugeicons-icon [icon]="Search01Icon" [size]="18" color="#64748b"></hugeicons-icon>
         <input type="text" placeholder="Search clients..." [(ngModel)]="searchQuery">
       </div>
+      
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <select [(ngModel)]="filterCount" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px; outline: none; min-width: 160px;">
+          <option value="any">Any Opps Count</option>
+          <option value=">0">Has Opportunities (>0)</option>
+          <option value="1">Exactly 1</option>
+          <option value="2">Exactly 2</option>
+          <option value="3+">3 or more</option>
+        </select>
+
+        <select [(ngModel)]="filterCategory" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px; outline: none; min-width: 160px;">
+          <option value="all">All Categories</option>
+          @for (cat of availableCategories(); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
     </div>
   </div>
 

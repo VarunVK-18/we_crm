@@ -1,5 +1,14 @@
 const mongoose = require('mongoose');
 
+const ExpenseSchema = new mongoose.Schema({
+  amount: { type: Number, default: 0 },
+  billUrl: { type: String, default: null },
+  transactionId: { type: String, default: '' },
+  paymentTimestamp: { type: Date, default: null },
+  uploadedAt: { type: Date, default: null },
+  reimbursementStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' }
+});
+
 const ChecklistItemSchema = new mongoose.Schema({
   label: {
     type: String
@@ -62,14 +71,8 @@ const ChecklistItemSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DocumentTemplate'
   }],
-  expense: {
-    amount: { type: Number, default: 0 },
-    billUrl: { type: String, default: null },
-    transactionId: { type: String, default: '' },
-    paymentTimestamp: { type: Date, default: null },
-    uploadedAt: { type: Date, default: null },
-    reimbursementStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' }
-  }
+  expense: ExpenseSchema, // Kept for backwards compatibility
+  expenses: [ExpenseSchema]
 });
 
 const ChecklistSchema = new mongoose.Schema({
@@ -147,6 +150,13 @@ const ChecklistSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: ''
+  },
+  bank_details: {
+    account_name: { type: String, default: '' },
+    account_number: { type: String, default: '' },
+    ifsc_code: { type: String, default: '' },
+    bank_name: { type: String, default: '' },
+    branch_name: { type: String, default: '' }
   },
   details: {
     type: mongoose.Schema.Types.Mixed,

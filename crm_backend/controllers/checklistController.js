@@ -499,7 +499,7 @@ const addChecklistItem = async (req, res) => {
 const updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to, assigned_team, notes, stage, items, requested_documents, status, details, advanceAmountPaid, applicationId } = req.body;
+    const { assigned_to, assigned_team, notes, stage, items, requested_documents, status, details, advanceAmountPaid, applicationId, bank_details } = req.body;
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -558,6 +558,7 @@ const updateChecklist = async (req, res) => {
         }
       }
       if (notes !== undefined) checklist.notes = notes;
+      if (bank_details !== undefined) checklist.bank_details = bank_details;
       if (stage !== undefined) checklist.stage = stage;
       if (status !== undefined) {
         const prevStatus = checklist.status;
@@ -1790,21 +1791,29 @@ If a field is not found, set it to null.`;
     const billUrl = `/api/documents/${doc._id}`;
 
     // Update the item
-    if (!item.expense) {
-      item.expense = {};
+    if (!item.expenses) {
+      item.expenses = [];
     }
-    item.expense.billUrl = billUrl;
-    item.expense.amount = extractedAmount;
-    item.expense.transactionId = extractedTransactionId || '';
-    item.expense.paymentTimestamp = new Date(); // automatically use current time
-    item.expense.uploadedAt = new Date();
+    const newExpense = {
+      billUrl: billUrl,
+      amount: extractedAmount,
+      transactionId: extractedTransactionId || '',
+      paymentTimestamp: new Date(),
+      uploadedAt: new Date(),
+      reimbursementStatus: 'pending'
+    };
+    item.expenses.push(newExpense);
+    
+    // Backwards compatibility
+    item.expense = newExpense;
 
+    checklist.markModified('items');
     await checklist.save();
 
     res.json({
       success: true,
       message: 'Expense bill uploaded successfully',
-      data: item.expense
+      data: newExpense
     });
 
   } catch (error) {
@@ -1906,7 +1915,7 @@ module.exports = {
 const getExpenses = async (req, res) => {
   try {
     const compId = req.user.company_id._id || req.user.company_id;
-    let query = { company_id: compId, 'items.expense.billUrl': { $type: 'string' } };
+    let query = { company_id: compId, $or: [ { 'items.expense.billUrl': { $type: 'string' } }, { 'items.expenses.0': { $exists: true } } ] };
 
     // If filing staff, only show checklists assigned to them where they might have uploaded expenses
     // Ideally we should filter the specific items they uploaded, but for now filtering by checklist assignment is standard here.
@@ -1920,22 +1929,25 @@ const getExpenses = async (req, res) => {
 
     checklists.forEach(cl => {
       cl.items.forEach(item => {
-        if (item.expense && item.expense.billUrl) {
+        const allExpenses = (item.expenses && item.expenses.length > 0) ? item.expenses : (item.expense && item.expense.billUrl ? [item.expense] : []);
+        
+        allExpenses.forEach(exp => {
           expenses.push({
             checklistId: cl._id,
             itemId: item._id,
+            expenseId: exp._id,
             custom_service_id: cl.custom_service_id,
             client_name: cl.client_id ? cl.client_id.name : 'Unknown',
             client_custom_id: cl.client_id ? cl.client_id.custom_id : 'Unknown',
             service_name: cl.service_name,
             item_title: item.title,
-            amount: item.expense.amount,
-            transactionId: item.expense.transactionId,
-            billUrl: item.expense.billUrl,
-            uploadedAt: item.expense.uploadedAt,
-            reimbursementStatus: item.expense.reimbursementStatus || 'pending'
+            amount: exp.amount,
+            transactionId: exp.transactionId,
+            billUrl: exp.billUrl,
+            uploadedAt: exp.uploadedAt,
+            reimbursementStatus: exp.reimbursementStatus || 'pending'
           });
-        }
+        });
       });
     });
 
@@ -1962,11 +1974,21 @@ const markExpensePaid = async (req, res) => {
     }
 
     const item = checklist.items.id(itemId);
-    if (!item || !item.expense) {
+    if (!item) {
+      return res.status(404).json({ success: false, message: 'Item not found' });
+    }
+
+    const { expenseId } = req.body;
+    
+    if (expenseId && item.expenses && item.expenses.length > 0) {
+      const exp = item.expenses.id(expenseId);
+      if (exp) exp.reimbursementStatus = 'paid';
+    } else if (item.expense) {
+      item.expense.reimbursementStatus = 'paid';
+    } else {
       return res.status(404).json({ success: false, message: 'Expense not found on this item' });
     }
 
-    item.expense.reimbursementStatus = 'paid';
     await checklist.save();
 
     res.status(200).json({ success: true, message: 'Expense marked as paid' });

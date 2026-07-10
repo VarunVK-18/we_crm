@@ -958,6 +958,7 @@ const subscribeService = async (req, res) => {
           finalItems = template.items.map(item => ({
             title: item.title,
             description: item.description,
+            staff_description: item.staff_description || '',
             label: item.title,
             isChecked: false
           }));
