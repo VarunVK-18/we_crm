@@ -4,11 +4,12 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Briefcase02Icon, CreditCardIcon, Alert01Icon, UserIcon, Building04Icon } from '@hugeicons/core-free-icons';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-dsc-tokens',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, DatePipe, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './dsc-tokens.html',
   styleUrls: ['./dsc-tokens.css']
 })
