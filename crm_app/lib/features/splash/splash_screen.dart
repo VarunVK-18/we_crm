@@ -60,11 +60,12 @@ class _SplashScreenState extends State<SplashScreen>
       body: FadeTransition(
         opacity: _opacity,
         child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          child: Transform.scale(
+            scale: 1.02, // Slight zoom to hide the edge line artifact in the image
             child: Image.asset(
               'assets/images/splash_screen3.jpg',
               fit: BoxFit.fitWidth,
+              width: double.infinity,
             ),
           ),
         ),

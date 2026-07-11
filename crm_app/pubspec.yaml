@@ -72,7 +72,5 @@ flutter:
         - asset: assets/fonts/Outfit-VariableFont_wght.ttf
 flutter_native_splash:
   color: "#ffffff"
-  image: "assets/images/splash_screen3.jpg"
   android_12:
     color: "#ffffff"
-    image: "assets/images/splash_screen3.jpg"

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -401,6 +402,25 @@ class CompanyDetailsScreen extends ConsumerStatefulWidget {
 }
 
 class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
+  Timer? _pollingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-refresh data every 5 seconds when screen is active
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted) {
+        ref.invalidate(userProfileProvider);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pollingTimer?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProfileProvider);
