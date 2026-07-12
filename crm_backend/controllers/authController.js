@@ -5,6 +5,7 @@ const AuditLog = require('../models/AuditLog');
 const { logActivity } = require('../middleware/rbac');
 const Checklist = require('../models/Checklist');
 const ChecklistTemplate = require('../models/ChecklistTemplate');
+const complianceService = require('../services/complianceService');
 const BucketRequest = require('../models/BucketRequest');
 const Document = require('../models/Document');
 const FilingTask = require('../models/FilingTask');
@@ -322,10 +323,10 @@ const getClients = async (req, res) => {
     if (req.user) {
       const role = req.user.role;
       if (role === 'client_manager') {
-        // Client Manager: view assigned clients, or clients they created that are unassigned
+        // Client Manager: view assigned clients, or clients they created
         filter.$or = [
           { assigned_to: req.user._id },
-          { created_by: req.user._id, assigned_to: null }
+          { created_by: req.user._id }
         ];
       } else if (role === 'account_manager') {
         // Account Manager: view assigned clients only
@@ -1419,6 +1420,160 @@ const reuploadProfileDocument = async (req, res) => {
   }
 };
 
+// @desc    Onboard external client via OCR data
+// @route   POST /api/users/clients/external-onboard
+// @access  Private (Admin/Manager)
+const externalOnboard = async (req, res) => {
+  try {
+    const {
+      clientName,
+      clientEmail,
+      companyName,
+      companyPhone,
+      companyEmail,
+      incorporationDate,
+      cinNumber,
+      pan,
+      tan,
+      clientPassword,
+      assignedTo,
+      entityType
+    } = req.body;
+
+    if (!clientEmail || !companyName) {
+      return res.status(400).json({ success: false, message: 'Client Email and Company Name are required.' });
+    }
+
+    // 1. Handle COI file upload
+    let documentId = null;
+    let fileUrl = null;
+    if (req.file) {
+      const doc = await Document.create({
+        filename: req.file.originalname,
+        contentType: req.file.mimetype,
+        data: req.file.buffer,
+        uploadedBy: req.user._id
+      });
+      documentId = doc._id;
+      fileUrl = `api/documents/${doc._id}`;
+    }
+
+    // 2. Generate random password if not provided by Manager
+    const plainPassword = clientPassword || (Math.random().toString(36).slice(-10) + 'A1!');
+
+    // 3. Create or find User
+    const normalizedEmail = clientEmail.trim().toLowerCase();
+    let user = await User.findOne({ email: normalizedEmail });
+    
+    // Create new entity
+    const parsedEntityType = entityType || 'Private Limited Company';
+    const newEntity = {
+      entity_name: companyName.trim(),
+      type: parsedEntityType,
+      status: 'Active',
+      incorporation_date: incorporationDate || null
+    };
+
+    if (!user) {
+      // Get the next sequential ID
+      const custom_client_id = await getNextClientId(req.user.company_id);
+      
+      user = await User.create({
+        company_id: req.user.company_id,
+        custom_client_id,
+        email: normalizedEmail,
+        password: plainPassword,
+        owner_name: clientName || '',
+        phone: companyPhone || '',
+        role: 'customer',
+        company_name: companyName.trim(),
+        pan: pan || '',
+        status: 'active',
+        created_by: req.user._id,
+        assigned_to: assignedTo || null,
+        onboarding_status: 'Approved',
+        in_compliance_radar: true, // Automatically enable compliance radar
+        client_entities: [newEntity]
+      });
+    } else {
+      // Append entity if user exists
+      user.client_entities.push(newEntity);
+      user.in_compliance_radar = true;
+      await user.save();
+    }
+
+    // Calculate next ROC compliance date (typically Sept 30 of the following financial year)
+    let expiryDate = new Date();
+    if (incorporationDate) {
+      const incDate = new Date(incorporationDate);
+      // Rough estimation: next year's Sept 30
+      expiryDate = new Date(incDate.getFullYear() + 1, 8, 30);
+      if (expiryDate < new Date()) {
+        expiryDate = new Date(new Date().getFullYear() + 1, 8, 30); // push to next year if already passed
+      }
+    } else {
+      expiryDate = new Date(new Date().getFullYear() + 1, 8, 30);
+    }
+
+    // 4. Create a dummy "Completed" Checklist to feed the Compliance Radar
+    const checklist = await Checklist.create({
+      company_id: req.user.company_id,
+      client_id: user._id,
+      service_name: 'Incorporation (External)',
+      assigned_to: assignedTo || req.user._id,
+      created_by: req.user._id,
+      status: 'completed',
+      completion_percentage: 100,
+      startedAt: new Date(),
+      completedAt: new Date(),
+      items: [],
+      final_documents: fileUrl ? [{
+        document_id: documentId,
+        name: 'Certificate of Incorporation (External)',
+        fileUrl: fileUrl,
+        uploadedAt: new Date(),
+        expiry_date: expiryDate
+      }] : []
+    });
+
+    // 5. Generate Compliance Tasks based on Entity Type
+    if (incorporationDate) {
+      try {
+        const incDateObj = new Date(incorporationDate);
+        if (parsedEntityType === 'LLP') {
+          await complianceService.generateCompliancesForLLP(
+            user._id, req.user.company_id, checklist._id, incDateObj, companyName.trim()
+          );
+        } else if (parsedEntityType === 'OPC') {
+          await complianceService.generateCompliancesForOPC(
+            user._id, req.user.company_id, checklist._id, incDateObj, companyName.trim()
+          );
+        } else if (parsedEntityType === 'Private Limited Company') {
+          await complianceService.generateCompliancesForPrivateLimited(
+            user._id, req.user.company_id, checklist._id, incDateObj, companyName.trim()
+          );
+        }
+        // Proprietorship typically does not have standard ROC compliance in the same manner.
+      } catch (err) {
+        console.error('Error generating compliances:', err);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'External client onboarded and compliance activated.',
+      user: {
+        email: user.email,
+        generatedPassword: plainPassword // In production, this should ideally be emailed via a mailing service
+      },
+      checklistId: checklist._id
+    });
+  } catch (error) {
+    console.error('External Onboard Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -1444,5 +1599,6 @@ module.exports = {
   editClientProfile,
   uploadDirectorDocument,
   toggleComplianceRadar,
-  reuploadProfileDocument
+  reuploadProfileDocument,
+  externalOnboard
 };

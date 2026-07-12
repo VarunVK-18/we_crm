@@ -22,7 +22,7 @@ const getDynamicReminders = (checklists) => {
             dueDate: doc.expiry_date,
             daysLeft,
             status,
-            entityName: checklist.company_id ? checklist.company_id.company_name : (checklist.client_id ? checklist.client_id.company_name : 'Individual'),
+            entityName: checklist.client_id ? (checklist.client_id.company_name || checklist.client_id.owner_name) : 'Individual',
             client_id: {
               owner_name: checklist.client_id ? checklist.client_id.owner_name : 'Client',
               company_name: checklist.client_id ? checklist.client_id.company_name : 'Individual'

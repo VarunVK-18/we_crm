@@ -23,10 +23,14 @@
       <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 20px; color: #475569;">Total Clients: {{ clients().length }}</span>
     </div>
     <div class="cd-filter-spacer"></div>
-    <div class="cd-filter-actions">
+    <div class="cd-filter-actions" style="display: flex; gap: 12px;">
       <button class="cd-add-btn" (click)="openCreateModal()" style="display: flex; align-items: center; gap: 8px;">
-        <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+        <span class="material-symbols-outlined" style="font-size: 20px;">person_add</span>
         <span>Add Client</span>
+      </button>
+      <button class="cd-add-btn" (click)="openExternalModal()" style="display: flex; align-items: center; gap: 8px; background-color: #6366f1;">
+        <span class="material-symbols-outlined" style="font-size: 20px;">domain_add</span>
+        <span>Add External Client Service</span>
       </button>
     </div>
   </div>
@@ -417,6 +421,150 @@
           <button type="submit" class="btn-submit">Save Mapping</button>
         </div>
       </form>
+    </div>
+  </div>
+}
+
+<!-- Add External Client Modal -->
+@if (isExternalModalOpen()) {
+  <div class="modal-overlay" (click)="closeExternalModal()">
+    <div class="modal-card-box" style="max-width: 700px;" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add External Client Service</h3>
+        <button class="close-modal-btn" (click)="closeExternalModal()">
+          <hugeicons-icon [icon]="Cancel01Icon" [size]="20" color="#64748B"></hugeicons-icon>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        @if (externalErrorMessage()) {
+          <div class="modal-error-message">{{ externalErrorMessage() }}</div>
+        }
+        @if (externalSuccessMessage()) {
+          <div class="modal-success-message">{{ externalSuccessMessage() }}</div>
+        }
+
+        <div class="form-group-item">
+          <label class="form-input-label">Upload Incorporation Certificate (COI) <span style="font-size: 11px; color: #64748b; font-weight: normal;">(Auto-fills details below)</span></label>
+          <input type="file" (change)="handleExternalCoiUpload($event)" accept="image/*,application/pdf" class="form-control-input" style="padding-top: 10px;">
+          @if (isExternalOcrProcessing()) {
+            <div style="margin-top: 8px; font-size: 13px; color: #2563eb; display: flex; align-items: center; gap: 6px;">
+              <app-we-loader style="transform: scale(0.5);"></app-we-loader> Extracting details via OCR...
+            </div>
+          }
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+          <div class="form-group-item">
+            <label class="form-input-label">Client Name</label>
+            <input type="text" [(ngModel)]="externalClient.clientName" class="form-control-input">
+          </div>
+          <div class="form-group-item">
+            <label class="form-input-label">Client Email *</label>
+            <input type="email" [(ngModel)]="externalClient.clientEmail" class="form-control-input">
+            @if (isInvalidEmail(externalClient.clientEmail)) {
+              <div style="color: #ef4444; font-size: 11px; margin-top: 4px;">Invalid email format</div>
+            }
+          </div>
+          <div class="form-group-item">
+            <label class="form-input-label">Client Password *</label>
+            <input type="text" [(ngModel)]="externalClient.clientPassword" class="form-control-input" placeholder="Min 6 characters">
+            @if (externalClient.clientPassword && externalClient.clientPassword.length < 6) {
+              <div style="color: #ef4444; font-size: 11px; margin-top: 4px;">Must be at least 6 characters</div>
+            }
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+          <div class="form-group-item">
+            <label class="form-input-label">Company Name *</label>
+            <input type="text" [(ngModel)]="externalClient.companyName" class="form-control-input">
+          </div>
+          <div class="form-group-item">
+            <label class="form-input-label">Entity Type *</label>
+            <select class="form-control-input" [(ngModel)]="externalClient.entityType">
+              <option value="Private Limited Company">Private Limited Company</option>
+              <option value="LLP">LLP (Limited Liability Partnership)</option>
+              <option value="OPC">OPC (One Person Company)</option>
+              <option value="Proprietorship">Proprietorship</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group-item">
+            <label class="form-input-label">Company Phone</label>
+            <input type="text" [(ngModel)]="externalClient.companyPhone" class="form-control-input">
+            @if (isInvalidPhone(externalClient.companyPhone)) {
+              <div style="color: #ef4444; font-size: 11px; margin-top: 4px;">Must contain only numbers</div>
+            }
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div class="form-group-item">
+            <label class="form-input-label">Company Email</label>
+            <input type="email" [(ngModel)]="externalClient.companyEmail" class="form-control-input">
+            @if (isInvalidEmail(externalClient.companyEmail)) {
+              <div style="color: #ef4444; font-size: 11px; margin-top: 4px;">Invalid email format</div>
+            }
+          </div>
+          <div class="form-group-item">
+            <label class="form-input-label">Incorporation Date</label>
+            <input type="date" [(ngModel)]="externalClient.incorporationDate" class="form-control-input">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+          <div class="form-group-item">
+            <label class="form-input-label">CIN Number</label>
+            <input type="text" [(ngModel)]="externalClient.cinNumber" class="form-control-input">
+          </div>
+          <div class="form-group-item">
+            <label class="form-input-label">PAN</label>
+            <input type="text" [(ngModel)]="externalClient.pan" class="form-control-input">
+          </div>
+          <div class="form-group-item">
+            <label class="form-input-label">TAN</label>
+            <input type="text" [(ngModel)]="externalClient.tan" class="form-control-input">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+          <div class="form-group-item">
+            <label class="form-input-label">Compliance Payment Amount (₹) *</label>
+            <input type="number" [(ngModel)]="externalClient.paymentAmount" placeholder="Min ₹15,000" class="form-control-input" min="15000">
+            @if (externalClient.paymentAmount !== null && externalClient.paymentAmount < 15000) {
+              <div style="color: #ef4444; font-size: 11px; margin-top: 4px;">Amount must be at least ₹15,000</div>
+            }
+          </div>
+          
+          <div class="form-group-item">
+            <label class="form-input-label">Assign to Filing Consultant (Optional)</label>
+            <select class="form-control-input" [(ngModel)]="externalClient.assignedTo">
+              <option value="">-- Leave Unassigned (Self-Managed) --</option>
+              @for (emp of getFlatEmployees(); track emp.id) {
+                <option [value]="emp.id">{{ emp.name }} ({{ emp.role | titlecase }})</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px; padding: 16px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <p style="font-size: 13px; color: #475569; margin: 0 0 8px 0;"><strong>What happens next?</strong></p>
+          <ul style="font-size: 12px; color: #64748b; margin: 0; padding-left: 20px;">
+            <li>An account will be created using the Client Email.</li>
+            <li>A password will be automatically generated.</li>
+            <li>Compliance radar will be instantly activated for this company.</li>
+            <li>The client can log into the App/Web to track compliance.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-footer-actions">
+        <button class="btn-cancel" (click)="closeExternalModal()">Cancel</button>
+        <button class="btn-submit" (click)="submitExternalClient()" [disabled]="isExternalSubmitting() || isExternalOcrProcessing()">
+          {{ isExternalSubmitting() ? 'Processing...' : 'Process Payment & Onboard' }}
+        </button>
+      </div>
     </div>
   </div>
 }

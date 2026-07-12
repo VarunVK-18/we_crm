@@ -61,4 +61,23 @@ export class OcrService {
     const details = await this.extractPaymentDetails(file, null);
     return details.rawText;
   }
+
+  /**
+   * Uploads a COI to extract incorporation details.
+   */
+  async extractIncorporationDetails(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+      const response = await firstValueFrom(this.api.post<any>('ocr/extract-incorp', formData));
+      if (response && response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response?.message || 'Failed to extract incorporation details.');
+    } catch (error: any) {
+      console.error('OCR Extraction Error:', error);
+      throw error;
+    }
+  }
 }

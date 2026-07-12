@@ -28,7 +28,8 @@ const {
   editClientProfile,
   uploadDirectorDocument,
   toggleComplianceRadar,
-  reuploadProfileDocument
+  reuploadProfileDocument,
+  externalOnboard
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -67,6 +68,7 @@ router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);
 router.patch('/users/clients/:id/compliance-radar', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), toggleComplianceRadar);
 router.post('/users/clients/:id/outsource-service', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), outsourceService);
+router.post('/users/clients/external-onboard', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), upload.single('coiFile'), externalOnboard);
 
 // Employee/Team routes
 router.get('/users/team-groups', checkUser, getTeamGroups);

@@ -12,6 +12,7 @@ import {
 } from '@hugeicons/core-free-icons';
 import { Api } from '../../api';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
+import { OcrService } from '../../services/ocr.service';
 
 @Component({
   selector: 'app-clients-directory',
@@ -110,7 +111,30 @@ export class ClientsDirectory implements OnInit {
   assignServiceSelected = '';
   assignServiceDealAmount = 0;
 
-  constructor(private api: Api) {}
+  // External Client Modal State
+  isExternalModalOpen = signal<boolean>(false);
+  isExternalSubmitting = signal<boolean>(false);
+  isExternalOcrProcessing = signal<boolean>(false);
+  externalErrorMessage = signal<string>('');
+  externalSuccessMessage = signal<string>('');
+  externalCoiFile: File | null = null;
+  externalClient = {
+    clientName: '',
+    clientEmail: '',
+    companyName: '',
+    companyPhone: '',
+    companyEmail: '',
+    incorporationDate: '',
+    cinNumber: '',
+    pan: '',
+    tan: '',
+    clientPassword: '',
+    assignedTo: '',
+    entityType: 'Private Limited Company',
+    paymentAmount: null as number | null
+  };
+
+  constructor(private api: Api, private ocrService: OcrService) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -221,6 +245,144 @@ export class ClientsDirectory implements OnInit {
     });
     return flat;
   }
+
+  // --- Inline Validation Helpers ---
+  isInvalidEmail(email: string): boolean {
+    if (!email) return false;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return !emailRegex.test(email);
+  }
+
+  isInvalidPhone(phone: string): boolean {
+    if (!phone) return false;
+    const phoneRegex = /^\d+$/;
+    return !phoneRegex.test(phone);
+  }
+  // ---------------------------------
+
+
+  // --- External Client Logic ---
+  openExternalModal() {
+    this.isExternalModalOpen.set(true);
+    this.externalErrorMessage.set('');
+    this.externalSuccessMessage.set('');
+    this.externalCoiFile = null;
+    this.externalClient = {
+      clientName: '',
+      clientEmail: '',
+      companyName: '',
+      companyPhone: '',
+      companyEmail: '',
+      incorporationDate: '',
+      cinNumber: '',
+      pan: '',
+      tan: '',
+      clientPassword: '',
+      assignedTo: '',
+      entityType: 'Private Limited Company',
+      paymentAmount: null as number | null
+    };
+  }
+
+  closeExternalModal() {
+    this.isExternalModalOpen.set(false);
+    this.externalErrorMessage.set('');
+    this.externalSuccessMessage.set('');
+  }
+
+  async handleExternalCoiUpload(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.externalCoiFile = file;
+      this.isExternalOcrProcessing.set(true);
+      this.externalErrorMessage.set('');
+      
+      try {
+        const details = await this.ocrService.extractIncorporationDetails(file);
+        // Autofill form
+        if (details.companyName) this.externalClient.companyName = details.companyName;
+        if (details.entityType && ['Private Limited Company', 'LLP', 'OPC', 'Proprietorship', 'Other'].includes(details.entityType)) {
+          this.externalClient.entityType = details.entityType;
+        }
+        if (details.incorporationDate) this.externalClient.incorporationDate = details.incorporationDate;
+        if (details.cinNumber) this.externalClient.cinNumber = details.cinNumber;
+        if (details.pan) this.externalClient.pan = details.pan;
+        if (details.tan) this.externalClient.tan = details.tan;
+        this.externalSuccessMessage.set('OCR extracted details successfully.');
+        setTimeout(() => this.externalSuccessMessage.set(''), 3000);
+      } catch (err: any) {
+        this.externalErrorMessage.set('OCR failed to extract all details. You can enter them manually.');
+      } finally {
+        this.isExternalOcrProcessing.set(false);
+      }
+    }
+  }
+
+  submitExternalClient() {
+    this.externalErrorMessage.set('');
+
+    if (!this.externalClient.clientEmail || !this.externalClient.companyName || !this.externalClient.clientPassword) {
+      this.externalErrorMessage.set('Client Email, Password, and Company Name are required.');
+      return;
+    }
+
+    if (this.externalClient.clientPassword.length < 6) {
+      this.externalErrorMessage.set('Client Password must be at least 6 characters.');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.externalClient.clientEmail)) {
+      this.externalErrorMessage.set('Please enter a valid Client Email address.');
+      return;
+    }
+    if (this.externalClient.companyEmail && !emailRegex.test(this.externalClient.companyEmail)) {
+      this.externalErrorMessage.set('Please enter a valid Company Email address.');
+      return;
+    }
+
+    // Phone validation (ensure it's digits only if provided, optionally 10 digits)
+    const phoneRegex = /^\d+$/;
+    if (this.externalClient.companyPhone && !phoneRegex.test(this.externalClient.companyPhone)) {
+      this.externalErrorMessage.set('Company Phone must contain only numbers.');
+      return;
+    }
+    // Payment validation
+    if (this.externalClient.paymentAmount === null || this.externalClient.paymentAmount < 15000) {
+      this.externalErrorMessage.set('Payment amount must be at least 15000.');
+      return;
+    }
+    
+    this.isExternalSubmitting.set(true);
+    
+    const formData = new FormData();
+    Object.entries(this.externalClient).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        formData.append(key, value.toString());
+      }
+    });
+    
+    if (this.externalCoiFile) {
+      formData.append('coiFile', this.externalCoiFile);
+    }
+    
+    this.api.post<any>('users/clients/external-onboard', formData).subscribe({
+      next: (res) => {
+        this.externalSuccessMessage.set('Successfully registered client!');
+        this.fetchClients();
+        setTimeout(() => {
+          this.closeExternalModal();
+          this.isExternalSubmitting.set(false);
+        }, 2000);
+      },
+      error: (err) => {
+        this.externalErrorMessage.set(err.error?.message || 'Failed to onboard external client.');
+        this.isExternalSubmitting.set(false);
+      }
+    });
+  }
+  // --- End External Client Logic ---
 
   openCreateModal() {
     this.errorMessage.set('');

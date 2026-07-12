@@ -191,7 +191,55 @@ If a field is not found, set it to null.`;
   }
 };
 
+// @desc    Extract Incorporation Date, CIN, PAN, TAN from a Certificate of Incorporation using Gemini AI
+// @route   POST /api/ocr/extract-incorp
+// @access  Private
+const extractIncorpDetails = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image provided for OCR.' });
+    }
+
+    const mimeType = req.file.mimetype;
+    const base64Data = req.file.buffer.toString('base64');
+
+    const imagePart = {
+      inlineData: {
+        data: base64Data,
+        mimeType
+      },
+    };
+
+    const prompt = `You are an expert OCR AI. Analyze this Certificate of Incorporation (COI) or similar corporate document.
+Extract the following information and return ONLY a valid JSON object with no markdown formatting or extra text:
+{
+  "companyName": "<string or null>",
+  "entityType": "<must be exactly one of: Private Limited Company, LLP, OPC, Proprietorship, Other>",
+  "incorporationDate": "<YYYY-MM-DD or null (Date of Incorporation, or Date of Registration/Commencement for Proprietorships)>",
+  "cinNumber": "<string or null (Extract CIN for Companies, LLPIN for LLPs, or general Registration Number)>",
+  "pan": "<string or null>",
+  "tan": "<string or null>"
+}
+
+If a field is not found, set it to null. Ensure the incorporation date is formatted exactly as YYYY-MM-DD.`;
+
+    const jsonText = await getWorkingKey(prompt, imagePart);
+    
+    let cleanJsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const details = JSON.parse(cleanJsonText);
+
+    res.json({
+      success: true,
+      data: details
+    });
+  } catch (error) {
+    console.error('OCR Extraction Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   extractPaymentDetails,
-  extractApplicationDetails
+  extractApplicationDetails,
+  extractIncorpDetails
 };
