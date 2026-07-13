@@ -3,27 +3,29 @@
 
 
   <!-- Filters -->
-  <div class="filter-pill-bar" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: nowrap; overflow-x: auto; gap: 16px;">
-    <div style="display: flex; gap: 8px; flex-wrap: nowrap; flex-shrink: 0;">
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Services - {{ getTabCount('all') }}</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_forms'" (click)="currentDirectoryTab.set('pending_forms')">Pending Forms - {{ getTabCount('pending_forms') }}</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_documents'" (click)="currentDirectoryTab.set('pending_documents')">Pending Documents - {{ getTabCount('pending_documents') }}</button>
-      <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress - {{ getTabCount('in_progress') }}</button>
-      <!-- Filing Staff sees Re-open and Completed tabs -->
-      @if (user()?.role === 'filling_staff') {
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'reopen'" (click)="currentDirectoryTab.set('reopen')" style="border-color: #ef4444; color: #dc2626;">Re-open - {{ getTabCount('reopen') }}</button>
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed - {{ getTabCount('completed') }}</button>
-      }
-      <!-- Managers/Admins see Pending Review, Completed (payment split), Final Delivered -->
-      @if (user()?.role !== 'filling_staff') {
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'under_review'" (click)="currentDirectoryTab.set('under_review')" style="border-color: #f59e0b; color: #b45309;">Pending Review - {{ getTabCount('under_review') }}</button>
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed - {{ getTabCount('completed') }}</button>
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered - {{ getTabCount('final_delivered') }}</button>
-      }
-    </div>
-    <div class="search-box" style="flex-shrink: 0;">
-      <span class="material-symbols-outlined search-icon">search</span>
-      <input type="text" placeholder="Search services..." [(ngModel)]="searchQuery" />
+  <div style="margin-bottom: var(--spacing-lg);">
+    <div class="filter-pill-bar" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 8px; margin-bottom: 0; width: 100%;">
+      <div style="display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; flex: 1; scrollbar-width: none;">
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')">All Services - {{ getTabCount('all') }}</button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_forms'" (click)="currentDirectoryTab.set('pending_forms')">Pending Forms - {{ getTabCount('pending_forms') }}</button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_documents'" (click)="currentDirectoryTab.set('pending_documents')">Pending Documents - {{ getTabCount('pending_documents') }}</button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')">In Progress - {{ getTabCount('in_progress') }}</button>
+        <!-- Filing Staff sees Re-open and Completed tabs -->
+        @if (user()?.role === 'filling_staff') {
+          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'reopen'" (click)="currentDirectoryTab.set('reopen')" style="border-color: #ef4444; color: #dc2626;">Re-open - {{ getTabCount('reopen') }}</button>
+          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed - {{ getTabCount('completed') }}</button>
+        }
+        <!-- Managers/Admins see Pending Review, Completed (payment split), Final Delivered -->
+        @if (user()?.role !== 'filling_staff') {
+          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'under_review'" (click)="currentDirectoryTab.set('under_review')" style="border-color: #f59e0b; color: #b45309;">Pending Review - {{ getTabCount('under_review') }}</button>
+          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')">Completed - {{ getTabCount('completed') }}</button>
+          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')">Final Delivered - {{ getTabCount('final_delivered') }}</button>
+        }
+      </div>
+      <div class="search-box" style="flex-shrink: 0;">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" placeholder="Search services..." [(ngModel)]="searchQuery" style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 180px;" />
+      </div>
     </div>
   </div>
 

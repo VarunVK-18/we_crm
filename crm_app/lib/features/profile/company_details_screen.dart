@@ -18,7 +18,7 @@ class _EntityExpandableCard extends StatefulWidget {
 }
 
 class _EntityExpandableCardState extends State<_EntityExpandableCard> {
-  bool _isExpanded = true;
+  bool _isExpanded = false;
   int _selectedTabIndex = 0;
   
   bool _isTrademarkExpanded = false;
@@ -228,10 +228,11 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       color: Colors.white,
-      elevation: 0,
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        side: BorderSide(color: Colors.grey.shade200, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -249,8 +250,8 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
                     child: Text(
                       widget.entity.entityName,
                       style: GoogleFonts.outfit(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                         color: AppTheme.deepTeal,
                       ),
                     ),
@@ -435,7 +436,7 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundLight,
         elevation: 0,
         iconTheme: const IconThemeData(color: AppTheme.deepTeal),
         actions: [

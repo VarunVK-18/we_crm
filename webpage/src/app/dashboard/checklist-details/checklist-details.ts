@@ -1371,6 +1371,13 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     });
   }
 
+  isDocItemChecked(doc: any): boolean {
+    const cl = this.checklist();
+    if (!cl || !cl.items || !doc.checklist_item_id) return false;
+    const item = cl.items.find((i: any) => i._id === doc.checklist_item_id);
+    return item ? !!item.isChecked : false;
+  }
+
   deleteTemporaryDocument(doc: any) {
     const cl = this.checklist();
     if (!cl) return;

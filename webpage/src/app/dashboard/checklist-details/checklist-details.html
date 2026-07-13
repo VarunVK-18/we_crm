@@ -704,13 +704,13 @@
                     Step Draft / Temporary Documents
                   </div>
                   @if (user() && user().role !== 'customer') {
-                  <label [style.opacity]="isStepDisabled(itemIndex) ? 0.5 : 1"
-                    [style.pointer-events]="isStepDisabled(itemIndex) ? 'none' : 'auto'"
+                  <label [style.opacity]="isStepDisabled(itemIndex) || item.isChecked ? 0.5 : 1"
+                    [style.pointer-events]="isStepDisabled(itemIndex) || item.isChecked ? 'none' : 'auto'"
                     style="background: white; border: 1px solid var(--border-color); color: var(--text-primary); padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.2s;"
                     onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#93c5fd'; this.style.color='#1d4ed8';"
                     onmouseout="this.style.background='white'; this.style.borderColor='var(--border-color)'; this.style.color='var(--text-primary)';">
                     <span class="material-symbols-outlined" style="font-size: 14px;">upload</span> Upload Draft
-                    <input type="file" [disabled]="isStepDisabled(itemIndex)"
+                    <input type="file" [disabled]="isStepDisabled(itemIndex) || item.isChecked"
                       (change)="uploadTemporaryDocument($event, item)" style="display: none;" />
                   </label>
                   }
@@ -769,7 +769,7 @@
                         <span style="font-size: 11px; font-weight: 700;">Signed Copy</span>
                       </a>
                       }
-                      @if (user() && user().role !== 'customer') {
+                      @if (user() && user().role !== 'customer' && !item.isChecked) {
                       <button type="button" class="btn-text-action btn-text-danger"
                         style="display: inline-flex; align-items: center;" title="Delete"
                         (click)="deleteTemporaryDocument(doc)">
@@ -1089,12 +1089,14 @@
               </a>
               }
 
+              @if (user() && user().role !== 'customer' && !isDocItemChecked(doc)) {
               <button (click)="deleteTemporaryDocument(doc)"
                 style="background: none; border: none; color: var(--color-danger); cursor: pointer; display: flex; align-items: center; padding: 6px; border-radius: 6px; transition: background 0.2s; flex-shrink: 0;"
                 onmouseover="this.style.background='var(--color-danger-bg)'"
                 onmouseout="this.style.background='transparent'">
                 <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
               </button>
+              }
             </div>
           </div>
           }

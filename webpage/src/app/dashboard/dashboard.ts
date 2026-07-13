@@ -335,7 +335,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   openClientChat(clientId: string) {
     this.selectedClientChatId.set(clientId);
-    this.pushNavigation('Staff Chat', () => this.handleTabChanged('staff-chat'));
+    this.pushNavigation('Chat', () => this.handleTabChanged('staff-chat'));
     this.handleTabChanged('staff-chat');
   }
 
@@ -397,7 +397,8 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'service-tracker-table': return 'Service Tracker';
       case 'team-service-track': return 'Team Service Tracker';
       case 'opportunities': return 'Opportunities';
-      case 'staff-chat': return 'Staff Chat';
+      case 'staff-chat': return 'Chat';
+      case 'dsc-tokens': return 'DSC Tokens';
       default: return 'Dashboard';
     }
   }

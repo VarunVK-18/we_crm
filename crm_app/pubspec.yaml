@@ -51,6 +51,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/WE CRM logo .png
+    - assets/WE CRM logo01.png
     - assets/chart.png
     - assets/Chatbackground.png
     - assets/google.png
@@ -72,5 +73,7 @@ flutter:
         - asset: assets/fonts/Outfit-VariableFont_wght.ttf
 flutter_native_splash:
   color: "#ffffff"
+  image: "assets/images/splash_screen.jpg"
   android_12:
     color: "#ffffff"
+    image: "assets/images/splash_screen.jpg"

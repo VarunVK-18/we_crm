@@ -162,7 +162,6 @@
   width: 100%;
   margin-bottom: var(--spacing-lg);
   border: 1px solid var(--border);
-  overflow-x: auto;
 }
 
 .filter-pill {

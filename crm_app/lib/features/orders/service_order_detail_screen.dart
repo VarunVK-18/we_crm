@@ -582,27 +582,79 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                                 );
                               },
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.grey.shade200),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(LucideIcons.user, size: 16, color: AppTheme.deepTeal),
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEEF2FA),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(LucideIcons.user, size: 20, color: Color(0xFF1E3BB3)),
+                                    ),
                                     const SizedBox(width: 12),
                                     Expanded(
-                                      child: Text(
-                                        'Director $idx: $name',
-                                        style: const TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppTheme.deepTeal,
-                                        ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Director $idx',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Wrap(
+                                            crossAxisAlignment: WrapCrossAlignment.center,
+                                            spacing: 6,
+                                            runSpacing: 4,
+                                            children: [
+                                              Text(
+                                                name,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                              if (dir['authorizedSignatory'] == true || dir['isAuthorizedSignatory'] == true || idx == 1)
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFFEEF2FA).withOpacity(0.5),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                    border: Border.all(color: const Color(0xFF1E3BB3).withOpacity(0.3)),
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: const [
+                                                      Icon(LucideIcons.checkCircle2, size: 12, color: Color(0xFF1E3BB3)),
+                                                      SizedBox(width: 4),
+                                                      Text(
+                                                        'Authorized Signatory',
+                                                        style: TextStyle(
+                                                          fontSize: 10,
+                                                          fontWeight: FontWeight.w600,
+                                                          color: Color(0xFF1E3BB3),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    const Icon(LucideIcons.chevronRight, size: 16, color: Colors.grey),
+                                    const Icon(LucideIcons.chevronRight, size: 20, color: Colors.grey),
                                   ],
                                 ),
                               ),
@@ -837,18 +889,6 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
                             child: _FinalDeliverySection(order: order),
-                          ),
-                        ],
-                        if (order.serviceType == 'Private Limited Incorporation' &&
-                            order.status != ServiceStatus.notInitialized &&
-                            order.details['directors'] != null &&
-                            order.details['directors'] != '[]' &&
-                            (order.details['directors'] is String || order.details['directors'] is List) &&
-                            order.details['directors'] != 'submitted') ...[
-                          const SizedBox(height: 32),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: _DirectorDetailsSection(order: order),
                           ),
                         ],
                         const SizedBox(height: 80), // space for FAB

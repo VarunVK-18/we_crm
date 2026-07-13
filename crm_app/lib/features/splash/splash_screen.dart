@@ -63,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen>
           child: Transform.scale(
             scale: 1.02, // Slight zoom to hide the edge line artifact in the image
             child: Image.asset(
-              'assets/images/splash_screen3.jpg',
+              'assets/images/splash_screen.jpg',
               fit: BoxFit.fitWidth,
               width: double.infinity,
             ),
