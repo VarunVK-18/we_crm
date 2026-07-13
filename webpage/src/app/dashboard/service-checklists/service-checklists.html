@@ -35,7 +35,7 @@
       <app-we-loader></app-we-loader>
       <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading checklists...</p>
     </div>
-  } @else if (filteredChecklists().length === 0) {
+  } @else if (filteredChecklists().length === 0 && !hasActiveFilters()) {
     <div class="empty-state">
       <span class="material-symbols-outlined empty-icon">inbox</span>
       <h3>No Checklists Found</h3>
@@ -46,36 +46,74 @@
       <table class="bucket-table">
         <thead>
           <tr>
-            <th>SERVICE ID</th>
-            <th>CLIENT ID</th>
-            <th>DATE</th>
-            <th>SERVICE NAME</th>
-            <th>COMPANY NAME</th>
-            <th>DUE DATE</th>
-            <th>PRIORITY</th>
-            <th>PROGRESS</th>
+            <th style="vertical-align: top;">
+              <div>SERVICE ID</div>
+              <input type="text" placeholder="Search..." [(ngModel)]="serviceIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+            </th>
+            <th style="vertical-align: top;">
+              <div>CLIENT ID</div>
+              <input type="text" placeholder="Search..." [(ngModel)]="clientIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+            </th>
+            <th style="vertical-align: top;">DATE</th>
+            <th style="vertical-align: top;">
+              <div>SERVICE NAME</div>
+              <input type="text" placeholder="Search..." [(ngModel)]="serviceFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+            </th>
+            <th style="vertical-align: top;">
+              <div>COMPANY NAME</div>
+              <input type="text" placeholder="Search..." [(ngModel)]="companyFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+            </th>
+            <th style="vertical-align: top;">DUE DATE</th>
+            <th style="vertical-align: top;">
+              <div>PRIORITY</div>
+              <select [(ngModel)]="priorityFilter" class="col-search-input" (click)="$event.stopPropagation()" style="padding: 4px 8px; height: 26px;">
+                <option value="">All</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </th>
+            <th style="vertical-align: top;">PROGRESS</th>
             @if (user()?.role !== 'filling_staff') {
-              <th>ASSIGNEE</th>
+              <th style="vertical-align: top;">
+                <div>ASSIGNEE</div>
+                <input type="text" placeholder="Search..." [(ngModel)]="assigneeFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+              </th>
             }
           </tr>
         </thead>
         <tbody>
+          @if (filteredChecklists().length === 0 && hasActiveFilters()) {
+            <tr>
+              <td [attr.colspan]="user()?.role !== 'filling_staff' ? 9 : 8" style="text-align: center; padding: 40px; color: #64748b; font-size: 14px;">
+                No checklists found matching your search.
+              </td>
+            </tr>
+          }
           @for (cl of paginatedChecklists(); track cl._id) {
-            <tr (click)="viewDetails(cl._id)" style="cursor: pointer;">
-              <td class="hover-text-link" style="font-family: monospace; color: #64748b;">
+            <tr>
+              <td class="hover-text-link" style="font-family: monospace; color: #64748b; cursor: pointer;" (click)="viewDetails(cl._id)">
                 {{ cl.custom_service_id || '—' }}
               </td>
-              <td class="hover-text-link" style="font-family: monospace; color: #64748b;" (click)="viewClient($event, cl.client_id?._id)">
-                {{ cl.client_id?.custom_client_id || '—' }}
+              <td>
+                @if (user()?.role === 'filling_staff') {
+                  <span style="font-family: monospace; color: #64748b;">
+                    {{ cl.client_id?.custom_client_id || '—' }}
+                  </span>
+                } @else {
+                  <span class="hover-text-link" style="font-family: monospace; color: #64748b;" (click)="viewClient($event, cl.client_id?._id)">
+                    {{ cl.client_id?.custom_client_id || '—' }}
+                  </span>
+                }
               </td>
               <td>
                 <span style="color: #64748b;">{{ cl.createdAt | date:'mediumDate' }}</span>
               </td>
               <td>
-                <span class="service-name" style="font-weight: 500;">{{ cl.service_name }}</span>
+                <span class="service-name" style="font-weight: 500; font-size: 14px;">{{ cl.service_name }}</span>
               </td>
               <td>
-                <div class="hover-text-link" style="font-weight: 500; font-size: 14px;" (click)="viewClient($event, cl.client_id?._id)">
+                <div style="font-weight: 500; font-size: 14px; color: var(--text-primary);">
                   {{ cl.details?.entityName || cl.client_id?.company_name || '-' }}
                 </div>
               </td>
@@ -83,7 +121,7 @@
                 <span style="color: #64748b;">{{ cl.dueDate ? (cl.dueDate | date:'mediumDate') : '-' }}</span>
               </td>
               <td>
-                <span class="status-pill" [ngClass]="{'status-action-required': cl.priority === 'High', 'status-pending': cl.priority === 'Medium', 'status-completed': cl.priority === 'Low'}" style="background: none; padding: 0;">{{ cl.priority || '-' }}</span>
+                <span [ngStyle]="{'color': cl.priority === 'High' ? '#dc2626' : (cl.priority === 'Medium' ? '#92400e' : (cl.priority === 'Low' ? '#16a34a' : 'inherit'))}" style="font-weight: 600; font-size: 13px;">{{ cl.priority || '-' }}</span>
               </td>
               <td>
                 <div class="progress-bar-container">

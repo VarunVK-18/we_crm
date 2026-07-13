@@ -308,14 +308,13 @@ input[type="file"] {
 }
 
 .hover-text-link {
-  color: inherit;
+  color: #2563eb !important;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.2s ease, text-decoration 0.2s ease;
 }
 
 .hover-text-link:hover {
-  color: #2563eb !important;
   text-decoration: underline !important;
 }
 

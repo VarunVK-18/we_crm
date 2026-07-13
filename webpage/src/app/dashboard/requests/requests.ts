@@ -103,6 +103,10 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
     return ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '');
   }
 
+  hasActiveFilters = computed(() => {
+    return !!(this.searchQuery() || this.clientIdFilter() || this.companyFilter() || this.serviceFilter() || this.clientNameFilter() || this.phoneFilter());
+  });
+
   filteredOrders = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
     const cId = this.clientIdFilter().toLowerCase().trim();
