@@ -954,8 +954,67 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     return 'Pending';
   }
 
+  totalOpportunities = signal<number>(0);
+
+  recommendationPool = [
+    { category: 'Incorporation', name: 'Private Limited Incorporation' },
+    { category: 'Incorporation', name: 'LLP Incorporation' },
+    { category: 'Incorporation', name: 'OPC' },
+    { category: 'Incorporation', name: 'MSME' },
+    { category: 'Incorporation', name: 'Proprietorship' },
+    { category: 'Compliance', name: 'MCA Compliance' },
+    { category: 'Compliance', name: 'TDS' },
+    { category: 'Compliance', name: 'PF' },
+    { category: 'IP', name: 'Copyright' },
+    { category: 'IP', name: 'Trade Mark' },
+    { category: 'IP', name: 'Patent' },
+    { category: 'Tax', name: 'GST filing' },
+    { category: 'Tax', name: 'GST Cancelation' },
+    { category: 'Tax', name: 'ITR' },
+    { category: 'Tax', name: 'GST Registration' },
+    { category: 'Licensing', name: 'DPIIT' },
+    { category: 'Licensing', name: 'ISO' },
+    { category: 'Licensing', name: 'FSSAI' },
+    { category: 'Licensing', name: 'DSC' },
+    { category: 'Licensing', name: 'IE code' },
+    { category: 'Licensing', name: 'LEI' },
+    { category: 'Licensing', name: 'BIS' },
+    { category: 'Licensing', name: 'ROSH & CE' },
+    { category: 'Compliance', name: 'ISO Certification' },
+    { category: 'Compliance', name: 'FSSAI Registration' }
+  ];
+
+  fetchOpportunitiesCount() {
+    this.api.get<any>('users/clients').subscribe({
+      next: (res) => {
+        if (res && res.clients) {
+          let totalOpp = 0;
+          for (const client of res.clients) {
+            const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => s.serviceName);
+            const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName);
+            const doneSet = new Set([...weDone, ...outsourced]);
+            
+            const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+            const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
+
+            const oppsForClient = this.recommendationPool.filter(s => {
+              if (doneSet.has(s.name)) return false;
+              if (hasPrimaryIncorp && primaryIncorpServices.includes(s.name)) return false;
+              return true;
+            });
+            totalOpp += oppsForClient.length;
+          }
+          this.totalOpportunities.set(totalOpp);
+          this.updateStats(); // Refresh the UI cards with the new count
+        }
+      },
+      error: (err) => console.error('[fetchOpportunitiesCount] Failed:', err)
+    });
+  }
+
   // Fetch all stat counts from a single optimized server endpoint
   fetchDashboardStats() {
+    this.fetchOpportunitiesCount();
     const monthStr = this.financialMonth();
     this.api.get<any>(`dashboard/stats?month=${monthStr}`).subscribe({
       next: (res) => {
@@ -970,22 +1029,40 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   updateStats() {
-    // Prefer server-side stats (optimized path)
+    const userRole = this.user()?.role;
+    
+    // Calculate Due Today using local checklists (as server stats doesn't provide it yet)
+    const allLocal = this.filteredRoleChecklists();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dueTodayCount = allLocal.filter(c => {
+      if (!c.dueDate || c.status === 'completed') return false;
+      const d = new Date(c.dueDate);
+      return d >= today && d < tomorrow;
+    }).length;
+
+    // Prefer server-side stats for the rest (optimized path)
     const serverStats = this.dashboardStats()?.stats;
     if (serverStats) {
       const { allTasks, formsPending, docsPending, inProgress, forReview, completed } = serverStats;
-      this.stats = [
-        { title: 'All Tasks', value: String(allTasks), detail: 'Total active checklists', isTrendUp: true },
-        { title: 'Forms Pending', value: String(formsPending), detail: formsPending > 0 ? 'Requires client action' : 'All clear', isWarning: formsPending > 0, isGood: formsPending === 0 },
-        { title: 'Docs Pending', value: String(docsPending), detail: docsPending > 0 ? 'Awaiting documents' : 'All clear', isWarning: docsPending > 0, isGood: docsPending === 0 },
-        { title: 'In Progress', value: String(inProgress), detail: inProgress > 0 ? 'Currently being worked on' : 'None', isTrendUp: true }
-      ];
-
-      const userRole = this.user()?.role;
+      
       if (userRole === 'filling_staff' || userRole === 'filing_staff') {
-        this.stats.push({ title: 'Completed', value: String(completed || 0), detail: 'Finished by you', isGood: true });
+        this.stats = [
+          { title: 'All Tasks', value: String(allTasks), detail: 'Total active checklists', isTrendUp: true },
+          { title: 'Due Today', value: String(dueTodayCount), detail: dueTodayCount > 0 ? 'Due for action today' : 'All clear', isWarning: dueTodayCount > 0, isGood: dueTodayCount === 0 },
+          { title: 'In Progress', value: String(inProgress), detail: inProgress > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+          { title: 'Completed', value: String(completed || 0), detail: 'Finished by you', isGood: true }
+        ];
       } else {
-        this.stats.push({ title: 'For Review', value: String(forReview), detail: forReview > 0 ? 'Ready for manager review' : 'None', isTrendUp: true });
+        this.stats = [
+          { title: 'All Tasks', value: String(allTasks), detail: 'Total active checklists', isTrendUp: true },
+          { title: 'Due Today', value: String(dueTodayCount), detail: dueTodayCount > 0 ? 'Due for action today' : 'All clear', isWarning: dueTodayCount > 0, isGood: dueTodayCount === 0 },
+          { title: 'In Progress', value: String(inProgress), detail: inProgress > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+          { title: 'For Review', value: String(forReview), detail: forReview > 0 ? 'Ready for manager review' : 'None', isTrendUp: true },
+          { title: 'Opportunities', value: String(this.totalOpportunities()), detail: 'Total available services', isTrendUp: true }
+        ];
       }
       return;
     }
@@ -993,23 +1070,25 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     // Fallback: compute locally from checklists (if server call not yet resolved)
     const all = this.filteredRoleChecklists();
     const allTasksCount = all.length;
-    const formsPendingCount = all.filter(c => this.isActionRequired(c) && c.status !== 'completed' && c.status !== 'under_review').length;
-    const docsPendingCount = all.filter(c => this.isDocumentPending(c) && c.status !== 'completed' && c.status !== 'under_review').length;
     const inProgressCount = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review').length;
     const forReviewCount = all.filter(c => c.status === 'under_review').length;
     const completedCount = all.filter(c => c.status === 'completed').length;
-    this.stats = [
-      { title: 'All Tasks', value: allTasksCount.toString(), detail: 'Total active checklists', isTrendUp: true },
-      { title: 'Forms Pending', value: formsPendingCount.toString(), detail: formsPendingCount > 0 ? 'Requires client action' : 'All clear', isWarning: formsPendingCount > 0, isGood: formsPendingCount === 0 },
-      { title: 'Docs Pending', value: docsPendingCount.toString(), detail: docsPendingCount > 0 ? 'Awaiting documents' : 'All clear', isWarning: docsPendingCount > 0, isGood: docsPendingCount === 0 },
-      { title: 'In Progress', value: inProgressCount.toString(), detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', isTrendUp: true }
-    ];
-
-    const userRole = this.user()?.role;
+    
     if (userRole === 'filling_staff' || userRole === 'filing_staff') {
-      this.stats.push({ title: 'Completed', value: completedCount.toString(), detail: 'Finished by you', isGood: true });
+      this.stats = [
+        { title: 'All Tasks', value: String(allTasksCount), detail: 'Total active checklists', isTrendUp: true },
+        { title: 'Due Today', value: String(dueTodayCount), detail: dueTodayCount > 0 ? 'Due for action today' : 'All clear', isWarning: dueTodayCount > 0, isGood: dueTodayCount === 0 },
+        { title: 'In Progress', value: String(inProgressCount), detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+        { title: 'Completed', value: String(completedCount), detail: 'Finished by you', isGood: true }
+      ];
     } else {
-      this.stats.push({ title: 'For Review', value: forReviewCount.toString(), detail: forReviewCount > 0 ? 'Ready for manager review' : 'None', isTrendUp: true });
+      this.stats = [
+        { title: 'All Tasks', value: String(allTasksCount), detail: 'Total active checklists', isTrendUp: true },
+        { title: 'Due Today', value: String(dueTodayCount), detail: dueTodayCount > 0 ? 'Due for action today' : 'All clear', isWarning: dueTodayCount > 0, isGood: dueTodayCount === 0 },
+        { title: 'In Progress', value: String(inProgressCount), detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+        { title: 'For Review', value: String(forReviewCount), detail: forReviewCount > 0 ? 'Ready for manager review' : 'None', isTrendUp: true },
+        { title: 'Opportunities', value: String(this.totalOpportunities()), detail: 'Total available services', isTrendUp: true }
+      ];
     }
   }
 

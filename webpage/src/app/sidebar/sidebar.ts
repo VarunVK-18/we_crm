@@ -95,8 +95,7 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
-          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
-          { id: 'payment-tracker', label: 'Reimbursement', color: '#10B981' }
+          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' }
         ]
       });
       groups.push({

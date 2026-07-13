@@ -187,17 +187,39 @@ export class ClientsDirectory implements OnInit {
     this.onOpenChat.emit(clientId);
   }
 
+  colSearch_clientId = signal<string>('');
+  colSearch_companyName = signal<string>('');
+  colSearch_clientName = signal<string>('');
+  colSearch_phone = signal<string>('');
+  colSearch_mail = signal<string>('');
+
   getFilteredClients() {
-    const query = this.searchQuery().toLowerCase().trim();
-    if (!query) {
-      return this.clients();
-    }
-    return this.clients().filter(c => 
-      String(c.owner_name || '').toLowerCase().includes(query) ||
-      String(c.company_name || '').toLowerCase().includes(query) ||
-      String(c.email || '').toLowerCase().includes(query) ||
-      String(c.phone || '').toLowerCase().includes(query)
-    );
+    const globalQ = this.searchQuery().toLowerCase().trim();
+    const qClientId = this.colSearch_clientId().toLowerCase().trim();
+    const qCompanyName = this.colSearch_companyName().toLowerCase().trim();
+    const qClientName = this.colSearch_clientName().toLowerCase().trim();
+    const qPhone = this.colSearch_phone().toLowerCase().trim();
+    const qMail = this.colSearch_mail().toLowerCase().trim();
+
+    return this.clients().filter(c => {
+      let match = true;
+      
+      if (globalQ) {
+        const matchesGlobal = String(c.owner_name || '').toLowerCase().includes(globalQ) ||
+                              String(c.company_name || '').toLowerCase().includes(globalQ) ||
+                              String(c.email || '').toLowerCase().includes(globalQ) ||
+                              String(c.phone || '').toLowerCase().includes(globalQ);
+        if (!matchesGlobal) match = false;
+      }
+      
+      if (qClientId && !String(c.custom_client_id || c._id || '').toLowerCase().includes(qClientId)) match = false;
+      if (qCompanyName && !String(c.company_name || 'Individual Account').toLowerCase().includes(qCompanyName)) match = false;
+      if (qClientName && !String(c.owner_name || '').toLowerCase().includes(qClientName)) match = false;
+      if (qPhone && !String(c.phone || '-').toLowerCase().includes(qPhone)) match = false;
+      if (qMail && !String(c.email || '-').toLowerCase().includes(qMail)) match = false;
+
+      return match;
+    });
   }
 
   getFlattenedFilteredClients(): any[] {

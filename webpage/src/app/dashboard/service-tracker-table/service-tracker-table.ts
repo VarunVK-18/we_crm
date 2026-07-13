@@ -10,90 +10,75 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
   imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './service-tracker-table.html',
   styles: [`
-    .table-container {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    .bucket-table-container {
+      background-color: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
       overflow-x: auto;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       margin-top: 16px;
     }
-    .header-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-top: 8px;
+    .bucket-table {
+      min-width: 100%;
+      width: max-content;
+      text-align: left;
+      border-collapse: collapse;
+      white-space: nowrap;
     }
-    .page-title {
-      font-size: 24px;
+    .bucket-table th {
+      padding: 8px 16px;
+      font-size: 12px;
       font-weight: 700;
-      color: #1e293b;
-      margin: 0 0 4px;
-    }
-    .page-subtitle {
-      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background-color: #f8fafc;
       color: #64748b;
-      margin: 0;
-    }
-    .search-box {
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+      resize: horizontal;
+      overflow: auto;
       position: relative;
-      display: flex;
-      align-items: center;
     }
-    .search-box input {
-      padding: 10px 16px 10px 40px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 14px;
-      width: 300px;
-      transition: all 0.2s;
+    .bucket-table th::-webkit-scrollbar {
+      height: 0px;
+      width: 0px;
+    }
+    .bucket-table th::-webkit-resizer {
+      background: transparent;
+      border: none;
+    }
+    .bucket-table td {
+      padding: 8px 24px;
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #e2e8f0;
+    }
+    .bucket-table th:last-child,
+    .bucket-table td:last-child {
+      border-right: none;
+    }
+    .col-search-input {
+      width: 100%;
+      min-width: 100px;
+      margin-top: 6px;
+      padding: 6px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 400;
+      color: #334155;
+      background-color: white;
+      box-sizing: border-box;
       outline: none;
     }
-    .search-box input:focus {
+    .col-search-input:focus {
       border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
     }
-    .search-icon {
-      position: absolute;
-      left: 12px;
-      color: #94a3b8;
-      font-size: 20px;
+    .table-row-hover {
+      transition: background-color 0.2s ease;
     }
-    .total-badge {
-      background: #eff6ff;
-      color: #2563eb;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .we-table {
-      width: 100%;
-      min-width: 1600px;
-      border-collapse: collapse;
-      text-align: left;
-    }
-    .we-table th {
-      padding: 16px 20px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #475569;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      background: #f8fafc;
-      border-bottom: 1px solid #e2e8f0;
-      white-space: nowrap;
-    }
-    .we-table td {
-      padding: 16px 20px;
-      border-bottom: 1px solid #f1f5f9;
-      color: #1e293b;
-      font-size: 14px;
-      vertical-align: middle;
-      white-space: nowrap;
-    }
-    .we-table tr:hover {
-      background: #f8fafc;
+    .table-row-hover:hover {
+      background-color: #f8fafc;
     }
     .status-badge {
       padding: 4px 10px;
@@ -125,6 +110,14 @@ export class ServiceTrackerTableComponent implements OnInit {
   isLoading = signal<boolean>(true);
   searchQuery = signal<string>('');
 
+  colSearch_serviceId = signal<string>('');
+  colSearch_clientId = signal<string>('');
+  colSearch_companyName = signal<string>('');
+  colSearch_serviceName = signal<string>('');
+  colSearch_task = signal<string>('');
+  colSearch_updatedOn = signal<string>('');
+  colSearch_assignedTo = signal<string>('');
+
   constructor(private api: Api) {}
 
   ngOnInit() {
@@ -149,19 +142,42 @@ export class ServiceTrackerTableComponent implements OnInit {
   }
 
   filteredChecklists() {
+    let lists = this.checklists();
     const query = this.searchQuery().toLowerCase();
-    const lists = this.checklists();
     
-    if (!query) return lists;
-    
-    return lists.filter(c => {
-      const clientName = (c.client_id?.company_name || c.client_id?.owner_name || '').toLowerCase();
-      const serviceName = (c.service_name || c.checklist_name || '').toLowerCase();
-      const cid = (c.client_id?._id || '').toLowerCase();
-      const sid = (c._id || '').toLowerCase();
-      
-      return clientName.includes(query) || serviceName.includes(query) || cid.includes(query) || sid.includes(query);
-    });
+    if (query) {
+      lists = lists.filter(c => {
+        const clientName = (c.client_id?.company_name || c.client_id?.owner_name || '').toLowerCase();
+        const serviceName = (c.service_name || c.checklist_name || '').toLowerCase();
+        const cid = (c.client_id?._id || '').toLowerCase();
+        const sid = (c._id || '').toLowerCase();
+        
+        return clientName.includes(query) || serviceName.includes(query) || cid.includes(query) || sid.includes(query);
+      });
+    }
+
+    const sId = this.colSearch_serviceId().toLowerCase();
+    if (sId) lists = lists.filter(c => (c.custom_service_id || '').toLowerCase().includes(sId));
+
+    const cId = this.colSearch_clientId().toLowerCase();
+    if (cId) lists = lists.filter(c => (c.client_id?.custom_client_id || '').toLowerCase().includes(cId));
+
+    const company = this.colSearch_companyName().toLowerCase();
+    if (company) lists = lists.filter(c => (c.details?.entityName || c.details?.entity_name || c.client_id?.company_name || c.client_id?.owner_name || '').toLowerCase().includes(company));
+
+    const service = this.colSearch_serviceName().toLowerCase();
+    if (service) lists = lists.filter(c => (c.service_name || c.checklist_name || '').toLowerCase().includes(service));
+
+    const task = this.colSearch_task().toLowerCase();
+    if (task) lists = lists.filter(c => this.getNextTask(c.items).toLowerCase().includes(task));
+
+    const updated = this.colSearch_updatedOn().toLowerCase();
+    if (updated) lists = lists.filter(c => this.formatDate(c.updatedAt).toLowerCase().includes(updated));
+
+    const assigned = this.colSearch_assignedTo().toLowerCase();
+    if (assigned) lists = lists.filter(c => (c.assigned_to?.owner_name || 'unassigned').toLowerCase().includes(assigned));
+
+    return lists;
   }
 
   formatDate(dateString: string): string {
