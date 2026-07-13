@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, signal, input, Output, EventEmitter, ElementRef, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -11,7 +11,8 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
   templateUrl: './service-checklists.html',
   styleUrl: './service-checklists.css'
 })
-export class ServiceChecklists implements OnInit, OnDestroy {
+export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
+  el = inject(ElementRef);
   @Output() onViewChecklist = new EventEmitter<string>();
   @Output() onViewClient = new EventEmitter<string>();
   user = signal<any>(null);
@@ -24,6 +25,44 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   // Directory State
   currentDirectoryTab = signal<string>('pending_forms');
   searchQuery = signal<string>('');
+  serviceIdFilter = signal<string>('');
+  clientIdFilter = signal<string>('');
+  serviceFilter = signal<string>('');
+  companyFilter = signal<string>('');
+  assigneeFilter = signal<string>('');
+  priorityFilter = signal<string>('');
+
+  private resizeObserver: ResizeObserver | null = null;
+  private observedHeaders = new Set<Element>();
+
+  ngAfterViewChecked() {
+    const headers = this.el.nativeElement.querySelectorAll('.bucket-table th');
+    if (headers.length > 0 && !this.resizeObserver) {
+      this.resizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          const target = entry.target as HTMLElement;
+          const key = 'service_col_' + target.innerText.trim();
+          if (target.style.width) {
+            localStorage.setItem(key, target.style.width);
+          }
+        }
+      });
+    }
+
+    headers.forEach((th: HTMLElement) => {
+      if (!this.observedHeaders.has(th)) {
+        const key = 'service_col_' + th.innerText.trim();
+        const savedWidth = localStorage.getItem(key);
+        if (savedWidth) {
+          th.style.width = savedWidth;
+        }
+        if (this.resizeObserver) {
+          this.resizeObserver.observe(th);
+          this.observedHeaders.add(th);
+        }
+      }
+    });
+  }
 
   // Checklist creation/edit State
   isCreateChecklistModalOpen = signal<boolean>(false);
@@ -151,6 +190,10 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     return Math.max(0, dealClosed - paid);
   }
 
+  hasActiveFilters = computed(() => {
+    return !!(this.searchQuery() || this.serviceIdFilter() || this.clientIdFilter() || this.serviceFilter() || this.companyFilter() || this.assigneeFilter() || this.priorityFilter());
+  });
+
   filteredChecklists() {
     const all = this.checklists();
     const tab = this.currentDirectoryTab();
@@ -186,6 +229,36 @@ export class ServiceChecklists implements OnInit, OnDestroy {
         const serviceName = (c.service_name || '').toLowerCase();
         return clientName.includes(query) || clientCompany.includes(query) || serviceName.includes(query);
       });
+    }
+
+    const sid = this.serviceIdFilter().toLowerCase().trim();
+    if (sid) {
+      filtered = filtered.filter(c => (c.custom_service_id || '').toLowerCase().includes(sid));
+    }
+
+    const cid = this.clientIdFilter().toLowerCase().trim();
+    if (cid) {
+      filtered = filtered.filter(c => (c.client_id?.custom_client_id || '').toLowerCase().includes(cid));
+    }
+
+    const svc = this.serviceFilter().toLowerCase().trim();
+    if (svc) {
+      filtered = filtered.filter(c => (c.service_name || '').toLowerCase().includes(svc));
+    }
+
+    const cmp = this.companyFilter().toLowerCase().trim();
+    if (cmp) {
+      filtered = filtered.filter(c => (c.details?.entityName || c.client_id?.company_name || '').toLowerCase().includes(cmp));
+    }
+
+    const asn = this.assigneeFilter().toLowerCase().trim();
+    if (asn) {
+      filtered = filtered.filter(c => (this.getAssigneeName(c) || '').toLowerCase().includes(asn));
+    }
+
+    const prio = this.priorityFilter();
+    if (prio) {
+      filtered = filtered.filter(c => (c.priority || '') === prio);
     }
 
     return filtered;

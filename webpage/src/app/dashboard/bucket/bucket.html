@@ -207,12 +207,12 @@
       </thead>
       <tbody>
         @for (job of filteredJobs(); track job._id) {
-        <tr (click)="selfAssign(job._id)" style="cursor: pointer;" class="clickable-row">
+        <tr>
           <td>
-            <span class="text-muted hover-text-link" style="font-family: monospace;" (click)="viewService($event, job.checklist_id?._id)">{{ job.checklist_id?.custom_service_id || '-' }}</span>
+            <span class="text-muted hover-text-link" style="font-family: monospace;" (click)="selfAssign(job._id)">{{ job.checklist_id?.custom_service_id || '-' }}</span>
           </td>
           <td>
-            <span class="text-muted hover-text-link" style="font-family: monospace;" (click)="viewClient($event, job.client_id?._id || job.user_id)">{{ job.dealvoice_client_id || job.client_id?.custom_client_id || '-' }}</span>
+            <span class="text-muted" style="font-family: monospace;">{{ job.dealvoice_client_id || job.client_id?.custom_client_id || '-' }}</span>
           </td>
           <td>
             <span class="time-ago">{{ (job.updatedAt || job.claimed_at || job.createdAt) | date:'short' }}</span>

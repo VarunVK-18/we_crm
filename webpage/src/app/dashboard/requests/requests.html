@@ -20,7 +20,7 @@
     <app-we-loader></app-we-loader>
     <p>Loading requests...</p>
   </div>
-  } @else if (filteredOrders().length === 0) {
+  } @else if (filteredOrders().length === 0 && !hasActiveFilters()) {
   <div class="no-results-placeholder">
     <div class="placeholder-icon-circle">
       <hugeicons-icon [icon]="CheckmarkBadge01Icon" size="32" color="#94A3B8"></hugeicons-icon>
@@ -60,6 +60,13 @@
         </tr>
       </thead>
       <tbody>
+        @if (filteredOrders().length === 0 && hasActiveFilters()) {
+          <tr>
+            <td [attr.colspan]="role !== 'admin' ? 7 : 6" style="text-align: center; padding: 40px; color: #64748b; font-size: 14px;">
+              No requests found matching your search.
+            </td>
+          </tr>
+        }
         @for (order of paginatedOrders(); track order._id) {
         <tr>
           <td>
@@ -72,7 +79,7 @@
             </div>
           </td>
           <td>
-            <span class="service-name" style="font-weight: 500;">{{ order.serviceType }}</span>
+            <span class="service-name" style="font-weight: 500; font-size: 14px;">{{ order.serviceType }}</span>
             @if (order.details?.badge === 'RENEW') {
               <div style="color: #dc2626; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;">
                 <span class="material-symbols-outlined" style="font-size: 12px;">autorenew</span> RENEWAL
