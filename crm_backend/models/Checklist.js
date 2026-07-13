@@ -115,10 +115,12 @@ const ChecklistSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  dueDate: { type: Date },
+  priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
   items: [ChecklistItemSchema],
   status: {
     type: String,
-    enum: ['pending', 'in_progress', 'completed'],
+    enum: ['pending', 'in_progress', 'under_review', 'reopen', 'completed', 'cancelled'],
     default: 'pending'
   },
   stage: {

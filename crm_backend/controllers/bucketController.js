@@ -37,6 +37,7 @@ const getBucketRequests = async (req, res) => {
       .populate('client_id', 'custom_client_id owner_name email phone company_name')
       .populate('claimed_by', 'owner_name email _id')
       .populate('assigned_to', 'owner_name email _id')
+      .populate('checklist_id', 'custom_service_id dueDate priority')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -55,7 +56,7 @@ const claimBucketRequest = async (req, res) => {
     const company_id = req.user.company_id;
     const managerId = req.user._id;
     const { id } = req.params;
-    const { team_id, dealClosedAmount, advanceAmountPaid, directorCount } = req.body;
+    const { team_id, dealClosedAmount, advanceAmountPaid, directorCount, dueDate, priority } = req.body;
 
     const bucketReq = await BucketRequest.findOne({ _id: id, company_id, status: 'open' })
       .populate('client_id', 'custom_client_id owner_name _id company_id assigned_to');
@@ -125,6 +126,8 @@ const claimBucketRequest = async (req, res) => {
       notes: '',
       dealClosedAmount: Number(dealClosedAmount) || 0,
       advanceAmountPaid: Number(advanceAmountPaid) || 0,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      priority: priority || 'Medium',
       details: {
         entityName,
         'Applicant Name': bucketReq.client_id?.owner_name || '',
@@ -223,6 +226,7 @@ const getAvailableJobs = async (req, res) => {
     const jobs = await BucketRequest.find(filter)
       .populate('client_id', 'custom_client_id owner_name email phone company_name')
       .populate('claimed_by', 'owner_name email _id')
+      .populate('checklist_id', 'custom_service_id dueDate priority')
       .sort({ claimed_at: -1 })
       .skip(skip)
       .limit(limit)

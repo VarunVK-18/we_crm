@@ -205,6 +205,24 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       });
     });
   }
+
+  rejectChecklist() {
+    const cl = this.checklist();
+    if (!cl || cl.status !== 'under_review') return;
+    this.confirmDialog.confirm({
+      title: 'Reject & Re-open',
+      message: `Are you sure you want to reject this checklist and re-open it for the filing staff?`,
+      confirmText: 'Reject',
+      cancelText: 'Cancel'
+    }).then(confirmed => {
+      if (!confirmed) return;
+      this.api.patch<any>(`checklists/${cl._id}`, { status: 'reopen' }).subscribe({
+        next: () => this.fetchChecklist(),
+        error: (err) => console.error('Failed to reject checklist', err)
+      });
+    });
+  }
+
   isOpportunitiesModalOpen = signal(false);
   opportunitiesClient = signal<any>(null);
   

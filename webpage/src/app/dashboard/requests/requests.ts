@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -15,7 +15,41 @@ import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.servic
   templateUrl: './requests.html',
   styleUrl: './requests.css'
 })
-export class RequestsComponent implements OnInit {
+export class RequestsComponent implements OnInit, AfterViewChecked {
+  el = inject(ElementRef);
+
+  private resizeObserver: ResizeObserver | null = null;
+  private observedHeaders = new Set<Element>();
+
+  ngAfterViewChecked() {
+    const headers = this.el.nativeElement.querySelectorAll('.bucket-table th');
+    if (headers.length > 0 && !this.resizeObserver) {
+      this.resizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          const target = entry.target as HTMLElement;
+          const key = 'requests_col_' + target.innerText.trim();
+          if (target.style.width) {
+            localStorage.setItem(key, target.style.width);
+          }
+        }
+      });
+    }
+
+    headers.forEach((th: HTMLElement) => {
+      if (!this.observedHeaders.has(th)) {
+        const key = 'requests_col_' + th.innerText.trim();
+        const savedWidth = localStorage.getItem(key);
+        if (savedWidth) {
+          th.style.width = savedWidth;
+        }
+        if (this.resizeObserver) {
+          this.resizeObserver.observe(th);
+          this.observedHeaders.add(th);
+        }
+      }
+    });
+  }
+
   user = signal<any>(null);
   orders = signal<any[]>([]);
   teams = signal<any[]>([]);
@@ -114,6 +148,8 @@ export class RequestsComponent implements OnInit {
   numberOfDirectorsForOrder = signal<{ [orderId: string]: number }>({});
   selectedPlanForOrder = signal<{ [orderId: string]: string }>({});
   isAssigningOrder = signal<Record<string, boolean>>({});
+  dueDateForOrder = signal<{ [orderId: string]: string }>({});
+  priorityForOrder = signal<{ [orderId: string]: string }>({});
 
   // Modal State
   selectedOrderForApproval = signal<any>(null);
@@ -311,15 +347,18 @@ export class RequestsComponent implements OnInit {
   }
 
   onAmountChange(orderId: string, event: any) {
-    // Strip commas to get raw number
     const rawVal = event.target.value.replace(/,/g, '');
-    // Allow empty or partial inputs, but parse as number when possible
     const val = rawVal && !isNaN(Number(rawVal)) ? Number(rawVal) : 0;
-
     this.dealClosedAmountForOrder.update(prev => ({ ...prev, [orderId]: val }));
-
-    // Format the value in the input field while typing
     event.target.value = val ? val.toLocaleString('en-IN') : '';
+  }
+
+  onDueDateChange(orderId: string, event: any) {
+    this.dueDateForOrder.update(prev => ({ ...prev, [orderId]: event.target.value }));
+  }
+
+  onPriorityChange(orderId: string, event: any) {
+    this.priorityForOrder.update(prev => ({ ...prev, [orderId]: event.target.value }));
   }
 
   getFormattedAdvance(orderId: string): string {
@@ -367,6 +406,9 @@ export class RequestsComponent implements OnInit {
     if (!orderId) return false;
     const emp = this.selectedEmployeeForOrder()[orderId];
     if (!emp) return false;
+    
+    if (!this.dueDateForOrder()[orderId]) return false;
+    if (!this.priorityForOrder()[orderId]) return false;
 
     const amount = this.dealClosedAmountForOrder()[orderId] || 0;
     if (amount <= 0) return false;
@@ -391,6 +433,8 @@ export class RequestsComponent implements OnInit {
 
   openApproveModal(order: any) {
     this.selectedOrderForApproval.set(order);
+    this.dueDateForOrder.update(prev => ({ ...prev, [order._id]: '' }));
+    this.priorityForOrder.update(prev => ({ ...prev, [order._id]: 'High' }));
     this.isApprovalModalOpen.set(true);
   }
 
@@ -480,7 +524,9 @@ export class RequestsComponent implements OnInit {
       stage: 'workAssigned',
       dealClosedAmount: amount,
       advanceAmountPaid: advance,
-      isGstApplicable: isGstApplicable
+      isGstApplicable: isGstApplicable,
+      dueDate: this.dueDateForOrder()[orderId],
+      priority: this.priorityForOrder()[orderId]
     };
 
     const plan = this.selectedPlanForOrder()[orderId];

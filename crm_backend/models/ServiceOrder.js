@@ -31,6 +31,8 @@ const ServiceOrderSchema = new mongoose.Schema({
   expertPhone: { type: String, default: '' },
   dealClosedAmount: { type: Number, default: 0 },
   advanceAmountPaid: { type: Number, default: 0 },
+  dueDate: { type: Date },
+  priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' },
   details: { type: mongoose.Schema.Types.Mixed, default: {} },
   documents: [{
     name: { type: String },

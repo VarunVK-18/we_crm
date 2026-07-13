@@ -21,7 +21,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   pollInterval: any;
 
   // Directory State
-  currentDirectoryTab = signal<string>('pending');
+  currentDirectoryTab = signal<string>('pending_forms');
   searchQuery = signal<string>('');
 
   // Checklist creation/edit State
@@ -157,21 +157,25 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     const role = this.user()?.role;
 
     let filtered = all;
-    if (tab === 'pending') {
+    if (tab === 'pending_forms') {
       filtered = all.filter(c => this.isActionRequired(c) && c.status !== 'completed' && c.status !== 'under_review');
+    } else if (tab === 'pending_documents') {
+      filtered = all.filter(c => this.isDocumentPending(c) && c.status !== 'completed' && c.status !== 'under_review');
     } else if (tab === 'in_progress') {
       filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review');
     } else if (tab === 'under_review') {
       filtered = all.filter(c => c.status === 'under_review');
     } else if (tab === 'completed') {
       if (role === 'filling_staff') {
-        // Filing staff sees all completed regardless of payment
-        filtered = all.filter(c => c.status === 'completed');
+        // Filing staff sees completed and under_review as completed
+        filtered = all.filter(c => c.status === 'completed' || c.status === 'under_review');
       } else {
         filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && this.hasPendingPayment(c));
       }
     } else if (tab === 'final_delivered') {
       filtered = all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && !this.hasPendingPayment(c));
+    } else if (tab === 'reopen') {
+      filtered = all.filter(c => c.status === 'reopen');
     }
 
     if (query) {
@@ -215,19 +219,23 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     const all = this.checklists();
     const role = this.user()?.role;
     if (tab === 'all') return all.length;
-    if (tab === 'pending') {
+    if (tab === 'pending_forms') {
       return all.filter(c => this.isActionRequired(c) && c.status !== 'completed' && c.status !== 'under_review').length;
+    } else if (tab === 'pending_documents') {
+      return all.filter(c => this.isDocumentPending(c) && c.status !== 'completed' && c.status !== 'under_review').length;
     } else if (tab === 'in_progress') {
       return all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review').length;
     } else if (tab === 'under_review') {
       return all.filter(c => c.status === 'under_review').length;
     } else if (tab === 'completed') {
       if (role === 'filling_staff') {
-        return all.filter(c => c.status === 'completed').length;
+        return all.filter(c => c.status === 'completed' || c.status === 'under_review').length;
       }
       return all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && this.hasPendingPayment(c)).length;
     } else if (tab === 'final_delivered') {
       return all.filter(c => this.getChecklistDisplayStatus(c) === 'Completed' && !this.hasPendingPayment(c)).length;
+    } else if (tab === 'reopen') {
+      return all.filter(c => c.status === 'reopen').length;
     }
     return 0;
   }
@@ -443,6 +451,13 @@ export class ServiceChecklists implements OnInit, OnDestroy {
       return !isFormFilled;
     }
 
+    return false;
+  }
+
+  isDocumentPending(c: any): boolean {
+    if (c.requested_documents && Array.isArray(c.requested_documents)) {
+      return c.requested_documents.some((d: any) => !d.isUploaded);
+    }
     return false;
   }
 

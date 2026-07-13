@@ -1,8 +1,9 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 import { OcrService } from '../../services/ocr.service';
+import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
 
 const bucketCache = {
   requests: null as any[] | null,
@@ -17,9 +18,43 @@ const bucketCache = {
   templateUrl: './bucket.html',
   styleUrl: './bucket.css'
 })
-export class BucketComponent implements OnInit {
+export class BucketComponent implements OnInit, AfterViewChecked {
   api = inject(Api);
   ocrService = inject(OcrService);
+  confirmDialog = inject(ConfirmDialogService);
+  el = inject(ElementRef);
+
+  private resizeObserver: ResizeObserver | null = null;
+  private observedHeaders = new Set<Element>();
+
+  ngAfterViewChecked() {
+    const headers = this.el.nativeElement.querySelectorAll('.bucket-table th');
+    if (headers.length > 0 && !this.resizeObserver) {
+      this.resizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          const target = entry.target as HTMLElement;
+          const key = 'bucket_col_' + target.innerText.trim();
+          if (target.style.width) {
+            localStorage.setItem(key, target.style.width);
+          }
+        }
+      });
+    }
+
+    headers.forEach((th: HTMLElement) => {
+      if (!this.observedHeaders.has(th)) {
+        const key = 'bucket_col_' + th.innerText.trim();
+        const savedWidth = localStorage.getItem(key);
+        if (savedWidth) {
+          th.style.width = savedWidth;
+        }
+        if (this.resizeObserver) {
+          this.resizeObserver.observe(th);
+          this.observedHeaders.add(th);
+        }
+      }
+    });
+  }
 
   user = signal<any>(null);
   requests = signal<any[]>([]);
@@ -76,8 +111,12 @@ export class BucketComponent implements OnInit {
   transactionId = signal<string>('');
   paymentTimestamp = signal<string>('');
 
+  dueDate = signal<string>('');
+  priority = signal<string>('High');
+
   isAcceptFormValid = computed(() => {
     if (!this.selectedTeamId()) return false;
+    if (!this.dueDate()) return false;
     if (this.requiresDirectorCount() && (!this.directorCount() || this.directorCount()! < 1)) return false;
     
     const dealAmount = Number(this.dealClosedAmount());
@@ -200,6 +239,8 @@ export class BucketComponent implements OnInit {
     this.advanceAmountPaid.set(null);
     this.directorCount.set(null);
     this.ocrMessage.set('');
+    this.dueDate.set('');
+    this.priority.set('High');
     this.isAcceptModalOpen.set(true);
   }
 
@@ -216,6 +257,8 @@ export class BucketComponent implements OnInit {
     this.isOcrVerified.set(false);
     this.transactionId.set('');
     this.paymentTimestamp.set('');
+    this.dueDate.set('');
+    this.priority.set('High');
   }
 
   async handleOcrUpload(event: any) {
@@ -268,6 +311,11 @@ export class BucketComponent implements OnInit {
       return;
     }
 
+    if (!this.dueDate()) {
+      alert('Please select a due date.');
+      return;
+    }
+
     if (this.requiresDirectorCount()) {
       const count = this.directorCount();
       if (count === null || count === undefined || count < 1) {
@@ -300,7 +348,9 @@ export class BucketComponent implements OnInit {
       team_id: teamId,
       dealClosedAmount: dealAmount,
       advanceAmountPaid: advanceAmount,
-      directorCount: this.directorCount()
+      directorCount: this.directorCount(),
+      dueDate: this.dueDate(),
+      priority: this.priority()
     };
 
     this.api.post<any>(`bucket/requests/${req._id}/claim`, payload).subscribe({
@@ -345,7 +395,15 @@ export class BucketComponent implements OnInit {
     });
   }
 
-  selfAssign(id: string) {
+  async selfAssign(id: string) {
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Take Job',
+      message: 'Are you sure you want to take this task?',
+      confirmText: 'Yes, Take Task',
+      cancelText: 'Cancel'
+    });
+    if (!confirmed) return;
+
     this.assigningId.set(id);
     this.api.post<any>(`bucket/requests/${id}/self-assign`, {}).subscribe({
       next: () => {

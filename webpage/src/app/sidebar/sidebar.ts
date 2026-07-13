@@ -71,8 +71,8 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Operations',
         items: [
-          { id: 'bucket', label: 'Bucket Requests', color: '#6366f1' },
-          { id: 'requests', label: 'New Requests', color: '#F43F5E' },
+          { id: 'bucket', label: 'New Requests', color: '#6366f1' },
+          { id: 'requests', label: 'New Services', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'service-track', label: 'Service Kanban', color: '#8B5CF6' },
@@ -103,8 +103,8 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Operations',
         items: [
-          { id: 'bucket', label: 'Bucket Requests', color: '#6366f1' },
-          { id: 'requests', label: 'New Requests', color: '#F43F5E' },
+          { id: 'bucket', label: 'New Requests', color: '#6366f1' },
+          { id: 'requests', label: 'New Services', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
@@ -124,7 +124,7 @@ export class Sidebar implements OnInit, OnDestroy {
       groups.push({
         header: 'Operations',
         items: [
-          { id: 'bucket', label: 'Available SR', color: '#6366f1' },
+          { id: 'bucket', label: 'Service Request', color: '#6366f1' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
           { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },

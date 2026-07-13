@@ -23,13 +23,13 @@
       <tbody>
         @for (i of [1, 2, 3, 4, 5]; track i) {
         <tr>
-          <td><div class="skeleton-text" style="width: 80px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
-          <td><div class="skeleton-text" style="width: 150px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
-          <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 140px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           <td><div class="skeleton-text" style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 150px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
+          <td><div class="skeleton-text" style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           @if (role !== 'admin') {
             <td><div class="skeleton-text" style="width: 70px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
           }
@@ -71,7 +71,7 @@
             <span class="text-muted" style="font-family: monospace;">{{ req.dealvoice_client_id || req.client_id?.custom_client_id || '-' }}</span>
           </td>
           <td>
-            <span style="font-weight: 500; color: var(--text-primary);">{{ req.client_company_name || '-' }}</span>
+            <span style="font-weight: 500; color: var(--text-primary);">{{ req.client_company_name || req.client_id?.company_name || '-' }}</span>
           </td>
           <td>
             <span class="service-name">{{ req.service_name }}</span>
@@ -80,10 +80,10 @@
             <span class="employee-name" style="font-weight: 500;">{{ getClientName(req) }}</span>
           </td>
           <td>
-            <span class="text-muted">{{ req.client_email || '-' }}</span>
+            <span class="text-muted">{{ req.client_email || req.client_id?.email || '-' }}</span>
           </td>
           <td>
-            <span>{{ req.client_phone || '-' }}</span>
+            <span>{{ req.client_phone || req.client_id?.phone || '-' }}</span>
           </td>
           <td>
             <span class="time-ago">{{ req.createdAt | date:'short' }}</span>
@@ -92,8 +92,24 @@
             <td style="text-align: center; vertical-align: middle;">
               @if (req.status === 'open') {
               <div class="action-buttons" style="display: flex; justify-content: center;">
-                <button class="btn-claim-sm" [disabled]="claimingId() === req._id" (click)="openAcceptModal(req)">
-                  {{ claimingId() === req._id ? 'Accepting...' : 'Accept' }}
+                <button class="btn-decline-sm" [disabled]="claimingId() === req._id" (click)="openAcceptModal(req)" title="Accept Request" style="color: #10b981; padding: 4px; display: inline-flex; align-items: center; justify-content: center;">
+                  @if (claimingId() === req._id) {
+                    <div class="bucket-spinner" style="width: 18px; height: 18px; border-width: 2px; margin-bottom: 0;"></div>
+                  } @else {
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M5 12l5 5l10 -10" />
+                    </svg>
+                  }
                 </button>
               </div>
               }
@@ -118,32 +134,21 @@
 
   @if (isFillingStaff) {
   <!-- FILLING STAFF VIEW: Jobs available in their team's bucket -->
-  <div class="bucket-header">
-    <div class="bucket-header-title">
-
-      <div>
-        <h1>Available Jobs</h1>
-        <p>Your manager has accepted these jobs for your team. Take a job to start working.</p>
-      </div>
-    </div>
-  </div>
-
   @if (isLoading()) {
   <div class="bucket-table-container">
     <table class="bucket-table">
       <thead>
         <tr>
+          <th>Service ID</th>
           <th>Client ID</th>
-          <th>Company Name</th>
+          <th>Updated On Date</th>
           <th>Service</th>
-          <th>Client Name</th>
-          <th>Email ID</th>
-          <th>Phone Number</th>
-          <th>Available Since</th>
+          <th>Company Name</th>
+          <th>Due Date</th>
+          <th>Priority</th>
           @if (user()?.role !== 'filling_staff') {
             <th>Team</th>
           }
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -159,7 +164,6 @@
           @if (user()?.role !== 'filling_staff') {
             <td><div class="skeleton-text" style="width: 100px; height: 14px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;"></div></td>
           }
-          <td><div class="skeleton-text" style="width: 90px; height: 32px; background: #e2e8f0; border-radius: 6px; animation: pulse 1.5s infinite;"></div></td>
         </tr>
         }
       </tbody>
@@ -179,42 +183,41 @@
     <table class="bucket-table">
       <thead>
         <tr>
+          <th>Service ID</th>
           <th>Client ID</th>
-          <th>Company Name</th>
+          <th>Updated On Date</th>
           <th>Service</th>
-          <th>Client Name</th>
-          <th>Email ID</th>
-          <th>Phone Number</th>
-          <th>Available Since</th>
+          <th>Company Name</th>
+          <th>Due Date</th>
+          <th>Priority</th>
           @if (user()?.role !== 'filling_staff') {
             <th>Team</th>
           }
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         @for (job of jobs(); track job._id) {
-        <tr>
+        <tr (click)="selfAssign(job._id)" style="cursor: pointer;" class="clickable-row">
+          <td>
+            <span class="text-muted" style="font-family: monospace;">{{ job.checklist_id?.custom_service_id || '-' }}</span>
+          </td>
           <td>
             <span class="text-muted" style="font-family: monospace;">{{ job.dealvoice_client_id || job.client_id?.custom_client_id || '-' }}</span>
           </td>
           <td>
-            <span style="font-weight: 500; color: var(--text-primary);">{{ job.client_company_name || '-' }}</span>
+            <span class="time-ago">{{ (job.updatedAt || job.claimed_at || job.createdAt) | date:'short' }}</span>
           </td>
           <td>
             <span class="service-name">{{ job.service_name }}</span>
           </td>
           <td>
-            <span class="employee-name" style="font-weight: 500;">{{ getClientName(job) }}</span>
+            <span style="font-weight: 500; color: var(--text-primary);">{{ job.client_company_name || job.client_id?.company_name || '-' }}</span>
           </td>
           <td>
-            <span class="text-muted">{{ job.client_email || '-' }}</span>
+            <span>{{ job.checklist_id?.dueDate ? (job.checklist_id.dueDate | date:'mediumDate') : '-' }}</span>
           </td>
           <td>
-            <span>{{ job.client_phone || '-' }}</span>
-          </td>
-          <td>
-            <span class="time-ago">{{ job.claimed_at | date:'short' }}</span>
+            <span>{{ job.checklist_id?.priority || '-' }}</span>
           </td>
           @if (user()?.role !== 'filling_staff') {
             <td>
@@ -223,17 +226,6 @@
               }
             </td>
           }
-          <td>
-            <div class="table-actions">
-              <button class="btn-claim-sm" (click)="selfAssign(job._id)" [disabled]="assigningId() === job._id">
-                @if (assigningId() === job._id) {
-                <span class="mini-spinner"></span>
-                } @else {
-                Take Job
-                }
-              </button>
-            </div>
-          </td>
         </tr>
         }
       </tbody>
@@ -267,7 +259,7 @@
 
       <div class="form-group-item">
         <label class="form-input-label">Assign to Filling Team *</label>
-        <select class="form-control-input" [(ngModel)]="selectedTeamId">
+        <select class="form-control-input" [(ngModel)]="selectedTeamId" style="background: white url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M6%209L12%2015L18%209%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E') no-repeat right 12px top 50%; background-size: 16px auto; appearance: none; -webkit-appearance: none;">
           <option value="">-- Select a Team --</option>
           @for (team of bucketTeams(); track team._id) {
           <option [value]="team._id">{{ team.name }}</option>
@@ -285,6 +277,22 @@
           <input type="number" class="form-control-input" placeholder="1" [(ngModel)]="directorCount" min="1" />
         </div>
       }
+
+      <div style="display: flex; gap: 16px; margin-top: 16px;">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <label class="form-input-label">Due Date *</label>
+          <input type="date" class="form-control-input" [(ngModel)]="dueDate" style="font-family: var(--font-body);" />
+        </div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <label class="form-input-label">Priority *</label>
+          <select class="form-control-input" [(ngModel)]="priority" style="background: white url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M6%209L12%2015L18%209%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E') no-repeat right 12px top 50%; background-size: 16px auto; appearance: none; -webkit-appearance: none; font-family: var(--font-body);">
+            <option value="High">High</option>
+            <option value="Medium">Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+      </div>
 
       <div class="form-group-item" style="margin-top: 16px;">
         <label class="form-input-label">Deal Closed Amount (INR) *</label>

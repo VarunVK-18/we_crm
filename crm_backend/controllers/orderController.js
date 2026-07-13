@@ -141,7 +141,9 @@ exports.updateOrder = async (req, res) => {
             $set: {
               assigned_team: updateData.team_id,
               dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
-              advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0
+              advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0,
+              dueDate: updateData.dueDate ? new Date(updateData.dueDate) : null,
+              priority: updateData.priority || 'Medium'
             }
           }
         );
@@ -204,6 +206,8 @@ exports.updateOrder = async (req, res) => {
             notes: '',
             dealClosedAmount: Number(updateData.dealClosedAmount) || 0,
             advanceAmountPaid: Number(updateData.advanceAmountPaid) || 0,
+            dueDate: updateData.dueDate ? new Date(updateData.dueDate) : null,
+            priority: updateData.priority || 'Medium',
             details: {
               entityName: order.entityName || bucketReq.client_name || '',
               Status: 'Pending Client Form Submission',

@@ -3,11 +3,11 @@
 }
 
 .premium-appbar {
-  height: 80px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 0 20px;
   background-color: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;

@@ -115,11 +115,31 @@
   background-color: var(--bg-secondary);
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  resize: horizontal;
+  overflow: auto;
+  position: relative;
+}
+
+.bucket-table th::-webkit-scrollbar {
+  height: 0px;
+  width: 0px;
+}
+
+.bucket-table th::-webkit-resizer {
+  background: transparent;
+  border: none;
 }
 
 .bucket-table td {
   padding: 8px 24px;
   border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.bucket-table th:last-child,
+.bucket-table td:last-child {
+  border-right: none;
 }
 
 .table-row-hover {
@@ -335,7 +355,7 @@
 
 .btn-decline-sm {
   background-color: var(--bg-primary);
-  border: 1px solid var(--border-color);
+  border: 1px solid transparent;
   color: var(--text-primary);
   padding: 8px 16px;
   border-radius: 4px;

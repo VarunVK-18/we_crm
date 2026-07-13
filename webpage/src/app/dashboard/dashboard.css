@@ -16,7 +16,6 @@
   height: 100vh;
   position: sticky;
   top: 0;
-  z-index: 100;
 }
 
 /* Main Panel */
@@ -30,11 +29,11 @@
 
 /* Premium White AppBar */
 .premium-appbar {
-  height: 80px;
+  height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 40px;
+  padding: 0 20px;
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   flex-shrink: 0;
@@ -54,13 +53,12 @@
 }
 
 .breadcrumb-item {
-  font-family: var(--font-heading);
-  font-size: 18px;
-  font-weight: 500;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 400;
   color: var(--text-muted);
   cursor: pointer;
   transition: color 0.2s ease;
-  letter-spacing: -0.5px;
 }
 
 .breadcrumb-item:hover {
@@ -68,8 +66,8 @@
 }
 
 .breadcrumb-item.active {
-  font-weight: 700;
-  color: var(--text-primary);
+  font-weight: 500;
+  color: var(--text-secondary);
   cursor: default;
 }
 
@@ -80,11 +78,13 @@
   opacity: 0.6;
 }
 
-.appbar-subtitle {
-  color: var(--text-muted);
-  font-size: var(--text-s); /* 12px */
-  font-weight: 500;
-  margin-top: 2px;
+.appbar-page-title {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 4px 0 0 0;
+  line-height: 1.2;
 }
 
 .appbar-actions {

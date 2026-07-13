@@ -750,3 +750,48 @@
   filter: grayscale(0%);
   transform: scale(1.05);
 }
+
+/* Media Query: Screens with small height (Laptops) */
+@media (max-height: 850px) {
+  .screen-layout {
+    padding: 16px;
+  }
+  
+  .branding-side {
+    padding: 2rem;
+  }
+  
+  .login-box {
+    padding: 1.25rem;
+  }
+  
+  .main-title {
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  
+  .main-subtitle {
+    margin-bottom: 12px;
+  }
+  
+  .auth-form {
+    gap: 0.75rem;
+  }
+  
+  .form-scroll-container {
+    padding: 1rem;
+  }
+  
+  .brand-logo {
+    height: 120px;
+    width: 120px;
+  }
+  
+  .custom-brand-logo {
+    max-width: 200px;
+  }
+  
+  .custom-brand-clients {
+    max-width: 350px;
+  }
+}

@@ -221,48 +221,68 @@
 }
 
 /* Table View */
-.table-container {
-  background: var(--surface);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+.bucket-table-container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.data-table {
+.bucket-table {
   width: 100%;
-  border-collapse: collapse;
   text-align: left;
-}
-
-.data-table th {
-  padding: 16px;
-  background-color: var(--surface-hover);
-  color: var(--text-secondary);
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border);
+  border-collapse: collapse;
   white-space: nowrap;
 }
 
-.data-table td {
-  padding: 16px;
-  border-bottom: 1px solid var(--border);
+.bucket-table th {
+  padding: 16px 24px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  resize: horizontal;
+  overflow: auto;
+  position: relative;
+}
+
+.bucket-table th::-webkit-scrollbar {
+  height: 0px;
+  width: 0px;
+}
+
+.bucket-table th::-webkit-resizer {
+  background: transparent;
+  border: none;
+}
+
+.bucket-table td {
+  padding: 8px 24px;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
   vertical-align: middle;
 }
 
-.data-table tr {
+.bucket-table th:last-child,
+.bucket-table td:last-child {
+  border-right: none;
+}
+
+.bucket-table tr {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-.data-table tbody tr:hover {
-  background-color: var(--surface-hover);
+.bucket-table tbody tr:hover {
+  background-color: var(--bg-secondary);
 }
 
-.data-table tbody tr:last-child td {
+.bucket-table tbody tr:last-child td {
   border-bottom: none;
 }
 

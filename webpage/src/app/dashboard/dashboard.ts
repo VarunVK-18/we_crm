@@ -386,12 +386,12 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'checklists': return 'Ongoing Service';
       case 'completed-checklists': return 'Completed Service';
       case 'checklist-details': return 'Service Details';
-      case 'requests': return 'New Requests';
+      case 'requests': return 'New Services';
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';
       case 'banners': return 'Banner Management';
       case 'staff-compliance': return 'Staff Compliance Radar';
-      case 'bucket': return 'Bucket Requests';
+      case 'bucket': return this.user()?.role === 'filling_staff' ? 'Service Request' : 'New Requests';
       case 'payment-tracker': return 'Reimbursement';
       case 'service-track': return 'Service Kanban';
       case 'service-tracker-table': return 'Service Tracker';

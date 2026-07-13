@@ -237,10 +237,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     this.destroyCharts();
   }
 
-  goToRequests() {
-    this.viewRequests.emit();
-  }
-
   getGreeting(): string {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -261,15 +257,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const u = this.user();
     if (!u) return '';
     return u.company_name || (u.company_id && typeof u.company_id === 'object' ? u.company_id.company_name : '');
-  }
-
-  getCompanyCode(): string {
-    const u = this.user();
-    if (!u) return '';
-    if (u.company_id && typeof u.company_id === 'object' && u.company_id.company_code) {
-      return u.company_id.company_code;
-    }
-    return u.company_code || '';
   }
 
   getTotalServicesCount(): number {
@@ -959,7 +946,15 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
+  isDocumentPending(c: any): boolean {
+    if (c.requested_documents && Array.isArray(c.requested_documents)) {
+      return c.requested_documents.some((d: any) => !d.isUploaded);
+    }
+    return false;
+  }
+
   getChecklistDisplayStatus(c: any): string {
+    if (!c) return 'Pending';
     if (c.status === 'completed') return 'Completed';
     
     const assigneeName = this.getAssigneeName(c);
@@ -977,64 +972,46 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   updateStats() {
-    const activeServicesCount = this.getTotalServicesCount();
-
-    const reminders = this.filteredRoleReminders();
-    let complianceScoreValue = 100;
-    let complianceDetail = 'Excellent Standing';
-    let complianceTrendUp = true;
-    if (reminders.length > 0) {
-      const expired = reminders.filter(r => r.status === 'expired').length;
-      const urgent = reminders.filter(r => r.status === 'urgent').length;
-      const expiringSoon = reminders.filter(r => r.status === 'expiringSoon').length;
-      complianceScoreValue = Math.max(0, Math.round(100 - (expired * 20 + urgent * 10 + expiringSoon * 2)));
-
-      if (complianceScoreValue >= 95) {
-        complianceDetail = 'Excellent Standing';
-        complianceTrendUp = true;
-      } else if (complianceScoreValue >= 80) {
-        complianceDetail = 'Good Standing';
-        complianceTrendUp = true;
-      } else if (complianceScoreValue >= 60) {
-        complianceDetail = 'Needs Attention';
-        complianceTrendUp = false;
-      } else {
-        complianceDetail = 'Critical Actions Required';
-        complianceTrendUp = false;
-      }
-    }
-
-    const openTasksCount = this.filteredRoleTasks().filter(t => !['Approved', 'Completed', 'Cancelled'].includes(t.status)).length;
+    const all = this.filteredRoleChecklists();
     
-    const actionRequiredCount = this.filteredRoleChecklists().filter(c => this.getChecklistDisplayStatus(c) === 'Action Required').length;
-    const inProcessCount = this.filteredRoleChecklists().filter(c => this.getChecklistDisplayStatus(c) === 'In Progress').length;
+    const allTasksCount = all.length;
+    const formsPendingCount = all.filter(c => this.isActionRequired(c) && c.status !== 'completed' && c.status !== 'under_review').length;
+    const docsPendingCount = all.filter(c => this.isDocumentPending(c) && c.status !== 'completed' && c.status !== 'under_review').length;
+    const inProgressCount = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review').length;
+    const forReviewCount = all.filter(c => c.status === 'under_review').length;
 
     this.stats = [
       { 
-        title: 'Active Services', 
-        value: inProcessCount.toString(), 
-        detail: inProcessCount > 0 ? `${inProcessCount} services in process` : 'No in process services', 
+        title: 'All Tasks', 
+        value: allTasksCount.toString(), 
+        detail: 'Total active checklists',
         isTrendUp: true 
       },
       { 
-        title: 'Compliance Score', 
-        value: `${complianceScoreValue}%`, 
-        detail: complianceDetail, 
-        isTrendUp: complianceTrendUp 
+        title: 'Forms Pending', 
+        value: formsPendingCount.toString(), 
+        detail: formsPendingCount > 0 ? 'Requires client action' : 'All clear', 
+        isWarning: formsPendingCount > 0,
+        isGood: formsPendingCount === 0
       },
       { 
-        title: 'Open Audit Tasks', 
-        value: openTasksCount.toString(), 
-        detail: openTasksCount > 0 ? 'Requires your review' : 'All caught up', 
-        isWarning: openTasksCount > 0,
-        isGood: openTasksCount === 0 
+        title: 'Docs Pending', 
+        value: docsPendingCount.toString(), 
+        detail: docsPendingCount > 0 ? 'Awaiting documents' : 'All clear', 
+        isWarning: docsPendingCount > 0,
+        isGood: docsPendingCount === 0 
       },
       { 
-        title: 'Actions Pending', 
-        value: actionRequiredCount.toString(), 
-        detail: actionRequiredCount > 0 ? `${actionRequiredCount} action required services` : 'All clear', 
-        isGood: actionRequiredCount === 0,
-        isWarning: actionRequiredCount > 0
+        title: 'In Progress', 
+        value: inProgressCount.toString(), 
+        detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', 
+        isTrendUp: true
+      },
+      { 
+        title: 'For Review', 
+        value: forReviewCount.toString(), 
+        detail: forReviewCount > 0 ? 'Ready for manager review' : 'None', 
+        isTrendUp: true
       }
     ];
   }

@@ -197,13 +197,13 @@
               }
               <span class="nav-item-label">{{ item.label }}</span>
               @if (item.id === 'requests' && newRequestsCount() > 0 && !isCollapsed()) {
-                <span class="nav-badge" style="color: var(--text-secondary, #64748b); font-size: 11px; margin-left: 8px; font-weight: 500;">({{ newRequestsCount() }})</span>
+                <span class="nav-badge count-badge">{{ newRequestsCount() }}</span>
               }
               @if (item.id === 'bucket' && bucketCount() > 0 && !isCollapsed()) {
-                <span class="nav-badge" style="color: var(--text-secondary, #64748b); font-size: 11px; margin-left: 8px; font-weight: 500;">({{ bucketCount() }})</span>
+                <span class="nav-badge count-badge">{{ bucketCount() }}</span>
               }
               @if (item.id === 'staff-chat' && unreadChatCount() > 0 && !isCollapsed()) {
-                <span class="nav-badge" style="color: var(--text-secondary, #64748b); font-size: 11px; margin-left: 8px; font-weight: 500;">({{ unreadChatCount() }})</span>
+                <span class="nav-badge count-badge">{{ unreadChatCount() }}</span>
               }
             </div>
             @if (isCollapsed()) {
