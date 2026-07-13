@@ -81,27 +81,22 @@
         <div style="margin-bottom: 32px;">
           <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Completed
             Service Orders (WE)</h3>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             @for (done of getWeDone(currentClient); track done.name) {
-            <div
-              style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="material-symbols-outlined" style="color: #059669; font-size: 18px;">check_circle</span>
-                <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">{{ done.name }}</span>
-              </div>
-              <div style="display: flex; align-items: center; gap: 12px;">
-                @if (done.checklistId) {
-                <a (click)="goToChecklist(done.checklistId)"
-                  style="cursor: pointer; font-size: 13px; font-weight: 600; color: #4f46e5; text-decoration: none; display: flex; align-items: center; gap: 4px;">
-                  View Order <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
-                </a>
-                }
-                <span
-                  style="font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: #e0f2fe; color: #0369a1;">
-                  #WE
-                </span>
-              </div>
-            </div>
+            <a 
+              [style.cursor]="done.checklistId ? 'pointer' : 'default'"
+              (click)="done.checklistId ? goToChecklist(done.checklistId) : null"
+              style="background-color: #6366f1; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; transition: opacity 0.2s;"
+              onmouseover="this.style.opacity='0.9'"
+              onmouseout="this.style.opacity='1'">
+              {{ done.name }}
+              @if (done.checklistId) {
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              }
+            </a>
             }
           </div>
         </div>
@@ -110,19 +105,11 @@
         <!-- 2. Outsourced Data -->
         @if (getOutsourcedDone(currentClient).length > 0) {
         <div style="margin-bottom: 32px;">
-          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Outsourced
-            Services</h3>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Outsourced Services</h3>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             @for (done of getOutsourcedDone(currentClient); track done.name) {
-            <div
-              style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 14px; font-weight: 600; color: var(--text-primary);">{{ done.name }}</span>
-              </div>
-              <span
-                style="font-size: 12px; font-weight: 700; padding: 4px 8px; border-radius: 4px; background: #f1f5f9; color: #475569;">
-                Outsourced
-              </span>
+            <div style="background-color: #111111; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center;">
+              {{ done.name }}
             </div>
             }
           </div>

@@ -20,7 +20,7 @@
   <!-- KPI Cards Grid -->
   <section class="client-metrics-grid" [style.display]="isSearching() ? 'none' : 'grid'">
     @for (stat of stats; track stat.title) {
-    <div class="metric-card">
+    <div class="metric-card" (click)="handleMetricCardClick(stat.title)" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
       <div class="metric-header" style="align-items: flex-start; justify-content: space-between; width: 100%;">
         <div>
           @if (isLoading()) {

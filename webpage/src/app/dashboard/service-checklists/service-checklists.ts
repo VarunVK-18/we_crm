@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, signal, input, Output, EventEmitter, ElementRef, inject, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, signal, input, Output, EventEmitter, ElementRef, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -23,6 +23,8 @@ export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
   pollInterval: any;
 
   // Directory State
+  initialTab = input<string>('');
+  initialPriority = input<string>('');
   currentDirectoryTab = signal<string>('pending_forms');
   searchQuery = signal<string>('');
   serviceIdFilter = signal<string>('');
@@ -109,7 +111,21 @@ export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
     'ROSH & CE'
   ];
 
-  constructor(public api: Api) { }
+  constructor(public api: Api) {
+    effect(() => {
+      const initTab = this.initialTab();
+      if (initTab && initTab !== 'all') { // If "all", we might still want it if the user explicit passed it. Let's just set it if present.
+        this.currentDirectoryTab.set(initTab);
+      } else if (initTab === 'all') {
+         this.currentDirectoryTab.set('all');
+      }
+
+      const initPriority = this.initialPriority();
+      if (initPriority) {
+        this.priorityFilter.set(initPriority);
+      }
+    }, { allowSignalWrites: true });
+  }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

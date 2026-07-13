@@ -153,7 +153,7 @@ export class ClientTopbarComponent implements OnInit {
     
     if (url.includes('/dashboard')) {
       trail = [{ label: 'Dashboard' }];
-      this.pageSubtitle.set('Client Portal Dashboard');
+      this.pageSubtitle.set('Stay updated with your business activities.');
     } else {
       trail.push({ label: 'Dashboard', path: '/client/dashboard' });
       
@@ -164,17 +164,17 @@ export class ClientTopbarComponent implements OnInit {
         trail.push({ label: 'Service Details' });
         this.pageSubtitle.set('Track your request progress');
       } else if (url.includes('/compliance')) {
-        trail.push({ label: 'Compliance Center' });
+        trail.push({ label: 'Compliance Calendar' });
         const usr = this.user();
-        this.pageSubtitle.set(usr?.company_name || usr?.name || 'Entity Compliance Management');
+        this.pageSubtitle.set('Track Your Compliance and Upcoming Deadlines');
       } else if (url.includes('/tools/nic-finder')) {
-        trail.push({ label: 'NIC CODE FINDER' });
-        this.pageSubtitle.set('Search and find the correct National Industrial Classification (NIC) Code for your business.');
+        trail.push({ label: 'NIC code finder' });
+        this.pageSubtitle.set('Search correct National Industrial Classification (NIC) Code for your business.');
       } else if (url.includes('/tools/compliance-calendar')) {
-        trail.push({ label: 'COMPLIANCE CALENDAR' });
+        trail.push({ label: 'Compliance calendar' });
         this.pageSubtitle.set('View upcoming compliance deadlines and forms.');
       } else if (url.includes('/tools/trademark-finder')) {
-        trail.push({ label: 'TRADEMARK CLASSES FINDER' });
+        trail.push({ label: 'Trademark class finder' });
         this.pageSubtitle.set('Search and find the correct TradeMark Class for your goods or services.');
       } else if (url.includes('/ongoing-services')) {
         trail.push({ label: 'My Services' });

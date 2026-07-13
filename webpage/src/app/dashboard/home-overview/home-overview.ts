@@ -1387,5 +1387,23 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
+
+  @Output() navigateTab = new EventEmitter<{tab: string, filter?: string, priority?: string}>();
+
+  handleMetricCardClick(statTitle: string) {
+    if (statTitle === 'Opportunities') {
+      this.navigateTab.emit({ tab: 'opportunities' });
+    } else if (statTitle === 'All Tasks') {
+      this.navigateTab.emit({ tab: 'checklists', filter: 'all' });
+    } else if (statTitle === 'Due Today') {
+      this.navigateTab.emit({ tab: 'checklists', filter: 'all', priority: 'High' });
+    } else if (statTitle === 'In Progress') {
+      this.navigateTab.emit({ tab: 'checklists', filter: 'in_progress' });
+    } else if (statTitle === 'For Review') {
+      this.navigateTab.emit({ tab: 'checklists', filter: 'under_review' });
+    } else if (statTitle === 'Completed') {
+      this.navigateTab.emit({ tab: 'checklists', filter: 'completed' });
+    }
+  }
 }
 

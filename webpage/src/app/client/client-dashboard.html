@@ -401,7 +401,7 @@
           </div>
           <span class="qa-label">Licensing</span>
         </div>
-        <div class="qa-item" (click)="goToServiceCategory('other')" style="cursor: pointer;">
+        <div class="qa-item" (click)="goToServiceCategory('all')" style="cursor: pointer;">
           <div class="qa-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
               color="#334155">
@@ -415,7 +415,7 @@
                 stroke-width="1.5" />
             </svg>
           </div>
-          <span class="qa-label">Other</span>
+          <span class="qa-label">All</span>
         </div>
       </div>
     </div>
@@ -657,7 +657,7 @@
 <div class="ho-modal-backdrop" (click)="closeDownloadAppModal()"
   style="display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 9999; animation: fadeIn 0.2s ease-out;">
   <div class="ho-modal-content" (click)="$event.stopPropagation()"
-    style="background: white; border-radius: 24px; padding: 32px; max-width: 420px; width: 90%; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.1), 0 10px 20px -5px rgba(15, 23, 42, 0.05); position: relative; text-align: center; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+    style="background: white; border-radius: 24px; padding: 32px; max-width: 420px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.1), 0 10px 20px -5px rgba(15, 23, 42, 0.05); position: relative; text-align: center; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
 
     <!-- Close button -->
     <button (click)="closeDownloadAppModal()"

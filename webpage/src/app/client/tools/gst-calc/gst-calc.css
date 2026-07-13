@@ -20,10 +20,42 @@
 }
 
 .tool-header {
-  margin-bottom: 32px;
+  background-color: var(--surface);
+  padding: 16px 0 0px;
+}
+
+.header-container {
+  width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+}
+
+.logo-wrapper {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.logo-text {
+  font-family: var(--font-heading);
+  font-size: 60px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: block;
 }
 
 .back-btn {
+  position: absolute;
+  left: 40px;
+  top: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
