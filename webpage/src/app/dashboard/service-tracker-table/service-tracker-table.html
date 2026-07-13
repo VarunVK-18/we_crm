@@ -31,15 +31,13 @@
     <table class="we-table">
       <thead>
         <tr>
-          <th>Ser-ID</th>
-          <th>Service Name</th>
-          <th>Company Name</th>
+          <th>Service ID</th>
           <th>Client ID</th>
-          <th>Client Name</th>
+          <th>Company Name</th>
+          <th>Service Name</th>
           <th>Upcoming Task</th>
-          <th>Created On</th>
           <th>Updated On</th>
-          <th>Handled By</th>
+          <th>Assigned To</th>
         </tr>
       </thead>
       <tbody>
@@ -51,25 +49,19 @@
             </div>
           </td>
           <td>
-            <div style="font-weight: 600; color: #2563eb; font-size: 14px;">{{ item.service_name || item.checklist_name || 'Unknown Service' }}</div>
-          </td>
-          <td>
-            <div style="font-size: 13px; font-weight: 500; color: #334155;">{{ item.details?.entityName || item.details?.entity_name || item.client_id?.company_name || 'N/A' }}</div>
-          </td>
-          <td>
             <div style="font-size: 12px; color: #64748b; font-family: monospace;">{{ item.client_id?.custom_client_id || 'N/A' }}</div>
           </td>
           <td>
-            <div style="font-weight: 500; font-size: 13px; color: #1e293b;">{{ item.client_id?.owner_name || 'Unknown Client' }}</div>
+            <div style="font-size: 13px; font-weight: 500; color: #334155;">{{ item.details?.entityName || item.details?.entity_name || item.client_id?.company_name || item.client_id?.owner_name || 'N/A' }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: #2563eb; font-size: 14px;">{{ item.service_name || item.checklist_name || 'Unknown Service' }}</div>
           </td>
           <td>
             <div style="font-size: 13px; color: #f59e0b; font-weight: 500; display: flex; align-items: center; gap: 4px;">
               <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
               Next: {{ getNextTask(item.items) }}
             </div>
-          </td>
-          <td>
-            <div style="font-size: 13px; color: #475569;">{{ formatDate(item.createdAt) }}</div>
           </td>
           <td>
             <div style="font-size: 13px; color: #475569;">{{ formatDate(item.updatedAt) }}</div>

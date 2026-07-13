@@ -131,14 +131,15 @@
         @if (user()) {
         <div class="user-badge-container">
           <div class="user-badge" (click)="toggleProfileDropdown()">
-            <div class="badge-avatar">
+            <label class="badge-avatar" style="cursor: pointer;" (click)="$event.stopPropagation()" title="Upload Profile Picture">
               @if (user()?.profile_image) {
               <img [src]="api.getFileUrl(user()?.profile_image)" alt="Profile"
                 style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
               } @else {
               {{ getInitials() }}
               }
-            </div>
+              <input type="file" style="display: none;" (change)="uploadProfilePhoto($event)" accept="image/*">
+            </label>
             <div class="user-badge-text">
               <span class="badge-name">{{ user().owner_name || user().name }}</span>
             </div>
@@ -153,12 +154,7 @@
           @if (isProfileDropdownOpen()) {
           <div (click)="isProfileDropdownOpen.set(false)" style="position: fixed; inset: 0; z-index: 998;"></div>
           <div class="profile-dropdown-menu" style="z-index: 999; position: absolute;">
-            <label class="dropdown-item"
-              style="cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 10px 16px; color: var(--palette-dark); font-size: 14px; transition: background 0.2s;">
-              <span class="material-symbols-outlined" style="font-size: 18px;">add_a_photo</span>
-              Upload Photo
-              <input type="file" style="display: none;" (change)="uploadProfilePhoto($event)" accept="image/*">
-            </label>
+
             <button class="logout-btn" (click)="handleLogout(); toggleProfileDropdown()">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

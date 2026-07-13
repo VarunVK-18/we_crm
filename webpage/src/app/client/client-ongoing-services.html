@@ -18,10 +18,10 @@
         } @else {
           <div class="filter-controls">
             <div class="tabs-container">
-              <button class="tab-btn" [class.active]="activeTab() === 'All'" (click)="setTab('All')">All ({{ getTabCount('All') }})</button>
-              <button class="tab-btn" [class.active]="activeTab() === 'Action Required'" (click)="setTab('Action Required')">Action Required ({{ getTabCount('Action Required') }})</button>
-              <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')">In Progress ({{ getTabCount('In Progress') }})</button>
-              <button class="tab-btn" [class.active]="activeTab() === 'Completed'" (click)="setTab('Completed')">Completed ({{ getTabCount('Completed') }})</button>
+              <button class="tab-btn" [class.active]="activeTab() === 'All'" (click)="setTab('All')" style="display: inline-flex; align-items: center;">All <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('All') }}</span></button>
+              <button class="tab-btn" [class.active]="activeTab() === 'Action Required'" (click)="setTab('Action Required')" style="display: inline-flex; align-items: center;">Action Required <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('Action Required') }}</span></button>
+              <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')" style="display: inline-flex; align-items: center;">In Progress <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('In Progress') }}</span></button>
+              <button class="tab-btn" [class.active]="activeTab() === 'Completed'" (click)="setTab('Completed')" style="display: inline-flex; align-items: center;">Completed <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('Completed') }}</span></button>
             </div>
             <div class="search-container">
               <span class="material-symbols-outlined search-icon">search</span>

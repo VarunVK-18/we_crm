@@ -35,85 +35,70 @@
     <div class="main-content-col">
 
       <!-- Client Info Card -->
-      <section class="info-card">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <h3 class="info-title">{{ checklist().client_id?.owner_name }}</h3>
-            @if (checklist().details?.entityName || checklist().client_id?.company_name) {
-            <p class="info-subtitle" style="display: flex; align-items: center; gap: 6px;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 22H22" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
-                  stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M17 2H7C4 2 3 3.79 3 6V22H21V6C21 3.79 20 2 17 2Z" stroke="currentColor" stroke-width="1.5"
-                  stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
-                <path opacity="0.4" d="M7 16.5H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
-                  stroke-linecap="round" stroke-linejoin="round" />
-                <path opacity="0.4" d="M14 16.5H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
-                  stroke-linecap="round" stroke-linejoin="round" />
-                <path opacity="0.4" d="M7 12H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
-                  stroke-linecap="round" stroke-linejoin="round" />
-                <path opacity="0.4" d="M14 12H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
-                  stroke-linecap="round" stroke-linejoin="round" />
-                <path opacity="0.4" d="M7 7.5H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
-                  stroke-linecap="round" stroke-linejoin="round" />
-                <path opacity="0.4" d="M14 7.5H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10"
-                  stroke-linecap="round" stroke-linejoin="round" />
+      <section class="info-card" style="padding: 16px 24px; border-radius: 12px; background-color: var(--bg-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px;">
+        <!-- Row 1 -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <!-- Left: Icon, Company & Badges -->
+          <div style="display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;">
+            <div style="width: 40px; height: 40px; border-radius: 8px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-primary); flex-shrink: 0;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2 22H22" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M17 2H7C4 2 3 3.79 3 6V22H21V6C21 3.79 20 2 17 2Z" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path opacity="0.4" d="M7 16.5H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path opacity="0.4" d="M14 16.5H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path opacity="0.4" d="M7 12H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path opacity="0.4" d="M14 12H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path opacity="0.4" d="M7 7.5H10" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
+                <path opacity="0.4" d="M14 7.5H17" stroke="currentColor" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round" />
               </svg>
-              {{ checklist().details?.entityName || checklist().client_id?.company_name }}
-            </p>
-            }
+            </div>
+            
+            <h3 class="info-title" style="margin: 0; font-size: 18px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ checklist().details?.entityName || checklist().client_id?.company_name || checklist().client_id?.owner_name }}
+            </h3>
+
+            <!-- Badges immediately next to Company Name -->
+            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+              <span class="status-badge" [ngClass]="getChecklistStatusClass(getChecklistDisplayStatus(checklist()))" style="font-size: 11px; padding: 4px 10px; border-radius: 100px; text-transform: uppercase; font-weight: 700;">
+                {{ getChecklistDisplayStatus(checklist()) }}
+              </span>
+              @if (checklist().service_name) {
+              <span style="font-size: 11px; padding: 4px 10px; border-radius: 100px; background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); text-transform: uppercase; font-weight: 600;">
+                {{ checklist().service_name }}
+              </span>
+              }
+            </div>
           </div>
-          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 12px;">
-            <span class="status-badge" [ngClass]="getChecklistStatusClass(getChecklistDisplayStatus(checklist()))">{{
-              getChecklistDisplayStatus(checklist()) }}</span>
-            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
-              @if (checklist().client_id?.phone) {
-              <div
-                style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); font-weight: 600;">
-                <span class="material-symbols-outlined"
-                  style="font-size: 16px; color: var(--text-secondary);">call</span>
-                {{ checklist().client_id.phone }}
-              </div>
-              }
-              @if (checklist().client_id?.email) {
-              <div
-                style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-primary); font-weight: 600;">
-                <span class="material-symbols-outlined"
-                  style="font-size: 16px; color: var(--text-secondary);">mail</span>
-                {{ checklist().client_id.email }}
-              </div>
-              }
+
+          <!-- Right: Progress Bar -->
+          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; gap: 6px; width: 240px; flex-shrink: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <h4 style="font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin: 0; letter-spacing: 0.5px;">OVERALL PROGRESS</h4>
+              <span style="font-size: 12px; font-weight: 800; color: var(--text-primary);">{{ getChecklistProgress() }}%</span>
+            </div>
+            <div style="width: 100%; height: 6px; background-color: var(--border-color); border-radius: 9999px; overflow: hidden;">
+              <div [style.width]="getChecklistProgress() + '%'" style="height: 100%; background-color: var(--text-primary); transition: width 1s ease-out; border-radius: 9999px;"></div>
             </div>
           </div>
         </div>
 
-        <div
-          style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px; border-top: 1px solid var(--border-color); padding-top: 24px;">
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <h4
-              style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin: 0;">
-              Service Name</h4>
-            <div style="display: flex; align-items: center; gap: 12px;">
-
-              <div style="display: flex; flex-direction: column;">
-                <span style="font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 20px;">{{
-                  checklist().service_name || 'Unknown Service' }}</span>
-              </div>
-            </div>
+        <!-- Row 2 -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <!-- Left: POC Name -->
+          <div style="padding-left: 52px; display: flex; align-items: center; flex: 1;">
+            <p class="info-subtitle" style="margin: 0; font-size: 13px; color: var(--text-secondary); font-weight: 500;">
+              POC: <span style="color: var(--text-primary); font-weight: 600;">{{ checklist().client_id?.owner_name }}</span>
+            </p>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <h4
-                style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin: 0;">
-                Completion Progress</h4>
-              <span style="font-size: 12px; font-weight: 700; color: var(--text-primary);">{{ getChecklistProgress()
-                }}%</span>
+
+          <!-- Right: Contacts -->
+          <div style="display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0;">
+            @if (checklist().client_id?.phone) {
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 600;">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: var(--text-secondary);">call</span>
+              {{ checklist().client_id.phone }}
             </div>
-            <div
-              style="width: 100%; height: 8px; background-color: var(--border-color); border-radius: 9999px; overflow: hidden;">
-              <div [style.width]="getChecklistProgress() + '%'"
-                style="height: 100%; background-color: var(--accent-primary); transition: width 1s ease-out;"></div>
-            </div>
+            }
           </div>
         </div>
       </section>

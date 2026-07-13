@@ -54,7 +54,7 @@ export class ServiceTrackComponent implements OnInit {
     if (this.isFirstLoad()) {
       this.isLoading.set(true);
     }
-    this.api.get<any>('checklists').subscribe({
+    this.api.get<any>('checklists/summary').subscribe({
       next: (res) => {
         if (res.checklists) {
           // Filter out completed/rejected checklists to only show active ones

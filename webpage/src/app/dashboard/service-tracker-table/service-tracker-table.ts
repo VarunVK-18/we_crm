@@ -133,7 +133,7 @@ export class ServiceTrackerTableComponent implements OnInit {
 
   fetchChecklists() {
     this.isLoading.set(true);
-    this.api.get<any>('checklists').subscribe({
+    this.api.get<any>('checklists/summary').subscribe({
       next: (res) => {
         if (res.checklists) {
           const activeChecklists = res.checklists.filter((c: any) => c.status !== 'completed' && c.status !== 'rejected');
