@@ -1,4 +1,6 @@
-import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef, Output, EventEmitter, OnDestroy } from '@angular/core';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -18,7 +20,7 @@ const bucketCache = {
   templateUrl: './bucket.html',
   styleUrl: './bucket.css'
 })
-export class BucketComponent implements OnInit, AfterViewChecked {
+export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   api = inject(Api);
   ocrService = inject(OcrService);
   confirmDialog = inject(ConfirmDialogService);
@@ -72,9 +74,71 @@ export class BucketComponent implements OnInit, AfterViewChecked {
     });
   }
 
+  searchSubject = new Subject<void>();
+  
+  ngOnDestroy() {
+    this.searchSubject.complete();
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+  }
+
+  onSearchChange() {
+    this.searchSubject.next();
+  }
+
   user = signal<any>(null);
   requests = signal<any[]>([]);
+  
+  // Manager Column Filters
+  mClientIdFilter = signal<string>('');
+  mCompanyNameFilter = signal<string>('');
+  mServiceFilter = signal<string>('');
+  mClientNameFilter = signal<string>('');
+  mEmailFilter = signal<string>('');
+  mPhoneFilter = signal<string>('');
+
+  filteredRequests = computed(() => {
+    let list = this.requests();
+    const cid = this.mClientIdFilter().toLowerCase();
+    const cname = this.mCompanyNameFilter().toLowerCase();
+    const svc = this.mServiceFilter().toLowerCase();
+    const cclient = this.mClientNameFilter().toLowerCase();
+    const email = this.mEmailFilter().toLowerCase();
+    const phone = this.mPhoneFilter().toLowerCase();
+
+    if (cid) list = list.filter(r => (r.dealvoice_client_id || r.client_id?.custom_client_id || '').toLowerCase().includes(cid));
+    if (cname) list = list.filter(r => (r.client_company_name || r.client_id?.company_name || '').toLowerCase().includes(cname));
+    if (svc) list = list.filter(r => (r.service_name || '').toLowerCase().includes(svc));
+    if (cclient) list = list.filter(r => this.getClientName(r).toLowerCase().includes(cclient));
+    if (email) list = list.filter(r => (r.client_email || r.client_id?.email || '').toLowerCase().includes(email));
+    if (phone) list = list.filter(r => (r.client_phone || r.client_id?.phone || '').toLowerCase().includes(phone));
+    
+    return list;
+  });
+
   jobs = signal<any[]>([]);
+  
+  // Staff Column Filters
+  sServiceIdFilter = signal<string>('');
+  sClientIdFilter = signal<string>('');
+  sServiceFilter = signal<string>('');
+  sCompanyFilter = signal<string>('');
+
+  filteredJobs = computed(() => {
+    let list = this.jobs();
+    const sid = this.sServiceIdFilter().toLowerCase();
+    const cid = this.sClientIdFilter().toLowerCase();
+    const svc = this.sServiceFilter().toLowerCase();
+    const cmp = this.sCompanyFilter().toLowerCase();
+
+    if (sid) list = list.filter(j => (j.checklist_id?.custom_service_id || '').toLowerCase().includes(sid));
+    if (cid) list = list.filter(j => (j.dealvoice_client_id || j.client_id?.custom_client_id || '').toLowerCase().includes(cid));
+    if (svc) list = list.filter(j => (j.service_name || '').toLowerCase().includes(svc));
+    if (cmp) list = list.filter(j => (j.client_company_name || j.client_id?.company_name || '').toLowerCase().includes(cmp));
+    
+    return list;
+  });
   bucketTeams = signal<any[]>([]);
 
   isLoading = signal<boolean>(true);
@@ -165,6 +229,11 @@ export class BucketComponent implements OnInit, AfterViewChecked {
   });
 
   ngOnInit() {
+    this.searchSubject.pipe(debounceTime(500)).subscribe(() => {
+      this.currentPage.set(1);
+      this.loadData(true);
+    });
+
     const saved = localStorage.getItem('user');
     if (saved) this.user.set(JSON.parse(saved));
 
@@ -201,29 +270,61 @@ export class BucketComponent implements OnInit, AfterViewChecked {
     return this.role === 'filling_staff' || this.role === 'account_manager';
   }
 
-  loadData() {
-    this.isLoading.set(true);
+  loadData(silent = false) {
+    if (!silent) {
+      this.isLoading.set(true);
+    }
     const page = this.currentPage();
     const limit = this.limit();
 
     if (this.isManager) {
       const status = this.activeTab() === 'all' ? 'all' : this.activeTab();
-      this.api.get<any>(`bucket/requests?status=${status}&page=${page}&limit=${limit}`).subscribe({
+      let url = `bucket/requests?status=${status}&page=${page}&limit=${limit}`;
+      const cid = this.mClientIdFilter().trim();
+      const cname = this.mCompanyNameFilter().trim();
+      const svc = this.mServiceFilter().trim();
+      const cclient = this.mClientNameFilter().trim();
+      const email = this.mEmailFilter().trim();
+      const phone = this.mPhoneFilter().trim();
+
+      if (cid) url += `&searchClientId=${encodeURIComponent(cid)}`;
+      if (cname) url += `&searchCompany=${encodeURIComponent(cname)}`;
+      if (svc) url += `&searchService=${encodeURIComponent(svc)}`;
+      if (cclient) url += `&searchClientName=${encodeURIComponent(cclient)}`;
+      if (email) url += `&searchEmail=${encodeURIComponent(email)}`;
+      if (phone) url += `&searchPhone=${encodeURIComponent(phone)}`;
+
+      this.api.get<any>(url).subscribe({
         next: (res) => {
           this.requests.set(res.requests || []);
           this.totalPages.set(res.totalPages || 1);
-          this.isLoading.set(false);
+          if (!silent) this.isLoading.set(false);
         },
-        error: () => this.isLoading.set(false)
+        error: () => {
+          if (!silent) this.isLoading.set(false);
+        }
       });
     } else if (this.isFillingStaff) {
-      this.api.get<any>(`bucket/available?page=${page}&limit=${limit}`).subscribe({
+      let url = `bucket/available?page=${page}&limit=${limit}`;
+      const sid = this.sServiceIdFilter().trim();
+      const cid = this.sClientIdFilter().trim();
+      const svc = this.sServiceFilter().trim();
+      const cmp = this.sCompanyFilter().trim();
+
+      if (sid) url += `&searchServiceId=${encodeURIComponent(sid)}`;
+      if (cid) url += `&searchClientId=${encodeURIComponent(cid)}`;
+      if (svc) url += `&searchService=${encodeURIComponent(svc)}`;
+      if (cmp) url += `&searchCompany=${encodeURIComponent(cmp)}`;
+
+      this.api.get<any>(url).subscribe({
         next: (res) => {
           this.jobs.set(res.jobs || []);
           this.totalPages.set(res.totalPages || 1);
-          this.isLoading.set(false);
+          if (!silent) this.isLoading.set(false);
         },
-        error: () => this.isLoading.set(false)
+        error: () => {
+          if (!silent) this.isLoading.set(false);
+        }
       });
     }
   }

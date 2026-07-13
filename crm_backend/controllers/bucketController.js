@@ -11,7 +11,15 @@ const { getNextServiceId } = require('../utils/counterHelper');
 const getBucketRequests = async (req, res) => {
   try {
     const company_id = req.user.company_id;
-    const { status = 'open' } = req.query;
+    const { 
+      status = 'open',
+      searchClientId,
+      searchCompany,
+      searchService,
+      searchClientName,
+      searchEmail,
+      searchPhone
+    } = req.query;
 
     const filter = { company_id };
     if (status === 'all') {
@@ -24,6 +32,36 @@ const getBucketRequests = async (req, res) => {
       filter.source = { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm', 'we-crm-new'] };
     } else {
       filter.status = status;
+    }
+
+    if (searchClientId || searchCompany || searchService || searchClientName || searchEmail || searchPhone) {
+      const userFilter = {};
+      let userQueryActive = false;
+
+      if (searchClientId) { userFilter.custom_client_id = { $regex: searchClientId, $options: 'i' }; userQueryActive = true; }
+      if (searchCompany) { userFilter.company_name = { $regex: searchCompany, $options: 'i' }; userQueryActive = true; }
+      if (searchClientName) { userFilter.owner_name = { $regex: searchClientName, $options: 'i' }; userQueryActive = true; }
+      if (searchEmail) { userFilter.email = { $regex: searchEmail, $options: 'i' }; userQueryActive = true; }
+      if (searchPhone) { userFilter.phone = { $regex: searchPhone, $options: 'i' }; userQueryActive = true; }
+
+      let matchingUserIds = [];
+      if (userQueryActive) {
+        const users = await User.find(userFilter).select('_id').lean();
+        matchingUserIds = users.map(u => u._id);
+      }
+
+      const andConditions = [];
+      if (searchClientId) andConditions.push({ $or: [{ dealvoice_client_id: { $regex: searchClientId, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+      if (searchCompany) andConditions.push({ $or: [{ client_company_name: { $regex: searchCompany, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+      if (searchService) andConditions.push({ service_name: { $regex: searchService, $options: 'i' } });
+      if (searchClientName) andConditions.push({ $or: [{ client_name: { $regex: searchClientName, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+      if (searchEmail) andConditions.push({ $or: [{ client_email: { $regex: searchEmail, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+      if (searchPhone) andConditions.push({ $or: [{ client_phone: { $regex: searchPhone, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+
+      if (andConditions.length > 0) {
+        if (!filter.$and) filter.$and = [];
+        filter.$and.push(...andConditions);
+      }
     }
 
     const page = parseInt(req.query.page) || 1;
@@ -206,6 +244,13 @@ const getAvailableJobs = async (req, res) => {
 
     const teamIds = teams.map(t => t._id);
 
+    const {
+      searchServiceId,
+      searchClientId,
+      searchService,
+      searchCompany
+    } = req.query;
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 15;
     const skip = (page - 1) * limit;
@@ -218,6 +263,37 @@ const getAvailableJobs = async (req, res) => {
         { claimed_by: { $in: teams.map(t => t.manager_id).filter(Boolean) }, team_id: null }
       ]
     };
+
+    if (searchServiceId || searchClientId || searchService || searchCompany) {
+      const userFilter = {};
+      let userQueryActive = false;
+
+      if (searchClientId) { userFilter.custom_client_id = { $regex: searchClientId, $options: 'i' }; userQueryActive = true; }
+      if (searchCompany) { userFilter.company_name = { $regex: searchCompany, $options: 'i' }; userQueryActive = true; }
+
+      let matchingUserIds = [];
+      if (userQueryActive) {
+        const users = await User.find(userFilter).select('_id').lean();
+        matchingUserIds = users.map(u => u._id);
+      }
+      
+      let matchingChecklistIds = [];
+      if (searchServiceId) {
+        const checklists = await Checklist.find({ custom_service_id: { $regex: searchServiceId, $options: 'i' } }).select('_id').lean();
+        matchingChecklistIds = checklists.map(c => c._id);
+      }
+
+      const andConditions = [];
+      if (searchServiceId) andConditions.push({ checklist_id: { $in: matchingChecklistIds } });
+      if (searchClientId) andConditions.push({ $or: [{ dealvoice_client_id: { $regex: searchClientId, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+      if (searchService) andConditions.push({ service_name: { $regex: searchService, $options: 'i' } });
+      if (searchCompany) andConditions.push({ $or: [{ client_company_name: { $regex: searchCompany, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+
+      if (andConditions.length > 0) {
+        if (!filter.$and) filter.$and = [];
+        filter.$and.push(...andConditions);
+      }
+    }
 
     const total = await BucketRequest.countDocuments(filter);
     const totalPages = Math.ceil(total / limit) || 1;

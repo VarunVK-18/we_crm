@@ -23,6 +23,7 @@ const homeOverviewCache = {
 })
 export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   @Output() viewRequests = new EventEmitter<void>();
+  @Output() viewChecklist = new EventEmitter<string>();
   searchQuery = input<string>('');
 
   @ViewChild('growthChart') growthChartCanvas!: ElementRef<HTMLCanvasElement>;
@@ -44,50 +45,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   checklists = signal<any[]>([]);
   // Optimized: server-side stat counts
   dashboardStats = signal<any>(null);
-  ongoingItems = computed(() => {
-    const list: any[] = [];
-    
-    // Add checklists
-    this.filteredRoleChecklists().forEach(c => {
-      let clientObj = typeof c.client_id === 'object' ? c.client_id : this.clients().find(client => client._id === c.client_id);
-      
-      list.push({
-        _id: c._id,
-        title: c.service_name,
-        clientName: c.details?.entityName || c.details?.companyName || clientObj?.company_name || clientObj?.owner_name || 'Client',
-        assignedTo: this.getAssigneeName(c),
-        status: c.status === 'completed' ? 'Certified' : (c.status === 'in_progress' ? 'In Progress' : 'Pending'),
-        isCompleted: c.status === 'completed',
-        createdAt: c.createdAt,
-        type: 'certification'
-      });
-    });
 
-    // Add tasks
-    this.filteredRoleTasks().forEach(t => {
-      let clientObj = typeof t.client_id === 'object' ? t.client_id : this.clients().find(client => client._id === t.client_id);
-      
-      list.push({
-        _id: t._id,
-        title: t.title,
-        clientName: t.details?.entityName || t.details?.companyName || clientObj?.company_name || clientObj?.owner_name || 'Client',
-        assignedTo: t.assigned_to?.owner_name || t.assigned_to?.name || 'Unassigned',
-        status: t.status,
-        isCompleted: t.status === 'Completed' || t.status === 'Approved',
-        createdAt: t.createdAt,
-        type: 'task'
-      });
-    });
-
-    // Sort by createdAt descending
-    list.sort((a, b) => {
-      const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return db - da;
-    });
-
-    return list;
-  });
 
   filteredRoleClients = computed(() => this.filterByRole(this.clients(), 'client'));
   filteredRoleTasks = computed(() => this.filterByRole(this.tasks(), 'task'));
@@ -128,25 +86,35 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     return data;
   }
 
-  filteredOngoingItems = computed(() => {
+
+
+  upcomingDueTasks = computed(() => {
     const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return this.ongoingItems();
-    return this.ongoingItems().filter(i => 
-      (i.title && i.title.toLowerCase().includes(q)) ||
-      (i.clientName && i.clientName.toLowerCase().includes(q)) ||
-      (i.assignedTo && i.assignedTo.toLowerCase().includes(q))
-    );
+    const checklists = this.filteredRoleChecklists().filter(c => {
+      // Must have a dueDate and not be completed
+      if (c.status === 'completed' || !c.dueDate) return false;
+      
+      if (!q) return true;
+      
+      const serviceName = (c.service_name || '').toLowerCase();
+      const applicantName = (c.details?.['Applicant Name'] || '').toLowerCase();
+      const entityName = (c.details?.['entityName'] || '').toLowerCase();
+      
+      return serviceName.includes(q) || applicantName.includes(q) || entityName.includes(q);
+    });
+
+    // Sort by dueDate (closest first)
+    return checklists.sort((a, b) => {
+      const dateA = new Date(a.dueDate).getTime();
+      const dateB = new Date(b.dueDate).getTime();
+      return dateA - dateB;
+    });
   });
 
-  filteredReminders = computed(() => {
-    const q = this.searchQuery().toLowerCase().trim();
-    if (!q) return this.filteredRoleReminders();
-    return this.filteredRoleReminders().filter(r => 
-      (r.title && r.title.toLowerCase().includes(q)) ||
-      (r.client_id?.owner_name && r.client_id.owner_name.toLowerCase().includes(q)) ||
-      (r.client_id?.company_name && r.client_id.company_name.toLowerCase().includes(q))
-    );
-  });
+  isOverdue(dateString: string): boolean {
+    if (!dateString) return false;
+    return new Date(dateString).getTime() < new Date().setHours(0,0,0,0);
+  }
 
   isSearching = computed(() => {
     return this.searchQuery().trim().length > 0;
@@ -379,6 +347,12 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   selectedPeriod = signal<string>('last6Months');
+  growthChartPeriod = signal<'1w' | '1m' | '1y'>('1w');
+
+  setGrowthPeriod(period: '1w' | '1m' | '1y') {
+    this.growthChartPeriod.set(period);
+    this.updateGrowthChart();
+  }
 
   financialMonth = signal<string>(`${new Date().getFullYear()}-${(new Date().getMonth() + 1).toString().padStart(2, '0')}`);
   availableMonths: { value: string, label: string }[] = [];
@@ -647,12 +621,13 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   initOrUpdateCharts() {
-    // Only construct if canvas elements are available in the DOM
-    if (!this.growthChartCanvas || !this.revenueChartCanvas || !this.activityChartCanvas) {
+    // Only construct if at least one canvas element is available in the DOM
+    if (!this.growthChartCanvas && !this.revenueChartCanvas && !this.activityChartCanvas) {
       return;
     }
 
     this.destroyCharts();
+    this.updateGrowthChart();
 
     let chartLabels: string[] = [];
     let line1Data: number[] = [];
@@ -847,32 +822,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    const ctxGrowth = this.growthChartCanvas.nativeElement.getContext('2d');
-    const ctxRevenue = this.revenueChartCanvas.nativeElement.getContext('2d');
-    const ctxActivity = this.activityChartCanvas.nativeElement.getContext('2d');
-
-    if (!ctxGrowth || !ctxRevenue || !ctxActivity) return;
-
-    const wGrowth = ctxGrowth.canvas.width || 600;
-    const gradientLine1 = ctxGrowth.createLinearGradient(0, 0, wGrowth, 0);
-    gradientLine1.addColorStop(0, '#1e1b4b');
-    gradientLine1.addColorStop(1, '#1e1b4b');
-
-    const hRevenue = ctxRevenue.canvas.height || 300;
-    const gradientBar = ctxRevenue.createLinearGradient(0, 0, 0, hRevenue);
-    gradientBar.addColorStop(0, '#312e81');
-    gradientBar.addColorStop(1, '#1e1b4b');
-
-    const wActivity = ctxActivity.canvas.width || 600;
-    const hActivity = ctxActivity.canvas.height || 300;
-    const gradientLine3 = ctxActivity.createLinearGradient(0, 0, wActivity, 0);
-    gradientLine3.addColorStop(0, '#1e1b4b');
-    gradientLine3.addColorStop(1, '#1e1b4b');
-
-    const gradientFill = ctxActivity.createLinearGradient(0, 0, 0, hActivity);
-    gradientFill.addColorStop(0, 'rgba(49, 46, 129, 0.3)');
-    gradientFill.addColorStop(1, 'rgba(30, 27, 75, 0.0)');
-
     const chartConfigDefaults = {
       responsive: true,
       maintainAspectRatio: false,
@@ -883,41 +832,56 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       }
     };
 
-    this.growthChartInstance = new Chart(ctxGrowth, {
-      type: 'line',
-      data: {
-        labels: chartLabels,
-        datasets: [
-          { label: 'Total Tasks', data: line1Data, borderColor: gradientLine1, borderWidth: 2, tension: 0.4, pointRadius: 0 },
-          { label: 'Completed', data: line2Data, borderColor: '#000000', borderWidth: 2, tension: 0.4, pointRadius: 0, borderDash: [5, 5] }
-        ]
-      },
-      options: chartConfigDefaults
-    });
+    // The growthChart is now handled by updateGrowthChart()
 
-    this.revenueChartInstance = new Chart(ctxRevenue, {
-      type: 'bar',
-      data: {
-        labels: chartLabels,
-        datasets: [{ 
-          data: revenueDataPoints,
-          backgroundColor: gradientBar,
-          borderRadius: 4
-        }]
-      },
-      options: chartConfigDefaults
-    });
+    if (this.revenueChartCanvas?.nativeElement) {
+      const ctxRevenue = this.revenueChartCanvas.nativeElement.getContext('2d');
+      if (ctxRevenue) {
+        const hRevenue = ctxRevenue.canvas.height || 300;
+        const gradientBar = ctxRevenue.createLinearGradient(0, 0, 0, hRevenue);
+        gradientBar.addColorStop(0, '#312e81');
+        gradientBar.addColorStop(1, '#1e1b4b');
 
-    this.activityChartInstance = new Chart(ctxActivity, {
-      type: 'line',
-      data: {
-        labels: chartLabels,
-        datasets: [
-          { label: 'Clients Onboarded', data: clientActivityPoints, fill: true, backgroundColor: gradientFill, borderColor: gradientLine3, borderWidth: 2, tension: 0.4, pointRadius: 0 }
-        ]
-      },
-      options: chartConfigDefaults
-    });
+        this.revenueChartInstance = new Chart(ctxRevenue, {
+          type: 'bar',
+          data: {
+            labels: chartLabels,
+            datasets: [{ 
+              data: revenueDataPoints,
+              backgroundColor: gradientBar,
+              borderRadius: 4
+            }]
+          },
+          options: chartConfigDefaults
+        });
+      }
+    }
+
+    if (this.activityChartCanvas?.nativeElement) {
+      const ctxActivity = this.activityChartCanvas.nativeElement.getContext('2d');
+      if (ctxActivity) {
+        const wActivity = ctxActivity.canvas.width || 600;
+        const hActivity = ctxActivity.canvas.height || 300;
+        const gradientLine3 = ctxActivity.createLinearGradient(0, 0, wActivity, 0);
+        gradientLine3.addColorStop(0, '#1e1b4b');
+        gradientLine3.addColorStop(1, '#1e1b4b');
+
+        const gradientFill = ctxActivity.createLinearGradient(0, 0, 0, hActivity);
+        gradientFill.addColorStop(0, 'rgba(49, 46, 129, 0.3)');
+        gradientFill.addColorStop(1, 'rgba(30, 27, 75, 0.0)');
+
+        this.activityChartInstance = new Chart(ctxActivity, {
+          type: 'line',
+          data: {
+            labels: chartLabels,
+            datasets: [
+              { label: 'Clients Onboarded', data: clientActivityPoints, fill: true, backgroundColor: gradientFill, borderColor: gradientLine3, borderWidth: 2, tension: 0.4, pointRadius: 0 }
+            ]
+          },
+          options: chartConfigDefaults
+        });
+      }
+    }
   }
 
   getAssigneeName(cl: any): string {
@@ -1009,14 +973,20 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     // Prefer server-side stats (optimized path)
     const serverStats = this.dashboardStats()?.stats;
     if (serverStats) {
-      const { allTasks, formsPending, docsPending, inProgress, forReview } = serverStats;
+      const { allTasks, formsPending, docsPending, inProgress, forReview, completed } = serverStats;
       this.stats = [
         { title: 'All Tasks', value: String(allTasks), detail: 'Total active checklists', isTrendUp: true },
         { title: 'Forms Pending', value: String(formsPending), detail: formsPending > 0 ? 'Requires client action' : 'All clear', isWarning: formsPending > 0, isGood: formsPending === 0 },
         { title: 'Docs Pending', value: String(docsPending), detail: docsPending > 0 ? 'Awaiting documents' : 'All clear', isWarning: docsPending > 0, isGood: docsPending === 0 },
-        { title: 'In Progress', value: String(inProgress), detail: inProgress > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
-        { title: 'For Review', value: String(forReview), detail: forReview > 0 ? 'Ready for manager review' : 'None', isTrendUp: true }
+        { title: 'In Progress', value: String(inProgress), detail: inProgress > 0 ? 'Currently being worked on' : 'None', isTrendUp: true }
       ];
+
+      const userRole = this.user()?.role;
+      if (userRole === 'filling_staff' || userRole === 'filing_staff') {
+        this.stats.push({ title: 'Completed', value: String(completed || 0), detail: 'Finished by you', isGood: true });
+      } else {
+        this.stats.push({ title: 'For Review', value: String(forReview), detail: forReview > 0 ? 'Ready for manager review' : 'None', isTrendUp: true });
+      }
       return;
     }
 
@@ -1027,13 +997,165 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const docsPendingCount = all.filter(c => this.isDocumentPending(c) && c.status !== 'completed' && c.status !== 'under_review').length;
     const inProgressCount = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review').length;
     const forReviewCount = all.filter(c => c.status === 'under_review').length;
+    const completedCount = all.filter(c => c.status === 'completed').length;
     this.stats = [
       { title: 'All Tasks', value: allTasksCount.toString(), detail: 'Total active checklists', isTrendUp: true },
       { title: 'Forms Pending', value: formsPendingCount.toString(), detail: formsPendingCount > 0 ? 'Requires client action' : 'All clear', isWarning: formsPendingCount > 0, isGood: formsPendingCount === 0 },
       { title: 'Docs Pending', value: docsPendingCount.toString(), detail: docsPendingCount > 0 ? 'Awaiting documents' : 'All clear', isWarning: docsPendingCount > 0, isGood: docsPendingCount === 0 },
-      { title: 'In Progress', value: inProgressCount.toString(), detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
-      { title: 'For Review', value: forReviewCount.toString(), detail: forReviewCount > 0 ? 'Ready for manager review' : 'None', isTrendUp: true }
+      { title: 'In Progress', value: inProgressCount.toString(), detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', isTrendUp: true }
     ];
+
+    const userRole = this.user()?.role;
+    if (userRole === 'filling_staff' || userRole === 'filing_staff') {
+      this.stats.push({ title: 'Completed', value: completedCount.toString(), detail: 'Finished by you', isGood: true });
+    } else {
+      this.stats.push({ title: 'For Review', value: forReviewCount.toString(), detail: forReviewCount > 0 ? 'Ready for manager review' : 'None', isTrendUp: true });
+    }
+  }
+
+  updateGrowthChart() {
+    if (!this.growthChartCanvas?.nativeElement) return;
+    
+    if (this.growthChartInstance) {
+      this.growthChartInstance.destroy();
+      this.growthChartInstance = null;
+    }
+
+    const ctxGrowth = this.growthChartCanvas.nativeElement.getContext('2d');
+    if (!ctxGrowth) return;
+
+    let labels: string[] = [];
+    let currentData: number[] = [];
+    let previousData: number[] = [];
+    let currentLabel = '';
+    let previousLabel = '';
+    const now = new Date();
+    const p = this.growthChartPeriod();
+
+    const tasks = this.filteredRoleTasks();
+    const checklists = this.filteredRoleChecklists();
+
+    const getCount = (start: number, end: number) => {
+      let count = 0;
+      tasks.forEach(t => {
+        if (t.createdAt) {
+          const time = new Date(t.createdAt).getTime();
+          if (time >= start && time <= end) count++;
+        }
+      });
+      checklists.forEach(c => {
+        if (c.createdAt) {
+          const time = new Date(c.createdAt).getTime();
+          if (time >= start && time <= end) count++;
+        }
+      });
+      return count;
+    };
+
+    if (p === '1w') {
+      currentLabel = 'This Week';
+      previousLabel = 'Last Week';
+      labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+        labels[6 - i] = d.toLocaleString('default', { weekday: 'short' });
+        
+        const startCurr = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0).getTime();
+        const endCurr = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59).getTime();
+        currentData.push(getCount(startCurr, endCurr));
+
+        const startPrev = startCurr - 7 * 24 * 60 * 60 * 1000;
+        const endPrev = endCurr - 7 * 24 * 60 * 60 * 1000;
+        previousData.push(getCount(startPrev, endPrev));
+      }
+    } else if (p === '1m') {
+      currentLabel = 'This Month';
+      previousLabel = 'Last Month';
+      labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const prevMonthDate = new Date(currentYear, currentMonth - 1, 1);
+      const prevMonth = prevMonthDate.getMonth();
+      const prevYear = prevMonthDate.getFullYear();
+
+      const getWeekBounds = (year: number, month: number) => [
+        { start: new Date(year, month, 1).getTime(), end: new Date(year, month, 7, 23, 59, 59).getTime() },
+        { start: new Date(year, month, 8).getTime(), end: new Date(year, month, 14, 23, 59, 59).getTime() },
+        { start: new Date(year, month, 15).getTime(), end: new Date(year, month, 21, 23, 59, 59).getTime() },
+        { start: new Date(year, month, 22).getTime(), end: new Date(year, month, 31, 23, 59, 59).getTime() }
+      ];
+
+      const currBounds = getWeekBounds(currentYear, currentMonth);
+      const prevBounds = getWeekBounds(prevYear, prevMonth);
+
+      for (let i = 0; i < 4; i++) {
+        currentData.push(getCount(currBounds[i].start, currBounds[i].end));
+        previousData.push(getCount(prevBounds[i].start, prevBounds[i].end));
+      }
+    } else {
+      currentLabel = 'This Year';
+      previousLabel = 'Last Year';
+      labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const currentYear = now.getFullYear();
+      for (let i = 0; i < 12; i++) {
+        const startCurr = new Date(currentYear, i, 1).getTime();
+        const endCurr = new Date(currentYear, i + 1, 0, 23, 59, 59).getTime(); // last day of month
+        currentData.push(getCount(startCurr, endCurr));
+
+        const startPrev = new Date(currentYear - 1, i, 1).getTime();
+        const endPrev = new Date(currentYear - 1, i + 1, 0, 23, 59, 59).getTime();
+        previousData.push(getCount(startPrev, endPrev));
+      }
+    }
+
+    const hGrowth = ctxGrowth.canvas.height || 350;
+    const gradientFill = ctxGrowth.createLinearGradient(0, 0, 0, hGrowth);
+    gradientFill.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
+    gradientFill.addColorStop(1, 'rgba(34, 197, 94, 0)');
+
+    this.growthChartInstance = new Chart(ctxGrowth, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: currentLabel,
+            data: currentData,
+            borderColor: '#22c55e', // solid green
+            backgroundColor: gradientFill,
+            fill: true,
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 0
+          },
+          {
+            label: previousLabel,
+            data: previousData,
+            borderColor: '#94a3b8', // dashed gray
+            borderDash: [5, 5],
+            fill: false,
+            borderWidth: 2,
+            tension: 0.4,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { 
+          legend: { 
+            display: true, 
+            position: 'bottom',
+            labels: { usePointStyle: false, boxWidth: 16, boxHeight: 2, padding: 20 } 
+          } 
+        },
+        scales: {
+          y: { display: false, min: 0 },
+          x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 12 }, color: '#64748b' } }
+        }
+      }
+    });
   }
 }
 

@@ -72,6 +72,11 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
 
   // Filter state
   searchQuery = signal<string>('');
+  clientIdFilter = signal<string>('');
+  companyFilter = signal<string>('');
+  serviceFilter = signal<string>('');
+  clientNameFilter = signal<string>('');
+  phoneFilter = signal<string>('');
 
   // Pagination state
   currentPage = signal<number>(1);
@@ -100,17 +105,40 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
 
   filteredOrders = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
+    const cId = this.clientIdFilter().toLowerCase().trim();
+    const cName = this.companyFilter().toLowerCase().trim();
+    const sName = this.serviceFilter().toLowerCase().trim();
+    const cClient = this.clientNameFilter().toLowerCase().trim();
+    const phone = this.phoneFilter().toLowerCase().trim();
+
     let filtered = this.orders().filter((o: any) => this.isNewOrder(o));
 
     if (query) {
       filtered = filtered.filter((o: any) => {
         const clientName = (o.user?.name || o.user?.owner_name || '').toLowerCase();
         const clientCompany = (o.user?.company_name || '').toLowerCase();
-        const serviceName = (o.serviceName || '').toLowerCase();
-        const entityName = (o.entityName || '').toLowerCase();
+        const serviceName = (o.serviceType || o.serviceName || '').toLowerCase();
+        const entityName = (o.entityName || o.companyName || '').toLowerCase();
         return clientName.includes(query) || clientCompany.includes(query) || serviceName.includes(query) || entityName.includes(query);
       });
     }
+
+    if (cId) {
+      filtered = filtered.filter((o: any) => (o.user?.custom_client_id || o.custom_client_id || '').toLowerCase().includes(cId));
+    }
+    if (cName) {
+      filtered = filtered.filter((o: any) => (o.entityName || o.companyName || o.user?.company_name || '').toLowerCase().includes(cName));
+    }
+    if (sName) {
+      filtered = filtered.filter((o: any) => (o.serviceType || o.serviceName || '').toLowerCase().includes(sName));
+    }
+    if (cClient) {
+      filtered = filtered.filter((o: any) => (o.user?.name || o.user?.owner_name || '').toLowerCase().includes(cClient));
+    }
+    if (phone) {
+      filtered = filtered.filter((o: any) => (o.user?.phone || '').toLowerCase().includes(phone));
+    }
+
     return filtered;
   });
 

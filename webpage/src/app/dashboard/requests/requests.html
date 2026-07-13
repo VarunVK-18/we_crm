@@ -12,21 +12,7 @@
   </div>
   }
 
-  <div class="header-actions">
-    <div>
-      <!-- <h2 class="page-title">Service Requests</h2>
-      <p class="page-subtitle">Manage all incoming orders and assign teams</p> -->
-    </div>
-    <div style="display: flex; gap: 16px; align-items: center;">
-      <div class="search-box">
-        <span class="material-symbols-outlined search-icon">search</span>
-        <input type="text" placeholder="Search requests..." [(ngModel)]="searchQuery" />
-      </div>
-      <div class="total-badge">
-        {{ filteredOrders().length }} New Requests
-      </div>
-    </div>
-  </div>
+
 
 
   @if (isLoading()) {
@@ -47,12 +33,27 @@
     <table class="bucket-table">
       <thead>
         <tr>
-          <th>Client ID</th>
-          <th>Request Date</th>
-          <th>Service</th>
-          <th>Company Name</th>
-          <th>Client Name</th>
-          <th>Phone Number</th>
+          <th style="vertical-align: top;">
+            <div>Client ID</div>
+            <input type="text" placeholder="Search..." [(ngModel)]="clientIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">Request Date</th>
+          <th style="vertical-align: top;">
+            <div>Service</div>
+            <input type="text" placeholder="Search..." [(ngModel)]="serviceFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>Company Name</div>
+            <input type="text" placeholder="Search..." [(ngModel)]="companyFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>Client Name</div>
+            <input type="text" placeholder="Search..." [(ngModel)]="clientNameFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>Phone Number</div>
+            <input type="text" placeholder="Search..." [(ngModel)]="phoneFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
           @if (role !== 'admin') {
             <th style="text-align: center;">Action</th>
           }

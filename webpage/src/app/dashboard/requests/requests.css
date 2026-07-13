@@ -299,6 +299,31 @@
   text-decoration: underline;
 }
 
+.hover-text-link:hover {
+  text-decoration: underline;
+  color: var(--accent-primary) !important;
+}
+
+.col-search-input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  box-sizing: border-box;
+  font-weight: normal;
+  transition: all 0.2s;
+}
+
+.col-search-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(0, 106, 97, 0.1);
+}
+
 /* Status chips */
 .status-chip {
   padding: 4px 10px;
@@ -756,7 +781,8 @@
 }
 
 .bucket-table {
-  width: 100%;
+  min-width: 100%;
+  width: max-content;
   text-align: left;
   border-collapse: collapse;
   white-space: nowrap;
@@ -768,7 +794,7 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background-color: var(--bg-secondary);
+  background-color: #f8fafc;
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
