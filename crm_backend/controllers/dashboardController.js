@@ -69,10 +69,16 @@ const getDashboardStats = async (req, res) => {
     let docsPendingCount = 0;
     let inProgressCount = 0;
     let forReviewCount = 0;
+    let completedCount = 0;
 
     for (const c of checklists) {
       const status = c.status;
       const isNotDone = status !== 'completed' && status !== 'under_review';
+
+      if (status === 'completed') {
+        completedCount++;
+        continue;
+      }
 
       if (status === 'under_review') {
         forReviewCount++;
@@ -156,7 +162,8 @@ const getDashboardStats = async (req, res) => {
         formsPending: formsPendingCount,
         docsPending: docsPendingCount,
         inProgress: inProgressCount,
-        forReview: forReviewCount
+        forReview: forReviewCount,
+        completed: completedCount
       },
       financial: {
         totalRevenue: financial.totalRevenue,

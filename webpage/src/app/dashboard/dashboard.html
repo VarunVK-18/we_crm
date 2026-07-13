@@ -22,7 +22,7 @@
       </button>
 
       <div class="appbar-title-section">
-        <div class="appbar-breadcrumb-trail">
+        <div class="appbar-breadcrumb-trail" [class.hidden]="navigationTrail().length <= 1">
           @for (crumb of navigationTrail(); track crumb.label; let i = $index) {
           <span class="breadcrumb-item" [class.active]="i === navigationTrail().length - 1"
             (click)="navigateToBreadcrumb(i)">
@@ -37,7 +37,7 @@
             }
             }
         </div>
-        <h1 class="appbar-page-title">{{ navigationTrail()[navigationTrail().length - 1].label }}</h1>
+        <h1 class="appbar-page-title" [class.centered]="navigationTrail().length <= 1">{{ navigationTrail()[navigationTrail().length - 1].label }}</h1>
       </div>
 
       <div class="appbar-actions">
@@ -189,7 +189,7 @@
     <!-- Active Tab Screen Content -->
     <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track'" [class.no-padding-scrollable]="currentTab() === 'payment-tracker'">
       @if (currentTab() === 'dashboard') {
-      <app-home-overview (viewRequests)="handleTabChanged('requests')"
+      <app-home-overview (viewRequests)="handleTabChanged('requests')" (viewChecklist)="viewChecklist($event)"
         [searchQuery]="globalSearchQuery()"></app-home-overview>
       }
       @if (currentTab() === 'requests') {

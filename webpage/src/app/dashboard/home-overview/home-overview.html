@@ -258,20 +258,6 @@
 
     <!-- Bento Grid for Performance Cards -->
     <div class="ho-charts-grid">
-      <!-- Certification Growth -->
-      <div class="ho-chart-card">
-        <div class="ho-chart-header">
-          <div>
-            <h4 class="ho-chart-title">Tasks & Certifications</h4>
-            <p class="ho-chart-subtitle">Tasks created & completed</p>
-          </div>
-          <span class="ho-chart-badge">+12.4%</span>
-        </div>
-        <div class="ho-chart-container">
-          <canvas #growthChart></canvas>
-        </div>
-      </div>
-
       <!-- Revenue Analytics -->
       <div class="ho-chart-card">
         <div class="ho-chart-header">
@@ -310,98 +296,51 @@
   <div class="ho-dynamic-grid">
     <!-- Main Content: Recent Filings -->
     <div class="ho-recent-filings">
-      <div class="ho-section-header">
+      <div class="ho-section-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
         <h3 class="ho-perf-title">Ongoing Certifications / Tasks</h3>
+        <div style="display: flex; gap: 4px; background-color: #f1f5f9; padding: 4px; border-radius: 8px;">
+          <button (click)="setGrowthPeriod('1w')" [style.background]="growthChartPeriod() === '1w' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1w' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1W</button>
+          <button (click)="setGrowthPeriod('1m')" [style.background]="growthChartPeriod() === '1m' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1m' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1M</button>
+          <button (click)="setGrowthPeriod('1y')" [style.background]="growthChartPeriod() === '1y' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1y' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1Y</button>
+        </div>
       </div>
-      <div class="ho-table-container">
-        <table class="ho-table">
-          <thead>
-            <tr>
-              <th>Task / Entity</th>
-              @if (user()?.role !== 'filling_staff') {
-              <th>Assigned To</th>
-              }
-              <th>Status</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of filteredOngoingItems().slice(0, 5); track item._id) {
-            <tr class="ho-table-row">
-              <td>
-                <div class="ho-table-cell-content">
-                  <div>
-                    <p class="ho-font-semibold">{{ item.title }}</p>
-                    <p class="ho-text-xs ho-text-muted">{{ item.clientName }}</p>
-                  </div>
-                </div>
-              </td>
-              @if (user()?.role !== 'filling_staff') {
-              <td>
-                <div class="ho-text-sm">{{ item.assignedTo }}</div>
-              </td>
-              }
-              <td>
-                <span class="ho-status-badge" [class.certified]="item.isCompleted" [class.pending]="!item.isCompleted">
+      
+      <!-- Analytics Chart -->
+      <div class="ho-chart-container" style="height: 350px; margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--border-color);">
+        <canvas #growthChart></canvas>
+      </div>
 
-                  {{ item.status }}
-                </span>
-              </td>
-              <td>
-                <div class="ho-text-sm ho-text-muted ho-font-label">{{ item.createdAt | date:'MMM dd, y' }}</div>
-              </td>
-            </tr>
-            }
-            @if (filteredOngoingItems().length === 0) {
-            <tr>
-              <td colspan="4" class="ho-table-empty">No active tasks or certifications found.</td>
-            </tr>
-            }
-          </tbody>
-        </table>
-      </div>
     </div>
 
     <!-- Sidebar: Recent Activity & Reminders -->
     <div class="ho-timeline-sidebar">
-      <h3 class="ho-perf-title">Compliance Timeline</h3>
+      <h3 class="ho-perf-title">Upcoming Due Dates</h3>
       <div class="ho-timeline-container">
         <div class="ho-timeline">
-          @for (rem of filteredReminders().slice(0, 4); track rem._id) {
-          <div class="ho-timeline-event">
-            <div class="ho-timeline-dot" [class.expired]="rem.status === 'expired'"
-              [class.urgent]="rem.status === 'urgent'"
-              [class.active]="rem.status !== 'expired' && rem.status !== 'urgent'">
-              @if (rem.status === 'expired') {
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
+          @for (task of upcomingDueTasks().slice(0, 3); track task._id) {
+          <div class="ho-timeline-event" style="cursor: pointer;" (click)="viewChecklist.emit(task._id)">
+            <div class="ho-timeline-dot" [class.urgent]="isOverdue(task.dueDate)" [class.active]="!isOverdue(task.dueDate)">
+              @if (isOverdue(task.dueDate)) {
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <line x1="12" y1="8" x2="12" y2="12"></line>
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
-              } @else if (rem.status === 'urgent') {
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="12" x2="12" y2="16"></line>
-                <line x1="12" y1="8" x2="12" y2="8"></line>
-              </svg>
               } @else {
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 6 9 17 4 12"></polyline>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
               </svg>
               }
             </div>
-            <p class="ho-timeline-time">{{ rem.dueDate | date:'MMM dd, y' }}</p>
-            <h5 class="ho-timeline-title">{{ rem.title }}</h5>
+            <p class="ho-timeline-time" [style.color]="isOverdue(task.dueDate) ? '#ef4444' : ''">{{ task.dueDate | date:'MMM dd, y' }}</p>
+            <h5 class="ho-timeline-title">{{ task.service_name }}</h5>
             <p class="ho-timeline-desc">
-              {{ rem.client_id?.owner_name || 'Client' }} ({{ rem.client_id?.company_name || 'Individual' }})
+              {{ task.details?.['entityName'] || task.details?.['Applicant Name'] || 'Client Task' }}
             </p>
           </div>
           }
-          @if (filteredReminders().length === 0) {
-          <div class="ho-timeline-empty">No compliance reminders.</div>
+          @if (upcomingDueTasks().length === 0) {
+          <div class="ho-timeline-empty">No upcoming due tasks.</div>
           }
         </div>
       </div>

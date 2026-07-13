@@ -24,7 +24,7 @@
       </div>
       <div class="search-box" style="flex-shrink: 0;">
         <span class="material-symbols-outlined search-icon">search</span>
-        <input type="text" placeholder="Search services..." [(ngModel)]="searchQuery" style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 180px;" />
+        <input type="text" placeholder="Search services..." [(ngModel)]="searchQuery" style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 130px;" />
       </div>
     </div>
   </div>
@@ -47,6 +47,7 @@
         <thead>
           <tr>
             <th>SERVICE ID</th>
+            <th>CLIENT ID</th>
             <th>DATE</th>
             <th>SERVICE NAME</th>
             <th>COMPANY NAME</th>
@@ -63,6 +64,9 @@
             <tr (click)="viewDetails(cl._id)" style="cursor: pointer;">
               <td class="hover-text-link" style="font-family: monospace; color: #64748b;">
                 {{ cl.custom_service_id || '—' }}
+              </td>
+              <td class="hover-text-link" style="font-family: monospace; color: #64748b;" (click)="viewClient($event, cl.client_id?._id)">
+                {{ cl.client_id?.custom_client_id || '—' }}
               </td>
               <td>
                 <span style="color: #64748b;">{{ cl.createdAt | date:'mediumDate' }}</span>
