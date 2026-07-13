@@ -41,6 +41,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'customer'
   },
+  isMobile: {
+    type: Boolean,
+    default: false
+  },
   fcm_token: {
     type: String,
     default: null

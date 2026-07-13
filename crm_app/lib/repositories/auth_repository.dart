@@ -73,6 +73,7 @@ class AuthRepository {
             body: jsonEncode({
               'email': email,
               'password': password,
+              'isMobileApp': true,
             }),
           )
           .timeout(const Duration(seconds: 10));

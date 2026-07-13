@@ -104,6 +104,8 @@ export class ClientDashboard implements OnInit, OnDestroy {
 
   constructor(private router: Router, public api: Api) {}
 
+  showDownloadAppModal = signal(false);
+
   actionRequiredSlideIndex = signal<number>(0);
   actionRequiredInterval: any;
 
@@ -132,6 +134,11 @@ export class ClientDashboard implements OnInit, OnDestroy {
     }
     this.user.set(parsedUser);
     
+    if (!parsedUser.isMobile) {
+      this.showDownloadAppModal.set(true);
+      sessionStorage.setItem('download_app_prompted', 'true');
+    }
+    
     this.fetchBanners();
     this.fetchClientManager();
     this.fetchOrders();
@@ -149,6 +156,19 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.sliderInterval = setInterval(() => {
       this.currentSlideIndex.set((this.currentSlideIndex() + 1) % this.totalSlides());
     }, 3500);
+  }
+
+  closeDownloadAppModal() {
+    this.showDownloadAppModal.set(false);
+  }
+
+  appLinkCopied = signal(false);
+  
+  copyAppLink() {
+    navigator.clipboard.writeText('https://play.google.com/store/apps').then(() => {
+      this.appLinkCopied.set(true);
+      setTimeout(() => this.appLinkCopied.set(false), 2000);
+    });
   }
 
   stopSlider() {

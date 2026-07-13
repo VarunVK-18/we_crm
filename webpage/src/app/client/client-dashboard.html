@@ -6,12 +6,13 @@
         <h1 class="ho-hero-title" style="font-size: 32px; margin: 0;">Welcome,</h1>
         <h2 style="font-size: 24px; font-weight: 600; color: #374151; margin: 0;">
           @if (selectedEntity() !== 'All') {
-            {{ selectedEntity() | titlecase }}
+          {{ selectedEntity() | titlecase }}
           } @else {
-            {{ (user()?.company_name || user()?.owner_name || user()?.name || 'Client') | titlecase }}
+          {{ (user()?.company_name || user()?.owner_name || user()?.name || 'Client') | titlecase }}
           }
         </h2>
-        <p class="ho-hero-subtitle" style="font-size: 14px; margin: 0;">Track the progress of your active services and requests from one place.</p>
+        <p class="ho-hero-subtitle" style="font-size: 14px; margin: 0;">Track the progress of your active services and
+          requests from one place.</p>
       </div>
       <div class="ho-hero-illustration" style="opacity: 0.8; z-index: 5; right: -40px; bottom: -100px;">
         <img src="rangoli.webp" alt="Rangoli" style="width: 120%; height: auto; object-fit: contain;">
@@ -254,40 +255,51 @@
 
     <div class="metric-card" style="background: white; position: relative; overflow: hidden; padding: 16px 20px;">
       @if (filteredActionRequiredOrders().length === 0) {
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
-           <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 4px;">
-             <!-- Squiggles and lines -->
-             <path d="M50 30 Q55 20 62 28 T 72 25" stroke="#8b5cf6" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-             
-             <!-- Stars -->
-             <path d="M30 25 L32 29 L36 29 L33 32 L34 36 L30 34 L26 36 L27 32 L24 29 L28 29 Z" fill="#c4b5fd"/>
-             <path d="M78 40 L80 43 L84 43 L81 46 L82 50 L78 48 L74 50 L75 46 L72 43 L76 43 Z" fill="#c4b5fd"/>
-             <path d="M60 10 L61.5 14 L65.5 14 L62.5 16.5 L63.5 20.5 L60 18.5 L56.5 20.5 L57.5 16.5 L54.5 14 L58.5 14 Z" fill="#8b5cf6"/>
+      <div
+        style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center;">
+        <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"
+          style="margin-bottom: 4px;">
+          <!-- Squiggles and lines -->
+          <path d="M50 30 Q55 20 62 28 T 72 25" stroke="#8b5cf6" stroke-width="2.5" fill="none"
+            stroke-linecap="round" />
 
-             <!-- Main Cone -->
-             <path d="M25 65 L45 35 L65 45 Z" fill="#7c3aed" />
-           </svg>
-           <span style="font-size: 14px; font-weight: 500; color: #1e293b; margin-bottom: 2px;">What a beautiful sight!</span>
-           <span style="font-size: 10px; color: #64748b;">You have no action required</span>
-        </div>
+          <!-- Stars -->
+          <path d="M30 25 L32 29 L36 29 L33 32 L34 36 L30 34 L26 36 L27 32 L24 29 L28 29 Z" fill="#c4b5fd" />
+          <path d="M78 40 L80 43 L84 43 L81 46 L82 50 L78 48 L74 50 L75 46 L72 43 L76 43 Z" fill="#c4b5fd" />
+          <path d="M60 10 L61.5 14 L65.5 14 L62.5 16.5 L63.5 20.5 L60 18.5 L56.5 20.5 L57.5 16.5 L54.5 14 L58.5 14 Z"
+            fill="#8b5cf6" />
+
+          <!-- Main Cone -->
+          <path d="M25 65 L45 35 L65 45 Z" fill="#7c3aed" />
+        </svg>
+        <span style="font-size: 14px; font-weight: 500; color: #1e293b; margin-bottom: 2px;">What a beautiful
+          sight!</span>
+        <span style="font-size: 10px; color: #64748b;">You have no action required</span>
+      </div>
       } @else {
-        <div class="action-carousel" style="position: relative; width: 100%; height: 100%;">
-          @for (order of filteredActionRequiredOrders(); track order._id; let i = $index) {
-            <div class="action-slide" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; transition: opacity 0.5s ease; opacity: 0; pointer-events: none;" [style.opacity]="i === actionRequiredSlideIndex() ? 1 : 0" [style.pointer-events]="i === actionRequiredSlideIndex() ? 'auto' : 'none'">
-               
-               <div>
-                 <div style="font-size: 18px; font-weight: 600; color: #0f172a; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" [title]="order.service_name || order.checklist_name">
-                   {{ order.service_name || order.checklist_name }}
-                 </div>
-               </div>
+      <div class="action-carousel" style="position: relative; width: 100%; height: 100%;">
+        @for (order of filteredActionRequiredOrders(); track order._id; let i = $index) {
+        <div class="action-slide"
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between; transition: opacity 0.5s ease; opacity: 0; pointer-events: none;"
+          [style.opacity]="i === actionRequiredSlideIndex() ? 1 : 0"
+          [style.pointer-events]="i === actionRequiredSlideIndex() ? 'auto' : 'none'">
 
-               <button (click)="openServiceDetails(order)" style="background: #ffffff; color: #8b5cf6; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; align-self: flex-start; display: flex; align-items: center; gap: 4px;">
-                 Take Action
-                 <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
-               </button>
+          <div>
+            <div
+              style="font-size: 18px; font-weight: 600; color: #0f172a; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;"
+              [title]="order.service_name || order.checklist_name">
+              {{ order.service_name || order.checklist_name }}
             </div>
-          }
+          </div>
+
+          <button (click)="openServiceDetails(order)"
+            style="background: #ffffff; color: #8b5cf6; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; align-self: flex-start; display: flex; align-items: center; gap: 4px;">
+            Take Action
+            <span class="material-symbols-outlined" style="font-size: 16px;">arrow_forward</span>
+          </button>
         </div>
+        }
+      </div>
       }
     </div>
   </div>
@@ -639,3 +651,81 @@
     }
   </div>
 </div>
+
+<!-- Download App Modal -->
+@if (showDownloadAppModal()) {
+<div class="ho-modal-backdrop" (click)="closeDownloadAppModal()"
+  style="display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 9999; animation: fadeIn 0.2s ease-out;">
+  <div class="ho-modal-content" (click)="$event.stopPropagation()"
+    style="background: white; border-radius: 24px; padding: 32px; max-width: 420px; width: 90%; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.1), 0 10px 20px -5px rgba(15, 23, 42, 0.05); position: relative; text-align: center; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+
+    <!-- Close button -->
+    <button (click)="closeDownloadAppModal()"
+      style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 8px; border-radius: 50%; transition: all 0.2s ease;">
+      <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+    </button>
+
+    <!-- App Icon / Illustration -->
+    <div
+      style="width: 80px; height: 80px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; ">
+      <img src="WE CRM logo.webp" alt="WE CRM Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+    </div>
+
+    <!-- Content -->
+    <h3
+      style="font-family: var(--font-heading); font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0;">
+      Get the WE CRM App</h3>
+    <p style="font-size: 14px; color: #475569; line-height: 1.6; margin: 0 0 28px 0;">
+      Track your services, get instant updates, and manage your documents easily from anywhere with our mobile app.
+    </p>
+
+    <!-- QR Code -->
+    <div
+      style="margin: 0 auto 20px; padding: 12px; background: white; border: 1px solid #e2e8f0; border-radius: 16px; display: flex; flex-direction: column; align-items: center; width: max-content; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://play.google.com/store/apps"
+        alt="QR Code to download app" style="width: 120px; height: 120px; display: block; border-radius: 8px;">
+      <p
+        style="font-size: 11px; color: #64748b; margin: 8px 0 0 0; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">
+        Scan to download</p>
+    </div>
+
+    <!-- Copy Link -->
+    <div
+      style="margin: -8px auto 24px; max-width: 280px; display: flex; align-items: center; justify-content: space-between; border-radius: 8px; padding: 8px 12px;">
+      <span
+        style="font-size: 13px; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px;">https://play.google.com/store/apps</span>
+      <button (click)="copyAppLink()"
+        style="background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; color: #64748b; transition: color 0.2s ease; border-radius: 4px;"
+        title="Copy Link">
+        @if (appLinkCopied()) {
+        <span class="material-symbols-outlined" style="font-size: 18px; color: #10b981;">check</span>
+        } @else {
+        <span class="material-symbols-outlined" style="font-size: 18px;">content_copy</span>
+        }
+      </button>
+    </div>
+
+    <!-- Actions -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <a href="https://play.google.com/store/apps" target="_blank"
+        style="display: flex; align-items: center; justify-content: center; gap: 10px; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; text-decoration: none; transition: background 0.2s ease;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2.518 1.583c-.318.337-.492.835-.492 1.45v17.935c0 .614.174 1.112.492 1.45l.067.062 10.05-10.05v-.764L2.585 1.52l-.067.063z" fill="#00D2FF"/>
+          <path d="M15.98 15.048L12.634 11.7v-.764l3.346-3.346.082.047 3.96 2.25c1.134.646 1.134 1.7 0 2.346l-3.96 2.25-.082.046z" fill="#FFCF00"/>
+          <path d="M16.06 14.996l-3.426-3.426L2.518 21.684c.365.385.962.43 1.636.046l11.907-6.734z" fill="#FF3A44"/>
+          <path d="M16.06 9.004L4.154 2.27c-.674-.384-1.27-.339-1.636.046l10.116 10.115 3.426-3.427z" fill="#00E676"/>
+        </svg>
+        Download for Android
+      </a>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <button (click)="closeDownloadAppModal()"
+        style="background: none; border: none; color: #64748b; font-size: 13px; font-weight: 500; cursor: pointer;">
+        Maybe Later
+      </button>
+    </div>
+
+  </div>
+</div>
+}

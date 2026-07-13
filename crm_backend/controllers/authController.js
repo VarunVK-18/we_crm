@@ -217,6 +217,7 @@ const loginUser = async (req, res) => {
     // If password is not initialized yet (empty string, null/undefined, or not a string)
     if (!user.password || typeof user.password !== 'string' || user.password.trim() === '') {
       user.password = password; // Trigger hashing pre-save hook
+      if (req.body.isMobileApp) user.isMobile = true;
       await user.save();
 
       const userResponse = user.toObject();
@@ -232,6 +233,12 @@ const loginUser = async (req, res) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
+    }
+
+    // Update isMobile if logged in from the flutter app
+    if (req.body.isMobileApp && !user.isMobile) {
+      user.isMobile = true;
+      await user.save();
     }
 
     // Remove password from response object
