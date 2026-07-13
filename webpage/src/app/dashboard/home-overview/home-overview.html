@@ -297,18 +297,98 @@
     <!-- Main Content: Recent Filings -->
     <div class="ho-recent-filings">
       <div class="ho-section-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="ho-perf-title">Ongoing Certifications / Tasks</h3>
-        <div style="display: flex; gap: 4px; background-color: #f1f5f9; padding: 4px; border-radius: 8px;">
-          <button (click)="setGrowthPeriod('1w')" [style.background]="growthChartPeriod() === '1w' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1w' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1W</button>
-          <button (click)="setGrowthPeriod('1m')" [style.background]="growthChartPeriod() === '1m' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1m' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1M</button>
-          <button (click)="setGrowthPeriod('1y')" [style.background]="growthChartPeriod() === '1y' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1y' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1Y</button>
+        <h3 class="ho-perf-title">{{ activeChartView() === 'upscaling' ? 'Upscaling Progress' : 'Ongoing Certifications / Tasks' }}</h3>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <!-- Time period buttons (hidden in upscaling view) -->
+          @if (activeChartView() !== 'upscaling') {
+          <div style="display: flex; gap: 4px; background-color: #f1f5f9; padding: 4px; border-radius: 8px;">
+            <button (click)="setGrowthPeriod('1w')" [style.background]="growthChartPeriod() === '1w' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1w' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1W</button>
+            <button (click)="setGrowthPeriod('1m')" [style.background]="growthChartPeriod() === '1m' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1m' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1M</button>
+            <button (click)="setGrowthPeriod('1y')" [style.background]="growthChartPeriod() === '1y' ? '#ffffff' : 'transparent'" [style.boxShadow]="growthChartPeriod() === '1y' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'" style="border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; color: #475569; transition: all 0.2s ease;">1Y</button>
+          </div>
+          }
+          <!-- Upscaling toggle (managers/admins only) -->
+          @if (user()?.role === 'admin' || user()?.role === 'client_manager' || user()?.role === 'account_manager') {
+          <button
+            (click)="toggleChartView()"
+            [style.background]="activeChartView() === 'upscaling' ? '#ffffff' : '#6366f1'"
+            [style.color]="activeChartView() === 'upscaling' ? '#6366f1' : '#ffffff'"
+            [style.borderColor]="'#6366f1'"
+            style="border: 1.5px solid; padding: 4px 14px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;">
+            @if (activeChartView() === 'upscaling') {
+            <!-- Back to Tasks icon -->
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Tasks
+            } @else {
+            <!-- Upscaling / trend-up icon -->
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 7L13.5 15.5L8.5 10.5L2 17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 7H22V13" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Upscaling
+            }
+          </button>
+          }
         </div>
       </div>
-      
-      <!-- Analytics Chart -->
+
+      <!-- Analytics Chart (hidden when upscaling view is active) -->
+      @if (activeChartView() !== 'upscaling') {
       <div class="ho-chart-container" style="height: 350px; margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--border-color);">
         <canvas #growthChart></canvas>
       </div>
+      }
+
+      <!-- Upscaling Progress -->
+      @if (activeChartView() === 'upscaling') {
+      <div>
+
+        <!-- Simple inline stats -->
+        <div style="display: flex; gap: 32px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+          <div>
+            <span style="font-size: 24px; font-weight: 700; color: var(--text-primary);">{{ upscalingSummary().totalDone }}</span>
+            <span style="font-size: 13px; color: #94a3b8; margin-left: 6px;">upsold</span>
+          </div>
+          <div>
+            <span style="font-size: 24px; font-weight: 700; color: var(--text-primary);">{{ upscalingSummary().totalOpps }}</span>
+            <span style="font-size: 13px; color: #94a3b8; margin-left: 6px;">open opportunities</span>
+          </div>
+          <div>
+            <span style="font-size: 24px; font-weight: 700; color: var(--text-primary);">{{ upscalingSummary().conversionRate }}%</span>
+            <span style="font-size: 13px; color: #94a3b8; margin-left: 6px;">converted</span>
+          </div>
+        </div>
+
+        <!-- Per-client horizontal rows -->
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          @for (item of getUpscalingDataForClients(); track item.label) {
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <!-- Client name -->
+            <div style="width: 140px; flex-shrink: 0; font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" [title]="item.label">
+              {{ item.label }}
+            </div>
+            <!-- Progress track -->
+            <div style="flex: 1; height: 8px; background: #f1f5f9; border-radius: 99px; overflow: hidden;">
+              <div
+                [style.width]="(item.done / (item.done + item.remaining)) * 100 + '%'"
+                style="height: 100%; background: #334155; border-radius: 99px; transition: width 0.6s ease;">
+              </div>
+            </div>
+            <!-- Fraction -->
+            <div style="width: 52px; flex-shrink: 0; text-align: right; font-size: 12px; color: #94a3b8;">
+              {{ item.done }}<span style="color: #cbd5e1;">/{{ item.done + item.remaining }}</span>
+            </div>
+          </div>
+          }
+          @if (getUpscalingDataForClients().length === 0) {
+          <p style="font-size: 13px; color: #94a3b8; margin: 0;">No client data available yet.</p>
+          }
+        </div>
+
+      </div>
+      }
 
     </div>
 

@@ -29,10 +29,12 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('growthChart') growthChartCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('revenueChart') revenueChartCanvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('activityChart') activityChartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('upscalingChart') upscalingChartCanvas!: ElementRef<HTMLCanvasElement>;
 
   private growthChartInstance: any = null;
   private revenueChartInstance: any = null;
   private activityChartInstance: any = null;
+  private upscalingChartInstance: any = null;
 
   user = signal<any>(null);
   isLoading = signal<boolean>(true);
@@ -344,10 +346,28 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       this.activityChartInstance.destroy();
       this.activityChartInstance = null;
     }
+    if (this.upscalingChartInstance) {
+      this.upscalingChartInstance.destroy();
+      this.upscalingChartInstance = null;
+    }
   }
 
   selectedPeriod = signal<string>('last6Months');
   growthChartPeriod = signal<'1w' | '1m' | '1y'>('1w');
+  activeChartView = signal<'tasks' | 'upscaling'>('tasks');
+
+  toggleChartView() {
+    const next = this.activeChartView() === 'tasks' ? 'upscaling' : 'tasks';
+    this.activeChartView.set(next);
+    // Re-render the relevant chart after Angular has updated the DOM
+    setTimeout(() => {
+      if (next === 'upscaling') {
+        this.updateUpscalingChart();
+      } else {
+        this.updateGrowthChart();
+      }
+    }, 50);
+  }
 
   setGrowthPeriod(period: '1w' | '1m' | '1y') {
     this.growthChartPeriod.set(period);
@@ -882,6 +902,9 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         });
       }
     }
+
+    // Upscaling Chart
+    this.updateUpscalingChart();
   }
 
   getAssigneeName(cl: any): string {
@@ -889,6 +912,134 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       return 'Yet to Assign';
     }
     return cl.assigned_to.owner_name || cl.assigned_to.name || 'Yet to Assign';
+  }
+
+  // ─── Upscaling / Opportunities ───────────────────────────────────────────────
+
+  readonly RECOMMENDATION_POOL = [
+    { category: 'Incorporation', name: 'Private Limited Incorporation' },
+    { category: 'Incorporation', name: 'LLP Incorporation' },
+    { category: 'Incorporation', name: 'OPC' },
+    { category: 'Incorporation', name: 'MSME' },
+    { category: 'Incorporation', name: 'Proprietorship' },
+    { category: 'Compliance', name: 'MCA Compliance' },
+    { category: 'Compliance', name: 'TDS' },
+    { category: 'Compliance', name: 'PF' },
+    { category: 'IP', name: 'Copyright' },
+    { category: 'IP', name: 'Trade Mark' },
+    { category: 'IP', name: 'Patent' },
+    { category: 'Tax', name: 'GST filing' },
+    { category: 'Tax', name: 'GST Cancelation' },
+    { category: 'Tax', name: 'ITR' },
+    { category: 'Tax', name: 'GST Registration' },
+    { category: 'Licensing', name: 'DPIIT' },
+    { category: 'Licensing', name: 'ISO' },
+    { category: 'Licensing', name: 'FSSAI' },
+    { category: 'Licensing', name: 'DSC' },
+    { category: 'Licensing', name: 'IE code' },
+    { category: 'Licensing', name: 'LEI' },
+    { category: 'Licensing', name: 'BIS' },
+    { category: 'Licensing', name: 'ROSH & CE' },
+  ];
+
+  getUpscalingDataForClients(): { label: string; done: number; remaining: number }[] {
+    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+    const poolSize = this.RECOMMENDATION_POOL.length;
+
+    return this.filteredRoleClients()
+      .map(client => {
+        const weDone = (client.we_services || [])
+          .filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed')
+          .map((s: any) => s.serviceName as string);
+        const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName as string);
+        const doneSet = new Set([...weDone, ...outsourced]);
+        const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
+
+        const remaining = this.RECOMMENDATION_POOL.filter(s => {
+          if (doneSet.has(s.name)) return false;
+          if (hasPrimaryIncorp && primaryIncorpServices.includes(s.name)) return false;
+          return true;
+        }).length;
+
+        const done = poolSize - remaining;
+        const label = (client.company_name || client.name || 'Client').substring(0, 18);
+        return { label, done, remaining };
+      })
+      .filter(d => d.done > 0 || d.remaining > 0)
+      .sort((a, b) => b.done - a.done)
+      .slice(0, 10); // top 10 clients
+  }
+
+  upscalingSummary = computed(() => {
+    const data = this.getUpscalingDataForClients();
+    const totalDone = data.reduce((s, d) => s + d.done, 0);
+    const totalRemaining = data.reduce((s, d) => s + d.remaining, 0);
+    const total = totalDone + totalRemaining;
+    const conversionRate = total > 0 ? Math.round((totalDone / total) * 100) : 0;
+    return { totalDone, totalOpps: totalRemaining, conversionRate };
+  });
+
+  updateUpscalingChart() {
+    if (!this.upscalingChartCanvas?.nativeElement) return;
+
+    if (this.upscalingChartInstance) {
+      this.upscalingChartInstance.destroy();
+      this.upscalingChartInstance = null;
+    }
+
+    const ctx = this.upscalingChartCanvas.nativeElement.getContext('2d');
+    if (!ctx) return;
+
+    const data = this.getUpscalingDataForClients();
+    if (data.length === 0) return;
+
+    this.upscalingChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.map(d => d.label),
+        datasets: [
+          {
+            label: 'Done via WE',
+            data: data.map(d => d.done),
+            backgroundColor: '#6366f1',
+            borderRadius: 5,
+            borderSkipped: false,
+          },
+          {
+            label: 'Remaining Opportunities',
+            data: data.map(d => d.remaining),
+            backgroundColor: '#e2e8f0',
+            borderRadius: 5,
+            borderSkipped: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx: any) => ` ${ctx.dataset.label}: ${ctx.raw}`
+            }
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: { display: false },
+            border: { display: false },
+            ticks: { font: { size: 11 }, color: '#64748b' }
+          },
+          y: {
+            stacked: true,
+            display: false,
+            grid: { display: false }
+          }
+        }
+      }
+    });
   }
 
   isActionRequired(c: any): boolean {
