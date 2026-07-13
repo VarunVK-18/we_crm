@@ -41,7 +41,7 @@
 }
 
 .breadcrumb-item.active {
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
   cursor: default;
 }
@@ -584,9 +584,10 @@
 }
 
 .breadcrumb-item.active {
-  font-weight: 700;
+  font-weight: 500;
   color: var(--text-primary);
   cursor: default;
+  letter-spacing: 0.005em;
 }
 
 .breadcrumb-separator {

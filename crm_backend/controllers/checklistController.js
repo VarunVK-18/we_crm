@@ -142,6 +142,65 @@ const createChecklist = async (req, res) => {
 
 
 // @desc    Get checklists scoped by role
+// @desc    Get a single checklist by ID (for the detail page)
+// @route   GET /api/checklists/:id
+// @access  Private
+const getChecklistById = async (req, res) => {
+  try {
+    const ChecklistTemplate = require('../models/ChecklistTemplate');
+
+    let cl = await Checklist.findById(req.params.id)
+      .populate('client_id', 'custom_client_id owner_name company_name email phone address pan gstin cin tan director_count directors onboarding_documents')
+      .populate('assigned_to', 'owner_name email role')
+      .populate('assigned_team', 'name')
+      .populate('created_by', 'owner_name email role')
+      .populate('items.checkedBy', 'owner_name')
+      .populate('items.linked_document_templates', 'name html_content');
+
+    if (!cl) {
+      return res.status(404).json({ success: false, message: 'Checklist not found' });
+    }
+
+    const template = await ChecklistTemplate.findOne({
+      company_id: cl.company_id,
+      service_name: cl.service_name
+    }).populate('items.linked_document_templates', 'name html_content');
+
+    // Auto-populate items from template if empty
+    if ((!cl.items || cl.items.length === 0) && template && template.items && template.items.length > 0) {
+      cl.items = template.items.map(item => ({
+        title: item.title,
+        description: item.description,
+        label: item.title,
+        isChecked: false,
+        isActionStep: item.isActionStep || false,
+        need_temporary: item.need_temporary || false,
+        has_custom_input: item.has_custom_input || false,
+        custom_input_label: item.custom_input_label || '',
+        linked_document_templates: item.linked_document_templates || []
+      }));
+      await cl.save();
+      cl = await Checklist.findById(req.params.id)
+        .populate('client_id', 'custom_client_id owner_name company_name email phone address pan gstin cin tan director_count directors onboarding_documents')
+        .populate('assigned_to', 'owner_name email role')
+        .populate('assigned_team', 'name')
+        .populate('created_by', 'owner_name email role')
+        .populate('items.checkedBy', 'owner_name')
+        .populate('items.linked_document_templates', 'name html_content');
+    }
+
+    const clObj = cl.toObject();
+    if (template && template.sop_document) {
+      clObj.sop_document = template.sop_document;
+    }
+
+    res.status(200).json({ success: true, checklist: clObj });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get all checklists for the company
 // @route   GET /api/checklists
 // @access  Private
 const getChecklists = async (req, res) => {
@@ -249,6 +308,106 @@ const getChecklists = async (req, res) => {
     }
 
     res.status(200).json({ success: true, checklists: checklistsData });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Get lightweight checklist list for the Ongoing Services table (optimized)
+// @route   GET /api/checklists/summary
+// @access  Private
+const getChecklistsSummary = async (req, res) => {
+  try {
+    const userCompanyId = req.user.company_id;
+    const filter = {};
+    if (userCompanyId) {
+      filter.company_id = userCompanyId;
+    }
+
+    const role = req.user.role;
+    if (role === 'filling_staff' || role === 'account_manager') {
+      const myTeams = await Team.find({ members: req.user._id }).select('_id');
+      const myTeamIds = myTeams.map(t => t._id);
+      filter.$or = [
+        { assigned_to: req.user._id },
+        { assigned_team: { $in: myTeamIds } }
+      ];
+    } else if (role === 'client_manager') {
+      const [myClients, myTeams] = await Promise.all([
+        User.find({
+          role: 'customer',
+          $or: [
+            { assigned_to: req.user._id },
+            { created_by: req.user._id, assigned_to: null }
+          ]
+        }).select('_id'),
+        Team.find({ members: req.user._id }).select('_id')
+      ]);
+      const myClientIds = myClients.map(c => c._id);
+      const myTeamIds = myTeams.map(t => t._id);
+      filter.$or = [
+        { assigned_to: req.user._id },
+        { assigned_team: { $in: myTeamIds } },
+        { client_id: { $in: myClientIds } }
+      ];
+    }
+
+    if (req.query.client_id) {
+      filter.client_id = req.query.client_id;
+    }
+
+    filter.service_name = { $ne: 'Live Chat Support' };
+
+    // Only fetch fields needed for the list table — no html_content, no heavy items populate
+    const checklists = await Checklist.find(filter)
+      .select('_id custom_service_id service_name status priority dueDate createdAt details.entityName items.isChecked items.need_temporary items.has_custom_input items.title requested_documents client_id assigned_to assigned_team company_id')
+      .populate('client_id', 'owner_name company_name custom_client_id')
+      .populate('assigned_to', 'owner_name')
+      .populate('assigned_team', 'name')
+      .lean()
+      .sort({ createdAt: -1 });
+
+    // Check for any checklists with 0 items and auto-populate from templates in bulk
+    const emptyChecklists = checklists.filter(cl => !cl.items || cl.items.length === 0);
+    if (emptyChecklists.length > 0) {
+      const ChecklistTemplate = require('../models/ChecklistTemplate');
+      const serviceNames = [...new Set(emptyChecklists.map(cl => cl.service_name))];
+      const templates = await ChecklistTemplate.find({
+        company_id: userCompanyId,
+        service_name: { $in: serviceNames }
+      }).select('service_name items.title items.isActionStep items.need_temporary items.has_custom_input items.custom_input_label items.linked_document_templates').lean();
+
+      const templateMap = {};
+      for (const tmpl of templates) {
+        templateMap[tmpl.service_name] = tmpl;
+      }
+
+      // Patch in-memory and save empty ones in parallel
+      const savePromises = [];
+      for (const cl of emptyChecklists) {
+        const template = templateMap[cl.service_name];
+        if (template && template.items && template.items.length > 0) {
+          const newItems = template.items.map(item => ({
+            title: item.title,
+            description: item.description || '',
+            label: item.title,
+            isChecked: false,
+            isActionStep: item.isActionStep || false,
+            need_temporary: item.need_temporary || false,
+            has_custom_input: item.has_custom_input || false,
+            custom_input_label: item.custom_input_label || '',
+            linked_document_templates: item.linked_document_templates || []
+          }));
+          cl.items = newItems;
+          savePromises.push(Checklist.findByIdAndUpdate(cl._id, { items: newItems }));
+        }
+      }
+      if (savePromises.length > 0) {
+        await Promise.all(savePromises);
+      }
+    }
+
+    res.status(200).json({ success: true, checklists });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -499,7 +658,7 @@ const addChecklistItem = async (req, res) => {
 const updateChecklist = async (req, res) => {
   try {
     const { id } = req.params;
-    const { assigned_to, assigned_team, notes, stage, items, requested_documents, status, details, advanceAmountPaid, applicationId, bank_details } = req.body;
+    const { assigned_to, assigned_team, notes, stage, items, requested_documents, status, details, advanceAmountPaid, applicationId, bank_details, isReviewed } = req.body;
 
     const checklist = await Checklist.findById(id);
     if (!checklist) {
@@ -509,6 +668,9 @@ const updateChecklist = async (req, res) => {
     if (req.user.role === 'customer') {
       if (checklist.client_id.toString() !== req.user._id.toString()) {
         return res.status(403).json({ success: false, message: 'Not authorized to update this checklist' });
+      }
+      if (isReviewed !== undefined) {
+        checklist.isReviewed = isReviewed;
       }
       if (details !== undefined) {
         checklist.details = { ...details, clientFormSubmitted: true };
@@ -1916,6 +2078,8 @@ const addFinancialLog = async (req, res) => {
 module.exports = {
   createChecklist,
   getChecklists,
+  getChecklistsSummary,
+  getChecklistById,
   getMyChecklists,
   toggleChecklistItem,
   addChecklistItem,
@@ -1934,38 +2098,71 @@ module.exports = {
 // @access  Private
 const getExpenses = async (req, res) => {
   try {
-    const compId = req.user.company_id._id || req.user.company_id;
-    let query = { company_id: compId, $or: [ { 'items.expense.billUrl': { $type: 'string' } }, { 'items.expenses.0': { $exists: true } } ] };
+    const rawCompId = req.user.company_id;
+    const compId = (rawCompId && typeof rawCompId === 'object' && rawCompId._id) ? rawCompId._id : rawCompId;
 
-    // If filing staff, only show checklists assigned to them where they might have uploaded expenses
-    // Ideally we should filter the specific items they uploaded, but for now filtering by checklist assignment is standard here.
+    // Only fetch checklists that actually have expense data
+    let query = {
+      company_id: compId,
+      $or: [
+        { 'items.expenses.0': { $exists: true } },  // has at least one expense in array
+        { 'items.expense.billUrl': { $exists: true, $ne: null } } // legacy single expense
+      ]
+    };
+
     if (req.user.role === 'filling_staff') {
       query.assigned_to = req.user._id;
     }
 
-    const checklists = await Checklist.find(query).populate('client_id', 'name custom_id');
+    // Project ONLY the fields needed — omit heavy fields like finalDocuments, financialLogs, details, etc.
+    const projection = {
+      _id: 1,
+      custom_service_id: 1,
+      service_name: 1,
+      client_id: 1,
+      'items._id': 1,
+      'items.title': 1,
+      'items.expenses': 1,
+      'items.expense': 1
+    };
+
+    const checklists = await Checklist.find(query, projection)
+      .populate('client_id', 'owner_name company_name custom_client_id')
+      .lean();
 
     let expenses = [];
 
     checklists.forEach(cl => {
+      if (!cl.items || cl.items.length === 0) return;
       cl.items.forEach(item => {
-        const allExpenses = (item.expenses && item.expenses.length > 0) ? item.expenses : (item.expense && item.expense.billUrl ? [item.expense] : []);
+        // Only include items that actually have expense bills uploaded
+        const hasExpenses = (item.expenses && item.expenses.length > 0);
+        const hasLegacyExpense = (item.expense && item.expense.billUrl);
+        if (!hasExpenses && !hasLegacyExpense) return;
+
+        const allExpenses = hasExpenses ? item.expenses : [item.expense];
         
         allExpenses.forEach(exp => {
+          if (!exp || !exp.billUrl) return; // skip empty entries
           expenses.push({
             checklistId: cl._id,
             itemId: item._id,
             expenseId: exp._id,
             custom_service_id: cl.custom_service_id,
-            client_name: cl.client_id ? cl.client_id.name : 'Unknown',
-            client_custom_id: cl.client_id ? cl.client_id.custom_id : 'Unknown',
+            clientId: cl.client_id ? cl.client_id._id : null,
+            client_name: cl.client_id ? (cl.client_id.owner_name || cl.client_id.name || 'Unknown') : 'Unknown',
+            client_custom_id: cl.client_id ? (cl.client_id.custom_client_id || cl.client_id.custom_id || '—') : '—',
+            company_name: cl.client_id ? (cl.client_id.company_name || 'Individual') : '—',
             service_name: cl.service_name,
             item_title: item.title,
             amount: exp.amount,
             transactionId: exp.transactionId,
             billUrl: exp.billUrl,
             uploadedAt: exp.uploadedAt,
-            reimbursementStatus: exp.reimbursementStatus || 'pending'
+            reimbursementStatus: exp.reimbursementStatus || 'pending',
+            paymentProofUrl: exp.paymentProofUrl || null,
+            paidAt: exp.paidAt || null,
+            paidByName: exp.paidByName || null
           });
         });
       });
@@ -1999,12 +2196,30 @@ const markExpensePaid = async (req, res) => {
     }
 
     const { expenseId } = req.body;
-    
+
+    // Handle payment proof screenshot upload
+    let paymentProofUrl = null;
+    if (req.file) {
+      // Store as base64 data URI so it can be retrieved without a separate document fetch
+      const b64 = req.file.buffer.toString('base64');
+      paymentProofUrl = `data:${req.file.mimetype};base64,${b64}`;
+    }
+
+    const paidAt = new Date();
+    const paidByName = req.user?.owner_name || req.user?.name || 'Manager';
+
+    const applyPaid = (exp) => {
+      exp.reimbursementStatus = 'paid';
+      exp.paidAt = paidAt;
+      exp.paidByName = paidByName;
+      if (paymentProofUrl) exp.paymentProofUrl = paymentProofUrl;
+    };
+
     if (expenseId && item.expenses && item.expenses.length > 0) {
       const exp = item.expenses.id(expenseId);
-      if (exp) exp.reimbursementStatus = 'paid';
+      if (exp) applyPaid(exp);
     } else if (item.expense) {
-      item.expense.reimbursementStatus = 'paid';
+      applyPaid(item.expense);
     } else {
       return res.status(404).json({ success: false, message: 'Expense not found on this item' });
     }

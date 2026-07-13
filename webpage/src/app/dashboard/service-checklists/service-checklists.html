@@ -61,7 +61,7 @@
         <tbody>
           @for (cl of paginatedChecklists(); track cl._id) {
             <tr (click)="viewDetails(cl._id)" style="cursor: pointer;">
-              <td style="font-family: monospace; color: #64748b;">
+              <td class="hover-text-link" style="font-family: monospace; color: #64748b;">
                 {{ cl.custom_service_id || '—' }}
               </td>
               <td>
@@ -71,7 +71,9 @@
                 <span class="service-name" style="font-weight: 500;">{{ cl.service_name }}</span>
               </td>
               <td>
-                <div style="font-weight: 500; color: var(--text-primary); font-size: 14px;">{{ cl.details?.entityName || cl.client_id?.company_name || '-' }}</div>
+                <div class="hover-text-link" style="font-weight: 500; font-size: 14px;" (click)="viewClient($event, cl.client_id?._id)">
+                  {{ cl.details?.entityName || cl.client_id?.company_name || '-' }}
+                </div>
               </td>
               <td>
                 <span style="color: #64748b;">{{ cl.dueDate ? (cl.dueDate | date:'mediumDate') : '-' }}</span>
@@ -107,13 +109,24 @@
       </table>
     </div>
 
-    @if (totalPages() > 1) {
-      <div class="pagination-controls">
-        <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
-        <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
-        <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+      <div style="display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 13px; margin-left: 8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="16" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>
+        <span>Showing tasks from the last 30 days</span>
       </div>
-    }
+
+      @if (totalPages() > 1) {
+        <div class="pagination-controls" style="margin-top: 0;">
+          <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+          <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
+          <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
+        </div>
+      }
+    </div>
   }
 </div>
 

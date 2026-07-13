@@ -8,6 +8,7 @@ const {
   loginUser, 
   getUserProfile, 
   getClients,
+  getClientsSummary,
   outsourceService,
   registerDirect,
   getTeamGroups,
@@ -63,6 +64,7 @@ router.delete('/users/profile/:id/remove-image', removeProfileImage);
 router.put('/users/profile/:id/documents/reupload', checkUser, upload.single('file'), reuploadProfileDocument);
 
 // Client users listing & actions route
+router.get('/users/clients/summary', checkUser, getClientsSummary); // Lightweight client list for dashboard
 router.get('/users/clients', checkUser, getClients);
 router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), assignClient);
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);

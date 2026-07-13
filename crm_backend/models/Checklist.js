@@ -6,7 +6,10 @@ const ExpenseSchema = new mongoose.Schema({
   transactionId: { type: String, default: '' },
   paymentTimestamp: { type: Date, default: null },
   uploadedAt: { type: Date, default: null },
-  reimbursementStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' }
+  reimbursementStatus: { type: String, enum: ['pending', 'paid'], default: 'pending' },
+  paymentProofUrl: { type: String, default: null },
+  paidAt: { type: Date, default: null },
+  paidByName: { type: String, default: null }
 });
 
 const ChecklistItemSchema = new mongoose.Schema({
@@ -196,6 +199,10 @@ const ChecklistSchema = new mongoose.Schema({
   isGstApplicable: {
     type: Boolean,
     default: true
+  },
+  isReviewed: {
+    type: Boolean,
+    default: false
   },
   financialLogs: [{
     paymentType: { type: String, required: true },

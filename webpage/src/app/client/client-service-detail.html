@@ -512,3 +512,57 @@
   </div>
   }
 </div>
+
+<!-- Google Review Modal -->
+@if (showReviewModal()) {
+  <div class="review-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.3s ease-out;">
+    <div class="review-modal-card" style="background: #ffffff; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); max-width: 480px; width: 90%; padding: 32px; text-align: center; border: 1px solid #e2e8f0; transform: translateY(0); animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+      
+      <!-- Close button -->
+      <button (click)="closeReviewModal()" style="position: absolute; top: 16px; right: 16px; background: none; border: none; color: #94a3b8; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 50%; transition: background 0.2s, color 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#475569';" onmouseout="this.style.background='transparent'; this.style.color='#94a3b8';">
+        <span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+      </button>
+
+      <!-- Google Brand Badge / Stars -->
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 4px; font-size: 32px; color: #fbbf24; margin-top: 8px;">
+          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 20px;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google Logo" style="width: 16px; height: 16px;">
+          <span style="font-size: 12px; font-weight: 600; color: #475569; letter-spacing: 0.02em;">GOOGLE REVIEWS</span>
+        </div>
+      </div>
+
+      <!-- Heading -->
+      <h2 style="font-family: var(--font-heading, 'Inter'); font-size: 22px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0; letter-spacing: -0.02em; line-height: 1.2;">
+        Service Completed Successfully!
+      </h2>
+
+      <!-- Description -->
+      <p style="font-family: var(--font-body, 'Inter'); font-size: 14.5px; color: #475569; line-height: 1.6; margin: 0 0 28px 0; padding: 0 8px;">
+        Your service is now fully processed. We'd love to hear about your experience! If you enjoyed working with us, please take 30 seconds to support us with a Google review.
+      </p>
+
+      <!-- Actions -->
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button (click)="redirectToGoogleReview()" style="width: 100%; padding: 14px 24px; background: #2563eb; color: #ffffff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); transition: background 0.2s, transform 0.2s;" onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)';" onmouseout="this.style.background='#2563eb'; this.style.transform='none';">
+          Write a Google Review
+          <span class="material-symbols-outlined" style="font-size: 18px;">open_in_new</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+</style>

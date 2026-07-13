@@ -222,6 +222,10 @@
   overflow: hidden !important;
 }
 
+.screen-content-wrapper.no-padding-scrollable {
+  padding: 0 !important;
+}
+
 /* Mobile Menu Toggle Button in AppBar */
 .mobile-menu-toggle {
   display: none;

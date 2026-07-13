@@ -3,7 +3,12 @@
   <!-- Toast Notification -->
   @if (toastMessage()) {
   <div class="toast-notification" [class.toast-error]="toastType() === 'error'">
-    {{ toastMessage() }}
+    @if (toastType() === 'error') {
+      <span class="material-symbols-outlined" style="color: #ef4444; font-size: 20px; flex-shrink: 0;">error</span>
+    } @else {
+      <span class="material-symbols-outlined" style="color: #10b981; font-size: 20px; flex-shrink: 0;">check_circle</span>
+    }
+    <span style="font-size: 13.5px; font-weight: 500; color: #1e293b; line-height: 1.4;">{{ toastMessage() }}</span>
   </div>
   }
 
@@ -57,7 +62,7 @@
         @for (order of paginatedOrders(); track order._id) {
         <tr>
           <td>
-            <span class="text-muted" style="font-family: monospace;">{{ order.user?.custom_client_id || order.custom_client_id || '-' }}</span>
+            <span class="text-muted hover-text-link" style="font-family: monospace;" (click)="viewClient($event, order.user?._id || order.userId)">{{ order.user?.custom_client_id || order.custom_client_id || '-' }}</span>
           </td>
           <td>
             <div style="display: flex; align-items: center; gap: 6px;">

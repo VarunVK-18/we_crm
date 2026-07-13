@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef } from '@angular/core';
+import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
@@ -23,6 +23,22 @@ export class BucketComponent implements OnInit, AfterViewChecked {
   ocrService = inject(OcrService);
   confirmDialog = inject(ConfirmDialogService);
   el = inject(ElementRef);
+  @Output() onViewClient = new EventEmitter<string>();
+  @Output() onViewService = new EventEmitter<string>();
+
+  viewClient(event: Event, clientId: string) {
+    event.stopPropagation();
+    if (this.role !== 'filling_staff' && clientId) {
+      this.onViewClient.emit(clientId);
+    }
+  }
+
+  viewService(event: Event, checklistId: string) {
+    event.stopPropagation();
+    if (checklistId) {
+      this.onViewService.emit(checklistId);
+    }
+  }
 
   private resizeObserver: ResizeObserver | null = null;
   private observedHeaders = new Set<Element>();

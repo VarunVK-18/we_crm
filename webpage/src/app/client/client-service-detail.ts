@@ -56,6 +56,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   // UI State
   isChatOpen = signal(false);
   isLoading = signal(true);
+  showReviewModal = signal(false);
 
   @ViewChild('trackerScroll') trackerScroll!: ElementRef;
 
@@ -297,6 +298,13 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
           found.derivedStatus = status;
           this.order.set(found);
+
+          if (found.status === 'completed' && !found.isReviewed) {
+            const hasBeenPrompted = localStorage.getItem(`google_review_prompted_${found._id}`);
+            if (!hasBeenPrompted) {
+              this.showReviewModal.set(true);
+            }
+          }
 
           if (!silent) {
             setTimeout(() => {
@@ -742,5 +750,30 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     const items = this.order()?.items || [];
     const hasProvideDetails = items.some((i: any) => i.title === 'Provide Necessary Details & Documents');
     return !hasProvideDetails;
+  }
+
+  redirectToGoogleReview() {
+    const oid = this.order()?._id || this.order()?.id;
+    if (oid) {
+      localStorage.setItem(`google_review_prompted_${oid}`, 'true');
+      this.api.patch<any>(`checklists/${oid}`, { isReviewed: true }).subscribe({
+        next: () => {
+          if (this.order()) {
+            this.order().isReviewed = true;
+          }
+        },
+        error: (err) => console.error('Failed to update review status in DB:', err)
+      });
+    }
+    this.showReviewModal.set(false);
+    window.open('https://search.google.com/local/writereview?placeid=ChIJx9xW-mloFjoRz1W0KjBexmE', '_blank');
+  }
+
+  closeReviewModal() {
+    const oid = this.order()?._id || this.order()?.id;
+    if (oid) {
+      localStorage.setItem(`google_review_prompted_${oid}`, 'true');
+    }
+    this.showReviewModal.set(false);
   }
 }

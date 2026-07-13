@@ -311,6 +311,40 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+// @desc    Lightweight client list for dashboard — no per-client stats queries
+// @route   GET /api/users/clients/summary
+// @access  Private
+const getClientsSummary = async (req, res) => {
+  try {
+    const userCompanyId = req.user ? req.user.company_id : req.query.company_id;
+    const filter = { role: 'customer' };
+    if (userCompanyId) {
+      filter.company_id = userCompanyId;
+    }
+
+    if (req.user) {
+      const role = req.user.role;
+      if (role === 'client_manager') {
+        filter.$or = [
+          { assigned_to: req.user._id },
+          { created_by: req.user._id }
+        ];
+      } else if (role === 'account_manager' || role === 'filling_staff') {
+        filter.assigned_to = req.user._id;
+      }
+    }
+
+    const clients = await User.find(filter)
+      .select('_id custom_client_id owner_name company_name email phone assigned_to created_by')
+      .populate('assigned_to', 'owner_name email role')
+      .lean();
+
+    res.json({ success: true, clients });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const getClients = async (req, res) => {
   try {
     const userCompanyId = req.user ? req.user.company_id : req.query.company_id;
@@ -1579,6 +1613,7 @@ module.exports = {
   loginUser,
   getUserProfile,
   getClients,
+  getClientsSummary,
   outsourceService,
   registerDirect,
   getTeamGroups,

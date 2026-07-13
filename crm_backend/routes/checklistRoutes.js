@@ -3,6 +3,8 @@ const router = express.Router();
 const {
   createChecklist,
   getChecklists,
+  getChecklistById,
+  getChecklistsSummary,
   getMyChecklists,
   toggleChecklistItem,
   addChecklistItem,
@@ -34,11 +36,13 @@ const upload = multer({
 // Checklist Management Routes
 router.post('/checklists', checkUser, permit('admin', 'client_manager'), createChecklist);
 router.delete('/checklists/:id', checkUser, permit('admin', 'client_manager'), deleteChecklist);
+router.get('/checklists/summary', checkUser, getChecklistsSummary); // Lightweight list for Ongoing Services page
+router.get('/checklists/expenses', checkUser, permit('admin', 'manager', 'client_manager', 'account_manager', 'filling_staff'), getExpenses); // Must be before /:id
 router.get('/checklists', checkUser, getChecklists);
+router.get('/checklists/:id', checkUser, getChecklistById); // Single checklist for detail page
 router.get('/my-checklists', checkUser, getMyChecklists); // For Flutter customer app
 
 // Payment Tracker / Expenses
-router.get('/checklists/expenses', checkUser, permit('admin', 'manager', 'client_manager', 'account_manager', 'filling_staff'), getExpenses);
 router.patch('/checklists/:id', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager', 'customer'), updateChecklist);
 router.post('/checklists/:id/items', checkUser, permit('admin', 'manager', 'client_manager'), addChecklistItem);
 router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
@@ -68,6 +72,6 @@ router.post('/checklists/:id/financial-logs', checkUser, permit('admin', 'manage
 router.post('/checklists/:id/items/:itemId/expense', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.single('bill'), uploadExpenseBill);
 
 
-router.post('/checklists/:id/items/:itemId/reimburse', checkUser, permit('admin', 'manager'), markExpensePaid);
+router.post('/checklists/:id/items/:itemId/reimburse', checkUser, permit('admin', 'manager'), upload.single('proof'), markExpensePaid);
 
 module.exports = router;

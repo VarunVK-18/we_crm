@@ -177,7 +177,7 @@
 }
 
 .ho-stat-card {
-  background-color: var(--card-bg);
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);

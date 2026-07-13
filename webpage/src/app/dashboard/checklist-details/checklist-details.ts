@@ -611,16 +611,15 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   }
 
   fetchChecklist() {
-    this.api.get<any>('checklists').subscribe({
+    const id = this.checklistId();
+    if (!id) return;
+    this.api.get<any>(`checklists/${id}`).subscribe({
       next: (res) => {
-        if (res && res.success) {
-          const found = res.checklists.find((c: any) => c._id === this.checklistId());
-          if (found) {
-            this.checklist.set(found);
-            if (this.autoOpenChat() && !this.isChatModalOpen() && !this._chatOpenedLocally) {
-              this._chatOpenedLocally = true;
-              this.openChatModal();
-            }
+        if (res && res.success && res.checklist) {
+          this.checklist.set(res.checklist);
+          if (this.autoOpenChat() && !this.isChatModalOpen() && !this._chatOpenedLocally) {
+            this._chatOpenedLocally = true;
+            this.openChatModal();
           }
         }
       },

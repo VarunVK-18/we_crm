@@ -350,12 +350,12 @@
 /* Premium Profile Header */
 .profile-header-card {
   position: relative;
-  background-color: var(--palette-dark);
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   border-radius: 24px;
   overflow: hidden;
   margin-bottom: 24px;
-  box-shadow: 0 12px 35px color-mix(in srgb, var(--palette-dark) 15%, transparent);
-  color: var(--palette-light);
+  box-shadow: 0 12px 35px rgba(229, 213, 255, 0.3);
+  color: #1F2937;
 }
 
 .profile-header-card::before {
@@ -366,8 +366,8 @@
   right: 0;
   bottom: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
   background-size: 32px 32px;
   pointer-events: none;
   z-index: 1;
@@ -379,8 +379,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 20%, transparent) 0%, transparent 50%),
-    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 50%);
+  background-image: radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
   opacity: 0.8;
   z-index: 1;
 }
@@ -397,7 +397,7 @@
 .phc-avatar {
   width: 80px;
   height: 80px;
-  background-color: var(--palette-dark);
+  background: #0f172a;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -412,23 +412,20 @@
   height: 80px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid color-mix(in srgb, var(--palette-purple) 30%, transparent);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--palette-dark) 10%, transparent);
+  border: 2px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
 .phc-info h1 {
   margin: 0;
   font-size: 24px;
-  color: var(--text-dark);
+  color: #1F2937;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 
 .short-company-badge {
   display: inline-block;
-  background: rgba(var(--primary-rgb), 0.1);
-  color: var(--primary);
-  padding: 4px 10px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
@@ -438,8 +435,9 @@
 
 .phc-info p {
   font-size: 14px;
-  color: color-mix(in srgb, var(--palette-light) 70%, transparent);
+  color: #4B5563;
   margin: 0;
+  opacity: 0.9;
 }
 
 .phc-status {

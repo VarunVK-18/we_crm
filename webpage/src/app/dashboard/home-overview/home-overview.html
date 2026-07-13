@@ -3,14 +3,16 @@
   <!-- Hero Banner -->
   <section class="ho-hero" [style.display]="isSearching() ? 'none' : 'flex'">
     <div class="ho-hero-content">
-      <h3 class="ho-hero-title">{{ getGreeting() }}, <br/>{{ user()?.owner_name || 'User' }}</h3>
+      <h3 class="ho-hero-title">{{ getGreeting() }}, <br />{{ user()?.owner_name || 'User' }}</h3>
       <p class="ho-hero-subtitle">
-        Track company filings, compliance reminders, and service checklists for {{ getCompanyName() || 'Wealth Empires' }} from one place. Your centralized command center for corporate governance.
+        Track company filings, compliance reminders, and service checklists for {{ getCompanyName() || 'Wealth Empires'
+        }} from one place. Your centralized command center for corporate governance.
       </p>
 
     </div>
     <!-- Abstract wave decorations -->
-    <div class="ho-hero-illustration" style="position: absolute; opacity: 0.8; z-index: 5; right: -40px; bottom: -100px; width: 400px; top: 0; pointer-events: none;">
+    <div class="ho-hero-illustration"
+      style="position: absolute; opacity: 0.8; z-index: 5; right: -40px; bottom: -100px; width: 400px; top: 0; pointer-events: none;">
       <img src="rangoli.webp" alt="Rangoli" style="width: 120%; height: auto; object-fit: contain;">
     </div>
   </section>
@@ -18,23 +20,24 @@
   <!-- KPI Cards Grid -->
   <section class="client-metrics-grid" [style.display]="isSearching() ? 'none' : 'grid'">
     @for (stat of stats; track stat.title) {
-      <div class="metric-card">
-        <div class="metric-header" style="align-items: flex-start; justify-content: space-between; width: 100%;">
-          <div>
-            @if (isLoading()) {
-              <div class="skeleton-box skeleton-number" style="height: 32px; width: 40px; margin: 0;"></div>
-            } @else {
-              <span class="number" style="margin: 0; line-height: 1;">{{ stat.value }}</span>
-            }
-          </div>
-          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="9" y1="15" x2="15" y2="9"></line>
-            <polyline points="10 9 15 9 15 14"></polyline>
-          </svg>
+    <div class="metric-card">
+      <div class="metric-header" style="align-items: flex-start; justify-content: space-between; width: 100%;">
+        <div>
+          @if (isLoading()) {
+          <div class="skeleton-box skeleton-number" style="height: 32px; width: 40px; margin: 0;"></div>
+          } @else {
+          <span class="number" style="margin: 0; line-height: 1;">{{ stat.value }}</span>
+          }
         </div>
-        <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stat.title }}</div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f172a"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="9" y1="15" x2="15" y2="9"></line>
+          <polyline points="10 9 15 9 15 14"></polyline>
+        </svg>
       </div>
+      <div class="metric-title" style="margin-top: 12px; font-size: 11px;">{{ stat.title }}</div>
+    </div>
     }
   </section>
 
@@ -46,53 +49,76 @@
       </h3>
       <div class="ho-perf-actions">
         <div class="ho-dropdown">
-          <button class="ho-btn-outline ho-dropdown-trigger" style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
+          <button class="ho-btn-outline ho-dropdown-trigger"
+            style="min-width: 120px; display: flex; justify-content: space-between; align-items: center;">
             {{ getFinancialMonthLabel() }}
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px;">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
           <div class="ho-dropdown-menu" style="max-height: 250px; overflow-y: auto;">
-            <button *ngFor="let m of availableMonths" class="ho-dropdown-item pop-item" [class.active]="financialMonth() === m.value" (click)="setFinancialMonth(m.value)">
+            <button *ngFor="let m of availableMonths" class="ho-dropdown-item pop-item"
+              [class.active]="financialMonth() === m.value" (click)="setFinancialMonth(m.value)">
               {{ m.label }}
             </button>
           </div>
         </div>
         <button class="ho-btn-dark" (click)="exportFinancialData()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px;">
-            <path d="M16.4405 8.8999C20.0405 9.2099 21.5105 11.0599 21.5105 15.1099V15.2399C21.5105 19.7099 19.7205 21.4999 15.2505 21.4999H8.74047C4.27047 21.4999 2.48047 19.7099 2.48047 15.2399V15.1099C2.48047 11.0899 3.93047 9.2399 7.47047 8.9099" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 15.0001V3.62012" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M15.3504 5.85L12.0004 2.5L8.65039 5.85" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+            style="margin-right: 4px;">
+            <path
+              d="M16.4405 8.8999C20.0405 9.2099 21.5105 11.0599 21.5105 15.1099V15.2399C21.5105 19.7099 19.7205 21.4999 15.2505 21.4999H8.74047C4.27047 21.4999 2.48047 19.7099 2.48047 15.2399V15.1099C2.48047 11.0899 3.93047 9.2399 7.47047 8.9099"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M12 15.0001V3.62012" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <path d="M15.3504 5.85L12.0004 2.5L8.65039 5.85" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           Export
         </button>
       </div>
     </div>
-    
+
     <div class="financial-metrics-grid">
       <div class="metric-card" style="overflow: visible;">
         <div class="metric-header">
           <div class="metric-title">Total Revenue</div>
           <div class="ho-info-wrapper">
-            <svg class="ho-info-icon" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M140,176a4,4,0,0,1-4,4,12,12,0,0,1-12-12V128a4,4,0,0,0-4-4,4,4,0,0,1,0-8,12,12,0,0,1,12,12v40a4,4,0,0,0,4,4A4,4,0,0,1,140,176ZM124,92a8,8,0,1,0-8-8A8,8,0,0,0,124,92Zm104,36A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z"/></svg>
+            <svg class="ho-info-icon" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+              fill="currentColor">
+              <path
+                d="M140,176a4,4,0,0,1-4,4,12,12,0,0,1-12-12V128a4,4,0,0,0-4-4,4,4,0,0,1,0-8,12,12,0,0,1,12,12v40a4,4,0,0,0,4,4A4,4,0,0,1,140,176ZM124,92a8,8,0,1,0-8-8A8,8,0,0,0,124,92Zm104,36A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z" />
+            </svg>
             <div class="ho-tooltip-box">
               <div class="ho-tt-title">Revenue Details</div>
               <table class="ho-tt-table" *ngIf="financialTotals().revenueDetails.length > 0; else noRev">
-                <thead><tr><th>Client</th><th>Service</th><th style="text-align: right;">Amount</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Service</th>
+                    <th style="text-align: right;">Amount</th>
+                  </tr>
+                </thead>
                 <tbody>
                   <tr *ngFor="let item of financialTotals().revenueDetails">
-                    <td>{{ item.clientName }}</td><td>{{ item.serviceName }}</td><td style="text-align: right;">₹{{ item.amount | number:'1.0-0' }}</td>
+                    <td>{{ item.clientName }}</td>
+                    <td>{{ item.serviceName }}</td>
+                    <td style="text-align: right;">₹{{ item.amount | number:'1.0-0' }}</td>
                   </tr>
                 </tbody>
               </table>
-              <ng-template #noRev><div class="ho-tt-empty">No data</div></ng-template>
+              <ng-template #noRev>
+                <div class="ho-tt-empty">No data</div>
+              </ng-template>
             </div>
           </div>
         </div>
         @if (isLoading()) {
-          <div class="skeleton-box skeleton-number" style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
+        <div class="skeleton-box skeleton-number"
+          style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
         } @else {
-          <span class="number">₹{{ financialTotals().totalRevenue | number:'1.0-0' }}</span>
+        <span class="number">₹{{ financialTotals().totalRevenue | number:'1.0-0' }}</span>
         }
         <div class="metric-value">
           <span class="trend">For selected month</span>
@@ -102,25 +128,40 @@
         <div class="metric-header">
           <div class="metric-title">Amount Received</div>
           <div class="ho-info-wrapper">
-            <svg class="ho-info-icon" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M140,176a4,4,0,0,1-4,4,12,12,0,0,1-12-12V128a4,4,0,0,0-4-4,4,4,0,0,1,0-8,12,12,0,0,1,12,12v40a4,4,0,0,0,4,4A4,4,0,0,1,140,176ZM124,92a8,8,0,1,0-8-8A8,8,0,0,0,124,92Zm104,36A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z"/></svg>
+            <svg class="ho-info-icon" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+              fill="currentColor">
+              <path
+                d="M140,176a4,4,0,0,1-4,4,12,12,0,0,1-12-12V128a4,4,0,0,0-4-4,4,4,0,0,1,0-8,12,12,0,0,1,12,12v40a4,4,0,0,0,4,4A4,4,0,0,1,140,176ZM124,92a8,8,0,1,0-8-8A8,8,0,0,0,124,92Zm104,36A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z" />
+            </svg>
             <div class="ho-tooltip-box">
               <div class="ho-tt-title">Received Details</div>
               <table class="ho-tt-table" *ngIf="financialTotals().receivedDetails.length > 0; else noRecv">
-                <thead><tr><th>Client</th><th>Service</th><th style="text-align: right;">Amount</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Service</th>
+                    <th style="text-align: right;">Amount</th>
+                  </tr>
+                </thead>
                 <tbody>
                   <tr *ngFor="let item of financialTotals().receivedDetails">
-                    <td>{{ item.clientName }}</td><td>{{ item.serviceName }}</td><td style="text-align: right;">₹{{ item.amount | number:'1.0-0' }}</td>
+                    <td>{{ item.clientName }}</td>
+                    <td>{{ item.serviceName }}</td>
+                    <td style="text-align: right;">₹{{ item.amount | number:'1.0-0' }}</td>
                   </tr>
                 </tbody>
               </table>
-              <ng-template #noRecv><div class="ho-tt-empty">No data</div></ng-template>
+              <ng-template #noRecv>
+                <div class="ho-tt-empty">No data</div>
+              </ng-template>
             </div>
           </div>
         </div>
         @if (isLoading()) {
-          <div class="skeleton-box skeleton-number" style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
+        <div class="skeleton-box skeleton-number"
+          style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
         } @else {
-          <span class="number">₹{{ financialTotals().amountReceived | number:'1.0-0' }}</span>
+        <span class="number">₹{{ financialTotals().amountReceived | number:'1.0-0' }}</span>
         }
         <div class="metric-value">
           <span class="trend positive">Received safely</span>
@@ -130,25 +171,40 @@
         <div class="metric-header">
           <div class="metric-title">Pending Amount</div>
           <div class="ho-info-wrapper">
-            <svg class="ho-info-icon" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M140,176a4,4,0,0,1-4,4,12,12,0,0,1-12-12V128a4,4,0,0,0-4-4,4,4,0,0,1,0-8,12,12,0,0,1,12,12v40a4,4,0,0,0,4,4A4,4,0,0,1,140,176ZM124,92a8,8,0,1,0-8-8A8,8,0,0,0,124,92Zm104,36A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z"/></svg>
+            <svg class="ho-info-icon" height="16" width="16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+              fill="currentColor">
+              <path
+                d="M140,176a4,4,0,0,1-4,4,12,12,0,0,1-12-12V128a4,4,0,0,0-4-4,4,4,0,0,1,0-8,12,12,0,0,1,12,12v40a4,4,0,0,0,4,4A4,4,0,0,1,140,176ZM124,92a8,8,0,1,0-8-8A8,8,0,0,0,124,92Zm104,36A100,100,0,1,1,128,28,100.11,100.11,0,0,1,228,128Zm-8,0a92,92,0,1,0-92,92A92.1,92.1,0,0,0,220,128Z" />
+            </svg>
             <div class="ho-tooltip-box right-aligned">
               <div class="ho-tt-title">Pending Details</div>
               <table class="ho-tt-table" *ngIf="financialTotals().pendingDetails.length > 0; else noPend">
-                <thead><tr><th>Client</th><th>Service</th><th style="text-align: right;">Amount</th></tr></thead>
+                <thead>
+                  <tr>
+                    <th>Client</th>
+                    <th>Service</th>
+                    <th style="text-align: right;">Amount</th>
+                  </tr>
+                </thead>
                 <tbody>
                   <tr *ngFor="let item of financialTotals().pendingDetails">
-                    <td>{{ item.clientName }}</td><td>{{ item.serviceName }}</td><td style="text-align: right;">₹{{ item.amount | number:'1.0-0' }}</td>
+                    <td>{{ item.clientName }}</td>
+                    <td>{{ item.serviceName }}</td>
+                    <td style="text-align: right;">₹{{ item.amount | number:'1.0-0' }}</td>
                   </tr>
                 </tbody>
               </table>
-              <ng-template #noPend><div class="ho-tt-empty">No data</div></ng-template>
+              <ng-template #noPend>
+                <div class="ho-tt-empty">No data</div>
+              </ng-template>
             </div>
           </div>
         </div>
         @if (isLoading()) {
-          <div class="skeleton-box skeleton-number" style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
+        <div class="skeleton-box skeleton-number"
+          style="height: 32px; width: 120px; margin-top: 12px; margin-bottom: 0;"></div>
         } @else {
-          <span class="number">₹{{ financialTotals().pendingAmount | number:'1.0-0' }}</span>
+        <span class="number">₹{{ financialTotals().pendingAmount | number:'1.0-0' }}</span>
         }
         <div class="metric-value">
           <span class="trend negative" *ngIf="financialTotals().pendingAmount > 0">Awaiting payment</span>
@@ -169,21 +225,31 @@
         <div class="ho-dropdown">
           <button class="ho-btn-outline ho-dropdown-trigger">
             {{ getPeriodLabel() }}
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 4px; display: inline-block; vertical-align: middle;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+              stroke-linecap="round" stroke-linejoin="round"
+              style="margin-left: 4px; display: inline-block; vertical-align: middle;">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
           <div class="ho-dropdown-menu">
-            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'thisMonth'" (click)="filterPeriod('thisMonth')">This Month</button>
-            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'last6Days'" (click)="filterPeriod('last6Days')">Last 6 Days</button>
-            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'last6Months'" (click)="filterPeriod('last6Months')">Last 6 Months</button>
+            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'thisMonth'"
+              (click)="filterPeriod('thisMonth')">This Month</button>
+            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'last6Days'"
+              (click)="filterPeriod('last6Days')">Last 6 Days</button>
+            <button class="ho-dropdown-item pop-item" [class.active]="selectedPeriod() === 'last6Months'"
+              (click)="filterPeriod('last6Months')">Last 6 Months</button>
           </div>
         </div>
         <button class="ho-btn-dark" (click)="openExportModal()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 4px;">
-            <path d="M16.4405 8.8999C20.0405 9.2099 21.5105 11.0599 21.5105 15.1099V15.2399C21.5105 19.7099 19.7205 21.4999 15.2505 21.4999H8.74047C4.27047 21.4999 2.48047 19.7099 2.48047 15.2399V15.1099C2.48047 11.0899 3.93047 9.2399 7.47047 8.9099" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 15.0001V3.62012" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M15.3504 5.85L12.0004 2.5L8.65039 5.85" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+            style="margin-right: 4px;">
+            <path
+              d="M16.4405 8.8999C20.0405 9.2099 21.5105 11.0599 21.5105 15.1099V15.2399C21.5105 19.7099 19.7205 21.4999 15.2505 21.4999H8.74047C4.27047 21.4999 2.48047 19.7099 2.48047 15.2399V15.1099C2.48047 11.0899 3.93047 9.2399 7.47047 8.9099"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M12 15.0001V3.62012" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+              stroke-linejoin="round" />
+            <path d="M15.3504 5.85L12.0004 2.5L8.65039 5.85" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" />
           </svg>
           Export
         </button>
@@ -253,7 +319,7 @@
             <tr>
               <th>Task / Entity</th>
               @if (user()?.role !== 'filling_staff') {
-                <th>Assigned To</th>
+              <th>Assigned To</th>
               }
               <th>Status</th>
               <th>Created At</th>
@@ -261,37 +327,35 @@
           </thead>
           <tbody>
             @for (item of filteredOngoingItems().slice(0, 5); track item._id) {
-              <tr class="ho-table-row">
-                <td>
-                  <div class="ho-table-cell-content">
-                    <div>
-                      <p class="ho-font-semibold">{{ item.title }}</p>
-                      <p class="ho-text-xs ho-text-muted">{{ item.clientName }}</p>
-                    </div>
+            <tr class="ho-table-row">
+              <td>
+                <div class="ho-table-cell-content">
+                  <div>
+                    <p class="ho-font-semibold">{{ item.title }}</p>
+                    <p class="ho-text-xs ho-text-muted">{{ item.clientName }}</p>
                   </div>
-                </td>
-                @if (user()?.role !== 'filling_staff') {
-                  <td>
-                    <div class="ho-text-sm">{{ item.assignedTo }}</div>
-                  </td>
-                }
-                <td>
-                  <span class="ho-status-badge" 
-                        [class.certified]="item.isCompleted"
-                        [class.pending]="!item.isCompleted">
+                </div>
+              </td>
+              @if (user()?.role !== 'filling_staff') {
+              <td>
+                <div class="ho-text-sm">{{ item.assignedTo }}</div>
+              </td>
+              }
+              <td>
+                <span class="ho-status-badge" [class.certified]="item.isCompleted" [class.pending]="!item.isCompleted">
 
-                    {{ item.status }}
-                  </span>
-                </td>
-                <td>
-                  <div class="ho-text-sm ho-text-muted ho-font-label">{{ item.createdAt | date:'MMM dd, y' }}</div>
-                </td>
-              </tr>
+                  {{ item.status }}
+                </span>
+              </td>
+              <td>
+                <div class="ho-text-sm ho-text-muted ho-font-label">{{ item.createdAt | date:'MMM dd, y' }}</div>
+              </td>
+            </tr>
             }
             @if (filteredOngoingItems().length === 0) {
-              <tr>
-                <td colspan="4" class="ho-table-empty">No active tasks or certifications found.</td>
-              </tr>
+            <tr>
+              <td colspan="4" class="ho-table-empty">No active tasks or certifications found.</td>
+            </tr>
             }
           </tbody>
         </table>
@@ -304,55 +368,71 @@
       <div class="ho-timeline-container">
         <div class="ho-timeline">
           @for (rem of filteredReminders().slice(0, 4); track rem._id) {
-            <div class="ho-timeline-event">
-              <div class="ho-timeline-dot" 
-                   [class.expired]="rem.status === 'expired'"
-                   [class.urgent]="rem.status === 'urgent'"
-                   [class.active]="rem.status !== 'expired' && rem.status !== 'urgent'">
-                @if (rem.status === 'expired') {
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                } @else if (rem.status === 'urgent') {
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="12" x2="12" y2="16"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
-                } @else {
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                }
-              </div>
-              <p class="ho-timeline-time">{{ rem.dueDate | date:'MMM dd, y' }}</p>
-              <h5 class="ho-timeline-title">{{ rem.title }}</h5>
-              <p class="ho-timeline-desc">
-                {{ rem.client_id?.owner_name || 'Client' }} ({{ rem.client_id?.company_name || 'Individual' }})
-              </p>
+          <div class="ho-timeline-event">
+            <div class="ho-timeline-dot" [class.expired]="rem.status === 'expired'"
+              [class.urgent]="rem.status === 'urgent'"
+              [class.active]="rem.status !== 'expired' && rem.status !== 'urgent'">
+              @if (rem.status === 'expired') {
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              } @else if (rem.status === 'urgent') {
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="12" x2="12" y2="16"></line>
+                <line x1="12" y1="8" x2="12" y2="8"></line>
+              </svg>
+              } @else {
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              }
             </div>
+            <p class="ho-timeline-time">{{ rem.dueDate | date:'MMM dd, y' }}</p>
+            <h5 class="ho-timeline-title">{{ rem.title }}</h5>
+            <p class="ho-timeline-desc">
+              {{ rem.client_id?.owner_name || 'Client' }} ({{ rem.client_id?.company_name || 'Individual' }})
+            </p>
+          </div>
           }
           @if (filteredReminders().length === 0) {
-            <div class="ho-timeline-empty">No compliance reminders.</div>
+          <div class="ho-timeline-empty">No compliance reminders.</div>
           }
         </div>
       </div>
 
       <!-- Small Banner -->
       @if (user()?.role !== 'admin') {
-        <div class="ho-small-banner">
-          <div class="ho-small-banner-bg"></div>
-          <div class="ho-small-banner-content">
-            <h4 class="ho-banner-card-title">Need Expert Assistance?</h4>
-            <p class="ho-banner-card-desc">Our senior consultants are available for complex regulatory filings.</p>
-            
-            @if (user()?.role === 'filing_staff' || user()?.role === 'filling_staff') {
-              <a [href]="'mailto:' + (user()?.client_manager?.email || '')" class="ho-email-badge">
-                <div style="font-weight: 500;">Manager Email: <span style="font-weight: 500; letter-spacing: .1em; color: #000000;">{{ user()?.client_manager?.email || 'Not provided' }}</span></div>
-              </a>
-            } @else if (user()?.role === 'client_manager') {
-              <a [href]="'mailto:' + (user()?.admin_email || '')" class="ho-email-badge">
-                <div style="font-weight: 500;">Admin Email: <span style="font-weight: 500; letter-spacing: .1em; color: #000000;">{{ user()?.admin_email || 'admin@example.com' }}</span></div>
-              </a>
-            } @else {
-              <button class="ho-banner-card-btn">
-                Contact Legal Team
-              </button>
-            }
-          </div>
+      <div class="ho-small-banner">
+        <div class="ho-small-banner-bg"></div>
+        <div class="ho-small-banner-content">
+          <h4 class="ho-banner-card-title">Need Expert Assistance?</h4>
+          <p class="ho-banner-card-desc">Our senior consultants are available for complex regulatory filings.</p>
+
+          @if (user()?.role === 'filing_staff' || user()?.role === 'filling_staff') {
+          <a [href]="'mailto:' + (user()?.client_manager?.email || '')" class="ho-email-badge">
+            <div style="font-weight: 500;">Manager Email: <span
+                style="font-weight: 500; letter-spacing: .1em; color: #000000;">{{ user()?.client_manager?.email || 'Not
+                provided' }}</span></div>
+          </a>
+          } @else if (user()?.role === 'client_manager') {
+          <a [href]="'mailto:' + (user()?.admin_email || '')" class="ho-email-badge">
+            <div style="font-weight: 500;">Admin Email: <span
+                style="font-weight: 500; letter-spacing: .1em; color: #000000;">{{ user()?.admin_email ||
+                'admin@example.com' }}</span></div>
+          </a>
+          } @else {
+          <button class="ho-banner-card-btn">
+            Contact Legal Team
+          </button>
+          }
         </div>
+      </div>
       }
     </div>
   </div>
@@ -360,27 +440,39 @@
 
 <!-- Export Modal Overlay -->
 @if (isExportModalOpen) {
-  <div class="ho-modal-overlay" (click)="closeExportModal()" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.2s ease;">
-    <div class="ho-modal-content" (click)="$event.stopPropagation()" style="background: white; border-radius: 12px; padding: 24px; width: 400px; max-width: 90vw; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: slideUp 0.3s ease;">
-      <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 18px; color: var(--text-primary); font-weight: 600;">Export Performance Data</h3>
-      <p style="margin-top: 0; margin-bottom: 24px; font-size: 14px; color: var(--text-secondary);">Select a date range to generate a customized CSV report.</p>
-      
-      <div style="display: flex; gap: 16px; margin-bottom: 24px;">
-        <div style="flex: 1;">
-          <label style="display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px;">Start Date</label>
-          <input type="date" #sDate [value]="exportStartDate" (change)="exportStartDate = sDate.value" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text-primary); outline: none;" />
-        </div>
-        <div style="flex: 1;">
-          <label style="display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px;">End Date</label>
-          <input type="date" #eDate [value]="exportEndDate" (change)="exportEndDate = eDate.value" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text-primary); outline: none;" />
-        </div>
-      </div>
+<div class="ho-modal-overlay" (click)="closeExportModal()"
+  style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.2s ease;">
+  <div class="ho-modal-content" (click)="$event.stopPropagation()"
+    style="background: white; border-radius: 12px; padding: 24px; width: 400px; max-width: 90vw; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: slideUp 0.3s ease;">
+    <h3 style="margin-top: 0; margin-bottom: 8px; font-size: 18px; color: var(--text-primary); font-weight: 600;">Export
+      Performance Data</h3>
+    <p style="margin-top: 0; margin-bottom: 24px; font-size: 14px; color: var(--text-secondary);">Select a date range to
+      generate a customized CSV report.</p>
 
-      <div style="display: flex; justify-content: flex-end; gap: 12px;">
-        <button (click)="closeExportModal()" style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Cancel</button>
-        <button (click)="confirmExport()" style="padding: 10px 16px; border-radius: 8px; border: none; background: #111827; color: white; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;">Generate CSV</button>
+    <div style="display: flex; gap: 16px; margin-bottom: 24px;">
+      <div style="flex: 1;">
+        <label
+          style="display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px;">Start
+          Date</label>
+        <input type="date" #sDate [value]="exportStartDate" (change)="exportStartDate = sDate.value"
+          style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text-primary); outline: none;" />
+      </div>
+      <div style="flex: 1;">
+        <label
+          style="display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px;">End
+          Date</label>
+        <input type="date" #eDate [value]="exportEndDate" (change)="exportEndDate = eDate.value"
+          style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; color: var(--text-primary); outline: none;" />
       </div>
     </div>
-  </div>
-}
 
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <button (click)="closeExportModal()"
+        style="padding: 10px 16px; border-radius: 8px; border: 1px solid var(--border); background: white; color: var(--text-primary); font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s;">Cancel</button>
+      <button (click)="confirmExport()"
+        style="padding: 10px 16px; border-radius: 8px; border: none; background: #111827; color: white; font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.2s;">Generate
+        CSV</button>
+    </div>
+  </div>
+</div>
+}

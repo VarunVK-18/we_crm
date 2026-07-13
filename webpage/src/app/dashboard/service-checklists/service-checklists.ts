@@ -13,6 +13,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 })
 export class ServiceChecklists implements OnInit, OnDestroy {
   @Output() onViewChecklist = new EventEmitter<string>();
+  @Output() onViewClient = new EventEmitter<string>();
   user = signal<any>(null);
   checklists = signal<any[]>([]);
   teams = input<any[]>([]);
@@ -124,7 +125,7 @@ export class ServiceChecklists implements OnInit, OnDestroy {
   }
 
   fetchChecklists() {
-    this.api.get<any>('checklists').subscribe({
+    this.api.get<any>('checklists/summary').subscribe({
       next: (res) => {
         if (res && res.success) {
           this.checklists.set(res.checklists);
@@ -262,6 +263,13 @@ export class ServiceChecklists implements OnInit, OnDestroy {
 
   viewDetails(id: string) {
     this.onViewChecklist.emit(id);
+  }
+
+  viewClient(event: Event, clientId: string) {
+    event.stopPropagation();
+    if (this.user()?.role !== 'filling_staff' && clientId) {
+      this.onViewClient.emit(clientId);
+    }
   }
 
   openCreateChecklistModal() {
@@ -436,6 +444,15 @@ export class ServiceChecklists implements OnInit, OnDestroy {
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
 
     if (requiresForm) {
+      if (c.details?.clientFormSubmitted) {
+        return false;
+      }
+
+      const formFillingStep = c.items?.find((item: any) => item.isActionStep);
+      if (formFillingStep?.isChecked) {
+        return false;
+      }
+
       // These are system-injected fields set at checklist creation time, NOT from client form submission
       const SYSTEM_FIELDS = new Set([
         'entityname', 'status', 'next step', 'applicant name', 'applicant email',

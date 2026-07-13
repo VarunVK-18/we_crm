@@ -203,18 +203,7 @@
   border: 1px solid transparent;
 }
 
-.nav-item-wrapper.selected::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 4px;
-  height: 20px;
-  border-radius: 0 4px 4px 0;
-  background-color: #000000;
-  opacity: 1;
-}
+
 
 .nav-item-content {
   display: flex;

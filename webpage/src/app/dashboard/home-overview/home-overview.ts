@@ -9,7 +9,9 @@ const homeOverviewCache = {
   checklists: null as any[] | null,
   reminders: null as any[] | null,
   orders: null as any[] | null,
+  dashboardStats: null as any | null,
   lastFetchTime: 0
+  // dashboardStatsTime is kept separately per month
 };
 
 @Component({
@@ -40,6 +42,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   clients = signal<any[]>([]);
   tasks = signal<any[]>([]);
   checklists = signal<any[]>([]);
+  // Optimized: server-side stat counts
+  dashboardStats = signal<any>(null);
   ongoingItems = computed(() => {
     const list: any[] = [];
     
@@ -191,13 +195,16 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           this.updateStats();
           this.isLoading.set(false);
         } else {
-          // Fetch all metrics data
+          // Optimized: fetch stat counts from a single endpoint
+          this.fetchDashboardStats();
+
+          // Still fetch full data for charts (clients, tasks, checklists)
           let expectedCalls = 3;
           let completedCalls = 0;
           
           const isAdminOrManager = parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff';
           if (isAdminOrManager) {
-            expectedCalls = 5;
+            expectedCalls = 4;
           }
 
           const checkDone = () => {
@@ -214,7 +221,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           
           if (isAdminOrManager) {
             this.fetchCompanyComplianceReminders(checkDone);
-            this.fetchCompanyOrders(checkDone);
           }
         }
       } catch (e) {
@@ -264,7 +270,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   fetchClients(callback?: () => void) {
-    this.api.get<any>('users/clients').subscribe({
+    this.api.get<any>('users/clients/summary').subscribe({
       next: (res) => {
         if (res && res.clients) {
           this.clients.set(res.clients);
@@ -294,7 +300,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   fetchChecklists(callback?: () => void) {
-    this.api.get<any>('checklists').subscribe({
+    this.api.get<any>('checklists/summary').subscribe({
       next: (res) => {
         if (res && res.success) {
           this.checklists.set(res.checklists);
@@ -398,18 +404,33 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
 
   setFinancialMonth(val: string) {
     this.financialMonth.set(val);
+    // Refetch server-side financial stats for the new month
+    this.fetchDashboardStats();
   }
 
   financialTotals = computed(() => {
+    // Use server-side financial totals if available (optimized)
+    const serverStats = this.dashboardStats();
+    if (serverStats?.financial) {
+      return {
+        totalRevenue: serverStats.financial.totalRevenue,
+        amountReceived: serverStats.financial.amountReceived,
+        pendingAmount: serverStats.financial.pendingAmount,
+        // Detail breakdowns still derived client-side from orders for the tooltip popovers
+        revenueDetails: [],
+        receivedDetails: [],
+        pendingDetails: []
+      };
+    }
+
+    // Fallback: compute from locally cached orders (same logic as before)
     const monthStr = this.financialMonth();
     const ordersList = this.filteredRoleOrders() || [];
     let totalRev = 0;
     let amtRecv = 0;
-
     const revenueDetails: any[] = [];
     const receivedDetails: any[] = [];
     const pendingDetails: any[] = [];
-
     ordersList.forEach(o => {
       if (!o.createdAt) return;
       const d = new Date(o.createdAt);
@@ -418,27 +439,16 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         const rev = o.dealClosedAmount || 0;
         const recv = o.advanceAmountPaid || 0;
         const pend = rev - recv;
-
         totalRev += rev;
         amtRecv += recv;
-
         const clientName = o.entityName || o.companyName || 'Unknown Client';
         const serviceName = o.serviceType || 'Service';
-
         if (rev > 0) revenueDetails.push({ clientName, serviceName, amount: rev });
         if (recv > 0) receivedDetails.push({ clientName, serviceName, amount: recv });
         if (pend > 0) pendingDetails.push({ clientName, serviceName, amount: pend });
       }
     });
-
-    return {
-      totalRevenue: totalRev,
-      amountReceived: amtRecv,
-      pendingAmount: totalRev - amtRecv,
-      revenueDetails,
-      receivedDetails,
-      pendingDetails
-    };
+    return { totalRevenue: totalRev, amountReceived: amtRecv, pendingAmount: totalRev - amtRecv, revenueDetails, receivedDetails, pendingDetails };
   });
 
   getPeriodLabel(): string {
@@ -928,6 +938,15 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
     
     if (requiresForm) {
+      if (c.details?.clientFormSubmitted) {
+        return false;
+      }
+
+      const formFillingStep = c.items?.find((item: any) => item.isActionStep);
+      if (formFillingStep?.isChecked) {
+        return false;
+      }
+
       // These are system-injected fields set at checklist creation time, NOT from client form submission
       const SYSTEM_FIELDS = new Set([
         'entityname', 'status', 'next step', 'applicant name', 'applicant email',
@@ -971,48 +990,49 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     return 'Pending';
   }
 
+  // Fetch all stat counts from a single optimized server endpoint
+  fetchDashboardStats() {
+    const monthStr = this.financialMonth();
+    this.api.get<any>(`dashboard/stats?month=${monthStr}`).subscribe({
+      next: (res) => {
+        if (res && res.success) {
+          this.dashboardStats.set(res);
+          homeOverviewCache.dashboardStats = res;
+          this.updateStats();
+        }
+      },
+      error: (err) => console.error('[fetchDashboardStats] Failed:', err)
+    });
+  }
+
   updateStats() {
+    // Prefer server-side stats (optimized path)
+    const serverStats = this.dashboardStats()?.stats;
+    if (serverStats) {
+      const { allTasks, formsPending, docsPending, inProgress, forReview } = serverStats;
+      this.stats = [
+        { title: 'All Tasks', value: String(allTasks), detail: 'Total active checklists', isTrendUp: true },
+        { title: 'Forms Pending', value: String(formsPending), detail: formsPending > 0 ? 'Requires client action' : 'All clear', isWarning: formsPending > 0, isGood: formsPending === 0 },
+        { title: 'Docs Pending', value: String(docsPending), detail: docsPending > 0 ? 'Awaiting documents' : 'All clear', isWarning: docsPending > 0, isGood: docsPending === 0 },
+        { title: 'In Progress', value: String(inProgress), detail: inProgress > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+        { title: 'For Review', value: String(forReview), detail: forReview > 0 ? 'Ready for manager review' : 'None', isTrendUp: true }
+      ];
+      return;
+    }
+
+    // Fallback: compute locally from checklists (if server call not yet resolved)
     const all = this.filteredRoleChecklists();
-    
     const allTasksCount = all.length;
     const formsPendingCount = all.filter(c => this.isActionRequired(c) && c.status !== 'completed' && c.status !== 'under_review').length;
     const docsPendingCount = all.filter(c => this.isDocumentPending(c) && c.status !== 'completed' && c.status !== 'under_review').length;
     const inProgressCount = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review').length;
     const forReviewCount = all.filter(c => c.status === 'under_review').length;
-
     this.stats = [
-      { 
-        title: 'All Tasks', 
-        value: allTasksCount.toString(), 
-        detail: 'Total active checklists',
-        isTrendUp: true 
-      },
-      { 
-        title: 'Forms Pending', 
-        value: formsPendingCount.toString(), 
-        detail: formsPendingCount > 0 ? 'Requires client action' : 'All clear', 
-        isWarning: formsPendingCount > 0,
-        isGood: formsPendingCount === 0
-      },
-      { 
-        title: 'Docs Pending', 
-        value: docsPendingCount.toString(), 
-        detail: docsPendingCount > 0 ? 'Awaiting documents' : 'All clear', 
-        isWarning: docsPendingCount > 0,
-        isGood: docsPendingCount === 0 
-      },
-      { 
-        title: 'In Progress', 
-        value: inProgressCount.toString(), 
-        detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', 
-        isTrendUp: true
-      },
-      { 
-        title: 'For Review', 
-        value: forReviewCount.toString(), 
-        detail: forReviewCount > 0 ? 'Ready for manager review' : 'None', 
-        isTrendUp: true
-      }
+      { title: 'All Tasks', value: allTasksCount.toString(), detail: 'Total active checklists', isTrendUp: true },
+      { title: 'Forms Pending', value: formsPendingCount.toString(), detail: formsPendingCount > 0 ? 'Requires client action' : 'All clear', isWarning: formsPendingCount > 0, isGood: formsPendingCount === 0 },
+      { title: 'Docs Pending', value: docsPendingCount.toString(), detail: docsPendingCount > 0 ? 'Awaiting documents' : 'All clear', isWarning: docsPendingCount > 0, isGood: docsPendingCount === 0 },
+      { title: 'In Progress', value: inProgressCount.toString(), detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+      { title: 'For Review', value: forReviewCount.toString(), detail: forReviewCount > 0 ? 'Ready for manager review' : 'None', isTrendUp: true }
     ];
   }
 }

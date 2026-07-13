@@ -187,13 +187,13 @@
     }
 
     <!-- Active Tab Screen Content -->
-    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track' || currentTab() === 'payment-tracker'">
+    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track'" [class.no-padding-scrollable]="currentTab() === 'payment-tracker'">
       @if (currentTab() === 'dashboard') {
       <app-home-overview (viewRequests)="handleTabChanged('requests')"
         [searchQuery]="globalSearchQuery()"></app-home-overview>
       }
       @if (currentTab() === 'requests') {
-      <app-requests></app-requests>
+      <app-requests (onViewClient)="viewClient($event)"></app-requests>
       }
       @if (currentTab() === 'clients' && user()?.role !== 'filling_staff' && user()?.role !== 'account_manager') {
       <app-clients-directory [teams]="teams()" (onViewClient)="viewClient($event)"
@@ -220,13 +220,13 @@
       <app-filing-tasks [teams]="teams()"></app-filing-tasks>
       }
       @if (currentTab() === 'checklists') {
-      <app-service-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)"></app-service-checklists>
+      <app-service-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)" (onViewClient)="viewClient($event)"></app-service-checklists>
       }
       @if (currentTab() === 'completed-checklists') {
       <app-completed-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)"></app-completed-checklists>
       }
       @if (currentTab() === 'payment-tracker') {
-      <app-payment-tracker></app-payment-tracker>
+      <app-payment-tracker (onViewChecklist)="viewChecklist($event)" (onViewClient)="viewClient($event)"></app-payment-tracker>
       }
       @if (currentTab() === 'checklist-details' && selectedChecklistId()) {
       <app-checklist-details [checklistId]="selectedChecklistId()!" [teams]="teams()" [autoOpenChat]="openChatOnLoad()"
@@ -253,7 +253,7 @@
       <app-banner-management></app-banner-management>
       }
       @if (currentTab() === 'bucket') {
-      <app-bucket></app-bucket>
+      <app-bucket (onViewClient)="viewClient($event)" (onViewService)="viewChecklist($event)"></app-bucket>
       }
       @if (currentTab() === 'team-service-track') {
       <app-team-service-track></app-team-service-track>

@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { EyeIcon, Download04Icon, Upload04Icon, Loading02Icon } from '@hugeicons/core-free-icons';
 import { Api } from '../../api';
+import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './client-dashboard.html',
   styleUrl: './client-dashboard.css'
 })

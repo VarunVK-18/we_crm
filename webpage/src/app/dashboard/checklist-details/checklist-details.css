@@ -1,7 +1,7 @@
 .details-layout-container {
   display: flex;
   flex-direction: row;
-  gap: 24px;
+  gap: 20px;
   max-width: 1440px;
   margin: 0 auto;
   width: 100%;
@@ -24,10 +24,10 @@
   width: 360px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   height: fit-content;
   position: sticky;
-  top: 24px;
+  top: 4px;
 }
 
 @media (max-width: 1024px) {
@@ -45,7 +45,7 @@
   padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
@@ -400,3 +400,50 @@ details.collapsible-card summary .material-symbols-outlined:last-child {
     transform: rotate(360deg);
   }
 }
+
+/* Table View for Final Documents */
+.bucket-table-container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-top: 12px;
+}
+
+.bucket-table {
+  width: 100%;
+  text-align: left;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.bucket-table th {
+  padding: 12px 24px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.bucket-table td {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.bucket-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.bucket-table tbody tr:hover {
+  background-color: var(--bg-secondary);
+}
+
+.bucket-table tbody tr:last-child td {
+  border-bottom: none;
+}
+

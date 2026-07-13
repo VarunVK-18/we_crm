@@ -1,9 +1,9 @@
 <div class="client-dashboard-container fade-in">
 
   @if (isLoading()) {
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading client details...</p>
+    <div class="loading-state" style="text-align: center; padding: 60px 0;">
+      <app-we-loader></app-we-loader>
+      <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading client details...</p>
     </div>
   } @else if (errorMessage()) {
     <div class="error-state">

@@ -112,6 +112,8 @@ const teamRoutes = require('./routes/teamRoutes');
 app.use('/api/teams', teamRoutes);
 const bucketRoutes = require('./routes/bucketRoutes');
 app.use('/api/bucket', bucketRoutes);
+const dashboardRoutes = require('./routes/dashboardRoutes');
+app.use('/api/dashboard', dashboardRoutes);
 const intakeRoutes = require('./routes/intakeRoutes');
 app.use('/api/intake', intakeRoutes);
 const ocrRoutes = require('./routes/ocrRoutes');

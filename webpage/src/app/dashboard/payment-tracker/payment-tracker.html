@@ -14,41 +14,48 @@
           <thead>
             <tr>
               <th>Service ID</th>
-              <th>Service Details</th>
-              <th>Client Name</th>
-              <th>Client Custom ID</th>
-              <th>Amount (₹)</th>
-              <th>Status</th>
+              <th>Client ID</th>
+              <th>Applied Date</th>
+              <th>Service Detail</th>
+              <th>Company Name</th>
+              <th>Amount ₹</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             @for (expense of pendingExpenses(); track expense.itemId) {
               <tr>
-                <td style="font-weight: 600;">{{ expense.custom_service_id }}</td>
+                <td>
+                  <a (click)="goToService(expense.checklistId)" style="font-weight: 600; color: var(--accent-primary); cursor: pointer; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                    {{ expense.custom_service_id }}
+                  </a>
+                </td>
+                <td>
+                  @if (userRole() !== 'filling_staff' && userRole() !== 'filing_staff') {
+                    <a (click)="goToClient(expense.clientId)" style="font-weight: 500; color: var(--accent-primary); cursor: pointer; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                      {{ expense.client_custom_id }}
+                    </a>
+                  } @else {
+                    <span style="font-weight: 500;">{{ expense.client_custom_id }}</span>
+                  }
+                </td>
+                <td style="font-size: 13px; color: var(--text-secondary);">
+                  {{ expense.uploadedAt | date:'mediumDate' }}
+                </td>
                 <td>
                   <div style="font-weight: 600;">{{ expense.service_name }}</div>
-                  <div style="font-size: 12px; color: var(--text-secondary);">
-                    {{ expense.item_title }}
-                  </div>
                 </td>
-                <td style="font-weight: 500;">{{ expense.client_name }}</td>
-                <td>{{ expense.client_custom_id }}</td>
+                <td style="font-weight: 500;">{{ expense.company_name }}</td>
                 <td style="font-weight: 600;">{{ expense.amount }}</td>
                 <td>
-                  <span class="status-badge" [ngClass]="expense.reimbursementStatus === 'paid' ? 'status-paid' : 'status-pending'">
-                    {{ expense.reimbursementStatus | titlecase }}
-                  </span>
-                </td>
-                <td>
                   <div style="display: flex; gap: 8px; align-items: center;">
-                    <button class="action-btn" style="background: white; color: var(--text-secondary); border: 1px solid var(--border-color);" (click)="openBill(expense.billUrl)">
-                      View Bill
+                    <button class="action-btn" style="background: white; color: var(--text-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; min-width: 36px;" (click)="openBill(expense.billUrl)" title="View Bill">
+                      <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
                     </button>
                     
                     @if (isManager() && expense.reimbursementStatus === 'pending') {
                       <button class="action-btn" 
-                              (click)="markAsPaid(expense)" 
+                              (click)="openMarkPaidModal(expense)" 
                               [disabled]="processingIds().has(expense.checklistId + '-' + expense.itemId)">
                         @if (processingIds().has(expense.checklistId + '-' + expense.itemId)) {
                           Processing...
@@ -92,37 +99,52 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Date</th>
               <th>Service ID</th>
-              <th>Service Details</th>
-              <th>Client Name</th>
-              <th>Amount (₹)</th>
-              <th>Status</th>
+              <th>Client ID</th>
+              <th>Paid Date</th>
+              <th>Service Detail</th>
+              <th>Company Name</th>
+              <th>Amount ₹</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             @for (expense of historyExpenses(); track expense.itemId) {
               <tr>
-                <td style="font-size: 13px; color: var(--text-secondary);">
-                  {{ expense.uploadedAt | date:'mediumDate' }}
+                <td>
+                  <a (click)="goToService(expense.checklistId)" style="font-weight: 600; color: var(--accent-primary); cursor: pointer; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                    {{ expense.custom_service_id }}
+                  </a>
                 </td>
-                <td style="font-weight: 600;">{{ expense.custom_service_id }}</td>
+                <td>
+                  @if (userRole() !== 'filling_staff' && userRole() !== 'filing_staff') {
+                    <a (click)="goToClient(expense.clientId)" style="font-weight: 500; color: var(--accent-primary); cursor: pointer; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+                      {{ expense.client_custom_id }}
+                    </a>
+                  } @else {
+                    <span style="font-weight: 500;">{{ expense.client_custom_id }}</span>
+                  }
+                </td>
+                <td style="font-size: 13px; color: var(--text-secondary);">
+                  {{ (expense.paidAt || expense.uploadedAt) | date:'mediumDate' }}
+                </td>
                 <td>
                   <div style="font-weight: 600;">{{ expense.service_name }}</div>
-                  <div style="font-size: 12px; color: var(--text-secondary);">
-                    {{ expense.item_title }}
-                  </div>
                 </td>
-                <td style="font-weight: 500;">{{ expense.client_name }}</td>
+                <td style="font-weight: 500;">{{ expense.company_name }}</td>
                 <td style="font-weight: 600;">{{ expense.amount }}</td>
                 <td>
-                  <span class="status-badge status-paid">Paid</span>
-                </td>
-                <td>
-                  <button class="action-btn" style="background: white; color: var(--text-secondary); border: 1px solid var(--border-color);" (click)="openBill(expense.billUrl)">
-                    View Bill
-                  </button>
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button class="action-btn" style="background: white; color: var(--text-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; min-width: 36px;" (click)="openBill(expense.billUrl)" title="View Bill">
+                      <span class="material-symbols-outlined" style="font-size: 20px;">visibility</span>
+                    </button>
+                    @if (expense.paymentProofUrl) {
+                      <button class="action-btn" style="background: #ecfdf5; color: #059669; border: 1px solid #6ee7b7; padding: 6px 12px; height: 36px; display: flex; align-items: center; gap: 4px;" (click)="openViewProof(expense.paymentProofUrl)">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">receipt</span>
+                        View Proof
+                      </button>
+                    }
+                  </div>
                 </td>
               </tr>
             } @empty {
@@ -142,3 +164,85 @@
     </div>
   }
 </div>
+
+<!-- Mark Paid Modal — requires screenshot upload -->
+@if (showProofModal()) {
+  <div class="modal-overlay" (click)="closeProofModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+    <div (click)="$event.stopPropagation()" style="background: var(--bg-primary); border-radius: 12px; padding: 32px; width: 440px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: var(--text-primary);">Confirm Reimbursement</h3>
+        <button (click)="closeProofModal()" style="background: none; border: none; cursor: pointer; color: var(--text-secondary);">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      @if (selectedExpense(); as exp) {
+        <div style="background: var(--bg-secondary); border-radius: 8px; padding: 16px; margin-bottom: 20px; font-size: 14px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span style="color: var(--text-secondary);">Service</span>
+            <span style="font-weight: 600;">{{ exp.service_name }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span style="color: var(--text-secondary);">Task</span>
+            <span>{{ exp.item_title }}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="color: var(--text-secondary);">Amount</span>
+            <span style="font-weight: 700; font-size: 16px; color: #059669;">₹{{ exp.amount }}</span>
+          </div>
+        </div>
+      }
+
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em;">
+          Payment Screenshot <span style="color: #ef4444;">*</span>
+        </label>
+        <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 12px 0;">Upload a screenshot of the payment confirmation. This will be visible to the filing staff.</p>
+        
+        <label for="proofUpload" style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px; border: 2px dashed var(--border-color); border-radius: 8px; cursor: pointer; transition: border-color 0.2s;"
+               [style.border-color]="proofPreviewUrl() ? '#059669' : ''"
+               [style.background]="proofPreviewUrl() ? '#ecfdf5' : ''">
+          @if (proofPreviewUrl()) {
+            <img [src]="proofPreviewUrl()" style="max-height: 160px; border-radius: 6px; object-fit: contain;">
+            <span style="font-size: 12px; color: #059669; font-weight: 600;">Screenshot ready ✓ — Click to change</span>
+          } @else {
+            <span class="material-symbols-outlined" style="font-size: 36px; color: var(--text-secondary);">upload</span>
+            <span style="font-size: 13px; color: var(--text-secondary);">Click to upload payment screenshot</span>
+            <span style="font-size: 11px; color: var(--text-secondary);">PNG, JPG, JPEG supported</span>
+          }
+          <input id="proofUpload" type="file" accept="image/*" (change)="onProofFileSelected($event)" style="display: none;">
+        </label>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button (click)="closeProofModal()" style="flex: 1; padding: 12px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+          Cancel
+        </button>
+        <button (click)="submitMarkPaid()" [disabled]="isSubmittingProof() || !proofFile()"
+                style="flex: 1; padding: 12px; background: #059669; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; opacity: 1; transition: opacity 0.2s;"
+                [style.opacity]="!proofFile() ? '0.5' : '1'">
+          @if (isSubmittingProof()) {
+            Processing...
+          } @else {
+            Confirm & Mark Paid
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- View Proof Modal -->
+@if (showViewProofModal()) {
+  <div class="modal-overlay" (click)="closeViewProof()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+    <div (click)="$event.stopPropagation()" style="background: var(--bg-primary); border-radius: 12px; padding: 24px; max-width: 90vw; max-height: 90vh; overflow: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary);">Payment Proof</h3>
+        <button (click)="closeViewProof()" style="background: none; border: none; cursor: pointer; color: var(--text-secondary);">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <img [src]="viewingProofUrl()" style="max-width: 100%; max-height: 70vh; border-radius: 8px; display: block;">
+    </div>
+  </div>
+}

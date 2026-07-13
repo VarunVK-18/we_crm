@@ -2,7 +2,7 @@
   <div class="filter-action-bar" style="display: flex; justify-content: space-between; align-items: center;">
     <div style="display: flex; align-items: center; gap: 12px;">
       <h2 class="section-title-premium"
-        style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin: 0;">Service Details
+        style="font-size: var(--text-2xl); font-weight: 700; color: var(--text-primary); margin: 0;">
       </h2>
     </div>
 
@@ -38,7 +38,6 @@
       <section class="info-card">
         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
           <div style="display: flex; flex-direction: column; gap: 8px;">
-            <span class="info-badge">{{ checklist().service_name }}</span>
             <h3 class="info-title">{{ checklist().client_id?.owner_name }}</h3>
             @if (checklist().details?.entityName || checklist().client_id?.company_name) {
             <p class="info-subtitle" style="display: flex; align-items: center; gap: 6px;">
@@ -93,29 +92,14 @@
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <h4
               style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin: 0;">
-              Assign Team</h4>
-            @if (canManage()) {
-            <select [ngModel]="checklist().assigned_team?._id || checklist().assigned_team || ''"
-              (ngModelChange)="assignTeamChecklist($event)"
-              style="width: 100%; max-width: 300px; padding: 8px 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 14px;">
-              <option value="">-- Select Team --</option>
-              @for (team of actualTeams(); track team._id) {
-              <option [value]="team._id">{{ team.name }}</option>
-              }
-            </select>
-            } @else {
+              Service Name</h4>
             <div style="display: flex; align-items: center; gap: 12px;">
-              <div
-                style="width: 32px; height: 32px; border-radius: 9999px; background-color: var(--accent-primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">
-                {{ (checklist().assigned_team?.name || 'U').charAt(0).toUpperCase() }}
-              </div>
+
               <div style="display: flex; flex-direction: column;">
                 <span style="font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 20px;">{{
-                  checklist().assigned_team?.name || 'Unassigned' }}</span>
-                <span style="font-size: 14px; color: var(--text-secondary); line-height: 20px;">Team</span>
+                  checklist().service_name || 'Unknown Service' }}</span>
               </div>
             </div>
-            }
           </div>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -173,7 +157,7 @@
 
       <!-- General Details Section -->
       @if (getGeneralDetails().length > 0) {
-      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+      <section style="display: flex; flex-direction: column; gap: 16px; ">
         <details
           style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"
           class="collapsible-card" open>
@@ -1117,36 +1101,46 @@
         <h3 class="section-title">Final Delivery Documents</h3>
 
         @if (checklist().final_documents && checklist().final_documents.length > 0) {
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
-          @for (fdoc of checklist().final_documents; track $index) {
-          <div
-            style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
-            <span
-              style="font-size: 16px; font-weight: 500; color: var(--text-primary); display: block; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{
-              fdoc.name }}</span>
-            <div
-              style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; margin-top: 12px;">
-              <a href="#"
-                (click)="openDocViewer('api/documents/' + (fdoc.document_id?._id || fdoc.document_id), fdoc.name, $event)"
-                style="flex: 1; text-align: center; color: var(--accent-primary); padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.2s;">
-                View
-              </a>
+        <div class="bucket-table-container">
+          <table class="bucket-table">
+            <thead>
+              <tr>
+                <th>Document Name</th>
+                <th style="width: 250px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (fdoc of checklist().final_documents; track $index) {
+              <tr>
+                <td style="font-weight: 500; color: var(--text-primary);">
+                  {{ fdoc.name }}
+                </td>
+                <td>
+                  <div style="display: flex; justify-content: flex-end; align-items: center; gap: 12px;">
+                    <a href="#"
+                      (click)="openDocViewer('api/documents/' + (fdoc.document_id?._id || fdoc.document_id), fdoc.name, $event)"
+                      style="color: var(--accent-primary); font-size: 13px; font-weight: 600; text-decoration: none;">
+                      View
+                    </a>
 
-              <label [style.opacity]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? '0.5' : '1'"
-                style="flex: 1; text-align: center; color: #f59e0b; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin: 0; transition: all 0.2s;">
-                {{ isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? 'Wait...' : 'Reupload' }}
-                <input type="file" style="display: none;"
-                  [disabled]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id]"
-                  (change)="reuploadFinalDoc($event, fdoc.document_id?._id || fdoc.document_id)" />
-              </label>
+                    <label [style.opacity]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? '0.5' : '1'"
+                      style="color: #f59e0b; font-size: 13px; font-weight: 600; cursor: pointer; margin: 0;">
+                      {{ isReuploadingMap[fdoc.document_id?._id || fdoc.document_id] ? 'Wait...' : 'Reupload' }}
+                      <input type="file" style="display: none;"
+                        [disabled]="isReuploadingMap[fdoc.document_id?._id || fdoc.document_id]"
+                        (change)="reuploadFinalDoc($event, fdoc.document_id?._id || fdoc.document_id)" />
+                    </label>
 
-              <button type="button" (click)="deleteUploadedFinalDoc(fdoc.document_id?._id || fdoc.document_id)"
-                style="flex: 1; text-align: center; background: rgba(255, 255, 255, 0.1); color: var(--color-danger); border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin: 0; transition: all 0.2s;">
-                Delete
-              </button>
-            </div>
-          </div>
-          }
+                    <button type="button" (click)="deleteUploadedFinalDoc(fdoc.document_id?._id || fdoc.document_id)"
+                      style="background: transparent; color: var(--color-danger); border: none; font-size: 13px; font-weight: 600; cursor: pointer; padding: 0;">
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
         </div>
         }
 
@@ -1488,7 +1482,7 @@
 
       <!-- Summary / Quick Context Card -->
       <div
-        style="background-color: rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 16px; margin-top: 24px;">
+        style="background-color: rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
         <h4
           style="font-size: 18px; line-height: 24px; font-weight: 600; color: var(--accent-primary); display: flex; align-items: center; gap: 8px; margin: 0;">
           <span class="material-symbols-outlined" style="font-size: 24px;">lightbulb</span>
@@ -1503,8 +1497,8 @@
 
   </div>
   } @else {
-  <div style="display: flex; justify-content: center; padding: 40px;">
-    <p style="color: var(--text-secondary);">Loading checklist details...</p>
+  <div style="padding: 60px 0; display: flex; justify-content: center; align-items: center; width: 100%;">
+    <app-we-loader></app-we-loader>
   </div>
   }
 </div>

@@ -306,3 +306,85 @@ input[type="file"] {
   color: #475569;
   cursor: pointer;
 }
+
+.hover-text-link {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.hover-text-link:hover {
+  color: #2563eb !important;
+  text-decoration: underline !important;
+}
+
+/* Global Premium Header Card Override (Welcome Card Style) */
+.premium-header-card {
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%) !important;
+  color: #1F2937 !important;
+  box-shadow: 0 12px 35px rgba(229, 213, 255, 0.3) !important;
+}
+
+.premium-header-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  background-image: 
+    linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px) !important;
+  background-size: 32px 32px !important;
+  pointer-events: none !important;
+  z-index: 2 !important;
+}
+
+.premium-header-card .ho-hero-title {
+  color: #1F2937 !important;
+}
+
+.premium-header-card .ho-hero-subtitle {
+  color: #4B5563 !important;
+}
+
+/* Subtle light highlights for background waves instead of dark/purple blobs */
+.premium-header-card .ho-wave {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Global Profile Header Card Override (Lavender Theme) */
+.profile-header-card {
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%) !important;
+  color: #1F2937 !important;
+  box-shadow: 0 12px 35px rgba(229, 213, 255, 0.3) !important;
+}
+
+.profile-header-card::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px) !important;
+  background-size: 32px 32px !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+}
+
+.profile-header-card .phc-bg {
+  background-image: radial-gradient(circle at 80% 50%, rgba(255, 255, 255, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 20% 0%, rgba(255, 255, 255, 0.3) 0%, transparent 50%) !important;
+  opacity: 0.8 !important;
+}
+
+.profile-header-card .phc-avatar {
+  background: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.profile-header-card .phc-info h1 {
+  color: #1F2937 !important;
+}
+
+.profile-header-card .phc-info p {
+  color: #4B5563 !important;
+}
