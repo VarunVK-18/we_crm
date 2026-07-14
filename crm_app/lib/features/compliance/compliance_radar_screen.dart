@@ -16,6 +16,7 @@ import '../../core/constants/port.dart';
 import '../../core/widgets/we_loader.dart';
 import '../../providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:file_picker/file_picker.dart';
 
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
@@ -654,6 +655,221 @@ class ComplianceRadarScreen extends ConsumerWidget {
                             ),
                             SizedBox(height: 16.r),
                           ],
+
+                          // --- Signatures Required Section ---
+                          Builder(
+                            builder: (context) {
+                              final List<Map<String, dynamic>> signatureDocs = [];
+                              final docTypes = [
+                                {'key': 'notice', 'label': 'Notice'},
+                                {'key': 'shareholders', 'label': 'List Of Share Holders'},
+                                {'key': 'directors', 'label': 'List Of Directors'},
+                                {'key': 'notes', 'label': 'Notes To Account'},
+                                {'key': 'temporary', 'label': 'Temporary Document'},
+                                {'key': 'normal', 'label': 'Normal Document'},
+                              ];
+
+                              for (final task in pendingReminders) {
+                                for (final dt in docTypes) {
+                                  final docId = task.noticeDocument; // placeholder, need a better way to access dynamically or manually
+                                  // Actually let's manually check each
+                                  String? doc;
+                                  String? replyDoc;
+                                  if (dt['key'] == 'notice') { doc = task.noticeDocument; replyDoc = task.noticeReplyDocument; }
+                                  if (dt['key'] == 'shareholders') { doc = task.shareholdersDocument; replyDoc = task.shareholdersReplyDocument; }
+                                  if (dt['key'] == 'directors') { doc = task.directorsDocument; replyDoc = task.directorsReplyDocument; }
+                                  if (dt['key'] == 'notes') { doc = task.notesDocument; replyDoc = task.notesReplyDocument; }
+                                  if (dt['key'] == 'temporary') { doc = task.temporaryDocument; replyDoc = task.temporaryReplyDocument; }
+                                  if (dt['key'] == 'normal') { doc = task.normalDocument; replyDoc = null; /* normal documents don't have reply documents usually, but let's just skip it if we only want signatures */ }
+
+                                  // Only show if the document exists AND the client hasn't uploaded a reply yet
+                                  // Actually wait, 'normal' documents are just for downloading. The web app didn't include them in the "Signatures Required" section.
+                                  // Let's omit normal from the signature required section.
+                                  
+                                  if (doc != null && replyDoc == null && dt['key'] != 'normal') {
+                                    signatureDocs.add({
+                                      'task': task,
+                                      'docKey': dt['key'],
+                                      'docLabel': dt['label'],
+                                      'fileId': doc,
+                                    });
+                                  }
+                                }
+                              }
+
+                              if (signatureDocs.isEmpty) return const SizedBox.shrink();
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.all(24.r),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      borderRadius: BorderRadius.circular(12.r),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.05),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Container(
+                                              padding: EdgeInsets.all(8.r),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF3E8FF),
+                                                borderRadius: BorderRadius.circular(8.r),
+                                              ),
+                                              child: Icon(LucideIcons.penTool, color: const Color(0xFFC16BFF), size: 20.r),
+                                            ),
+                                            SizedBox(width: 12.r),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text('Signatures Required', style: GoogleFonts.outfit(fontSize: 18.sp, fontWeight: FontWeight.w700, color: const Color(0xFF0F172A))),
+                                                  Text('Please download, sign, and upload the following documents.', style: GoogleFonts.outfit(fontSize: 14.sp, color: const Color(0xFF64748B))),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 16.r),
+                                        GridView.builder(
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: Responsive.isMobile(context) ? 1 : 2,
+                                            crossAxisSpacing: 16.r,
+                                            mainAxisSpacing: 16.r,
+                                            mainAxisExtent: 140.r,
+                                          ),
+                                          itemCount: signatureDocs.length,
+                                          itemBuilder: (context, index) {
+                                            final doc = signatureDocs[index];
+                                            final task = doc['task'] as ComplianceTask;
+                                            return Container(
+                                              padding: EdgeInsets.all(16.r),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF8FAFC),
+                                                border: Border.all(color: const Color(0xFFCBD5E1)),
+                                                borderRadius: BorderRadius.circular(8.r),
+                                              ),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                children: [
+                                                  Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        doc['docLabel'].toString().toUpperCase(),
+                                                        style: GoogleFonts.outfit(fontSize: 11.sp, fontWeight: FontWeight.w800, color: const Color(0xFF475569), letterSpacing: 0.5),
+                                                      ),
+                                                      SizedBox(height: 4.r),
+                                                      Text(
+                                                        task.title,
+                                                        style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w600, color: const Color(0xFF0F172A)),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                      SizedBox(height: 2.r),
+                                                      Text(
+                                                        task.entityName,
+                                                        style: GoogleFonts.outfit(fontSize: 12.sp, color: const Color(0xFF64748B)),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: OutlinedButton.icon(
+                                                          icon: Icon(LucideIcons.download, size: 16.r, color: const Color(0xFF3B82F6)),
+                                                          label: Text('Download', style: GoogleFonts.outfit(fontSize: 13.sp, fontWeight: FontWeight.w600, color: const Color(0xFF3B82F6))),
+                                                          style: OutlinedButton.styleFrom(
+                                                            padding: EdgeInsets.symmetric(vertical: 8.r),
+                                                            backgroundColor: Colors.white,
+                                                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+                                                          ),
+                                                          onPressed: () async {
+                                                            final url = Uri.parse('$kBaseUrl/api/files/${doc['fileId']}');
+                                                            if (await canLaunchUrl(url)) {
+                                                              await launchUrl(url, mode: LaunchMode.externalApplication);
+                                                            }
+                                                          },
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 12.r),
+                                                      Expanded(
+                                                        child: ElevatedButton.icon(
+                                                          icon: Icon(LucideIcons.uploadCloud, size: 16.r, color: Colors.white),
+                                                          label: Text('Upload Signed', style: GoogleFonts.outfit(fontSize: 13.sp, fontWeight: FontWeight.w600, color: Colors.white)),
+                                                          style: ElevatedButton.styleFrom(
+                                                            padding: EdgeInsets.symmetric(vertical: 8.r),
+                                                            backgroundColor: const Color(0xFFF97316),
+                                                            elevation: 0,
+                                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
+                                                          ),
+                                                          onPressed: () async {
+                                                            final result = await FilePicker.platform.pickFiles(
+                                                              type: FileType.custom,
+                                                              allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+                                                            );
+                                                            
+                                                            if (result != null && result.files.single.path != null) {
+                                                              // Show loading snackbar
+                                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                                SnackBar(content: Text('Uploading ${doc['docLabel']}...'), duration: const Duration(seconds: 2)),
+                                                              );
+                                                              
+                                                              final uid = ref.read(authStateProvider).value?.uid ?? '';
+                                                              final success = await uploadClientReplyDocument(
+                                                                taskId: task.id,
+                                                                documentType: '${doc['docKey']}Reply',
+                                                                filePath: result.files.single.path!,
+                                                                fileName: result.files.single.name,
+                                                                uid: uid,
+                                                              );
+                                                              
+                                                              if (success) {
+                                                                ref.invalidate(complianceRemindersProvider);
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  SnackBar(content: Text('${doc['docLabel']} uploaded successfully!'), backgroundColor: Colors.green),
+                                                                );
+                                                              } else {
+                                                                ScaffoldMessenger.of(context).showSnackBar(
+                                                                  SnackBar(content: Text('Failed to upload ${doc['docLabel']}'), backgroundColor: Colors.red),
+                                                                );
+                                                              }
+                                                            }
+                                                          },
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(height: 16.r),
+                                ],
+                              );
+                            },
+                          ),
 
                           // --- Grid Layout ---
                           Row(

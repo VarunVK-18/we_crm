@@ -12,6 +12,41 @@ final selectedEntityProvider = StateProvider<String>((ref) {
   return 'All Entities'; // Default to all entities
 });
 
+Future<bool> uploadClientReplyDocument({
+  required String taskId,
+  required String documentType,
+  required String filePath,
+  required String fileName,
+  required String uid,
+}) async {
+  try {
+    final uri = Uri.parse('$kBaseUrl/api/compliance/tasks/$taskId/upload');
+    final request = http.MultipartRequest('POST', uri);
+    request.headers['x-user-id'] = uid;
+    request.fields['documentType'] = documentType;
+
+    final file = await http.MultipartFile.fromPath(
+      'file',
+      filePath,
+      filename: fileName,
+    );
+    request.files.add(file);
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      debugPrint("Upload failed: ${response.statusCode} - ${response.body}");
+      return false;
+    }
+  } catch (e) {
+    debugPrint("Error uploading document: $e");
+    return false;
+  }
+}
+
 class CertificateModel {
   final String id;
   final String serviceName;
@@ -169,6 +204,14 @@ final complianceRemindersProvider =
             addDoc(t['certificateDocument'], 'Certificate');
             addDoc(t['acknowledgementDocument'], 'Acknowledgement');
 
+            String? extractDocStr(String key) {
+              final val = t[key];
+              if (val == null) return null;
+              if (val is String) return val;
+              if (val is Map && val['_id'] != null) return val['_id'].toString();
+              return null;
+            }
+
             allTasks.add(ComplianceTask(
               id: t['_id'] ?? DateTime.now().millisecondsSinceEpoch.toString(),
               title: title,
@@ -176,6 +219,17 @@ final complianceRemindersProvider =
               daysLeft: daysLeft,
               status: status,
               documents: docs,
+              noticeDocument: extractDocStr('noticeDocument'),
+              noticeReplyDocument: extractDocStr('noticeReplyDocument'),
+              shareholdersDocument: extractDocStr('shareholdersDocument'),
+              shareholdersReplyDocument: extractDocStr('shareholdersReplyDocument'),
+              directorsDocument: extractDocStr('directorsDocument'),
+              directorsReplyDocument: extractDocStr('directorsReplyDocument'),
+              notesDocument: extractDocStr('notesDocument'),
+              notesReplyDocument: extractDocStr('notesReplyDocument'),
+              temporaryDocument: extractDocStr('temporaryDocument'),
+              temporaryReplyDocument: extractDocStr('temporaryReplyDocument'),
+              normalDocument: extractDocStr('normalDocument'),
             ));
           }
         }
