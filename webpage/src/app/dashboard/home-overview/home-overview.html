@@ -297,7 +297,7 @@
     <!-- Main Content: Recent Filings -->
     <div class="ho-recent-filings">
       <div class="ho-section-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="ho-perf-title">{{ activeChartView() === 'upscaling' ? 'Upscaling Progress' : 'Ongoing Certifications / Tasks' }}</h3>
+        <h3 class="ho-perf-title">{{ activeChartView() === 'upscaling' ? 'Upscaling Progress' : ((user()?.role === 'filing_staff' || user()?.role === 'filling_staff') ? 'Your Performance' : 'Ongoing Certifications / Tasks') }}</h3>
         <div style="display: flex; gap: 8px; align-items: center;">
           <!-- Time period buttons (hidden in upscaling view) -->
           @if (activeChartView() !== 'upscaling') {
@@ -425,34 +425,7 @@
         </div>
       </div>
 
-      <!-- Small Banner -->
-      @if (user()?.role !== 'admin') {
-      <div class="ho-small-banner">
-        <div class="ho-small-banner-bg"></div>
-        <div class="ho-small-banner-content">
-          <h4 class="ho-banner-card-title">Need Expert Assistance?</h4>
-          <p class="ho-banner-card-desc">Our senior consultants are available for complex regulatory filings.</p>
 
-          @if (user()?.role === 'filing_staff' || user()?.role === 'filling_staff') {
-          <a [href]="'mailto:' + (user()?.client_manager?.email || '')" class="ho-email-badge">
-            <div style="font-weight: 500;">Manager Email: <span
-                style="font-weight: 500; letter-spacing: .1em; color: #000000;">{{ user()?.client_manager?.email || 'Not
-                provided' }}</span></div>
-          </a>
-          } @else if (user()?.role === 'client_manager') {
-          <a [href]="'mailto:' + (user()?.admin_email || '')" class="ho-email-badge">
-            <div style="font-weight: 500;">Admin Email: <span
-                style="font-weight: 500; letter-spacing: .1em; color: #000000;">{{ user()?.admin_email ||
-                'admin@example.com' }}</span></div>
-          </a>
-          } @else {
-          <button class="ho-banner-card-btn">
-            Contact Legal Team
-          </button>
-          }
-        </div>
-      </div>
-      }
     </div>
   </div>
 </div>

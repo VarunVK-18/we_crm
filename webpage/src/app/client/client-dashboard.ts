@@ -42,6 +42,21 @@ export class ClientDashboard implements OnInit, OnDestroy {
   // Ticket stats
   pendingTicketsCount = signal(0);
 
+  // Compliance
+  pendingTasks = signal<any[]>([]);
+  healthScore = computed(() => {
+    const pending = this.pendingTasks().filter(t => this.matchesEntity(t));
+    if (pending.length === 0) return 1.0;
+    
+    let minScore = 0.9;
+    for (const t of pending) {
+      if (t.status === 'Overdue') minScore = Math.min(minScore, 0.25);
+      else if (t.status === 'Critical') minScore = Math.min(minScore, 0.5);
+      else if (t.status === 'Due Soon') minScore = Math.min(minScore, 0.75);
+    }
+    return minScore;
+  });
+
   // Banners
   banners = signal<any[]>([]);
 
@@ -77,6 +92,11 @@ export class ClientDashboard implements OnInit, OnDestroy {
   filteredCompletedOrders = computed(() => this.completedOrders().filter(o => this.matchesEntity(o)));
   filteredPendingOrders = computed(() => this.pendingOrders().filter(o => this.matchesEntity(o)));
   filteredActionRequiredOrders = computed(() => this.activeOrders().filter(o => this.matchesEntity(o) && o.derivedStatus === 'action-required'));
+  sliderOrders = computed(() => {
+    const actionRequired = this.filteredActionRequiredOrders();
+    if (actionRequired.length > 0) return actionRequired;
+    return this.filteredActiveOrders();
+  });
   
   // UI State
   activeTab = signal<'active' | 'completed' | 'pending-request'>('active');
@@ -99,8 +119,26 @@ export class ClientDashboard implements OnInit, OnDestroy {
   sliderInterval: any;
   totalSlides = computed(() => {
     const defaultBanners = this.banners().length > 0 ? this.banners().length : 1;
-    return defaultBanners + this.filteredActiveOrders().length;
+    return defaultBanners + this.sliderOrders().length;
   });
+
+  getSlideStyle(index: number) {
+    const colors = ['#d7d98a', '#73bb3f', '#dde100', '#03969e', '#cce7f1', '#107054'];
+    const bg = colors[index % colors.length];
+    
+    // Determine text color based on background luminance
+    const hex = bg.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    const isLight = yiq >= 128;
+    
+    return {
+      'background': bg,
+      'color': isLight ? '#0f172a' : '#ffffff'
+    };
+  }
 
   constructor(private router: Router, public api: Api) {}
 
@@ -143,9 +181,11 @@ export class ClientDashboard implements OnInit, OnDestroy {
     this.fetchClientManager();
     this.fetchOrders();
     this.fetchTickets();
+    this.fetchReminders();
     this.pollingInterval = setInterval(() => {
       this.fetchOrders();
       this.fetchTickets();
+      this.fetchReminders();
     }, 4000);
     this.startSlider();
     window.addEventListener('entityChanged', this.entityChangeHandler);
@@ -246,6 +286,32 @@ export class ClientDashboard implements OnInit, OnDestroy {
         }
       },
       error: (err) => console.error('Failed to fetch tickets:', err)
+    });
+  }
+
+  fetchReminders() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+
+    this.api.get<any>(`compliance/tasks/user/${uid}`).subscribe({
+      next: (res) => {
+        const fetched = res.tasks || [];
+        const mapped = fetched.map((r: any) => {
+          const entityName =
+            r.entityName?.trim() ||
+            (r.companyId && typeof r.companyId === 'object'
+              ? r.companyId.company_name
+              : null) ||
+            r.checklistId?.details?.entityName ||
+            r.checklistId?.details?.companyName ||
+            r.checklistId?.details?.proposed_company_name ||
+            r.checklistId?.details?.businessName ||
+            'Individual';
+          return { ...r, entityName };
+        });
+        this.pendingTasks.set(mapped);
+      },
+      error: (err) => console.error('Failed to fetch compliance tasks:', err)
     });
   }
 

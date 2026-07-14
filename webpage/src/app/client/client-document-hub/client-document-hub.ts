@@ -34,6 +34,11 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
   docViewerName: string = '';
   docViewerType = signal<'pdf' | 'image' | ''>('');
 
+  // Scroll Animation State
+  logoOpacity = signal<number>(1);
+  logoTranslate = signal<number>(0);
+  isSearchStuck = signal<boolean>(false);
+
   // Entity filter synced with topbar switcher
   selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
   private entityChangeHandler = (e: Event) => {
@@ -67,6 +72,21 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
     private api: Api,
     private confirmDialog: ConfirmDialogService
   ) { }
+
+  onScroll(event: Event) {
+    const target = event.target as HTMLElement;
+    const scrollTop = target.scrollTop;
+    
+    // Fade out logo (fade out completely by 120px scroll)
+    const opacity = Math.max(0, 1 - (scrollTop / 120));
+    this.logoOpacity.set(opacity);
+    
+    // Slight parallax effect for logo
+    this.logoTranslate.set(scrollTop * 0.4);
+    
+    // Check if search is stuck (approximate threshold where logo is scrolled past)
+    this.isSearchStuck.set(scrollTop > 100);
+  }
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -134,14 +154,12 @@ export class ClientDocumentHub implements OnInit, OnDestroy {
     if (doc.isPaymentPending) {
       const choice = await this.confirmDialog.confirm({
         title: 'Document Locked',
-        message: 'Almost there! Your document is ready, but there\'s a pending balance on this service. You can securely pay online now or contact your account manager for assistance.',
-        confirmText: 'Pay Online',
-        cancelText: 'Call Account Manager'
+        message: 'Almost there! Your document is ready, but there\'s a pending balance on this service. Please contact support for assistance.',
+        confirmText: 'Contact Support',
+        hideCancel: true
       });
 
       if (choice === true) {
-        window.open('/client/wallet', '_self');
-      } else if (choice === false) {
         window.open('/client/support', '_self');
       }
       return;

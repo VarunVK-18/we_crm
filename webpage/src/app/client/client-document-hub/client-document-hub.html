@@ -1,13 +1,16 @@
-<div class="hub-container fade-in">
-  <!-- Top Section: Google-like Search -->
-  <div class="search-section">
+<div class="hub-container fade-in" (scroll)="onScroll($event)">
+  <!-- Top Section: Logo -->
+  <div class="logo-section" [style.opacity]="logoOpacity()" [style.transform]="'translateY(' + logoTranslate() + 'px)'" [style.pointer-events]="logoOpacity() === 0 ? 'none' : 'auto'">
     <div class="logo-wrapper">
       <span class="logo-text">#WE</span>
       <span class="logo-subtitle">
         {{ selectedEntity() === 'All' ? 'Document Hub' : 'Document Hub of ' + formatTitleCase(selectedEntity()) }}
       </span>
     </div>
+  </div>
 
+  <!-- Sticky Search Bar -->
+  <div class="sticky-search-section" [class.is-stuck]="isSearchStuck()">
     <div class="search-bar-wrapper">
       <hugeicons-icon [icon]="Search01Icon" [size]="20" class="search-icon" color="#9aa0a6" [strokeWidth]="2"></hugeicons-icon>
       <input type="text" class="search-input" placeholder="Search your documents or services..." [(ngModel)]="searchQuery">
@@ -83,7 +86,7 @@
   </div>
 
   <div class="trusted-banner">
-    Your secure and trusted repository for all official corporate documents. Access, download, and manage your filings with complete peace of mind.
+    Your secure repository for corporate documents. Access, download, and manage your filings with complete peace of mind.
   </div>
 </div>
 

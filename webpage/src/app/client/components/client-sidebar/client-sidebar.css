@@ -175,7 +175,7 @@
 .group-items {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .nav-item-wrapper {
@@ -208,7 +208,7 @@
 .nav-item-content {
   display: flex;
   align-items: center;
-  padding: 10px 14px;
+  padding: 8px 14px;
   gap: 12px;
 }
 

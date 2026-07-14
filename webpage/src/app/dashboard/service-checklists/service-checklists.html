@@ -48,20 +48,20 @@
           <tr>
             <th style="vertical-align: top;">
               <div>SERVICE ID</div>
-              <input type="text" placeholder="Search..." [(ngModel)]="serviceIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+              <input type="text"  [(ngModel)]="serviceIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
             <th style="vertical-align: top;">
               <div>CLIENT ID</div>
-              <input type="text" placeholder="Search..." [(ngModel)]="clientIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+              <input type="text"  [(ngModel)]="clientIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
             <th style="vertical-align: top;">DATE</th>
             <th style="vertical-align: top;">
               <div>SERVICE NAME</div>
-              <input type="text" placeholder="Search..." [(ngModel)]="serviceFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+              <input type="text"  [(ngModel)]="serviceFilter" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
             <th style="vertical-align: top;">
               <div>COMPANY NAME</div>
-              <input type="text" placeholder="Search..." [(ngModel)]="companyFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+              <input type="text"  [(ngModel)]="companyFilter" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
             <th style="vertical-align: top;">DUE DATE</th>
             <th style="vertical-align: top;">
@@ -77,7 +77,7 @@
             @if (user()?.role !== 'filling_staff') {
               <th style="vertical-align: top;">
                 <div>ASSIGNEE</div>
-                <input type="text" placeholder="Search..." [(ngModel)]="assigneeFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+                <input type="text"  [(ngModel)]="assigneeFilter" class="col-search-input" (click)="$event.stopPropagation()" />
               </th>
             }
           </tr>
@@ -121,7 +121,7 @@
                 <span style="color: #64748b;">{{ cl.dueDate ? (cl.dueDate | date:'mediumDate') : '-' }}</span>
               </td>
               <td>
-                <span [ngStyle]="{'color': cl.priority === 'High' ? '#dc2626' : (cl.priority === 'Medium' ? '#92400e' : (cl.priority === 'Low' ? '#16a34a' : 'inherit'))}" style="font-weight: 600; font-size: 13px;">{{ cl.priority || '-' }}</span>
+                <span [ngStyle]="{'color': cl.priority === 'High' ? '#dc2626' : (cl.priority === 'Medium' ? '#eab308' : (cl.priority === 'Low' ? '#3b82f6' : 'inherit'))}" style="font-weight: 600; font-size: 13px;">{{ cl.priority || '-' }}</span>
               </td>
               <td>
                 <div class="progress-bar-container">
