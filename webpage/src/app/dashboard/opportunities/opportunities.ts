@@ -72,6 +72,73 @@ export class Opportunities implements OnInit {
   filterCount = signal<string>('any');
   filterCategory = signal<string>('all');
 
+  // Modal State
+  isAssignModalOpen = signal<boolean>(false);
+  selectedOpportunity = signal<any>(null);
+  selectedClientForAssign = signal<any>(null);
+  teams = signal<any[]>([]);
+  selectedTeamId = signal<string>('');
+  dealClosedAmount = signal<number | null>(null);
+  advanceAmountPaid = signal<number | null>(null);
+  directorCount = signal<number | null>(null);
+  dealAmountStr = signal<string>('');
+  advanceAmountStr = signal<string>('');
+  dueDate = signal<string>('');
+  priority = signal<string>('High');
+  claimingId = signal<string | null>(null);
+  systemSettings = signal<any>(null);
+  
+  onDealAmountChange(val: string) {
+    const numeric = val.replace(/[^0-9]/g, '');
+    if (numeric) {
+      this.dealClosedAmount.set(parseInt(numeric, 10));
+      this.dealAmountStr.set(new Intl.NumberFormat('en-IN').format(parseInt(numeric, 10)));
+    } else {
+      this.dealClosedAmount.set(null);
+      this.dealAmountStr.set('');
+    }
+  }
+
+  onAdvanceAmountChange(val: string) {
+    const numeric = val.replace(/[^0-9]/g, '');
+    if (numeric) {
+      this.advanceAmountPaid.set(parseInt(numeric, 10));
+      this.advanceAmountStr.set(new Intl.NumberFormat('en-IN').format(parseInt(numeric, 10)));
+    } else {
+      this.advanceAmountPaid.set(null);
+      this.advanceAmountStr.set('');
+    }
+  }
+
+  requiresDirectorCount = computed(() => {
+    const opp = this.selectedOpportunity();
+    if (!opp) return false;
+    const name = opp.name?.toLowerCase() || '';
+    return name.includes('private limited') || 
+           name.includes('incorp') ||
+           name.includes('llp') || 
+           name.includes('opc') || 
+           name.includes('mca') || 
+           name.includes('digital signature') ||
+           name.includes('dsc');
+  });
+
+  isAcceptFormValid = computed(() => {
+    if (!this.selectedTeamId()) return false;
+    if (!this.dueDate()) return false;
+    if (this.requiresDirectorCount() && (!this.directorCount() || this.directorCount()! < 1)) return false;
+    
+    const dealAmount = Number(this.dealClosedAmount());
+    if (isNaN(dealAmount) || dealAmount <= 0) return false;
+
+    const advanceAmount = Number(this.advanceAmountPaid());
+    if (isNaN(advanceAmount) || advanceAmount <= 0) return false;
+
+    if (advanceAmount > dealAmount) return false;
+
+    return true;
+  });
+
   availableCategories = computed(() => {
     const cats = new Set<string>();
     this.recommendationPool.forEach(p => cats.add(p.category));
@@ -123,30 +190,24 @@ export class Opportunities implements OnInit {
   }
 
   ngOnInit() {
-    this.fetchClients();
-  }
-
-  fetchClients() {
     this.api.get<any>('users/clients').subscribe({
       next: (res) => {
-        if (res && res.clients) {
-          // Temporarily allowing all clients for testing purposes
-          let eligibleClients = res.clients;
+        if (res.clients) {
+          const enhancedClients = res.clients.map((c: any) => {
+            const weDone = (c.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => s.serviceName);
+            const outsourced = (c.outsourced_services || []).map((s: any) => s.serviceName);
+            const doneSet = new Set([...weDone, ...outsourced]);
+            const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+            const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
 
-          // If no one is eligible (for testing), maybe we show all? 
-          // But requirement says "if the client is onboarded... and they do PLI... they need services"
-          // We will strictly enforce it, but if array is empty we show it empty.
-          // For demo, let's allow all if strict is not needed, but let's stick to strict.
-          // Wait, actually let's just show everyone but calculate their opportunities.
-          // If we want STRICT filter:
-          // eligibleClients = res.clients; (uncomment to test without PLI)
-
-          const enhancedClients = eligibleClients.map((client: any) => {
-            return {
-              ...client,
-              opportunities: this.generateOpportunitiesForClient(client),
-              alreadyDone: this.getAlreadyDoneServices(client)
-            };
+            const opps = this.recommendationPool.filter(s => {
+              if (doneSet.has(s.name)) return false;
+              if (hasPrimaryIncorp && primaryIncorpServices.includes(s.name)) return false;
+              return true;
+            });
+            c.opportunities = opps;
+            c.alreadyDone = this.getAlreadyDoneServices(c);
+            return c;
           });
           this.clients.set(enhancedClients);
           // Auto-select client if preselected
@@ -161,6 +222,21 @@ export class Opportunities implements OnInit {
       error: (err) => {
         console.error('Error fetching clients', err);
         this.isLoading.set(false);
+      }
+    });
+
+    const saved = localStorage.getItem('user');
+    const user = saved ? JSON.parse(saved) : null;
+
+    this.api.get<any>('teams').subscribe({
+      next: (res) => {
+        let allTeams = res.teams || [];
+        if (user && user.role === 'client_manager') {
+          allTeams = allTeams.filter((t: any) => 
+            t.manager_id && (t.manager_id._id === user._id || t.manager_id === user._id)
+          );
+        }
+        this.teams.set(allTeams);
       }
     });
   }
@@ -232,8 +308,71 @@ export class Opportunities implements OnInit {
   }
 
   applyWithWE(client: any, opportunity: any) {
-    if (confirm(`Navigate to ${client.name || client.company_name}'s dashboard to apply for ${opportunity.name}?`)) {
-      window.location.href = `/dashboard/client/${client._id}`;
+    this.selectedClientForAssign.set(client);
+    this.selectedOpportunity.set(opportunity);
+    this.selectedTeamId.set('');
+    this.dealClosedAmount.set(null);
+    this.advanceAmountPaid.set(null);
+    this.directorCount.set(null);
+    this.dealAmountStr.set('');
+    this.advanceAmountStr.set('');
+    this.dueDate.set('');
+    this.priority.set('High');
+    this.isAssignModalOpen.set(true);
+  }
+
+  closeAssignModal() {
+    this.isAssignModalOpen.set(false);
+    this.selectedClientForAssign.set(null);
+    this.selectedOpportunity.set(null);
+  }
+
+  confirmAssign() {
+    const client = this.selectedClientForAssign();
+    const opp = this.selectedOpportunity();
+    if (!client || !opp) return;
+
+    if (!this.isAcceptFormValid()) {
+      alert('Please fill out all required fields correctly.');
+      return;
     }
+
+    this.claimingId.set(opp.name);
+    const payload = {
+      client_id: client._id,
+      service_name: opp.name,
+      team_id: this.selectedTeamId(),
+      dealClosedAmount: Number(this.dealClosedAmount()),
+      advanceAmountPaid: Number(this.advanceAmountPaid()),
+      directorCount: this.directorCount(),
+      dueDate: this.dueDate(),
+      priority: this.priority()
+    };
+
+    this.api.post<any>('bucket/requests/direct-assign', payload).subscribe({
+      next: (res) => {
+        alert('Assigned successfully!');
+        this.claimingId.set(null);
+        this.closeAssignModal();
+        // Remove the opportunity from the UI
+        this.clients.update(clients => {
+          const index = clients.findIndex(c => c._id === client._id);
+          if (index !== -1) {
+            const updatedClient = { ...clients[index] };
+            updatedClient.opportunities = updatedClient.opportunities.filter((o: any) => o.name !== opp.name);
+            // Optionally add to weDone
+            updatedClient.alreadyDone = [...(updatedClient.alreadyDone || []), { name: opp.name, source: 'WE', checklistId: res.checklist?._id }];
+            const newClients = [...clients];
+            newClients[index] = updatedClient;
+            return newClients;
+          }
+          return clients;
+        });
+      },
+      error: (err) => {
+        this.claimingId.set(null);
+        alert(err?.error?.message || 'Failed to assign service.');
+      }
+    });
   }
 }

@@ -575,11 +575,56 @@ const getBucketCount = async (req, res) => {
   }
 };
 
+// @desc    Direct assign from Opportunity
+// @route   POST /api/bucket/requests/direct-assign
+const directAssignOpportunity = async (req, res) => {
+  try {
+    const { client_id, service_name } = req.body;
+    
+    // Validate client
+    const User = require('../models/User');
+    const client = await User.findById(client_id);
+    if (!client) {
+      return res.status(404).json({ success: false, message: 'Client not found.' });
+    }
+
+    // Determine entity name
+    const requestedEntityName = client.company_name || client.name || 'Unnamed Client';
+
+    // Create BucketRequest
+    const bucketReq = await BucketRequest.create({
+      company_id: client.company_id || req.user.company_id || '000000000000000000000000',
+      client_id: client._id,
+      service_name: service_name,
+      status: 'open',
+      source: 'opportunity',
+      client_name: requestedEntityName,
+      client_phone: client.phone || '',
+      client_email: client.email || '',
+      client_company_name: client.company_name || ''
+    });
+
+    // Check if it's an external compliance service
+    const externalComplianceServices = ['PF', 'ESI', 'GST filing', 'MCA Compliance'];
+    if (externalComplianceServices.includes(service_name)) {
+      bucketReq.is_external_compliance = true;
+      await bucketReq.save();
+    }
+
+    // Delegate to claimBucketRequest
+    req.params.id = bucketReq._id.toString();
+    return claimBucketRequest(req, res);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 module.exports = {
   getBucketRequests,
   claimBucketRequest,
   getAvailableJobs,
   selfAssignJob,
   declineBucketRequest,
-  getBucketCount
+  getBucketCount,
+  directAssignOpportunity
 };
