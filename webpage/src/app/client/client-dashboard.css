@@ -1193,12 +1193,12 @@ a.eab-value:hover {
 }
 
 .ho-status-badge.in-progress {
-  background-color: rgba(249, 115, 22, 0.15) !important;
-  color: #c2410c !important;
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #2563eb !important;
 }
 
 .ho-status-badge.in-progress .ho-status-dot {
-  background-color: #f97316 !important;
+  background-color: #3b82f6 !important;
   animation: pulse 2s infinite;
 }
 
