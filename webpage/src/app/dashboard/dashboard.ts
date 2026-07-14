@@ -277,7 +277,26 @@ export class Dashboard implements OnInit, OnDestroy {
     return nameStr.charAt(0).toUpperCase();
   }
 
-  handleTabChanged(tab: string) {
+  checklistsFilterTab = signal<string>('all');
+  checklistsPriorityFilter = signal<string>('');
+
+  handleTabChanged(event: string | {tab: string, filter?: string, priority?: string}) {
+    let tab = '';
+    if (typeof event === 'string') {
+      tab = event;
+      if (tab === 'checklists') {
+        this.checklistsFilterTab.set(''); // Clear filter to use default 'pending_forms' when navigating via sidebar
+        this.checklistsPriorityFilter.set(''); // Clear priority filter
+      }
+    } else {
+      tab = event.tab;
+      if (tab === 'checklists') {
+        if (event.filter) this.checklistsFilterTab.set(event.filter);
+        if (event.priority) this.checklistsPriorityFilter.set(event.priority);
+        else this.checklistsPriorityFilter.set('');
+      }
+    }
+
     this.currentTab.set(tab);
     if (tab !== 'checklist-details' && tab !== 'staff-chat') {
       this.selectedChecklistId.set(null);

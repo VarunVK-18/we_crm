@@ -329,13 +329,17 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   scrollTrackerLeft() {
     if (this.trackerScroll?.nativeElement) {
-      this.trackerScroll.nativeElement.scrollBy({ left: -300, behavior: 'smooth' });
+      const el = this.trackerScroll.nativeElement;
+      const childWidth = el.firstElementChild?.offsetWidth || 300;
+      el.scrollBy({ left: -childWidth, behavior: 'smooth' });
     }
   }
 
   scrollTrackerRight() {
     if (this.trackerScroll?.nativeElement) {
-      this.trackerScroll.nativeElement.scrollBy({ left: 300, behavior: 'smooth' });
+      const el = this.trackerScroll.nativeElement;
+      const childWidth = el.firstElementChild?.offsetWidth || 300;
+      el.scrollBy({ left: childWidth, behavior: 'smooth' });
     }
   }
 

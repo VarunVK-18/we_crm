@@ -186,6 +186,7 @@
     <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track'" [class.no-padding-scrollable]="currentTab() === 'payment-tracker'">
       @if (currentTab() === 'dashboard') {
       <app-home-overview (viewRequests)="handleTabChanged('requests')" (viewChecklist)="viewChecklist($event)"
+        (navigateTab)="handleTabChanged($event)"
         [searchQuery]="globalSearchQuery()"></app-home-overview>
       }
       @if (currentTab() === 'requests') {
@@ -216,7 +217,7 @@
       <app-filing-tasks [teams]="teams()"></app-filing-tasks>
       }
       @if (currentTab() === 'checklists') {
-      <app-service-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)" (onViewClient)="viewClient($event)"></app-service-checklists>
+      <app-service-checklists [teams]="teams()" [initialTab]="checklistsFilterTab()" [initialPriority]="checklistsPriorityFilter()" (onViewChecklist)="viewChecklist($event)" (onViewClient)="viewClient($event)"></app-service-checklists>
       }
       @if (currentTab() === 'completed-checklists') {
       <app-completed-checklists [teams]="teams()" (onViewChecklist)="viewChecklist($event)"></app-completed-checklists>

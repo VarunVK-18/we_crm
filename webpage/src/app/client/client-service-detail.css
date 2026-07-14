@@ -337,7 +337,14 @@
   justify-content: center;
   cursor: pointer;
   color: #64748b;
+  opacity: 0;
+  pointer-events: none;
   transition: all 0.2s ease;
+}
+
+.checklist-carousel-container:hover .carousel-arrow {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .carousel-arrow:hover {
