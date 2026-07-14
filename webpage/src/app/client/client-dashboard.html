@@ -472,6 +472,53 @@
     </div>
   </div>
 
+  @if (isLoading()) {
+  <div class="expert-assistance-banner skeleton-banner">
+    <div class="eab-content">
+      <div class="skeleton-text skeleton-title"></div>
+      <div class="skeleton-text skeleton-desc"></div>
+    </div>
+    <div class="eab-contact">
+      <div class="skeleton-text skeleton-contact"></div>
+      <div class="skeleton-text skeleton-contact"></div>
+    </div>
+  </div>
+  } @else if (clientManager()) {
+  <div class="expert-assistance-banner">
+    <div style="display: flex; gap: 20px; align-items: center;">
+      @if (clientManager().profile_image) {
+      <img [src]="api.getFileUrl(clientManager().profile_image)" alt="Manager"
+        style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.2); flex-shrink: 0;">
+      } @else {
+      <div
+        style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <span class="material-symbols-outlined" style="font-size: 36px; color: white;">person</span>
+      </div>
+      }
+      <div class="eab-content">
+        <h2 class="eab-title">Need Expert Assistance?</h2>
+        <p class="eab-desc">Your client manager <strong>{{ clientManager().owner_name || clientManager().name ||
+            'Support
+            Team' }}</strong> is available to assist you with any queries.</p>
+      </div>
+    </div>
+    <div class="eab-contact">
+      <div class="eab-contact-item">
+        <span class="eab-label"><hugeicons-icon [icon]="Call02Icon" [size]="20" color="rgba(255,255,255,0.7)"
+            [strokeWidth]="2"></hugeicons-icon></span>
+        <a [href]="'tel:' + (clientManager().phone || '+918072286963')" class="eab-value">{{ clientManager().phone ||
+          '+91 98765 43210' }}</a>
+      </div>
+      <div class="eab-contact-item">
+        <span class="eab-label"><hugeicons-icon [icon]="MailOpenIcon" [size]="20" color="rgba(255,255,255,0.7)"
+            [strokeWidth]="2"></hugeicons-icon></span>
+        <a [href]="'mailto:' + (clientManager().email || 'varun@gmail.com')" class="eab-value">{{ clientManager().email
+          || 'support@wealthempires.com' }}</a>
+      </div>
+    </div>
+  </div>
+  }
+
   <div class="tabs">
     <button class="tab-btn" [class.active]="activeTab() === 'active'" (click)="setTab('active')">
       Active <span class="tab-badge">{{ filteredActiveOrders().length }}</span>

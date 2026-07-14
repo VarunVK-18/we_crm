@@ -9,7 +9,8 @@ const {
   getAvailableJobs,
   selfAssignJob,
   declineBucketRequest,
-  getBucketCount
+  getBucketCount,
+  directAssignOpportunity
 } = require('../controllers/bucketController');
 
 // Admin and client_managers see open requests
@@ -20,6 +21,9 @@ router.get('/count', checkUser, permit('admin', 'client_manager', 'filling_staff
 
 // Client manager claims a bucket request (supports optional COI file upload for compliance requests)
 router.post('/requests/:id/claim', checkUser, permit('admin', 'client_manager'), upload.single('coiFile'), claimBucketRequest);
+
+// Admin/Manager direct assign
+router.post('/requests/direct-assign', checkUser, permit('admin', 'client_manager'), directAssignOpportunity);
 
 // Client manager declines a request
 router.post('/requests/:id/decline', checkUser, permit('admin', 'client_manager'), declineBucketRequest);

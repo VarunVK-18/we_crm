@@ -61,11 +61,11 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'bucket', label: 'New Requests', color: '#6366f1' },
           { id: 'requests', label: 'New Services', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
-          { id: 'staff-chat', label: 'Chat', color: '#10B981' },
+          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'service-track', label: 'Service Kanban', color: '#8B5CF6' },
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
-          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
-          { id: 'payment-tracker', label: 'Reimbursement', color: '#10B981' }
+          { id: 'payment-tracker', label: 'Reimbursement', color: '#10B981' },
+          { id: 'staff-chat', label: 'Chat', color: '#10B981' }
         ]
       });
       groups.push({
@@ -93,9 +93,9 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'bucket', label: 'New Requests', color: '#6366f1' },
           { id: 'requests', label: 'New Services', color: '#F43F5E' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
-          { id: 'staff-chat', label: 'Chat', color: '#10B981' },
+          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
           { id: 'service-tracker-table', label: 'Service Tracker Table', color: '#4F46E5' },
-          { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' }
+          { id: 'staff-chat', label: 'Chat', color: '#10B981' }
         ]
       });
       groups.push({
