@@ -1,6 +1,7 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Alert01Icon, CheckmarkCircle01Icon, Calendar02Icon, Search01Icon, ArrowDown01Icon, ArrowUp01Icon } from '@hugeicons/core-free-icons';
@@ -23,8 +24,16 @@ export class StaffCompliance implements OnInit {
 
   tasks = signal<any[]>([]);
   isLoading = signal(true);
-  searchQuery = signal<string>('');
-  expandedEntities = signal<Set<string>>(new Set());
+  
+  // Column Filters
+  clientIdFilter = signal<string>('');
+  entityFilter = signal<string>('');
+  taskFilter = signal<string>('');
+  statusFilter = signal<string>('');
+  
+  // Pagination (Optional but good to have)
+  currentPage = signal(1);
+  pageSize = signal(15);
   
   // File Upload State for Complete Task
   selectedTask = signal<any>(null);
@@ -33,32 +42,54 @@ export class StaffCompliance implements OnInit {
   certificateDocument: File | null = null;
   acknowledgementDocument: File | null = null;
 
-  groupedTasks = computed(() => {
-    const all = this.tasks();
-    const query = this.searchQuery().toLowerCase();
-    const map = new Map<string, any[]>();
+  filteredTasks = computed(() => {
+    let all = this.tasks();
     
-    all.forEach(r => {
-      const key = r.entityName || 'Other';
-      if (query && !key.toLowerCase().includes(query)) return;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(r);
+    const clientQ = this.clientIdFilter().toLowerCase();
+    const entityQ = this.entityFilter().toLowerCase();
+    const taskQ = this.taskFilter().toLowerCase();
+    const statusQ = this.statusFilter().toLowerCase();
+    
+    return all.filter(t => {
+      const clientIdMatch = t.clientUid?.custom_client_id?.toLowerCase().includes(clientQ) || t.clientUid?.owner_name?.toLowerCase().includes(clientQ) || t.clientUid?.company_name?.toLowerCase().includes(clientQ) || ''.includes(clientQ);
+      const entityMatch = t.entityName?.toLowerCase().includes(entityQ);
+      const taskMatch = t.title?.toLowerCase().includes(taskQ);
+      const statusMatch = t.status?.toLowerCase().includes(statusQ) || t.message?.toLowerCase().includes(statusQ);
+      
+      return (!clientQ || clientIdMatch) &&
+             (!entityQ || entityMatch) &&
+             (!taskQ || taskMatch) &&
+             (!statusQ || statusMatch);
     });
-
-    return Array.from(map.entries()).map(([key, items]) => ({ key, items }));
   });
 
-  toggleEntity(key: string) {
-    const current = new Set(this.expandedEntities());
-    if (current.has(key)) current.delete(key);
-    else current.add(key);
-    this.expandedEntities.set(current);
+  paginatedTasks = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredTasks().slice(start, start + this.pageSize());
+  });
+
+  totalPages = computed(() => Math.ceil(this.filteredTasks().length / this.pageSize()) || 1);
+
+  nextPage() {
+    if (this.currentPage() < this.totalPages()) this.currentPage.update(p => p + 1);
   }
 
-  constructor(private api: Api) {}
+  prevPage() {
+    if (this.currentPage() > 1) this.currentPage.update(p => p - 1);
+  }
+
+  hasActiveFilters = computed(() => {
+    return this.clientIdFilter() || this.entityFilter() || this.taskFilter() || this.statusFilter();
+  });
+
+  constructor(private api: Api, private router: Router) {}
 
   ngOnInit() {
     this.fetchAllTasks();
+  }
+
+  viewDetails(id: string) {
+    this.router.navigate(['/dashboard/compliance-details', id]);
   }
 
   fetchAllTasks() {

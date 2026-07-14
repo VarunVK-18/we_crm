@@ -409,7 +409,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'logs': return 'System Audit Logs';
       case 'settings': return 'System Settings';
       case 'banners': return 'Banner Management';
-      case 'staff-compliance': return 'Staff Compliance Radar';
+      case 'staff-compliance': return 'Compliance Radar';
       case 'bucket': return this.user()?.role === 'filling_staff' ? 'Service Request' : 'New Requests';
       case 'payment-tracker': return 'Reimbursement';
       case 'service-track': return 'Service Kanban';

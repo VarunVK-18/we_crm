@@ -1197,13 +1197,14 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     // Prefer server-side stats for the rest (optimized path)
     const serverStats = this.dashboardStats()?.stats;
     if (serverStats) {
-      const { allTasks, formsPending, docsPending, inProgress, forReview, completed } = serverStats;
+      const { allTasks, formsPending, docsPending, inProgress, forReview, completed, reopen } = serverStats;
       
       if (userRole === 'filling_staff' || userRole === 'filing_staff') {
         this.stats = [
           { title: 'All Tasks', value: String(allTasks), detail: 'Total active checklists', isTrendUp: true },
           { title: 'Due Today', value: String(dueTodayCount), detail: dueTodayCount > 0 ? 'Due for action today' : 'All clear', isWarning: dueTodayCount > 0, isGood: dueTodayCount === 0 },
           { title: 'In Progress', value: String(inProgress), detail: inProgress > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+          { title: 'Reopened', value: String(reopen || 0), detail: (reopen || 0) > 0 ? 'Needs your attention' : 'None', isWarning: (reopen || 0) > 0, isGood: (reopen || 0) === 0 },
           { title: 'Completed', value: String(completed || 0), detail: 'Finished by you', isGood: true }
         ];
       } else {
@@ -1224,12 +1225,14 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const inProgressCount = all.filter(c => this.getChecklistDisplayStatus(c) === 'In Progress' && c.status !== 'under_review').length;
     const forReviewCount = all.filter(c => c.status === 'under_review').length;
     const completedCount = all.filter(c => c.status === 'completed').length;
+    const reopenCount = all.filter(c => c.status === 'reopen').length;
     
     if (userRole === 'filling_staff' || userRole === 'filing_staff') {
       this.stats = [
         { title: 'All Tasks', value: String(allTasksCount), detail: 'Total active checklists', isTrendUp: true },
         { title: 'Due Today', value: String(dueTodayCount), detail: dueTodayCount > 0 ? 'Due for action today' : 'All clear', isWarning: dueTodayCount > 0, isGood: dueTodayCount === 0 },
         { title: 'In Progress', value: String(inProgressCount), detail: inProgressCount > 0 ? 'Currently being worked on' : 'None', isTrendUp: true },
+        { title: 'Reopened', value: String(reopenCount), detail: reopenCount > 0 ? 'Needs your attention' : 'None', isWarning: reopenCount > 0, isGood: reopenCount === 0 },
         { title: 'Completed', value: String(completedCount), detail: 'Finished by you', isGood: true }
       ];
     } else {

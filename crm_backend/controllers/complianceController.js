@@ -418,6 +418,62 @@ exports.getUserComplianceTasks = async (req, res) => {
   }
 };
 
+// Get a single compliance task by ID
+exports.getComplianceTaskById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const task = await ComplianceTask.findById(id)
+      .populate('clientUid', 'owner_name company_name email phone custom_client_id')
+      .populate('companyId', 'company_name')
+      .populate('checklistId', 'service_name details')
+      .populate('proofDocument')
+      .populate('certificateDocument')
+      .populate('acknowledgementDocument')
+      .populate('assigned_staff_id', 'owner_name email')
+      .lean();
+
+    if (!task) {
+      // It might be a dynamic reminder. To handle dynamic reminders, we need to check completed checklists
+      // For now, if not found in ComplianceTask, try returning 404
+      return res.status(404).json({ success: false, message: 'Task not found in Compliance Tasks list' });
+    }
+
+    const today = new Date();
+    const daysLeft = Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24));
+    
+    let computedStatus = task.status;
+    const complianceService = require('../services/complianceService');
+    if (computedStatus !== 'Completed') {
+      computedStatus = complianceService.calculateStatus(task.dueDate, null);
+    }
+    
+    let entityName = task.entityName;
+    if (!entityName && task.checklistId && task.checklistId.details) {
+       entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
+    }
+    if (!entityName && task.clientUid) {
+       entityName = task.clientUid.company_name || task.clientUid.owner_name;
+    }
+    if (!entityName) {
+       entityName = 'Individual';
+    }
+
+    const taskDetails = {
+      ...task,
+      entityName,
+      daysLeft,
+      status: computedStatus,
+      message: daysLeft <= 0 ? 'Overdue - Penalty Applicable' : `Due in ${daysLeft} days`
+    };
+
+    res.status(200).json({ success: true, task: taskDetails });
+  } catch (error) {
+    console.error('Error fetching compliance task by id:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // Complete a compliance task with proofs
 exports.completeComplianceTask = async (req, res) => {
   try {

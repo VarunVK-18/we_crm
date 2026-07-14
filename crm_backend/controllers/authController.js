@@ -87,7 +87,7 @@ const registerUser = async (req, res) => {
       }
     }
 
-    const finalCompanyId = req.user ? req.user.company_id : (company_id || null);
+    const finalCompanyId = req.user ? req.user.company_id : (company_id || process.env.WE_CRM_COMPANYID || null);
     
     // Set onboarding status based on creator role and input
     let onboarding_status = req.body.onboarding_status || 'Prospect';
@@ -110,7 +110,7 @@ const registerUser = async (req, res) => {
     }
 
     let custom_client_id = null;
-    if (!['admin', 'superadmin', 'client_manager', 'account_manager', 'filling_staff'].includes(role)) {
+    if (!['admin', 'superadmin', 'client_manager', 'account_manager', 'filling_staff'].includes(role) && finalCompanyId) {
        try {
          custom_client_id = await getNextClientId(finalCompanyId);
        } catch (e) { console.error('Failed to generate custom_client_id', e); }
@@ -158,9 +158,16 @@ const registerUser = async (req, res) => {
 
       // Handle serviceName provided by DealVoice Lead conversion or other frontend
       const passedServiceName = req.body.serviceName || req.body.service_name;
+      const isComplianceService = req.body.isComplianceService === 'true' || req.body.isComplianceService === true;
+
       if (passedServiceName && !user.services.includes(passedServiceName)) {
         user.services.push(passedServiceName);
         await user.save();
+      }
+
+      // If this is a compliance service, immediately enable in_compliance_radar
+      if (isComplianceService) {
+        await User.findByIdAndUpdate(user._id, { in_compliance_radar: true });
       }
 
       // Create Bucket Request for ALL services the user has
@@ -176,7 +183,8 @@ const registerUser = async (req, res) => {
               client_name: user.owner_name || user.company_name || 'Client',
               client_phone: user.phone || '',
               client_email: user.email,
-              client_company_name: user.company_name || ''
+              client_company_name: user.company_name || '',
+              is_external_compliance: isComplianceService
             });
             console.log(`Created Bucket Request for newly registered client: ${s}`);
           } catch (e) {
@@ -1057,71 +1065,47 @@ const subscribeService = async (req, res) => {
         // Create a Bucket Request instead of a direct Checklist
 
 
-        // Create a Bucket Request ONLY if the client does not have a personal manager yet
-        let managerName = 'To be assigned';
-        let managerPhone = '';
+        // Always create a Bucket Request — managers must formally accept all service requests
+        const existingBucketReq = await BucketRequest.findOne({
+          company_id: user.company_id,
+          client_id: user._id,
+          service_name: serviceName,
+          status: { $in: ['open', 'claimed_by_manager', 'assigned'] }
+        });
 
-        if (!user.assigned_to) {
-          const existingBucketReq = await BucketRequest.findOne({
-            company_id: user.company_id,
+        if (!existingBucketReq) {
+          // If client already has an assigned manager, pre-attach them so it shows in their queue
+          const preAssignedManager = user.assigned_to || null;
+          let managerName = 'To be assigned';
+          let managerPhone = '';
+          
+          if (preAssignedManager) {
+            const manager = await User.findById(preAssignedManager).lean();
+            if (manager) {
+              managerName = manager.owner_name || manager.email;
+              managerPhone = manager.phone || '';
+            }
+          }
+          
+          await BucketRequest.create({
+            company_id: user.company_id || '000000000000000000000000',
             client_id: user._id,
             service_name: serviceName,
-            status: { $in: ['open', 'claimed_by_manager', 'assigned'] }
+            status: 'open',
+            source: 'dealvoice',
+            client_name: requestedEntityName,
+            client_phone: user.phone || '',
+            client_email: user.email,
+            client_company_name: user.company_name || ''
           });
-
-          if (!existingBucketReq) {
-            await BucketRequest.create({
-              company_id: user.company_id || '000000000000000000000000',
-              client_id: user._id,
-              service_name: serviceName,
-              status: 'open',
-              source: 'we-crm',
-              client_name: requestedEntityName,
-              client_phone: user.phone || '',
-              client_email: user.email,
-              client_company_name: user.company_name || ''
-            });
-            console.log(`Created open Bucket Request for unassigned client: ${serviceName}`);
-          }
-        } else {
-          const manager = await User.findById(user.assigned_to);
-          if (manager) {
-            managerName = manager.owner_name || manager.email;
-            managerPhone = manager.phone || '';
-
-            // Map turnoverCategory to Checklist valid enum if present
-            let checklistTurnover = '';
-            if (details.turnoverCategory) {
-              const tc = details.turnoverCategory.toLowerCase();
-              if (tc.includes('below') || tc.includes('less than ₹20') || tc.includes('less than 20')) {
-                checklistTurnover = 'Less than ₹20 Lakhs';
-              } else if (tc.includes('greater than ₹20') || tc.includes('between')) {
-                checklistTurnover = 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs';
-              } else if (tc.includes('above') || tc.includes('greater than ₹50')) {
-                checklistTurnover = 'Greater than ₹50 Lakhs';
-              }
-            }
-            
-            await Checklist.create({
-              company_id: user.company_id || '000000000000000000000000',
-              client_id: user._id,
-              service_name: serviceName,
-              assigned_to: null, // Set to null ("Yet to Assign") instead of manager._id
-              created_by: manager._id,
-              items: finalItems,
-              details: details,
-              status: 'pending',
-              stage: 'quotePending',
-              action_required: true,
-              recommended_plan: calculatedPlan,
-              recommended_fee: calculatedFee,
-              turnover_category: checklistTurnover
-            });
-            console.log(`Auto-created Checklist for ${serviceName} assigned to existing manager ${managerName}`);
-          }
+          console.log(`Created Bucket Request for DealVoice client: ${serviceName}`);
         }
 
         // Also create a ServiceOrder so it appears in the New Requests page
+        const assignedManager = user.assigned_to ? await User.findById(user.assigned_to).lean() : null;
+        const soManagerName = assignedManager ? (assignedManager.owner_name || assignedManager.email) : 'To be assigned';
+        const soManagerPhone = assignedManager ? (assignedManager.phone || '') : '';
+        
         await ServiceOrder.create({
           clientUid: user._id.toString(),
           companyId: user.company_id,
@@ -1129,11 +1113,11 @@ const subscribeService = async (req, res) => {
           serviceType: serviceName,
           status: 'active',
           stage: 'reqReceived',
-          assignedExpert: managerName,
-          expertPhone: managerPhone,
+          assignedExpert: soManagerName,
+          expertPhone: soManagerPhone,
           documents: orderDocuments,
           details: details,
-          steps: finalItems, // Assuming orderSteps was renamed or using finalItems
+          steps: finalItems,
           turnover_category: details.turnoverCategory || '',
           recommended_plan: calculatedPlan,
           service_fee: calculatedFee

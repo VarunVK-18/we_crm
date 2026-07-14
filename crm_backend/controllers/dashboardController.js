@@ -70,6 +70,7 @@ const getDashboardStats = async (req, res) => {
     let inProgressCount = 0;
     let forReviewCount = 0;
     let completedCount = 0;
+    let reopenCount = 0;
 
     for (const c of checklists) {
       const status = c.status;
@@ -83,6 +84,10 @@ const getDashboardStats = async (req, res) => {
       if (status === 'under_review') {
         forReviewCount++;
         continue;
+      }
+
+      if (status === 'reopen') {
+        reopenCount++;
       }
 
       if (isNotDone) {
@@ -163,7 +168,8 @@ const getDashboardStats = async (req, res) => {
         docsPending: docsPendingCount,
         inProgress: inProgressCount,
         forReview: forReviewCount,
-        completed: completedCount
+        completed: completedCount,
+        reopen: reopenCount
       },
       financial: {
         totalRevenue: financial.totalRevenue,

@@ -66,6 +66,9 @@ const bucketRequestSchema = new mongoose.Schema({
   client_email: { type: String, default: '' },
   client_company_name: { type: String, default: '' },
   dealvoice_client_id: { type: String, default: '' },
+  // External compliance service flag — when true, no checklist is created;
+  // client goes directly to Compliance Radar
+  is_external_compliance: { type: Boolean, default: false },
 }, { timestamps: true });
 
 module.exports = mongoose.models.BucketRequest || mongoose.model('BucketRequest', bucketRequestSchema);

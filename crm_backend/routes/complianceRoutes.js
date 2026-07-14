@@ -8,6 +8,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // NEW ENDPOINTS FOR COMPLIANCE TASKS
 router.get('/tasks/all', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), complianceController.getAllComplianceTasks);
 router.get('/tasks/user/:userId', checkUser, complianceController.getUserComplianceTasks);
+router.get('/tasks/details/:id', checkUser, complianceController.getComplianceTaskById);
 router.post('/tasks/:id/complete', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), upload.any(), complianceController.completeComplianceTask);
 
 // GET /api/compliance/user/:userId

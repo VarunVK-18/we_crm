@@ -191,6 +191,17 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   transactionId = signal<string>('');
   paymentTimestamp = signal<string>('');
 
+  // COI State (for external compliance requests)
+  isCoiProcessing = signal<boolean>(false);
+  coiExtractedMessage = signal<string>('');
+  coiFile: File | null = null;
+  showCoiEditForm = signal<boolean>(false);
+  coiDetails = signal<{companyName: string, entityType: string, incorporationDate: string}>({
+    companyName: '',
+    entityType: 'Private Limited Company',
+    incorporationDate: ''
+  });
+
   dueDate = signal<string>('');
   priority = signal<string>('High');
 
@@ -201,6 +212,18 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     
     const dealAmount = Number(this.dealClosedAmount());
     if (isNaN(dealAmount) || dealAmount <= 0) return false;
+
+    // Enforce ₹15,000 minimum and COI upload for external compliance services
+    const req = this.selectedBucketReq();
+    if (req?.is_external_compliance) {
+      if (dealAmount < 15000) return false;
+      if (!this.coiFile) return false;
+      
+      const details = this.coiDetails();
+      if (!details.companyName?.trim()) return false;
+      if (!details.entityType?.trim()) return false;
+      if (!details.incorporationDate) return false;
+    }
 
     const advanceAmount = Number(this.advanceAmountPaid());
     if (isNaN(advanceAmount) || advanceAmount <= 0) return false;
@@ -358,6 +381,11 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     this.ocrMessage.set('');
     this.dueDate.set('');
     this.priority.set('High');
+    this.coiFile = null;
+    this.coiExtractedMessage.set('');
+    this.isCoiProcessing.set(false);
+    this.showCoiEditForm.set(false);
+    this.coiDetails.set({ companyName: '', entityType: 'Private Limited Company', incorporationDate: '' });
     this.isAcceptModalOpen.set(true);
   }
 
@@ -376,6 +404,34 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     this.paymentTimestamp.set('');
     this.dueDate.set('');
     this.priority.set('High');
+    this.coiFile = null;
+    this.coiExtractedMessage.set('');
+    this.isCoiProcessing.set(false);
+    this.showCoiEditForm.set(false);
+    this.coiDetails.set({ companyName: '', entityType: 'Private Limited Company', incorporationDate: '' });
+  }
+
+  async handleCoiUpload(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    this.coiFile = file;
+    this.isCoiProcessing.set(true);
+    this.coiExtractedMessage.set('');
+    try {
+      const details = await this.ocrService.extractIncorporationDetails(file);
+      this.coiDetails.set({
+        companyName: details.companyName || this.getClientName(this.selectedBucketReq()),
+        entityType: details.entityType || 'Private Limited Company',
+        incorporationDate: details.incorporationDate || ''
+      });
+      this.coiExtractedMessage.set('Details extracted. Review mapping.');
+    } catch {
+      this.coiDetails.set({ companyName: this.getClientName(this.selectedBucketReq()), entityType: 'Private Limited Company', incorporationDate: '' });
+      this.coiExtractedMessage.set('File uploaded. Please fill mapped attributes.');
+    } finally {
+      this.isCoiProcessing.set(false);
+      this.showCoiEditForm.set(true); // Auto-expand so they immediately see the mapping
+    }
   }
 
   async handleOcrUpload(event: any) {
@@ -447,6 +503,12 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
       return;
     }
 
+    // Compliance services require minimum ₹15,000
+    if (req.is_external_compliance && dealAmount < 15000) {
+      alert('Compliance services require a minimum deal amount of ₹15,000.');
+      return;
+    }
+
     const advanceAmount = Number(this.advanceAmountPaid());
     if (isNaN(advanceAmount) || advanceAmount <= 0) {
       alert('Please enter a valid Advance Amount Paid. It must be greater than 0.');
@@ -461,18 +523,42 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     this.claimingId.set(req._id);
     this.isAcceptModalOpen.set(false);
 
-    const payload = {
-      team_id: teamId,
-      dealClosedAmount: dealAmount,
-      advanceAmountPaid: advanceAmount,
-      directorCount: this.directorCount(),
-      dueDate: this.dueDate(),
-      priority: this.priority()
-    };
+    // Build payload — use FormData if COI file is attached (compliance request)
+    const isCompliance = !!req.is_external_compliance;
+    let requestObservable: any;
 
-    this.api.post<any>(`bucket/requests/${req._id}/claim`, payload).subscribe({
-      next: (res) => {
-        if (advanceAmount > 0 && res.checklist) {
+    if (isCompliance && this.coiFile) {
+      const formData = new FormData();
+      formData.append('team_id', teamId);
+      formData.append('dealClosedAmount', String(dealAmount));
+      formData.append('advanceAmountPaid', String(advanceAmount));
+      if (this.directorCount()) formData.append('directorCount', String(this.directorCount()));
+      if (this.dueDate()) formData.append('dueDate', this.dueDate());
+      formData.append('priority', this.priority());
+      formData.append('coiFile', this.coiFile);
+      
+      // Pass the extracted/edited details to the backend
+      const details = this.coiDetails();
+      if (details.companyName) formData.append('coi_companyName', details.companyName);
+      if (details.entityType) formData.append('coi_entityType', details.entityType);
+      if (details.incorporationDate) formData.append('coi_incorporationDate', details.incorporationDate);
+
+      requestObservable = this.api.post<any>(`bucket/requests/${req._id}/claim`, formData);
+    } else {
+      const payload = {
+        team_id: teamId,
+        dealClosedAmount: dealAmount,
+        advanceAmountPaid: advanceAmount,
+        directorCount: this.directorCount(),
+        dueDate: this.dueDate(),
+        priority: this.priority()
+      };
+      requestObservable = this.api.post<any>(`bucket/requests/${req._id}/claim`, payload);
+    }
+
+    requestObservable.subscribe({
+      next: (res: any) => {
+        if (!isCompliance && advanceAmount > 0 && res.checklist) {
           const logPayload = {
             client_id: req.client_id?._id || req.client_id,
             service_name: req.service_name,
@@ -492,7 +578,7 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
         this.selectedBucketReq.set(null);
         this.loadData();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.claimingId.set(null);
         alert(err?.error?.message || 'Failed to accept request.');
       }

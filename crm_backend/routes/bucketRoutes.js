@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { checkUser, permit } = require('../middleware/rbac');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 const {
   getBucketRequests,
   claimBucketRequest,
@@ -16,8 +18,8 @@ router.get('/requests', checkUser, permit('admin', 'client_manager'), getBucketR
 // Count badge (for all staff roles)
 router.get('/count', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), getBucketCount);
 
-// Client manager claims a bucket request
-router.post('/requests/:id/claim', checkUser, permit('admin', 'client_manager'), claimBucketRequest);
+// Client manager claims a bucket request (supports optional COI file upload for compliance requests)
+router.post('/requests/:id/claim', checkUser, permit('admin', 'client_manager'), upload.single('coiFile'), claimBucketRequest);
 
 // Client manager declines a request
 router.post('/requests/:id/decline', checkUser, permit('admin', 'client_manager'), declineBucketRequest);

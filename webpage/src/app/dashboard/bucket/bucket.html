@@ -87,6 +87,11 @@
           </td>
           <td>
             <span class="service-name">{{ req.service_name }}</span>
+            @if (req.is_external_compliance) {
+              <span style="display: inline-flex; align-items: center; background: #ecfdf5; color: #059669; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; border: 1px solid #6ee7b7; margin-left: 6px; letter-spacing: 0.3px;">
+                <span class="material-symbols-outlined" style="font-size: 12px; margin-right: 2px;">shield</span>COMPLIANCE
+              </span>
+            }
           </td>
           <td>
             <span style="font-weight: 500; color: var(--text-primary);">{{ req.client_company_name || req.client_id?.company_name || '-' }}</span>
@@ -219,6 +224,11 @@
           </td>
           <td>
             <span class="service-name">{{ job.service_name }}</span>
+            @if (job.is_external_compliance) {
+              <span style="display: inline-flex; align-items: center; background: #ecfdf5; color: #059669; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px; border: 1px solid #6ee7b7; margin-left: 6px; letter-spacing: 0.3px;">
+                <span class="material-symbols-outlined" style="font-size: 12px; margin-right: 2px;">shield</span>COMPLIANCE
+              </span>
+            }
           </td>
           <td>
             <span style="font-weight: 500; color: var(--text-primary);">{{ job.client_company_name || job.client_id?.company_name || '-' }}</span>
@@ -256,7 +266,7 @@
   <!-- Accept Request Modal -->
   @if (isAcceptModalOpen() && selectedBucketReq()) {
   <div class="modal-overlay" (click)="closeAcceptModal()">
-    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+    <div class="modal-card-box" style="max-width: 500px; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Accept Bucket Request</h3>
         <button class="close-modal-btn" (click)="closeAcceptModal()">
@@ -266,6 +276,65 @@
       <div style="margin-bottom: 24px; color: var(--text-secondary); font-size: 14px;">
         You are accepting the request for <strong>{{ getClientName(selectedBucketReq()) }}</strong>.
       </div>
+
+      <!-- COI Upload: only for external compliance requests -->
+      @if (selectedBucketReq()?.is_external_compliance) {
+        <div class="form-group-item" style="margin-top: 16px;">
+          <label class="form-input-label" style="display: block; margin-bottom: 8px;">
+            <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">upload_file</span>
+            Upload Incorporation Certificate (COI) <span style="color: #ef4444;">*</span>
+          </label>
+          <p style="font-size: 12px; color: #6b7280; margin: 0 0 10px 0;">OCR will auto-extract: company name, entity type, incorporation date — compliance tasks (ADT-1, AOC-4, MGT-7A etc.) will be generated automatically.</p>
+          <input type="file" accept="image/*,application/pdf" (change)="handleCoiUpload($event)"
+            style="display: block; width: 100%; font-size: 13px;" />
+          @if (isCoiProcessing()) {
+            <div style="margin-top: 8px; font-size: 12px; color: #2563eb; display: flex; align-items: center; gap: 6px;">
+              <span class="material-symbols-outlined" style="font-size: 14px; animation: spin 1s linear infinite;">sync</span>
+              Extracting details from COI...
+            </div>
+          }
+          @if (coiExtractedMessage()) {
+            <div style="margin-top: 8px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px; color: #059669; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+                {{ coiExtractedMessage() }}
+              </div>
+              <button type="button" (click)="showCoiEditForm.set(!showCoiEditForm())" style="background: none; border: none; padding: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; border-radius: 4px; transition: 0.2s;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a'" onmouseout="this.style.background='none'; this.style.color='#64748b'" title="Review and edit extracted details">
+                <span class="material-symbols-outlined" style="font-size: 18px;">{{ showCoiEditForm() ? 'expand_less' : 'edit_document' }}</span>
+              </button>
+            </div>
+          }
+
+          <!-- Editable Mapped Attributes -->
+          @if (showCoiEditForm()) {
+            <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 12px;">
+              <h4 style="margin: 0; font-size: 13px; color: #334155; font-weight: 600;">Mapped Attributes</h4>
+              
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 4px;">Company Name</label>
+                <input type="text" class="form-control-input" [ngModel]="coiDetails().companyName" (ngModelChange)="coiDetails.set({...coiDetails(), companyName: $event})" placeholder="e.g. Acme Corp" style="font-size: 13px; padding: 6px 10px;" />
+              </div>
+              
+              <div style="display: flex; gap: 12px;">
+                <div style="flex: 1;">
+                  <label style="display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 4px;">Entity Type *</label>
+                  <select class="form-control-input" [ngModel]="coiDetails().entityType" (ngModelChange)="coiDetails.set({...coiDetails(), entityType: $event})" style="font-size: 13px; padding: 6px 10px; background: white url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M6%209L12%2015L18%209%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E') no-repeat right 8px top 50%; background-size: 14px auto; appearance: none; -webkit-appearance: none;">
+                    <option value="Private Limited Company">Private Limited Company</option>
+                    <option value="Public Limited Company">Public Limited Company</option>
+                    <option value="LLP">LLP</option>
+                    <option value="OPC">OPC</option>
+                    <option value="Proprietorship">Proprietorship</option>
+                  </select>
+                </div>
+                <div style="flex: 1;">
+                  <label style="display: block; font-size: 12px; font-weight: 500; color: #475569; margin-bottom: 4px;">Incorporation Date *</label>
+                  <input type="date" class="form-control-input" [ngModel]="coiDetails().incorporationDate" (ngModelChange)="coiDetails.set({...coiDetails(), incorporationDate: $event})" style="font-size: 13px; padding: 6px 10px;" />
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
 
       <div class="form-group-item">
         <label class="form-input-label">Assign to Filling Team *</label>
@@ -304,57 +373,59 @@
         </div>
       </div>
 
-      <div class="form-group-item" style="margin-top: 16px;">
-        <label class="form-input-label">Deal Closed Amount (INR) *</label>
-        <input type="text" class="form-control-input" placeholder="0" [ngModel]="dealAmountStr()" (ngModelChange)="onDealAmountChange($event)" />
-      </div>
-
-      <div class="form-group-item" style="margin-top: 16px;">
-        <label class="form-input-label">Advance Amount Paid (INR) *</label>
-        <div style="display: flex; flex-direction: column; gap: 8px;">
-          <div style="display: flex; gap: 8px; width: 100%;">
-            <input type="text" class="form-control-input" placeholder="0" [ngModel]="advanceAmountStr()" (ngModelChange)="onAdvanceAmountChange($event)"
-              style="flex: 1; width: 100%;" [readonly]="systemSettings()?.require_payment_verification !== false" />
-
-              <!-- OCR Upload Button -->
-              <div
-                style="position: relative; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0 12px; cursor: pointer; transition: all 0.2s;"
-                onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
-                <input type="file" (change)="handleOcrUpload($event)" accept="image/*"
-                  style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;"
-                  [disabled]="isOcrProcessing()" />
-                @if (isOcrProcessing()) {
-                <span class="material-symbols-outlined"
-                  style="color: #3b82f6; animation: spin 1s linear infinite;">sync</span>
-                } @else {
-                <span class="material-symbols-outlined" style="color: #64748b;">document_scanner</span>
-                }
-              </div>
-            </div>
-
-            <div style="display: flex; flex-direction: column; gap: 8px;">
-              @if (ocrMessage()) {
-              <div style="font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 4px;"
-                [style.color]="isOcrVerified() ? '#10b981' : (ocrMessage().includes('Warning') ? '#f59e0b' : '#64748b')">
-                <span class="material-symbols-outlined" style="font-size: 14px;">{{ isOcrVerified() ? 'verified' :
-                  'info' }}</span>
-                {{ ocrMessage() }}
-              </div>
-              }
-
-              <div style="display: flex; flex-direction: column; gap: 4px;">
-                @if (transactionId()) {
-                <span
-                  style="font-size: 12px; font-weight: 600; color: #64748b; font-family: monospace; word-break: break-all;">TID:
-                  {{ transactionId() }}</span>
-                }
-                @if (paymentTimestamp()) {
-                <span style="font-size: 11px; font-weight: 500; color: #94a3b8;">{{ paymentTimestamp() }}</span>
-                }
-              </div>
-            </div>
-          </div>
+      <div style="display: flex; gap: 16px; margin-top: 16px; align-items: flex-start;">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <label class="form-input-label">Deal Closed Amount (INR) *</label>
+          <input type="text" class="form-control-input" placeholder="0" [ngModel]="dealAmountStr()" (ngModelChange)="onDealAmountChange($event)" />
         </div>
+
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <label class="form-input-label">Advance Amount Paid (INR) *</label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <input type="text" class="form-control-input" placeholder="0" [ngModel]="advanceAmountStr()" (ngModelChange)="onAdvanceAmountChange($event)"
+                style="flex: 1; width: 100%;" [readonly]="systemSettings()?.require_payment_verification !== false" />
+
+                <!-- OCR Upload Button -->
+                <div
+                  style="position: relative; display: flex; align-items: center; justify-content: center; background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 0 12px; cursor: pointer; transition: all 0.2s;"
+                  onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                  <input type="file" (change)="handleOcrUpload($event)" accept="image/*"
+                    style="position: absolute; width: 100%; height: 100%; opacity: 0; cursor: pointer;"
+                    [disabled]="isOcrProcessing()" />
+                  @if (isOcrProcessing()) {
+                  <span class="material-symbols-outlined"
+                    style="color: #3b82f6; animation: spin 1s linear infinite;">sync</span>
+                  } @else {
+                  <span class="material-symbols-outlined" style="color: #64748b;">document_scanner</span>
+                  }
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                @if (ocrMessage()) {
+                <div style="font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 4px;"
+                  [style.color]="isOcrVerified() ? '#10b981' : (ocrMessage().includes('Warning') ? '#f59e0b' : '#64748b')">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">{{ isOcrVerified() ? 'verified' :
+                    'info' }}</span>
+                  {{ ocrMessage() }}
+                </div>
+                }
+
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                  @if (transactionId()) {
+                  <span
+                    style="font-size: 12px; font-weight: 600; color: #64748b; font-family: monospace; word-break: break-all;">TID:
+                    {{ transactionId() }}</span>
+                  }
+                  @if (paymentTimestamp()) {
+                  <span style="font-size: 11px; font-weight: 500; color: #94a3b8;">{{ paymentTimestamp() }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
 
       <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
         <button class="btn-decline-sm" (click)="closeAcceptModal()">Cancel</button>

@@ -1,0 +1,161 @@
+<div class="page-container fade-in">
+  <!-- Header -->
+  <div class="cd-header">
+    <button class="back-btn" (click)="goBack()">
+      <hugeicons-icon [icon]="ArrowLeft01Icon" [size]="20" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
+      Back to Compliance Radar
+    </button>
+  </div>
+
+  @if (isLoading()) {
+    <div class="loading-state" style="text-align: center; padding: 60px 0;">
+      <app-we-loader></app-we-loader>
+      <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading task details...</p>
+    </div>
+  } @else if (task()) {
+    <div class="cd-main-card">
+      <div class="cd-main-header">
+        <div class="cd-title-area">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span class="status-badge"
+              [ngStyle]="{
+                'background': task().status === 'Completed' ? '#dcfce7' : 
+                              task().status === 'Overdue' ? '#fee2e2' : 
+                              task().status === 'Critical' ? '#ffedd5' : '#f1f5f9',
+                'color': task().status === 'Completed' ? '#166534' : 
+                         task().status === 'Overdue' ? '#991b1b' : 
+                         task().status === 'Critical' ? '#9a3412' : '#475569'
+              }">
+              <hugeicons-icon 
+                [icon]="task().status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
+                [size]="16"
+                [strokeWidth]="2">
+              </hugeicons-icon>
+              {{ task().status }}
+            </span>
+            @if (task().status !== 'Completed') {
+              <span class="due-days-badge" [class.overdue]="task().daysLeft <= 0">
+                {{ task().message }}
+              </span>
+            }
+          </div>
+          <h1 class="cd-title">{{ task().title }}</h1>
+        </div>
+
+        <div class="cd-actions">
+          @if (task().status !== 'Completed') {
+            <button class="complete-btn" (click)="openCompleteModal()">
+              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="18" [strokeWidth]="2"></hugeicons-icon>
+              Complete Task
+            </button>
+          } @else {
+            <div class="completed-stamp">
+              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="20" [strokeWidth]="2"></hugeicons-icon>
+              Completed on {{ task().completedAt | date:'mediumDate' }}
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="cd-grid">
+        <!-- Client & Entity Info -->
+        <div class="info-section">
+          <h3 class="section-title">Client Information</h3>
+          <div class="info-list">
+            <div class="info-item">
+              <div class="info-icon">
+                <hugeicons-icon [icon]="UserIcon" [size]="18" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Client Name</span>
+                <span class="info-value">{{ task().clientUid?.owner_name || 'N/A' }}</span>
+              </div>
+            </div>
+            
+            <div class="info-item">
+              <div class="info-icon">
+                <hugeicons-icon [icon]="Building03Icon" [size]="18" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Entity Name</span>
+                <span class="info-value">{{ task().entityName || 'Individual' }}</span>
+              </div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-icon">
+                <hugeicons-icon [icon]="Calendar02Icon" [size]="18" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
+              </div>
+              <div class="info-content">
+                <span class="info-label">Due Date</span>
+                <span class="info-value">{{ task().dueDate | date:'longDate' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="info-section">
+          <h3 class="section-title">Attached Documents</h3>
+          @if (!task().proofDocument && !task().certificateDocument && !task().acknowledgementDocument) {
+            <div class="empty-docs">
+              <hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="32" [strokeWidth]="1.5" color="#cbd5e1"></hugeicons-icon>
+              <p>No documents attached to this task yet.</p>
+            </div>
+          } @else {
+            <div class="docs-list">
+              @if (task().proofDocument) {
+                <a [href]="api.getFileUrl(task().proofDocument.data || task().proofDocument._id || task().proofDocument)" target="_blank" class="doc-card">
+                  <div class="doc-icon"><hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="20" [strokeWidth]="2" color="#3b82f6"></hugeicons-icon></div>
+                  <div class="doc-name">Proof Document</div>
+                </a>
+              }
+              @if (task().certificateDocument) {
+                <a [href]="api.getFileUrl(task().certificateDocument.data || task().certificateDocument._id || task().certificateDocument)" target="_blank" class="doc-card">
+                  <div class="doc-icon"><hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="20" [strokeWidth]="2" color="#10b981"></hugeicons-icon></div>
+                  <div class="doc-name">Certificate</div>
+                </a>
+              }
+              @if (task().acknowledgementDocument) {
+                <a [href]="api.getFileUrl(task().acknowledgementDocument.data || task().acknowledgementDocument._id || task().acknowledgementDocument)" target="_blank" class="doc-card">
+                  <div class="doc-icon"><hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="20" [strokeWidth]="2" color="#8b5cf6"></hugeicons-icon></div>
+                  <div class="doc-name">Filing Acknowledgement</div>
+                </a>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Complete Task Modal -->
+  @if (isCompleteModalOpen()) {
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);">
+      <div style="background: white; border-radius: 20px; width: 100%; max-width: 500px; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
+        <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: var(--text-dark);">Complete Task</h2>
+        <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b;">{{ task()?.title }}</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Proof Document</label>
+            <input type="file" (change)="onFileChange($event, 'proof')" style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px; font-size: 13px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Certificate (Optional)</label>
+            <input type="file" (change)="onFileChange($event, 'cert')" style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px; font-size: 13px;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Acknowledgement (Optional)</label>
+            <input type="file" (change)="onFileChange($event, 'ack')" style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px; font-size: 13px;">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
+          <button (click)="isCompleteModalOpen.set(false)" style="padding: 10px 20px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; color: #475569; cursor: pointer;">Cancel</button>
+          <button (click)="submitCompletion()" style="padding: 10px 20px; background: var(--accent-orange, #f97316); border: none; border-radius: 8px; font-weight: 600; color: white; cursor: pointer;">Submit Completion</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -3,6 +3,9 @@ const Team = require('../models/Team');
 const User = require('../models/User');
 const Checklist = require('../models/Checklist');
 const ChecklistTemplate = require('../models/ChecklistTemplate');
+const Document = require('../models/Document');
+const complianceService = require('../services/complianceService');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { logActivity } = require('../middleware/rbac');
 const { getNextServiceId } = require('../utils/counterHelper');
 
@@ -101,6 +104,143 @@ const claimBucketRequest = async (req, res) => {
     if (!bucketReq || !bucketReq.client_id) {
       return res.status(404).json({ success: false, message: 'Bucket request not found, already claimed, or client was deleted.' });
     }
+
+    // ─── External Compliance Service: upload COI, extract via OCR, generate compliance tasks ───
+    if (bucketReq.is_external_compliance) {
+      const dealAmount = Number(dealClosedAmount);
+      if (isNaN(dealAmount) || dealAmount < 15000) {
+        return res.status(400).json({ success: false, message: 'Minimum deal amount of ₹15,000 is required for compliance services.' });
+      }
+
+      // 1. Handle COI file upload (optional)
+      let documentId = null;
+      let fileUrl = null;
+      if (req.file) {
+        const doc = await Document.create({
+          filename: req.file.originalname,
+          contentType: req.file.mimetype,
+          data: req.file.buffer,
+          uploadedBy: managerId
+        });
+        documentId = doc._id;
+        fileUrl = `api/documents/${doc._id}`;
+      }
+
+      // 2. OCR / Manual Override: use provided details or extract from COI
+      let extractedDetails = { companyName: null, entityType: 'Private Limited Company', incorporationDate: null, cinNumber: null, pan: null, tan: null };
+      
+      const hasFrontendDetails = req.body.coi_companyName || req.body.coi_incorporationDate;
+      if (hasFrontendDetails) {
+        extractedDetails.companyName = req.body.coi_companyName || null;
+        extractedDetails.entityType = req.body.coi_entityType || 'Private Limited Company';
+        extractedDetails.incorporationDate = req.body.coi_incorporationDate || null;
+      } else if (req.file) {
+        // Run OCR if no details were provided from the frontend
+        try {
+          const keys = [process.env.GEMINI_API_KEY1, process.env.GEMINI_API_KEY2, process.env.GEMINI_API_KEY3].filter(Boolean);
+          const base64Data = req.file.buffer.toString('base64');
+          const imagePart = { inlineData: { data: base64Data, mimeType: req.file.mimetype } };
+          const prompt = `You are an expert OCR AI. Analyze this Certificate of Incorporation (COI) or similar corporate document.
+Extract the following information and return ONLY a valid JSON object with no markdown formatting or extra text:
+{
+  "companyName": "<string or null>",
+  "entityType": "<must be exactly one of: Private Limited Company, LLP, OPC, Proprietorship, Other>",
+  "incorporationDate": "<YYYY-MM-DD or null>",
+  "cinNumber": "<string or null>",
+  "pan": "<string or null>",
+  "tan": "<string or null>"
+}
+If a field is not found, set it to null.`;
+          for (const key of keys) {
+            try {
+              const genAI = new GoogleGenerativeAI(key);
+              const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite' });
+              const result = await model.generateContent([prompt, imagePart]);
+              const text = (await result.response).text().replace(/```json/g, '').replace(/```/g, '').trim();
+              extractedDetails = { ...extractedDetails, ...JSON.parse(text) };
+              break;
+            } catch (e) { /* try next key */ }
+          }
+        } catch (e) {
+          console.error('[BucketClaim] COI OCR failed:', e.message);
+        }
+      }
+
+      // 3. Update client record with OCR data + enable compliance radar
+      const clientUpdateFields = { in_compliance_radar: true };
+      if (extractedDetails.companyName) clientUpdateFields.company_name = extractedDetails.companyName;
+      if (extractedDetails.pan)  clientUpdateFields.pan = extractedDetails.pan;
+      if (!bucketReq.client_id.assigned_to) clientUpdateFields.assigned_to = managerId;
+      await User.findByIdAndUpdate(bucketReq.client_id._id, clientUpdateFields);
+
+      // 4. Create a dummy completed Checklist to anchor to Compliance Radar (mirrors externalOnboard)
+      let custom_service_id = null;
+      try { custom_service_id = await getNextServiceId(company_id); } catch (e) { console.error(e); }
+      
+      const incDate = extractedDetails.incorporationDate ? new Date(extractedDetails.incorporationDate) : null;
+      let expiryDate = new Date(new Date().getFullYear() + 1, 8, 30);
+      if (incDate) {
+        expiryDate = new Date(incDate.getFullYear() + 1, 8, 30);
+        if (expiryDate < new Date()) expiryDate = new Date(new Date().getFullYear() + 1, 8, 30);
+      }
+      const clientName = bucketReq.client_id?.company_name || bucketReq.client_company_name || bucketReq.client_name || 'Client';
+      const complianceChecklist = await Checklist.create({
+        company_id,
+        client_id: bucketReq.client_id._id,
+        custom_service_id: custom_service_id,
+        service_name: 'Incorporation (External)',
+        assigned_to: managerId,
+        created_by: managerId,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : null,
+        priority: req.body.priority || 'Medium',
+        status: 'completed',
+        completion_percentage: 100,
+        startedAt: new Date(),
+        completedAt: new Date(),
+        items: [],
+        final_documents: fileUrl ? [{
+          document_id: documentId,
+          name: 'Certificate of Incorporation (External)',
+          fileUrl,
+          uploadedAt: new Date(),
+          expiry_date: expiryDate
+        }] : []
+      });
+
+      // 5. Generate compliance tasks from incorporation date
+      if (incDate) {
+        const entityType = extractedDetails.entityType || 'Private Limited Company';
+        try {
+          if (entityType === 'LLP') {
+            await complianceService.generateCompliancesForLLP(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
+          } else if (entityType === 'OPC') {
+            await complianceService.generateCompliancesForOPC(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
+          } else if (entityType === 'Private Limited Company' || entityType === 'Public Limited Company' || entityType.includes('Limited')) {
+            await complianceService.generateCompliancesForPrivateLimited(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
+          }
+        } catch (e) {
+          console.error('[BucketClaim] Compliance task generation failed:', e.message);
+        }
+      }
+
+      // 6. Mark bucket request as claimed (no regular checklist, but we attach the anchor)
+      bucketReq.status = 'claimed_by_manager';
+      bucketReq.claimed_by = managerId;
+      bucketReq.team_id = team_id || null;
+      bucketReq.checklist_id = complianceChecklist._id;
+      bucketReq.claimed_at = new Date();
+      await bucketReq.save();
+
+      await logActivity(
+        managerId,
+        'bucket_claim',
+        `Manager accepted compliance service "${bucketReq.service_name}" for "${clientName}" — Compliance Radar activated with ${extractedDetails.incorporationDate ? 'auto-generated tasks from incorporation date ' + extractedDetails.incorporationDate : 'no incorporation date (tasks skipped)'}`,
+        company_id
+      );
+
+      return res.json({ success: true, bucketRequest: bucketReq, checklist: null, complianceChecklistId: complianceChecklist._id, extractedDetails });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
 
     // Build checklist items from template or defaults
     let finalItems = [];
@@ -359,11 +499,13 @@ const selfAssignJob = async (req, res) => {
 
     // Update checklist to re-assign to this staff
     if (bucketReq.checklist_id) {
-      await Checklist.findByIdAndUpdate(bucketReq.checklist_id, {
-        assigned_to: staffId,
-        status: 'in_progress',
-        stage: 'workAssigned'
-      });
+      const updateData = { assigned_to: staffId };
+      // Only change status/stage for standard workflows; external compliance anchors stay completed
+      if (!bucketReq.is_external_compliance) {
+        updateData.status = 'in_progress';
+        updateData.stage = 'workAssigned';
+      }
+      await Checklist.findByIdAndUpdate(bucketReq.checklist_id, updateData);
     }
 
     // Update bucket request
