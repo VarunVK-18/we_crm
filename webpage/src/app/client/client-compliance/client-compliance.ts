@@ -1,5 +1,6 @@
 import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -9,7 +10,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 @Component({
   selector: 'app-client-compliance',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
   templateUrl: './client-compliance.html',
   styleUrl: './client-compliance.css'
 })
@@ -215,6 +216,137 @@ export class ClientCompliance implements OnInit, OnDestroy {
     this.currentEntity.set(name === 'All' ? 'All Entities' : name);
   };
 
+  // --- Chat Feature ---
+  isChatModalOpen = signal<boolean>(false);
+  chatMessages = signal<any[]>([]);
+  isLoadingChat = signal<boolean>(false);
+  newChatMessage: string = '';
+  chatPollingInterval: any;
+  orderIdForChat: string | null = null;
+  
+  openChatModal() {
+    this.isChatModalOpen.set(true);
+    const uid = this.user()?._id || this.user()?.id;
+    this.orderIdForChat = 'compliance_' + uid;
+    this.startChatDataFetch();
+    
+    // Add escape key listener
+    document.addEventListener('keydown', this.onEscapeKey);
+  }
+  
+  onEscapeKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') this.closeChatModal();
+  }
+
+  startChatDataFetch() {
+    this.fetchChatMessages(true);
+    if (this.chatPollingInterval) clearInterval(this.chatPollingInterval);
+    this.chatPollingInterval = setInterval(() => {
+      this.fetchChatMessages(false);
+    }, 5000);
+  }
+
+  closeChatModal() {
+    this.isChatModalOpen.set(false);
+    this.chatMessages.set([]);
+    this.newChatMessage = '';
+    if (this.chatPollingInterval) {
+      clearInterval(this.chatPollingInterval);
+    }
+    document.removeEventListener('keydown', this.onEscapeKey);
+  }
+
+  fetchChatMessages(showLoading = false) {
+    const chatId = this.orderIdForChat;
+    if (!chatId) return;
+    
+    if (showLoading) this.isLoadingChat.set(true);
+    this.api.get<any>(`chat/${chatId}`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const prevCount = this.chatMessages().length;
+          this.chatMessages.set(res.messages);
+          if (res.messages.length > prevCount) {
+            this.scrollToBottomChat();
+          }
+          this.markChatAsSeen(chatId);
+        }
+        if (showLoading) this.isLoadingChat.set(false);
+      },
+      error: (err) => {
+        console.error('Error fetching chat messages:', err);
+        if (showLoading) this.isLoadingChat.set(false);
+      }
+    });
+  }
+
+  markChatAsSeen(chatId: string) {
+    let userRole = 'client';
+    try {
+      userRole = JSON.parse(localStorage.getItem('user') || '{}').role || 'client';
+    } catch(e) {}
+    this.api.put(`chat/${chatId}/seen`, { viewerRole: userRole }).subscribe({
+      error: (err) => console.error('Error marking messages as seen:', err)
+    });
+  }
+
+  onChatKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      this.sendChatMessage();
+    }
+  }
+
+  sendChatMessage() {
+    if (!this.newChatMessage.trim()) return;
+    const chatId = this.orderIdForChat;
+    if (!chatId) return;
+    
+    const content = this.newChatMessage.trim();
+    this.newChatMessage = ''; 
+    
+    let currentUser: any = {};
+    try {
+      currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    } catch(e) {}
+    const senderRole = currentUser.role || 'client';
+    
+    this.api.post<any>(`chat/${chatId}`, {
+      senderId: currentUser._id || currentUser.id,
+      senderRole: senderRole,
+      content: content,
+      mentions: []
+    }).subscribe({
+      next: (res) => {
+        if (res.success && res.message) {
+          this.chatMessages.update(prev => [...prev, res.message]);
+          this.scrollToBottomChat();
+        }
+      },
+      error: (err) => {
+        console.error('Error sending chat message:', err);
+      }
+    });
+  }
+
+  shouldShowDateDivider(index: number): boolean {
+    if (index === 0) return true;
+    const currentMsg = this.chatMessages()[index];
+    const prevMsg = this.chatMessages()[index - 1];
+    const currentDate = new Date(currentMsg.createdAt).toDateString();
+    const prevDate = new Date(prevMsg.createdAt).toDateString();
+    return currentDate !== prevDate;
+  }
+
+  scrollToBottomChat() {
+    setTimeout(() => {
+      const containers = document.querySelectorAll('.chat-messages-container');
+      containers.forEach(container => {
+        container.scrollTop = container.scrollHeight;
+      });
+    }, 100);
+  }
+
   constructor(private api: Api, private router: Router) {}
 
   ngOnInit() {
@@ -238,6 +370,10 @@ export class ClientCompliance implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     window.removeEventListener('entityChanged', this.entityChangeHandler);
+    if (this.chatPollingInterval) {
+      clearInterval(this.chatPollingInterval);
+    }
+    document.removeEventListener('keydown', this.onEscapeKey);
   }
 
   fetchChecklists() {

@@ -346,12 +346,13 @@ export class Dashboard implements OnInit, OnDestroy {
     ]);
   }
 
-  viewComplianceDetails(entityInfo: { entityName: string, clientUid: string }) {
+  viewComplianceDetails(entityInfo: { entityName: string, clientUid: string }, openChat: boolean = false) {
     this.selectedComplianceEntity.set(entityInfo);
+    this.openChatOnLoad.set(openChat);
     this.currentTab.set('compliance-details');
     this.navigationTrail.update(trail => [
       ...trail,
-      { label: 'Compliance Details', action: () => this.viewComplianceDetails(entityInfo) }
+      { label: 'Compliance Details', action: () => this.viewComplianceDetails(entityInfo, openChat) }
     ]);
   }
 
@@ -375,6 +376,12 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   viewChecklist(checklistId: string, openChat: boolean = false) {
+    if (checklistId.startsWith('compliance_')) {
+      const clientUid = checklistId.replace('compliance_', '');
+      this.viewComplianceDetails({ entityName: 'Compliance Entity', clientUid }, openChat);
+      return;
+    }
+    
     this.selectedChecklistId.set(checklistId);
     this.openChatOnLoad.set(openChat);
     this.currentTab.set('checklist-details');

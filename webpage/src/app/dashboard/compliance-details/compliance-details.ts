@@ -72,7 +72,220 @@ export class ComplianceDetails implements OnInit, OnDestroy {
     return `${this.api.serverUrl}api/documents/${id}`;
   }
 
+  // --- Chat Feature ---
+  isChatModalOpen = signal<boolean>(false);
+  chatMessages = signal<any[]>([]);
+  isLoadingChat = signal<boolean>(false);
+  newChatMessage: string = '';
+  chatPollingInterval: any;
+  orderIdForChat: string | null = null;
+  
+  // Smart Mentions logic
+  showMentionDropdown = false;
+  mentionSearch = '';
+  
+  get currentMentionOptions(): {name: string, role: string, internalRole: string}[] {
+    const opts = [];
+    opts.push({ name: 'Client Manager', role: 'Client Manager', internalRole: 'client_manager' });
+    opts.push({ name: 'Filing Staff', role: 'Filing Staff', internalRole: 'filling_staff' });
+    opts.push({ name: this.entity?.entityName || 'Client', role: 'Client', internalRole: 'customer' });
+    return opts;
+  }
+  
+  get filteredMentionOptions() {
+    const search = this.mentionSearch;
+    if (!search) return this.currentMentionOptions;
+    return this.currentMentionOptions.filter(o => 
+      o.name.toLowerCase().includes(search.toLowerCase()) || 
+      o.role.toLowerCase().includes(search.toLowerCase())
+    );
+  }
+
+  openChatModal() {
+    this.isChatModalOpen.set(true);
+    this.orderIdForChat = 'compliance_' + this.entity.clientUid;
+    this.startChatDataFetch();
+    
+    // Add escape key listener
+    document.addEventListener('keydown', this.onEscapeKey);
+  }
+  
+  onEscapeKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') this.closeChatModal();
+  }
+
+  startChatDataFetch() {
+    this.fetchChatMessages(true);
+    if (this.chatPollingInterval) clearInterval(this.chatPollingInterval);
+    this.chatPollingInterval = setInterval(() => {
+      this.fetchChatMessages(false);
+    }, 5000);
+  }
+
+  closeChatModal() {
+    this.isChatModalOpen.set(false);
+    this.chatMessages.set([]);
+    this.newChatMessage = '';
+    if (this.chatPollingInterval) {
+      clearInterval(this.chatPollingInterval);
+    }
+    document.removeEventListener('keydown', this.onEscapeKey);
+  }
+
+  fetchChatMessages(showLoading = false) {
+    const chatId = this.orderIdForChat;
+    if (!chatId) return;
+    
+    if (showLoading) this.isLoadingChat.set(true);
+    this.api.get<any>(`chat/${chatId}`).subscribe({
+      next: (res) => {
+        if (res.success) {
+          const prevCount = this.chatMessages().length;
+          this.chatMessages.set(res.messages);
+          if (res.messages.length > prevCount) {
+            this.scrollToBottomChat();
+          }
+          this.markChatAsSeen(chatId);
+        }
+        if (showLoading) this.isLoadingChat.set(false);
+      },
+      error: (err) => {
+        console.error('Error fetching chat messages:', err);
+        if (showLoading) this.isLoadingChat.set(false);
+      }
+    });
+  }
+
+  markChatAsSeen(chatId: string) {
+    let userRole = 'client_manager';
+    try {
+      userRole = JSON.parse(localStorage.getItem('user') || '{}').role || 'client_manager';
+    } catch(e) {}
+    this.api.put(`chat/${chatId}/seen`, { viewerRole: userRole }).subscribe({
+      error: (err) => console.error('Error marking messages as seen:', err)
+    });
+  }
+
+  onChatInput(event: any) {
+    const val = this.newChatMessage;
+    const cursor = event.target.selectionStart;
+    const textBeforeCursor = val.substring(0, cursor);
+    const lastAtPos = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtPos !== -1) {
+      const searchStr = textBeforeCursor.substring(lastAtPos + 1);
+      if (!searchStr.includes(' ')) {
+        this.showMentionDropdown = true;
+        this.mentionSearch = searchStr;
+        return;
+      }
+    }
+    this.showMentionDropdown = false;
+  }
+
+  onChatKeydown(event: KeyboardEvent) {
+    if (this.showMentionDropdown) {
+      if (event.key === 'Escape') {
+        this.showMentionDropdown = false;
+        event.preventDefault();
+      } else if (event.key === 'Enter') {
+        const opts = this.filteredMentionOptions;
+        if (opts.length > 0) {
+          event.preventDefault();
+          this.insertMention(opts[0]);
+        }
+      }
+    } else {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        this.sendChatMessage();
+      }
+    }
+  }
+
+  insertMention(opt: any, event?: Event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const inputEl = document.querySelector('.chat-input-area input') as HTMLInputElement;
+    const cursor = inputEl ? inputEl.selectionStart || this.newChatMessage.length : this.newChatMessage.length;
+    
+    const val = this.newChatMessage;
+    const textBeforeCursor = val.substring(0, cursor);
+    const textAfterCursor = val.substring(cursor);
+    const lastAtPos = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtPos !== -1) {
+      const before = textBeforeCursor.substring(0, lastAtPos);
+      const mentionStr = `@${opt.internalRole} `;
+      const after = textAfterCursor;
+      this.newChatMessage = before + mentionStr + after;
+    }
+    this.showMentionDropdown = false;
+    
+    setTimeout(() => {
+      if (inputEl) inputEl.focus();
+    }, 10);
+  }
+
+  sendChatMessage() {
+    if (!this.newChatMessage.trim()) return;
+    const chatId = this.orderIdForChat;
+    if (!chatId) return;
+    
+    const content = this.newChatMessage.trim();
+    this.newChatMessage = ''; 
+    
+    let currentUser: any = {};
+    try {
+      currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    } catch(e) {}
+    const senderRole = currentUser.role || 'client_manager';
+    
+    const mentions = [];
+    if (content.includes('@client_manager')) mentions.push('client_manager');
+    if (content.includes('@filling_staff')) mentions.push('filling_staff');
+    if (content.includes('@customer')) mentions.push('customer');
+    
+    this.api.post<any>(`chat/${chatId}`, {
+      senderId: currentUser._id || currentUser.id,
+      senderRole: senderRole,
+      content: content,
+      mentions: mentions
+    }).subscribe({
+      next: (res) => {
+        if (res.success && res.message) {
+          this.chatMessages.update(prev => [...prev, res.message]);
+          this.scrollToBottomChat();
+        }
+      },
+      error: (err) => {
+        console.error('Error sending chat message:', err);
+      }
+    });
+  }
+
+  shouldShowDateDivider(index: number): boolean {
+    if (index === 0) return true;
+    const currentMsg = this.chatMessages()[index];
+    const prevMsg = this.chatMessages()[index - 1];
+    const currentDate = new Date(currentMsg.createdAt).toDateString();
+    const prevDate = new Date(prevMsg.createdAt).toDateString();
+    return currentDate !== prevDate;
+  }
+
+  scrollToBottomChat() {
+    setTimeout(() => {
+      const containers = document.querySelectorAll('.chat-messages-container');
+      containers.forEach(container => {
+        container.scrollTop = container.scrollHeight;
+      });
+    }, 100);
+  }
+
   constructor(
+
     public api: Api
   ) {}
 
@@ -92,6 +305,10 @@ export class ComplianceDetails implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    if (this.chatPollingInterval) {
+      clearInterval(this.chatPollingInterval);
+    }
+    document.removeEventListener('keydown', this.onEscapeKey);
   }
 
   onGoBack() {

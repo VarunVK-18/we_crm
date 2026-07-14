@@ -337,4 +337,148 @@
     </div>
   }
 
+  <!-- Floating Chat Button -->
+  <button (click)="openChatModal()"
+    style="position: fixed; bottom: 24px; right: 24px; z-index: 999; width: 60px; height: 60px; border-radius: 50%; background: #2563eb; color: white; border: none; box-shadow: 0 4px 14px rgba(37,99,235,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"
+    onmouseover="this.style.transform='scale(1.05) translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(37,99,235,0.5)'"
+    onmouseout="this.style.transform='scale(1) translateY(0)'; this.style.boxShadow='0 4px 14px rgba(37,99,235,0.4)'">
+    <span class="material-symbols-outlined" style="font-size: 28px;">chat</span>
+  </button>
+
+  @if (isChatModalOpen()) {
+  <div class="chat-popup-container"
+    style="position: fixed; top: 0; right: 0; bottom: 0; z-index: 9999; display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out;">
+    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.2); z-index: 9998;" (click)="closeChatModal()"></div>
+    <div class="chat-popup-box"
+      style="position: relative; z-index: 9999; width: 400px; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; padding: 0; border-radius: 0; overflow: hidden; box-shadow: -12px 0 40px rgba(0,0,0,0.15), -4px 0 12px rgba(0,0,0,0.08); border-left: 1px solid rgba(0,0,0,0.08); background: var(--bg-primary);">
+      <!-- Premium Header -->
+      <div
+        style="padding: 16px 20px; background: var(--bg-primary); display: flex; align-items: center; justify-content: space-between; z-index: 10; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div
+            style="width: 38px; height: 38px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; border: 1px solid #dbeafe;">
+            {{ (entity.entityName || 'C')[0] | uppercase }}
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">{{
+              entity.entityName || 'Client' }}</h3>
+            <span
+              style="font-size: 12px; color: #64748b; display: flex; align-items: center; gap: 4px; font-weight: 500; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 230px;">
+              <span class="material-symbols-outlined" style="font-size: 14px;">work</span>
+              Compliance Services
+            </span>
+          </div>
+        </div>
+        <button (click)="closeChatModal()"
+          style="background: var(--bg-primary); border: 1px solid var(--border-color); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #64748b; transition: all 0.2s;"
+          onmouseover="this.style.background='#f1f5f9'; this.style.color='#0f172a';"
+          onmouseout="this.style.background='transparent'; this.style.color='#64748b';">
+          <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+        </button>
+      </div>
+      <!-- Chat Messages Container -->
+      <div class="chat-messages-container"
+        style="flex: 1; overflow-y: auto; padding: 20px 16px; background-color: var(--bg-primary); background-image: linear-gradient(rgba(248, 250, 252, 0.9), rgba(248, 250, 252, 0.9)), url('/assets/chart/Chatbackground.png'); background-size: cover; background-position: center; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth;">
+        @if (isLoadingChat()) {
+        <div style="display: flex; justify-content: center; align-items: center; height: 100%;">
+          <div
+            style="padding: 8px 16px; background: var(--bg-primary); border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); color: #64748b; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-outlined"
+              style="animation: spin 1s linear infinite; font-size: 18px;">sync</span> Loading messages...
+          </div>
+        </div>
+        } @else {
+        @for (msg of chatMessages(); track msg._id; let i = $index) {
+        @if (shouldShowDateDivider(i)) {
+        <div style="display: flex; justify-content: center; margin: 8px 0;">
+          <div
+            style="background: rgba(37, 99, 235, 0.1); color: #2563eb; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 12px;">
+            {{ msg.createdAt | date:'mediumDate' }}
+          </div>
+        </div>
+        }
+        <div style="display: flex; flex-direction: column; animation: fadeIn 0.2s ease-out; margin-bottom: 8px;"
+          [style.align-items]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? 'flex-start' : 'flex-end'">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;"
+            [style.flex-direction]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? 'row' : 'row-reverse'">
+            @if (msg.senderRole !== 'client') {
+            <span style="padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; white-space: nowrap; background: #eff6ff; color: #1d4ed8">
+              {{ msg.senderRole.replace('_', ' ') | titlecase }}
+            </span>
+            }
+            @if (!msg.senderRole.startsWith('director_') || msg.senderRole === 'client') {
+            <span style="font-size: 11.5px; font-weight: 600; color: #334155;">{{ msg.senderId?.name ||
+              msg.senderId?.owner_name || (msg.senderRole === 'client' ? 'Client' : 'User') }}</span>
+            }
+          </div>
+          <div style="max-width: 85%; padding: 10px 14px 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);"
+            [style.background]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#ffffff' : '#0f172a'"
+            [style.color]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#1e293b' : '#ffffff'"
+            [style.border-radius]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '16px 16px 16px 4px' : '16px 16px 4px 16px'"
+            [style.border]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '1px solid #e2e8f0' : 'none'">
+            <div style="font-size: 14.5px; line-height: 1.5; word-break: break-word;">
+              {{ msg.content }}
+              <span style="display: inline-flex; align-items: center; gap: 4px; margin-left: 12px; font-size: 11px;"
+                [style.color]="msg.senderRole === 'client' || msg.senderRole.startsWith('director_') ? '#94a3b8' : 'rgba(255,255,255,0.7)'">
+                {{ msg.createdAt | date:'shortTime' }}
+                @if (msg.senderRole !== 'client' && !msg.senderRole.startsWith('director_')) {
+                <span class="material-symbols-outlined" style="font-size: 14px; line-height: 1;"
+                  [style.color]="msg.seen ? '#10b981' : 'rgba(255,255,255,0.6)'">{{ msg.seen ? 'done_all' : 'check' }}</span>
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+        }
+        @if (chatMessages().length === 0) {
+        <div
+          style="display: flex; justify-content: center; align-items: center; height: 100%; flex-direction: column; gap: 12px; opacity: 0.8;">
+          <div
+            style="width: 56px; height: 56px; border-radius: 50%; background: #eff6ff; display: flex; align-items: center; justify-content: center; color: #3b82f6;">
+            <span class="material-symbols-outlined" style="font-size: 28px;">chat</span>
+          </div>
+          <div style="text-align: center; color: #64748b; font-size: 14px; font-weight: 500;">No messages yet.<br>Start
+            the conversation!</div>
+        </div>
+        }
+        }
+      </div>
+      <!-- Input Area -->
+      <div class="chat-input-area"
+        style="padding: 12px 20px 16px; background: var(--bg-primary); border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; position: relative;">
+        @if (showMentionDropdown) {
+        <div class="mention-dropdown"
+          style="position: absolute; bottom: 100%; left: 20px; margin-bottom: 8px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); padding: 4px; z-index: 50; width: 250px; max-height: 200px; overflow-y: auto;">
+          @for (opt of filteredMentionOptions; track opt.internalRole) {
+          <div class="mention-option" (click)="insertMention(opt, $event)"
+            style="padding: 8px 12px; border-radius: 6px; cursor: pointer; display: flex; flex-direction: column; gap: 2px;"
+            onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+            <span style="font-size: 13px; font-weight: 600; color: #1e293b;">{{ opt.name }}</span>
+            <span style="font-size: 11px; color: #64748b;">{{ opt.role }}</span>
+          </div>
+          }
+          @if (filteredMentionOptions.length === 0) {
+          <div style="padding: 8px 12px; font-size: 12px; color: #94a3b8; text-align: center;">No matches found</div>
+          }
+        </div>
+        }
+        <div
+          style="width: 100%; display: flex; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 24px; padding: 4px 4px 4px 16px; transition: all 0.2s;">
+          <input type="text" placeholder="Write a message..."
+            style="flex: 1; border: none; background: transparent; padding: 8px 0; font-family: inherit; font-size: 14.5px; outline: none; color: var(--text-primary);"
+            [(ngModel)]="newChatMessage" (input)="onChatInput($event)" (keydown)="onChatKeydown($event)"
+            (keyup.enter)="sendChatMessage()">
+          <button (click)="sendChatMessage()" [disabled]="!newChatMessage.trim()"
+            style="width: 36px; height: 36px; border-radius: 50%; background: #2563eb; color: white; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.1s, opacity 0.2s; flex-shrink: 0;"
+            [style.opacity]="newChatMessage.trim() ? '1' : '0.5'"
+            onmouseover="if(this.style.opacity=='1') this.style.transform='scale(1.05)'"
+            onmouseout="this.style.transform='scale(1)'">
+            <span class="material-symbols-outlined" style="font-size: 18px; margin-left: 2px;">send</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
 </div>
