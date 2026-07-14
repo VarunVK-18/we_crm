@@ -113,7 +113,7 @@
 }
 
 .bucket-table th {
-  padding: 8px 16px;
+  padding: 8px 12px;
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -125,6 +125,9 @@
   resize: horizontal;
   overflow: auto;
   position: relative;
+  min-width: 100px;
+  max-width: 300px;
+  width: 140px;
 }
 
 .bucket-table th::-webkit-scrollbar {

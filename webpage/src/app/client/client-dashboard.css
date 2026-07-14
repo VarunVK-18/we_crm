@@ -457,7 +457,7 @@
   background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   background-size: 100% 100%, 100% 100%, 24px 24px, 100% 100%;
   border-radius: 1.25rem;
-  padding: 16px 32px;
+  padding: 12px 24px;
   color: #1f2823;
   overflow: hidden;
 }
@@ -497,7 +497,7 @@
   min-width: 100%;
   height: 100%;
   position: relative;
-  padding: 20px 20px 48px 20px;
+  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -900,7 +900,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-evenly;
+  justify-content: center;
+  gap: 4px;
 }
 
 .ho-hero-illustration {
@@ -934,7 +935,7 @@
   font-size: 16px;
   line-height: 1.6;
   opacity: 0.9;
-  margin: 0 0 16px 0;
+  margin: 0 0 8px 0;
   color: #4B5563;
 }
 

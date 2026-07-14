@@ -237,18 +237,21 @@
 }
 
 .bucket-table th {
-  padding: 16px 24px;
+  padding: 8px 12px;
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   background-color: #f8fafc;
   color: var(--text-secondary);
-  border-bottom: 1px solid var(--border-color);
-  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
   resize: horizontal;
   overflow: auto;
   position: relative;
+  min-width: 100px;
+  max-width: 300px;
+  width: 140px;
 }
 
 .bucket-table th::-webkit-scrollbar {

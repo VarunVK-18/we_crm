@@ -1,192 +1,242 @@
 <div class="page-container fade-in">
 
-  <!-- Content -->
   @if (isLoading()) {
-    <div class="loading-state" style="text-align: center; padding: 60px 0;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; gap: 16px;">
       <app-we-loader></app-we-loader>
-      <p style="text-align: center; color: #64748b; margin-top: 16px;">Loading company tasks...</p>
+      <p style="color: #94a3b8; font-size: 14px; margin: 0; font-weight: 500;">Loading compliance tasks...</p>
     </div>
   } @else {
-    <div class="cd-header-info" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-      <div>
-        <h1 class="cd-title" style="font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 0 0 8px 0;">{{ entity.entityName | uppercase }}</h1>
-        <p style="color: #64748b; font-size: 14px; margin: 0; display: flex; align-items: center; gap: 6px;">
-          <span class="material-symbols-outlined" style="font-size: 16px;">task</span>
-          {{ tasks().length }} compliance tasks found
-        </p>
+
+    <!-- Header Card -->
+    <section class="info-card" style="padding: 20px 24px; border-radius: 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 20px;">
+
+      <!-- Left: Icon + Entity Info -->
+      <div style="display: flex; gap: 16px; min-width: 0; flex: 1; align-items: center;">
+        <div style="width: 48px; height: 48px; border-radius: 12px; background-color: var(--bg-secondary, #f1f5f9); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-primary); flex-shrink: 0;">
+          <span class="material-symbols-outlined" style="font-size: 22px; color: #475569;">gavel</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              {{ entity.entityName | uppercase }}
+            </h3>
+            <span style="font-size: 11px; padding: 3px 10px; border-radius: 100px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">
+              {{ tasks().length }} Tasks
+            </span>
+          </div>
+          <p style="margin: 0; font-size: 13px; color: #6b7280; font-weight: 400;">
+            Compliance filings & document management
+          </p>
+        </div>
       </div>
 
+      <!-- Right: Client Details -->
       @if (tasks().length > 0 && tasks()[0].clientUid) {
-        <div style="display: flex; flex-direction: column; gap: 8px; text-align: right; border-left: 1px solid #f1f5f9; padding-left: 24px;">
-          <div style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Company Details</div>
-          
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; border-left: 1px solid var(--border-color); padding-left: 24px;">
+          <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Client</div>
           @if (tasks()[0].clientUid.custom_client_id) {
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; font-weight: 600; color: #334155;">
-              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">tag</span>
+            <div style="font-size: 12px; font-weight: 700; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 6px;">
               {{ tasks()[0].clientUid.custom_client_id }}
             </div>
           }
-          
-          <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; color: #475569;">
-            <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">person</span>
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #374151; font-weight: 600;">
+            <span class="material-symbols-outlined" style="font-size: 14px; color: #94a3b8;">person</span>
             {{ tasks()[0].clientUid.owner_name || tasks()[0].clientUid.name || 'Client' }}
           </div>
-          
           @if (tasks()[0].clientUid.email) {
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; color: #475569;">
-              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">mail</span>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280;">
+              <span class="material-symbols-outlined" style="font-size: 13px; color: #94a3b8;">mail</span>
               {{ tasks()[0].clientUid.email }}
             </div>
           }
-          
           @if (tasks()[0].clientUid.phone) {
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; color: #475569;">
-              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">call</span>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280;">
+              <span class="material-symbols-outlined" style="font-size: 13px; color: #94a3b8;">call</span>
               {{ tasks()[0].clientUid.phone }}
             </div>
           }
         </div>
       }
-    </div>
+    </section>
 
+    <!-- Empty State -->
     @if (tasks().length === 0) {
-      <div style="background: white; border-radius: 16px; padding: 60px; text-align: center; border: 1px solid #e2e8f0;">
-        <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="48" color="#10b981" [strokeWidth]="1.5"></hugeicons-icon>
-        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 16px 0 8px;">No Pending Tasks</h3>
-        <p style="color: #64748b; margin: 0;">This company is fully compliant. No tasks are pending or overdue.</p>
+      <div style="background: var(--bg-primary); border-radius: 12px; padding: 64px 32px; text-align: center; border: 1px solid var(--border-color);">
+        <div style="width: 56px; height: 56px; background: #dcfce7; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+          <span class="material-symbols-outlined" style="font-size: 28px; color: #16a34a;">verified</span>
+        </div>
+        <h3 style="font-size: 17px; font-weight: 700; color: #111827; margin: 0 0 8px;">Fully Compliant</h3>
+        <p style="color: #94a3b8; margin: 0; font-size: 14px;">No pending or overdue compliance tasks for this entity.</p>
       </div>
+
     } @else {
-      <div class="cd-tasks-list" style="display: flex; flex-direction: column; gap: 24px;">
+
+      <!-- Task List -->
+      <div style="display: flex; flex-direction: column; gap: 16px;">
         @for (task of tasks(); track task.id) {
-          <div class="cd-task-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;">
+          <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow='none'">
+
             <!-- Task Header -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
-              <div>
-                <h2 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 0 0 12px 0;">{{ task.title }}</h2>
-                <div style="display: flex; gap: 20px; align-items: center; font-size: 14px; color: #64748b; font-weight: 500;">
-                  <span style="display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 6px 12px; border-radius: 8px;">
-                    <hugeicons-icon [icon]="Calendar02Icon" [size]="16" color="#64748b"></hugeicons-icon>
-                    Due: {{ task.dueDate | date:'mediumDate' }}
+            <div style="padding: 20px 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; border-bottom: 1px solid var(--border-color);">
+              <div style="flex: 1; min-width: 0;">
+                <h2 style="font-size: 16px; font-weight: 700; color: #111827; margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ task.title }}</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                  <!-- Due Date -->
+                  <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #6b7280; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid #f1f5f9;">
+                    <span class="material-symbols-outlined" style="font-size: 13px;">calendar_today</span>
+                    {{ task.dueDate | date:'mediumDate' }}
                   </span>
-                  <span [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#dc2626' : (task.status === 'Completed' ? '#16a34a' : '#64748b')}" style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                    @if (task.status === 'Overdue') { <hugeicons-icon [icon]="Alert01Icon" [size]="16" color="#dc2626"></hugeicons-icon> }
-                    @if (task.status === 'Completed') { <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#16a34a"></hugeicons-icon> }
+                  <!-- Status Message -->
+                  <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;"
+                    [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#dc2626' : (task.status === 'Completed' ? '#16a34a' : '#d97706')}">
+                    @if (task.status === 'Overdue' || task.status === 'Critical') {
+                      <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
+                    }
+                    @if (task.status === 'Completed') {
+                      <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+                    }
                     {{ task.message }}
                   </span>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;"
+
+              <!-- Actions -->
+              <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                <!-- Status Badge -->
+                <span style="display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;"
                   [ngStyle]="{
-                    'background': task.status === 'Completed' ? '#dcfce7' : 
-                                  task.status === 'Overdue' ? '#fee2e2' : 
+                    'background': task.status === 'Completed' ? '#dcfce7' :
+                                  task.status === 'Overdue' ? '#fee2e2' :
                                   task.status === 'Critical' ? '#ffedd5' : '#f1f5f9',
-                    'color': task.status === 'Completed' ? '#16a34a' : 
-                             task.status === 'Overdue' ? '#dc2626' : 
+                    'color': task.status === 'Completed' ? '#16a34a' :
+                             task.status === 'Overdue' ? '#dc2626' :
                              task.status === 'Critical' ? '#d97706' : '#475569'
                   }">
                   {{ task.status }}
                 </span>
-                
+
                 @if (task.status !== 'Completed') {
-                  <button (click)="markTaskComplete(task.id)" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                    <span class="material-symbols-outlined" style="font-size: 16px;">task_alt</span> Mark Complete
+                  <button (click)="markTaskComplete(task.id)"
+                    style="background: #16a34a; color: white; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; letter-spacing: 0.3px;"
+                    onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                    <span class="material-symbols-outlined" style="font-size: 15px;">task_alt</span>
+                    Mark Complete
                   </button>
                 }
               </div>
             </div>
 
+            <!-- Documents Section -->
+            <div style="padding: 16px 24px; background: var(--bg-secondary, #f8fafc);">
 
-              <div style="margin-top: 24px; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); background: #fafafa; display: flex; flex-direction: column; gap: 10px;">
-              
-                <!-- Header -->
-                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
-                  <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.05em;">
-                      <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">assignment_returned</span>
-                      Generated Documents
-                    </span>
-                    
-                    <label style="cursor: pointer; font-size: 11px; font-weight: 700; color: white; background: #64748b; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 4px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                      <input type="file" (change)="directUploadDocument($event, 'temporary', task)" style="display: none">
-                      <span class="material-symbols-outlined" style="font-size: 14px;">upload</span> Temporary Document
-                    </label>
+              <!-- Documents Header -->
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">folder_open</span>
+                  <span style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;">Generated Documents</span>
+                </div>
 
-                    <label style="cursor: pointer; font-size: 11px; font-weight: 700; color: white; background: #3b82f6; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 4px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                      <input type="file" (change)="directUploadDocument($event, 'normal', task)" style="display: none">
-                      <span class="material-symbols-outlined" style="font-size: 14px;">upload</span> Normal Document
-                    </label>
-                  </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <!-- Upload Temporary Document -->
+                  <label style="cursor: pointer; font-size: 11px; font-weight: 600; color: #475569; background: var(--bg-primary); padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border-color); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
+                    onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='var(--bg-primary)'">
+                    <input type="file" (change)="directUploadDocument($event, 'temporary', task)" style="display: none">
+                    <span class="material-symbols-outlined" style="font-size: 13px;">upload</span>
+                    Temporary Doc
+                  </label>
+
+                  <!-- Upload Normal Document -->
+                  <label style="cursor: pointer; font-size: 11px; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 5px 12px; border-radius: 6px; border: 1px solid #bfdbfe; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
+                    onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                    <input type="file" (change)="directUploadDocument($event, 'normal', task)" style="display: none">
+                    <span class="material-symbols-outlined" style="font-size: 13px;">upload</span>
+                    Normal Doc
+                  </label>
+
+                  <!-- Add Document Dropdown -->
                   @if (getMissingDocuments(task).length > 0) {
-                    <div style="position: relative; display: inline-block;">
+                    <div style="position: relative; display: inline-flex; align-items: center;">
                       <select #docSelect (change)="openDocAction(task.id, docSelect.value, task); docSelect.value = ''"
-                        style="background: transparent; border: none; color: var(--accent-primary, #3b82f6); font-size: 12px; font-weight: 700; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; padding-right: 16px; padding-left: 4px;">
+                        style="appearance: none; -webkit-appearance: none; background: #111827; color: white; border: none; padding: 5px 28px 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; outline: none; letter-spacing: 0.3px;">
                         <option value="" disabled selected>+ Add Document</option>
                         @for (doc of getMissingDocuments(task); track doc.key) {
                           <option [value]="doc.key">{{ doc.label }}</option>
                         }
                       </select>
-                      <span class="material-symbols-outlined" style="font-size: 14px; color: var(--accent-primary, #3b82f6); position: absolute; right: 0; top: 50%; transform: translateY(-50%); pointer-events: none;">expand_more</span>
+                      <span class="material-symbols-outlined" style="font-size: 13px; color: white; position: absolute; right: 8px; pointer-events: none;">expand_more</span>
                     </div>
                   }
                 </div>
-              
-                <!-- Empty state -->
-                @if (getAddedDocuments(task).length === 0) {
-                <div style="font-size: 12px; color: #94a3b8; font-style: italic; padding: 4px 0;">
-                  No documents generated yet. Select "+ Add Document" to generate one.
+              </div>
+
+              <!-- Empty Documents State -->
+              @if (getAddedDocuments(task).length === 0) {
+                <div style="text-align: center; padding: 20px; border: 1px dashed #e2e8f0; border-radius: 8px; background: var(--bg-primary);">
+                  <span class="material-symbols-outlined" style="font-size: 24px; color: #cbd5e1; display: block; margin-bottom: 6px;">folder</span>
+                  <p style="font-size: 12px; color: #94a3b8; margin: 0;">No documents yet. Use "Add Document" to generate one.</p>
                 </div>
-                }
-              
-                <!-- Files list -->
-                <div style="display: flex; flex-direction: column; gap: 8px;">
+              }
+
+              <!-- Document Rows -->
+              @if (getAddedDocuments(task).length > 0) {
+                <div style="display: flex; flex-direction: column; gap: 6px;">
                   @for (doc of getAddedDocuments(task); track doc.key) {
-                    <div style="display: flex; align-items: center; justify-content: space-between; background: white; border: 1px solid #f1f5f9; border-radius: 6px; padding: 8px 12px;">
-                      <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
-                        <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b;">description</span>
-                        <span style="font-size: 13px; font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ task[doc.key + 'Document']?.filename || doc.label }}">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 16px; transition: border-color 0.2s;"
+                      onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='var(--border-color)'">
+                      <!-- File Info -->
+                      <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                        <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                          <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">description</span>
+                        </div>
+                        <span style="font-size: 13px; font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                          title="{{ task[doc.key + 'Document']?.filename || doc.label }}">
                           {{ task[doc.key + 'Document']?.filename || doc.label }}
                         </span>
                       </div>
-              
+
+                      <!-- Status + Actions -->
                       <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <!-- Status Pill -->
                         @if (doc.key !== 'normal') {
                           @if (task[doc.key + 'ReplyDocument']) {
-                            <span style="color: #047857; background: #ecfdf5; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                              <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Client Replied
+                            <span style="color: #16a34a; background: #dcfce7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                              <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span> Client Replied
                             </span>
                           } @else {
-                            <span style="color: #d97706; background: #fef3c7; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                              <span class="material-symbols-outlined" style="font-size: 14px;">pending_actions</span> Awaiting Client Reply
+                            <span style="color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                              <span class="material-symbols-outlined" style="font-size: 13px;">pending_actions</span> Awaiting Reply
                             </span>
                           }
                         } @else {
-                          <span style="color: #047857; background: #ecfdf5; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
-                            <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Received
+                          <span style="color: #16a34a; background: #dcfce7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                            <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span> Sent
                           </span>
                         }
-                        
+
+                        <!-- View Original -->
                         <a [href]="getDocumentUrl(task[doc.key + 'Document'])" target="_blank"
-                          style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; text-decoration: none;"
-                          onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'"
-                          title="Original Document">
-                          <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span> View Original
+                          style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; transition: all 0.2s;"
+                          onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
+                          <span class="material-symbols-outlined" style="font-size: 13px;">visibility</span> View
                         </a>
-                        
+
+                        <!-- View Signed (if replied) -->
                         @if (task[doc.key + 'ReplyDocument']) {
                           <a [href]="getDocumentUrl(task[doc.key + 'ReplyDocument'])" target="_blank"
-                            style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; text-decoration: none;"
-                            onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'"
-                            title="Signed Reply">
-                            <span class="material-symbols-outlined" style="font-size: 14px;">signature</span> View Signed
+                            style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; transition: all 0.2s;"
+                            onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'">
+                            <span class="material-symbols-outlined" style="font-size: 13px;">signature</span> Signed
                           </a>
                         }
                       </div>
                     </div>
                   }
                 </div>
-              </div>
+              }
             </div>
+
+          </div>
         }
       </div>
     }
@@ -194,69 +244,97 @@
 
   <!-- Document Action Modal -->
   @if (activeDocAction()) {
-    <div class="modal-overlay" (click)="cancelDocAction()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);">
-      <div class="modal-card-box" style="background: white; border-radius: 12px; width: 900px; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);" (click)="$event.stopPropagation()">
-        <!-- Header -->
-        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
-          <h2 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700;">Document Action</h2>
-          <button (click)="cancelDocAction()" style="background: none; border: none; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">
-            <span class="material-symbols-outlined">close</span>
+    <div class="modal-overlay" (click)="cancelDocAction()"
+      style="position: fixed; inset: 0; background: rgba(15,23,42,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(6px); padding: 24px;">
+      <div class="modal-card-box" style="background: white; border-radius: 16px; width: 860px; max-width: 100%; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 24px 48px -12px rgba(0,0,0,0.18);" (click)="$event.stopPropagation()">
+
+        <!-- Modal Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid #e2e8f0;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 9px; display: flex; align-items: center; justify-content: center;">
+              <span class="material-symbols-outlined" style="font-size: 18px; color: #475569;">auto_awesome</span>
+            </div>
+            <div>
+              <h2 style="margin: 0; font-size: 16px; color: #0f172a; font-weight: 700;">Generate Document</h2>
+              <p style="margin: 0; font-size: 12px; color: #94a3b8; font-weight: 500;">Fill placeholders and preview before generating</p>
+            </div>
+          </div>
+          <button (click)="cancelDocAction()"
+            style="background: #f8fafc; border: 1px solid #e2e8f0; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 8px; transition: all 0.2s;"
+            onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'">
+            <span class="material-symbols-outlined" style="font-size: 18px;">close</span>
           </button>
         </div>
 
-        <!-- Body -->
-        <div style="display: flex; flex: 1; overflow: hidden; background: #fafafa;">
-          <!-- Left side: Placeholders -->
-          <div style="width: 350px; border-right: 1px solid #e2e8f0; background: white; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+        <!-- Modal Body -->
+        <div style="display: flex; flex: 1; overflow: hidden; min-height: 0;">
 
-
-              @if (selectedTemplateId() && templatePlaceholders().length > 0) {
-                <div>
-                  <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #1e293b;">Fill Placeholders</h4>
-                  <div style="display: flex; flex-direction: column; gap: 12px;">
-                    @for (item of templatePlaceholders(); track item.key) {
-                      <div>
-                        <label style="font-size: 12px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">{{ item.label }}</label>
-                        <input type="text" [ngModel]="placeholderValues()[item.key]" (ngModelChange)="onPlaceholderChange(item.key, $event)" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" [placeholder]="'Enter ' + item.label">
-                      </div>
-                    }
-                  </div>
+          <!-- Left: Placeholders -->
+          <div style="width: 300px; border-right: 1px solid #e2e8f0; background: #f8fafc; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0;">
+            @if (selectedTemplateId() && templatePlaceholders().length > 0) {
+              <div>
+                <h4 style="margin: 0 0 14px 0; font-size: 13px; font-weight: 700; color: #374151; text-transform: uppercase; letter-spacing: 0.5px;">Placeholders</h4>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  @for (item of templatePlaceholders(); track item.key) {
+                    <div>
+                      <label style="font-size: 11px; font-weight: 700; color: #64748b; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px;">{{ item.label }}</label>
+                      <input type="text" [ngModel]="placeholderValues()[item.key]" (ngModelChange)="onPlaceholderChange(item.key, $event)"
+                        style="width: 100%; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 7px; font-size: 13px; box-sizing: border-box; background: white; color: #111827; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"
+                        [placeholder]="'Enter ' + item.label">
+                    </div>
+                  }
                 </div>
-              } @else if (selectedTemplateId()) {
-                <div style="padding: 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px; color: #64748b; text-align: center;">
-                  No placeholders found in this template.
+              </div>
+            } @else if (selectedTemplateId()) {
+              <div style="padding: 14px; background: white; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px; color: #94a3b8; text-align: center;">
+                No placeholders in this template.
+              </div>
+            } @else {
+              <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; text-align: center; gap: 10px; padding: 20px 0;">
+                <span class="material-symbols-outlined" style="font-size: 36px; opacity: 0.4;">edit_note</span>
+                <p style="font-size: 13px; margin: 0;">Select a template to fill placeholders</p>
+              </div>
+            }
+          </div>
+
+          <!-- Right: Live Preview -->
+          <div style="flex: 1; padding: 24px; overflow-y: auto; background: #f1f5f9; min-width: 0;">
+            <div style="background: white; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); padding: 32px; min-height: 380px;">
+              @if (livePreviewHtml()) {
+                <div [innerHTML]="livePreviewHtml()" style="font-family: Arial, sans-serif; line-height: 1.65; color: #333; max-width: 100%;"></div>
+              } @else {
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: #cbd5e1;">
+                  <span class="material-symbols-outlined" style="font-size: 44px; margin-bottom: 12px;">description</span>
+                  <p style="font-size: 13px; margin: 0; color: #94a3b8;">Select a template to preview the document</p>
                 </div>
               }
             </div>
-
-            <!-- Right side: Live Preview -->
-            <div style="flex: 1; padding: 24px; overflow-y: auto; background: #f1f5f9;">
-              <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); padding: 32px; min-height: 400px; overflow-x: auto;">
-                @if (livePreviewHtml()) {
-                  <div [innerHTML]="livePreviewHtml()" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 100%;"></div>
-                } @else {
-                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 14px;">
-                    <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">description</span>
-                    Select a template to view preview
-                  </div>
-                }
-              </div>
-            </div>
+          </div>
         </div>
 
-        <!-- Footer Actions -->
-        <div style="padding: 16px 24px; border-top: 1px solid #e2e8f0; background: white; display: flex; justify-content: flex-end; gap: 12px;">
-          <button (click)="cancelDocAction()" style="background: white; border: 1px solid #cbd5e1; color: #475569; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Cancel</button>
-          
-          <button (click)="generateCustomDocument(selectedTemplateId())" [disabled]="!selectedTemplateId() || isGenerating()" [style.opacity]="(!selectedTemplateId() || isGenerating()) ? 0.5 : 1" style="background: #3b82f6; color: white; border: none; padding: 8px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+        <!-- Modal Footer -->
+        <div style="padding: 14px 24px; border-top: 1px solid #e2e8f0; background: white; display: flex; justify-content: flex-end; gap: 10px; align-items: center;">
+          <button (click)="cancelDocAction()"
+            style="background: white; border: 1px solid #e2e8f0; color: #475569; padding: 8px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;"
+            onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+            Cancel
+          </button>
+          <button (click)="generateCustomDocument(selectedTemplateId())"
+            [disabled]="!selectedTemplateId() || isGenerating()"
+            [style.opacity]="(!selectedTemplateId() || isGenerating()) ? 0.5 : 1"
+            style="background: #111827; color: white; border: none; padding: 8px 22px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: opacity 0.2s;">
             @if (isGenerating()) {
+              <span class="material-symbols-outlined" style="font-size: 16px; animation: spin 1s linear infinite;">autorenew</span>
               Generating...
             } @else {
-              <span class="material-symbols-outlined" style="font-size: 18px;">magic_button</span> Generate
+              <span class="material-symbols-outlined" style="font-size: 16px;">auto_awesome</span>
+              Generate
             }
           </button>
         </div>
       </div>
     </div>
   }
+
 </div>
