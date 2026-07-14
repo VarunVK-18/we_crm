@@ -17,6 +17,7 @@ import '../../core/widgets/we_loader.dart';
 import '../../providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
+import '../orders/order_chat_screen.dart';
 
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
@@ -469,6 +470,26 @@ class ComplianceRadarScreen extends ConsumerWidget {
         ),
         child: Scaffold(
           backgroundColor: AppTheme.backgroundLight,
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              final user = ref.read(authStateProvider).value;
+              if (user != null) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OrderChatScreen(
+                      orderId: 'compliance_${user.uid}',
+                      serviceName: 'Compliance Services',
+                      assignedExpert: 'Support',
+                    ),
+                  ),
+                );
+              }
+            },
+            backgroundColor: AppTheme.deepTeal,
+            elevation: 4,
+            child: const Icon(LucideIcons.messageCircle, color: Colors.white),
+          ),
           body: SafeArea(
             child: isLoading
                 ? const Center(
