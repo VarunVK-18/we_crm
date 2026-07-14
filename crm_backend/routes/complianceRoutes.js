@@ -10,6 +10,8 @@ router.get('/tasks/all', checkUser, permit('admin', 'client_manager', 'filling_s
 router.get('/tasks/user/:userId', checkUser, complianceController.getUserComplianceTasks);
 router.get('/tasks/details/:id', checkUser, complianceController.getComplianceTaskById);
 router.post('/tasks/:id/complete', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), upload.any(), complianceController.completeComplianceTask);
+router.post('/tasks/:id/upload', checkUser, upload.single('document'), complianceController.uploadComplianceDocument);
+router.post('/tasks/:id/generate-document', checkUser, complianceController.generateDocumentFromTemplateForTask);
 
 // GET /api/compliance/user/:userId
 router.get('/user/:userId', complianceController.getUserComplianceReminders);

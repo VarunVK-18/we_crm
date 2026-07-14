@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon, FilterIcon } from '@hugeicons/core-free-icons';
+import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon, FilterIcon, DocumentAttachmentIcon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 @Component({
@@ -21,6 +21,7 @@ export class ClientCompliance implements OnInit, OnDestroy {
   readonly ArrowLeftRightIcon = ArrowLeftRightIcon;
   readonly AiSecurity01Icon = AiSecurity01Icon;
   readonly FilterIcon = FilterIcon;
+  readonly DocumentAttachmentIcon = DocumentAttachmentIcon;
 
   reminders = signal<any[]>([]);
   checklists = signal<any[]>([]);
@@ -182,6 +183,28 @@ export class ClientCompliance implements OnInit, OnDestroy {
     );
   });
 
+  documentsRequiringSignature = computed(() => {
+    const tasks = this.filteredTasks();
+    const docs: { task: any, docKey: string, docLabel: string, fileId: string, isUploaded: boolean }[] = [];
+    
+    tasks.forEach(task => {
+      this.documentTypes.forEach(d => {
+        // Only show if the document exists AND the client hasn't uploaded a reply yet
+        if (task[d.key + 'Document'] && !task[d.key + 'ReplyDocument']) {
+          docs.push({
+            task: task,
+            docKey: d.key,
+            docLabel: d.label,
+            fileId: task[d.key + 'Document'],
+            isUploaded: false // Always false now, since we filter out uploaded ones
+          });
+        }
+      });
+    });
+    
+    return docs;
+  });
+
   isRenewModalOpen = signal(false);
   selectedCertForRenewal = signal<any>(null);
   isRenewing = signal(false);
@@ -283,6 +306,47 @@ export class ClientCompliance implements OnInit, OnDestroy {
   }
 
   // Removed file upload state since clients do not complete tasks
+  
+  documentTypes = [
+    { key: 'notice', label: 'Notice' },
+    { key: 'shareholders', label: 'List Of Share Holders' },
+    { key: 'directors', label: 'List Of Directors' },
+    { key: 'notes', label: 'Notes' },
+    { key: 'temporary', label: 'Temporary Document' }
+  ];
+
+  getRequiredSignatures(task: any) {
+    // Only return documents that exist on the task, so the client knows what to sign
+    return this.documentTypes.filter(d => !!task[d.key + 'Document']);
+  }
+
+  getDocumentUrl(docObj: any): string {
+    if (!docObj) return '';
+    const id = typeof docObj === 'object' ? (docObj._id || docObj.id) : docObj;
+    return `${this.api.serverUrl}api/documents/${id}`;
+  }
+
+  uploadClientReply(event: any, taskId: string, docType: string) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    this.isLoading.set(true);
+    const formData = new FormData();
+    formData.append('document', file);
+    formData.append('documentType', docType);
+
+    this.api.post<any>(`compliance/tasks/${taskId}/upload`, formData).subscribe({
+      next: () => {
+        this.fetchReminders(); // Refresh tasks
+        alert('Document uploaded successfully!');
+      },
+      error: (err) => {
+        console.error('Failed to upload document', err);
+        this.isLoading.set(false);
+        alert('Failed to upload document. Please try again.');
+      }
+    });
+  }
 
   renewService(serviceName: string) {
     // Navigate to the services catalog, where client-services component will

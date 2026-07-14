@@ -1,0 +1,223 @@
+/* Filters */
+.filter-pill-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  background-color: var(--surface-hover);
+  padding: 6px;
+  border-radius: 9999px;
+  width: 100%;
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--border);
+}
+
+.filter-pill {
+  padding: 6px var(--spacing-md);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: var(--text-base);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filter-pill:hover {
+  background-color: #eceef0;
+}
+
+.filter-pill.active {
+  background-color: var(--surface);
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 20px;
+  pointer-events: none;
+}
+
+.search-box input {
+  padding: 8px 16px 8px 40px;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  width: 260px;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  transition: all 0.2s;
+}
+
+.search-box input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(0, 106, 97, 0.1);
+}
+
+/* Table View styling ported from service-checklists */
+.bucket-table-container {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow-x: auto;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.bucket-table {
+  min-width: 100%;
+  width: max-content;
+  text-align: left;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.bucket-table th {
+  padding: 16px 24px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #f8fafc;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  resize: horizontal;
+  overflow: auto;
+  position: relative;
+}
+
+.bucket-table th::-webkit-scrollbar {
+  height: 0px;
+  width: 0px;
+}
+
+.bucket-table th::-webkit-resizer {
+  background: transparent;
+  border: none;
+}
+
+.bucket-table td {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.bucket-table th:last-child,
+.bucket-table td:last-child {
+  border-right: none;
+}
+
+.bucket-table tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.bucket-table tbody tr:hover {
+  background-color: var(--bg-secondary);
+}
+
+.bucket-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.col-search-input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--text-primary);
+  background-color: var(--surface);
+  box-sizing: border-box;
+  font-weight: normal;
+  transition: all 0.2s;
+}
+
+.col-search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.1);
+}
+
+.client-details-table {
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+}
+
+.client-name-sm {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.client-meta-sm {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: monospace;
+}
+
+.entity-name-sm {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.count-val-sm {
+  font-family: monospace;
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.status-badge-sm-red {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge-sm-neutral {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.btn-action-view {
+  background-color: #0f172a;
+  color: white;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.btn-action-view:hover {
+  opacity: 0.9;
+}

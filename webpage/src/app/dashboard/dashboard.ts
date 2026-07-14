@@ -22,6 +22,7 @@ import { RequestsComponent } from './requests/requests';
 import { ClientDashboard } from './client-dashboard/client-dashboard';
 import { ChecklistDetails } from './checklist-details/checklist-details';
 import { StaffCompliance } from './staff-compliance/staff-compliance';
+import { ComplianceDetails } from './compliance-details/compliance-details';
 import { EmployeeProfile } from './employee-profile/employee-profile';
 import { PaymentTrackerComponent } from './payment-tracker/payment-tracker';
 import { ServiceTrackComponent } from './service-track/service-track';
@@ -53,6 +54,7 @@ import { DscTokens } from './dsc-tokens/dsc-tokens';
     ClientDashboard,
     ChecklistDetails,
     StaffCompliance,
+    ComplianceDetails,
     EmployeeProfile,
     PaymentTrackerComponent,
     ServiceTrackComponent,
@@ -71,6 +73,7 @@ export class Dashboard implements OnInit, OnDestroy {
   currentTab = signal<string>('dashboard');
   selectedClientId = signal<string | null>(null);
   selectedChecklistId = signal<string | null>(null);
+  selectedComplianceEntity = signal<{ entityName: string, clientUid: string } | null>(null);
   selectedClientChatId = signal<string | null>(null);
   selectedEmployeeObj = signal<any>(null);
   openChatOnLoad = signal<boolean>(false);
@@ -302,6 +305,10 @@ export class Dashboard implements OnInit, OnDestroy {
       this.selectedChecklistId.set(null);
     }
     
+    if (tab !== 'compliance-details') {
+      this.selectedComplianceEntity.set(null);
+    }
+
     if (tab !== 'staff-chat') {
       this.selectedClientChatId.set(null);
     }
@@ -336,6 +343,15 @@ export class Dashboard implements OnInit, OnDestroy {
     this.navigationTrail.update(trail => [
       ...trail,
       { label: 'Employee Profile', action: () => this.viewEmployee(employee) }
+    ]);
+  }
+
+  viewComplianceDetails(entityInfo: { entityName: string, clientUid: string }) {
+    this.selectedComplianceEntity.set(entityInfo);
+    this.currentTab.set('compliance-details');
+    this.navigationTrail.update(trail => [
+      ...trail,
+      { label: 'Compliance Details', action: () => this.viewComplianceDetails(entityInfo) }
     ]);
   }
 
@@ -410,6 +426,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'settings': return 'System Settings';
       case 'banners': return 'Banner Management';
       case 'staff-compliance': return 'Compliance Radar';
+      case 'compliance-details': return 'Compliance Details';
       case 'bucket': return this.user()?.role === 'filling_staff' ? 'Service Request' : 'New Requests';
       case 'payment-tracker': return 'Reimbursement';
       case 'service-track': return 'Service Kanban';

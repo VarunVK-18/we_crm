@@ -1,159 +1,260 @@
 <div class="page-container fade-in">
-  <!-- Header -->
-  <div class="cd-header">
-    <button class="back-btn" (click)="goBack()">
-      <hugeicons-icon [icon]="ArrowLeft01Icon" [size]="20" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
-      Back to Compliance Radar
-    </button>
-  </div>
 
+  <!-- Content -->
   @if (isLoading()) {
     <div class="loading-state" style="text-align: center; padding: 60px 0;">
       <app-we-loader></app-we-loader>
-      <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading task details...</p>
+      <p style="text-align: center; color: #64748b; margin-top: 16px;">Loading company tasks...</p>
     </div>
-  } @else if (task()) {
-    <div class="cd-main-card">
-      <div class="cd-main-header">
-        <div class="cd-title-area">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-            <span class="status-badge"
-              [ngStyle]="{
-                'background': task().status === 'Completed' ? '#dcfce7' : 
-                              task().status === 'Overdue' ? '#fee2e2' : 
-                              task().status === 'Critical' ? '#ffedd5' : '#f1f5f9',
-                'color': task().status === 'Completed' ? '#166534' : 
-                         task().status === 'Overdue' ? '#991b1b' : 
-                         task().status === 'Critical' ? '#9a3412' : '#475569'
-              }">
-              <hugeicons-icon 
-                [icon]="task().status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
-                [size]="16"
-                [strokeWidth]="2">
-              </hugeicons-icon>
-              {{ task().status }}
-            </span>
-            @if (task().status !== 'Completed') {
-              <span class="due-days-badge" [class.overdue]="task().daysLeft <= 0">
-                {{ task().message }}
-              </span>
-            }
-          </div>
-          <h1 class="cd-title">{{ task().title }}</h1>
-        </div>
+  } @else {
+    <div class="cd-header-info" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; background: white; padding: 24px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+      <div>
+        <h1 class="cd-title" style="font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 0 0 8px 0;">{{ entity.entityName | uppercase }}</h1>
+        <p style="color: #64748b; font-size: 14px; margin: 0; display: flex; align-items: center; gap: 6px;">
+          <span class="material-symbols-outlined" style="font-size: 16px;">task</span>
+          {{ tasks().length }} compliance tasks found
+        </p>
+      </div>
 
-        <div class="cd-actions">
-          @if (task().status !== 'Completed') {
-            <button class="complete-btn" (click)="openCompleteModal()">
-              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="18" [strokeWidth]="2"></hugeicons-icon>
-              Complete Task
-            </button>
-          } @else {
-            <div class="completed-stamp">
-              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="20" [strokeWidth]="2"></hugeicons-icon>
-              Completed on {{ task().completedAt | date:'mediumDate' }}
+      @if (tasks().length > 0 && tasks()[0].clientUid) {
+        <div style="display: flex; flex-direction: column; gap: 8px; text-align: right; border-left: 1px solid #f1f5f9; padding-left: 24px;">
+          <div style="font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Company Details</div>
+          
+          @if (tasks()[0].clientUid.custom_client_id) {
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; font-weight: 600; color: #334155;">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">tag</span>
+              {{ tasks()[0].clientUid.custom_client_id }}
+            </div>
+          }
+          
+          <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; color: #475569;">
+            <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">person</span>
+            {{ tasks()[0].clientUid.owner_name || tasks()[0].clientUid.name || 'Client' }}
+          </div>
+          
+          @if (tasks()[0].clientUid.email) {
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; color: #475569;">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">mail</span>
+              {{ tasks()[0].clientUid.email }}
+            </div>
+          }
+          
+          @if (tasks()[0].clientUid.phone) {
+            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; font-size: 14px; color: #475569;">
+              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">call</span>
+              {{ tasks()[0].clientUid.phone }}
             </div>
           }
         </div>
-      </div>
-
-      <div class="cd-grid">
-        <!-- Client & Entity Info -->
-        <div class="info-section">
-          <h3 class="section-title">Client Information</h3>
-          <div class="info-list">
-            <div class="info-item">
-              <div class="info-icon">
-                <hugeicons-icon [icon]="UserIcon" [size]="18" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
-              </div>
-              <div class="info-content">
-                <span class="info-label">Client Name</span>
-                <span class="info-value">{{ task().clientUid?.owner_name || 'N/A' }}</span>
-              </div>
-            </div>
-            
-            <div class="info-item">
-              <div class="info-icon">
-                <hugeicons-icon [icon]="Building03Icon" [size]="18" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
-              </div>
-              <div class="info-content">
-                <span class="info-label">Entity Name</span>
-                <span class="info-value">{{ task().entityName || 'Individual' }}</span>
-              </div>
-            </div>
-
-            <div class="info-item">
-              <div class="info-icon">
-                <hugeicons-icon [icon]="Calendar02Icon" [size]="18" [strokeWidth]="2" color="#64748b"></hugeicons-icon>
-              </div>
-              <div class="info-content">
-                <span class="info-label">Due Date</span>
-                <span class="info-value">{{ task().dueDate | date:'longDate' }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Documents Section -->
-        <div class="info-section">
-          <h3 class="section-title">Attached Documents</h3>
-          @if (!task().proofDocument && !task().certificateDocument && !task().acknowledgementDocument) {
-            <div class="empty-docs">
-              <hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="32" [strokeWidth]="1.5" color="#cbd5e1"></hugeicons-icon>
-              <p>No documents attached to this task yet.</p>
-            </div>
-          } @else {
-            <div class="docs-list">
-              @if (task().proofDocument) {
-                <a [href]="api.getFileUrl(task().proofDocument.data || task().proofDocument._id || task().proofDocument)" target="_blank" class="doc-card">
-                  <div class="doc-icon"><hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="20" [strokeWidth]="2" color="#3b82f6"></hugeicons-icon></div>
-                  <div class="doc-name">Proof Document</div>
-                </a>
-              }
-              @if (task().certificateDocument) {
-                <a [href]="api.getFileUrl(task().certificateDocument.data || task().certificateDocument._id || task().certificateDocument)" target="_blank" class="doc-card">
-                  <div class="doc-icon"><hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="20" [strokeWidth]="2" color="#10b981"></hugeicons-icon></div>
-                  <div class="doc-name">Certificate</div>
-                </a>
-              }
-              @if (task().acknowledgementDocument) {
-                <a [href]="api.getFileUrl(task().acknowledgementDocument.data || task().acknowledgementDocument._id || task().acknowledgementDocument)" target="_blank" class="doc-card">
-                  <div class="doc-icon"><hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="20" [strokeWidth]="2" color="#8b5cf6"></hugeicons-icon></div>
-                  <div class="doc-name">Filing Acknowledgement</div>
-                </a>
-              }
-            </div>
-          }
-        </div>
-      </div>
+      }
     </div>
+
+    @if (tasks().length === 0) {
+      <div style="background: white; border-radius: 16px; padding: 60px; text-align: center; border: 1px solid #e2e8f0;">
+        <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="48" color="#10b981" [strokeWidth]="1.5"></hugeicons-icon>
+        <h3 style="font-size: 18px; font-weight: 700; color: var(--text-dark); margin: 16px 0 8px;">No Pending Tasks</h3>
+        <p style="color: #64748b; margin: 0;">This company is fully compliant. No tasks are pending or overdue.</p>
+      </div>
+    } @else {
+      <div class="cd-tasks-list" style="display: flex; flex-direction: column; gap: 24px;">
+        @for (task of tasks(); track task.id) {
+          <div class="cd-task-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s;">
+            <!-- Task Header -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9;">
+              <div>
+                <h2 style="font-size: 20px; font-weight: 700; color: var(--text-dark); margin: 0 0 12px 0;">{{ task.title }}</h2>
+                <div style="display: flex; gap: 20px; align-items: center; font-size: 14px; color: #64748b; font-weight: 500;">
+                  <span style="display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 6px 12px; border-radius: 8px;">
+                    <hugeicons-icon [icon]="Calendar02Icon" [size]="16" color="#64748b"></hugeicons-icon>
+                    Due: {{ task.dueDate | date:'mediumDate' }}
+                  </span>
+                  <span [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#dc2626' : (task.status === 'Completed' ? '#16a34a' : '#64748b')}" style="font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                    @if (task.status === 'Overdue') { <hugeicons-icon [icon]="Alert01Icon" [size]="16" color="#dc2626"></hugeicons-icon> }
+                    @if (task.status === 'Completed') { <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#16a34a"></hugeicons-icon> }
+                    {{ task.message }}
+                  </span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;"
+                  [ngStyle]="{
+                    'background': task.status === 'Completed' ? '#dcfce7' : 
+                                  task.status === 'Overdue' ? '#fee2e2' : 
+                                  task.status === 'Critical' ? '#ffedd5' : '#f1f5f9',
+                    'color': task.status === 'Completed' ? '#16a34a' : 
+                             task.status === 'Overdue' ? '#dc2626' : 
+                             task.status === 'Critical' ? '#d97706' : '#475569'
+                  }">
+                  {{ task.status }}
+                </span>
+                
+                @if (task.status !== 'Completed') {
+                  <button (click)="markTaskComplete(task.id)" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">task_alt</span> Mark Complete
+                  </button>
+                }
+              </div>
+            </div>
+
+
+              <div style="margin-top: 24px; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color, #e2e8f0); background: #fafafa; display: flex; flex-direction: column; gap: 10px;">
+              
+                <!-- Header -->
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px; text-transform: uppercase; letter-spacing: 0.05em;">
+                      <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">assignment_returned</span>
+                      Generated Documents
+                    </span>
+                    
+                    <label style="cursor: pointer; font-size: 11px; font-weight: 700; color: white; background: #64748b; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 4px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                      <input type="file" (change)="directUploadDocument($event, 'temporary', task)" style="display: none">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">upload</span> Temporary Document
+                    </label>
+
+                    <label style="cursor: pointer; font-size: 11px; font-weight: 700; color: white; background: #3b82f6; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 4px; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                      <input type="file" (change)="directUploadDocument($event, 'normal', task)" style="display: none">
+                      <span class="material-symbols-outlined" style="font-size: 14px;">upload</span> Normal Document
+                    </label>
+                  </div>
+                  @if (getMissingDocuments(task).length > 0) {
+                    <div style="position: relative; display: inline-block;">
+                      <select #docSelect (change)="openDocAction(task.id, docSelect.value, task); docSelect.value = ''"
+                        style="background: transparent; border: none; color: var(--accent-primary, #3b82f6); font-size: 12px; font-weight: 700; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; padding-right: 16px; padding-left: 4px;">
+                        <option value="" disabled selected>+ Add Document</option>
+                        @for (doc of getMissingDocuments(task); track doc.key) {
+                          <option [value]="doc.key">{{ doc.label }}</option>
+                        }
+                      </select>
+                      <span class="material-symbols-outlined" style="font-size: 14px; color: var(--accent-primary, #3b82f6); position: absolute; right: 0; top: 50%; transform: translateY(-50%); pointer-events: none;">expand_more</span>
+                    </div>
+                  }
+                </div>
+              
+                <!-- Empty state -->
+                @if (getAddedDocuments(task).length === 0) {
+                <div style="font-size: 12px; color: #94a3b8; font-style: italic; padding: 4px 0;">
+                  No documents generated yet. Select "+ Add Document" to generate one.
+                </div>
+                }
+              
+                <!-- Files list -->
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  @for (doc of getAddedDocuments(task); track doc.key) {
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: white; border: 1px solid #f1f5f9; border-radius: 6px; padding: 8px 12px;">
+                      <div style="display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1;">
+                        <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b;">description</span>
+                        <span style="font-size: 13px; font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ task[doc.key + 'Document']?.filename || doc.label }}">
+                          {{ task[doc.key + 'Document']?.filename || doc.label }}
+                        </span>
+                      </div>
+              
+                      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        @if (doc.key !== 'normal') {
+                          @if (task[doc.key + 'ReplyDocument']) {
+                            <span style="color: #047857; background: #ecfdf5; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                              <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Client Replied
+                            </span>
+                          } @else {
+                            <span style="color: #d97706; background: #fef3c7; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                              <span class="material-symbols-outlined" style="font-size: 14px;">pending_actions</span> Awaiting Client Reply
+                            </span>
+                          }
+                        } @else {
+                          <span style="color: #047857; background: #ecfdf5; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Received
+                          </span>
+                        }
+                        
+                        <a [href]="getDocumentUrl(task[doc.key + 'Document'])" target="_blank"
+                          style="background: #f1f5f9; border: 1px solid #cbd5e1; color: #334155; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; text-decoration: none;"
+                          onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'"
+                          title="Original Document">
+                          <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span> View Original
+                        </a>
+                        
+                        @if (task[doc.key + 'ReplyDocument']) {
+                          <a [href]="getDocumentUrl(task[doc.key + 'ReplyDocument'])" target="_blank"
+                            style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; text-decoration: none;"
+                            onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'"
+                            title="Signed Reply">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">signature</span> View Signed
+                          </a>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+        }
+      </div>
+    }
   }
 
-  <!-- Complete Task Modal -->
-  @if (isCompleteModalOpen()) {
-    <div style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);">
-      <div style="background: white; border-radius: 20px; width: 100%; max-width: 500px; padding: 32px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);">
-        <h2 style="margin: 0 0 8px 0; font-size: 20px; font-weight: 700; color: var(--text-dark);">Complete Task</h2>
-        <p style="margin: 0 0 24px 0; font-size: 14px; color: #64748b;">{{ task()?.title }}</p>
-        
-        <div style="display: flex; flex-direction: column; gap: 20px;">
-          <div>
-            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Proof Document</label>
-            <input type="file" (change)="onFileChange($event, 'proof')" style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px; font-size: 13px;">
-          </div>
-          <div>
-            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Certificate (Optional)</label>
-            <input type="file" (change)="onFileChange($event, 'cert')" style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px; font-size: 13px;">
-          </div>
-          <div>
-            <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Acknowledgement (Optional)</label>
-            <input type="file" (change)="onFileChange($event, 'ack')" style="width: 100%; padding: 10px; border: 1px dashed #cbd5e1; border-radius: 8px; font-size: 13px;">
-          </div>
+  <!-- Document Action Modal -->
+  @if (activeDocAction()) {
+    <div class="modal-overlay" (click)="cancelDocAction()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);">
+      <div class="modal-card-box" style="background: white; border-radius: 12px; width: 900px; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);" (click)="$event.stopPropagation()">
+        <!-- Header -->
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+          <h2 style="margin: 0; font-size: 18px; color: #0f172a; font-weight: 700;">Document Action</h2>
+          <button (click)="cancelDocAction()" style="background: none; border: none; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='transparent'">
+            <span class="material-symbols-outlined">close</span>
+          </button>
         </div>
 
-        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
-          <button (click)="isCompleteModalOpen.set(false)" style="padding: 10px 20px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; color: #475569; cursor: pointer;">Cancel</button>
-          <button (click)="submitCompletion()" style="padding: 10px 20px; background: var(--accent-orange, #f97316); border: none; border-radius: 8px; font-weight: 600; color: white; cursor: pointer;">Submit Completion</button>
+        <!-- Body -->
+        <div style="display: flex; flex: 1; overflow: hidden; background: #fafafa;">
+          <!-- Left side: Placeholders -->
+          <div style="width: 350px; border-right: 1px solid #e2e8f0; background: white; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;">
+
+
+              @if (selectedTemplateId() && templatePlaceholders().length > 0) {
+                <div>
+                  <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #1e293b;">Fill Placeholders</h4>
+                  <div style="display: flex; flex-direction: column; gap: 12px;">
+                    @for (item of templatePlaceholders(); track item.key) {
+                      <div>
+                        <label style="font-size: 12px; font-weight: 600; color: #64748b; display: block; margin-bottom: 4px;">{{ item.label }}</label>
+                        <input type="text" [ngModel]="placeholderValues()[item.key]" (ngModelChange)="onPlaceholderChange(item.key, $event)" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; box-sizing: border-box;" [placeholder]="'Enter ' + item.label">
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @else if (selectedTemplateId()) {
+                <div style="padding: 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px; color: #64748b; text-align: center;">
+                  No placeholders found in this template.
+                </div>
+              }
+            </div>
+
+            <!-- Right side: Live Preview -->
+            <div style="flex: 1; padding: 24px; overflow-y: auto; background: #f1f5f9;">
+              <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); padding: 32px; min-height: 400px; overflow-x: auto;">
+                @if (livePreviewHtml()) {
+                  <div [innerHTML]="livePreviewHtml()" style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 100%;"></div>
+                } @else {
+                  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #94a3b8; font-size: 14px;">
+                    <span class="material-symbols-outlined" style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;">description</span>
+                    Select a template to view preview
+                  </div>
+                }
+              </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div style="padding: 16px 24px; border-top: 1px solid #e2e8f0; background: white; display: flex; justify-content: flex-end; gap: 12px;">
+          <button (click)="cancelDocAction()" style="background: white; border: 1px solid #cbd5e1; color: #475569; padding: 8px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s;">Cancel</button>
+          
+          <button (click)="generateCustomDocument(selectedTemplateId())" [disabled]="!selectedTemplateId() || isGenerating()" [style.opacity]="(!selectedTemplateId() || isGenerating()) ? 0.5 : 1" style="background: #3b82f6; color: white; border: none; padding: 8px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+            @if (isGenerating()) {
+              Generating...
+            } @else {
+              <span class="material-symbols-outlined" style="font-size: 18px;">magic_button</span> Generate
+            }
+          </button>
         </div>
       </div>
     </div>

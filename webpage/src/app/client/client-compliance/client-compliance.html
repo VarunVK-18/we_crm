@@ -33,6 +33,49 @@
         </div>
       }
 
+      @if (documentsRequiringSignature().length > 0) {
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <div style="padding: 8px; border-radius: 8px; color: #c16bff; display: flex; align-items: center; justify-content: center;">
+              <span class="material-symbols-outlined" style="font-size: 20px;">draw</span>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 18px; font-weight: 700; color: #0f172a;">Signatures Required</h3>
+              <p style="margin: 0; font-size: 14px; color: #64748b;">Please download, sign, and upload the following documents.</p>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 16px;">
+            @for (doc of documentsRequiringSignature(); track doc.task._id + doc.docKey) {
+              <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 16px;">
+                <div>
+                  <div style="font-size: 13px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.5px;">{{ doc.docLabel }}</div>
+                  <div style="font-size: 15px; font-weight: 600; color: #0f172a; margin-top: 4px;">{{ doc.task.title }}</div>
+                  <div style="font-size: 12px; color: #64748b; margin-top: 2px;">{{ doc.task.entityName }}</div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: auto;">
+                  <a [href]="getDocumentUrl(doc.fileId)" target="_blank" style="flex: 1; justify-content: center; font-size: 13px; font-weight: 600; color: #3b82f6; text-decoration: none; display: flex; align-items: center; gap: 6px; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">download</span> Download
+                  </a>
+                  
+                  @if (doc.isUploaded) {
+                    <span style="flex: 1; justify-content: center; font-size: 13px; font-weight: 600; color: #10b981; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 6px; background: #ecfdf5; border: 1px solid #a7f3d0;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span> Uploaded
+                    </span>
+                  } @else {
+                    <label style="flex: 1; justify-content: center; font-size: 13px; font-weight: 600; color: white; background: #f97316; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">upload</span> Upload Signed
+                      <input type="file" style="display: none;" (change)="uploadClientReply($event, doc.task._id || doc.task.id, doc.docKey + 'Reply')">
+                    </label>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
       <div class="grid-row">
         <!-- Health Card -->
         <div class="bento-card health-card">
@@ -155,13 +198,21 @@
                       }
                     </td>
                     <td>
-                      @if (item.type?.toLowerCase() === 'completed') {
-                        <span class="status-badge resolved-badge">COMPLETED</span>
-                      } @else if (item.type === 'Overdue' || item.daysLeft < 0) {
-                        <span class="status-badge" style="background: #fee2e2; color: #dc2626;">OVERDUE</span>
-                      } @else {
-                        <span class="status-badge pending-badge">PENDING</span>
-                      }
+                      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+                        @if (item.type?.toLowerCase() === 'completed') {
+                          <span class="status-badge resolved-badge">COMPLETED</span>
+                        } @else if (item.type === 'Overdue' || item.daysLeft < 0) {
+                          <span class="status-badge" style="background: #fee2e2; color: #dc2626;">OVERDUE</span>
+                        } @else {
+                          <span class="status-badge pending-badge">PENDING</span>
+                        }
+                        
+                        @if (item.normalDocument) {
+                          <a [href]="getDocumentUrl(item.normalDocument)" target="_blank" style="font-size: 11px; font-weight: 600; color: #3b82f6; text-decoration: none; display: flex; align-items: center; gap: 4px; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; border: 1px solid #cbd5e1; transition: all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'" title="Download Document">
+                            <span class="material-symbols-outlined" style="font-size: 14px;">download</span> Download
+                          </a>
+                        }
+                      </div>
                     </td>
                   </tr>
                 }
@@ -277,20 +328,53 @@
                 <h3 style="font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0; letter-spacing: -0.3px;">{{ group.key }}</h3>
               </div>
               @for (task of group.items; track task.id) {
-                <div class="pending-item" style="margin-bottom: 12px;">
-                  <div class="pending-item-info">
-                    <h4>{{ task.title }}</h4>
-                    <p>{{ task.message }} - Status: <strong>{{ task.status }}</strong></p>
-                  </div>
-                  @if (task.status?.toLowerCase() === 'completed') {
-                    <div style="display: flex; align-items: center; gap: 6px; color: #10b981; font-weight: 600; font-size: 13px;">
-                      <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#10b981" [strokeWidth]="2.5"></hugeicons-icon>
-                      Completed
+                <div class="pending-item" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                    <div class="pending-item-info">
+                      <h4>{{ task.title }}</h4>
+                      <p>{{ task.message }} - Status: <strong>{{ task.status }}</strong></p>
                     </div>
-                  } @else {
-                    <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-weight: 600; font-size: 13px;">
-                      <hugeicons-icon [icon]="Clock02Icon" [size]="16" color="#64748b" [strokeWidth]="2.5"></hugeicons-icon>
-                      Pending
+                    @if (task.status?.toLowerCase() === 'completed') {
+                      <div style="display: flex; align-items: center; gap: 6px; color: #10b981; font-weight: 600; font-size: 13px;">
+                        <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="16" color="#10b981" [strokeWidth]="2.5"></hugeicons-icon>
+                        Completed
+                      </div>
+                    } @else {
+                      <div style="display: flex; align-items: center; gap: 6px; color: #64748b; font-weight: 600; font-size: 13px;">
+                        <hugeicons-icon [icon]="Clock02Icon" [size]="16" color="#64748b" [strokeWidth]="2.5"></hugeicons-icon>
+                        Pending
+                      </div>
+                    }
+                  </div>
+                  
+                  @if (getRequiredSignatures(task).length > 0) {
+                    <div style="background: #f8fafc; border-radius: 8px; padding: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 8px;">
+                      <div style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Documents requiring signature</div>
+                      @for (doc of getRequiredSignatures(task); track doc.key) {
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: white; padding: 8px 12px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                          <div style="display: flex; align-items: center; gap: 8px;">
+                            <hugeicons-icon [icon]="DocumentAttachmentIcon" [size]="16" color="#64748b"></hugeicons-icon>
+                            <span style="font-size: 13px; font-weight: 600; color: #334155;">{{ doc.label }}</span>
+                          </div>
+                          
+                          <div style="display: flex; align-items: center; gap: 12px;">
+                            <a [href]="getDocumentUrl(task[doc.key + 'Document'])" target="_blank" style="font-size: 12px; font-weight: 600; color: #3b82f6; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                              <span class="material-symbols-outlined" style="font-size: 14px;">download</span> Download
+                            </a>
+                            
+                            @if (task[doc.key + 'ReplyDocument']) {
+                              <span style="font-size: 12px; font-weight: 600; color: #10b981; display: flex; align-items: center; gap: 4px;">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span> Uploaded
+                              </span>
+                            } @else {
+                              <label style="font-size: 12px; font-weight: 600; color: white; background: #f97316; padding: 4px 10px; border-radius: 4px; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                                <span class="material-symbols-outlined" style="font-size: 14px;">upload</span> Upload Signed
+                                <input type="file" style="display: none;" (change)="uploadClientReply($event, task._id || task.id, doc.key + 'Reply')">
+                              </label>
+                            }
+                          </div>
+                        </div>
+                      }
                     </div>
                   }
                 </div>

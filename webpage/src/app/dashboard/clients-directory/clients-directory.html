@@ -7,18 +7,6 @@
     </div>
   </div>
 
-
-  <!-- Filter & Search Bar -->
-  <div class="cd-filter-bar">
-    <div class="cd-filter-spacer"></div>
-    <div class="cd-filter-actions" style="display: flex; gap: 12px;">
-      <button class="cd-add-btn" (click)="openExternalModal()" style="display: flex; align-items: center; gap: 8px; background-color: #6366f1;">
-        <span class="material-symbols-outlined" style="font-size: 20px;">domain_add</span>
-        <span>Add External Client Service</span>
-      </button>
-    </div>
-  </div>
-
   <!-- Client Cards Grid -->
   @if (isLoading()) {
     <div class="loading-state" style="text-align: center; padding: 60px 0;">

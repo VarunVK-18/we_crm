@@ -1,10 +1,5 @@
 <div class="page-container fade-in">
-  <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px;">
-    <div>
-      <h1 style="font-size: 24px; font-weight: 700; color: var(--text-dark); margin: 0 0 8px 0; letter-spacing: -0.3px;">Compliance Radar</h1>
-      <p style="color: #64748b; font-size: 15px; margin: 0;">Master list of all pending compliances across all clients.</p>
-    </div>
-  </div>
+
 
   @if (isLoading()) {
     <div class="loading-state" style="text-align: center; padding: 60px 0;">
@@ -12,94 +7,73 @@
       <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading compliance radar...</p>
     </div>
   } @else {
+  <!-- Filters -->
+  <div style="margin-bottom: var(--spacing-lg);">
+    <div class="filter-pill-bar" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 8px; margin-bottom: 0; width: 100%;">
+      <div style="display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; flex: 1; scrollbar-width: none;">
+        <button class="filter-pill" [class.active]="currentTab() === 'all'" (click)="currentTab.set('all')" style="display: inline-flex; align-items: center;">All Tasks <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('all') }}</span></button>
+        <button class="filter-pill" [class.active]="currentTab() === 'upcoming'" (click)="currentTab.set('upcoming')" style="display: inline-flex; align-items: center;">Upcoming <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('upcoming') }}</span></button>
+        <button class="filter-pill" [class.active]="currentTab() === 'due_soon'" (click)="currentTab.set('due_soon')" style="display: inline-flex; align-items: center; border-color: #f59e0b; color: #b45309;">Due Soon <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(180, 83, 9, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('due_soon') }}</span></button>
+        <button class="filter-pill" [class.active]="currentTab() === 'critical'" (click)="currentTab.set('critical')" style="display: inline-flex; align-items: center; border-color: #f97316; color: #c2410c;">Critical <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(194, 65, 12, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('critical') }}</span></button>
+        <button class="filter-pill" [class.active]="currentTab() === 'overdue'" (click)="currentTab.set('overdue')" style="display: inline-flex; align-items: center; border-color: #ef4444; color: #dc2626;">Overdue <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(220, 38, 38, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('overdue') }}</span></button>
+        <button class="filter-pill" [class.active]="currentTab() === 'completed'" (click)="currentTab.set('completed')" style="display: inline-flex; align-items: center; border-color: #10b981; color: #047857;">Completed <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(4, 120, 87, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('completed') }}</span></button>
+      </div>
+      <div class="search-box" style="flex-shrink: 0;">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" placeholder="Search tasks..." [(ngModel)]="searchQuery" style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 130px;" />
+      </div>
+    </div>
+  </div>
+
     <div class="bucket-table-container">
       <table class="bucket-table">
         <thead>
           <tr>
             <th style="vertical-align: top;">
+              <div>SERVICE ID</div>
+              <input type="text" placeholder="Search service..." [(ngModel)]="serviceIdFilter" class="col-search-input" />
+            </th>
+            <th style="vertical-align: top;">
+              <div>CLIENT ID</div>
+              <input type="text" placeholder="Search ID..." [(ngModel)]="clientIdFilter" class="col-search-input" />
+            </th>
+            <th style="vertical-align: top;">
+              <div>COMPANY NAME</div>
+              <input type="text" placeholder="Search company..." [(ngModel)]="entityFilter" class="col-search-input" />
+            </th>
+            <th style="vertical-align: top;">
               <div>CLIENT</div>
-              <input type="text" placeholder="Search client..." [(ngModel)]="clientIdFilter" class="col-search-input" />
+              <input type="text" placeholder="Search client..." [(ngModel)]="clientNameFilter" class="col-search-input" />
             </th>
-            <th style="vertical-align: top;">
-              <div>ENTITY NAME</div>
-              <input type="text" placeholder="Search entity..." [(ngModel)]="entityFilter" class="col-search-input" />
-            </th>
-            <th style="vertical-align: top;">
-              <div>TASK NAME</div>
-              <input type="text" placeholder="Search task..." [(ngModel)]="taskFilter" class="col-search-input" />
-            </th>
-            <th style="vertical-align: top;">DUE DATE</th>
-            <th style="vertical-align: top;">
-              <div>STATUS</div>
-              <select [(ngModel)]="statusFilter" class="col-search-input" style="padding: 4px 8px; height: 26px;">
-                <option value="">All</option>
-                <option value="Completed">Completed</option>
-                <option value="Overdue">Overdue</option>
-                <option value="Critical">Critical</option>
-                <option value="Due Soon">Due Soon</option>
-                <option value="Upcoming">Upcoming</option>
-              </select>
-            </th>
-            <th style="vertical-align: top; text-align: center;">ACTION</th>
+            <th style="vertical-align: top;">TOTAL TASKS</th>
           </tr>
         </thead>
         <tbody>
-          @if (filteredTasks().length === 0) {
+          @if (paginatedCompanies().length === 0) {
             <tr>
-              <td colspan="6" style="text-align: center; padding: 40px; color: #64748b; font-size: 14px;">
-                No compliance tasks found matching your filters.
+              <td colspan="5" style="text-align: center; padding: 40px; color: #64748b; font-size: 14px;">
+                No companies found matching your filters.
               </td>
             </tr>
           }
-          @for (task of paginatedTasks(); track task.id) {
-            <tr>
-              <td (click)="viewDetails(task.id)" style="cursor: pointer;">
-                <div style="font-weight: 600; color: var(--text-dark); font-size: 14px;">{{ task.clientUid?.owner_name || 'Client' }}</div>
-                <div style="font-size: 12px; color: #64748b; margin-top: 2px;">{{ task.clientUid?.custom_client_id || task.clientUid?.company_name || '—' }}</div>
+          @for (company of paginatedCompanies(); track company.entityName) {
+            <tr class="sc-tr hover-row">
+              <td class="hover-text-link" style="font-family: monospace; color: #3b82f6; font-weight: 500; cursor: pointer;" (click)="viewDetails({ entityName: company.entityName, clientUid: company.clientUid })">
+                {{ company.serviceIds }}
               </td>
-              <td (click)="viewDetails(task.id)" style="cursor: pointer;">
-                <div style="font-weight: 600; color: #3b82f6; font-size: 13px;">{{ task.entityName || 'Individual' }}</div>
+              <td>
+                <span class="client-meta-sm">{{ company.clientDetails?.custom_client_id || '—' | uppercase }}</span>
               </td>
-              <td (click)="viewDetails(task.id)" style="cursor: pointer;">
-                <div style="font-weight: 600; color: var(--text-dark); font-size: 14px; display: flex; align-items: center; gap: 6px;">
-                  <hugeicons-icon 
-                    [icon]="task.status === 'Completed' ? CheckmarkCircle01Icon : Alert01Icon" 
-                    [size]="16"
-                    [color]="task.status === 'Completed' ? '#10b981' : '#f59e0b'"
-                    [strokeWidth]="2">
-                  </hugeicons-icon>
-                  {{ task.title }}
-                </div>
+              <td>
+                <div class="entity-name-sm">{{ company.entityName | uppercase }}</div>
               </td>
-              <td (click)="viewDetails(task.id)" style="cursor: pointer;">
-                <div style="font-size: 13px; font-weight: 600; color: var(--text-dark);">{{ task.dueDate | date:'mediumDate' }}</div>
-                <div style="font-size: 11px; margin-top: 2px; font-weight: 600;" [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#ef4444' : '#64748b'}">
-                  {{ task.message }}
-                </div>
+              <td>
+                <span class="client-name-sm">{{ company.clientDetails?.owner_name || company.clientDetails?.name || 'Client' | uppercase }}</span>
               </td>
-              <td (click)="viewDetails(task.id)" style="cursor: pointer;">
-                <span style="display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 99px; font-size: 12px; font-weight: 600;"
-                  [ngStyle]="{
-                    'background': task.status === 'Completed' ? '#dcfce7' : 
-                                  task.status === 'Overdue' ? '#fee2e2' : 
-                                  task.status === 'Critical' ? '#ffedd5' : '#f1f5f9',
-                    'color': task.status === 'Completed' ? '#166534' : 
-                             task.status === 'Overdue' ? '#991b1b' : 
-                             task.status === 'Critical' ? '#9a3412' : '#475569'
-                  }">
-                  {{ task.status }}
+              <td>
+                <span class="count-val-sm">
+                  {{ company.totalTasks }}
                 </span>
-              </td>
-              <td style="text-align: center;">
-                @if (task.status === 'Completed') {
-                  <span style="display: inline-flex; padding: 6px 12px; background: #f8fafc; border-radius: 6px; font-size: 13px; font-weight: 600; color: #10b981;">
-                    Done
-                  </span>
-                } @else {
-                  <button (click)="openCompleteModal(task)" style="padding: 6px 16px; background: var(--accent-orange, #f97316); color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                    Complete
-                  </button>
-                }
               </td>
             </tr>
           }

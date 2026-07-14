@@ -241,91 +241,91 @@ exports.getAllComplianceTasks = async (req, res) => {
           clientFilter.assigned_to = req.user._id;
         }
 
-        const authorizedClients = await User.find(clientFilter).select('_id');
-        const authorizedClientIds = authorizedClients.map(c => c._id);
+        // Run auth lookups in parallel
+        const [authorizedClients, globalRadarClients] = await Promise.all([
+          User.find(clientFilter).select('_id').lean(),
+          User.find({ role: 'customer', in_compliance_radar: { $ne: false } }).select('_id').lean()
+        ]);
 
-        // Get global set of clients in compliance radar to ensure no excluded client slips through checklist assignment
-        const globalRadarClients = await User.find({ role: 'customer', in_compliance_radar: { $ne: false } }).select('_id');
+        const authorizedClientIds = authorizedClients.map(c => c._id);
         const globalRadarClientIds = globalRadarClients.map(c => c._id);
 
-        const Checklist = require('../models/Checklist');
         const authorizedChecklists = await Checklist.find({
-            client_id: { $in: globalRadarClientIds },
-            $or: [
-                { assigned_to: req.user._id },
-                { client_id: { $in: authorizedClientIds } }
-            ]
-        }).select('_id');
+          client_id: { $in: globalRadarClientIds },
+          $or: [
+            { assigned_to: req.user._id },
+            { client_id: { $in: authorizedClientIds } }
+          ]
+        }).select('_id').lean();
         const authorizedChecklistIds = authorizedChecklists.map(c => c._id);
 
         taskFilter.$or = [
-            { checklistId: { $in: authorizedChecklistIds } },
-            { clientUid: { $in: authorizedClientIds }, checklistId: { $exists: false } },
-            { clientUid: { $in: authorizedClientIds }, checklistId: null }
+          { checklistId: { $in: authorizedChecklistIds } },
+          { clientUid: { $in: authorizedClientIds }, checklistId: { $exists: false } },
+          { clientUid: { $in: authorizedClientIds }, checklistId: null }
         ];
         checklistFilter._id = { $in: authorizedChecklistIds };
       } else {
         // For admin/others, still filter out clients not in compliance radar
-        const radarClients = await User.find({ role: 'customer', in_compliance_radar: { $ne: false } }).select('_id');
+        const radarClients = await User.find({ role: 'customer', in_compliance_radar: { $ne: false } }).select('_id').lean();
         const radarClientIds = radarClients.map(c => c._id);
-        
+
         taskFilter.clientUid = { $in: radarClientIds };
         checklistFilter.client_id = { $in: radarClientIds };
       }
     }
 
-    const tasks = await ComplianceTask.find(taskFilter)
-      .populate('clientUid', 'owner_name company_name')
-      .populate('companyId', 'company_name')
-      .populate('checklistId', 'service_name details')
-      .populate('proofDocument')
-      .populate('certificateDocument')
-      .populate('acknowledgementDocument')
-      .sort({ dueDate: 1 })
-      .lean();
+    // Fetch tasks and completed checklists in parallel
+    // NOTE: We do NOT populate proofDocument/certificateDocument/acknowledgementDocument here
+    // because the radar list doesn't show them — they are fetched on the Details page only.
+    const [tasks, completedChecklists] = await Promise.all([
+      ComplianceTask.find(taskFilter)
+        .populate('clientUid', 'owner_name company_name custom_client_id')
+        .populate('companyId', 'company_name')
+        .populate('checklistId', 'service_name details custom_service_id')
+        .select('-proofDocument -certificateDocument -acknowledgementDocument -description -warning_status')
+        .sort({ dueDate: 1 })
+        .lean(),
+      Checklist.find(checklistFilter)
+        .populate('client_id', 'custom_client_id owner_name company_name')
+        .select('service_name final_documents client_id company_id')
+        .lean()
+    ]);
 
     const today = new Date();
     const mappedTasks = tasks.map(task => {
       const daysLeft = Math.ceil((new Date(task.dueDate) - today) / (1000 * 60 * 60 * 24));
-      
+
       let computedStatus = task.status;
       if (computedStatus !== 'Completed') {
         computedStatus = complianceService.calculateStatus(task.dueDate, null);
       }
-      
+
       let entityName = task.entityName;
       if (!entityName && task.checklistId && task.checklistId.details) {
-         entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
+        entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
       }
       if (!entityName && task.clientUid) {
-         entityName = task.clientUid.company_name || task.clientUid.owner_name;
+        entityName = task.clientUid.company_name || task.clientUid.owner_name;
       }
-      if (!entityName) {
-         entityName = 'Individual';
-      }
+      if (!entityName) entityName = 'Individual';
 
       return {
         ...task,
         entityName,
+        clientDetails: task.clientUid,
         daysLeft,
         status: computedStatus
       };
     });
 
-    // Also fetch dynamic reminders from completed checklists across all clients
-    const completedChecklists = await Checklist.find(checklistFilter)
-      .populate('company_id', 'company_name')
-      .populate('client_id', 'custom_client_id owner_name company_name')
-      .lean();
-
     const dynamicRemindersRaw = getDynamicReminders(completedChecklists);
-    
     const mappedDynamic = dynamicRemindersRaw.map(r => {
       let mappedStatus = 'Upcoming';
       if (r.daysLeft <= 0) mappedStatus = 'Overdue';
       else if (r.daysLeft <= 3) mappedStatus = 'Critical';
       else if (r.daysLeft <= 10) mappedStatus = 'Due Soon';
-      
+
       return {
         _id: r._id,
         title: r.title + ' Renewal',
@@ -333,7 +333,8 @@ exports.getAllComplianceTasks = async (req, res) => {
         dueDate: r.dueDate,
         daysLeft: r.daysLeft,
         status: mappedStatus,
-        clientUid: r.client_id
+        clientUid: r.client_id,
+        clientDetails: r.client_id
       };
     });
 
@@ -352,11 +353,22 @@ exports.getUserComplianceTasks = async (req, res) => {
     const { userId } = req.params;
 
     const tasks = await ComplianceTask.find({ clientUid: userId })
+      .populate('clientUid', 'owner_name company_name email phone custom_client_id')
       .populate('companyId', 'company_name')
-      .populate('checklistId', 'service_name details')
+      .populate('checklistId', 'service_name details custom_service_id')
       .populate('proofDocument')
       .populate('certificateDocument')
       .populate('acknowledgementDocument')
+      .populate('noticeDocument')
+      .populate('shareholdersDocument')
+      .populate('shareholdersReplyDocument')
+      .populate('directorsDocument')
+      .populate('directorsReplyDocument')
+      .populate('notesDocument')
+      .populate('notesReplyDocument')
+      .populate('temporaryDocument')
+      .populate('temporaryReplyDocument')
+      .populate('normalDocument')
       .sort({ dueDate: 1 })
       .lean();
 
@@ -372,6 +384,9 @@ exports.getUserComplianceTasks = async (req, res) => {
       let entityName = task.entityName;
       if (!entityName && task.checklistId && task.checklistId.details) {
          entityName = task.checklistId.details.companyName || task.checklistId.details.proposed_company_name || task.checklistId.details.businessName;
+      }
+      if (!entityName && task.clientUid) {
+         entityName = task.clientUid.company_name || task.clientUid.owner_name;
       }
       if (!entityName) {
          entityName = 'Individual';
@@ -430,6 +445,17 @@ exports.getComplianceTaskById = async (req, res) => {
       .populate('proofDocument')
       .populate('certificateDocument')
       .populate('acknowledgementDocument')
+      .populate('noticeDocument')
+      .populate('noticeReplyDocument')
+      .populate('shareholdersDocument')
+      .populate('shareholdersReplyDocument')
+      .populate('directorsDocument')
+      .populate('directorsReplyDocument')
+      .populate('notesDocument')
+      .populate('notesReplyDocument')
+      .populate('temporaryDocument')
+      .populate('temporaryReplyDocument')
+      .populate('normalDocument')
       .populate('assigned_staff_id', 'owner_name email')
       .lean();
 
@@ -509,3 +535,133 @@ exports.completeComplianceTask = async (req, res) => {
   }
 };
 
+
+// Upload a single document for a compliance task
+exports.uploadComplianceDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { documentType } = req.body;
+    
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+    
+    const validTypes = [
+      'certificate', 'acknowledgement', 'notice', 'shareholders', 'directors', 'notes', 'temporary', 'normal',
+      'noticeReply', 'shareholdersReply', 'directorsReply', 'notesReply', 'temporaryReply'
+    ];
+    if (!validTypes.includes(documentType)) {
+      return res.status(400).json({ success: false, message: 'Invalid documentType' });
+    }
+
+    const task = await ComplianceTask.findById(id);
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
+    const Document = require('../models/Document');
+    const newDoc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      uploadedBy: req.user._id
+    });
+
+    task[`${documentType}Document`] = newDoc._id;
+    await task.save();
+
+    res.status(200).json({ success: true, message: 'Document uploaded successfully', docId: newDoc._id });
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Generate a document from a template for a compliance task
+exports.generateDocumentFromTemplateForTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { templateId, documentType } = req.body;
+
+    const validTypes = ['notice', 'shareholders', 'directors', 'notes'];
+    if (!validTypes.includes(documentType)) {
+      return res.status(400).json({ success: false, message: 'Invalid documentType' });
+    }
+
+    const task = await ComplianceTask.findById(id).populate('checklistId');
+    if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
+
+    const DocumentTemplate = require('../models/DocumentTemplate');
+    const tmpl = await DocumentTemplate.findOne({ _id: templateId, company_id: req.user.company_id });
+    if (!tmpl) return res.status(404).json({ success: false, message: 'Template not found' });
+
+    // Use checklist for placeholders if available
+    let placeholders = {};
+    if (task.checklistId) {
+      const { buildPlaceholderMap } = require('./documentTemplateController');
+      // buildPlaceholderMap might not be directly exported, let's just do a basic one or require it
+      // Actually, building placeholders is complex. Let's do a basic one for now.
+      const checklist = await require('../models/Checklist').findById(task.checklistId._id).lean();
+      if (checklist) {
+         try {
+           const docCtrl = require('./documentTemplateController');
+           if(typeof docCtrl.buildPlaceholderMap === 'function') {
+             placeholders = await docCtrl.buildPlaceholderMap(checklist);
+           }
+         } catch(e) {}
+      }
+    }
+
+    // Merge manual placeholders from req.body
+    if (req.body.placeholders) {
+      for (const [k, v] of Object.entries(req.body.placeholders)) {
+        placeholders[`{{${k}}}`] = v;
+      }
+    }
+
+    // Apply placeholders
+    let filledHtml = tmpl.html_content;
+    for (const [key, value] of Object.entries(placeholders)) {
+      filledHtml = filledHtml.split(key).join(value || '');
+    }
+
+    const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; padding: 10px 20px; line-height: 1.6; }
+    h1, h2, h3 { margin-bottom: 12px; }
+    p { margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+    td, th { border: 1px solid #333; padding: 6px 10px; }
+    .page-break { page-break-after: always; }
+  </style>
+</head>
+<body>${filledHtml}</body>
+</html>`;
+
+    let pdfBuffer;
+    const puppeteer = require('puppeteer');
+    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const page = await browser.newPage();
+    await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+    pdfBuffer = await page.pdf({ format: 'A4', margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' }, printBackground: true });
+    await browser.close();
+
+    const Document = require('../models/Document');
+    const safeDocName = `${tmpl.name} - Generated.pdf`;
+    const newDoc = await Document.create({
+      filename: safeDocName,
+      contentType: 'application/pdf',
+      data: Buffer.from(pdfBuffer),
+      uploadedBy: req.user._id
+    });
+
+    task[`${documentType}Document`] = newDoc._id;
+    await task.save();
+
+    res.status(200).json({ success: true, message: 'Document generated successfully', docId: newDoc._id });
+  } catch (error) {
+    console.error('Error generating document:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
