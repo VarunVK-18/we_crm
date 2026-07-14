@@ -5,127 +5,264 @@
           <p>Loading profile details...</p>
         </div>
       } @else {
-        <!-- Premium Profile Header -->
-        <div class="profile-header-card">
-          <div class="phc-bg"></div>
-          <div class="phc-content">
-            @if (user()?.profile_image) {
-              <img [src]="api.getFileUrl(user().profile_image)" class="phc-avatar-img" alt="Profile" />
-            } @else {
-              <div class="phc-avatar">{{ (user()?.owner_name || user()?.company_name || user()?.name || 'C')[0] | uppercase }}</div>
-            }
-            <div class="phc-info">
-              <h1>{{ (user()?.owner_name || user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
-              @if (shortCompanyName) {
-                <span class="short-company-badge">{{ shortCompanyName }}</span>
-              }
-              <p>{{ user()?.email || 'N/A' }} &bull; {{ user()?.business_type || 'Business' }}</p>
+        <!-- Redesigned Profile Header -->
+        <div class="profile-header-new">
+          <div class="phn-icon-box">
+            <svg stroke="#0f172a" width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 22H5C3 22 2 21 2 19V11C2 9 3 8 5 8H10V19C10 21 11 22 13 22Z" stroke="#0f172a" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <path opacity="0.4" d="M10.11 4C10.03 4.3 10 4.63 10 5V8H5V6C5 4.9 5.9 4 7 4H10.11Z" stroke="#0f172a" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <path opacity="0.4" d="M14 8V13" stroke="#0f172a" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <path opacity="0.4" d="M18 8V13" stroke="#0f172a" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 17H15C14.45 17 14 17.45 14 18V22H18V18C18 17.45 17.55 17 17 17Z" stroke="#0f172a" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <path opacity="0.4" d="M6 13V17" stroke="#0f172a" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M10 19V5C10 3 11 2 13 2H19C21 2 22 3 22 5V19C22 21 21 22 19 22H13C11 22 10 21 10 19Z" stroke="#0f172a" stroke-width="1.5" stroke-miterlimit="10" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="phn-info">
+            <div class="phn-title-row">
+              <h1 class="phn-title">{{ (user()?.owner_name || user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
+              <span class="phn-badge active">{{ user()?.status || 'ACTIVE' }}</span>
+              <span class="phn-badge type">{{ (user()?.business_type || shortCompanyName || 'COMPANY') | uppercase }}</span>
+            </div>
+            <div class="phn-subtitle-row">
+              <span class="phn-location">
+                <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
+                {{ user()?.state || 'INDIA' }}
+              </span>
+              <span>&bull;</span>
+              <span>CIN: {{ user()?.cin || 'N/A' }}</span>
             </div>
           </div>
         </div>
 
-        <div class="profile-grid">
-          <!-- Details Section -->
-          <div class="profile-card">
-            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <h2>Account Details</h2>
-              <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" (click)="toggleEdit()">
-                {{ isEditing() ? 'Cancel' : 'Edit Profile' }}
+        <!-- Pill-shaped Tab Navigation -->
+        <div class="profile-tabs-bar">
+          <button class="profile-tab" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
+            <span class="material-symbols-outlined" style="font-size: 18px;">grid_view</span> Overview
+          </button>
+          <button class="profile-tab" [class.active]="activeTab() === 'services'" (click)="setTab('services')">
+            <span class="material-symbols-outlined" style="font-size: 18px;">business_center</span> Services
+          </button>
+          <button class="profile-tab" [class.active]="activeTab() === 'calendar'" (click)="setTab('calendar')">
+            <span class="material-symbols-outlined" style="font-size: 18px;">calendar_month</span> Calendar
+          </button>
+          <button class="profile-tab" [class.active]="activeTab() === 'directors'" (click)="setTab('directors')">
+            <span class="material-symbols-outlined" style="font-size: 18px;">group</span> Directors
+          </button>
+          <button class="profile-tab" [class.active]="activeTab() === 'documents'" (click)="setTab('documents')">
+            <span class="material-symbols-outlined" style="font-size: 18px;">folder</span> Documents
+          </button>
+        </div>
+
+        @if (activeTab() === 'overview') {
+          <div class="info-grid">
+            <!-- Basic Information Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <div class="info-card-header-left">
+                  <div class="info-card-icon">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">info</span>
+                  </div>
+                  <h3 class="info-card-title">Basic Information</h3>
+                </div>
+                <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit Profile' }}</button>
+              </div>
+              
+              <div class="info-card-content">
+                <div class="info-field">
+                  <span class="info-label">Entity Name</span>
+                  @if(isEditing()) {
+                    <input type="text" class="form-input" [(ngModel)]="editData.company_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                  } @else {
+                    <span class="info-val">{{ user()?.company_name || 'N/A' }}</span>
+                  }
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Entity Type</span>
+                  @if(isEditing()) {
+                    <input type="text" class="form-input" [(ngModel)]="editData.business_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                  } @else {
+                    <span class="info-val">{{ user()?.business_type || 'N/A' }}</span>
+                  }
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Status</span>
+                  <span class="info-val">{{ user()?.status || 'ACTIVE' }}</span>
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Owner Name</span>
+                  @if(isEditing()) {
+                    <input type="text" class="form-input" [(ngModel)]="editData.owner_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                  } @else {
+                    <span class="info-val">{{ user()?.owner_name || 'N/A' }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Information Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <div class="info-card-header-left">
+                  <div class="info-card-icon">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">call</span>
+                  </div>
+                  <h3 class="info-card-title">Contact Information</h3>
+                </div>
+              </div>
+              
+              <div class="info-card-content">
+                <div class="info-field">
+                  <span class="info-label">Email</span>
+                  @if(isEditing()) {
+                    <input type="email" class="form-input" [(ngModel)]="editData.email" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                  } @else {
+                    <span class="info-val" style="word-break: break-all;">{{ user()?.email || 'N/A' }}</span>
+                  }
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Phone</span>
+                  @if(isEditing()) {
+                    <input type="text" class="form-input" [(ngModel)]="editData.phone" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                  } @else {
+                    <span class="info-val">{{ user()?.phone || 'N/A' }}</span>
+                  }
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Website</span>
+                  <span class="info-val">{{ user()?.website || 'N/A' }}</span>
+                </div>
+                <div class="info-field">
+                  <span class="info-label">State of Registration</span>
+                  <span class="info-val">{{ user()?.state || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Statutory Details Card (spanning full width or grid) -->
+          <div class="info-card" style="margin-top: 20px;">
+            <div class="info-card-header">
+              <div class="info-card-header-left">
+                <div class="info-card-icon">
+                  <span class="material-symbols-outlined" style="font-size: 18px;">policy</span>
+                </div>
+                <h3 class="info-card-title">Statutory Details</h3>
+              </div>
+            </div>
+            <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+              <div class="info-field">
+                <span class="info-label">PAN</span>
+                @if(isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.pan" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="info-val">{{ user()?.pan || 'N/A' }}</span>
+                }
+              </div>
+              <div class="info-field">
+                <span class="info-label">PAN Verified Name</span>
+                @if(isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.pan_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="info-val">{{ user()?.pan_name || 'N/A' }}</span>
+                }
+              </div>
+              <div class="info-field">
+                <span class="info-label">PAN Father's Name</span>
+                @if(isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.pan_father_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="info-val">{{ user()?.pan_father_name || 'N/A' }}</span>
+                }
+              </div>
+              <div class="info-field">
+                <span class="info-label">PAN DOB</span>
+                @if(isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.pan_dob" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="info-val">{{ user()?.pan_dob || 'N/A' }}</span>
+                }
+              </div>
+              <div class="info-field">
+                <span class="info-label">GSTIN</span>
+                @if(isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.gstin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="info-val">{{ user()?.gstin || 'N/A' }}</span>
+                }
+              </div>
+              <div class="info-field">
+                <span class="info-label">TAN</span>
+                @if(isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.tan" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="info-val">{{ user()?.tan || 'N/A' }}</span>
+                }
+              </div>
+              <div class="info-field">
+                <span class="info-label">CIN</span>
+                @if(isEditing()) {
+                  <input type="text" class="form-input" [(ngModel)]="editData.cin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                } @else {
+                  <span class="info-val">{{ user()?.cin || 'N/A' }}</span>
+                }
+              </div>
+            </div>
+          </div>
+          
+          @if (isEditing()) {
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">
+              <button class="btn btn-outline" (click)="toggleEdit()">Cancel</button>
+              <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isSaving()">
+                {{ isSaving() ? 'Saving...' : 'Save Changes' }}
               </button>
             </div>
+          }
+        }
+
+        @if (activeTab() === 'services') {
+          <div class="info-card">
+            <h3 class="info-card-title" style="margin-bottom: 20px;">Completed Services</h3>
             
-            <div class="details-list">
-              <div class="detail-item">
-                <span class="detail-label">Company Name</span>
-                @if (isEditing()) {
-                  <input type="text" class="form-input" [(ngModel)]="editData.company_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                } @else {
-                  <span class="detail-value" [title]="user()?.company_name || 'N/A'">{{ user()?.company_name || 'N/A' }}</span>
+            @if (completedServices().length > 0) {
+              <div style="display: flex; flex-direction: column; gap: 16px;">
+                @for (service of completedServices(); track service._id) {
+                  <div style="border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary);">{{ service.service_name }}</h4>
+                      <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">
+                        Entity: {{ service.details?.entityName || service.details?.companyName || user()?.company_name || 'N/A' }}
+                        &bull; Completed on: {{ (service.updatedAt || service.createdAt) | date:'mediumDate' }}
+                      </p>
+                    </div>
+                    <span style="background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+                      Completed
+                    </span>
+                  </div>
                 }
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Owner Name</span>
-                @if (isEditing()) {
-                  <input type="text" class="form-input" [(ngModel)]="editData.owner_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                } @else {
-                  <span class="detail-value" [title]="user()?.owner_name || 'N/A'">{{ user()?.owner_name || 'N/A' }}</span>
-                }
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Email</span>
-                @if (isEditing()) {
-                  <input type="email" class="form-input" [(ngModel)]="editData.email" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                } @else {
-                  <span class="detail-value" [title]="user()?.email || 'N/A'">{{ user()?.email || 'N/A' }}</span>
-                }
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Phone</span>
-                @if (isEditing()) {
-                  <input type="text" class="form-input" [(ngModel)]="editData.phone" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                } @else {
-                  <span class="detail-value" [title]="user()?.phone || 'N/A'">{{ user()?.phone || 'N/A' }}</span>
-                }
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Business Type</span>
-                @if (isEditing()) {
-                  <input type="text" class="form-input" [(ngModel)]="editData.business_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                } @else {
-                  <span class="detail-value" [title]="user()?.business_type || 'N/A'">{{ user()?.business_type || 'N/A' }}</span>
-                }
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">PAN</span>
-                <span class="detail-value" [title]="user()?.pan || 'N/A'">{{ user()?.pan || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">PAN Verified Name</span>
-                <span class="detail-value">{{ user()?.pan_name || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">PAN Father's Name</span>
-                <span class="detail-value">{{ user()?.pan_father_name || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">PAN DOB</span>
-                <span class="detail-value">{{ user()?.pan_dob || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">GSTIN</span>
-                <span class="detail-value">{{ user()?.gstin || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">TAN</span>
-                <span class="detail-value">{{ user()?.tan || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">CIN</span>
-                <span class="detail-value">{{ user()?.cin || 'N/A' }}</span>
-              </div>
-              <div class="detail-item">
-                <span class="detail-label">Incorporation Date</span>
-                <span class="detail-value">{{ user()?.incorporation_date ? (user()?.incorporation_date | date:'dd/MM/yy') : 'N/A' }}</span>
-              </div>
-              <div class="detail-item full-width">
-                <span class="detail-label">Address</span>
-                @if (isEditing()) {
-                  <textarea class="form-input" [(ngModel)]="editData.address" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; min-height: 80px; resize: vertical;"></textarea>
-                } @else {
-                  <span class="detail-value">{{ user()?.address || 'N/A' }}</span>
-                }
-              </div>
-            </div>
-            
-            @if (isEditing()) {
-              <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
-                <button class="btn btn-outline" (click)="toggleEdit()" [disabled]="isSaving()">Cancel</button>
-                <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isSaving()">
-                  {{ isSaving() ? 'Saving...' : 'Save Changes' }}
-                </button>
+            } @else {
+              <div style="color: var(--text-secondary); text-align: center; padding: 40px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: var(--border); margin-bottom: 16px;">business_center</span>
+                <p>No completed services found.</p>
               </div>
             }
           </div>
+        }
+        
+        @if (activeTab() === 'calendar') {
+          <div class="info-card" style="padding: 0; overflow: hidden;">
+            <div style="padding: 24px;">
+              <h3 class="info-card-title" style="margin-bottom: 20px;">Compliance Calendar</h3>
+              <div style="color: var(--text-secondary); text-align: center; padding: 40px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: var(--border); margin-bottom: 16px;">calendar_month</span>
+                <p>Compliance calendar is currently empty.</p>
+              </div>
+            </div>
+          </div>
+        }
+        
+        @if (activeTab() === 'documents') {
 
           <!-- Documents Section -->
           <div class="profile-card documents-card">
@@ -222,8 +359,10 @@
               }
             </div>
           </div>
+        }
           
           <!-- Directors Section -->
+          @if (activeTab() === 'directors') {
           @if (filteredDirectors().length > 0) {
             <div class="profile-card directors-card" style="grid-column: 1 / -1;">
               <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -234,183 +373,186 @@
                   {{ isEditing() ? 'Cancel' : 'Edit Directors' }}
                 </button>
               </div>
-              <div class="directors-master-detail" style="display: grid; grid-template-columns: 280px 1fr; gap: 24px; margin-top: 16px;">
-                <!-- Left: List -->
-                <div class="directors-list" style="display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--border); padding-right: 16px; max-height: 400px; overflow-y: auto;">
-                   @for (dir of filteredDirectors(); track $index) {
-                     <div class="director-list-item" 
-                          [class.active]="selectedDirectorIndex() === $index"
-                          (click)="selectedDirectorIndex.set($index)"
-                          style="padding: 12px 16px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s;">
-                       <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px;">{{ dir.fullName || 'Unnamed' }}</div>
-                       <div style="font-size: 12px; color: #64748b; font-weight: 500;">{{ dir.role || 'Director' }}</div>
-                     </div>
-                   }
-                </div>
+              <div class="directors-accordion-list" style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+                @for (dir of (isEditing() ? editData.directors : filteredDirectors()); track $index) {
+                   <div class="director-accordion-card" style="border: 1px solid var(--border); border-radius: 12px; background: white; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                      <!-- Header -->
+                      <div class="director-card-header" 
+                           style="display: flex; align-items: center; justify-content: space-between; padding: 20px; cursor: pointer; transition: background 0.2s;"
+                           (click)="selectedDirectorIndex.set(selectedDirectorIndex() === $index ? -1 : $index)"
+                           onmouseover="this.style.backgroundColor='#f8fafc'"
+                           onmouseout="this.style.backgroundColor='transparent'">
+                         <div style="display: flex; align-items: center; gap: 16px;">
+                            <!-- Avatar -->
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: #f3e8ff; color: black; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;">
+                               {{ dir.fullName ? (dir.fullName.split(' ')[0][0] + (dir.fullName.split(' ').length > 1 ? dir.fullName.split(' ')[1][0] : '')).toUpperCase() : 'NA' }}
+                            </div>
+                            
+                            <!-- Info -->
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                               <div style="display: flex; align-items: center; gap: 12px;">
+                                  <span style="font-size: 16px; font-weight: 700; color: #0f172a;">{{ dir.fullName || 'Unnamed' }}</span>
+                                  @if (dir.isAuthSignatory === 'Yes' || dir.isAuthorized === 'Yes') {
+                                     <span style="background: #f3e8ff; color: #7e22ce; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase;">Authorized Signatory</span>
+                                  }
+                               </div>
+                               <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b;">
+                                  <span style="color: #64748b; font-weight: 500;">{{ dir.role || 'Director And Shareholder' }}</span>
+                                  <span>&bull;</span>
+                                  <span>5 documents</span>
+                               </div>
+                            </div>
+                         </div>
+                         
+                         <!-- Chevron -->
+                         <span class="material-symbols-outlined" style="color: #7e22ce; transition: transform 0.3s;" [style.transform]="selectedDirectorIndex() === $index ? 'rotate(180deg)' : 'rotate(0)'">
+                            expand_more
+                         </span>
+                      </div>
 
-                <!-- Right: Details -->
-                <div class="director-detail" style="padding: 8px 16px;">
-                  @if (!isEditing()) {
-                    @if (filteredDirectors()[selectedDirectorIndex()]; as currentDir) {
-                      <div class="detail-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Name</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.fullName || 'N/A' }}</div>
+                      <!-- Body -->
+                      @if (selectedDirectorIndex() === $index) {
+                        <div class="director-card-body" style="padding: 20px; border-top: 1px solid var(--border); background: #fafafa;">
+                           <div class="detail-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Name</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.fullName" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.fullName || 'N/A' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Role</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.role" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.role || 'Director' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Email</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.email" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.email || 'N/A' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Phone</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.phone" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.phone || 'N/A' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">PAN</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.pan" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.pan || 'N/A' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Aadhaar</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.aadhaar" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.aadhaar || 'N/A' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DOB</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.dob" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.dob || 'N/A' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DIN</label>
+                               @if(isEditing()) {
+                                 <input type="text" class="form-input" [(ngModel)]="dir.din" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
+                               } @else {
+                                 <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.din || 'N/A' }}</div>
+                               }
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Photo</label>
+                               <div>
+                                 @if (dir.photo) {
+                                   <div class="image-preview-container">
+                                     @if (isImage(dir.photo)) {
+                                       <img [src]="api.getFileUrl(dir.photo)" class="preview-img" alt="Photo" />
+                                     } @else {
+                                       <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px;">
+                                         <span class="material-symbols-outlined" style="font-size: 32px; color: var(--text-secondary);">description</span>
+                                         <span style="font-size: 11px; margin-top: 4px; font-weight: 500; color: var(--text-secondary);">Document</span>
+                                       </div>
+                                     }
+                                     <div class="image-overlay">
+                                       <a href="javascript:void(0)" (click)="openDocViewer(dir.photo, dir.fullName + '-Photo', $event)" class="overlay-btn view-btn" title="View">
+                                         <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                       </a>
+                                       <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(dir.photo), dir.fullName + '-Photo.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
+                                         <hugeicons-icon [icon]="Download04Icon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                       </a>
+                                     </div>
+                                   </div>
+                                 } @else {
+                                   <span style="font-size: 13px; color: #94a3b8;">N/A</span>
+                                 }
+                                 @if(isEditing()) {
+                                   <div style="margin-top: 8px;">
+                                     <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
+                                       Upload Photo
+                                       <input type="file" style="display: none;" (change)="uploadDirectorDocument($index, 'photo', $event)" accept="image/*" />
+                                     </label>
+                                   </div>
+                                 }
+                               </div>
+                             </div>
+                             <div class="detail-item">
+                               <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Signature</label>
+                               <div>
+                                 @if (dir.signature) {
+                                   <div class="image-preview-container">
+                                     @if (isImage(dir.signature)) {
+                                       <img [src]="api.getFileUrl(dir.signature)" class="preview-img" alt="Signature" />
+                                     } @else {
+                                       <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px;">
+                                         <span class="material-symbols-outlined" style="font-size: 32px; color: var(--text-secondary);">description</span>
+                                         <span style="font-size: 11px; margin-top: 4px; font-weight: 500; color: var(--text-secondary);">Document</span>
+                                       </div>
+                                     }
+                                     <div class="image-overlay">
+                                       <a href="javascript:void(0)" (click)="openDocViewer(dir.signature, dir.fullName + '-Signature', $event)" class="overlay-btn view-btn" title="View">
+                                         <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                       </a>
+                                       <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(dir.signature), dir.fullName + '-Signature.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
+                                         <hugeicons-icon [icon]="Download04Icon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
+                                       </a>
+                                     </div>
+                                   </div>
+                                 } @else {
+                                   <span style="font-size: 13px; color: #94a3b8;">N/A</span>
+                                 }
+                                 @if(isEditing()) {
+                                   <div style="margin-top: 8px;">
+                                     <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
+                                       Upload Signature
+                                       <input type="file" style="display: none;" (change)="uploadDirectorDocument($index, 'signature', $event)" accept="image/*,application/pdf" />
+                                     </label>
+                                   </div>
+                                 }
+                               </div>
+                             </div>
+                           </div>
                         </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Role</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark); display: flex; align-items: center; gap: 8px;">
-                            <span style="background: rgba(15,23,42,0.05); padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ currentDir.role || 'Director' }}</span>
-                            @if (selectedDirectorIndex() === 0 && (currentDir.isAuthSignatory === 'Yes' || currentDir.isAuthorized === 'Yes')) {
-                              <span style="background: #eff6ff; color: #3b82f6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; border: 1px solid #bfdbfe; display: flex; align-items: center; gap: 4px;">
-                                <span class="material-symbols-outlined" style="font-size: 12px;">verified</span> Authorized Signatory
-                              </span>
-                            }
-                          </div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Email</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.email || 'N/A' }}</div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Phone</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.phone || 'N/A' }}</div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">PAN</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.pan || 'N/A' }}</div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Aadhaar</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.aadhaar || 'N/A' }}</div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DOB</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.dob || 'N/A' }}</div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DIN</label>
-                          <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ currentDir.din || 'N/A' }}</div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Photo</label>
-                          <div>
-                            @if (currentDir.photo) {
-                              <div class="image-preview-container">
-                                @if (isImage(currentDir.photo)) {
-                                  <img [src]="api.getFileUrl(currentDir.photo)" class="preview-img" alt="Photo" />
-                                } @else {
-                                  <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px;">
-                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--text-secondary);">description</span>
-                                    <span style="font-size: 11px; margin-top: 4px; font-weight: 500; color: var(--text-secondary);">Document</span>
-                                  </div>
-                                }
-                                <div class="image-overlay">
-                                  <a href="javascript:void(0)" (click)="openDocViewer(currentDir.photo, currentDir.fullName + '-Photo', $event)" class="overlay-btn view-btn" title="View">
-                                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
-                                  </a>
-                                  <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(currentDir.photo), currentDir.fullName + '-Photo.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
-                                    <hugeicons-icon [icon]="Download04Icon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
-                                  </a>
-                                </div>
-                              </div>
-                            } @else {
-                              <span style="font-size: 13px; color: #94a3b8;">N/A</span>
-                            }
-                          </div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Signature</label>
-                          <div>
-                            @if (currentDir.signature) {
-                              <div class="image-preview-container">
-                                @if (isImage(currentDir.signature)) {
-                                  <img [src]="api.getFileUrl(currentDir.signature)" class="preview-img" alt="Signature" />
-                                } @else {
-                                  <div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px;">
-                                    <span class="material-symbols-outlined" style="font-size: 32px; color: var(--text-secondary);">description</span>
-                                    <span style="font-size: 11px; margin-top: 4px; font-weight: 500; color: var(--text-secondary);">Document</span>
-                                  </div>
-                                }
-                                <div class="image-overlay">
-                                  <a href="javascript:void(0)" (click)="openDocViewer(currentDir.signature, currentDir.fullName + '-Signature', $event)" class="overlay-btn view-btn" title="View">
-                                    <hugeicons-icon [icon]="EyeIcon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
-                                  </a>
-                                  <a href="javascript:void(0)" (click)="downloadImage(api.getFileUrl(currentDir.signature), currentDir.fullName + '-Signature.jpg'); $event.preventDefault()" class="overlay-btn download-btn" title="Download">
-                                    <hugeicons-icon [icon]="Download04Icon" [size]="18" color="white" [strokeWidth]="2"></hugeicons-icon>
-                                  </a>
-                                </div>
-                              </div>
-                            } @else {
-                              <span style="font-size: 13px; color: #94a3b8;">N/A</span>
-                            }
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  } @else {
-                    @if (editData.directors[selectedDirectorIndex()]; as editDir) {
-                      <div class="detail-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Name</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.fullName" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Role</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.role" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Email</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.email" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Phone</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.phone" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">PAN</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.pan" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Aadhaar</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.aadhaar" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DOB</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.dob" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DIN</label>
-                          <input type="text" class="form-input" [(ngModel)]="editDir.din" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Photo</label>
-                          <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                            @if (editDir.photo) {
-                              <a [href]="api.getFileUrl(editDir.photo)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
-                            }
-                            <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
-                              Upload Photo
-                              <input type="file" style="display: none;" (change)="uploadDirectorDocument(selectedDirectorIndex(), 'photo', $event)" accept="image/*" />
-                            </label>
-                          </div>
-                        </div>
-                        <div class="detail-item">
-                          <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Signature</label>
-                          <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                            @if (editDir.signature) {
-                              <a [href]="api.getFileUrl(editDir.signature)" target="_blank" style="font-size: 12px; color: var(--palette-purple); text-decoration: none;">View</a>
-                            }
-                            <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
-                              Upload Signature
-                              <input type="file" style="display: none;" (change)="uploadDirectorDocument(selectedDirectorIndex(), 'signature', $event)" accept="image/*,application/pdf" />
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    }
-                  }
-                </div>
+                      }
+                   </div>
+                }
               </div>
               
               @if (isEditing()) {
@@ -423,7 +565,7 @@
               }
             </div>
           }
-        </div>
+        }
       }
     </div>
 

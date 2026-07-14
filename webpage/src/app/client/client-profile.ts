@@ -39,6 +39,12 @@ export class ClientProfile implements OnInit, OnDestroy {
     this.selectedEntity.set((e as CustomEvent).detail as string);
   };
 
+  activeTab = signal('overview');
+
+  setTab(tab: string) {
+    this.activeTab.set(tab);
+  }
+
   // Stores which entity each document belongs to (by doc._id)
   private docEntityMap = new Map<string, string>();
   // Stores which entity each director entry belongs to
@@ -54,14 +60,30 @@ export class ClientProfile implements OnInit, OnDestroy {
     });
   });
 
+  allChecklists = signal<any[]>([]);
+  completedServices = computed(() => {
+    const sel = this.selectedEntity();
+    const list = this.allChecklists().filter((c: any) => c.status === 'completed' || c.status === 'Completed' || c.status === 'done' || c.status === 'Done');
+    if (sel === 'All') return list;
+    return list.filter((c: any) => {
+      const entityName = (
+        c.details?.entityName || c.details?.companyName || c.details?.proposed_company_name ||
+        c.details?.businessName || c.details?.entity_name || c.entityName || c.companyName || ''
+      ).trim();
+      return entityName.toLowerCase() === sel.toLowerCase();
+    });
+  });
+
   /** Directors filtered by the selected entity */
   filteredDirectors = computed(() => {
     const sel = this.selectedEntity();
     if (sel === 'All') return this.directors();
+    
+    // Always include directors that don't have a specific entity tagged, 
+    // or those that match the selected entity. 
     return this.directors().filter(d => {
-      // directors have serviceName set from the checklist; map back via directorEntityMap
       const entityName = d._entityName || '';
-      return entityName.toLowerCase() === sel.toLowerCase();
+      return entityName.toLowerCase() === sel.toLowerCase() || entityName === '';
     });
   });
 
@@ -114,6 +136,7 @@ export class ClientProfile implements OnInit, OnDestroy {
           this.api.get<any>('my-checklists').subscribe({
             next: (chkRes) => {
               if (chkRes.checklists) {
+                this.allChecklists.set(chkRes.checklists);
                 for (const c of chkRes.checklists) {
                   // Resolve entity name for this checklist
                   const entityName = (
@@ -171,9 +194,13 @@ export class ClientProfile implements OnInit, OnDestroy {
                       }
                     }
                   }
-                  if (c.details && c.details.directors && Array.isArray(c.details.directors)) {
-                    for (let i = 0; i < c.details.directors.length; i++) {
-                      const d = { ...c.details.directors[i] };
+                  let rawDirs = c.details && (c.details.directors || c.details.partners || c.details.members);
+                  if (typeof rawDirs === 'string') {
+                    try { rawDirs = JSON.parse(rawDirs); } catch (e) {}
+                  }
+                  if (Array.isArray(rawDirs)) {
+                    for (let i = 0; i < rawDirs.length; i++) {
+                      const d = { ...rawDirs[i] };
 
                       // Check requested_documents for director's photo and signature if not already set
                       if (c.requested_documents) {
@@ -201,8 +228,8 @@ export class ClientProfile implements OnInit, OnDestroy {
                         }
                       }
 
-                      // Prevent duplicates by checking PAN or DIN
-                      if (!directorsList.some(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || (existing.fullName === d.fullName && d.fullName))) {
+                      // Prevent duplicates by checking email (better for dummy data where PANs are reused)
+                      if (!directorsList.some(existing => existing.email === d.email && d.email)) {
                         directorsList.push({
                           ...d,
                           serviceName: c.service_name,
@@ -231,6 +258,7 @@ export class ClientProfile implements OnInit, OnDestroy {
               }
 
               this.allDocuments.set(docs);
+              console.log('Final directorsList:', directorsList);
               this.directors.set(directorsList);
               this.isLoading.set(false);
             },
@@ -389,6 +417,13 @@ export class ClientProfile implements OnInit, OnDestroy {
         phone: current?.phone || '',
         business_type: current?.business_type || '',
         address: current?.address || '',
+        pan: current?.pan || '',
+        pan_name: current?.pan_name || '',
+        pan_father_name: current?.pan_father_name || '',
+        pan_dob: current?.pan_dob || '',
+        gstin: current?.gstin || '',
+        tan: current?.tan || '',
+        cin: current?.cin || '',
         directors: JSON.parse(JSON.stringify(this.directors())) // Deep copy directors
       };
       this.isEditing.set(true);

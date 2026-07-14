@@ -112,8 +112,8 @@ export class Sidebar implements OnInit, OnDestroy {
         items: [
           { id: 'bucket', label: 'Service Request', color: '#6366f1' },
           { id: 'checklists', label: 'Ongoing Services', color: '#06B6D4' },
-          { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'staff-compliance', label: 'Compliance Radar', color: '#3B82F6' },
+          { id: 'staff-chat', label: 'Chat', color: '#10B981' },
           { id: 'payment-tracker', label: 'Reimbursement', color: '#10B981' }
         ]
       });

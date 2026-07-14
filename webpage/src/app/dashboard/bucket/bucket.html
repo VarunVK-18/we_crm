@@ -108,7 +108,7 @@
               <div class="action-buttons" style="display: flex; justify-content: center;">
                 <button class="btn-decline-sm" [disabled]="claimingId() === req._id" (click)="openAcceptModal(req)" title="Accept Request" style="background-color: black; color: white; border-radius: 8px; padding: 4px 10px; font-weight: 400; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; border: none;">
                   @if (claimingId() === req._id) {
-                    <div class="bucket-spinner" style="width: 14px; height: 14px; border-width: 2px; margin-bottom: 0; margin-right: 6px;"></div>
+                    <span class="bucket-spinner" style="display: inline-block; width: 14px; height: 14px; border-width: 2px; margin-bottom: 0; margin-right: 6px;"></span>
                     Accepting...
                   } @else {
                     Accept
