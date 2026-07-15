@@ -8,7 +8,7 @@ const ServiceStepSchema = new mongoose.Schema({
 });
 
 const ServiceOrderSchema = new mongoose.Schema({
-  clientUid: { type: String, required: true },
+  clientUid: { type: String, required: true, index: true },
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company'

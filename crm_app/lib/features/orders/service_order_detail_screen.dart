@@ -49,9 +49,17 @@ import 'tds_form_screen.dart';
 import '../services/service_request_summary_sheet.dart';
 
 
-class ServiceOrderDetailScreen extends ConsumerWidget {
+class ServiceOrderDetailScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
   const ServiceOrderDetailScreen({super.key, required this.order});
+
+  @override
+  ConsumerState<ServiceOrderDetailScreen> createState() => _ServiceOrderDetailScreenState();
+}
+
+class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScreen> {
+  ServiceOrder? _fullOrder;
+  bool _isLoading = true;
 
   static const _stageLabels = {
     OrderStage.reqReceived: 'Requirement Received',
@@ -62,8 +70,109 @@ class ServiceOrderDetailScreen extends ConsumerWidget {
   };
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final order = ref.watch(serviceOrdersProvider).value?.firstWhere((o) => o.id == this.order.id, orElse: () => this.order) ?? this.order;
+  void initState() {
+    super.initState();
+    _fetchFullOrder();
+  }
+
+  Future<void> _fetchFullOrder() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) {
+      if (mounted) setState(() => _isLoading = false);
+      return;
+    }
+    try {
+      final response = await http.get(
+        Uri.parse('$kBaseUrl/api/checklists/${widget.order.id}'),
+        headers: {'x-user-id': uid},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['checklist'] != null) {
+          final c = data['checklist'];
+          final user = ref.read(userProfileProvider).value;
+          final companyName = user?.companyName ?? '';
+          
+          final assignedTo = c['assigned_to'];
+          final isAssignedToExpert = assignedTo != null;
+          
+          final details = c['details'] ?? {};
+          final String actualCompany = (details['entityName']?.toString().isNotEmpty == true)
+              ? details['entityName'].toString()
+              : (details['companyName']?.toString() ??
+                  details['businessName']?.toString() ??
+                  details['proposed_company_name']?.toString() ??
+                  companyName);
+                  
+          final mappedData = <String, dynamic>{
+            'clientUid': uid,
+            'entityName': actualCompany.isNotEmpty ? actualCompany : 'Default Entity',
+            'serviceType': c['service_name'] ?? '',
+            'companyName': actualCompany,
+            'status': c['status'] == 'completed' ? 'complete' : (!isAssignedToExpert ? 'notInitialized' : 'active'),
+            'stage': c['status'] == 'completed' ? 'completed' : (!isAssignedToExpert ? 'reqReceived' : 'workInProgress'),
+            'steps': (c['items'] as List<dynamic>? ?? []).map((i) => {
+              'title': i['title'] ?? i['label'] ?? '',
+              'description': i['description'] ?? i['notes'] ?? '',
+              'isCompleted': i['isChecked'] == true,
+              'isActionStep': i['isActionStep'] == true,
+              'has_custom_input': i['has_custom_input'] == true,
+              'custom_input_label': i['custom_input_label'] ?? '',
+              'custom_input_value': i['custom_input_value'] ?? '',
+              'completedAt': i['checkedAt'] != null ? DateTime.tryParse(i['checkedAt'].toString()) : null,
+            }).toList(),
+            'requestedDocuments': c['requested_documents'] ?? [],
+            'finalDocuments': c['final_documents'] ?? [],
+            'temporaryDocuments': c['temporary_documents'] ?? [],
+            'assignedExpert': isAssignedToExpert ? (assignedTo['owner_name'] ?? 'To be assigned') : 'To be assigned',
+            'expertPhone': isAssignedToExpert ? (assignedTo['phone'] ?? '') : '',
+            'customServiceId': c['custom_service_id']?.toString() ?? '',
+            'createdAt': c['createdAt'],
+            'dealClosedAmount': c['dealClosedAmount'] ?? 0,
+            'advanceAmountPaid': c['advanceAmountPaid'] ?? 0,
+            'notes': c['notes'] ?? '',
+            'details': details is Map ? Map<String, dynamic>.from(details) : {},
+            'actionRequired': c['action_required'] ?? false,
+          };
+          
+          if (mounted) {
+            setState(() {
+              _fullOrder = ServiceOrder.fromMap(mappedData, widget.order.id);
+              _isLoading = false;
+            });
+          }
+        } else {
+          if (mounted) setState(() => _isLoading = false);
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      print("Error fetching full order detail: $e");
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundLight,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          leading: IconButton(
+            icon: const Icon(LucideIcons.arrowLeft, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(widget.order.serviceType, style: const TextStyle(color: Colors.white, fontSize: 16)),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(color: AppTheme.neonPurple),
+        ),
+      );
+    }
+
+    final order = _fullOrder ?? widget.order;
     
     final unreadCount =
         ref.watch(notificationProvider).where((n) => !n.isRead).length;

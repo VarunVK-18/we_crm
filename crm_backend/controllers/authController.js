@@ -267,54 +267,59 @@ const loginUser = async (req, res) => {
 // @access  Public
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password').populate('company_id').populate('assigned_to');
+    const user = await User.findById(req.params.id).select('-password').populate('company_id').populate('assigned_to').lean();
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const userObj = user.toObject();
+    const userObj = user;
 
     // Explicitly find the Client Manager for this user
-    let clientManager = null;
+    let clientManagerPromise = null;
+    let fallbackManagerPromise = null;
+    let globalFallbackPromise = null;
+    let adminUserPromise = null;
+    let globalAdminPromise = null;
 
     if (user.created_by) {
-      const creator = await User.findById(user.created_by).select('-password');
-      if (creator) {
-        clientManager = creator.toObject();
-      }
+      clientManagerPromise = User.findById(user.created_by).select('-password').lean();
     }
 
-    if (!clientManager && user.company_id) {
-      const companyId = userObj.company_id._id || userObj.company_id;
-      const fallbackManager = await User.findOne({
-        company_id: companyId,
-        role: 'client_manager'
-      }).select('-password');
-      
-      if (fallbackManager) {
-        clientManager = fallbackManager.toObject();
-      }
+    const companyId = userObj.company_id ? (userObj.company_id._id || userObj.company_id) : null;
+
+    if (companyId) {
+      fallbackManagerPromise = User.findOne({ company_id: companyId, role: 'client_manager' }).select('-password').lean();
+      adminUserPromise = User.findOne({ company_id: companyId, role: 'admin' }).select('email').lean();
+    } else {
+      globalFallbackPromise = User.findOne({ role: 'client_manager' }).select('-password').lean();
+      globalAdminPromise = User.findOne({ role: 'admin' }).select('email').lean();
     }
 
-    // Global fallback for testing if no company matched
-    if (!clientManager) {
-      const globalFallback = await User.findOne({ role: 'client_manager' }).select('-password');
-      if (globalFallback) {
-        clientManager = globalFallback.toObject();
-      }
+    const [creator, fallbackManager, globalFallback, adminUser, globalAdmin] = await Promise.all([
+      clientManagerPromise,
+      fallbackManagerPromise,
+      globalFallbackPromise,
+      adminUserPromise,
+      globalAdminPromise
+    ]);
+
+    let clientManager = null;
+    if (creator) {
+      clientManager = creator;
+    } else if (fallbackManager) {
+      clientManager = fallbackManager;
+    } else if (globalFallback) {
+      clientManager = globalFallback;
     }
 
     userObj.client_manager = clientManager;
     
     // Also find the Admin email for the company
     let adminEmail = 'admin@example.com';
-    if (user.company_id) {
-      const companyId = userObj.company_id._id || userObj.company_id;
-      const adminUser = await User.findOne({ company_id: companyId, role: 'admin' }).select('email');
-      if (adminUser) adminEmail = adminUser.email;
-    } else {
-      const globalAdmin = await User.findOne({ role: 'admin' }).select('email');
-      if (globalAdmin) adminEmail = globalAdmin.email;
+    if (adminUser) {
+      adminEmail = adminUser.email;
+    } else if (globalAdmin) {
+      adminEmail = globalAdmin.email;
     }
     userObj.admin_email = adminEmail;
 
@@ -1723,10 +1728,29 @@ const getClientsOpportunities = async (req, res) => {
       }
     }
 
-    // Fetch base clients
+    if (searchQuery) {
+      const searchRegex = new RegExp(searchQuery.trim(), 'i');
+      const searchConditions = [
+        { name: searchRegex },
+        { company_name: searchRegex },
+        { email: searchRegex }
+      ];
+      
+      if (filter.$or) {
+        filter.$and = [
+          { $or: filter.$or },
+          { $or: searchConditions }
+        ];
+        delete filter.$or;
+      } else {
+        filter.$or = searchConditions;
+      }
+    }
+
+    // Fetch base clients without population and sort at DB level
     const clients = await User.find(filter)
       .select('name company_name email phone outsourced_services created_at assigned_to')
-      .populate('assigned_to', 'owner_name email role')
+      .sort({ created_at: -1 })
       .lean();
 
     const clientIds = clients.map(c => c._id.toString());
@@ -1795,14 +1819,7 @@ const getClientsOpportunities = async (req, res) => {
       client.opportunities = opps;
       const oppsCount = opps.length;
 
-      // Apply Frontend Search Filters
-      const matchSearch = !searchLower || 
-        (client.name && client.name.toLowerCase().includes(searchLower)) ||
-        (client.company_name && client.company_name.toLowerCase().includes(searchLower)) ||
-        (client.email && client.email.toLowerCase().includes(searchLower));
-        
-      if (!matchSearch) continue;
-
+      // Apply Frontend Filters
       let matchCount = true;
       if (filterCount === '>0') matchCount = oppsCount > 0;
       else if (filterCount === '1') matchCount = oppsCount === 1;
@@ -1821,15 +1838,29 @@ const getClientsOpportunities = async (req, res) => {
       totalPendingOpportunities += oppsCount;
     }
 
-    // Sort by creation date (newest first)
-    filteredClients.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+    // Sorting is already handled at the database level
 
     // Paginate
     const pageNum = parseInt(page) || 1;
     const limitNum = parseInt(limit) || 10;
     const startIndex = (pageNum - 1) * limitNum;
-    const paginatedClients = filteredClients.slice(startIndex, startIndex + limitNum);
+    let paginatedClients = filteredClients.slice(startIndex, startIndex + limitNum);
     const totalPages = Math.ceil(filteredClients.length / limitNum) || 1;
+
+    // Populate assigned_to only for the paginated slice
+    const managerIds = [...new Set(paginatedClients.map(c => c.assigned_to).filter(Boolean))];
+    if (managerIds.length > 0) {
+      const managers = await User.find({ _id: { $in: managerIds } }).select('owner_name email role').lean();
+      const managerMap = {};
+      managers.forEach(m => managerMap[m._id.toString()] = m);
+      
+      paginatedClients = paginatedClients.map(c => {
+        if (c.assigned_to && managerMap[c.assigned_to.toString()]) {
+          c.assigned_to = managerMap[c.assigned_to.toString()];
+        }
+        return c;
+      });
+    }
 
     res.json({
       clients: paginatedClients,

@@ -20,7 +20,7 @@
       </div>
       <div class="search-box" style="flex-shrink: 0;">
         <span class="material-symbols-outlined search-icon">search</span>
-        <input type="text" placeholder="Search tasks..." [(ngModel)]="searchQuery" style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 130px;" />
+        <input type="text" [(ngModel)]="searchQuery" style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 130px;" />
       </div>
     </div>
   </div>
@@ -31,19 +31,19 @@
           <tr>
             <th style="vertical-align: top;">
               <div>SERVICE ID</div>
-              <input type="text" placeholder="Search service..." [(ngModel)]="serviceIdFilter" class="col-search-input" />
+              <input type="text" [(ngModel)]="serviceIdFilter" class="col-search-input" />
             </th>
             <th style="vertical-align: top;">
               <div>CLIENT ID</div>
-              <input type="text" placeholder="Search ID..." [(ngModel)]="clientIdFilter" class="col-search-input" />
+              <input type="text" [(ngModel)]="clientIdFilter" class="col-search-input" />
             </th>
             <th style="vertical-align: top;">
               <div>COMPANY NAME</div>
-              <input type="text" placeholder="Search company..." [(ngModel)]="entityFilter" class="col-search-input" />
+              <input type="text" [(ngModel)]="entityFilter" class="col-search-input" />
             </th>
             <th style="vertical-align: top;">
               <div>CLIENT</div>
-              <input type="text" placeholder="Search client..." [(ngModel)]="clientNameFilter" class="col-search-input" />
+              <input type="text" [(ngModel)]="clientNameFilter" class="col-search-input" />
             </th>
             <th style="vertical-align: top;">TOTAL TASKS</th>
           </tr>

@@ -17,33 +17,48 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
   while (true) {
     try {
       final response = await http.get(
-        Uri.parse('$kBaseUrl/api/my-checklists'),
+        Uri.parse('$kBaseUrl/api/my-services-summary'),
         headers: {'x-user-id': uid},
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        final List<dynamic> checklistsJson = data['checklists'] ?? [];
+        final List<dynamic> servicesJson = data['services'] ?? [];
 
         final user = ref.read(userProfileProvider).value;
         final companyName = user?.companyName ?? '';
 
-        final orders = checklistsJson.map((c) {
+        final orders = servicesJson.map((c) {
           final id = c['_id']?.toString() ?? '';
 
           final assignedTo = c['assigned_to'];
           final isAssignedToExpert = assignedTo != null;
 
-          final String actualCompany = (c['details'] != null && c['details']['entityName'] != null)
-              ? c['details']['entityName'].toString()
-              : (c['company_name']?.toString() ??
-                  (c['client_id'] != null ? c['client_id']['company_name']?.toString() : null) ??
+          final details = c['details'] as Map<String, dynamic>? ?? {};
+          final String actualCompany = (details['entityName']?.toString().isNotEmpty == true)
+              ? details['entityName'].toString()
+              : (details['companyName']?.toString() ??
+                  details['businessName']?.toString() ??
+                  details['proposed_company_name']?.toString() ??
                   companyName);
+
+          // Build synthetic steps list from pre-computed counts for progress display
+          final int totalItems = (c['totalItems'] as num?)?.toInt() ?? 0;
+          final int completedItems = (c['completedItems'] as num?)?.toInt() ?? 0;
+          final List<Map<String, dynamic>> syntheticSteps = List.generate(totalItems, (i) => {
+            'title': 'Step ${i + 1}',
+            'description': '',
+            'isCompleted': i < completedItems,
+            'isActionStep': false,
+            'has_custom_input': false,
+            'custom_input_label': '',
+            'custom_input_value': '',
+            'completedAt': null,
+          });
 
           final mappedData = <String, dynamic>{
             'clientUid': uid,
-            'entityName':
-                actualCompany.isNotEmpty ? actualCompany : 'Default Entity',
+            'entityName': actualCompany.isNotEmpty ? actualCompany : 'Default Entity',
             'serviceType': c['service_name'] ?? '',
             'companyName': actualCompany,
             'status': c['status'] == 'completed'
@@ -52,36 +67,21 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
             'stage': c['status'] == 'completed'
                 ? 'completed'
                 : (!isAssignedToExpert ? 'reqReceived' : 'workInProgress'),
-            'steps': (c['items'] as List<dynamic>? ?? [])
-                .map((i) => {
-                      'title': i['title'] ?? i['label'] ?? '',
-                      'description': i['description'] ?? i['notes'] ?? '',
-                      'isCompleted': i['isChecked'] == true,
-                      'isActionStep': i['isActionStep'] == true,
-                      'has_custom_input': i['has_custom_input'] == true,
-                      'custom_input_label': i['custom_input_label'] ?? '',
-                      'custom_input_value': i['custom_input_value'] ?? '',
-                      'completedAt': i['checkedAt'] != null ? DateTime.tryParse(i['checkedAt'].toString()) : null,
-                    })
-                .toList(),
-            'requestedDocuments': c['requested_documents'] ?? [],
-            'finalDocuments': c['final_documents'] ?? [],
-            'temporaryDocuments': c['temporary_documents'] ?? [],
+            'steps': syntheticSteps,
+            'requestedDocuments': [],
+            'finalDocuments': [],
+            'temporaryDocuments': [],
             'assignedExpert': isAssignedToExpert
                 ? (assignedTo['owner_name'] ?? 'To be assigned')
                 : 'To be assigned',
-            'expertPhone':
-                isAssignedToExpert ? (assignedTo['phone'] ?? '') : '',
-            'customServiceId': c['custom_service_id']?.toString() ?? '',
+            'expertPhone': '',
+            'customServiceId': '',
             'createdAt': c['createdAt'],
-            'dealClosedAmount': c['dealClosedAmount'] ?? 0,
-            'advanceAmountPaid': c['advanceAmountPaid'] ?? 0,
-            'notes': c['notes'] ?? '',
+            'dealClosedAmount': 0,
+            'advanceAmountPaid': 0,
+            'notes': '',
             'details': {
-              if (c['details'] is Map) ...c['details'],
-              'created_by': c['created_by'],
-              'assigned_to': c['assigned_to'],
-              'client_id': c['client_id'],
+              ...details,
             },
             'actionRequired': c['action_required'] ?? false,
           };
@@ -92,10 +92,10 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
         yield orders;
       }
     } catch (e) {
-      print("Error fetching real-time service orders: $e");
+      print("Error fetching service orders summary: $e");
     }
 
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 10));
   }
 });
 

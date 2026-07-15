@@ -78,27 +78,27 @@ export class Opportunities implements OnInit {
     { category: 'Compliance', name: 'PF', desc: 'Provident Fund registration and monthly compliance.' },
 
     // IP
-    { category: 'IP', name: 'Copyright', desc: 'Protection for original creative literary or artistic works.' },
     { category: 'IP', name: 'Trade Mark', desc: 'Brand protection and intellectual property rights.' },
+    { category: 'IP', name: 'Copyright', desc: 'Protection for original creative literary or artistic works.' },
     { category: 'IP', name: 'Patent', desc: 'Exclusive rights for your inventions.' },
 
     // Tax
-    { category: 'Tax', name: 'GST filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
-    { category: 'Tax', name: 'GST Cancelation', desc: 'Surrender and cancel your GST registration.' },
     { category: 'Tax', name: 'ITR', desc: 'Income Tax Return filing for individuals and businesses.' },
     { category: 'Tax', name: 'GST Registration', desc: 'GST Registration for your business! Thank you for choosing Wealth Empires.' },
+    { category: 'Tax', name: 'GST filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
+    { category: 'Tax', name: 'GST Cancelation', desc: 'Surrender and cancel your GST registration.' },
 
     // Licensing
-    { category: 'Licensing', name: 'DUNS', desc: 'Data Universal Numbering System for global business identity.' },
     { category: 'Licensing', name: 'DPIIT', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
     { category: 'Licensing', name: 'ISO', desc: 'Quality management certification (ISO 9001 and others).' },
     { category: 'Licensing', name: 'FSSAI', desc: 'Registration for food business operators, manufacturers, and startups.' },
-    { category: 'Licensing', name: 'DSC', desc: 'Digital Signature Certificate for individuals & organizations.' },
     { category: 'Licensing', name: 'IE code', desc: 'Import Export Code registration for cross-border trade.' },
-    { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
+    { category: 'Licensing', name: 'DSC', desc: 'Digital Signature Certificate for individuals & organizations.' },
+    { category: 'Licensing', name: 'DUNS', desc: 'Data Universal Numbering System for global business identity.' },
     { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
+    { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
+    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' },
     { category: 'Licensing', name: 'RoHS', desc: 'Restriction of Hazardous Substances directive certification.' },
-    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' }
   ];
 
   // Modal State

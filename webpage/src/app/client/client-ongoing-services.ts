@@ -75,29 +75,27 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) return;
     
-    this.api.get<any>('my-checklists').subscribe({
+    this.api.get<any>('my-services-summary').subscribe({
       next: (res: any) => {
-        const checklists = res.checklists || [];
+        const services = res.services || [];
         const active: any[] = [];
         
-        for (const c of checklists) {
+        for (const c of services) {
           const isAssigned = !!c.assigned_to;
           if (isAssigned) {
             let status = c.status === 'completed' ? 'completed' : 'in-progress';
             
             if (status === 'in-progress') {
-              const needsDocUpload = c.requestedDocuments?.some((doc: any) => !doc.isUploaded);
-              const clientFormSubmitted = c.details?.clientFormSubmitted === true;
-              if (needsDocUpload || !clientFormSubmitted || c.action_required) {
+              if (c.hasPendingDocUpload || !c.details?.clientFormSubmitted || c.action_required) {
                 status = 'action-required';
               }
             } else if (status === 'completed') {
               if (!this.showCongratsModal()) {
-                const hasBeenCongratulated = localStorage.getItem(`congrats_shown_${c._id || c.id}`);
+                const hasBeenCongratulated = localStorage.getItem(`congrats_shown_${c._id}`);
                 if (!hasBeenCongratulated) {
-                  this.congratsServiceName.set(c.service_name || c.checklist_name || 'Service');
+                  this.congratsServiceName.set(c.service_name || 'Service');
                   this.showCongratsModal.set(true);
-                  localStorage.setItem(`congrats_shown_${c._id || c.id}`, 'true');
+                  localStorage.setItem(`congrats_shown_${c._id}`, 'true');
                 }
               }
             }
@@ -110,7 +108,7 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
         this.activeOrders.set(active);
         this.isLoading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error fetching orders', err);
         this.isLoading.set(false);
       }

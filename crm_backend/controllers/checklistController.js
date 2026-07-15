@@ -1005,6 +1005,76 @@ const updateChecklist = async (req, res) => {
   }
 };
 
+// @desc    Lightweight service summary for the Ongoing Services list screen (web & mobile)
+// @route   GET /api/my-services-summary
+// @access  Private (customer)
+const getMyServicesSummary = async (req, res) => {
+  try {
+    const clientId = req.user._id;
+
+    const checklists = await Checklist.find({
+      client_id: clientId,
+      service_name: { $ne: 'Live Chat Support' }
+    })
+      .select('service_name status stage createdAt assigned_to action_required details items requested_documents')
+      .populate('assigned_to', 'owner_name')
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    const SERVICES_WITH_FORMS_SET = new Set([
+      'DPIIT', 'DUNS', 'Private Limited', 'Trade mark', 'Trademark', 'Copyright',
+      'LLP', 'MSME', 'MSME Certification', 'GST', 'GST Registration', 'GST Compliance',
+      'GST Filing', 'GST Cancellation', 'ISO', 'ISO Registration', 'ISO Certification',
+      'FSSAI', 'FSSAI Registration', 'FSSAI Food License', 'One Person Company', 'OPC',
+      'LEI Registration', 'LEI', 'LIE Registration', 'LIE', 'BIS Registration', 'BIS',
+      'MCA Compliance', 'DSC', 'IEC Registration', 'IEC', 'Proprietorship', 'TDS',
+      'PAN, TAN', 'ITR', 'PF Registration', 'PF', 'Patent Registration', 'Patent', 'Copyright'
+    ]);
+
+    const summaries = checklists.map(c => {
+      const serviceNameLower = (c.service_name || '').toLowerCase();
+      const requiresForm = [...SERVICES_WITH_FORMS_SET].some(s => serviceNameLower.includes(s.toLowerCase()));
+
+      const items = c.items || [];
+      const totalItems = items.length;
+      const completedItems = items.filter(i => i.isChecked).length;
+
+      const hasPendingDocUpload = (c.requested_documents || []).some(d => !d.isUploaded);
+      const clientFormSubmitted = !!(c.details && c.details.clientFormSubmitted);
+      const isFormFilled = clientFormSubmitted || (requiresForm && items.some(i => i.title === 'Client Form Filling' && i.isChecked));
+
+      let derivedActionRequired = c.action_required || false;
+      if (requiresForm && !isFormFilled) derivedActionRequired = true;
+      if (hasPendingDocUpload) derivedActionRequired = true;
+
+      return {
+        _id: c._id,
+        service_name: c.service_name,
+        status: c.status,
+        stage: c.stage,
+        createdAt: c.createdAt,
+        assigned_to: c.assigned_to ? { owner_name: c.assigned_to.owner_name, _id: c.assigned_to._id } : null,
+        action_required: derivedActionRequired,
+        details: {
+          entityName: c.details?.entityName,
+          entity_name: c.details?.entity_name,
+          companyName: c.details?.companyName,
+          businessName: c.details?.businessName,
+          proposed_company_name: c.details?.proposed_company_name,
+          clientFormSubmitted: clientFormSubmitted
+        },
+        totalItems,
+        completedItems,
+        hasPendingDocUpload
+      };
+    });
+
+    res.status(200).json({ success: true, services: summaries });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get checklists for the logged-in customer (Flutter client)
 // @route   GET /api/my-checklists
 // @access  Private (customer)
@@ -1022,7 +1092,8 @@ const getMyChecklists = async (req, res) => {
       .populate('assigned_to', 'owner_name email role phone')
       .populate('created_by', 'owner_name email role')
       .select('service_name company_id custom_service_id status stage items requested_documents temporary_documents final_documents notes assigned_to created_by createdAt updatedAt dealClosedAmount advanceAmountPaid details action_required')
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .lean();
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
     // Bulk-fetch all needed templates in ONE query to avoid N+1
@@ -1042,7 +1113,7 @@ const getMyChecklists = async (req, res) => {
       for (let cl of checklistsNeedingTemplate) {
         const template = templateMap[cl.service_name];
         if (template && template.items && template.items.length > 0) {
-          cl.items = template.items.map(item => ({
+          const newItems = template.items.map(item => ({
             title: item.title,
             description: item.description,
             label: item.title,
@@ -1050,14 +1121,14 @@ const getMyChecklists = async (req, res) => {
             isActionStep: item.isActionStep || false,
             linked_document_templates: item.linked_document_templates || []
           }));
-          await cl.save();
+          cl.items = newItems;
+          await Checklist.findByIdAndUpdate(cl._id, { items: newItems });
           console.log(`[DEBUG] getMyChecklists: Dynamically populated ${cl.items.length} items from template for checklist ID ${cl._id} (${cl.service_name})`);
         }
       }
     }
 
-    // Convert to plain objects so we can enrich them without Mongoose restrictions
-    const checklistsPlain = checklists.map(c => c.toObject());
+    const checklistsPlain = checklists;
 
     // Fetch corresponding service orders to get dealClosedAmount if present
     const ServiceOrder = require('../models/ServiceOrder');
@@ -2104,6 +2175,7 @@ module.exports = {
   getChecklistsSummary,
   getChecklistById,
   getMyChecklists,
+  getMyServicesSummary,
   toggleChecklistItem,
   addChecklistItem,
   updateChecklist,

@@ -6,6 +6,7 @@ const {
   getChecklistById,
   getChecklistsSummary,
   getMyChecklists,
+  getMyServicesSummary,
   toggleChecklistItem,
   addChecklistItem,
   updateChecklist,
@@ -40,6 +41,7 @@ router.get('/checklists/summary', checkUser, getChecklistsSummary); // Lightweig
 router.get('/checklists/expenses', checkUser, permit('admin', 'manager', 'client_manager', 'account_manager', 'filling_staff'), getExpenses); // Must be before /:id
 router.get('/checklists', checkUser, getChecklists);
 router.get('/checklists/:id', checkUser, getChecklistById); // Single checklist for detail page
+router.get('/my-services-summary', checkUser, getMyServicesSummary); // Lightweight list for order tracker / ongoing services
 router.get('/my-checklists', checkUser, getMyChecklists); // For Flutter customer app
 
 // Payment Tracker / Expenses

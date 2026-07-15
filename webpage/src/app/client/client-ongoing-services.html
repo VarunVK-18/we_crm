@@ -75,9 +75,9 @@
                       <td>
                         <div class="progress-bar-container" style="display: flex; align-items: center; gap: 8px; min-width: 120px;">
                           <div class="progress-bar-bg" style="flex: 1; height: 6px; background-color: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden;">
-                            <div class="progress-bar-fill" style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 3px; transition: width 0.3s ease;" [style.width.%]="(order.items || []).length ? (getCompletedCount(order.items) / (order.items || []).length) * 100 : 0"></div>
+                            <div class="progress-bar-fill" style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 3px; transition: width 0.3s ease;" [style.width.%]="order.totalItems ? (order.completedItems / order.totalItems) * 100 : 0"></div>
                           </div>
-                          <span class="progress-text-sm" style="font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); min-width: 32px;">{{ getCompletedCount(order.items) }}/{{ (order.items || []).length }}</span>
+                          <span class="progress-text-sm" style="font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); min-width: 32px;">{{ order.completedItems || 0 }}/{{ order.totalItems || 0 }}</span>
                         </div>
                       </td>
                       <td>

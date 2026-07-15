@@ -6,7 +6,8 @@ const UserSchema = new mongoose.Schema({
   company_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    default: null
+    default: null,
+    index: true
   },
   custom_client_id: {
     type: String,
@@ -39,7 +40,8 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: 'customer'
+    default: 'customer',
+    index: true
   },
   isMobile: {
     type: Boolean,
