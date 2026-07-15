@@ -297,7 +297,7 @@
     <!-- Main Content: Recent Filings -->
     <div class="ho-recent-filings">
       <div class="ho-section-header" style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 class="ho-perf-title">{{ activeChartView() === 'upscaling' ? 'Upscaling Progress' : ((user()?.role === 'filing_staff' || user()?.role === 'filling_staff') ? 'Your Performance' : 'Ongoing Certifications / Tasks') }}</h3>
+        <h3 class="ho-perf-title">{{ activeChartView() === 'upscaling' ? 'Upscaling Progress' : ((user()?.role === 'filing_staff' || user()?.role === 'filling_staff') ? 'Your Performance' : 'Employee Performance') }}</h3>
         <div style="display: flex; gap: 8px; align-items: center;">
           <!-- Time period buttons (hidden in upscaling view) -->
           @if (activeChartView() !== 'upscaling') {
@@ -327,7 +327,7 @@
               <path d="M22 7L13.5 15.5L8.5 10.5L2 17" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               <path d="M16 7H22V13" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Upscaling
+            Up Selling
             }
           </button>
           }

@@ -177,12 +177,11 @@
           <td>
             <span style="color: #64748b;">{{ cl.dueDate ? (cl.dueDate | date:'mediumDate') : '-' }}</span>
           </td>
-          <td [ngStyle]="{
-                'background-color': cl.priority === 'High' ? 'rgba(220, 38, 38, 0.1)' : (cl.priority === 'Medium' ? 'rgba(234, 179, 8, 0.1)' : (cl.priority === 'Low' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'))
-              }">
+          <td>
             <span [ngStyle]="{
+                  'background-color': cl.priority === 'High' ? 'rgba(220, 38, 38, 0.1)' : (cl.priority === 'Medium' ? 'rgba(234, 179, 8, 0.1)' : (cl.priority === 'Low' ? 'rgba(59, 130, 246, 0.1)' : 'transparent')),
                   'color': cl.priority === 'High' ? '#dc2626' : (cl.priority === 'Medium' ? '#eab308' : (cl.priority === 'Low' ? '#3b82f6' : 'inherit'))
-                }" style="font-weight: 600; font-size: 13px;">{{ cl.priority || '-' }}</span>
+                }" style="font-weight: 600; font-size: 13px; padding: 4px 10px; border-radius: 6px;">{{ cl.priority || '-' }}</span>
           </td>
           <td>
             <div class="progress-bar-container">

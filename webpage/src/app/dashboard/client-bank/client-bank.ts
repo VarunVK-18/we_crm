@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Api } from '../../api';
 
 @Component({
@@ -95,7 +96,14 @@ export class ClientBank implements OnInit {
     return Math.max(1, Math.ceil(result.length / this.pageSize));
   });
 
-  constructor(private api: Api) {}
+  constructor(private api: Api, private router: Router) {}
+
+  viewClient(event: Event, id: string) {
+    event.stopPropagation();
+    if (id) {
+      this.router.navigate(['/dashboard/client-details', id]);
+    }
+  }
 
   ngOnInit() {
     this.fetchClients();

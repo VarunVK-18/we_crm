@@ -60,7 +60,7 @@ export class ComplianceDetails implements OnInit, OnDestroy {
     { key: 'shareholders', label: 'List Of Share Holders', templateName: 'list of share holders' },
     { key: 'directors', label: 'List Of Directors', templateName: 'list of directors' },
     { key: 'notes', label: 'Notes', templateName: 'notes' },
-    { key: 'temporary', label: 'Signing Document', templateName: '', isUploadOnly: true },
+    { key: 'temporary', label: 'Unsigned Document', templateName: '', isUploadOnly: true },
     { key: 'normal', label: 'Acknowledge Document', templateName: '', isUploadOnly: true }
   ];
 

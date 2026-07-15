@@ -11,6 +11,7 @@
           <th>Client Name</th>
           <th>Incorporation Date</th>
           <th>Phone Number</th>
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -39,6 +40,11 @@
           <td>
             <div class="skeleton-text"
               style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;">
+            </div>
+          </td>
+          <td>
+            <div class="skeleton-text"
+              style="width: 80px; height: 28px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite; margin: 0 auto;">
             </div>
           </td>
         </tr>
@@ -85,13 +91,16 @@
             <input type="text" [ngModel]="mPhoneFilter()" (ngModelChange)="mPhoneFilter.set($event); onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
+          <th style="vertical-align: top; width: 100px; text-align: center;">
+            <div>Action</div>
+          </th>
         </tr>
       </thead>
       <tbody>
         @for (client of filteredClients(); track client._id) {
-        <tr class="table-row-hover" style="cursor: pointer;" (click)="openModal(client)">
+        <tr class="table-row-hover">
           <td>
-            <span class="text-muted" style="font-family: monospace;">{{ client.custom_client_id || '-' }}</span>
+            <span class="hover-text-link" style="font-family: monospace; color: #64748b; cursor: pointer;" (click)="viewClient($event, client._id)">{{ client.custom_client_id || '-' }}</span>
           </td>
           <td>
             <span class="ellipsis-text" style="font-weight: 500; color: var(--text-primary);">{{ client.company_name || '-' }}</span>
@@ -104,6 +113,9 @@
           </td>
           <td>
             <span>{{ client.phone || '-' }}</span>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn-claim-sm" style="padding: 6px 14px; font-size: 13px; border-radius: 6px;" (click)="openModal(client); $event.stopPropagation()">Update</button>
           </td>
         </tr>
         }

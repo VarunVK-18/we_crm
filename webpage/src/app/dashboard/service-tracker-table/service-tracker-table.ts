@@ -38,6 +38,9 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
       resize: horizontal;
       overflow: auto;
       position: relative;
+      min-width: 100px;
+      max-width: 300px;
+      width: 140px;
     }
     .bucket-table th::-webkit-scrollbar {
       height: 0px;
@@ -48,13 +51,22 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
       border: none;
     }
     .bucket-table td {
-      padding: 8px 24px;
+      padding: 8px 16px;
       border-bottom: 1px solid #e2e8f0;
       border-right: 1px solid #e2e8f0;
+      max-width: 300px;
     }
     .bucket-table th:last-child,
     .bucket-table td:last-child {
       border-right: none;
+    }
+    .ellipsis-text {
+      display: block;
+      width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      vertical-align: middle;
     }
     .col-search-input {
       width: 100%;
