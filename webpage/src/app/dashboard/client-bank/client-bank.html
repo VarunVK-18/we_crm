@@ -94,10 +94,10 @@
             <span class="text-muted" style="font-family: monospace;">{{ client.custom_client_id || '-' }}</span>
           </td>
           <td>
-            <span style="font-weight: 500; color: var(--text-primary);">{{ client.company_name || '-' }}</span>
+            <span class="ellipsis-text" style="font-weight: 500; color: var(--text-primary);">{{ client.company_name || '-' }}</span>
           </td>
           <td>
-            <span class="employee-name" style="font-weight: 500;">{{ client.owner_name }}</span>
+            <span class="employee-name ellipsis-text" style="font-weight: 500;">{{ client.owner_name }}</span>
           </td>
           <td>
             <span>{{ getIncorporationDate(client) ? (getIncorporationDate(client) | date:'mediumDate') : '-' }}</span>

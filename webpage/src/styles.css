@@ -387,3 +387,18 @@ input[type="file"] {
 .profile-header-card .phc-info p {
   color: #4B5563 !important;
 }
+
+/* Global Ellipsis Text for Table Cells */
+.bucket-table td:has(.ellipsis-text) {
+  max-width: 0;
+  width: 150px;
+}
+
+.ellipsis-text {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}

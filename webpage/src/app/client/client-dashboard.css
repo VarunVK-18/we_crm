@@ -1250,9 +1250,10 @@ a.eab-value:hover {
 /* Metric Cards */
 .client-metrics-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 20px;
   margin: 24px 40px;
+  overflow-x: auto;
 }
 
 .metric-card {
@@ -1355,14 +1356,10 @@ a.eab-value:hover {
 }
 
 @media (max-width: 1200px) {
-  .client-metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
 @media (max-width: 768px) {
   .client-metrics-grid {
-    grid-template-columns: 1fr;
     margin: 24px 20px;
   }
 }

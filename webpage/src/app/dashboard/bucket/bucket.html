@@ -136,11 +136,10 @@
             }
           </td>
           <td>
-            <span style="font-weight: 500; color: var(--text-primary);">{{ req.client_company_name ||
-              req.client_id?.company_name || '-' }}</span>
+            <span class="ellipsis-text" style="font-weight: 500; color: var(--text-primary);">{{ req.client_company_name || req.client_id?.company_name || '-' }}</span>
           </td>
           <td>
-            <span class="employee-name" style="font-weight: 500;">{{ getClientName(req) }}</span>
+            <span class="employee-name ellipsis-text" style="font-weight: 500;">{{ getClientName(req) }}</span>
           </td>
           <td>
             <span>{{ req.client_phone || req.client_id?.phone || '-' }}</span>
@@ -327,8 +326,7 @@
             }
           </td>
           <td>
-            <span style="font-weight: 500; color: var(--text-primary);">{{ job.client_company_name ||
-              job.client_id?.company_name || '-' }}</span>
+            <span class="ellipsis-text" style="font-weight: 500; color: var(--text-primary);">{{ job.client_company_name || job.client_id?.company_name || '-' }}</span>
           </td>
           <td>
             <span>{{ job.checklist_id?.dueDate ? (job.checklist_id.dueDate | date:'mediumDate') : '-' }}</span>
