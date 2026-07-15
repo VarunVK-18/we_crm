@@ -34,7 +34,7 @@ export class ClientTopbarComponent implements OnInit {
 
   // Entity switcher state (shared via localStorage so all pages react)
   availableEntities = signal<string[]>([]);
-  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || '');
 
   constructor(
     private router: Router, 
@@ -115,15 +115,19 @@ export class ClientTopbarComponent implements OnInit {
             entitySet.add(name);
           }
         });
-        this.availableEntities.set(Array.from(entitySet).sort());
+        const entities = Array.from(entitySet).sort();
+        this.availableEntities.set(entities);
 
         // Validate saved selection still exists
         const saved = localStorage.getItem('client_selected_entity');
-        if (saved && saved !== 'All' && !entitySet.has(saved)) {
-          this.selectedEntity.set('All');
-          localStorage.setItem('client_selected_entity', 'All');
-        } else if (saved) {
-          this.selectedEntity.set(saved);
+        if (entities.length > 0) {
+          if (!saved || saved === 'All' || !entitySet.has(saved)) {
+            this.selectedEntity.set(entities[0]);
+            localStorage.setItem('client_selected_entity', entities[0]);
+            window.dispatchEvent(new CustomEvent('entityChanged', { detail: entities[0] }));
+          } else {
+            this.selectedEntity.set(saved);
+          }
         }
       },
       error: (err) => console.error('Failed to fetch entities for switcher', err)

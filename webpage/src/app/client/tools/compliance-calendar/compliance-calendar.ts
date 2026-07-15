@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, HostListener, ElementRef } from '@angular/core';
+import { Component, signal, computed, OnInit, HostListener, ElementRef, Input } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +22,7 @@ interface ComplianceEvent {
   styleUrl: './compliance-calendar.css',
 })
 export class ComplianceCalendarComponent implements OnInit {
+  @Input() isEmbedded = false;
   searchQuery = signal('');
   allEvents = signal<ComplianceEvent[]>([]);
   isLoading = signal(true);

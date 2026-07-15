@@ -8,11 +8,12 @@ import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon, Downlo
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
 import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { ComplianceCalendarComponent } from './tools/compliance-calendar/compliance-calendar';
 
 @Component({
   selector: 'app-client-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, PdfViewerModule],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, PdfViewerModule, ComplianceCalendarComponent],
   templateUrl: './client-profile.html',
   styleUrl: './client-profile.css',
 })
