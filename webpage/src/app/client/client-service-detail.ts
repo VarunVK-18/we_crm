@@ -85,7 +85,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
         if (this.isChatOpen()) {
           this.fetchChatMessages(true);
         }
-      }, 2000);
+      }, 4000);
     });
 
     this.route.queryParams.subscribe(q => {
@@ -277,21 +277,19 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   }
 
   fetchOrderDetails(silent = false) {
+    const id = this.orderId();
+    if (!id) return;
     if (!silent) this.isLoading.set(true);
 
-    // We can fetch single order if we had an endpoint, but since the flutter app uses /my-checklists, we can filter it or we can try GET /orders/:id
-    // Let's use GET /orders/:id if it works for clients, else we fetch my-checklists and filter
-    const uid = this.user()?._id || this.user()?.id;
-    this.api.get<any>('my-checklists').subscribe({
+    this.api.get<any>(`checklists/${id}`).subscribe({
       next: (res: any) => {
-        const checklists = res.checklists || [];
-        const found = checklists.find((c: any) => c._id === this.orderId());
+        const found = res.checklist;
         if (found) {
           const isAssigned = !!found.assigned_to;
           let status = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'in-progress');
 
           if (status === 'in-progress') {
-            const needsDocUpload = found.requestedDocuments?.some((doc: any) => !doc.isUploaded);
+            const needsDocUpload = found.requested_documents?.some((doc: any) => !doc.isUploaded);
             const clientFormSubmitted = found.details?.clientFormSubmitted === true;
             if (needsDocUpload || !clientFormSubmitted || found.action_required) {
               status = 'action-required';

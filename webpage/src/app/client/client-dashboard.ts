@@ -172,10 +172,10 @@ export class ClientDashboard implements OnInit, OnDestroy {
     }
     this.user.set(parsedUser);
     
-    if (!parsedUser.isMobile) {
-      this.showDownloadAppModal.set(true);
-      sessionStorage.setItem('download_app_prompted', 'true');
-    }
+    // if (!parsedUser.isMobile) {
+    //   this.showDownloadAppModal.set(true);
+    //   sessionStorage.setItem('download_app_prompted', 'true');
+    // }
     
     this.fetchBanners();
     this.fetchClientManager();

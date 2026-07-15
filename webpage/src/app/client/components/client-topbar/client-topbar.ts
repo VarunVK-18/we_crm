@@ -164,7 +164,7 @@ export class ClientTopbarComponent implements OnInit {
         trail.push({ label: 'Service Details' });
         this.pageSubtitle.set('Track your request progress');
       } else if (url.includes('/compliance')) {
-        trail.push({ label: 'Compliance Calendar' });
+        trail.push({ label: 'Compliance' });
         const usr = this.user();
         this.pageSubtitle.set('Track Your Compliance and Upcoming Deadlines');
       } else if (url.includes('/tools/nic-finder')) {

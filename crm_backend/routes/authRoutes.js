@@ -8,6 +8,7 @@ const {
   loginUser, 
   getUserProfile, 
   getClients,
+  getClientsOpportunities,
   getClientsSummary,
   outsourceService,
   registerDirect,
@@ -72,6 +73,7 @@ router.get('/users/clients/summary', checkUser, getClientsSummary); // Lightweig
 router.get('/users/clients/no-bank-details', checkUser, permit('admin', 'client_manager'), getClientsWithNoBankDetails);
 router.patch('/users/clients/:id/bank-details', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), updateClientBankDetails);
 router.get('/users/clients', checkUser, getClients);
+router.post('/users/clients/opportunities/query', checkUser, getClientsOpportunities);
 router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), assignClient);
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);
 router.patch('/users/clients/:id/compliance-radar', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), toggleComplianceRadar);

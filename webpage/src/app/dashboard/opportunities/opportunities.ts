@@ -17,11 +17,45 @@ export class Opportunities implements OnInit {
   @Output() onViewChecklist = new EventEmitter<string>();
   preselectedClientId = input<string>('');
   private api = inject(Api);
-  searchQuery = signal<string>('');
   clients = signal<any[]>([]);
   isLoading = signal<boolean>(true);
   selectedClientIndex = signal<number>(0);
   
+  // Pagination & Filter state
+  currentPage = signal<number>(1);
+  itemsPerPage = 10;
+  totalPages = signal<number>(1);
+  totalPendingOpportunities = signal<number>(0);
+
+  searchQuery = signal<string>('');
+  filterCount = signal<string>('any');
+  filterCategory = signal<string>('all');
+  
+  paginatedClients = computed(() => this.clients()); // For backward compatibility with template loop
+
+  pageNumbers = computed(() => {
+    const pages = [];
+    for (let i = 1; i <= this.totalPages(); i++) {
+      pages.push(i);
+    }
+    return pages;
+  });
+
+  goToPage(page: number) {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.fetchOpportunities();
+    }
+  }
+
+  nextPage() {
+    this.goToPage(this.currentPage() + 1);
+  }
+
+  prevPage() {
+    this.goToPage(this.currentPage() - 1);
+  }
+
   readonly Search01Icon = Search01Icon;
   readonly PlusSignIcon = PlusSignIcon;
   readonly CheckmarkCircle02Icon = CheckmarkCircle02Icon;
@@ -55,6 +89,7 @@ export class Opportunities implements OnInit {
     { category: 'Tax', name: 'GST Registration', desc: 'GST Registration for your business! Thank you for choosing Wealth Empires.' },
 
     // Licensing
+    { category: 'Licensing', name: 'DUNS', desc: 'Data Universal Numbering System for global business identity.' },
     { category: 'Licensing', name: 'DPIIT', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
     { category: 'Licensing', name: 'ISO', desc: 'Quality management certification (ISO 9001 and others).' },
     { category: 'Licensing', name: 'FSSAI', desc: 'Registration for food business operators, manufacturers, and startups.' },
@@ -63,15 +98,8 @@ export class Opportunities implements OnInit {
     { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
     { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
     { category: 'Licensing', name: 'RoHS', desc: 'Restriction of Hazardous Substances directive certification.' },
-    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' },
-    
-    // Fallback original pool ones just in case naming was different
-    { category: 'Compliance', name: 'ISO Certification', desc: 'Quality management system certification' },
-    { category: 'Compliance', name: 'FSSAI Registration', desc: 'Food safety and standards registration' }
+    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' }
   ];
-
-  filterCount = signal<string>('any');
-  filterCategory = signal<string>('all');
 
   // Modal State
   isAssignModalOpen = signal<boolean>(false);
@@ -146,39 +174,21 @@ export class Opportunities implements OnInit {
     return Array.from(cats);
   });
 
-  filteredClients = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    const fCount = this.filterCount();
-    const fCat = this.filterCategory();
+  private searchTimeout: any;
 
-    if (!this.clients()) return [];
+  onSearchChange(val: string) {
+    this.searchQuery.set(val);
+    this.currentPage.set(1);
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.fetchOpportunities();
+    }, 400);
+  }
 
-    return this.clients().filter(c => {
-      const matchSearch = !query || 
-        (c.name && c.name.toLowerCase().includes(query)) ||
-        (c.company_name && c.company_name.toLowerCase().includes(query)) ||
-        (c.email && c.email.toLowerCase().includes(query));
-      
-      if (!matchSearch) return false;
-
-      const oppsCount = c.opportunities ? c.opportunities.length : 0;
-      let matchCount = true;
-      if (fCount === '>0') matchCount = oppsCount > 0;
-      else if (fCount === '1') matchCount = oppsCount === 1;
-      else if (fCount === '2') matchCount = oppsCount === 2;
-      else if (fCount === '3+') matchCount = oppsCount >= 3;
-
-      if (!matchCount) return false;
-
-      let matchCat = true;
-      if (fCat !== 'all') {
-        matchCat = c.opportunities && c.opportunities.some((o: any) => o.category === fCat);
-      }
-      if (!matchCat) return false;
-
-      return true;
-    });
-  });
+  onFilterChange() {
+    this.currentPage.set(1);
+    this.fetchOpportunities();
+  }
 
   constructor() {
     effect(() => {
@@ -191,40 +201,7 @@ export class Opportunities implements OnInit {
   }
 
   ngOnInit() {
-    this.api.get<any>('users/clients').subscribe({
-      next: (res) => {
-        if (res.clients) {
-          const enhancedClients = res.clients.map((c: any) => {
-            const weDone = (c.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => s.serviceName);
-            const outsourced = (c.outsourced_services || []).map((s: any) => s.serviceName);
-            const doneSet = new Set([...weDone, ...outsourced]);
-            const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
-            const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
-
-            const opps = this.recommendationPool.filter(s => {
-              if (doneSet.has(s.name)) return false;
-              if (hasPrimaryIncorp && primaryIncorpServices.includes(s.name)) return false;
-              return true;
-            });
-            c.opportunities = opps;
-            c.alreadyDone = this.getAlreadyDoneServices(c);
-            return c;
-          });
-          this.clients.set(enhancedClients);
-          // Auto-select client if preselected
-          const preId = this.preselectedClientId();
-          if (preId) {
-            const idx = enhancedClients.findIndex((c: any) => c._id === preId);
-            if (idx !== -1) this.selectedClientIndex.set(idx);
-          }
-        }
-        this.isLoading.set(false);
-      },
-      error: (err) => {
-        console.error('Error fetching clients', err);
-        this.isLoading.set(false);
-      }
-    });
+    this.fetchOpportunities();
 
     const saved = localStorage.getItem('user');
     const user = saved ? JSON.parse(saved) : null;
@@ -238,6 +215,47 @@ export class Opportunities implements OnInit {
           );
         }
         this.teams.set(allTeams);
+      }
+    });
+  }
+
+  fetchOpportunities() {
+    this.isLoading.set(true);
+    const body = {
+      recommendationPool: this.recommendationPool,
+      page: this.currentPage(),
+      limit: this.itemsPerPage,
+      searchQuery: this.searchQuery(),
+      filterCount: this.filterCount(),
+      filterCategory: this.filterCategory()
+    };
+
+    this.api.post<any>('users/clients/opportunities/query', body).subscribe({
+      next: (res) => {
+        if (res.clients) {
+          // Calculate alreadyDone since it's used in the template (Right sidebar)
+          const enhancedClients = res.clients.map((c: any) => {
+            c.alreadyDone = this.getAlreadyDoneServices(c);
+            return c;
+          });
+          this.clients.set(enhancedClients);
+          this.totalPages.set(res.totalPages || 1);
+          this.totalPendingOpportunities.set(res.totalPendingOpportunities || 0);
+          
+          // Auto-select client if preselected
+          const preId = this.preselectedClientId();
+          if (preId) {
+            const idx = enhancedClients.findIndex((c: any) => c._id === preId);
+            if (idx !== -1) this.selectedClientIndex.set(idx);
+          } else {
+            this.selectedClientIndex.set(0);
+          }
+        }
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error fetching clients:', err);
+        this.isLoading.set(false);
       }
     });
   }

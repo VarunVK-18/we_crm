@@ -1,7 +1,7 @@
 import { Component, input, output, signal, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon, Search01Icon, Message02Icon, Settings01Icon, TrendingUpDownIcon, Key01Icon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, ChatNotificationIcon, Bookmark02Icon, FileValidationIcon, WorkHistoryIcon, UserMultiple02Icon, UserAccountIcon, Search01Icon, Message02Icon, Settings01Icon, TrendingUpDownIcon, Key01Icon, BankIcon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 
 @Component({
@@ -30,6 +30,7 @@ export class Sidebar implements OnInit, OnDestroy {
   readonly Settings01Icon = Settings01Icon;
   readonly TrendingUpDownIcon = TrendingUpDownIcon;
   readonly Key01Icon = Key01Icon;
+  readonly BankIcon = BankIcon;
 
   user = signal<any>(null);
   newRequestsCount = signal<number>(0);

@@ -41,7 +41,7 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     
     this.fetchClientManager();
     this.fetchOrders();
-    this.pollingInterval = setInterval(() => this.fetchOrders(), 4000);
+    this.pollingInterval = setInterval(() => this.fetchOrders(), 10000);
     window.addEventListener('entityChanged', this.entityChangeHandler);
   }
 

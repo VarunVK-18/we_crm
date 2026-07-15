@@ -145,6 +145,42 @@ const createChecklist = async (req, res) => {
 // @desc    Get a single checklist by ID (for the detail page)
 // @route   GET /api/checklists/:id
 // @access  Private
+const SERVICES_WITH_FORMS = [
+  'DPIIT', 'DUNS', 'Private Limited', 'Trade mark', 'Trademark', 'Copyright',
+  'LLP', 'MSME', 'MSME Certification', 'GST', 'GST Registration', 'GST Compliance',
+  'GST Filing', 'GST Cancellation', 'ISO', 'ISO Registration', 'ISO Certification',
+  'FSSAI', 'FSSAI Registration', 'FSSAI Food License', 'One Person Company', 'OPC',
+  'LEI Registration', 'LEI', 'LIE Registration', 'LIE', 'BIS Registration', 'BIS',
+  'MCA Compliance', 'DSC', 'IEC Registration', 'IEC', 'Proprietorship', 'TDS',
+  'PAN, TAN', 'ITR', 'PF Registration', 'PF', 'Patent Registration', 'Patent', 'Copyright'
+];
+
+const enrichChecklistForCustomer = (c) => {
+  const serviceNameLower = c.service_name ? c.service_name.toLowerCase() : '';
+  const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s.toLowerCase()));
+  let dynamicActionRequired = c.action_required;
+  let modifiedItems = c.items || [];
+
+  if (requiresForm) {
+    const clientFormFillingStep = modifiedItems.find(i => i.title === 'Client Form Filling');
+    const isFormFilled = !!(c.details && c.details.clientFormSubmitted) || !!(clientFormFillingStep && clientFormFillingStep.isChecked);
+    dynamicActionRequired = !isFormFilled;
+    modifiedItems = modifiedItems.filter(i => i.title !== 'Client Form Filling');
+    modifiedItems = [
+      {
+        title: "Provide Necessary Details & Documents",
+        description: "Please fill out the required form to begin the process.",
+        isChecked: isFormFilled,
+        isActionStep: true,
+        checkedAt: clientFormFillingStep ? clientFormFillingStep.checkedAt : null
+      },
+      ...modifiedItems
+    ];
+  }
+
+  return { ...c, items: modifiedItems, action_required: dynamicActionRequired };
+};
+
 const getChecklistById = async (req, res) => {
   try {
     const ChecklistTemplate = require('../models/ChecklistTemplate');
@@ -194,7 +230,10 @@ const getChecklistById = async (req, res) => {
       clObj.sop_document = template.sop_document;
     }
 
-    res.status(200).json({ success: true, checklist: clObj });
+    // If the caller is a customer, enrich the checklist the same way getMyChecklists does
+    const enriched = (req.user && req.user.role === 'customer') ? enrichChecklistForCustomer(clObj) : clObj;
+
+    res.status(200).json({ success: true, checklist: enriched });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -986,15 +1025,24 @@ const getMyChecklists = async (req, res) => {
       .sort({ updatedAt: -1 });
 
     // Auto-fetch/populate items from ChecklistTemplate if checklist has 0 items
+    // Bulk-fetch all needed templates in ONE query to avoid N+1
     const ChecklistTemplate = require('../models/ChecklistTemplate');
-    for (let cl of checklists) {
-      if (!cl.items || cl.items.length === 0) {
-        const template = await ChecklistTemplate.findOne({
-          company_id: cl.company_id,
-          service_name: cl.service_name
-        });
+    const checklistsNeedingTemplate = checklists.filter(cl => !cl.items || cl.items.length === 0);
+    
+    if (checklistsNeedingTemplate.length > 0) {
+      const serviceNames = [...new Set(checklistsNeedingTemplate.map(cl => cl.service_name))];
+      const templates = await ChecklistTemplate.find({
+        company_id: checklists[0].company_id,
+        service_name: { $in: serviceNames }
+      }).lean();
+      
+      const templateMap = {};
+      templates.forEach(t => { templateMap[t.service_name] = t; });
+      
+      for (let cl of checklistsNeedingTemplate) {
+        const template = templateMap[cl.service_name];
         if (template && template.items && template.items.length > 0) {
-           cl.items = template.items.map(item => ({
+          cl.items = template.items.map(item => ({
             title: item.title,
             description: item.description,
             label: item.title,
@@ -1062,39 +1110,9 @@ const getMyChecklists = async (req, res) => {
 
     const enrichedChecklists = checklistsPlain.map(c => {
       const order = serviceOrders.find(o => o.serviceType === c.service_name);
-      const serviceNameLower = c.service_name ? c.service_name.toLowerCase() : '';
-      const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s.toLowerCase()));
-      let dynamicActionRequired = c.action_required;
-      let modifiedItems = c.items || [];
-
-      if (requiresForm) {
-        // Check if explicit flag is set OR if the "Client Form Filling" step is actually checked
-        const clientFormFillingStep = c.items && c.items.find(i => i.title === 'Client Form Filling');
-        const isFormFilled = !!(c.details && c.details.clientFormSubmitted) || !!(clientFormFillingStep && clientFormFillingStep.isChecked);
-
-        // Override action_required if form is not filled
-        dynamicActionRequired = !isFormFilled;
-
-        // Remove 'Client Form Filling' since we are replacing it with 'Provide Necessary Details & Documents' for the client
-        modifiedItems = modifiedItems.filter(i => i.title !== 'Client Form Filling');
-
-        // Dynamically inject the form step at the beginning
-        modifiedItems = [
-          {
-            title: "Provide Necessary Details & Documents",
-            description: "Please fill out the required form to begin the process.",
-            isChecked: isFormFilled, // Check details instead of action_required
-            isActionStep: true,
-            checkedAt: clientFormFillingStep ? clientFormFillingStep.checkedAt : null
-          },
-          ...modifiedItems
-        ];
-      }
-
+      const enriched = enrichChecklistForCustomer(c);
       return {
-        ...c,
-        items: modifiedItems,
-        action_required: dynamicActionRequired,
+        ...enriched,
         dealClosedAmount: order?.dealClosedAmount || c.dealClosedAmount || 0
       };
     });

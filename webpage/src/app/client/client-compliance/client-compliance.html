@@ -1,16 +1,4 @@
 <div class="compliance-page">
-  <div class="comp-hero">
-    <div class="comp-hero-bg"></div>
-    <div class="comp-hero-content">
-      <div class="comp-hero-text">
-        <span class="comp-hero-badge">COMPLIANCE CENTER</span>
-        <div class="entity-header">
-          <h1 class="comp-hero-title" [title]="currentEntity()">{{ currentEntity() }}</h1>
-        </div>
-        <p class="comp-hero-subtitle">Track, manage, and resolve your compliance requirements in real-time.</p>
-      </div>
-    </div>
-  </div>
 
   @if (isLoading()) {
     <div class="loading-state">
@@ -19,7 +7,7 @@
   } @else {
     <div class="compliance-content">
       @if (hasWarningCertificates()) {
-        <div class="warning-banner" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start;">
+        <div class="warning-banner" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px 20px;display: flex; gap: 16px; align-items: flex-start;">
           <hugeicons-icon [icon]="Alert01Icon" [size]="24" color="#dc2626" [strokeWidth]="2" style="flex-shrink: 0; margin-top: 2px;"></hugeicons-icon>
           <div>
             <h3 style="color: #991b1b; font-size: 16px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: -0.3px;">Attention Required</h3>
