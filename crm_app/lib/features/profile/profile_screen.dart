@@ -15,6 +15,7 @@ import 'subscriptions_screen.dart';
 import 'company_details_screen.dart';
 import '../../core/utils/responsive.dart';
 import '../../providers/navigation_provider.dart';
+import '../../providers/compliance_provider.dart';
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 
@@ -99,14 +100,20 @@ class ProfileScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── User Info Card ────────────────────────────────────────
-                  _UserInfoCard(
-                    uid: user?.id ?? '',
-                    name: user?.name ?? 'User',
-                    email: user?.email ?? '---',
-                    phone: user?.phone ?? '---',
-                    profileImage: user?.profileImage ?? '',
-                    companyName: user?.companyName ?? '',
-                  ),
+                  Builder(builder: (context) {
+                    final selectedEntity = ref.watch(selectedEntityProvider);
+                    final displayedCompany = (selectedEntity.isNotEmpty && selectedEntity != 'All Entities')
+                        ? selectedEntity
+                        : (user?.companyName ?? '');
+                    return _UserInfoCard(
+                      uid: user?.id ?? '',
+                      name: user?.name ?? 'User',
+                      email: user?.email ?? '---',
+                      phone: user?.phone ?? '---',
+                      profileImage: user?.profileImage ?? '',
+                      companyName: displayedCompany,
+                    );
+                  }),
 
                   SizedBox(height: 24.r),
 
@@ -123,8 +130,8 @@ class ProfileScreen extends ConsumerWidget {
                     tiles: [
                       ProfileTile(
                         icon: HugeIcons.strokeRoundedOffice,
-                        title: 'Entities',
-                        subtitle: 'Manage your business entities',
+                        title: 'Switch Entities',
+                        subtitle: 'Switch your active business entity',
                         onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -450,30 +457,23 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.name,
+                  widget.companyName.isNotEmpty ? widget.companyName : widget.name,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AppTheme.deepTeal,
                         fontSize: 18.sp,
                       ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 if (widget.companyName.isNotEmpty) ...[
-                  SizedBox(height: 6.r),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.r, vertical: 4.r),
-                    decoration: BoxDecoration(
-                      color: AppTheme.corporateBlue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6.r),
-                    ),
-                    child: Text(
-                      widget.companyName.replaceAll(RegExp(r'\b(private limited|pvt\.?\s*ltd\.?|limited|ltd\.?|llp|opc|inc|corp)\b', caseSensitive: false), '').trim(),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppTheme.corporateBlue,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11.sp,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                  SizedBox(height: 4.r),
+                  Text(
+                    widget.name,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12.sp,
                     ),
                   ),
                 ],

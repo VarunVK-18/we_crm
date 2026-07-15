@@ -240,15 +240,21 @@
                         }
                       </div>
                     </td>
-                    <td style="font-size: 13px;">
-                      @if (item.daysLeft < 0) {
-                        <span style="color: #ef4444; font-weight: 600;">Overdue by {{ -item.daysLeft }} days</span>
-                      } @else if (item.daysLeft === 0) {
-                        <span style="color: #f97316; font-weight: 600;">Due Today</span>
-                      } @else {
-                        <span style="color: #64748b; font-weight: 500;">{{ item.daysLeft }} days left</span>
-                      }
-                    </td>
+                     <td style="font-size: 13px;">
+                       @if (item.type === 'Overdue' || item.daysLeft < 0 || item.type === 'Critical') {
+                         <span style="display: inline-flex; align-items: center; gap: 5px; background: #fee2e2; color: #b91c1c; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;">
+                           <span style="width: 6px; height: 6px; border-radius: 50%; background: #dc2626; display: inline-block;"></span>HIGH
+                         </span>
+                       } @else if (item.type === 'Due Soon' || (item.daysLeft >= 0 && item.daysLeft <= 30)) {
+                         <span style="display: inline-flex; align-items: center; gap: 5px; background: #fff7ed; color: #c2410c; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;">
+                           <span style="width: 6px; height: 6px; border-radius: 50%; background: #f97316; display: inline-block;"></span>MEDIUM
+                         </span>
+                       } @else {
+                         <span style="display: inline-flex; align-items: center; gap: 5px; background: #f0fdf4; color: #15803d; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase;">
+                           <span style="width: 6px; height: 6px; border-radius: 50%; background: #22c55e; display: inline-block;"></span>LOW
+                         </span>
+                       }
+                     </td>
                     <td style="color: #475569; font-size: 13px;">
                       {{ item.dueDate | date:'dd MMM yyyy' }}
                     </td>

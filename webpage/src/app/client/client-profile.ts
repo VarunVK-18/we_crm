@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
-import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon, Download04Icon, Upload04Icon, Loading02Icon } from '@hugeicons/core-free-icons';
+import { DashboardSquareRemoveIcon, UserAccountIcon, File01Icon, EyeIcon, Download04Icon, Upload04Icon, Loading02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, CheckmarkCircle01Icon, GridIcon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
 import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
@@ -18,6 +18,23 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
 })
 export class ClientProfile implements OnInit, OnDestroy {
   readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
+  readonly OfficeIcon = OfficeIcon;
+  readonly Briefcase01Icon = Briefcase01Icon;
+  readonly LicenseIcon = LicenseIcon;
+  readonly CalculatorIcon = CalculatorIcon;
+  readonly CheckmarkCircle01Icon = CheckmarkCircle01Icon;
+  readonly GridIcon = GridIcon;
+
+  getServiceIcon(category: string) {
+    const cat = (category || '').toLowerCase();
+    if (cat.includes('incorporation')) return this.OfficeIcon;
+    if (cat.includes('compliance')) return this.Briefcase01Icon;
+    if (cat.includes('ip')) return this.CheckmarkCircle01Icon;
+    if (cat.includes('tax')) return this.CalculatorIcon;
+    if (cat.includes('licensing')) return this.LicenseIcon;
+    return this.GridIcon;
+  }
+
   readonly UserAccountIcon = UserAccountIcon;
   readonly File01Icon = File01Icon;
   readonly EyeIcon = EyeIcon;
@@ -40,6 +57,7 @@ export class ClientProfile implements OnInit, OnDestroy {
   };
 
   activeTab = signal('overview');
+  documentSearchQuery = signal<string>('');
 
   setTab(tab: string) {
     this.activeTab.set(tab);
@@ -53,14 +71,80 @@ export class ClientProfile implements OnInit, OnDestroy {
   /** Documents filtered by the selected entity */
   filteredDocuments = computed(() => {
     const sel = this.selectedEntity();
-    if (sel === 'All') return this.allDocuments();
-    return this.allDocuments().filter(doc => {
-      const entityName = this.docEntityMap.get(doc._id) || '';
+    const query = this.documentSearchQuery().toLowerCase();
+    
+    let docs = this.allDocuments();
+    
+    if (sel !== 'All') {
+      docs = docs.filter(doc => {
+        const entityName = this.docEntityMap.get(doc._id) || '';
+        return entityName.toLowerCase() === sel.toLowerCase();
+      });
+    }
+    
+    if (query) {
+      docs = docs.filter(doc => 
+        (doc.name || '').toLowerCase().includes(query) || 
+        (doc.document_type || '').toLowerCase().includes(query) || 
+        (doc.file_name || '').toLowerCase().includes(query)
+      );
+    }
+    
+    return docs;
+  });
+
+  allChecklists = signal<any[]>([]);
+
+  activeServiceTab = signal<'all' | 'in-progress' | 'completed' | 'upcoming'>('all');
+
+  recommendationPool = [
+    { category: 'Incorporation', name: 'Private Limited Incorporation', desc: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.' },
+    { category: 'Incorporation', name: 'LLP Incorporation', desc: 'Statutory compliance for Limited Liability Partnerships.' },
+    { category: 'Incorporation', name: 'OPC', desc: 'One Person Company registration for solo entrepreneurs.' },
+    { category: 'Incorporation', name: 'MSME', desc: 'Official Udyam Registration for small and medium enterprises.' },
+    { category: 'Incorporation', name: 'Proprietorship', desc: 'Sole vendor formation with business identification.' },
+    { category: 'Compliance', name: 'MCA Compliance', desc: 'Annual return filings and MCA statutory compliance.' },
+    { category: 'Compliance', name: 'TDS', desc: 'TDS return filing and certificate issuance.' },
+    { category: 'Compliance', name: 'PF', desc: 'Provident Fund registration and monthly compliance.' },
+    { category: 'IP', name: 'Copyright', desc: 'Protection for original creative literary or artistic works.' },
+    { category: 'IP', name: 'Trade Mark', desc: 'Brand protection and intellectual property rights.' },
+    { category: 'IP', name: 'Patent', desc: 'Exclusive rights for your inventions.' },
+    { category: 'Tax', name: 'GST filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
+    { category: 'Tax', name: 'GST Cancelation', desc: 'Surrender and cancel your GST registration.' },
+    { category: 'Tax', name: 'ITR', desc: 'Income Tax Return filing for individuals and businesses.' },
+    { category: 'Tax', name: 'GST Registration', desc: 'GST Registration for your business! Thank you for choosing Wealth Empires.' },
+    { category: 'Licensing', name: 'DPIIT', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
+    { category: 'Licensing', name: 'ISO', desc: 'Quality management certification (ISO 9001 and others).' },
+    { category: 'Licensing', name: 'FSSAI', desc: 'Registration for food business operators, manufacturers, and startups.' },
+    { category: 'Licensing', name: 'DSC', desc: 'Digital Signature Certificate for individuals & organizations.' },
+    { category: 'Licensing', name: 'IE code', desc: 'Import Export Code registration for cross-border trade.' },
+    { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
+    { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
+    { category: 'Licensing', name: 'RoHS', desc: 'Restriction of Hazardous Substances directive certification.' },
+    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' }
+  ];
+
+  inProgressServices = computed(() => {
+    const sel = this.selectedEntity();
+    const list = this.allChecklists().filter((c: any) => c.status !== 'completed' && c.status !== 'Completed' && c.status !== 'done' && c.status !== 'Done');
+    if (sel === 'All') return list;
+    return list.filter((c: any) => {
+      const entityName = (c.details?.entityName || c.details?.companyName || c.details?.proposed_company_name || c.details?.businessName || c.details?.entity_name || c.entityName || c.companyName || '').trim();
       return entityName.toLowerCase() === sel.toLowerCase();
     });
   });
 
-  allChecklists = signal<any[]>([]);
+  upcomingServices = computed(() => {
+    const completed = this.completedServices();
+    const inProgress = this.inProgressServices();
+    const allExistingNames = [...completed, ...inProgress].map((c: any) => (c.name || c.service_name || '').toLowerCase().trim());
+    return this.recommendationPool.filter(rec => !allExistingNames.includes(rec.name.toLowerCase().trim()));
+  });
+
+  allServices = computed(() => {
+    return [...this.inProgressServices(), ...this.completedServices()];
+  });
+
   completedServices = computed(() => {
     const sel = this.selectedEntity();
     const list = this.allChecklists().filter((c: any) => c.status === 'completed' || c.status === 'Completed' || c.status === 'done' || c.status === 'Done');
@@ -93,6 +177,34 @@ export class ClientProfile implements OnInit, OnDestroy {
     return full.replace(/\b(private limited|pvt\.?\s*ltd\.?|limited|ltd\.?|llp|opc|inc|corp)\b/gi, '').trim();
   }
 
+  
+  get selectedEntityType(): string {
+    const sel = this.selectedEntity();
+    const u = this.user();
+    
+    if (sel === 'All') {
+      if (u?.business_type && u.business_type !== 'N/A') return u.business_type;
+      if (u?.company_type_expanded && u.company_type_expanded !== 'N/A') return u.company_type_expanded;
+      if (u?.class_of_company && u.class_of_company !== 'N/A') {
+        const cls = u.class_of_company.toLowerCase();
+        if (cls.includes('private')) return 'Private Limited Company';
+        if (cls.includes('public')) return 'Public Limited Company';
+        return u.class_of_company;
+      }
+      return 'COMPANY';
+    } else {
+      // Derive from selected entity name
+      const name = sel.toUpperCase();
+      if (name.includes('PRIVATE LIMITED') || name.includes('PVT LTD') || name.includes('PVT. LTD.')) return 'Private Limited Company';
+      if (name.includes('LIMITED') || name.includes('LTD')) return 'Public Limited Company';
+      if (name.includes('LLP') || name.includes('LIMITED LIABILITY PARTNERSHIP')) return 'Limited Liability Partnership';
+      if (name.includes('OPC') || name.includes('ONE PERSON COMPANY')) return 'One Person Company';
+      if (name.includes('INC') || name.includes('INCORPORATED')) return 'Corporation';
+      if (name.includes('LLC')) return 'Limited Liability Company';
+      return 'COMPANY';
+    }
+  }
+
   get entityType(): string {
     const u = this.user();
     if (!u) return 'N/A';
@@ -116,6 +228,23 @@ export class ClientProfile implements OnInit, OnDestroy {
   }
 
   constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) { }
+  
+  viewServiceDetails(serviceId: string) {
+    this.router.navigate(['/client/service', serviceId]);
+  }
+  
+  
+  hasActionRequired(c: any): boolean {
+    const docs = c.requested_documents || c.requestedDocuments || [];
+    const needsDocUpload = docs.some((doc: any) => !doc.isUploaded);
+    const clientFormSubmitted = c.details?.clientFormSubmitted === true;
+    return !!(needsDocUpload || !clientFormSubmitted || c.action_required);
+  }
+
+  applyService(serviceName: string) {
+    this.router.navigate(['/client/services'], { queryParams: { serviceName: serviceName } });
+  }
+
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (!savedUser) {

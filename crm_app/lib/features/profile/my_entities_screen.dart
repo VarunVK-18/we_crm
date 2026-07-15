@@ -97,7 +97,7 @@ class MyEntitiesScreen extends ConsumerWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'My Entities',
+          'Switch Entities',
           style: TextStyle(
             color: AppTheme.deepTeal,
             fontWeight: FontWeight.w900,
@@ -116,12 +116,6 @@ class MyEntitiesScreen extends ConsumerWidget {
               : ListView(
                   padding: const EdgeInsets.all(24),
                   children: [
-                    // All Entities summary card
-                    _AllEntitiesCard(
-                      totalEntities: entityCards.length,
-                      totalActiveServices: totalActive,
-                    ),
-                    const SizedBox(height: 16),
                     ...entityCards.map((c) => _EntityCard(data: c)),
                   ],
                 ),
@@ -169,162 +163,6 @@ IconData _iconForEntity(String name) {
   return _entityIcons[hash % _entityIcons.length];
 }
 
-// ── All Entities summary card ─────────────────────────────────────────────
-
-class _AllEntitiesCard extends ConsumerWidget {
-  final int totalEntities;
-  final int totalActiveServices;
-
-  const _AllEntitiesCard({
-    required this.totalEntities,
-    required this.totalActiveServices,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedEntity = ref.watch(selectedEntityProvider);
-    final isSelected = selectedEntity == 'All Entities';
-    const color = Color.fromARGB(255, 0, 0, 4);
-
-    return InkWell(
-      onTap: () {
-        ref.read(selectedEntityProvider.notifier).state = 'All Entities';
-        final navContext = Navigator.of(context).context;
-        Navigator.pop(context);
-        
-        showDialog(
-          context: navContext,
-          barrierColor: Colors.black12,
-          barrierDismissible: false,
-          builder: (dialogContext) {
-            Future.delayed(const Duration(milliseconds: 800), () {
-              Navigator.pop(dialogContext);
-            });
-            return Center(
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.deepTeal,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.deepTeal.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      )
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(LucideIcons.checkCircle, color: Colors.white),
-                      SizedBox(width: 12),
-                      Text(
-                        'Selected All Entities',
-                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
-        );
-      },
-      borderRadius: BorderRadius.circular(20),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? AppTheme.deepTeal.withOpacity(0.1)
-                  : Colors.black.withOpacity(0.05),
-              blurRadius: isSelected ? 24 : 16,
-              spreadRadius: 0,
-              offset: Offset(0, isSelected ? 12 : 8),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              alignment: Alignment.center,
-              child: const Icon(LucideIcons.layoutGrid, color: AppTheme.deepTeal, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'All Entities',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w900,
-                      color: AppTheme.deepTeal,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppTheme.deepTeal.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'Portfolio',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AppTheme.deepTeal,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '$totalEntities Entities · $totalActiveServices Active',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: AppTheme.deepTeal.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(LucideIcons.check,
-                    color: AppTheme.deepTeal, size: 20),
-              )
-            else
-              Icon(LucideIcons.chevronRight, color: Colors.grey.shade300),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 // ── Individual entity card ─────────────────────────────────────────────────
 
@@ -348,52 +186,15 @@ class _EntityCard extends ConsumerWidget {
       onTap: () {
         // Store entityName as the canonical selector key
         ref.read(selectedEntityProvider.notifier).state = entityName;
-        final navContext = Navigator.of(context).context;
         Navigator.pop(context);
-        
-        showDialog(
-          context: navContext,
-          barrierColor: Colors.black12,
-          barrierDismissible: false,
-          builder: (dialogContext) {
-            Future.delayed(const Duration(milliseconds: 800), () {
-              Navigator.pop(dialogContext);
-            });
-            return Center(
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.deepTeal,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.deepTeal.withOpacity(0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      )
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(LucideIcons.checkCircle, color: Colors.white),
-                      const SizedBox(width: 12),
-                      Flexible(
-                        child: Text(
-                          'Selected $entityName',
-                          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Switched to $entityName'),
+            backgroundColor: AppTheme.deepTeal,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         );
       },
       borderRadius: BorderRadius.circular(20),

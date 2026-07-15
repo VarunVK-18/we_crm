@@ -20,8 +20,8 @@
           </div>
           <div class="phn-info">
             <div class="phn-title-row">
-              <h1 class="phn-title">{{ (user()?.owner_name || user()?.company_name || user()?.name || 'Client') | titlecase }}</h1>
-              <span class="phn-badge type">{{ (user()?.business_type || shortCompanyName || 'COMPANY') | uppercase }}</span>
+              <h1 class="phn-title">{{ (selectedEntity() === 'All' ? (user()?.company_name || user()?.name || 'Client') : selectedEntity()) | titlecase }}</h1>
+              <span class="phn-badge type">{{ selectedEntityType | uppercase }}</span>
             </div>
             <div class="phn-subtitle-row">
               <span class="phn-location">
@@ -137,11 +137,47 @@
                 </div>
               </div>
             </div>
+
+            <!-- Bank Details Card -->
+            <div class="info-card">
+              <div class="info-card-header">
+                <div class="info-card-header-left">
+                  <div class="info-card-icon">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">account_balance</span>
+                  </div>
+                  <h3 class="info-card-title">Bank Details</h3>
+                </div>
+              </div>
+              
+              <div class="info-card-content">
+                <div class="info-field">
+                  <span class="info-label">Bank Name</span>
+                  <span class="info-val">{{ user()?.bank_details?.bankName || 'N/A' }}</span>
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Account Number</span>
+                  <span class="info-val">{{ user()?.bank_details?.accountNumber || 'N/A' }}</span>
+                </div>
+                <div class="info-field">
+                  <span class="info-label">IFSC Code</span>
+                  <span class="info-val">{{ user()?.bank_details?.ifscCode || 'N/A' }}</span>
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Account Type</span>
+                  <span class="info-val">{{ user()?.bank_details?.accountType || 'N/A' }}</span>
+                </div>
+                <div class="info-field">
+                  <span class="info-label">Branch Name</span>
+                  <span class="info-val">{{ user()?.bank_details?.branchName || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           
-                    <!-- Statutory Details Categorized Cards -->
+          <!-- Statutory Details Categorized Cards -->
+          <div class="info-grid">
 
-          <div class="info-card" style="margin-top: 20px;">
+          <div class="info-card">
             <div class="info-card-header">
               <div class="info-card-header-left">
                 <div class="info-card-icon">
@@ -186,7 +222,7 @@
               </div>
             </div>
           </div>
-          <div class="info-card" style="margin-top: 20px;">
+          <div class="info-card">
             <div class="info-card-header">
               <div class="info-card-header-left">
                 <div class="info-card-icon">
@@ -215,7 +251,7 @@
               </div>
             </div>
           </div>
-          <div class="info-card" style="margin-top: 20px;">
+          <div class="info-card">
             <div class="info-card-header">
               <div class="info-card-header-left">
                 <div class="info-card-icon">
@@ -268,7 +304,7 @@
               </div>
             </div>
           </div>
-          <div class="info-card" style="margin-top: 20px;">
+          <div class="info-card">
             <div class="info-card-header">
               <div class="info-card-header-left">
                 <div class="info-card-icon">
@@ -329,7 +365,7 @@
               </div>
             </div>
           </div>
-          <div class="info-card" style="margin-top: 20px;">
+          <div class="info-card">
             <div class="info-card-header">
               <div class="info-card-header-left">
                 <div class="info-card-icon">
@@ -366,7 +402,7 @@
               </div>
             </div>
           </div>
-          <div class="info-card" style="margin-top: 20px;">
+          <div class="info-card">
             <div class="info-card-header">
               <div class="info-card-header-left">
                 <div class="info-card-icon">
@@ -435,6 +471,7 @@
               </div>
             </div>
           </div>
+          </div> <!-- End of Statutory Details Grid -->
           @if (isEditing()) {
             <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">
               <button class="btn btn-outline" (click)="toggleEdit()">Cancel</button>
@@ -446,36 +483,104 @@
         }
 
         @if (activeTab() === 'services') {
-          <div class="info-card">
-            <h3 class="info-card-title" style="margin-bottom: 20px;">Completed Services</h3>
-            
-            @if (completedServices().length > 0) {
-              <div style="display: flex; flex-direction: column; gap: 16px;">
-                @for (service of completedServices(); track service._id) {
-                  <div style="border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                      <h4 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-primary);">{{ service.service_name }}</h4>
-                      <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-secondary);">
-                        Entity: {{ service.details?.entityName || service.details?.companyName || user()?.company_name || 'N/A' }}
-                        &bull; Completed on: {{ (service.updatedAt || service.createdAt) | date:'mediumDate' }}
-                      </p>
+            <div class="services-tab-content" style="padding: 10px 0;">
+              <!-- Filter Tabs -->
+              <div style="display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 8px;">
+                <button (click)="activeServiceTab.set('all')" [style.background]="activeServiceTab() === 'all' ? 'var(--primary)' : '#f8fafc'" [style.color]="activeServiceTab() === 'all' ? '#fff' : '#64748b'" style="border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                  All Services 
+                  <span [style.background]="activeServiceTab() === 'all' ? 'rgba(255,255,255,0.2)' : '#e2e8f0'" [style.color]="activeServiceTab() === 'all' ? '#fff' : '#475569'" style="padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ allServices().length }}</span>
+                </button>
+                <button (click)="activeServiceTab.set('in-progress')" [style.background]="activeServiceTab() === 'in-progress' ? 'var(--primary)' : '#f8fafc'" [style.color]="activeServiceTab() === 'in-progress' ? '#fff' : '#64748b'" style="border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                  In Progress 
+                  <span [style.background]="activeServiceTab() === 'in-progress' ? 'rgba(255,255,255,0.2)' : '#e2e8f0'" [style.color]="activeServiceTab() === 'in-progress' ? '#fff' : '#475569'" style="padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ inProgressServices().length }}</span>
+                </button>
+                <button (click)="activeServiceTab.set('upcoming')" [style.background]="activeServiceTab() === 'upcoming' ? 'var(--primary)' : '#f8fafc'" [style.color]="activeServiceTab() === 'upcoming' ? '#fff' : '#64748b'" style="border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                  Upcoming 
+                  <span [style.background]="activeServiceTab() === 'upcoming' ? 'rgba(255,255,255,0.2)' : '#e2e8f0'" [style.color]="activeServiceTab() === 'upcoming' ? '#fff' : '#475569'" style="padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ upcomingServices().length }}</span>
+                </button>
+                <button (click)="activeServiceTab.set('completed')" [style.background]="activeServiceTab() === 'completed' ? 'var(--primary)' : '#f8fafc'" [style.color]="activeServiceTab() === 'completed' ? '#fff' : '#64748b'" style="border: none; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+                  Completed 
+                  <span [style.background]="activeServiceTab() === 'completed' ? 'rgba(255,255,255,0.2)' : '#e2e8f0'" [style.color]="activeServiceTab() === 'completed' ? '#fff' : '#475569'" style="padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ completedServices().length }}</span>
+                </button>
+              </div>
+
+              <!-- Services Grid -->
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px;">
+                @if (activeServiceTab() === 'upcoming') {
+                  @for (opp of upcomingServices(); track opp.name) {
+                    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column;">
+                      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 13px;">
+                          <hugeicons-icon [icon]="getServiceIcon(opp.category)" [size]="18" color="var(--primary)"></hugeicons-icon>
+                          {{ opp.category }}
+                        </div>
+                        <span style="background: #f1f5f9; color: #64748b; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">Recommendation</span>
+                      </div>
+                      <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0;">{{ opp.name }}</h3>
+                      <p style="font-size: 14px; color: #64748b; margin: 0 0 20px 0; line-height: 1.5; flex: 1;">{{ opp.desc }}</p>
+                      <button (click)="applyService(opp.name)" style="width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Add Service &rarr;</button>
                     </div>
-                    <span style="background: #e8f5e9; color: #2e7d32; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; text-transform: uppercase;">
-                      Completed
-                    </span>
-                  </div>
+                  }
+                } @else {
+                  @for (service of (activeServiceTab() === 'all' ? allServices() : activeServiceTab() === 'in-progress' ? inProgressServices() : completedServices()); track service._id) {
+                    <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column;">
+                      <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 13px;">
+                          <hugeicons-icon [icon]="getServiceIcon(service.details?.category)" [size]="18" color="var(--primary)"></hugeicons-icon>
+                          {{ service.details?.category || 'Business Service' }}
+                        </div>
+                        @if (service.status === 'completed' || service.status === 'Completed' || service.status === 'done' || service.status === 'Done') {
+                          <span style="background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">Completed</span>
+                        } @else {
+                          <span style="background: #eff6ff; color: #1d4ed8; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600;">In Progress</span>
+                        }
+                      </div>
+                      
+                      <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 8px 0;">{{ service.name || service.service_name || 'Service' }}</h3>
+                      <p style="font-size: 14px; color: #64748b; margin: 0 0 16px 0;">Entity: {{ service.details?.entityName || service.details?.companyName || user()?.company_name || 'N/A' }}</p>
+                      
+                      @if (service.status === 'completed' || service.status === 'Completed' || service.status === 'done' || service.status === 'Done') {
+                        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                          <div style="display: flex; align-items: center; gap: 6px; color: #059669; font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span> All stages completed
+                          </div>
+                          <p style="margin: 0; font-size: 13px; color: #047857;">Your service request is complete.</p>
+                        </div>
+                      } @else {
+                        @if (hasActionRequired(service)) {
+                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                          <div style="display: flex; align-items: center; gap: 6px; color: #1d4ed8; font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">pending_actions</span> Action Required
+                          </div>
+                          <p style="margin: 0; font-size: 13px; color: #1e3a8a;">Check details to provide missing information or documents.</p>
+                        </div>
+                      } @else {
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+                          <div style="display: flex; align-items: center; gap: 6px; color: #475569; font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">autorenew</span> Work in Progress
+                          </div>
+                          <p style="margin: 0; font-size: 13px; color: #64748b;">Our team is working on your service request.</p>
+                        </div>
+                      }
+                      }
+                      
+                      <button (click)="viewServiceDetails(service._id || service.id)" style="width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">View Details &rarr;</button>
+                    </div>
+                  }
+                  
+                  @if ((activeServiceTab() === 'all' && allServices().length === 0) || (activeServiceTab() === 'in-progress' && inProgressServices().length === 0) || (activeServiceTab() === 'completed' && completedServices().length === 0)) {
+                    <div style="grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; padding: 60px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px;">
+                      <span class="material-symbols-outlined" style="font-size: 48px; color: #94a3b8; margin-bottom: 16px;">business_center</span>
+                      <h3 style="font-size: 16px; font-weight: 600; color: #475569; margin: 0 0 8px 0;">No services found</h3>
+                      <p style="font-size: 14px; color: #64748b; margin: 0;">You have no services in this category.</p>
+                    </div>
+                  }
                 }
               </div>
-            } @else {
-              <div style="color: var(--text-secondary); text-align: center; padding: 40px;">
-                <span class="material-symbols-outlined" style="font-size: 48px; color: var(--border); margin-bottom: 16px;">business_center</span>
-                <p>No completed services found.</p>
-              </div>
-            }
-          </div>
-        }
-        
-        @if (activeTab() === 'calendar') {
+            </div>
+          }
+          
+          @if (activeTab() === 'calendar') {
           <div class="info-card" style="padding: 0; overflow: hidden;">
             <div style="padding: 24px;">
               <h3 class="info-card-title" style="margin-bottom: 20px;">Compliance Calendar</h3>
@@ -500,7 +605,7 @@
             
             <div class="documents-list">
               <!-- Default fields that could have documents attached directly on the user model -->
-              @if (user()?.pan_file) {
+              @if (user()?.pan_file && (!documentSearchQuery() || 'pan card document'.includes(documentSearchQuery().toLowerCase()))) {
                 <div class="document-item">
                   <div class="doc-icon-box">
                     <hugeicons-icon [icon]="File01Icon" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>
@@ -523,7 +628,7 @@
                 </div>
               }
               
-              @if (user()?.gstin_file) {
+              @if (user()?.gstin_file && (!documentSearchQuery() || 'gstin document'.includes(documentSearchQuery().toLowerCase()))) {
                 <div class="document-item">
                   <div class="doc-icon-box">
                     <hugeicons-icon [icon]="File01Icon" [size]="20" color="var(--palette-purple)" [strokeWidth]="2"></hugeicons-icon>

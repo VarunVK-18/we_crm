@@ -472,26 +472,39 @@ class ComplianceRadarScreen extends ConsumerWidget {
         ),
         child: Scaffold(
           backgroundColor: AppTheme.backgroundLight,
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              final user = ref.read(authStateProvider).value;
-              if (user != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => OrderChatScreen(
-                      orderId: 'compliance_${user.uid}',
-                      serviceName: 'Compliance Services',
-                      assignedExpert: 'Support',
-                    ),
-                  ),
-                );
-              }
-            },
-            backgroundColor: AppTheme.deepTeal,
-            elevation: 4,
-            child: const Icon(LucideIcons.messageCircle, color: Colors.white),
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 72),
+            child: SizedBox(
+              width: 60,
+              height: 60,
+              child: FloatingActionButton(
+                onPressed: () {
+                  final user = ref.read(authStateProvider).value;
+                  if (user != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OrderChatScreen(
+                          orderId: 'compliance_${user.uid}',
+                          serviceName: 'Compliance Services',
+                          assignedExpert: 'Support',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                backgroundColor: AppTheme.deepTeal,
+                elevation: 6,
+                shape: const CircleBorder(),
+                child: HugeIcon(
+                  icon: HugeIcons.strokeRoundedMessage01,
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+            ),
           ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           body: SafeArea(
             child: isLoading
                 ? const Center(
