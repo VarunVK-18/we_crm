@@ -1,7 +1,9 @@
-import { Component, OnInit, signal, computed, ViewChild, ElementRef, AfterViewInit, OnDestroy, Output, EventEmitter, input } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, signal, computed, effect, Output, EventEmitter, AfterViewInit, OnDestroy, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Api } from '../../api';
-import Chart from 'chart.js/auto';
+import { Chart, ChartConfiguration } from 'chart.js/auto';
+import * as ExcelJS from 'exceljs';
+import * as FileSaver from 'file-saver';
 
 const homeOverviewCache = {
   clients: null as any[] | null,
@@ -174,7 +176,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           
           const isAdminOrManager = parsedUser.role === 'admin' || parsedUser.role === 'client_manager' || parsedUser.role === 'account_manager' || parsedUser.role === 'filing_staff' || parsedUser.role === 'filling_staff';
           if (isAdminOrManager) {
-            expectedCalls = 4;
+            expectedCalls = 5; // incremented to account for orders fetch
           }
 
           const checkDone = () => {
@@ -191,6 +193,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
           
           if (isAdminOrManager) {
             this.fetchCompanyComplianceReminders(checkDone);
+            this.fetchCompanyOrders(checkDone);
           }
         }
       } catch (e) {
@@ -403,21 +406,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   financialTotals = computed(() => {
-    // Use server-side financial totals if available (optimized)
-    const serverStats = this.dashboardStats();
-    if (serverStats?.financial) {
-      return {
-        totalRevenue: serverStats.financial.totalRevenue,
-        amountReceived: serverStats.financial.amountReceived,
-        pendingAmount: serverStats.financial.pendingAmount,
-        // Detail breakdowns still derived client-side from orders for the tooltip popovers
-        revenueDetails: [],
-        receivedDetails: [],
-        pendingDetails: []
-      };
-    }
-
-    // Fallback: compute from locally cached orders (same logic as before)
+    // Detail breakdowns derived client-side from orders for tooltip popovers and exports
     const monthStr = this.financialMonth();
     const ordersList = this.filteredRoleOrders() || [];
     let totalRev = 0;
@@ -442,6 +431,21 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         if (pend > 0) pendingDetails.push({ clientName, serviceName, amount: pend });
       }
     });
+
+    // Use server-side financial totals if available (optimized)
+    const serverStats = this.dashboardStats();
+    if (serverStats?.financial) {
+      return {
+        totalRevenue: serverStats.financial.totalRevenue,
+        amountReceived: serverStats.financial.amountReceived,
+        pendingAmount: serverStats.financial.pendingAmount,
+        revenueDetails,
+        receivedDetails,
+        pendingDetails
+      };
+    }
+
+    // Fallback: compute from locally cached orders (same logic as before)
     return { totalRevenue: totalRev, amountReceived: amtRecv, pendingAmount: totalRev - amtRecv, revenueDetails, receivedDetails, pendingDetails };
   });
 
@@ -573,11 +577,40 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     this.closeExportModal();
   }
 
-  exportFinancialData() {
+  async exportFinancialData() {
     const monthStrFilter = this.financialMonth();
     const ordersList = this.filteredRoleOrders() || [];
     
-    let csvContent = 'Client Name,Service Name,Total Amount,Amount Received,Pending Amount,Inst 1 Amount,Inst 1 Date,Inst 2 Amount,Inst 2 Date,Inst 3 Amount,Inst 3 Date,Inst 4 Amount,Inst 4 Date,Inst 5 Amount,Inst 5 Date\n';
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Financial Data');
+
+    worksheet.columns = [
+      { header: 'Client Name', key: 'clientName', width: 25 },
+      { header: 'Service Name', key: 'serviceName', width: 25 },
+      { header: 'Total Amount', key: 'totalAmount', width: 15 },
+      { header: 'Amount Received', key: 'amountReceived', width: 18 },
+      { header: 'Pending Amount', key: 'pendingAmount', width: 18 },
+      { header: 'Inst 1 Amount', key: 'inst1Amt', width: 15 },
+      { header: 'Inst 1 Date', key: 'inst1Date', width: 15 },
+      { header: 'Inst 2 Amount', key: 'inst2Amt', width: 15 },
+      { header: 'Inst 2 Date', key: 'inst2Date', width: 15 },
+      { header: 'Inst 3 Amount', key: 'inst3Amt', width: 15 },
+      { header: 'Inst 3 Date', key: 'inst3Date', width: 15 },
+      { header: 'Inst 4 Amount', key: 'inst4Amt', width: 15 },
+      { header: 'Inst 4 Date', key: 'inst4Date', width: 15 },
+      { header: 'Inst 5 Amount', key: 'inst5Amt', width: 15 },
+      { header: 'Inst 5 Date', key: 'inst5Date', width: 15 }
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFD1D5DB' }
+      };
+      cell.font = { bold: true };
+    });
 
     let totalRevenueSum = 0;
     let totalReceivedSum = 0;
@@ -588,8 +621,6 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       const d = new Date(o.createdAt);
       const oMonthStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
       if (oMonthStr === monthStrFilter) {
-        const clientName = o.entityName || o.companyName || 'Unknown Client';
-        const serviceName = o.serviceType || 'Service';
         const rev = o.dealClosedAmount || 0;
         const recv = o.advanceAmountPaid || 0;
         const pend = rev - recv;
@@ -597,47 +628,53 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
         totalRevenueSum += rev;
         totalReceivedSum += recv;
         totalPendingSum += pend;
+
+        let rowData: any = {
+          clientName: o.entityName || o.companyName || 'Unknown Client',
+          serviceName: o.serviceType || 'Service',
+          totalAmount: rev,
+          amountReceived: recv,
+          pendingAmount: pend
+        };
         
-        let instCols = [];
         let logs = (o.financialLogs && Array.isArray(o.financialLogs)) ? o.financialLogs : [];
-        
         for (let i = 0; i < 5; i++) {
           if (i < logs.length) {
             const log = logs[i];
             const dt = log.paymentTimestamp ? new Date(log.paymentTimestamp) : (log.addedAt ? new Date(log.addedAt) : null);
-            const dateStr = dt ? dt.toLocaleDateString() : 'N/A';
-            instCols.push(`${log.amount || 0}`);
-            instCols.push(`"${dateStr}"`);
+            rowData[`inst${i+1}Amt`] = log.amount || 0;
+            rowData[`inst${i+1}Date`] = dt ? dt.toLocaleDateString() : 'N/A';
           } else {
-            instCols.push('0');
-            instCols.push('""');
+            rowData[`inst${i+1}Amt`] = 0;
+            rowData[`inst${i+1}Date`] = '';
           }
         }
-        
-        const safeClientName = `"${clientName.replace(/"/g, '""')}"`;
-        const safeServiceName = `"${serviceName.replace(/"/g, '""')}"`;
-        const instDetailsCsv = instCols.join(',');
-        
-        csvContent += `${safeClientName},${safeServiceName},${rev},${recv},${pend},${instDetailsCsv}\n`;
+        worksheet.addRow(rowData);
       }
     });
 
-    // Add 2 blank rows
-    csvContent += `,,,,,,,,,,,,,,\n`;
-    csvContent += `,,,,,,,,,,,,,,\n`;
+    worksheet.addRow({});
+    
+    const totalRow = worksheet.addRow({
+      clientName: 'TOTAL',
+      serviceName: '',
+      totalAmount: totalRevenueSum,
+      amountReceived: totalReceivedSum,
+      pendingAmount: totalPendingSum
+    });
 
-    // Add totals row at the bottom
-    csvContent += `TOTAL,"",${totalRevenueSum},${totalReceivedSum},${totalPendingSum},,,,,,,,,,\n`;
+    totalRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFFEF08A' }
+      };
+      cell.font = { bold: true };
+    });
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Financial_Export_${monthStrFilter}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    FileSaver.saveAs(blob, `Financial_Export_${monthStrFilter}.xlsx`);
   }
 
   initOrUpdateCharts() {
