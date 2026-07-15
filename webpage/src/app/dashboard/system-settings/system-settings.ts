@@ -70,7 +70,8 @@ export class SystemSettings implements OnInit {
     'IE code',
     'LEI',
     'BIS',
-    'ROSH & CE'
+    'RoHS',
+    'CE'
   ];
 
   selectedService = '';

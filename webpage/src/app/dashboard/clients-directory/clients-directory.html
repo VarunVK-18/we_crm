@@ -39,14 +39,15 @@
               <input type="text"  [ngModel]="colSearch_mail()" (ngModelChange)="colSearch_mail.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
             <th style="font-weight: 700; text-align: center;">Chat</th>
-            <th style="font-weight: 700; text-align: center;">Actions</th>
           </tr>
         </thead>
         <tbody>
           @for (client of getFilteredClients(); track client._id) {
           <tr class="table-row-hover">
             <td>
-              <span class="text-muted" style="font-family: monospace;">{{ client.custom_client_id || client._id }}</span>
+              <a href="javascript:void(0)" (click)="viewClientDashboard(client)" class="hover-text-link" style="font-family: monospace; font-weight: 500; text-decoration: none; color: var(--primary);">
+                {{ client.custom_client_id || client._id }}
+              </a>
             </td>
             <td>
               <span style="font-weight: 500; color: var(--text-primary);">{{ client.company_name || 'Individual Account' }}</span>
@@ -68,11 +69,6 @@
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
               </a>
-            </td>
-            <td style="text-align: center;">
-              <button class="btn-decline-sm" (click)="viewClientDashboard(client)" style="background-color: black; color: white; border-radius: 8px; padding: 4px 10px; font-weight: 400; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer;">
-                View
-              </button>
             </td>
           </tr>
           }

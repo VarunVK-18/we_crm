@@ -93,6 +93,28 @@ export class ClientProfile implements OnInit, OnDestroy {
     return full.replace(/\b(private limited|pvt\.?\s*ltd\.?|limited|ltd\.?|llp|opc|inc|corp)\b/gi, '').trim();
   }
 
+  get entityType(): string {
+    const u = this.user();
+    if (!u) return 'N/A';
+    if (u.business_type && u.business_type !== 'N/A') return u.business_type;
+    if (u.company_type_expanded && u.company_type_expanded !== 'N/A') return u.company_type_expanded;
+    if (u.class_of_company && u.class_of_company !== 'N/A') {
+      const cls = u.class_of_company.toLowerCase();
+      if (cls.includes('private')) return 'Private Limited Company';
+      if (cls.includes('public')) return 'Public Limited Company';
+      return u.class_of_company;
+    }
+    
+    // Derive from name if fields are empty
+    const name = (u.company_name || '').toUpperCase();
+    if (name.includes('PRIVATE LIMITED') || name.includes('PVT LTD') || name.includes('PVT. LTD.')) return 'Private Limited Company';
+    if (name.includes('LIMITED') || name.includes('LTD')) return 'Public Limited Company';
+    if (name.includes('LLP') || name.includes('LIMITED LIABILITY PARTNERSHIP')) return 'LLP (Limited Liability Partnership)';
+    if (name.includes('OPC') || name.includes('ONE PERSON COMPANY')) return 'OPC (One Person Company)';
+    
+    return 'N/A';
+  }
+
   constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) { }
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -244,7 +266,7 @@ export class ClientProfile implements OnInit, OnDestroy {
               // Merge with user.directors if any exist
               if (res.user.directors && Array.isArray(res.user.directors)) {
                 for (const d of res.user.directors) {
-                  const existingIndex = directorsList.findIndex(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || (existing.fullName === d.fullName && d.fullName));
+                  const existingIndex = directorsList.findIndex(existing => (existing.pan === d.pan && d.pan) || (existing.din === d.din && d.din) || ((existing.firstName === d.firstName && existing.lastName === d.lastName) && d.firstName));
                   if (existingIndex >= 0) {
                     // Update existing with newer user profile data
                     const merged = { ...directorsList[existingIndex], ...d };
@@ -424,7 +446,34 @@ export class ClientProfile implements OnInit, OnDestroy {
         gstin: current?.gstin || '',
         tan: current?.tan || '',
         cin: current?.cin || '',
-        directors: JSON.parse(JSON.stringify(this.directors())) // Deep copy directors
+        incorporation_date: current?.incorporation_date || '',
+        company_email: current?.company_email || '',
+        main_division_description: current?.main_division_description || '',
+        authorised_capital: current?.authorised_capital || '',
+        paidup_capital: current?.paidup_capital || '',
+        total_obligation_of_contribution: current?.total_obligation_of_contribution || '',
+        address_type: current?.address_type || '',
+        street_address_line_1: current?.street_address_line_1 || '',
+        street_address_line_2: current?.street_address_line_2 || '',
+        city: current?.city || '',
+        state: current?.state || '',
+        postal_code: current?.postal_code || '',
+        main_division_no: current?.main_division_no || '',
+        company_type_expanded: current?.company_type_expanded || '',
+        class_of_company: current?.class_of_company || '',
+        company_category: current?.company_category || '',
+        company_subcategory: current?.company_subcategory || '',
+        registration_number: current?.registration_number || '',
+        company_origin: current?.company_origin || '',
+        roc: current?.roc || '',
+        directors: JSON.parse(JSON.stringify(this.directors())).map((d: any) => {
+          if (!d.firstName && !d.lastName && d.fullName) {
+            const parts = d.fullName.trim().split(' ');
+            d.firstName = parts[0];
+            d.lastName = parts.slice(1).join(' ');
+          }
+          return d;
+        })
       };
       this.isEditing.set(true);
     } else {
@@ -457,6 +506,7 @@ export class ClientProfile implements OnInit, OnDestroy {
 
   uploadDirectorDocument(index: number, docType: 'photo' | 'signature', event: any) {
     const file = event.target.files[0];
+    if (event.target) event.target.value = '';
     if (!file) return;
 
     const userId = this.user()?._id || this.user()?.id;
@@ -493,6 +543,7 @@ export class ClientProfile implements OnInit, OnDestroy {
 
   reuploadGeneralDocument(doc: any, event: any) {
     const file = event.target.files[0];
+    if (event.target) event.target.value = '';
     if (!file) return;
 
     const u = this.user();

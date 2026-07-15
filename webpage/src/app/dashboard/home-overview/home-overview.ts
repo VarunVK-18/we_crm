@@ -939,7 +939,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     { category: 'Licensing', name: 'IE code' },
     { category: 'Licensing', name: 'LEI' },
     { category: 'Licensing', name: 'BIS' },
-    { category: 'Licensing', name: 'ROSH & CE' },
+    { category: 'Licensing', name: 'RoHS' },
+    { category: 'Licensing', name: 'CE' },
   ];
 
   getUpscalingDataForClients(): { label: string; done: number; remaining: number }[] {
@@ -1047,7 +1048,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
       'dpiit', 'duns', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
-      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
+      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent', 'ce', 'rohs'
     ];
     
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
@@ -1130,7 +1131,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     { category: 'Licensing', name: 'IE code' },
     { category: 'Licensing', name: 'LEI' },
     { category: 'Licensing', name: 'BIS' },
-    { category: 'Licensing', name: 'ROSH & CE' },
+    { category: 'Licensing', name: 'RoHS' },
+    { category: 'Licensing', name: 'CE' },
     { category: 'Compliance', name: 'ISO Certification' },
     { category: 'Compliance', name: 'FSSAI Registration' }
   ];

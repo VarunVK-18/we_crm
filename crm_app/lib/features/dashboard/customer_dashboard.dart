@@ -245,7 +245,8 @@ class CustomerDashboard extends ConsumerWidget {
                       'IE code',
                       'LEI',
                       'BIS',
-                      'ROSH & CE',
+                      'RoHS',
+                      'CE',
                       'Individual DSC',
                       'Organization DSC'
                     ],

@@ -67,8 +67,8 @@ exports.activateSubscription = async (req, res) => {
 
     // Determine tier from recommended_plan
     let planTier = 'Startup';
-    if (checklist.recommended_plan === 'Business Plan') planTier = 'Business';
     if (checklist.recommended_plan === 'Corporate Plan') planTier = 'Corporate';
+    if (checklist.recommended_plan === 'Enterprise Plan') planTier = 'Enterprise';
 
     // Set expiry 1 year from now
     const activationDate = new Date();

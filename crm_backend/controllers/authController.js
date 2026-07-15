@@ -1048,13 +1048,13 @@ const subscribeService = async (req, res) => {
         if (details.turnoverCategory) {
           const tc = details.turnoverCategory.toLowerCase();
           if (tc.includes('below') || tc.includes('less than ₹20') || tc.includes('less than 20')) {
-            calculatedPlan = 'Basic Plan';
+            calculatedPlan = 'Startup Plan';
             calculatedFee = 25000;
           } else if (tc.includes('greater than ₹20') || tc.includes('between')) {
-            calculatedPlan = 'Business Plan';
+            calculatedPlan = 'Corporate Plan';
             calculatedFee = 35000;
           } else if (tc.includes('above') || tc.includes('greater than ₹50')) {
-            calculatedPlan = 'Corporate Plan';
+            calculatedPlan = 'Enterprise Plan';
             calculatedFee = 50000;
           }
         }
@@ -1065,42 +1065,7 @@ const subscribeService = async (req, res) => {
         // Create a Bucket Request instead of a direct Checklist
 
 
-        // Always create a Bucket Request — managers must formally accept all service requests
-        const existingBucketReq = await BucketRequest.findOne({
-          company_id: user.company_id,
-          client_id: user._id,
-          service_name: serviceName,
-          status: { $in: ['open', 'claimed_by_manager', 'assigned'] }
-        });
-
-        if (!existingBucketReq) {
-          // If client already has an assigned manager, pre-attach them so it shows in their queue
-          const preAssignedManager = user.assigned_to || null;
-          let managerName = 'To be assigned';
-          let managerPhone = '';
-          
-          if (preAssignedManager) {
-            const manager = await User.findById(preAssignedManager).lean();
-            if (manager) {
-              managerName = manager.owner_name || manager.email;
-              managerPhone = manager.phone || '';
-            }
-          }
-          
-          await BucketRequest.create({
-            company_id: user.company_id || '000000000000000000000000',
-            client_id: user._id,
-            service_name: serviceName,
-            status: 'open',
-            source: 'dealvoice',
-            client_name: requestedEntityName,
-            client_phone: user.phone || '',
-            client_email: user.email,
-            client_company_name: user.company_name || ''
-          });
-          console.log(`Created Bucket Request for DealVoice client: ${serviceName}`);
-        }
-
+        // Removed BucketRequest creation - existing clients go directly to ServiceOrders (New Services)
         // Also create a ServiceOrder so it appears in the New Requests page
         const assignedManager = user.assigned_to ? await User.findById(user.assigned_to).lean() : null;
         const soManagerName = assignedManager ? (assignedManager.owner_name || assignedManager.email) : 'To be assigned';
@@ -1302,7 +1267,13 @@ const editClientProfile = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Unauthorized to edit this profile.' });
     }
 
-    const { company_name, owner_name, email, phone, business_type, address, directors } = req.body;
+    const { 
+      company_name, owner_name, email, phone, business_type, address, directors,
+      company_email, main_division_description, authorised_capital, paidup_capital,
+      total_obligation_of_contribution, address_type, street_address_line_1, street_address_line_2,
+      city, state, postal_code, main_division_no, company_type_expanded, class_of_company,
+      company_category, company_subcategory, registration_number, company_origin, roc
+    } = req.body;
     
     // Only update allowed fields
     const user = await User.findByIdAndUpdate(id, {
@@ -1312,6 +1283,25 @@ const editClientProfile = async (req, res) => {
       phone,
       business_type,
       address,
+      company_email, 
+      main_division_description, 
+      authorised_capital, 
+      paidup_capital,
+      total_obligation_of_contribution, 
+      address_type, 
+      street_address_line_1, 
+      street_address_line_2,
+      city, 
+      state, 
+      postal_code, 
+      main_division_no, 
+      company_type_expanded, 
+      class_of_company,
+      company_category, 
+      company_subcategory, 
+      registration_number, 
+      company_origin, 
+      roc,
       ...(directors !== undefined && { directors })
     }, { new: true });
 

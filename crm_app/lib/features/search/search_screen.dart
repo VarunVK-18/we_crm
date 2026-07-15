@@ -181,7 +181,12 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Licensing',
     },
     {
-      'label': 'ROSH & CE',
+      'label': 'RoHS',
+      'icon': LucideIcons.globe,
+      'category': 'Licensing',
+    },
+    {
+      'label': 'CE',
       'icon': LucideIcons.globe,
       'category': 'Licensing',
     },

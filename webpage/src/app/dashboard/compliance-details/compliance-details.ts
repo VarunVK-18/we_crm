@@ -543,6 +543,7 @@ export class ComplianceDetails implements OnInit, OnDestroy {
 
   directUploadDocument(event: any, documentType: string, task: any) {
     const file = event.target.files[0];
+    if (event.target) event.target.value = '';
     if (!file) return;
 
     // We can just reuse the same toast/loading state, or a simpler one.

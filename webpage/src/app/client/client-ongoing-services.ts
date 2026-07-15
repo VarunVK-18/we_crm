@@ -83,7 +83,9 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
             let status = c.status === 'completed' ? 'completed' : 'in-progress';
             
             if (status === 'in-progress') {
-              if (c.action_required) {
+              const needsDocUpload = c.requestedDocuments?.some((doc: any) => !doc.isUploaded);
+              const clientFormSubmitted = c.details?.clientFormSubmitted === true;
+              if (needsDocUpload || !clientFormSubmitted || c.action_required) {
                 status = 'action-required';
               }
             }

@@ -166,7 +166,7 @@
             <thead>
               <tr>
                 <th>TASK NAME</th>
-                <th>TYPE</th>
+                <th>PRIORITY</th>
                 <th>DEADLINE</th>
                 <th>STATUS</th>
               </tr>
@@ -187,7 +187,6 @@
                         }
                       </div>
                     </td>
-                    <td style="color: #475569; font-size: 13px;">{{ item.type }}</td>
                     <td style="font-size: 13px;">
                       @if (item.daysLeft < 0) {
                         <span style="color: #ef4444; font-weight: 600;">Overdue by {{ -item.daysLeft }} days</span>
@@ -196,6 +195,9 @@
                       } @else {
                         <span style="color: #64748b; font-weight: 500;">{{ item.daysLeft }} days left</span>
                       }
+                    </td>
+                    <td style="color: #475569; font-size: 13px;">
+                      {{ item.dueDate | date:'dd MMM yyyy' }}
                     </td>
                     <td>
                       <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">

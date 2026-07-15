@@ -189,11 +189,17 @@
                 @if (showEntityDropdown()) {
                   <div class="form-group">
                     <label>Select Entity for this Service</label>
-                    <select name="selectedEntity" [(ngModel)]="quoteForm.selectedEntity" required class="form-input select-input" style="height: 48px;">
-                      @for (entity of availableEntities(); track entity) {
-                        <option [value]="entity">{{ entity }}</option>
-                      }
-                    </select>
+                    @if (isLoadingEntities()) {
+                      <div style="height: 48px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">
+                        <div class="we-loader" style="width: 24px; height: 24px; border-width: 2px;"></div>
+                      </div>
+                    } @else {
+                      <select name="selectedEntity" [(ngModel)]="quoteForm.selectedEntity" required class="form-input select-input" style="height: 48px;">
+                        @for (entity of availableEntities(); track entity) {
+                          <option [value]="entity">{{ entity }}</option>
+                        }
+                      </select>
+                    }
                   </div>
 
                   @if (getCompatibilityWarning(); as warning) {

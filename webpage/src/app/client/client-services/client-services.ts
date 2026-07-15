@@ -172,7 +172,12 @@ export class ClientServicesComponent implements OnInit {
         features: ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support', 'Processing Time: 5-7 business days']
       },
       {
-        title: 'ROSH & CE',
+        title: 'RoHS',
+        description: 'Restriction of Hazardous Substances directive certification.',
+        features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 business days']
+      },
+      {
+        title: 'CE',
         description: 'European standard certifications for electronics and products.',
         features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 business days']
       }
@@ -231,6 +236,7 @@ export class ClientServicesComponent implements OnInit {
   isLoadingManager = signal(true);
   clientManager = signal<any>(null);
   availableEntities = signal<string[]>([]);
+  isLoadingEntities = signal<boolean>(true);
   myChecklists = signal<any[]>([]);
 
   // Form State
@@ -319,6 +325,7 @@ export class ClientServicesComponent implements OnInit {
   entityTypesMap = new Map<string, string>();
 
   fetchEntities() {
+    this.isLoadingEntities.set(true);
     this.api.get<any>('my-checklists').subscribe({
       next: (res) => {
         let entities = new Set<string>();
@@ -372,8 +379,12 @@ export class ClientServicesComponent implements OnInit {
         if (entityArray.length > 0) {
           this.quoteForm.selectedEntity = entityArray[0];
         }
+        this.isLoadingEntities.set(false);
       },
-      error: (err) => console.error('Failed to fetch entities:', err)
+      error: (err) => {
+        console.error('Failed to fetch entities:', err);
+        this.isLoadingEntities.set(false);
+      }
     });
   }
 

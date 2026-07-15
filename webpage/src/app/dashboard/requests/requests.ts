@@ -434,10 +434,10 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
     if (['MCA Compliance', 'GST Compliance'].includes(s)) {
       const selected = this.selectedPlanForOrder()[order._id];
       if (selected !== undefined) {
-        return !['Startup Plan', 'Business Plan', 'Corporate Plan'].includes(selected);
+        return !['Startup Plan', 'Corporate Plan', 'Enterprise Plan'].includes(selected);
       }
       const dbPlan = order.recommended_plan || order.details?.recommended_plan;
-      return !['Startup Plan', 'Business Plan', 'Corporate Plan'].includes(dbPlan);
+      return !['Startup Plan', 'Corporate Plan', 'Enterprise Plan'].includes(dbPlan);
     }
     return false;
   }

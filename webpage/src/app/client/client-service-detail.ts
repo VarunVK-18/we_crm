@@ -291,7 +291,9 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
           let status = found.status === 'completed' ? 'completed' : (!isAssigned ? 'not-initialized' : 'in-progress');
 
           if (status === 'in-progress') {
-            if (found.action_required) {
+            const needsDocUpload = found.requestedDocuments?.some((doc: any) => !doc.isUploaded);
+            const clientFormSubmitted = found.details?.clientFormSubmitted === true;
+            if (needsDocUpload || !clientFormSubmitted || found.action_required) {
               status = 'action-required';
             }
           }

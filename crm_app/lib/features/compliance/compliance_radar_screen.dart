@@ -767,7 +767,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                           shrinkWrap: true,
                                           physics: const NeverScrollableScrollPhysics(),
                                           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                            crossAxisCount: Responsive.isMobile(context) ? 1 : 2,
+                                            crossAxisCount: MediaQuery.of(context).size.width < 600 ? 1 : 2,
                                             crossAxisSpacing: 16.r,
                                             mainAxisSpacing: 16.r,
                                             mainAxisExtent: 140.r,

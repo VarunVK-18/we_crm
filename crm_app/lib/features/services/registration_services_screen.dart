@@ -186,7 +186,15 @@ class _RegistrationServicesScreenState
       'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
     },
     {
-      'title': 'CE & RoHS',
+      'title': 'RoHS',
+      'description': 'European standard certifications for electronics and products.',
+      'icon': LucideIcons.checkCircle,
+      'color': const Color(0xFF14B8A6),
+      'category': 'Licensing',
+      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
+    },
+    {
+      'title': 'CE',
       'description': 'European standard certifications for electronics and products.',
       'icon': LucideIcons.checkCircle,
       'color': const Color(0xFF14B8A6),

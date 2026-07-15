@@ -566,8 +566,8 @@ const toggleChecklistItem = async (req, res) => {
       const existingSub = await Subscription.findOne({ checklist_id: checklist._id });
       if (!existingSub) {
         let planTier = 'Startup';
-        if (checklist.recommended_plan === 'Business Plan') planTier = 'Business';
         if (checklist.recommended_plan === 'Corporate Plan') planTier = 'Corporate';
+        if (checklist.recommended_plan === 'Enterprise Plan') planTier = 'Enterprise';
 
         const activationDate = new Date();
         const expiryDate = new Date();
@@ -711,7 +711,7 @@ const updateChecklist = async (req, res) => {
             'duns', 'dpiit', 'private limited', 'trademark', 'trade mark', 'llp', 'msme',
             'gst', 'iso', 'fssai', 'one person company', 'opc', 'lei', 'lie', 'bis',
             'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'pf', 'patent',
-            'copyright', 'itr'
+            'copyright', 'itr', 'ce', 'rohs'
           ];
           const svcLower = checklist.service_name ? checklist.service_name.toLowerCase() : '';
           if (formServices.some(s => svcLower.includes(s))) {
@@ -926,8 +926,8 @@ const updateChecklist = async (req, res) => {
       const existingSub = await Subscription.findOne({ checklist_id: checklist._id });
       if (!existingSub) {
         let planTier = 'Startup';
-        if (checklist.recommended_plan === 'Business Plan') planTier = 'Business';
         if (checklist.recommended_plan === 'Corporate Plan') planTier = 'Corporate';
+        if (checklist.recommended_plan === 'Enterprise Plan') planTier = 'Enterprise';
 
         const activationDate = new Date();
         const expiryDate = new Date();
@@ -1138,7 +1138,12 @@ const uploadRequestedDocuments = async (req, res) => {
         if (req.body && req.body.docIndex !== undefined) {
           requestedDocIndex = parseInt(req.body.docIndex, 10);
         } else {
-          requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
+          // Find the first pending request for this document name
+          requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName && !d.isUploaded);
+          // Fallback to first match if all are already uploaded
+          if (requestedDocIndex === -1) {
+            requestedDocIndex = checklist.requested_documents.findIndex(d => d.name === docName);
+          }
         }
 
         const doc = await Document.create({

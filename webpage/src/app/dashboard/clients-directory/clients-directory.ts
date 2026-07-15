@@ -91,7 +91,8 @@ export class ClientsDirectory implements OnInit {
     'IE code',
     'LEI',
     'BIS',
-    'ROSH & CE'
+    'RoHS',
+    'CE'
   ];
 
   // Task Creation Modal inside clients context

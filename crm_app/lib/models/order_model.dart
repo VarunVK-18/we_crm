@@ -260,17 +260,24 @@ class ServiceOrder {
   }
 
   bool get isReallyActionRequired {
-    if (!actionRequired) return false;
-    
-    // If the client has already submitted the form, action is no longer required
-    final clientFormSubmitted = details['clientFormSubmitted'] == true;
-    if (clientFormSubmitted) return false;
-    
     // Check if there are still documents to upload
     final needsDocUpload = requestedDocuments.any((doc) => !doc.isUploaded);
+    if (needsDocUpload) return true;
     
-    // Action is required if: form not filled OR documents still needed
-    return true;
+    final clientFormSubmitted = details['clientFormSubmitted'] == true;
+    
+    // If the staff has taken the job (status is active) but form is not submitted, action is required
+    if (status == ServiceStatus.active && !clientFormSubmitted) {
+      return true;
+    }
+    
+    // If backend explicitly sets actionRequired
+    if (actionRequired) {
+      if (clientFormSubmitted) return false;
+      return true;
+    }
+    
+    return false;
   }
 
   bool get isPaymentPending {

@@ -1118,10 +1118,10 @@ exports.submitMcaForm = async (req, res) => {
       recommendedPlan = 'Startup Plan';
       recommendedFee = 25000;
     } else if (turnoverCategory === 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs') {
-      recommendedPlan = 'Business Plan';
+      recommendedPlan = 'Corporate Plan';
       recommendedFee = 35000;
     } else if (turnoverCategory === 'Greater than ₹50 Lakhs') {
-      recommendedPlan = 'Corporate Plan';
+      recommendedPlan = 'Enterprise Plan';
       recommendedFee = 50000;
     }
 
@@ -1214,10 +1214,10 @@ exports.submitGstComplianceForm = async (req, res) => {
       recommendedPlan = 'Startup Plan';
       recommendedFee = 25000;
     } else if (turnoverCategory === 'Greater than ₹20 Lakhs and Less than ₹50 Lakhs') {
-      recommendedPlan = 'Business Plan';
+      recommendedPlan = 'Corporate Plan';
       recommendedFee = 35000;
     } else if (turnoverCategory === 'Greater than ₹50 Lakhs') {
-      recommendedPlan = 'Corporate Plan';
+      recommendedPlan = 'Enterprise Plan';
       recommendedFee = 50000;
     }
 

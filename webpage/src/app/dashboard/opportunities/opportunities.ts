@@ -62,7 +62,8 @@ export class Opportunities implements OnInit {
     { category: 'Licensing', name: 'IE code', desc: 'Import Export Code registration for cross-border trade.' },
     { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
     { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
-    { category: 'Licensing', name: 'ROSH & CE', desc: 'European standard certifications for electronics and products.' },
+    { category: 'Licensing', name: 'RoHS', desc: 'Restriction of Hazardous Substances directive certification.' },
+    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' },
     
     // Fallback original pool ones just in case naming was different
     { category: 'Compliance', name: 'ISO Certification', desc: 'Quality management system certification' },

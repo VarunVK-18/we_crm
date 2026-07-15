@@ -322,13 +322,13 @@ class SubscriptionsScreen extends ConsumerWidget {
     
     final lowerPlan = planName.toLowerCase();
     if (lowerPlan.contains('startup')) {
-      planLabel = 'BASIC COMPLIANCE';
+      planLabel = 'Startup Plan';
       planIcon = HugeIcons.strokeRoundedAward01;
     } else if (lowerPlan.contains('corporate')) {
-      planLabel = 'ELITE COMPLIANCE';
+      planLabel = 'Corporate Plan';
       planIcon = HugeIcons.strokeRoundedCrown03;
     } else {
-      planLabel = 'PREMIUM COMPLIANCE';
+      planLabel = 'Enterprise Plan';
       planIcon = HugeIcons.strokeRoundedCrown03;
     }
     

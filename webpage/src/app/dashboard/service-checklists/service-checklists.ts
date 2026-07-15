@@ -108,7 +108,8 @@ export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
     'IE code',
     'LEI',
     'BIS',
-    'ROSH & CE'
+    'RoHS',
+    'CE'
   ];
 
   constructor(public api: Api) {
@@ -527,7 +528,7 @@ export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
       'dpiit', 'duns', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai',
-      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
+      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent', 'ce', 'rohs'
     ];
 
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));

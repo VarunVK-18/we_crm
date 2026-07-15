@@ -231,9 +231,9 @@
               </div>
               <select style="width: 100%; padding: 10px 12px; padding-right: 32px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: white url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M6%209L12%2015L18%209%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E') no-repeat right 12px top 50%; background-size: 16px auto; appearance: none; -webkit-appearance: none; color: #1e293b;" (change)="onPlanChange(selectedOrderForApproval()._id, $event)">
                 <option value="">-- No Plan / Default --</option>
-                <option value="Basic Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Basic Plan' || selectedOrderForApproval().details?.recommended_plan === 'Basic Plan'">Basic Plan (₹25,000 + GST)</option>
-                <option value="Business Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Business Plan' || selectedOrderForApproval().details?.recommended_plan === 'Business Plan'">Business Plan (₹35,000 + GST)</option>
-                <option value="Corporate Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Corporate Plan' || selectedOrderForApproval().details?.recommended_plan === 'Corporate Plan'">Corporate Plan (₹50,000 + GST)</option>
+                <option value="Startup Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Startup Plan' || selectedOrderForApproval().details?.recommended_plan === 'Startup Plan'">Startup Plan (₹25,000 + GST)</option>
+                <option value="Corporate Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Corporate Plan' || selectedOrderForApproval().details?.recommended_plan === 'Corporate Plan'">Corporate Plan (₹35,000 + GST)</option>
+                <option value="Enterprise Plan" [selected]="selectedOrderForApproval().recommended_plan === 'Enterprise Plan' || selectedOrderForApproval().details?.recommended_plan === 'Enterprise Plan'">Enterprise Plan (₹50,000 + GST)</option>
               </select>
             </div>
           }

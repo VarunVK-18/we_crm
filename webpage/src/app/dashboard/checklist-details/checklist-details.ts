@@ -258,7 +258,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     { category: 'Licensing', name: 'IE code', desc: 'Import Export Code registration for cross-border trade.' },
     { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
     { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
-    { category: 'Licensing', name: 'ROSH & CE', desc: 'European standard certifications for electronics and products.' },
+    { category: 'Licensing', name: 'RoHS', desc: 'Restriction of Hazardous Substances directive certification.' },
+    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' },
     
     // Fallback original pool ones just in case naming was different
     { category: 'Compliance', name: 'ISO Certification', desc: 'Quality management system certification' },
@@ -557,7 +558,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
       'dpiit', 'duns', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
-      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent'
+      'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent', 'ce', 'rohs'
     ];
     
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));

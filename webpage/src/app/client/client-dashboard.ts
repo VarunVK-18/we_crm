@@ -375,7 +375,9 @@ export class ClientDashboard implements OnInit, OnDestroy {
       } else if (!isAssigned) {
         status = 'pending-request';
       } else {
-        if (c.action_required) {
+        const needsDocUpload = c.requestedDocuments?.some((doc: any) => !doc.isUploaded);
+        const clientFormSubmitted = c.details?.clientFormSubmitted === true;
+        if (needsDocUpload || !clientFormSubmitted || c.action_required) {
           status = 'action-required';
         }
       }
