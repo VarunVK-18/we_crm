@@ -13,6 +13,10 @@ router.post('/tasks/:id/complete', checkUser, permit('admin', 'client_manager', 
 router.post('/tasks/:id/upload', checkUser, upload.single('document'), complianceController.uploadComplianceDocument);
 router.post('/tasks/:id/generate-document', checkUser, complianceController.generateDocumentFromTemplateForTask);
 
+// Share Capital Bank Statement upload (Case 1 client action)
+router.post('/clients/:clientId/upload-share-capital', checkUser, upload.single('file'), complianceController.uploadShareCapitalBankStatement);
+
+
 // GET /api/compliance/user/:userId
 router.get('/user/:userId', complianceController.getUserComplianceReminders);
 

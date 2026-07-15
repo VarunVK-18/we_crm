@@ -7,239 +7,406 @@
     </div>
   } @else {
 
-    <!-- Header Card -->
-    <section class="info-card" style="padding: 20px 24px; border-radius: 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 20px;">
+    <!-- Flex Layout Wrapper -->
+    <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+      
+      <!-- Left Panel: Main Content -->
+      <div style="flex: 1; min-width: 0;">
+        <!-- Header Card -->
+        <section class="info-card" style="padding: 20px 24px; border-radius: 12px; background-color: var(--bg-primary); border: 1px solid var(--border-color); display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 20px;">
 
-      <!-- Left: Icon + Entity Info -->
-      <div style="display: flex; gap: 16px; min-width: 0; flex: 1; align-items: center;">
-        <div style="width: 48px; height: 48px; border-radius: 12px; background-color: var(--bg-secondary, #f1f5f9); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-primary); flex-shrink: 0;">
-          <span class="material-symbols-outlined" style="font-size: 22px; color: #475569;">gavel</span>
-        </div>
-
-        <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-              {{ entity.entityName | uppercase }}
-            </h3>
-            <span style="font-size: 11px; padding: 3px 10px; border-radius: 100px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">
-              {{ tasks().length }} Tasks
-            </span>
-          </div>
-          <p style="margin: 0; font-size: 13px; color: #6b7280; font-weight: 400;">
-            Compliance filings & document management
-          </p>
-        </div>
-      </div>
-
-      <!-- Right: Client Details -->
-      @if (tasks().length > 0 && tasks()[0].clientUid) {
-        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; border-left: 1px solid var(--border-color); padding-left: 24px;">
-          <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Client</div>
-          @if (tasks()[0].clientUid.custom_client_id) {
-            <div style="font-size: 12px; font-weight: 700; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 6px;">
-              {{ tasks()[0].clientUid.custom_client_id }}
+          <!-- Left: Icon + Entity Info -->
+          <div style="display: flex; gap: 16px; min-width: 0; flex: 1; align-items: center;">
+            <div style="width: 48px; height: 48px; border-radius: 12px; background-color: var(--bg-secondary, #f1f5f9); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-primary); flex-shrink: 0;">
+              <span class="material-symbols-outlined" style="font-size: 22px; color: #475569;">gavel</span>
             </div>
-          }
-          <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #374151; font-weight: 600;">
-            <span class="material-symbols-outlined" style="font-size: 14px; color: #94a3b8;">person</span>
-            {{ tasks()[0].clientUid.owner_name || tasks()[0].clientUid.name || 'Client' }}
-          </div>
-          @if (tasks()[0].clientUid.email) {
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280;">
-              <span class="material-symbols-outlined" style="font-size: 13px; color: #94a3b8;">mail</span>
-              {{ tasks()[0].clientUid.email }}
-            </div>
-          }
-          @if (tasks()[0].clientUid.phone) {
-            <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280;">
-              <span class="material-symbols-outlined" style="font-size: 13px; color: #94a3b8;">call</span>
-              {{ tasks()[0].clientUid.phone }}
-            </div>
-          }
-        </div>
-      }
-    </section>
 
-    <!-- Empty State -->
-    @if (tasks().length === 0) {
-      <div style="background: var(--bg-primary); border-radius: 12px; padding: 64px 32px; text-align: center; border: 1px solid var(--border-color);">
-        <div style="width: 56px; height: 56px; background: #dcfce7; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-          <span class="material-symbols-outlined" style="font-size: 28px; color: #16a34a;">verified</span>
-        </div>
-        <h3 style="font-size: 17px; font-weight: 700; color: #111827; margin: 0 0 8px;">Fully Compliant</h3>
-        <p style="color: #94a3b8; margin: 0; font-size: 14px;">No pending or overdue compliance tasks for this entity.</p>
-      </div>
-
-    } @else {
-
-      <!-- Task List -->
-      <div style="display: flex; flex-direction: column; gap: 16px;">
-        @for (task of tasks(); track task.id) {
-          <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow='none'">
-
-            <!-- Task Header -->
-            <div style="padding: 20px 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; border-bottom: 1px solid var(--border-color);">
-              <div style="flex: 1; min-width: 0;">
-                <h2 style="font-size: 16px; font-weight: 700; color: #111827; margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ task.title }}</h2>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
-                  <!-- Due Date -->
-                  <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #6b7280; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid #f1f5f9;">
-                    <span class="material-symbols-outlined" style="font-size: 13px;">calendar_today</span>
-                    {{ task.dueDate | date:'mediumDate' }}
-                  </span>
-                  <!-- Status Message -->
-                  <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;"
-                    [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#dc2626' : (task.status === 'Completed' ? '#16a34a' : '#d97706')}">
-                    @if (task.status === 'Overdue' || task.status === 'Critical') {
-                      <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
-                    }
-                    @if (task.status === 'Completed') {
-                      <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
-                    }
-                    {{ task.message }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                <!-- Status Badge -->
-                <span style="display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;"
-                  [ngStyle]="{
-                    'background': task.status === 'Completed' ? '#dcfce7' :
-                                  task.status === 'Overdue' ? '#fee2e2' :
-                                  task.status === 'Critical' ? '#ffedd5' : '#f1f5f9',
-                    'color': task.status === 'Completed' ? '#16a34a' :
-                             task.status === 'Overdue' ? '#dc2626' :
-                             task.status === 'Critical' ? '#d97706' : '#475569'
-                  }">
-                  {{ task.status }}
+            <div style="display: flex; flex-direction: column; gap: 5px; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  {{ entity.entityName | uppercase }}
+                </h3>
+                <span style="font-size: 11px; padding: 3px 10px; border-radius: 100px; background: #f1f5f9; border: 1px solid #e2e8f0; color: #475569; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">
+                  {{ tasks().length }} Tasks
                 </span>
-
-                @if (task.status !== 'Completed') {
-                  <button (click)="markTaskComplete(task.id)"
-                    style="background: #16a34a; color: white; border: none; padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; letter-spacing: 0.3px;"
-                    onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
-                    <span class="material-symbols-outlined" style="font-size: 15px;">task_alt</span>
-                    Mark Complete
-                  </button>
-                }
               </div>
+              <p style="margin: 0; font-size: 13px; color: #6b7280; font-weight: 400;">
+                Compliance filings & document management
+              </p>
             </div>
+          </div>
 
-            <!-- Documents Section -->
-            <div style="padding: 16px 24px; background: var(--bg-secondary, #f8fafc);">
-
-              <!-- Documents Header -->
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">folder_open</span>
-                  <span style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;">Generated Documents</span>
-                </div>
-
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                  <!-- Upload Temporary Document -->
-                  <label style="cursor: pointer; font-size: 11px; font-weight: 600; color: #475569; background: var(--bg-primary); padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border-color); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
-                    onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='var(--bg-primary)'">
-                    <input type="file" (change)="directUploadDocument($event, 'temporary', task)" style="display: none">
-                    <span class="material-symbols-outlined" style="font-size: 13px;">upload</span>
-                    Temporary Doc
-                  </label>
-
-                  <!-- Upload Normal Document -->
-                  <label style="cursor: pointer; font-size: 11px; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 5px 12px; border-radius: 6px; border: 1px solid #bfdbfe; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
-                    onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
-                    <input type="file" (change)="directUploadDocument($event, 'normal', task)" style="display: none">
-                    <span class="material-symbols-outlined" style="font-size: 13px;">upload</span>
-                    Normal Doc
-                  </label>
-
-                  <!-- Add Document Dropdown -->
-                  @if (getMissingDocuments(task).length > 0) {
-                    <div style="position: relative; display: inline-flex; align-items: center;">
-                      <select #docSelect (change)="openDocAction(task.id, docSelect.value, task); docSelect.value = ''"
-                        style="appearance: none; -webkit-appearance: none; background: #111827; color: white; border: none; padding: 5px 28px 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; outline: none; letter-spacing: 0.3px;">
-                        <option value="" disabled selected>+ Add Document</option>
-                        @for (doc of getMissingDocuments(task); track doc.key) {
-                          <option [value]="doc.key">{{ doc.label }}</option>
-                        }
-                      </select>
-                      <span class="material-symbols-outlined" style="font-size: 13px; color: white; position: absolute; right: 8px; pointer-events: none;">expand_more</span>
-                    </div>
-                  }
-                </div>
-              </div>
-
-              <!-- Empty Documents State -->
-              @if (getAddedDocuments(task).length === 0) {
-                <div style="text-align: center; padding: 20px; border: 1px dashed #e2e8f0; border-radius: 8px; background: var(--bg-primary);">
-                  <span class="material-symbols-outlined" style="font-size: 24px; color: #cbd5e1; display: block; margin-bottom: 6px;">folder</span>
-                  <p style="font-size: 12px; color: #94a3b8; margin: 0;">No documents yet. Use "Add Document" to generate one.</p>
+          <!-- Right: Client Details -->
+          @if (tasks().length > 0 && tasks()[0].clientUid) {
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; border-left: 1px solid var(--border-color); padding-left: 24px;">
+              <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px;">Client</div>
+              @if (tasks()[0].clientUid.custom_client_id) {
+                <div style="font-size: 12px; font-weight: 700; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; padding: 2px 8px; border-radius: 6px;">
+                  {{ tasks()[0].clientUid.custom_client_id }}
                 </div>
               }
+              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #374151; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size: 14px; color: #94a3b8;">person</span>
+                {{ tasks()[0].clientUid.owner_name || tasks()[0].clientUid.name || 'Client' }}
+              </div>
+              @if (tasks()[0].clientUid.email) {
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280;">
+                  <span class="material-symbols-outlined" style="font-size: 13px; color: #94a3b8;">mail</span>
+                  {{ tasks()[0].clientUid.email }}
+                </div>
+              }
+              @if (tasks()[0].clientUid.phone) {
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b7280;">
+                  <span class="material-symbols-outlined" style="font-size: 13px; color: #94a3b8;">call</span>
+                  {{ tasks()[0].clientUid.phone }}
+                </div>
+              }
+            </div>
+          }
+        </section>
 
-              <!-- Document Rows -->
-              @if (getAddedDocuments(task).length > 0) {
-                <div style="display: flex; flex-direction: column; gap: 6px;">
-                  @for (doc of getAddedDocuments(task); track doc.key) {
-                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 16px; transition: border-color 0.2s;"
-                      onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='var(--border-color)'">
-                      <!-- File Info -->
-                      <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
-                        <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                          <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">description</span>
+        <!-- Empty State -->
+        @if (tasks().length === 0) {
+          <div style="background: var(--bg-primary); border-radius: 12px; padding: 64px 32px; text-align: center; border: 1px solid var(--border-color);">
+            <div style="width: 56px; height: 56px; background: #dcfce7; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+              <span class="material-symbols-outlined" style="font-size: 28px; color: #16a34a;">verified</span>
+            </div>
+            <h3 style="font-size: 17px; font-weight: 700; color: #111827; margin: 0 0 8px;">Fully Compliant</h3>
+            <p style="color: #94a3b8; margin: 0; font-size: 14px;">No pending or overdue compliance tasks for this entity.</p>
+          </div>
+
+        } @else {
+
+          <!-- Task List -->
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            @for (task of tasks(); track task.id) {
+              <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.06)'" onmouseout="this.style.boxShadow='none'">
+
+                <!-- Task Header -->
+                <div style="padding: 20px 24px; display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; border-bottom: 1px solid var(--border-color);">
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 10px;">
+                      <input type="checkbox" 
+                             [checked]="task.status === 'Completed'" 
+                             (change)="markTaskComplete(task.id)"
+                             [disabled]="task.status === 'Completed'"
+                             style="width: 20px; height: 20px; border-radius: 4px; border: 1px solid #cbd5e1; cursor: pointer; accent-color: #16a34a;">
+                      <h2 style="font-size: 16px; font-weight: 700; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                          [ngStyle]="{'text-decoration': task.status === 'Completed' ? 'line-through' : 'none', 'color': task.status === 'Completed' ? '#94a3b8' : '#111827'}">
+                        {{ task.title }}
+                      </h2>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                      <!-- Due Date -->
+                      <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: #6b7280; background: #f8fafc; padding: 4px 10px; border-radius: 6px; border: 1px solid #f1f5f9;">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">calendar_today</span>
+                        {{ task.dueDate | date:'mediumDate' }}
+                      </span>
+                      <!-- Status Message -->
+                      <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;"
+                        [ngStyle]="{'color': task.status === 'Overdue' || task.status === 'Critical' ? '#dc2626' : (task.status === 'Completed' ? '#16a34a' : '#d97706')}">
+                        @if (task.status === 'Overdue' || task.status === 'Critical') {
+                          <span class="material-symbols-outlined" style="font-size: 14px;">warning</span>
+                        }
+                        @if (task.status === 'Completed') {
+                          <span class="material-symbols-outlined" style="font-size: 14px;">check_circle</span>
+                        }
+                        {{ task.message }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                    <!-- Status Badge -->
+                    <span style="display: inline-flex; align-items: center; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;"
+                      [ngStyle]="{
+                        'background': task.status === 'Completed' ? '#dcfce7' :
+                                      task.status === 'Overdue' ? '#fee2e2' :
+                                      task.status === 'Critical' ? '#ffedd5' : '#f1f5f9',
+                        'color': task.status === 'Completed' ? '#16a34a' :
+                                 task.status === 'Overdue' ? '#dc2626' :
+                                 task.status === 'Critical' ? '#d97706' : '#475569'
+                      }">
+                      {{ task.status }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Documents Section -->
+                <div style="padding: 16px 24px; background: var(--bg-secondary, #f8fafc);">
+
+                  <!-- Documents Header -->
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">folder_open</span>
+                      <span style="font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.6px;">Generated Documents</span>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <!-- Upload Temporary Document -->
+                      <label style="cursor: pointer; font-size: 11px; font-weight: 600; color: #475569; background: var(--bg-primary); padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border-color); display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
+                        onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='var(--bg-primary)'">
+                        <input type="file" (change)="directUploadDocument($event, 'temporary', task)" style="display: none">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">upload</span>
+                        Signing Document
+                      </label>
+
+                      <!-- Upload Normal Document -->
+                      <label style="cursor: pointer; font-size: 11px; font-weight: 600; color: #2563eb; background: #eff6ff; padding: 5px 12px; border-radius: 6px; border: 1px solid #bfdbfe; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s;"
+                        onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                        <input type="file" (change)="directUploadDocument($event, 'normal', task)" style="display: none">
+                        <span class="material-symbols-outlined" style="font-size: 13px;">upload</span>
+                        Acknowledge Document
+                      </label>
+
+                      <!-- Add Document Dropdown -->
+                      @if (getMissingDocuments(task).length > 0 && task.title.includes('MCA')) {
+                        <div style="position: relative; display: inline-flex; align-items: center;">
+                          <select #docSelect (change)="openDocAction(task.id, docSelect.value, task); docSelect.value = ''"
+                            style="appearance: none; -webkit-appearance: none; background: #111827; color: white; border: none; padding: 5px 28px 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; outline: none; letter-spacing: 0.3px;">
+                            <option value="" disabled selected>+ Add Document</option>
+                            @for (doc of getMissingDocuments(task); track doc.key) {
+                              <option [value]="doc.key">{{ doc.label }}</option>
+                            }
+                          </select>
+                          <span class="material-symbols-outlined" style="font-size: 13px; color: white; position: absolute; right: 8px; pointer-events: none;">expand_more</span>
                         </div>
-                        <span style="font-size: 13px; font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
-                          title="{{ task[doc.key + 'Document']?.filename || doc.label }}">
-                          {{ task[doc.key + 'Document']?.filename || doc.label }}
-                        </span>
-                      </div>
+                      }
+                    </div>
+                  </div>
 
-                      <!-- Status + Actions -->
-                      <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
-                        <!-- Status Pill -->
-                        @if (doc.key !== 'normal') {
-                          @if (task[doc.key + 'ReplyDocument']) {
-                            <span style="color: #16a34a; background: #dcfce7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                              <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span> Client Replied
+                  <!-- Empty Documents State -->
+                  @if (getAddedDocuments(task).length === 0) {
+                    <div style="text-align: center; padding: 20px; border: 1px dashed #e2e8f0; border-radius: 8px; background: var(--bg-primary);">
+                      <span class="material-symbols-outlined" style="font-size: 24px; color: #cbd5e1; display: block; margin-bottom: 6px;">folder</span>
+                      <p style="font-size: 12px; color: #94a3b8; margin: 0;">No documents yet.</p>
+                    </div>
+                  }
+
+                  <!-- Document Rows -->
+                  @if (getAddedDocuments(task).length > 0) {
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                      @for (doc of getAddedDocuments(task); track doc.key) {
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 16px; transition: border-color 0.2s;"
+                          onmouseover="this.style.borderColor='#cbd5e1'" onmouseout="this.style.borderColor='var(--border-color)'">
+                          <!-- File Info -->
+                          <div style="display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1;">
+                            <div style="width: 32px; height: 32px; background: #f1f5f9; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                              <span class="material-symbols-outlined" style="font-size: 16px; color: #94a3b8;">description</span>
+                            </div>
+                            <span style="font-size: 13px; font-weight: 500; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                              title="{{ task[doc.key + 'Document']?.filename || doc.label }}">
+                              {{ task[doc.key + 'Document']?.filename || doc.label }}
                             </span>
-                          } @else {
-                            <span style="color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                              <span class="material-symbols-outlined" style="font-size: 13px;">pending_actions</span> Awaiting Reply
-                            </span>
-                          }
-                        } @else {
-                          <span style="color: #16a34a; background: #dcfce7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
-                            <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span> Sent
-                          </span>
-                        }
+                          </div>
 
-                        <!-- View Original -->
-                        <a [href]="getDocumentUrl(task[doc.key + 'Document'])" target="_blank"
-                          style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; transition: all 0.2s;"
-                          onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
-                          <span class="material-symbols-outlined" style="font-size: 13px;">visibility</span> View
-                        </a>
+                          <!-- Status + Actions -->
+                          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <!-- Status Pill -->
+                            @if (doc.key !== 'normal') {
+                              @if (task[doc.key + 'ReplyDocument']) {
+                                <span style="color: #16a34a; background: #dcfce7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                  <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span> Client Replied
+                                </span>
+                              } @else {
+                                <span style="color: #b45309; background: #fef3c7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                  <span class="material-symbols-outlined" style="font-size: 13px;">pending_actions</span> Awaiting Reply
+                                </span>
+                              }
+                            } @else {
+                              <span style="color: #16a34a; background: #dcfce7; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                <span class="material-symbols-outlined" style="font-size: 13px;">check_circle</span> Sent
+                              </span>
+                            }
 
-                        <!-- View Signed (if replied) -->
-                        @if (task[doc.key + 'ReplyDocument']) {
-                          <a [href]="getDocumentUrl(task[doc.key + 'ReplyDocument'])" target="_blank"
-                            style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; transition: all 0.2s;"
-                            onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'">
-                            <span class="material-symbols-outlined" style="font-size: 13px;">signature</span> Signed
-                          </a>
-                        }
-                      </div>
+                            <!-- View Original -->
+                            <a [href]="getDocumentUrl(task[doc.key + 'Document'])" target="_blank"
+                              style="background: #f8fafc; border: 1px solid #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; transition: all 0.2s;"
+                              onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f8fafc'">
+                              <span class="material-symbols-outlined" style="font-size: 13px;">visibility</span> View
+                            </a>
+
+                            <!-- View Signed (if replied) -->
+                            @if (task[doc.key + 'ReplyDocument']) {
+                              <a [href]="getDocumentUrl(task[doc.key + 'ReplyDocument'])" target="_blank"
+                                style="background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; transition: all 0.2s;"
+                                onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'">
+                                <span class="material-symbols-outlined" style="font-size: 13px;">signature</span> Signed
+                              </a>
+                            }
+                          </div>
+                        </div>
+                      }
                     </div>
                   }
                 </div>
-              }
-            </div>
 
+              </div>
+            }
           </div>
         }
-      </div>
-    }
+      </div> <!-- End Left Panel -->
+
+      <!-- Right Panel: MCA / Company Data -->
+      @if (tasks().length > 0 && tasks()[0].clientUid) {
+        <div style="width: 320px; flex-shrink: 0; background: var(--bg-primary); border-radius: 12px; border: 1px solid var(--border-color); padding: 20px 24px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+          
+          <!-- Header -->
+          <h3 style="margin: 0; font-size: 15px; font-weight: 700; color: #111827; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+            <span class="material-symbols-outlined" style="font-size: 18px; color: #3b82f6;">corporate_fare</span>
+            Company Profile (MCA)
+          </h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <!-- Company Name -->
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Company Name</div>
+              <div style="font-size: 13px; font-weight: 600; color: #334155; line-height: 1.4;">{{ tasks()[0].clientUid.company_name || 'N/A' }}</div>
+            </div>
+            
+            <!-- Incorporation Date -->
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Incorporation Date</div>
+              <div style="font-size: 13px; font-weight: 500; color: #475569; display: flex; align-items: center; gap: 6px;">
+                <span class="material-symbols-outlined" style="font-size: 14px; color: #94a3b8;">event</span>
+                {{ tasks()[0].clientUid.incorporation_date ? (tasks()[0].clientUid.incorporation_date | date:'longDate') : 'N/A' }}
+              </div>
+            </div>
+
+            <!-- PAN -->
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">PAN / Tax ID</div>
+              <div style="font-size: 13px; font-weight: 600; color: #475569; font-family: monospace; background: #f8fafc; padding: 4px 8px; border-radius: 4px; display: inline-block; border: 1px solid #e2e8f0;">
+                {{ tasks()[0].clientUid.pan || 'N/A' }}
+              </div>
+            </div>
+            
+            <!-- Compliance Case -->
+            <div>
+              <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Compliance Type</div>
+              <div style="font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px;"
+                [ngStyle]="{
+                  'background': tasks()[0].clientUid.compliance_case === 'case1' ? '#eff6ff' : tasks()[0].clientUid.compliance_case === 'case2' ? '#f0fdf4' : tasks()[0].clientUid.compliance_case === 'case3' ? '#fdf4ff' : '#f1f5f9',
+                  'color': tasks()[0].clientUid.compliance_case === 'case1' ? '#2563eb' : tasks()[0].clientUid.compliance_case === 'case2' ? '#16a34a' : tasks()[0].clientUid.compliance_case === 'case3' ? '#c026d3' : '#475569',
+                  'border': '1px solid ' + (tasks()[0].clientUid.compliance_case === 'case1' ? '#bfdbfe' : tasks()[0].clientUid.compliance_case === 'case2' ? '#bbf7d0' : tasks()[0].clientUid.compliance_case === 'case3' ? '#f5d0fe' : '#e2e8f0')
+                }">
+                <span class="material-symbols-outlined" style="font-size: 14px;">schema</span>
+                {{ tasks()[0].clientUid.compliance_case === 'case1' ? 'First Year (Case 1)' : tasks()[0].clientUid.compliance_case === 'case2' ? 'Annual Renewal (Case 2)' : tasks()[0].clientUid.compliance_case === 'case3' ? 'Transferred (Case 3)' : 'Standard' }}
+              </div>
+            </div>
+
+            <!-- Year Count -->
+            @if (tasks()[0].clientUid.compliance_year_count) {
+              <div>
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Years with Us</div>
+                <div style="font-size: 14px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 16px; color: #f59e0b;">verified</span>
+                  Year {{ tasks()[0].clientUid.compliance_year_count }}
+                </div>
+              </div>
+            }
+
+            <!-- Share Capital Document (Case 1) -->
+            @if (tasks()[0].clientUid.share_capital_bank_statement) {
+              <div style="margin-top: 4px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Share Capital Transfer</div>
+                <a [href]="tasks()[0].clientUid.share_capital_bank_statement.startsWith('http') ? tasks()[0].clientUid.share_capital_bank_statement : api.serverUrl + tasks()[0].clientUid.share_capital_bank_statement" target="_blank"
+                  style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #f0fdf4; color: #16a34a; border: 1.5px solid #bbf7d0; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; text-decoration: none; transition: 0.2s;"
+                  onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">download</span>
+                  View Statement
+                </a>
+              </div>
+            }
+
+            <!-- Share Capital Pending Upload -->
+            @if (!tasks()[0].clientUid.share_capital_bank_statement && tasks()[0].clientUid.compliance_case === 'case1') {
+              <div style="margin-top: 4px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Share Capital Transfer</div>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 6px; background: #fffbeb; color: #b45309; border: 1.5px dashed #fde68a; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">hourglass_empty</span>
+                  Pending Upload
+                </div>
+              </div>
+            }
+
+            <!-- MCA Profile Data -->
+            @if (tasks()[0].clientUid.mca_profile_completed) {
+              <div style="margin-top: 4px; padding-top: 16px; border-top: 1px dashed var(--border-color);">
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 14px;">security</span>
+                  MCA Credentials
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                  <div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 600; margin-bottom: 2px;">USERNAME</div>
+                    <div style="font-size: 13px; color: #1e293b; font-weight: 500; font-family: monospace;">{{ tasks()[0].clientUid.mca_username || 'N/A' }}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10px; color: #64748b; font-weight: 600; margin-bottom: 2px;">PASSWORD</div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="font-size: 13px; color: #1e293b; font-weight: 500; font-family: monospace;">
+                        {{ showMcaPassword() ? (tasks()[0].clientUid.mca_password || 'N/A') : '••••••••' }}
+                      </div>
+                      <button (click)="showMcaPassword.set(!showMcaPassword())" style="background: none; border: none; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; padding: 2px; border-radius: 4px;" title="Toggle visibility">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">{{ showMcaPassword() ? 'visibility_off' : 'visibility' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                  @if (tasks()[0].clientUid.annual_turnover) {
+                    <div>
+                      <div style="font-size: 10px; color: #64748b; font-weight: 600; margin-bottom: 2px;">ANNUAL TURNOVER</div>
+                      <div style="font-size: 13px; color: #1e293b; font-weight: 500;">{{ tasks()[0].clientUid.annual_turnover }}</div>
+                    </div>
+                  }
+                </div>
+
+                <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">MCA Documents</div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  @if (tasks()[0].clientUid.coi_file) {
+                    <a [href]="getDocumentUrl(tasks()[0].clientUid.coi_file)" target="_blank" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">description</span> COI Document
+                    </a>
+                  }
+                  @if (tasks()[0].clientUid.pan_file) {
+                    <a [href]="getDocumentUrl(tasks()[0].clientUid.pan_file)" target="_blank" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">description</span> PAN Document
+                    </a>
+                  }
+                  @if (tasks()[0].clientUid.moa_file) {
+                    <a [href]="getDocumentUrl(tasks()[0].clientUid.moa_file)" target="_blank" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">description</span> MOA Document
+                    </a>
+                  }
+                  @if (tasks()[0].clientUid.aoa_file) {
+                    <a [href]="getDocumentUrl(tasks()[0].clientUid.aoa_file)" target="_blank" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">description</span> AOA Document
+                    </a>
+                  }
+                  @if (tasks()[0].clientUid.bank_statement_file) {
+                    <a [href]="getDocumentUrl(tasks()[0].clientUid.bank_statement_file)" target="_blank" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">description</span> Bank Statement
+                    </a>
+                  }
+                  @if (tasks()[0].clientUid.sales_invoice_file) {
+                    <a [href]="getDocumentUrl(tasks()[0].clientUid.sales_invoice_file)" target="_blank" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">description</span> Sales Invoice
+                    </a>
+                  }
+                  @if (tasks()[0].clientUid.purchase_bills_file) {
+                    <a [href]="getDocumentUrl(tasks()[0].clientUid.purchase_bills_file)" target="_blank" style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 500;">
+                      <span class="material-symbols-outlined" style="font-size: 16px;">description</span> Purchase Bills
+                    </a>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
   }
 
   <!-- Document Action Modal -->

@@ -1,0 +1,178 @@
+<div class="bucket-page">
+
+
+  @if (isLoading()) {
+  <div class="bucket-table-container">
+    <table class="bucket-table">
+      <thead>
+        <tr>
+          <th>Client ID</th>
+          <th>Company Name</th>
+          <th>Client Name</th>
+          <th>Incorporation Date</th>
+          <th>Phone Number</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (i of [1, 2, 3, 4, 5]; track i) {
+        <tr>
+          <td>
+            <div class="skeleton-text"
+              style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;">
+            </div>
+          </td>
+          <td>
+            <div class="skeleton-text"
+              style="width: 140px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;">
+            </div>
+          </td>
+          <td>
+            <div class="skeleton-text"
+              style="width: 120px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;">
+            </div>
+          </td>
+          <td>
+            <div class="skeleton-text"
+              style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;">
+            </div>
+          </td>
+          <td>
+            <div class="skeleton-text"
+              style="width: 100px; height: 16px; background: #e2e8f0; border-radius: 4px; animation: pulse 1.5s infinite;">
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  } @else if (clients().length === 0) {
+  <div class="bucket-empty">
+    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+    <h3>No missing bank details</h3>
+    <p>All incorporated clients have their bank details filled.</p>
+  </div>
+  } @else {
+  <div class="bucket-table-container">
+    <table class="bucket-table">
+      <thead>
+        <tr>
+          <th style="vertical-align: top;">
+            <div>Client ID</div>
+            <input type="text" [ngModel]="mClientIdFilter()" (ngModelChange)="mClientIdFilter.set($event); onSearchChange()" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>Company Name</div>
+            <input type="text" [ngModel]="mCompanyNameFilter()" (ngModelChange)="mCompanyNameFilter.set($event); onSearchChange()" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>Client Name</div>
+            <input type="text" [ngModel]="mClientNameFilter()" (ngModelChange)="mClientNameFilter.set($event); onSearchChange()" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>Incorporation Date</div>
+            <input type="text" [ngModel]="mIncDateFilter()" (ngModelChange)="mIncDateFilter.set($event); onSearchChange()" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>Phone Number</div>
+            <input type="text" [ngModel]="mPhoneFilter()" (ngModelChange)="mPhoneFilter.set($event); onSearchChange()" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (client of filteredClients(); track client._id) {
+        <tr class="table-row-hover" style="cursor: pointer;" (click)="openModal(client)">
+          <td>
+            <span class="text-muted" style="font-family: monospace;">{{ client.custom_client_id || '-' }}</span>
+          </td>
+          <td>
+            <span style="font-weight: 500; color: var(--text-primary);">{{ client.company_name || '-' }}</span>
+          </td>
+          <td>
+            <span class="employee-name" style="font-weight: 500;">{{ client.owner_name }}</span>
+          </td>
+          <td>
+            <span>{{ getIncorporationDate(client) ? (getIncorporationDate(client) | date:'mediumDate') : '-' }}</span>
+          </td>
+          <td>
+            <span>{{ client.phone || '-' }}</span>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (totalPages() > 1) {
+  <div class="pagination-controls">
+    <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+    <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
+    <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
+  </div>
+  }
+  }
+
+  <!-- Update Bank Details Modal -->
+  @if (isModalOpen() && selectedClient()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-card-box" style="max-width: 500px; max-height: 90vh; overflow-y: auto;"
+      (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Update Bank Details</h3>
+        <button class="close-modal-btn" (click)="closeModal()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div style="margin-bottom: 24px; color: var(--text-secondary); font-size: 14px;">
+        Fill in the corporate bank details for <strong>{{ selectedClient().company_name || selectedClient().owner_name }}</strong>.
+      </div>
+
+      <div class="form-group-item" style="margin-top: 16px;">
+        <label class="form-input-label">Bank Name *</label>
+        <input type="text" class="form-control-input" [ngModel]="bankName()" (ngModelChange)="bankName.set($event)" placeholder="e.g. HDFC Bank" />
+      </div>
+
+      <div class="form-group-item" style="margin-top: 16px;">
+        <label class="form-input-label">Account Number *</label>
+        <input type="text" class="form-control-input" [ngModel]="accountNumber()" (ngModelChange)="accountNumber.set($event)" placeholder="Account Number" />
+      </div>
+
+      <div class="form-group-item" style="margin-top: 16px;">
+        <label class="form-input-label">IFSC Code *</label>
+        <input type="text" class="form-control-input" [ngModel]="ifscCode()" (ngModelChange)="ifscCode.set($event)" placeholder="IFSC Code" />
+      </div>
+
+      <div class="form-group-item" style="margin-top: 16px;">
+        <label class="form-input-label">Account Type *</label>
+        <select class="form-control-input" [ngModel]="accountType()" (ngModelChange)="accountType.set($event)"
+          style="background: white url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M6%209L12%2015L18%209%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E') no-repeat right 12px top 50%; background-size: 16px auto; appearance: none; -webkit-appearance: none;">
+          <option value="">-- Select Type --</option>
+          <option value="Current">Current</option>
+          <option value="Savings">Savings</option>
+          <option value="OD">Overdraft (OD)</option>
+        </select>
+      </div>
+
+      <div class="form-group-item" style="margin-top: 16px;">
+        <label class="form-input-label">Branch Name</label>
+        <input type="text" class="form-control-input" [ngModel]="branchName()" (ngModelChange)="branchName.set($event)" placeholder="Branch Name (Optional)" />
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px;">
+        <button class="btn-decline-sm" (click)="closeModal()">Cancel</button>
+        <button class="btn-claim-sm" (click)="saveBankDetails()" [disabled]="!isFormValid() || isSaving()">
+          {{ isSaving() ? 'Saving...' : 'Save Details' }}
+        </button>
+      </div>
+    </div>
+  </div>
+  }
+</div>

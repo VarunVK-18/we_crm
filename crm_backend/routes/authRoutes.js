@@ -30,7 +30,10 @@ const {
   uploadDirectorDocument,
   toggleComplianceRadar,
   reuploadProfileDocument,
-  externalOnboard
+  externalOnboard,
+  updateMcaProfile,
+  getClientsWithNoBankDetails,
+  updateClientBankDetails
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -62,9 +65,12 @@ router.put('/users/profile/:id/entities', checkUser, preventAuditorWrite, permit
 router.post('/users/profile/:id/upload-image', upload.single('profileImage'), uploadProfileImage);
 router.delete('/users/profile/:id/remove-image', removeProfileImage);
 router.put('/users/profile/:id/documents/reupload', checkUser, upload.single('file'), reuploadProfileDocument);
+router.post('/users/me/mca-profile', checkUser, upload.any(), updateMcaProfile);
 
 // Client users listing & actions route
 router.get('/users/clients/summary', checkUser, getClientsSummary); // Lightweight client list for dashboard
+router.get('/users/clients/no-bank-details', checkUser, permit('admin', 'client_manager'), getClientsWithNoBankDetails);
+router.patch('/users/clients/:id/bank-details', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), updateClientBankDetails);
 router.get('/users/clients', checkUser, getClients);
 router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), assignClient);
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);

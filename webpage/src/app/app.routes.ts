@@ -108,6 +108,7 @@ export const routes: Routes = [
       { path: 'forms/lei/:id', component: LeiForm },
       { path: 'forms/bis/:id', component: BisForm },
       { path: 'forms/mca/:id', component: McaFormComponent },
+      { path: 'forms/mca-profile', component: McaFormComponent },
       { path: 'forms/proprietorship/:id', component: ProprietorshipForm },
       { path: 'forms/tds/:id', component: TdsForm },
       { path: 'forms/itr/:id', component: ItrForm },

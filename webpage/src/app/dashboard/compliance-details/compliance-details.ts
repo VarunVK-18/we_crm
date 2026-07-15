@@ -18,7 +18,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 @Component({
   selector: 'app-compliance-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './compliance-details.html',
   styleUrl: './compliance-details.css'
 })
@@ -43,6 +43,7 @@ export class ComplianceDetails implements OnInit, OnDestroy {
   activeDocAction = signal<{taskId: string, type: string, task: any} | null>(null);
   selectedFile: File | null = null;
   selectedTemplateId = signal<string>('');
+  showMcaPassword = signal(false);
 
   // Modal specific signals
   activeTab = signal<'generate' | 'upload'>('generate');
@@ -58,8 +59,8 @@ export class ComplianceDetails implements OnInit, OnDestroy {
     { key: 'shareholders', label: 'List Of Share Holders', templateName: 'list of share holders' },
     { key: 'directors', label: 'List Of Directors', templateName: 'list of directors' },
     { key: 'notes', label: 'Notes', templateName: 'notes' },
-    { key: 'temporary', label: 'Temporary Document', templateName: '', isUploadOnly: true },
-    { key: 'normal', label: 'Normal Document', templateName: '', isUploadOnly: true }
+    { key: 'temporary', label: 'Signing Document', templateName: '', isUploadOnly: true },
+    { key: 'normal', label: 'Acknowledge Document', templateName: '', isUploadOnly: true }
   ];
 
   getTemplateFor(templateName: string): any {
@@ -322,6 +323,15 @@ export class ComplianceDetails implements OnInit, OnDestroy {
       next: (res) => {
         const fetched = res.tasks || [];
         const entityTasks = fetched.filter((t: any) => {
+          if (t.title && (
+              t.title.includes('Share Capital Transfer') || 
+              t.title.includes('Current Account Opening') || 
+              t.title.includes('SH-1') ||
+              t.title.includes('Incorporation (External)') ||
+              t.title.includes('Certificate of Incorporation (External)')
+          )) {
+            return false;
+          }
           const tEntityName = t.entityName?.trim() || 
             (t.companyId && typeof t.companyId === 'object' ? t.companyId.company_name : null) || 
             t.checklistId?.details?.entityName || 
@@ -338,7 +348,11 @@ export class ComplianceDetails implements OnInit, OnDestroy {
           message: r.daysLeft <= 0 ? 'Overdue - Penalty Applicable' : `Due in ${r.daysLeft} days`
         }));
         
-        this.tasks.set(mapped);
+        // Ensure "MCA Reports" always appears at the end of the list
+        const nonMca = mapped.filter((t: any) => !t.title?.includes('MCA Reports'));
+        const mca = mapped.filter((t: any) => t.title?.includes('MCA Reports'));
+        
+        this.tasks.set([...nonMca, ...mca]);
         this.isLoading.set(false);
       },
       error: (err) => {

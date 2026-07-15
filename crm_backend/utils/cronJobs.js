@@ -114,3 +114,58 @@ cron.schedule('44 15 * * *', async () => {
     console.error('Error in cron job:', err);
   }
 });
+
+// ─── April 1 Annual Compliance Renewal Cron ───────────────────────────────────
+// Runs at midnight on April 1 every year.
+// For every client in the compliance radar (compliance_year_count >= 1 with us),
+// creates a new bucket request for the manager to review and trigger the next year's tasks.
+cron.schedule('0 0 1 4 *', async () => {
+  try {
+    console.log('[Compliance Cron] April 1 renewal run started...');
+    const User = require('../models/User');
+    const BucketRequest = require('../models/BucketRequest');
+
+    // Find all clients in radar who have done at least 1 year with us (Case 1, 2, or 3)
+    const clients = await User.find({
+      role: 'customer',
+      in_compliance_radar: true,
+      compliance_case: { $in: ['case1', 'case2', 'case3'] },
+      compliance_year_count: { $gte: 1 }
+    }).select('_id owner_name company_name custom_client_id company_id assigned_to compliance_year_count compliance_case');
+
+    console.log(`[Compliance Cron] Found ${clients.length} clients eligible for April 1 renewal`);
+
+    for (const client of clients) {
+      try {
+        // Increment the year count
+        const newYearCount = (client.compliance_year_count || 1) + 1;
+        await User.findByIdAndUpdate(client._id, {
+          compliance_year_count: newYearCount,
+          compliance_case: 'case2' // From 2nd year onwards, always Case 2 (renewal)
+        });
+
+        // Create a renewal bucket request for the manager
+        await BucketRequest.create({
+          company_id: client.company_id,
+          client_id: client._id,
+          service_name: `Annual Compliance Renewal (Year ${newYearCount})`,
+          source: 'we-crm',
+          status: 'open',
+          is_external_compliance: true,
+          client_name: client.owner_name || '',
+          client_company_name: client.company_name || '',
+          dealvoice_client_id: client.custom_client_id || ''
+        });
+
+        console.log(`[Compliance Cron] Created renewal bucket for client ${client._id} (Year ${newYearCount})`);
+      } catch (clientErr) {
+        console.error(`[Compliance Cron] Error processing client ${client._id}:`, clientErr.message);
+      }
+    }
+
+    console.log('[Compliance Cron] April 1 renewal run completed.');
+  } catch (err) {
+    console.error('[Compliance Cron] April 1 renewal cron failed:', err);
+  }
+});
+

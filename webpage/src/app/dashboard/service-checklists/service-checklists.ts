@@ -33,6 +33,8 @@ export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
   companyFilter = signal<string>('');
   assigneeFilter = signal<string>('');
   priorityFilter = signal<string>('');
+  dateFilter = signal<string>('');
+  dueDateFilter = signal<string>('');
 
   private resizeObserver: ResizeObserver | null = null;
   private observedHeaders = new Set<Element>();
@@ -208,7 +210,7 @@ export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   hasActiveFilters = computed(() => {
-    return !!(this.searchQuery() || this.serviceIdFilter() || this.clientIdFilter() || this.serviceFilter() || this.companyFilter() || this.assigneeFilter() || this.priorityFilter());
+    return !!(this.searchQuery() || this.serviceIdFilter() || this.clientIdFilter() || this.serviceFilter() || this.companyFilter() || this.assigneeFilter() || this.priorityFilter() || this.dateFilter() || this.dueDateFilter());
   });
 
   filteredChecklists() {
@@ -276,6 +278,30 @@ export class ServiceChecklists implements OnInit, OnDestroy, AfterViewChecked {
     const prio = this.priorityFilter();
     if (prio) {
       filtered = filtered.filter(c => (c.priority || '') === prio);
+    }
+
+    const dFilter = this.dateFilter();
+    if (dFilter) {
+      filtered = filtered.filter(c => {
+        if (!c.createdAt) return false;
+        const d = new Date(c.createdAt);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}` === dFilter;
+      });
+    }
+
+    const dueFilter = this.dueDateFilter();
+    if (dueFilter) {
+      filtered = filtered.filter(c => {
+        if (!c.dueDate) return false;
+        const d = new Date(c.dueDate);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}` === dueFilter;
+      });
     }
 
     return filtered;

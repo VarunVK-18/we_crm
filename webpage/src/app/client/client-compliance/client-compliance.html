@@ -33,6 +33,45 @@
         </div>
       }
 
+      <!-- Share Capital Bank Statement Upload Card — Only for Case 1 clients who haven't uploaded yet AND ADT-1 is complete -->
+      @if (isCase1() && !shareCapitalUploaded() && isAdt1Completed()) {
+        <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 1.5px solid #f59e0b; border-radius: 14px; padding: 20px 24px; margin-bottom: 24px; display: flex; gap: 16px; align-items: flex-start; box-shadow: 0 4px 12px rgba(245,158,11,0.12);">
+          <div style="width: 44px; height: 44px; border-radius: 10px; background: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <span class="material-symbols-outlined" style="color: white; font-size: 22px;">account_balance</span>
+          </div>
+          <div style="flex: 1;">
+            <h3 style="color: #92400e; font-size: 16px; font-weight: 700; margin: 0 0 6px 0;">Action Required: Share Capital Transfer</h3>
+            <p style="color: #92400e; font-size: 13px; margin: 0; line-height: 1.5;">
+              As part of your company incorporation process, please upload your <strong>Share Capital Transfer</strong>
+              showing the share capital deposited in your company's current account.
+              This is required to complete your first-year compliance filing.
+            </p>
+            @if (isUploadingShareCapital()) {
+              <div style="display: flex; align-items: center; gap: 8px; color: #b45309; font-size: 13px; font-weight: 500;">
+                <span class="material-symbols-outlined" style="font-size: 16px; animation: spin 1s linear infinite;">sync</span>
+                Uploading...
+              </div>
+            } @else {
+              <label style="display: inline-flex; align-items: center; gap: 8px; background: #f59e0b; color: white; font-size: 13px; font-weight: 600; padding: 9px 18px; border-radius: 8px; cursor: pointer; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                <span class="material-symbols-outlined" style="font-size: 16px;">upload</span>
+                Upload Bank Statement
+                <input type="file" accept="image/*,application/pdf" style="display: none;" (change)="uploadShareCapitalStatement($event)" />
+              </label>
+            }
+          </div>
+        </div>
+      }
+
+      @if (isCase1() && shareCapitalUploaded()) {
+        <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 14px; padding: 14px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+          <span class="material-symbols-outlined" style="color: #16a34a; font-size: 22px;">check_circle</span>
+          <div>
+            <div style="font-size: 14px; font-weight: 700; color: #15803d;">Share Capital Transfer Uploaded</div>
+            <div style="font-size: 12px; color: #166534;">Your bank statement has been received. Our team will verify it shortly.</div>
+          </div>
+        </div>
+      }
+
       @if (documentsRequiringSignature().length > 0) {
         <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
@@ -129,6 +168,20 @@
           <div class="deadline-date">
             No upcoming deadlines
           </div>
+        </div>
+      }
+
+      <!-- MCA Form Embedded -->
+      @if (user() && !user().mca_profile_completed) {
+        <div style="margin-bottom: 24px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--bg-primary);">
+          <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); background: #f8fafc;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 8px;">
+              <span class="material-symbols-outlined" style="color: #2563eb; font-size: 20px;">account_balance</span>
+              Complete Company Profile
+            </h3>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Please provide your MCA credentials and incorporation documents.</p>
+          </div>
+          <app-mca-form [isEmbedded]="true" (formCompleted)="onMcaFormCompleted()"></app-mca-form>
         </div>
       }
 

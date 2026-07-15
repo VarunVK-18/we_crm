@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, effect, OnDestroy } from '@angular/core';
+import { Component, OnInit, signal, effect, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -19,6 +19,9 @@ export class McaFormComponent implements OnInit, OnDestroy {
   isSubmitting = signal(false);
   errorMessage = signal('');
   isSuccess = signal(false);
+
+  @Input() isEmbedded = false;
+  @Output() formCompleted = new EventEmitter<void>();
 
   username = '';
   password = '';
@@ -143,7 +146,7 @@ export class McaFormComponent implements OnInit, OnDestroy {
   }
 
   submitDetails() {
-    if (!this.orderId()) return;
+    if (!this.isEmbedded && !this.orderId()) return;
 
     if (!this.annualTurnover) {
       this.errorMessage.set('Please select your annual turnover category.');
@@ -172,15 +175,31 @@ export class McaFormComponent implements OnInit, OnDestroy {
     if (this.salesInvoiceFile) formData.append('salesInvoice', this.salesInvoiceFile); else if (this.existingDocs['salesInvoice']) formData.append('salesInvoice_existing', this.existingDocs['salesInvoice'].fileUrl);
     if (this.purchaseBillsFile) formData.append('purchaseBills', this.purchaseBillsFile); else if (this.existingDocs['purchaseBills']) formData.append('purchaseBills_existing', this.existingDocs['purchaseBills'].fileUrl);
 
-    this.api.post<any>(`orders/${this.orderId()}/submit-mca-form`, formData).subscribe({
+    const apiCall = this.orderId() 
+      ? this.api.post<any>(`orders/${this.orderId()}/submit-mca-form`, formData)
+      : this.api.post<any>(`users/me/mca-profile`, formData);
+
+    apiCall.subscribe({
       next: (res: any) => {
         this.isSubmitting.set(false);
         if (res && res.success !== false) {
           this.isSuccess.set(true);
-          this.draftService.clearDraft(this.orderId()!, this.constructor.name);
-          setTimeout(() => {
-            this.router.navigate(['/client/service', this.orderId()]);
-          }, 2000);
+          if (this.orderId()) {
+            this.draftService.clearDraft(this.orderId()!, this.constructor.name);
+          }
+          if (this.isEmbedded) {
+            setTimeout(() => {
+              this.formCompleted.emit();
+            }, 1000);
+          } else {
+            setTimeout(() => {
+              if (this.orderId()) {
+                this.router.navigate(['/client/service', this.orderId()]);
+              } else {
+                this.router.navigate(['/client/compliance']);
+              }
+            }, 2000);
+          }
         } else {
           this.errorMessage.set(res.message || 'Failed to submit form.');
         }

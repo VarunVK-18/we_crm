@@ -18,6 +18,7 @@ import '../../providers/auth_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import '../orders/order_chat_screen.dart';
+import 'mca_profile_form_screen.dart';
 
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
@@ -398,6 +399,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final remindersAsync = ref.watch(complianceRemindersProvider);
     final reminders = remindersAsync.value ?? [];
     final isLoading = remindersAsync.isLoading && reminders.isEmpty;
+    final user = ref.watch(userProfileProvider).value;
 
     // Removed auto-correct to allow selecting entities with zero reminders
 
@@ -672,6 +674,63 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ],
+                              ),
+                            ),
+                            SizedBox(height: 16.r),
+                          ],
+                          // --- MCA Profile Completion CTA ---
+                          if (user != null && !user.mcaProfileCompleted) ...[
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const McaProfileFormScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(16.r),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.3)),
+                                  borderRadius: BorderRadius.circular(12.r),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppTheme.corporateBlue.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(10.r),
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.corporateBlue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8.r),
+                                      ),
+                                      child: HugeIcon(
+                                        icon: HugeIcons.strokeRoundedBank,
+                                        color: AppTheme.corporateBlue,
+                                        size: 24.r,
+                                      ),
+                                    ),
+                                    SizedBox(width: 16.r),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text('Complete Company Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
+                                          SizedBox(height: 4.r),
+                                          Text('Provide MCA credentials and incorporation documents.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
+                                        ],
+                                      ),
+                                    ),
+                                    Icon(Icons.chevron_right, color: AppTheme.corporateBlue, size: 24.r),
+                                  ],
+                                ),
                               ),
                             ),
                             SizedBox(height: 16.r),

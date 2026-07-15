@@ -43,64 +43,197 @@ const addDays = (date, days) => {
     return result;
 };
 
-exports.generateCompliancesForPrivateLimited = async (clientUid, companyId, checklistId, incDate, entityName = '') => {
-    // Delete any existing tasks for this checklist to prevent duplicates on reupload
+// Calculate which AGM number this is, based on the company incorporation date and current financial year
+const calculateAGMNumber = (incDate) => {
+    const today = new Date();
+    // Indian FY: April 1 to March 31
+    // Current FY end year: if today is Jan-Mar, FY ends this year; Apr-Dec = ends next year
+    const currentFyEndYear = (today.getMonth() < 3) ? today.getFullYear() : today.getFullYear() + 1;
+    // First AGM FY end year = incDate.year + 1 (always one year after inc)
+    const firstFyEndYear = incDate.getFullYear() + 1;
+    const agmNumber = currentFyEndYear - firstFyEndYear + 1;
+    return Math.max(1, agmNumber);
+};
+
+const AGM_ORDINAL = (n) => {
+    const ordinals = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+    return n <= 10 ? ordinals[n - 1] : `${n}th`;
+};
+
+const getNextFyDate = (month, day) => {
+    const today = new Date();
+    const year = (today.getMonth() < 3) ? today.getFullYear() : today.getFullYear() + 1;
+    return new Date(year, month, day);
+};
+
+// CASE 1: First-time client (incorporated with/via us)
+// Full first-year compliances. Share Capital Bank Statement is uploaded separately by client.
+exports.generateCase1Compliances = async (clientUid, companyId, checklistId, incDate, entityName = '') => {
     await ComplianceTask.deleteMany({ checklistId });
 
     const firstAgmDate = calculateFirstAGM(incDate);
+    const agmNumber = calculateAGMNumber(incDate);
 
     const compliances = [
         {
             title: 'ADT-1',
-            description: 'First Auditor Appointment (Due 14 days after inc)',
+            description: 'First Auditor Appointment — Due 14 days after incorporation',
             dueDate: addDays(incDate, 14)
         },
         {
-            title: 'Current Account Opening & Share Capital Transfer',
-            description: 'Due 30 days after inc',
-            dueDate: addDays(incDate, 30)
-        },
-        {
-            title: 'SH-1 (Share Certificates)',
-            description: 'Due 60 days after inc',
-            dueDate: addDays(incDate, 60)
-        },
-        {
             title: 'INC-20A (Commencement of Business)',
-            description: 'Due 180 days after inc',
+            description: 'Declaration of commencement of business — Due 180 days after incorporation',
             dueDate: addDays(incDate, 180)
         },
         {
-            title: 'First AGM',
-            description: 'Within 9 months from first financial year end',
+            title: `${AGM_ORDINAL(agmNumber)} AGM`,
+            description: `Annual General Meeting — Within 9 months from first financial year end`,
             dueDate: firstAgmDate
         },
         {
+            title: 'MGT-7A',
+            description: 'Annual Return — Due 60 days after AGM',
+            dueDate: addDays(firstAgmDate, 60)
+        },
+        {
             title: 'AOC-4',
-            description: 'Due 30 days after AGM',
+            description: 'Financial Statements — Due 30 days after AGM',
             dueDate: addDays(firstAgmDate, 30)
         },
         {
-            title: 'MGT-7A',
-            description: 'Due 60 days after AGM',
-            dueDate: addDays(firstAgmDate, 60)
+            title: 'DIR-3 KYC',
+            description: 'Director KYC — Due 30 September every year',
+            dueDate: getNextFyDate(8, 30)
+        },
+        {
+            title: 'ITR-6',
+            description: 'Income Tax Return — Due 31 October every year',
+            dueDate: getNextFyDate(9, 31)
+        },
+        {
+            title: 'MCA Reports',
+            description: 'MCA Annual Reports — Due 30 September every year',
+            dueDate: getNextFyDate(8, 30)
         }
-        // Subsequent AGM is yearly, can be generated later by a cron or when First AGM completes
     ];
 
     for (const c of compliances) {
         await ComplianceTask.create({
-            clientUid,
-            companyId,
-            checklistId,
-            entityName,
-            title: c.title,
-            description: c.description,
-            dueDate: c.dueDate,
-            status: 'Upcoming'
+            clientUid, companyId, checklistId, entityName,
+            title: c.title, description: c.description, dueDate: c.dueDate, status: 'Upcoming'
         });
     }
 };
+
+// CASE 2: Renewal — Client has already done year 1+ with us. No ADT-1, no bank statement.
+// Runs each April 1 for existing clients. AGM number increments from yearNumber.
+exports.generateCase2Compliances = async (clientUid, companyId, checklistId, incDate, entityName = '', yearNumber = 2) => {
+    await ComplianceTask.deleteMany({ checklistId });
+
+    const agmNumber = Math.max(yearNumber, calculateAGMNumber(incDate));
+    // AGM due: Sept 30 of current FY end
+    const agmDate = getNextFyDate(8, 30);
+
+    const compliances = [
+        {
+            title: `${AGM_ORDINAL(agmNumber)} AGM`,
+            description: `Annual General Meeting — Due 30 September`,
+            dueDate: agmDate
+        },
+        {
+            title: 'MGT-7A',
+            description: 'Annual Return — Due 60 days after AGM',
+            dueDate: addDays(agmDate, 60)
+        },
+        {
+            title: 'AOC-4',
+            description: 'Financial Statements — Due 30 days after AGM',
+            dueDate: addDays(agmDate, 30)
+        },
+        {
+            title: 'DIR-3 KYC',
+            description: 'Director KYC — Due 30 September every year',
+            dueDate: getNextFyDate(8, 30)
+        },
+        {
+            title: 'ITR-6',
+            description: 'Income Tax Return — Due 31 October every year',
+            dueDate: getNextFyDate(9, 31)
+        },
+        {
+            title: 'MCA Reports',
+            description: 'MCA Annual Reports — Due 30 September every year',
+            dueDate: getNextFyDate(8, 30)
+        }
+    ];
+
+    for (const c of compliances) {
+        await ComplianceTask.create({
+            clientUid, companyId, checklistId, entityName,
+            title: c.title, description: c.description, dueDate: c.dueDate, status: 'Upcoming'
+        });
+    }
+};
+
+// CASE 3: Client came from another firm — Nth year overall, 1st year with us.
+// Requires ADT-1 (reappoint auditor) + AGM auto-calculated from inc date.
+// On each April 1 thereafter, they become like Case 2.
+exports.generateCase3Compliances = async (clientUid, companyId, checklistId, incDate, entityName = '') => {
+    await ComplianceTask.deleteMany({ checklistId });
+
+    const agmNumber = calculateAGMNumber(incDate);
+    const agmDate = getNextFyDate(8, 30);
+
+    const compliances = [
+        {
+            title: 'ADT-1',
+            description: 'Auditor Reappointment — Due 14 days after onboarding',
+            dueDate: addDays(new Date(), 14)
+        },
+        {
+            title: `${AGM_ORDINAL(agmNumber)} AGM`,
+            description: `Annual General Meeting — Due 30 September`,
+            dueDate: agmDate
+        },
+        {
+            title: 'MGT-7A',
+            description: 'Annual Return — Due 60 days after AGM',
+            dueDate: addDays(agmDate, 60)
+        },
+        {
+            title: 'AOC-4',
+            description: 'Financial Statements — Due 30 days after AGM',
+            dueDate: addDays(agmDate, 30)
+        },
+        {
+            title: 'DIR-3 KYC',
+            description: 'Director KYC — Due 30 September every year',
+            dueDate: getNextFyDate(8, 30)
+        },
+        {
+            title: 'ITR-6',
+            description: 'Income Tax Return — Due 31 October every year',
+            dueDate: getNextFyDate(9, 31)
+        },
+        {
+            title: 'MCA Reports',
+            description: 'MCA Annual Reports — Due 30 September every year',
+            dueDate: getNextFyDate(8, 30)
+        }
+    ];
+
+    for (const c of compliances) {
+        await ComplianceTask.create({
+            clientUid, companyId, checklistId, entityName,
+            title: c.title, description: c.description, dueDate: c.dueDate, status: 'Upcoming'
+        });
+    }
+};
+
+// Legacy: keep for backward compatibility (LLP/OPC still call generateCompliancesForPrivateLimited by old name)
+exports.generateCompliancesForPrivateLimited = exports.generateCase1Compliances;
+
+
 
 exports.generateCompliancesForLLP = async (clientUid, companyId, checklistId, incDate, entityName = '') => {
     // Delete any existing tasks for this checklist to prevent duplicates on reupload

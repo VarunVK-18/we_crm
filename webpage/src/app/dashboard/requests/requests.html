@@ -37,7 +37,10 @@
             <div>Client ID</div>
             <input type="text"  [(ngModel)]="clientIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">Request Date</th>
+          <th style="vertical-align: top;">
+            <div>Request Date</div>
+            <input type="text" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="requestDateFilter" class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
           <th style="vertical-align: top;">
             <div>Service</div>
             <input type="text"  [(ngModel)]="serviceFilter" class="col-search-input" (click)="$event.stopPropagation()" />

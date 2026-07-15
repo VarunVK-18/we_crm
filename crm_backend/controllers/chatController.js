@@ -156,6 +156,7 @@ exports.getUnreadCount = async (req, res) => {
     }
 
     const role = req.user.role;
+    let myClientIds = [];
     if (role === 'filling_staff' || role === 'account_manager') {
       filter.assigned_to = req.user._id;
     } else if (role === 'client_manager') {
@@ -166,7 +167,7 @@ exports.getUnreadCount = async (req, res) => {
           { created_by: req.user._id, assigned_to: null }
         ]
       }).select('_id');
-      const myClientIds = myClients.map(c => c._id);
+      myClientIds = myClients.map(c => c._id);
       filter.$or = [
         { assigned_to: req.user._id },
         { client_id: { $in: myClientIds } }

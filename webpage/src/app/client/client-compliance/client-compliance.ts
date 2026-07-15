@@ -6,11 +6,12 @@ import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon, FilterIcon, DocumentAttachmentIcon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
+import { McaFormComponent } from '../forms/mca-form/mca-form';
 
 @Component({
   selector: 'app-client-compliance',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, McaFormComponent],
   templateUrl: './client-compliance.html',
   styleUrl: './client-compliance.css'
 })
@@ -34,6 +35,18 @@ export class ClientCompliance implements OnInit, OnDestroy {
   currentEntity = signal<string>('All Entities');
   taskFilter = signal<'pending' | 'completed' | 'all'>('pending');
   timelineTab = signal<'all' | 'pending' | 'completed'>('all');
+
+  // Compliance Case State
+  isCase1 = signal<boolean>(false);
+  shareCapitalUploaded = signal<boolean>(false);
+  isUploadingShareCapital = signal<boolean>(false);
+
+  // ADT-1 state
+  isAdt1Completed = computed(() => {
+    return this.reminders().some(r => 
+      r.title && r.title.includes('ADT-1') && (r.status === 'Completed' || r.status === 'Done')
+    );
+  });
 
   // Computed Values
   availableEntities = computed(() => {
@@ -356,6 +369,7 @@ export class ClientCompliance implements OnInit, OnDestroy {
       this.fetchReminders();
       this.fetchChecklists();
       this.fetchCertificates();
+      this.fetchUserComplianceProfile();
     } else {
       this.isLoading.set(false);
     }
@@ -366,6 +380,21 @@ export class ClientCompliance implements OnInit, OnDestroy {
       this.currentEntity.set(saved);
     }
     window.addEventListener('entityChanged', this.entityChangeHandler);
+  }
+
+  onMcaFormCompleted() {
+    // Reload user data so the form disappears
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    this.api.get<any>(`users/profile/${uid}`).subscribe({
+      next: (res) => {
+        const u = res.user || res;
+        if (u) {
+          this.user.set(u);
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+      }
+    });
   }
 
   ngOnDestroy() {
@@ -385,6 +414,44 @@ export class ClientCompliance implements OnInit, OnDestroy {
     });
   }
 
+  fetchUserComplianceProfile() {
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    this.api.get<any>(`users/profile/${uid}`).subscribe({
+      next: (res) => {
+        const u = res.user || res;
+        this.isCase1.set(u.compliance_case === 'case1');
+        this.shareCapitalUploaded.set(!!u.share_capital_bank_statement);
+      },
+      error: () => {}
+    });
+  }
+
+  uploadShareCapitalStatement(event: any) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+
+    this.isUploadingShareCapital.set(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    this.api.post<any>(`compliance/clients/${uid}/upload-share-capital`, formData).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.shareCapitalUploaded.set(true);
+        }
+        this.isUploadingShareCapital.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to upload share capital statement:', err);
+        this.isUploadingShareCapital.set(false);
+        alert('Upload failed. Please try again.');
+      }
+    });
+  }
+
   fetchReminders() {
     const uid = this.user()?._id || this.user()?.id;
     if (!uid) {
@@ -395,7 +462,9 @@ export class ClientCompliance implements OnInit, OnDestroy {
     this.api.get<any>(`compliance/tasks/user/${uid}`).subscribe({
       next: (res) => {
         const fetched = res.tasks || [];
-        const mapped = fetched.map((r: any) => {
+        // Filter out Incorporation renewals since they don't actually expire/renew
+        const filtered = fetched.filter((r: any) => !r.title?.toLowerCase().includes('incorporation'));
+        const mapped = filtered.map((r: any) => {
           // Resolve entityName with priority order
           const entityName =
             r.entityName?.trim() ||

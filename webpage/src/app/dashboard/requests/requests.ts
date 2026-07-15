@@ -77,6 +77,7 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
   serviceFilter = signal<string>('');
   clientNameFilter = signal<string>('');
   phoneFilter = signal<string>('');
+  requestDateFilter = signal<string>('');
 
   // Pagination state
   currentPage = signal<number>(1);
@@ -104,7 +105,7 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
   }
 
   hasActiveFilters = computed(() => {
-    return !!(this.searchQuery() || this.clientIdFilter() || this.companyFilter() || this.serviceFilter() || this.clientNameFilter() || this.phoneFilter());
+    return !!(this.searchQuery() || this.clientIdFilter() || this.companyFilter() || this.serviceFilter() || this.clientNameFilter() || this.phoneFilter() || this.requestDateFilter());
   });
 
   filteredOrders = computed(() => {
@@ -114,6 +115,7 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
     const sName = this.serviceFilter().toLowerCase().trim();
     const cClient = this.clientNameFilter().toLowerCase().trim();
     const phone = this.phoneFilter().toLowerCase().trim();
+    const reqDate = this.requestDateFilter();
 
     let filtered = this.orders().filter((o: any) => this.isNewOrder(o));
 
@@ -141,6 +143,17 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
     }
     if (phone) {
       filtered = filtered.filter((o: any) => (o.user?.phone || '').toLowerCase().includes(phone));
+    }
+    if (reqDate) {
+      filtered = filtered.filter((o: any) => {
+        if (!o.createdAt) return false;
+        const d = new Date(o.createdAt);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${day}`;
+        return dateStr === reqDate;
+      });
     }
 
     return filtered;

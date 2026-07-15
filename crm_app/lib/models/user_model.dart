@@ -88,6 +88,7 @@ class UserModel {
   final Map<String, dynamic>? manager;
   final List<ClientEntity> clientEntities;
   final int directorCount;
+  final bool mcaProfileCompleted;
 
   UserModel({
     required this.id,
@@ -102,6 +103,7 @@ class UserModel {
     this.manager,
     this.clientEntities = const [],
     this.directorCount = 0,
+    this.mcaProfileCompleted = false,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, [String? id]) {
@@ -184,6 +186,7 @@ class UserModel {
       manager: extractedManager,
       clientEntities: extractedEntities,
       directorCount: data['director_count'] != null ? int.tryParse(data['director_count'].toString()) ?? 0 : 0,
+      mcaProfileCompleted: data['mca_profile_completed'] == true || data['mca_profile_completed'] == 'true',
     );
   }
 

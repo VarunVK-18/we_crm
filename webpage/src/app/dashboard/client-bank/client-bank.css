@@ -526,3 +526,16 @@
 .col-search-input:focus {
   border-color: var(--primary-color, #006a61);
 }
+.bucket-table td:has(.ellipsis-text) {
+  max-width: 0;
+  width: 150px;
+}
+
+.ellipsis-text {
+  display: block;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}

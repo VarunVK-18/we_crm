@@ -1316,6 +1316,45 @@ const editClientProfile = async (req, res) => {
   }
 };
 
+// Update MCA Profile for Compliance Clients
+const updateMcaProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+    const { mcaUsername, mcaPassword, annualTurnover } = req.body;
+    if (mcaUsername) user.mca_username = mcaUsername;
+    if (mcaPassword) user.mca_password = mcaPassword;
+    if (annualTurnover) user.annual_turnover = annualTurnover;
+
+    // Handle files if any
+    const fileFields = ['coi', 'pan', 'moa', 'aoa', 'bankStatement', 'salesInvoice', 'purchaseBills'];
+    console.log("Files received in updateMcaProfile:", req.files);
+    
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files) {
+        if (fileFields.includes(file.fieldname)) {
+          const doc = await Document.create({
+            filename: file.originalname,
+            contentType: file.mimetype,
+            data: file.buffer,
+            uploadedBy: req.user._id
+          });
+          user[`${file.fieldname.replace(/([A-Z])/g, "_$1").toLowerCase()}_file`] = doc._id.toString();
+        }
+      }
+    }
+    
+    user.mca_profile_completed = true;
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'MCA Profile updated successfully.' });
+  } catch (error) {
+    console.error('Error updating MCA profile:', error);
+    res.status(500).json({ success: false, message: 'Server error while updating MCA profile.' });
+  }
+};
+
 // Upload document for a specific director
 const uploadDirectorDocument = async (req, res) => {
   try {
@@ -1589,6 +1628,69 @@ const externalOnboard = async (req, res) => {
   }
 };
 
+// @desc    Get clients with no bank details
+// @route   GET /api/users/clients/no-bank-details
+// @access  Private (Manager/Admin)
+const getClientsWithNoBankDetails = async (req, res) => {
+  try {
+    const clients = await User.find({
+      company_id: req.user.company_id,
+      role: 'customer',
+      client_entities: { $exists: true, $not: { $size: 0 } },
+      $or: [
+        { 'bank_details.bankName': { $in: [null, ''] } },
+        { 'bank_details.accountNumber': { $in: [null, ''] } },
+        { 'bank_details.ifscCode': { $in: [null, ''] } },
+        { 'bank_details.accountType': { $in: [null, ''] } },
+        { 'bank_details.branchName': { $in: [null, ''] } },
+        { bank_details: { $exists: false } }
+      ]
+    }).select('owner_name company_name phone custom_client_id createdAt client_entities bank_details').sort({ createdAt: -1 });
+
+    res.json(clients);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @desc    Update client bank details
+// @route   PATCH /api/users/clients/:id/bank-details
+// @access  Private (Manager/Admin)
+const updateClientBankDetails = async (req, res) => {
+  try {
+    const { bankName, accountNumber, ifscCode, accountType, branchName } = req.body;
+    
+    const client = await User.findById(req.params.id);
+    if (!client) {
+      return res.status(404).json({ message: 'Client not found' });
+    }
+
+    client.bank_details = {
+      bankName: bankName || '',
+      accountNumber: accountNumber || '',
+      ifscCode: ifscCode || '',
+      accountType: accountType || '',
+      branchName: branchName || ''
+    };
+
+    await client.save();
+    
+    await logActivity(
+      req.user.id,
+      'UPDATE_BANK_DETAILS',
+      `Updated bank details for client ${client.owner_name}`,
+      req.user.company_id,
+      { clientId: client._id }
+    );
+
+    res.json(client);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -1616,5 +1718,8 @@ module.exports = {
   uploadDirectorDocument,
   toggleComplianceRadar,
   reuploadProfileDocument,
-  externalOnboard
+  externalOnboard,
+  updateMcaProfile,
+  getClientsWithNoBankDetails,
+  updateClientBankDetails
 };

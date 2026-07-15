@@ -97,6 +97,8 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   mClientNameFilter = signal<string>('');
   mEmailFilter = signal<string>('');
   mPhoneFilter = signal<string>('');
+  mDateFilter = signal<string>('');
+  mDueDateFilter = signal<string>('');
 
   filteredRequests = computed(() => {
     let list = this.requests();
@@ -124,6 +126,8 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   sClientIdFilter = signal<string>('');
   sServiceFilter = signal<string>('');
   sCompanyFilter = signal<string>('');
+  sDateFilter = signal<string>('');
+  sDueDateFilter = signal<string>('');
 
   filteredJobs = computed(() => {
     let list = this.jobs();
@@ -201,6 +205,9 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     entityType: 'Private Limited Company',
     incorporationDate: ''
   });
+
+  // Compliance case: case1 = first year with us, case2 = renewal, case3 = from another firm
+  complianceCase = signal<string>('case1');
 
   dueDate = signal<string>('');
   priority = signal<string>('High');
@@ -309,6 +316,8 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
       const cclient = this.mClientNameFilter().trim();
       const email = this.mEmailFilter().trim();
       const phone = this.mPhoneFilter().trim();
+      const dateStr = this.mDateFilter().trim();
+      const dueDateStr = this.mDueDateFilter().trim();
 
       if (cid) url += `&searchClientId=${encodeURIComponent(cid)}`;
       if (cname) url += `&searchCompany=${encodeURIComponent(cname)}`;
@@ -316,6 +325,8 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
       if (cclient) url += `&searchClientName=${encodeURIComponent(cclient)}`;
       if (email) url += `&searchEmail=${encodeURIComponent(email)}`;
       if (phone) url += `&searchPhone=${encodeURIComponent(phone)}`;
+      if (dateStr) url += `&searchDate=${encodeURIComponent(dateStr)}`;
+      if (dueDateStr) url += `&searchDueDate=${encodeURIComponent(dueDateStr)}`;
 
       this.api.get<any>(url).subscribe({
         next: (res) => {
@@ -333,11 +344,15 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
       const cid = this.sClientIdFilter().trim();
       const svc = this.sServiceFilter().trim();
       const cmp = this.sCompanyFilter().trim();
+      const dateStr = this.sDateFilter().trim();
+      const dueDateStr = this.sDueDateFilter().trim();
 
       if (sid) url += `&searchServiceId=${encodeURIComponent(sid)}`;
       if (cid) url += `&searchClientId=${encodeURIComponent(cid)}`;
       if (svc) url += `&searchService=${encodeURIComponent(svc)}`;
       if (cmp) url += `&searchCompany=${encodeURIComponent(cmp)}`;
+      if (dateStr) url += `&searchDate=${encodeURIComponent(dateStr)}`;
+      if (dueDateStr) url += `&searchDueDate=${encodeURIComponent(dueDateStr)}`;
 
       this.api.get<any>(url).subscribe({
         next: (res) => {
@@ -386,6 +401,7 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     this.isCoiProcessing.set(false);
     this.showCoiEditForm.set(false);
     this.coiDetails.set({ companyName: '', entityType: 'Private Limited Company', incorporationDate: '' });
+    this.complianceCase.set('case1');
     this.isAcceptModalOpen.set(true);
   }
 
@@ -409,6 +425,7 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     this.isCoiProcessing.set(false);
     this.showCoiEditForm.set(false);
     this.coiDetails.set({ companyName: '', entityType: 'Private Limited Company', incorporationDate: '' });
+    this.complianceCase.set('case1');
   }
 
   async handleCoiUpload(event: any) {
@@ -542,10 +559,11 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
       if (details.companyName) formData.append('coi_companyName', details.companyName);
       if (details.entityType) formData.append('coi_entityType', details.entityType);
       if (details.incorporationDate) formData.append('coi_incorporationDate', details.incorporationDate);
+      formData.append('compliance_case', this.complianceCase());
 
       requestObservable = this.api.post<any>(`bucket/requests/${req._id}/claim`, formData);
     } else {
-      const payload = {
+      const payload: any = {
         team_id: teamId,
         dealClosedAmount: dealAmount,
         advanceAmountPaid: advanceAmount,
@@ -553,6 +571,14 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
         dueDate: this.dueDate(),
         priority: this.priority()
       };
+      // Include compliance case for external compliance requests even without COI
+      if (req.is_external_compliance) {
+        payload.compliance_case = this.complianceCase();
+        const details = this.coiDetails();
+        if (details.companyName) payload.coi_companyName = details.companyName;
+        if (details.entityType) payload.coi_entityType = details.entityType;
+        if (details.incorporationDate) payload.coi_incorporationDate = details.incorporationDate;
+      }
       requestObservable = this.api.post<any>(`bucket/requests/${req._id}/claim`, payload);
     }
 

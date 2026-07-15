@@ -353,22 +353,24 @@ exports.getUserComplianceTasks = async (req, res) => {
     const { userId } = req.params;
 
     const tasks = await ComplianceTask.find({ clientUid: userId })
-      .populate('clientUid', 'owner_name company_name email phone custom_client_id')
+      .populate('clientUid', 'owner_name company_name email phone custom_client_id pan incorporation_date compliance_case compliance_year_count share_capital_bank_statement mca_username mca_password annual_turnover mca_profile_completed coi_file pan_file moa_file aoa_file bank_statement_file sales_invoice_file purchase_bills_file')
       .populate('companyId', 'company_name')
       .populate('checklistId', 'service_name details custom_service_id')
-      .populate('proofDocument')
-      .populate('certificateDocument')
-      .populate('acknowledgementDocument')
-      .populate('noticeDocument')
-      .populate('shareholdersDocument')
-      .populate('shareholdersReplyDocument')
-      .populate('directorsDocument')
-      .populate('directorsReplyDocument')
-      .populate('notesDocument')
-      .populate('notesReplyDocument')
-      .populate('temporaryDocument')
-      .populate('temporaryReplyDocument')
-      .populate('normalDocument')
+      .populate([
+        { path: 'proofDocument', select: 'filename' },
+        { path: 'certificateDocument', select: 'filename' },
+        { path: 'acknowledgementDocument', select: 'filename' },
+        { path: 'noticeDocument', select: 'filename' },
+        { path: 'shareholdersDocument', select: 'filename' },
+        { path: 'shareholdersReplyDocument', select: 'filename' },
+        { path: 'directorsDocument', select: 'filename' },
+        { path: 'directorsReplyDocument', select: 'filename' },
+        { path: 'notesDocument', select: 'filename' },
+        { path: 'notesReplyDocument', select: 'filename' },
+        { path: 'temporaryDocument', select: 'filename' },
+        { path: 'temporaryReplyDocument', select: 'filename' },
+        { path: 'normalDocument', select: 'filename' }
+      ])
       .sort({ dueDate: 1 })
       .lean();
 
@@ -439,7 +441,7 @@ exports.getComplianceTaskById = async (req, res) => {
     const { id } = req.params;
     
     const task = await ComplianceTask.findById(id)
-      .populate('clientUid', 'owner_name company_name email phone custom_client_id')
+      .populate('clientUid', 'owner_name company_name email phone custom_client_id mca_username mca_password annual_turnover mca_profile_completed coi_file pan_file moa_file aoa_file bank_statement_file sales_invoice_file purchase_bills_file')
       .populate('companyId', 'company_name')
       .populate('checklistId', 'service_name details')
       .populate('proofDocument')
@@ -504,7 +506,7 @@ exports.getComplianceTaskById = async (req, res) => {
 exports.completeComplianceTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const task = await ComplianceTask.findById(id);
+    const task = await ComplianceTask.findById(id).populate('clientUid', 'company_id compliance_case');
     if (!task) return res.status(404).json({ success: false, message: 'Task not found' });
 
     const Document = require('../models/Document');
@@ -527,6 +529,32 @@ exports.completeComplianceTask = async (req, res) => {
     task.status = 'Completed';
     task.completedAt = new Date();
     await task.save();
+
+    // ─── ADT-1 Auto-Trigger: When ADT-1 is completed for a Case 1 client, auto-create a
+    // bucket notification for the manager that share capital bank statement is now pending upload.
+    if (task.title === 'ADT-1' && task.clientUid && task.clientUid.compliance_case === 'case1') {
+      try {
+        const BucketRequest = require('../models/BucketRequest');
+        const client = await User.findById(task.clientUid._id).select('company_name owner_name custom_client_id company_id assigned_to');
+        const company_id = task.companyId || (client && client.company_id);
+        if (company_id) {
+          await BucketRequest.create({
+            company_id,
+            client_id: task.clientUid._id,
+            service_name: 'Share Capital Bank Statement — Upload Required',
+            source: 'we-crm',
+            status: 'open',
+            is_external_compliance: false,
+            client_name: client ? (client.owner_name || '') : '',
+            client_company_name: client ? (client.company_name || '') : '',
+            dealvoice_client_id: client ? (client.custom_client_id || '') : ''
+          });
+          console.log('[ADT-1] Auto-triggered Share Capital bucket request for client', task.clientUid._id);
+        }
+      } catch (e) {
+        console.error('[ADT-1] Auto-trigger failed:', e.message);
+      }
+    }
 
     res.status(200).json({ success: true, task });
   } catch (error) {
@@ -662,6 +690,30 @@ exports.generateDocumentFromTemplateForTask = async (req, res) => {
     res.status(200).json({ success: true, message: 'Document generated successfully', docId: newDoc._id });
   } catch (error) {
     console.error('Error generating document:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Upload Share Capital Bank Statement (client uploads in compliance page - Case 1 only)
+exports.uploadShareCapitalBankStatement = async (req, res) => {
+  try {
+    const { clientId } = req.params;
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+
+    const Document = require('../models/Document');
+    const newDoc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      uploadedBy: req.user ? req.user._id : clientId
+    });
+    const fileUrl = `api/documents/${newDoc._id}`;
+
+    await User.findByIdAndUpdate(clientId, { share_capital_bank_statement: fileUrl });
+
+    res.status(200).json({ success: true, message: 'Share Capital Bank Statement uploaded', fileUrl });
+  } catch (error) {
+    console.error('Error uploading share capital statement:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

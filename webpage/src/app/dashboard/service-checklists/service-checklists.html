@@ -4,171 +4,237 @@
 
   <!-- Filters -->
   <div style="margin-bottom: var(--spacing-lg);">
-    <div class="filter-pill-bar" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 8px; margin-bottom: 0; width: 100%;">
+    <div class="filter-pill-bar"
+      style="display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 8px; margin-bottom: 0; width: 100%;">
       <div style="display: flex; gap: 8px; flex-wrap: nowrap; overflow-x: auto; flex: 1; scrollbar-width: none;">
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'" (click)="currentDirectoryTab.set('all')" style="display: inline-flex; align-items: center;">All Services <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('all') }}</span></button>
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_forms'" (click)="currentDirectoryTab.set('pending_forms')" style="display: inline-flex; align-items: center;">Pending Forms <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('pending_forms') }}</span></button>
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_documents'" (click)="currentDirectoryTab.set('pending_documents')" style="display: inline-flex; align-items: center;">Pending Documents <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('pending_documents') }}</span></button>
-        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'" (click)="currentDirectoryTab.set('in_progress')" style="display: inline-flex; align-items: center;">In Progress <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('in_progress') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'all'"
+          (click)="currentDirectoryTab.set('all')" style="display: inline-flex; align-items: center;">All Services <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('all') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_forms'"
+          (click)="currentDirectoryTab.set('pending_forms')" style="display: inline-flex; align-items: center;">Pending
+          Forms <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('pending_forms') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'pending_documents'"
+          (click)="currentDirectoryTab.set('pending_documents')"
+          style="display: inline-flex; align-items: center;">Pending Documents <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('pending_documents') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'in_progress'"
+          (click)="currentDirectoryTab.set('in_progress')" style="display: inline-flex; align-items: center;">In
+          Progress <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('in_progress') }}</span></button>
         <!-- Filing Staff sees Re-open and Completed tabs -->
         @if (user()?.role === 'filling_staff') {
-          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'reopen'" (click)="currentDirectoryTab.set('reopen')" style="display: inline-flex; align-items: center; border-color: #ef4444; color: #dc2626;">Re-open <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(220, 38, 38, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('reopen') }}</span></button>
-          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')" style="display: inline-flex; align-items: center;">Completed <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('completed') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'reopen'"
+          (click)="currentDirectoryTab.set('reopen')"
+          style="display: inline-flex; align-items: center; border-color: #ef4444; color: #dc2626;">Re-open <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(220, 38, 38, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('reopen') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'"
+          (click)="currentDirectoryTab.set('completed')" style="display: inline-flex; align-items: center;">Completed
+          <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('completed') }}</span></button>
         }
         <!-- Managers/Admins see Pending Review, Completed (payment split), Final Delivered -->
         @if (user()?.role !== 'filling_staff') {
-          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'under_review'" (click)="currentDirectoryTab.set('under_review')" style="display: inline-flex; align-items: center; border-color: #f59e0b; color: #b45309;">Pending Review <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(180, 83, 9, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('under_review') }}</span></button>
-          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'" (click)="currentDirectoryTab.set('completed')" style="display: inline-flex; align-items: center;">Completed <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('completed') }}</span></button>
-          <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'" (click)="currentDirectoryTab.set('final_delivered')" style="display: inline-flex; align-items: center;">Final Delivered <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('final_delivered') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'under_review'"
+          (click)="currentDirectoryTab.set('under_review')"
+          style="display: inline-flex; align-items: center; border-color: #f59e0b; color: #b45309;">Pending Review <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(180, 83, 9, 0.1); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('under_review') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'completed'"
+          (click)="currentDirectoryTab.set('completed')" style="display: inline-flex; align-items: center;">Completed
+          <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('completed') }}</span></button>
+        <button class="filter-pill" [class.active]="currentDirectoryTab() === 'final_delivered'"
+          (click)="currentDirectoryTab.set('final_delivered')" style="display: inline-flex; align-items: center;">Final
+          Delivered <span
+            style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+            getTabCount('final_delivered') }}</span></button>
         }
       </div>
       <div class="search-box" style="flex-shrink: 0;">
         <span class="material-symbols-outlined search-icon">search</span>
-        <input type="text" placeholder="Search services..." [(ngModel)]="searchQuery" style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 130px;" />
+        <input type="text" placeholder="Search services..." [(ngModel)]="searchQuery"
+          style="border: none; background: white; border-radius: 99px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); padding: 8px 16px 8px 40px; outline: none; width: 130px;" />
       </div>
     </div>
   </div>
 
   <!-- Checklist Cards Grid -->
   @if (isLoading()) {
-    <div class="loading-state" style="text-align: center; padding: 60px 0;">
-      <app-we-loader></app-we-loader>
-      <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading checklists...</p>
-    </div>
+  <div class="loading-state" style="text-align: center; padding: 60px 0;">
+    <app-we-loader></app-we-loader>
+    <p style="color: #64748b; font-weight: 600; margin-top: 16px;">Loading checklists...</p>
+  </div>
   } @else if (filteredChecklists().length === 0 && !hasActiveFilters()) {
-    <div class="empty-state">
-      <span class="material-symbols-outlined empty-icon">inbox</span>
-      <h3>No Checklists Found</h3>
-      <p>{{ canCreate() ? 'Create a new checklist to get started.' : 'You have no checklists assigned to this view.' }}</p>
-    </div>
+  <div class="empty-state">
+    <span class="material-symbols-outlined empty-icon">inbox</span>
+    <h3>No Checklists Found</h3>
+    <p>{{ canCreate() ? 'Create a new checklist to get started.' : 'You have no checklists assigned to this view.' }}
+    </p>
+  </div>
   } @else {
-    <div class="bucket-table-container" style="margin-top: 16px;">
-      <table class="bucket-table">
-        <thead>
-          <tr>
-            <th style="vertical-align: top;">
-              <div>SERVICE ID</div>
-              <input type="text"  [(ngModel)]="serviceIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
-            </th>
-            <th style="vertical-align: top;">
-              <div>CLIENT ID</div>
-              <input type="text"  [(ngModel)]="clientIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
-            </th>
-            <th style="vertical-align: top;">DATE</th>
-            <th style="vertical-align: top;">
-              <div>SERVICE NAME</div>
-              <input type="text"  [(ngModel)]="serviceFilter" class="col-search-input" (click)="$event.stopPropagation()" />
-            </th>
-            <th style="vertical-align: top;">
-              <div>COMPANY NAME</div>
-              <input type="text"  [(ngModel)]="companyFilter" class="col-search-input" (click)="$event.stopPropagation()" />
-            </th>
-            <th style="vertical-align: top;">DUE DATE</th>
-            <th style="vertical-align: top;">
-              <div>PRIORITY</div>
-              <select [(ngModel)]="priorityFilter" class="col-search-input" (click)="$event.stopPropagation()" style="padding: 4px 8px; height: 26px;">
-                <option value="">All</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
-              </select>
-            </th>
-            <th style="vertical-align: top;">PROGRESS</th>
-            @if (user()?.role !== 'filling_staff') {
-              <th style="vertical-align: top;">
-                <div>ASSIGNEE</div>
-                <input type="text"  [(ngModel)]="assigneeFilter" class="col-search-input" (click)="$event.stopPropagation()" />
-              </th>
+  <div class="bucket-table-container" style="margin-top: 16px;">
+    <table class="bucket-table">
+      <thead>
+        <tr>
+          <th style="vertical-align: top;">
+            <div>SERVICE ID</div>
+            <input type="text" [(ngModel)]="serviceIdFilter" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>CLIENT ID</div>
+            <input type="text" [(ngModel)]="clientIdFilter" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>DATE</div>
+            <input type="text" onfocus="(this.type='date')"
+              onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="dateFilter"
+              class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>SERVICE NAME</div>
+            <input type="text" [(ngModel)]="serviceFilter" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>COMPANY NAME</div>
+            <input type="text" [(ngModel)]="companyFilter" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>DUE DATE</div>
+            <input type="text" onfocus="(this.type='date')"
+              onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="dueDateFilter"
+              class="col-search-input" (click)="$event.stopPropagation()" />
+          </th>
+          <th style="vertical-align: top;">
+            <div>PRIORITY</div>
+            <select [(ngModel)]="priorityFilter" class="col-search-input" (click)="$event.stopPropagation()"
+              style="padding: 4px 8px; height: 26px;">
+              <option value="">All</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </th>
+          <th style="vertical-align: top;">PROGRESS</th>
+          @if (user()?.role !== 'filling_staff') {
+          <th style="vertical-align: top;">
+            <div>ASSIGNEE</div>
+            <input type="text" [(ngModel)]="assigneeFilter" class="col-search-input"
+              (click)="$event.stopPropagation()" />
+          </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @if (filteredChecklists().length === 0 && hasActiveFilters()) {
+        <tr>
+          <td [attr.colspan]="user()?.role !== 'filling_staff' ? 9 : 8"
+            style="text-align: center; padding: 40px; color: #64748b; font-size: 14px;">
+            No checklists found matching your search.
+          </td>
+        </tr>
+        }
+        @for (cl of paginatedChecklists(); track cl._id) {
+        <tr>
+          <td class="hover-text-link" style="font-family: monospace; color: #64748b; cursor: pointer;"
+            (click)="viewDetails(cl._id)">
+            {{ cl.custom_service_id || '—' }}
+          </td>
+          <td>
+            @if (user()?.role === 'filling_staff') {
+            <span style="font-family: monospace; color: #64748b;">
+              {{ cl.client_id?.custom_client_id || '—' }}
+            </span>
+            } @else {
+            <span class="hover-text-link" style="font-family: monospace; color: #64748b;"
+              (click)="viewClient($event, cl.client_id?._id)">
+              {{ cl.client_id?.custom_client_id || '—' }}
+            </span>
             }
-          </tr>
-        </thead>
-        <tbody>
-          @if (filteredChecklists().length === 0 && hasActiveFilters()) {
-            <tr>
-              <td [attr.colspan]="user()?.role !== 'filling_staff' ? 9 : 8" style="text-align: center; padding: 40px; color: #64748b; font-size: 14px;">
-                No checklists found matching your search.
-              </td>
-            </tr>
-          }
-          @for (cl of paginatedChecklists(); track cl._id) {
-            <tr>
-              <td class="hover-text-link" style="font-family: monospace; color: #64748b; cursor: pointer;" (click)="viewDetails(cl._id)">
-                {{ cl.custom_service_id || '—' }}
-              </td>
-              <td>
-                @if (user()?.role === 'filling_staff') {
-                  <span style="font-family: monospace; color: #64748b;">
-                    {{ cl.client_id?.custom_client_id || '—' }}
-                  </span>
-                } @else {
-                  <span class="hover-text-link" style="font-family: monospace; color: #64748b;" (click)="viewClient($event, cl.client_id?._id)">
-                    {{ cl.client_id?.custom_client_id || '—' }}
-                  </span>
-                }
-              </td>
-              <td>
-                <span style="color: #64748b;">{{ cl.createdAt | date:'mediumDate' }}</span>
-              </td>
-              <td>
-                <span class="service-name" style="font-weight: 500; font-size: 14px;">{{ cl.service_name }}</span>
-              </td>
-              <td>
-                <div style="font-weight: 500; font-size: 14px; color: var(--text-primary);">
-                  {{ cl.details?.entityName || cl.client_id?.company_name || '-' }}
-                </div>
-              </td>
-              <td>
-                <span style="color: #64748b;">{{ cl.dueDate ? (cl.dueDate | date:'mediumDate') : '-' }}</span>
-              </td>
-              <td>
-                <span [ngStyle]="{'color': cl.priority === 'High' ? '#dc2626' : (cl.priority === 'Medium' ? '#eab308' : (cl.priority === 'Low' ? '#3b82f6' : 'inherit'))}" style="font-weight: 600; font-size: 13px;">{{ cl.priority || '-' }}</span>
-              </td>
-              <td>
-                <div class="progress-bar-container">
-                  <div class="progress-bar-bg">
-                    <div class="progress-bar-fill" [ngClass]="getChecklistStatusClass(cl.status)" [style.width]="getChecklistProgress(cl) + '%'"></div>
-                  </div>
-                  <span class="progress-text-sm">{{ getChecklistProgress(cl) }}%</span>
-                </div>
-              </td>
-              @if (user()?.role !== 'filling_staff') {
-                <td>
-                  <div class="assignee-info">
-                    @if (getAssigneeName(cl) !== 'Yet to Assign') {
-                      <div class="assignee-avatar has-user">
-                        {{ getAssigneeInitial(cl) }}
-                      </div>
-                    } @else {
-                      <div class="assignee-avatar no-user" style="background-color: #f1f5f9; color: #64748b; font-size: 13px; font-weight: 600;">Y</div>
-                    }
-                    <span class="assignee-name" [ngStyle]="{'color': getAssigneeName(cl) === 'Yet to Assign' ? '#94a3b8' : 'inherit', 'font-style': getAssigneeName(cl) === 'Yet to Assign' ? 'italic' : 'normal'}">{{ getAssigneeName(cl) }}</span>
-                  </div>
-                </td>
+          </td>
+          <td>
+            <span style="color: #64748b;">{{ cl.createdAt | date:'mediumDate' }}</span>
+          </td>
+          <td>
+            <span class="service-name" style="font-weight: 500; font-size: 14px;">{{ cl.service_name }}</span>
+          </td>
+          <td>
+            <div style="font-weight: 500; font-size: 14px; color: var(--text-primary);">
+              {{ cl.details?.entityName || cl.client_id?.company_name || '-' }}
+            </div>
+          </td>
+          <td>
+            <span style="color: #64748b;">{{ cl.dueDate ? (cl.dueDate | date:'mediumDate') : '-' }}</span>
+          </td>
+          <td [ngStyle]="{
+                'background-color': cl.priority === 'High' ? 'rgba(220, 38, 38, 0.1)' : (cl.priority === 'Medium' ? 'rgba(234, 179, 8, 0.1)' : (cl.priority === 'Low' ? 'rgba(59, 130, 246, 0.1)' : 'transparent'))
+              }">
+            <span [ngStyle]="{
+                  'color': cl.priority === 'High' ? '#dc2626' : (cl.priority === 'Medium' ? '#eab308' : (cl.priority === 'Low' ? '#3b82f6' : 'inherit'))
+                }" style="font-weight: 600; font-size: 13px;">{{ cl.priority || '-' }}</span>
+          </td>
+          <td>
+            <div class="progress-bar-container">
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" [ngClass]="getChecklistStatusClass(cl.status)"
+                  [style.width]="getChecklistProgress(cl) + '%'"></div>
+              </div>
+              <span class="progress-text-sm">{{ getChecklistProgress(cl) }}%</span>
+            </div>
+          </td>
+          @if (user()?.role !== 'filling_staff') {
+          <td>
+            <div class="assignee-info">
+              @if (getAssigneeName(cl) !== 'Yet to Assign') {
+              <div class="assignee-avatar has-user">
+                {{ getAssigneeInitial(cl) }}
+              </div>
+              } @else {
+              <div class="assignee-avatar no-user"
+                style="background-color: #f1f5f9; color: #64748b; font-size: 13px; font-weight: 600;">Y</div>
               }
-            </tr>
+              <span class="assignee-name"
+                [ngStyle]="{'color': getAssigneeName(cl) === 'Yet to Assign' ? '#94a3b8' : 'inherit', 'font-style': getAssigneeName(cl) === 'Yet to Assign' ? 'italic' : 'normal'}">{{
+                getAssigneeName(cl) }}</span>
+            </div>
+          </td>
           }
-        </tbody>
-      </table>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+    <div style="display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 13px; margin-left: 8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="16" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+      </svg>
+      <span>Showing tasks from the last 30 days</span>
     </div>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
-      <div style="display: flex; align-items: center; gap: 8px; color: #6b7280; font-size: 13px; margin-left: 8px;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="16" x2="12" y2="12"></line>
-          <line x1="12" y1="8" x2="12.01" y2="8"></line>
-        </svg>
-        <span>Showing tasks from the last 30 days</span>
-      </div>
-
-      @if (totalPages() > 1) {
-        <div class="pagination-controls" style="margin-top: 0;">
-          <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
-          <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
-          <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
-        </div>
-      }
+    @if (totalPages() > 1) {
+    <div class="pagination-controls" style="margin-top: 0;">
+      <button class="btn-decline-sm" [disabled]="currentPage() === 1" (click)="prevPage()">Previous</button>
+      <span class="pagination-text">Page {{ currentPage() }} of {{ totalPages() }}</span>
+      <button class="btn-decline-sm" [disabled]="currentPage() >= totalPages()" (click)="nextPage()">Next</button>
     </div>
+    }
+  </div>
   }
 </div>
 
@@ -176,187 +242,175 @@
 
 <!-- Create Checklist Modal -->
 @if (isCreateChecklistModalOpen()) {
-  <div class="modal-overlay" (click)="closeCreateChecklistModal()">
-    <div class="modal-card-box" style="max-width: 520px;" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>New Service Checklist</h3>
-        <button class="close-modal-btn" (click)="closeCreateChecklistModal()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-
-      <form (ngSubmit)="submitCreateChecklist()" class="modal-form">
-        <div style="margin-bottom: 24px;">
-
-          @if (checklistErrorMessage()) {
-            <div style="background-color: var(--color-danger-bg); color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
-              {{ checklistErrorMessage() }}
-            </div>
-          }
-          @if (checklistSuccessMessage()) {
-            <div style="background-color: var(--color-success-bg); color: var(--color-success); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
-              {{ checklistSuccessMessage() }}
-            </div>
-          }
-
-          <div class="form-group-item">
-            <label class="form-input-label">Client *</label>
-            <select name="cl_client" class="form-control-input select-input" [(ngModel)]="newChecklist.client_id" required>
-              <option value="">-- Select client --</option>
-              @for (client of clients(); track client._id) {
-                <option [value]="client._id">{{ client.owner_name }} ({{ client.company_name || 'Individual' }})</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group-item" style="margin-top: 16px;">
-            <label class="form-input-label">Service Name *</label>
-            <select name="cl_service" class="form-control-input select-input" [(ngModel)]="newChecklist.service_name" required>
-              <option value="">-- Select service --</option>
-              @for (svc of availableServices; track svc) {
-                <option [value]="svc">{{ svc }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group-item" style="margin-top: 16px;">
-            <label class="form-input-label">Assign to Staff</label>
-            <select name="cl_assignee" class="form-control-input select-input" [(ngModel)]="newChecklist.assigned_to">
-              <option value="">-- Unassigned --</option>
-              @for (emp of getFlatEmployees(); track emp.id) {
-                @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
-                  <option [value]="emp.id">{{ emp.name }} ({{ getRoleLabel(emp.role) }})</option>
-                }
-              }
-            </select>
-          </div>
-
-            <div class="form-group-item" style="margin-top: 16px;">
-              <label class="form-input-label">Checklist Items</label>
-              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
-                <input type="text"
-                       name="cl_item_title"
-                       placeholder="Item Title (max 30 chars)"
-                       class="form-control-input"
-                       maxlength="30"
-                       [(ngModel)]="newChecklistNewItemTitle" />
-                <textarea name="cl_item_desc"
-                          placeholder="Item Description (max 200 chars)"
-                          class="form-control-input"
-                          rows="2"
-                          maxlength="200"
-                          style="resize: vertical;"
-                          [(ngModel)]="newChecklistNewItemDesc"></textarea>
-                <button type="button" class="btn-submit" style="padding: 8px 16px; align-self: flex-start;" (click)="addItemToNewChecklist()">
-                  + Add Item
-                </button>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto;">
-                @for (item of newChecklist.items; track $index) {
-                  <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
-                    <div style="display: flex; flex-direction: column;">
-                      <strong style="color: var(--text-primary);">{{ item.title }}</strong>
-                      <span style="color: var(--text-secondary); font-size: 11px;">{{ item.description }}</span>
-                    </div>
-                    <button type="button" (click)="removeNewChecklistItem($index)" style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px;">×</button>
-                  </div>
-                }
-              @if (newChecklist.items.length === 0) {
-                <div style="color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 4px 0;">No items added yet.</div>
-              }
-            </div>
-          </div>
-
-          <div class="form-group-item" style="margin-top: 16px;">
-            <label class="form-input-label">Notes</label>
-            <textarea name="cl_notes"
-                      placeholder="Optional notes or instructions..."
-                      class="form-control-input"
-                      rows="2"
-                      style="resize: vertical; font-family: inherit;"
-                      [(ngModel)]="newChecklist.notes"></textarea>
-          </div>
-
-        </div>
-        <div class="modal-footer-actions">
-          <button type="button" class="btn-cancel" (click)="closeCreateChecklistModal()">Cancel</button>
-          <button type="submit" class="btn-submit">Create Checklist</button>
-        </div>
-      </form>
+<div class="modal-overlay" (click)="closeCreateChecklistModal()">
+  <div class="modal-card-box" style="max-width: 520px;" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>New Service Checklist</h3>
+      <button class="close-modal-btn" (click)="closeCreateChecklistModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </div>
+
+    <form (ngSubmit)="submitCreateChecklist()" class="modal-form">
+      <div style="margin-bottom: 24px;">
+
+        @if (checklistErrorMessage()) {
+        <div
+          style="background-color: var(--color-danger-bg); color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
+          {{ checklistErrorMessage() }}
+        </div>
+        }
+        @if (checklistSuccessMessage()) {
+        <div
+          style="background-color: var(--color-success-bg); color: var(--color-success); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
+          {{ checklistSuccessMessage() }}
+        </div>
+        }
+
+        <div class="form-group-item">
+          <label class="form-input-label">Client *</label>
+          <select name="cl_client" class="form-control-input select-input" [(ngModel)]="newChecklist.client_id"
+            required>
+            <option value="">-- Select client --</option>
+            @for (client of clients(); track client._id) {
+            <option [value]="client._id">{{ client.owner_name }} ({{ client.company_name || 'Individual' }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group-item" style="margin-top: 16px;">
+          <label class="form-input-label">Service Name *</label>
+          <select name="cl_service" class="form-control-input select-input" [(ngModel)]="newChecklist.service_name"
+            required>
+            <option value="">-- Select service --</option>
+            @for (svc of availableServices; track svc) {
+            <option [value]="svc">{{ svc }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group-item" style="margin-top: 16px;">
+          <label class="form-input-label">Assign to Staff</label>
+          <select name="cl_assignee" class="form-control-input select-input" [(ngModel)]="newChecklist.assigned_to">
+            <option value="">-- Unassigned --</option>
+            @for (emp of getFlatEmployees(); track emp.id) {
+            @if (emp.role === 'filling_staff' || emp.role === 'account_manager') {
+            <option [value]="emp.id">{{ emp.name }} ({{ getRoleLabel(emp.role) }})</option>
+            }
+            }
+          </select>
+        </div>
+
+        <div class="form-group-item" style="margin-top: 16px;">
+          <label class="form-input-label">Checklist Items</label>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px;">
+            <input type="text" name="cl_item_title" placeholder="Item Title (max 30 chars)" class="form-control-input"
+              maxlength="30" [(ngModel)]="newChecklistNewItemTitle" />
+            <textarea name="cl_item_desc" placeholder="Item Description (max 200 chars)" class="form-control-input"
+              rows="2" maxlength="200" style="resize: vertical;" [(ngModel)]="newChecklistNewItemDesc"></textarea>
+            <button type="button" class="btn-submit" style="padding: 8px 16px; align-self: flex-start;"
+              (click)="addItemToNewChecklist()">
+              + Add Item
+            </button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; max-height: 150px; overflow-y: auto;">
+            @for (item of newChecklist.items; track $index) {
+            <div
+              style="display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 10px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+              <div style="display: flex; flex-direction: column;">
+                <strong style="color: var(--text-primary);">{{ item.title }}</strong>
+                <span style="color: var(--text-secondary); font-size: 11px;">{{ item.description }}</span>
+              </div>
+              <button type="button" (click)="removeNewChecklistItem($index)"
+                style="background: none; border: none; color: var(--color-danger); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px;">×</button>
+            </div>
+            }
+            @if (newChecklist.items.length === 0) {
+            <div style="color: var(--text-secondary); font-size: 12px; font-style: italic; padding: 4px 0;">No items
+              added yet.</div>
+            }
+          </div>
+        </div>
+
+        <div class="form-group-item" style="margin-top: 16px;">
+          <label class="form-input-label">Notes</label>
+          <textarea name="cl_notes" placeholder="Optional notes or instructions..." class="form-control-input" rows="2"
+            style="resize: vertical; font-family: inherit;" [(ngModel)]="newChecklist.notes"></textarea>
+        </div>
+
+      </div>
+      <div class="modal-footer-actions">
+        <button type="button" class="btn-cancel" (click)="closeCreateChecklistModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Create Checklist</button>
+      </div>
+    </form>
   </div>
+</div>
 }
 
 <!-- Add Checklist Item Modal -->
 @if (isAddChecklistItemModalOpen()) {
-  <div class="modal-overlay" (click)="closeAddChecklistItemModal()">
-    <div class="modal-card-box" style="max-width: 420px;" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Add Checklist Item</h3>
-        <button class="close-modal-btn" (click)="closeAddChecklistItemModal()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <form (ngSubmit)="submitAddChecklistItem()" class="modal-form">
-        <div style="margin-bottom: 24px;">
-          <div class="form-group-item">
-            <label class="form-input-label">Item Title (max 30 chars) *</label>
-            <input type="text"
-                   name="add_item_title"
-                   placeholder="e.g. Submit bank statement"
-                   class="form-control-input"
-                   maxlength="30"
-                   [(ngModel)]="newChecklistItemTitle"
-                   required />
-          </div>
-          <div class="form-group-item" style="margin-top: 12px;">
-            <label class="form-input-label">Item Description (max 200 chars)</label>
-            <textarea name="add_item_desc"
-                      placeholder="Optional description"
-                      class="form-control-input"
-                      rows="3"
-                      maxlength="200"
-                      style="resize: vertical;"
-                      [(ngModel)]="newChecklistItemDesc"></textarea>
-          </div>
-        </div>
-        <div class="modal-footer-actions">
-          <button type="button" class="btn-cancel" (click)="closeAddChecklistItemModal()">Cancel</button>
-          <button type="submit" class="btn-submit">Add Item</button>
-        </div>
-      </form>
+<div class="modal-overlay" (click)="closeAddChecklistItemModal()">
+  <div class="modal-card-box" style="max-width: 420px;" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add Checklist Item</h3>
+      <button class="close-modal-btn" (click)="closeAddChecklistItemModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </div>
+    <form (ngSubmit)="submitAddChecklistItem()" class="modal-form">
+      <div style="margin-bottom: 24px;">
+        <div class="form-group-item">
+          <label class="form-input-label">Item Title (max 30 chars) *</label>
+          <input type="text" name="add_item_title" placeholder="e.g. Submit bank statement" class="form-control-input"
+            maxlength="30" [(ngModel)]="newChecklistItemTitle" required />
+        </div>
+        <div class="form-group-item" style="margin-top: 12px;">
+          <label class="form-input-label">Item Description (max 200 chars)</label>
+          <textarea name="add_item_desc" placeholder="Optional description" class="form-control-input" rows="3"
+            maxlength="200" style="resize: vertical;" [(ngModel)]="newChecklistItemDesc"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer-actions">
+        <button type="button" class="btn-cancel" (click)="closeAddChecklistItemModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Add Item</button>
+      </div>
+    </form>
   </div>
+</div>
 }
 
 <!-- Request Document Modal -->
 @if (isRequestDocModalOpen()) {
-  <div class="modal-overlay" (click)="closeRequestDocModal()">
-    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h3>Request Document</h3>
-        <button class="close-modal-btn" (click)="closeRequestDocModal()">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <form (ngSubmit)="submitRequestDoc()" class="modal-form">
-        <div style="margin-bottom: 24px;">
-          @if (checklistErrorMessage()) {
-            <div style="background-color: var(--color-danger-bg); color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
-              {{ checklistErrorMessage() }}
-            </div>
-          }
-          <div class="form-group-item">
-            <label class="form-input-label">Document Name (e.g., PAN Card)</label>
-            <input type="text" class="form-control-input" [(ngModel)]="newDocRequestName" name="docName" placeholder="Enter document name" required />
-            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">The client will see this request in their app and will be prompted to upload it.</p>
-          </div>
-        </div>
-        <div class="modal-footer-actions">
-          <button type="button" class="btn-cancel" (click)="closeRequestDocModal()">Cancel</button>
-          <button type="submit" class="btn-submit">Request via App</button>
-        </div>
-      </form>
+<div class="modal-overlay" (click)="closeRequestDocModal()">
+  <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Request Document</h3>
+      <button class="close-modal-btn" (click)="closeRequestDocModal()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
     </div>
+    <form (ngSubmit)="submitRequestDoc()" class="modal-form">
+      <div style="margin-bottom: 24px;">
+        @if (checklistErrorMessage()) {
+        <div
+          style="background-color: var(--color-danger-bg); color: var(--color-danger); padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 14px;">
+          {{ checklistErrorMessage() }}
+        </div>
+        }
+        <div class="form-group-item">
+          <label class="form-input-label">Document Name (e.g., PAN Card)</label>
+          <input type="text" class="form-control-input" [(ngModel)]="newDocRequestName" name="docName"
+            placeholder="Enter document name" required />
+          <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">The client will see this request in
+            their app and will be prompted to upload it.</p>
+        </div>
+      </div>
+      <div class="modal-footer-actions">
+        <button type="button" class="btn-cancel" (click)="closeRequestDocModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Request via App</button>
+      </div>
+    </form>
   </div>
+</div>
 }

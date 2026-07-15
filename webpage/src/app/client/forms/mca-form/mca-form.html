@@ -1,16 +1,18 @@
-<div class="form-layout">
-  <div class="form-header">
-    <div class="header-container">
-      <button class="back-btn" (click)="goBack()">
-        <span class="material-symbols-outlined">arrow_back</span>
-        Back to Service
-      </button>
-      <div class="title-row">
-        <h1 class="pf-title">MCA Compliance Form</h1>
-        <p class="pf-subtitle">Complete the credentials and documents for MCA Compliance.</p>
+<div class="form-layout" [class.embedded-mode]="isEmbedded">
+  @if (!isEmbedded) {
+    <div class="form-header">
+      <div class="header-container">
+        <button class="back-btn" (click)="goBack()">
+          <span class="material-symbols-outlined">arrow_back</span>
+          Back to Service
+        </button>
+        <div class="title-row">
+          <h1 class="pf-title">MCA Compliance Form</h1>
+          <p class="pf-subtitle">Complete the credentials and documents for MCA Compliance.</p>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <div class="form-container">
     @if (errorMessage()) {

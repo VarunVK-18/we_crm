@@ -53,6 +53,22 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // Compliance case: 'case1' = first year with us, 'case2' = renewal (we did year 1+), 'case3' = from another firm
+  compliance_case: {
+    type: String,
+    enum: ['case1', 'case2', 'case3'],
+    default: null
+  },
+  // How many compliance years has this client been with US (0 = brand new, 1 = finished year 1, etc.)
+  compliance_year_count: {
+    type: Number,
+    default: 0
+  },
+  // File URL of client-uploaded Share Capital Bank Statement (Case 1 only)
+  share_capital_bank_statement: {
+    type: String,
+    default: null
+  },
   company_code: {
     type: String,
     default: 'WE',
@@ -147,6 +163,28 @@ const UserSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  mca_username: {
+    type: String,
+    default: ''
+  },
+  mca_password: {
+    type: String,
+    default: ''
+  },
+  annual_turnover: {
+    type: String,
+    default: ''
+  },
+  mca_profile_completed: {
+    type: Boolean,
+    default: false
+  },
+  coi_file: { type: String, default: '' },
+  moa_file: { type: String, default: '' },
+  aoa_file: { type: String, default: '' },
+  bank_statement_file: { type: String, default: '' },
+  sales_invoice_file: { type: String, default: '' },
+  purchase_bills_file: { type: String, default: '' },
   profile_image: {
     type: String,
     default: ''
@@ -262,6 +300,13 @@ const UserSchema = new mongoose.Schema({
       presentPincode: String
     }],
     default: []
+  },
+  bank_details: {
+    bankName: { type: String, default: '' },
+    accountNumber: { type: String, default: '' },
+    ifscCode: { type: String, default: '' },
+    accountType: { type: String, default: '' },
+    branchName: { type: String, default: '' }
   }
 }, { timestamps: true });
 

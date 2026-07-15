@@ -33,6 +33,7 @@ import { ServiceTrackerTableComponent } from './service-tracker-table/service-tr
 import { TeamServiceTrackComponent } from './team-service-track/team-service-track';
 import { Opportunities } from './opportunities/opportunities';
 import { DscTokens } from './dsc-tokens/dsc-tokens';
+import { ClientBank } from './client-bank/client-bank';
 
 @Component({
   selector: 'app-dashboard',
@@ -64,7 +65,8 @@ import { DscTokens } from './dsc-tokens/dsc-tokens';
     ServiceTrackerTableComponent,
     TeamServiceTrackComponent,
     Opportunities,
-    DscTokens
+    DscTokens,
+    ClientBank
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -442,6 +444,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'opportunities': return 'Opportunities';
       case 'staff-chat': return 'Chat';
       case 'dsc-tokens': return 'DSC Tokens';
+      case 'client-bank': return 'Client Bank Details';
       default: return 'Dashboard';
     }
   }

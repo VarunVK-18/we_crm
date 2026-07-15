@@ -21,7 +21,9 @@ const getBucketRequests = async (req, res) => {
       searchService,
       searchClientName,
       searchEmail,
-      searchPhone
+      searchPhone,
+      searchDate,
+      searchDueDate
     } = req.query;
 
     const filter = { company_id };
@@ -37,7 +39,7 @@ const getBucketRequests = async (req, res) => {
       filter.status = status;
     }
 
-    if (searchClientId || searchCompany || searchService || searchClientName || searchEmail || searchPhone) {
+    if (searchClientId || searchCompany || searchService || searchClientName || searchEmail || searchPhone || searchDate || searchDueDate) {
       const userFilter = {};
       let userQueryActive = false;
 
@@ -60,6 +62,14 @@ const getBucketRequests = async (req, res) => {
       if (searchClientName) andConditions.push({ $or: [{ client_name: { $regex: searchClientName, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
       if (searchEmail) andConditions.push({ $or: [{ client_email: { $regex: searchEmail, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
       if (searchPhone) andConditions.push({ $or: [{ client_phone: { $regex: searchPhone, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+
+      if (searchDate) {
+        const start = new Date(searchDate);
+        start.setHours(0,0,0,0);
+        const end = new Date(searchDate);
+        end.setHours(23,59,59,999);
+        andConditions.push({ $or: [{ createdAt: { $gte: start, $lte: end } }, { updatedAt: { $gte: start, $lte: end } }] });
+      }
 
       if (andConditions.length > 0) {
         if (!filter.$and) filter.$and = [];
@@ -97,7 +107,7 @@ const claimBucketRequest = async (req, res) => {
     const company_id = req.user.company_id;
     const managerId = req.user._id;
     const { id } = req.params;
-    const { team_id, dealClosedAmount, advanceAmountPaid, directorCount, dueDate, priority } = req.body;
+    const { team_id, dealClosedAmount, advanceAmountPaid, directorCount, dueDate, priority, compliance_case, compliance_year_count } = req.body;
 
     const bucketReq = await BucketRequest.findOne({ _id: id, company_id, status: 'open' })
       .populate('client_id', 'custom_client_id owner_name _id company_id assigned_to');
@@ -166,11 +176,19 @@ If a field is not found, set it to null.`;
         }
       }
 
-      // 3. Update client record with OCR data + enable compliance radar
+      // 3. Update client record with OCR data + enable compliance radar + set compliance case
       const clientUpdateFields = { in_compliance_radar: true };
       if (extractedDetails.companyName) clientUpdateFields.company_name = extractedDetails.companyName;
-      if (extractedDetails.pan)  clientUpdateFields.pan = extractedDetails.pan;
+      if (extractedDetails.pan) clientUpdateFields.pan = extractedDetails.pan;
       if (!bucketReq.client_id.assigned_to) clientUpdateFields.assigned_to = managerId;
+      if (extractedDetails.incorporationDate) clientUpdateFields.incorporation_date = new Date(extractedDetails.incorporationDate);
+      if (compliance_case) clientUpdateFields.compliance_case = compliance_case;
+      // Set year count: case1 & case3 start at year 1 with us; case2 increments provided count
+      if (compliance_case === 'case2') {
+        clientUpdateFields.compliance_year_count = parseInt(compliance_year_count) + 1 || 2;
+      } else {
+        clientUpdateFields.compliance_year_count = 1; // First year with us
+      }
       await User.findByIdAndUpdate(bucketReq.client_id._id, clientUpdateFields);
 
       // 4. Create a dummy completed Checklist to anchor to Compliance Radar (mirrors externalOnboard)
@@ -207,20 +225,33 @@ If a field is not found, set it to null.`;
         }] : []
       });
 
-      // 5. Generate compliance tasks from incorporation date
-      if (incDate) {
-        const entityType = extractedDetails.entityType || 'Private Limited Company';
-        try {
-          if (entityType === 'LLP') {
-            await complianceService.generateCompliancesForLLP(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
-          } else if (entityType === 'OPC') {
-            await complianceService.generateCompliancesForOPC(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
-          } else if (entityType === 'Private Limited Company' || entityType === 'Public Limited Company' || entityType.includes('Limited')) {
-            await complianceService.generateCompliancesForPrivateLimited(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
+      // 5. Generate compliance tasks based on compliance_case
+      const entityType = extractedDetails.entityType || 'Private Limited Company';
+      const yearNum = parseInt(compliance_year_count) || 0;
+      try {
+        if (entityType === 'LLP') {
+          if (incDate) await complianceService.generateCompliancesForLLP(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
+        } else if (entityType === 'OPC') {
+          if (incDate) await complianceService.generateCompliancesForOPC(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
+        } else {
+          // Private Limited / Public Limited — use compliance case
+          const caseToUse = compliance_case || 'case1';
+          if (caseToUse === 'case2') {
+            // Renewal — no ADT-1, AGM number from year count
+            const incDateForCase2 = incDate || new Date();
+            await complianceService.generateCase2Compliances(bucketReq.client_id._id, company_id, complianceChecklist._id, incDateForCase2, clientName, yearNum + 1);
+          } else if (caseToUse === 'case3') {
+            // From another firm — ADT-1 + AGM from inc date
+            if (!incDate) throw new Error('Incorporation date is required for Case 3');
+            await complianceService.generateCase3Compliances(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
+          } else {
+            // Case 1 (default) — first-time client
+            if (!incDate) throw new Error('Incorporation date is required for Case 1');
+            await complianceService.generateCase1Compliances(bucketReq.client_id._id, company_id, complianceChecklist._id, incDate, clientName);
           }
-        } catch (e) {
-          console.error('[BucketClaim] Compliance task generation failed:', e.message);
         }
+      } catch (e) {
+        console.error('[BucketClaim] Compliance task generation failed:', e.message);
       }
 
       // 6. Mark bucket request as claimed (no regular checklist, but we attach the anchor)
@@ -388,7 +419,9 @@ const getAvailableJobs = async (req, res) => {
       searchServiceId,
       searchClientId,
       searchService,
-      searchCompany
+      searchCompany,
+      searchDate,
+      searchDueDate
     } = req.query;
 
     const page = parseInt(req.query.page) || 1;
@@ -404,7 +437,7 @@ const getAvailableJobs = async (req, res) => {
       ]
     };
 
-    if (searchServiceId || searchClientId || searchService || searchCompany) {
+    if (searchServiceId || searchClientId || searchService || searchCompany || searchDate || searchDueDate) {
       const userFilter = {};
       let userQueryActive = false;
 
@@ -428,6 +461,29 @@ const getAvailableJobs = async (req, res) => {
       if (searchClientId) andConditions.push({ $or: [{ dealvoice_client_id: { $regex: searchClientId, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
       if (searchService) andConditions.push({ service_name: { $regex: searchService, $options: 'i' } });
       if (searchCompany) andConditions.push({ $or: [{ client_company_name: { $regex: searchCompany, $options: 'i' } }, { client_id: { $in: matchingUserIds } }] });
+
+      if (searchDate) {
+        const start = new Date(searchDate);
+        start.setHours(0,0,0,0);
+        const end = new Date(searchDate);
+        end.setHours(23,59,59,999);
+        andConditions.push({ $or: [{ createdAt: { $gte: start, $lte: end } }, { updatedAt: { $gte: start, $lte: end } }] });
+      }
+
+      if (searchDueDate) {
+        // Find checklists with this due date, then add their IDs to filter
+        const start = new Date(searchDueDate);
+        start.setHours(0,0,0,0);
+        const end = new Date(searchDueDate);
+        end.setHours(23,59,59,999);
+        const dueDateChecklists = await Checklist.find({ dueDate: { $gte: start, $lte: end } }).select('_id').lean();
+        const dueDateChecklistIds = dueDateChecklists.map(c => c._id);
+        if (dueDateChecklistIds.length > 0) {
+          andConditions.push({ checklist_id: { $in: dueDateChecklistIds } });
+        } else {
+          andConditions.push({ _id: null }); // Force no match if no checklist has this due date
+        }
+      }
 
       if (andConditions.length > 0) {
         if (!filter.$and) filter.$and = [];
