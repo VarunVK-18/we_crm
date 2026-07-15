@@ -39,17 +39,17 @@
           <button class="profile-tab" [class.active]="activeTab() === 'overview'" (click)="setTab('overview')">
             <span class="material-symbols-outlined" style="font-size: 18px;">grid_view</span> Overview
           </button>
-          <button class="profile-tab" [class.active]="activeTab() === 'services'" (click)="setTab('services')">
-            <span class="material-symbols-outlined" style="font-size: 18px;">business_center</span> Services
-          </button>
-          <button class="profile-tab" [class.active]="activeTab() === 'calendar'" (click)="setTab('calendar')">
-            <span class="material-symbols-outlined" style="font-size: 18px;">calendar_month</span> Calendar
-          </button>
           <button class="profile-tab" [class.active]="activeTab() === 'directors'" (click)="setTab('directors')">
             <span class="material-symbols-outlined" style="font-size: 18px;">group</span> Directors
           </button>
+          <button class="profile-tab" [class.active]="activeTab() === 'services'" (click)="setTab('services')">
+            <span class="material-symbols-outlined" style="font-size: 18px;">business_center</span> Services
+          </button>
           <button class="profile-tab" [class.active]="activeTab() === 'documents'" (click)="setTab('documents')">
             <span class="material-symbols-outlined" style="font-size: 18px;">folder</span> Documents
+          </button>
+          <button class="profile-tab" [class.active]="activeTab() === 'calendar'" (click)="setTab('calendar')">
+            <span class="material-symbols-outlined" style="font-size: 18px;">calendar_month</span> Calendar
           </button>
         </div>
 
@@ -139,7 +139,7 @@
             </div>
 
             <!-- Bank Details Card -->
-            <div class="info-card">
+            <div class="info-card" style="grid-column: 1 / -1;">
               <div class="info-card-header">
                 <div class="info-card-header-left">
                   <div class="info-card-icon">
@@ -581,26 +581,22 @@
           }
           
           @if (activeTab() === 'calendar') {
-          <div class="info-card" style="padding: 0; overflow: hidden;">
-            <div style="padding: 24px;">
-              <h3 class="info-card-title" style="margin-bottom: 20px;">Compliance Calendar</h3>
-              <div style="color: var(--text-secondary); text-align: center; padding: 40px;">
-                <span class="material-symbols-outlined" style="font-size: 48px; color: var(--border); margin-bottom: 16px;">calendar_month</span>
-                <p>Compliance calendar is currently empty.</p>
-              </div>
-            </div>
-          </div>
-        }
+            <app-compliance-calendar [isEmbedded]="true"></app-compliance-calendar>
+          }
         
         @if (activeTab() === 'documents') {
 
           <!-- Documents Section -->
           <div class="profile-card documents-card">
-            <div class="card-header">
-              <div>
-                <h2>Uploaded Documents</h2>
+            <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+              <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+                <h2 style="margin: 0;">Uploaded Documents</h2>
+                <span class="doc-count">{{ filteredDocuments().length + (selectedEntity() === 'All' ? (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) : 0) }} Total</span>
               </div>
-              <span class="doc-count">{{ filteredDocuments().length + (selectedEntity() === 'All' ? (user()?.pan_file ? 1 : 0) + (user()?.gstin_file ? 1 : 0) : 0) }} Total</span>
+              <div class="search-box" style="position: relative; max-width: 300px; width: 100%;">
+                <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #94a3b8;">search</span>
+                <input type="text" placeholder="Search documents..." [ngModel]="documentSearchQuery()" (ngModelChange)="documentSearchQuery.set($event)" style="width: 100%; padding: 8px 12px 8px 40px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; transition: border-color 0.2s; box-sizing: border-box;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#cbd5e1'">
+              </div>
             </div>
             
             <div class="documents-list">
