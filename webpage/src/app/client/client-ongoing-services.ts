@@ -23,6 +23,9 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
   isLoading = signal(true);
   pollingInterval: any;
 
+  showCongratsModal = signal(false);
+  congratsServiceName = signal('');
+
   // Entity filter — synced with topbar via custom event
   selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
   private entityChangeHandler = (e: Event) => {
@@ -87,6 +90,15 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
               const clientFormSubmitted = c.details?.clientFormSubmitted === true;
               if (needsDocUpload || !clientFormSubmitted || c.action_required) {
                 status = 'action-required';
+              }
+            } else if (status === 'completed') {
+              if (!this.showCongratsModal()) {
+                const hasBeenCongratulated = localStorage.getItem(`congrats_shown_${c._id || c.id}`);
+                if (!hasBeenCongratulated) {
+                  this.congratsServiceName.set(c.service_name || c.checklist_name || 'Service');
+                  this.showCongratsModal.set(true);
+                  localStorage.setItem(`congrats_shown_${c._id || c.id}`, 'true');
+                }
               }
             }
             
@@ -182,5 +194,9 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
 
   openServiceDetails(order: any) {
     this.router.navigate(['/client/service', order._id || order.id]);
+  }
+
+  closeCongratsModal() {
+    this.showCongratsModal.set(false);
   }
 }

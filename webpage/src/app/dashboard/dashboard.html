@@ -241,7 +241,7 @@
       <app-staff-compliance (onViewDetails)="viewComplianceDetails($event)"></app-staff-compliance>
       }
       @if (currentTab() === 'compliance-details' && selectedComplianceEntity()) {
-      <app-compliance-details [entity]="selectedComplianceEntity()!" (goBack)="handleTabChanged('staff-compliance')"></app-compliance-details>
+      <app-compliance-details [entity]="selectedComplianceEntity()!" (goBack)="handleTabChanged('staff-compliance')" (onViewClient)="viewClient($event)"></app-compliance-details>
       }
       @if (currentTab() === 'service-track') {
       <app-service-track (onViewChecklist)="viewChecklist($event)"></app-service-track>

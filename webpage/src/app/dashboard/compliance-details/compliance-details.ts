@@ -25,6 +25,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 export class ComplianceDetails implements OnInit, OnDestroy {
   @Input() entity!: { entityName: string, clientUid: string };
   @Output() goBack = new EventEmitter<void>();
+  @Output() onViewClient = new EventEmitter<any>();
 
   readonly ArrowLeft01Icon = ArrowLeft01Icon;
   readonly CheckmarkCircle01Icon = CheckmarkCircle01Icon;
@@ -100,6 +101,16 @@ export class ComplianceDetails implements OnInit, OnDestroy {
       o.name.toLowerCase().includes(search.toLowerCase()) || 
       o.role.toLowerCase().includes(search.toLowerCase())
     );
+  }
+
+  toggleMcaPassword() {
+    this.showMcaPassword.set(!this.showMcaPassword());
+  }
+
+  viewClientProfile() {
+    if (this.tasks().length > 0 && this.tasks()[0].clientUid) {
+      this.onViewClient.emit(this.tasks()[0].clientUid);
+    }
   }
 
   openChatModal() {

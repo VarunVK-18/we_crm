@@ -700,3 +700,35 @@
   </div>
 </div>
 }
+
+@if (showCongratsModal()) {
+<div class="ho-modal-backdrop" (click)="closeCongratsModal()"
+  style="display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 9999; animation: fadeIn 0.2s ease-out;">
+  <div class="ho-modal-content" (click)="$event.stopPropagation()"
+    style="background: white; border-radius: 24px; padding: 40px 32px; max-width: 420px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.1), 0 10px 20px -5px rgba(15, 23, 42, 0.05); position: relative; text-align: center; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+
+    <!-- Confetti / Success Icon -->
+    <div style="width: 80px; height: 80px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; background: #ecfdf5; border-radius: 50%;">
+      <span class="material-symbols-outlined" style="font-size: 40px; color: #10b981;">celebration</span>
+    </div>
+
+    <!-- Content -->
+    <h3 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0;">
+      Congratulations!
+    </h3>
+    <p style="font-size: 15px; color: #475569; line-height: 1.6; margin: 0 0 32px 0;">
+      Your service <strong>{{ congratsServiceName() }}</strong> has been successfully completed. 
+      Thank you for choosing Wealth Empires.
+    </p>
+
+    <!-- Actions -->
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <button (click)="closeCongratsModal()"
+        style="width: 100%; background: #0f172a; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: background 0.2s ease;">
+        Great, thanks!
+      </button>
+    </div>
+
+  </div>
+</div>
+}

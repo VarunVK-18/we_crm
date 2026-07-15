@@ -123,7 +123,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
   });
 
   getSlideStyle(index: number) {
-    const colors = ['#d7d98a', '#73bb3f', '#dde100', '#03969e', '#cce7f1', '#107054'];
+    const colors = ['#d7d98a', '#dcfce7', '#fef08a', '#bae6fd', '#e0f2fe', '#ccfbf1'];
     const bg = colors[index % colors.length];
     
     // Determine text color based on background luminance
@@ -203,6 +203,9 @@ export class ClientDashboard implements OnInit, OnDestroy {
   }
 
   appLinkCopied = signal(false);
+
+  showCongratsModal = signal(false);
+  congratsServiceName = signal('');
   
   copyAppLink() {
     navigator.clipboard.writeText('https://play.google.com/store/apps').then(() => {
@@ -384,9 +387,21 @@ export class ClientDashboard implements OnInit, OnDestroy {
       
       c.derivedStatus = status;
       
-      if (status === 'action-required' || status === 'in-progress' || status === 'active') active.push(c);
-      else if (status === 'completed') completed.push(c);
-      else notInit.push(c);
+      if (status === 'action-required' || status === 'in-progress' || status === 'active') {
+        active.push(c);
+      } else if (status === 'completed') {
+        completed.push(c);
+        if (!this.showCongratsModal()) {
+          const hasBeenCongratulated = localStorage.getItem(`congrats_shown_${c._id || c.id}`);
+          if (!hasBeenCongratulated) {
+            this.congratsServiceName.set(c.service_name || c.checklist_name || 'Service');
+            this.showCongratsModal.set(true);
+            localStorage.setItem(`congrats_shown_${c._id || c.id}`, 'true');
+          }
+        }
+      } else {
+        notInit.push(c);
+      }
     }
     
     this.activeOrders.set(active);
@@ -426,6 +441,10 @@ export class ClientDashboard implements OnInit, OnDestroy {
 
   openServiceDetails(order: any) {
     this.router.navigate([`/client/service/${order._id}`]);
+  }
+
+  closeCongratsModal() {
+    this.showCongratsModal.set(false);
   }
 
   getCompletedCount(items: any[]): number {
