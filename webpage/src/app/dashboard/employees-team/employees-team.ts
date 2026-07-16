@@ -58,6 +58,7 @@ export class EmployeesTeam implements OnInit {
     name: '',
     email: '',
     phone: '',
+    password: '',
     role: 'filling_staff'
   };
 
@@ -380,6 +381,7 @@ export class EmployeesTeam implements OnInit {
       name: member.name || member.owner_name,
       email: member.email,
       phone: member.phone || '',
+      password: '',
       role: member.role
     };
     this.isEditEmployeeModalOpen.set(true);

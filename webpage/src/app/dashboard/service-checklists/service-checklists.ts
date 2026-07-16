@@ -1,3 +1,4 @@
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { Component, OnInit, OnDestroy, AfterViewChecked, signal, input, Output, EventEmitter, ElementRef, inject, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 @Component({
   selector: 'app-service-checklists',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, ResizableColumnDirective],
   templateUrl: './service-checklists.html',
   styleUrl: './service-checklists.css'
 })

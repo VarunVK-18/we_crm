@@ -356,7 +356,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   }
 
   selectedPeriod = signal<string>('last6Months');
-  growthChartPeriod = signal<'1w' | '1m' | '1y'>('1w');
+  growthChartPeriod = signal<'1w' | '1m' | '3m' | '6m' | '1y'>('1w');
   activeChartView = signal<'tasks' | 'upscaling'>('tasks');
 
   toggleChartView() {
@@ -372,7 +372,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     }, 50);
   }
 
-  setGrowthPeriod(period: '1w' | '1m' | '1y') {
+  setGrowthPeriod(period: '1w' | '1m' | '3m' | '6m' | '1y') {
     this.growthChartPeriod.set(period);
     this.updateGrowthChart();
   }
@@ -1363,6 +1363,25 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       for (let i = 0; i < 4; i++) {
         currentData.push(getCount(currBounds[i].start, currBounds[i].end));
         previousData.push(getCount(prevBounds[i].start, prevBounds[i].end));
+      }
+    } else if (p === '3m' || p === '6m') {
+      const numMonths = p === '3m' ? 3 : 6;
+      currentLabel = `Last ${numMonths} Months`;
+      previousLabel = `Previous ${numMonths} Months`;
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      
+      for (let i = numMonths - 1; i >= 0; i--) {
+        const d = new Date(currentYear, currentMonth - i, 1);
+        labels.push(d.toLocaleString('default', { month: 'short' }));
+        
+        const startCurr = new Date(currentYear, currentMonth - i, 1).getTime();
+        const endCurr = new Date(currentYear, currentMonth - i + 1, 0, 23, 59, 59).getTime();
+        currentData.push(getCount(startCurr, endCurr));
+
+        const startPrev = new Date(currentYear, currentMonth - i - numMonths, 1).getTime();
+        const endPrev = new Date(currentYear, currentMonth - i - numMonths + 1, 0, 23, 59, 59).getTime();
+        previousData.push(getCount(startPrev, endPrev));
       }
     } else {
       currentLabel = 'This Year';

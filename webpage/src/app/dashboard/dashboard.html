@@ -66,8 +66,8 @@
               [class.active]="isNotificationOpen()">
               <hugeicons-icon [icon]="Notification01Icon" [size]="20" color="currentColor"
                 [strokeWidth]="2"></hugeicons-icon>
-              @if (notifService.notifications().length > 0) {
-              <span class="notification-dot">{{ notifService.notifications().length }}</span>
+              @if (systemNotifications().length > 0) {
+              <span class="notification-dot">{{ systemNotifications().length }}</span>
               }
             </button>
 
@@ -82,12 +82,12 @@
             </div>
 
             <div class="notif-list">
-              @if (notifService.notifications().length === 0) {
+              @if (systemNotifications().length === 0) {
               <div class="notif-empty">
                 <p>No recent updates</p>
               </div>
               } @else {
-              @for (notif of notifService.notifications(); track notif._id) {
+              @for (notif of systemNotifications(); track notif._id) {
               <div class="notif-item" [class.unread]="!notif.isRead">
                 <div class="notif-icon" [ngClass]="notif.type">
                   @if (notif.type === 'chat') {

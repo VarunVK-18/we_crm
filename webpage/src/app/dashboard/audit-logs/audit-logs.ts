@@ -28,7 +28,16 @@ export class AuditLogs implements OnInit {
     this.api.get<any>('audit-logs').subscribe({
       next: (res) => {
         if (res && res.success) {
-          this.logs.set(res.logs);
+          const transformedLogs = res.logs.map((log: any) => {
+            if (log.action) {
+              log.action = log.action.replace(/bucket/gi, 'Service');
+            }
+            if (log.details) {
+              log.details = log.details.replace(/bucket/gi, 'Service');
+            }
+            return log;
+          });
+          this.logs.set(transformedLogs);
         }
         this.isLoading.set(false);
       },

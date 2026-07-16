@@ -1,3 +1,4 @@
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +12,7 @@ import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.servic
 @Component({
   selector: 'app-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, ResizableColumnDirective],
   templateUrl: './requests.html',
   styleUrl: './requests.css'
 })

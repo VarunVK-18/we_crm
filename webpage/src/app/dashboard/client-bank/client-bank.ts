@@ -1,3 +1,4 @@
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,7 @@ import { Api } from '../../api';
 @Component({
   selector: 'app-client-bank',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ResizableColumnDirective],
   templateUrl: './client-bank.html',
   styleUrl: './client-bank.css'
 })

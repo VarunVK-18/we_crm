@@ -4,14 +4,14 @@
   @if (isLoading()) {
   <div class="bucket-table-container">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="client-bank-col-1">
         <tr>
-          <th>Client ID</th>
-          <th>Company Name</th>
-          <th>Client Name</th>
-          <th>Incorporation Date</th>
-          <th>Phone Number</th>
-          <th>Action</th>
+          <th appResizableColumn="client-bank-col-2">Client ID</th>
+          <th appResizableColumn="client-bank-col-3">Company Name</th>
+          <th appResizableColumn="client-bank-col-4">Client Name</th>
+          <th appResizableColumn="client-bank-col-5">Incorporation Date</th>
+          <th appResizableColumn="client-bank-col-6">Phone Number</th>
+          <th appResizableColumn="client-bank-col-7">Action</th>
         </tr>
       </thead>
       <tbody>
@@ -64,34 +64,34 @@
   } @else {
   <div class="bucket-table-container">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="client-bank-col-8">
         <tr>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="client-bank-col-9">
             <div>Client ID</div>
             <input type="text" [ngModel]="mClientIdFilter()" (ngModelChange)="mClientIdFilter.set($event); onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="client-bank-col-10">
             <div>Company Name</div>
             <input type="text" [ngModel]="mCompanyNameFilter()" (ngModelChange)="mCompanyNameFilter.set($event); onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="client-bank-col-11">
             <div>Client Name</div>
             <input type="text" [ngModel]="mClientNameFilter()" (ngModelChange)="mClientNameFilter.set($event); onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="client-bank-col-12">
             <div>Incorporation Date</div>
             <input type="text" [ngModel]="mIncDateFilter()" (ngModelChange)="mIncDateFilter.set($event); onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="client-bank-col-13">
             <div>Phone Number</div>
             <input type="text" [ngModel]="mPhoneFilter()" (ngModelChange)="mPhoneFilter.set($event); onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top; width: 100px; text-align: center;">
+          <th style="vertical-align: top; width: 100px; text-align: center;" appResizableColumn="client-bank-col-14">
             <div>Action</div>
           </th>
         </tr>

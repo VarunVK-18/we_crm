@@ -31,34 +31,34 @@
   } @else {
   <div class="bucket-table-container" style="margin-top: 16px;">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="requests-col-1">
         <tr>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="requests-col-2">
             <div>Client ID</div>
             <input type="text"  [(ngModel)]="clientIdFilter" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="requests-col-3">
             <div>Request Date</div>
             <input type="text" onfocus="(this.type='date')" onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="requestDateFilter" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="requests-col-4">
             <div>Service</div>
             <input type="text"  [(ngModel)]="serviceFilter" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="requests-col-5">
             <div>Company Name</div>
             <input type="text"  [(ngModel)]="companyFilter" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="requests-col-6">
             <div>Client Name</div>
             <input type="text"  [(ngModel)]="clientNameFilter" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="requests-col-7">
             <div>Phone Number</div>
             <input type="text"  [(ngModel)]="phoneFilter" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
           @if (role !== 'admin') {
-            <th style="text-align: center;">Action</th>
+            <th style="text-align: center;" appResizableColumn="requests-col-8">Action</th>
           }
         </tr>
       </thead>

@@ -107,7 +107,6 @@
           <div class="form-group">
             <label>Select Completed Service</label>
             <div class="input-wrapper select-wrapper">
-              <hugeicons-icon [icon]="GridIcon" [size]="18" class="input-icon"></hugeicons-icon>
               <select [(ngModel)]="newTicket.checklistId" class="form-control">
                 @for (service of completedServices(); track service._id) {
                   <option [value]="service._id">{{ service.service_name || 'Service' }}</option>
@@ -119,7 +118,6 @@
           <div class="form-group">
             <label>Subject</label>
             <div class="input-wrapper">
-              <hugeicons-icon [icon]="Tag01Icon" [size]="18" class="input-icon"></hugeicons-icon>
               <input type="text" [(ngModel)]="newTicket.subject" class="form-control" placeholder="e.g., GST Registration Failure" />
             </div>
           </div>
@@ -127,7 +125,6 @@
           <div class="form-group">
             <label>Description</label>
             <div class="input-wrapper textarea-wrapper">
-              <hugeicons-icon [icon]="TextFontIcon" [size]="18" class="input-icon"></hugeicons-icon>
               <textarea [(ngModel)]="newTicket.description" class="form-control" rows="4" placeholder="Describe your issue in detail..."></textarea>
             </div>
           </div>

@@ -56,63 +56,103 @@
       <textarea [(ngModel)]="address" name="address" class="form-control" rows="3" required placeholder="Complete registered address"></textarea>
     </div>
 
-    <div class="form-group">
-      <label>Authorization details (Name, PAN, mobile, email, designation) <span class="required">*</span></label>
-      <textarea [(ngModel)]="authDetails" name="authDetails" class="form-control" rows="3" required placeholder="Authorized representative details"></textarea>
-    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Do you have Organization DSC? <span class="required">*</span></label>
+        <select [(ngModel)]="orgDsc" name="orgDsc" class="form-control" required>
+          <option value="Yes">Yes</option>
+          <option value="No, I want one">No, I want one</option>
+        </select>
+      </div>
 
-    <div class="form-group">
-      <label>Current number of employees <span class="required">*</span></label>
-      <input type="number" [(ngModel)]="employees" name="employees" class="form-control" required placeholder="E.g. 10" />
-    </div>
+      <div class="form-group">
+        <label>Website link <span class="optional">(Optional)</span></label>
+        <input type="text" [(ngModel)]="website" name="website" class="form-control" placeholder="https://example.com" />
+      </div>
 
-    <div class="form-group">
-      <label>Applied for IPR? (Mention if any) <span class="required">*</span></label>
-      <input type="text" [(ngModel)]="ipr" name="ipr" class="form-control" required placeholder="Trademarks, Patents, etc. or 'None'" />
-    </div>
+      <div class="form-group">
+        <label>Brief about Company <span class="required">*</span></label>
+        <textarea [(ngModel)]="brief" name="brief" class="form-control" rows="3" maxlength="500" required placeholder="Description of your company (Max 500 characters)"></textarea>
+      </div>
 
-    <div class="form-group">
-      <label>Nature of startup <span class="required">*</span></label>
-      <select [(ngModel)]="startupNature" name="startupNature" class="form-control" required>
-        <option value="Innovative">Innovative</option>
-        <option value="Scalable">Scalable</option>
-      </select>
-    </div>
+      <div class="form-group">
+        <label>Director details (Name, email ID, Mobile) <span class="required">*</span></label>
+        <textarea [(ngModel)]="directorDetails" name="directorDetails" class="form-control" rows="2" required placeholder="E.g. John Doe, john@example.com, +91 9876543210"></textarea>
+      </div>
 
-    <div class="form-group">
-      <label>Received any Funds? <span class="required">*</span></label>
-      <select [(ngModel)]="receivedFunds" name="receivedFunds" class="form-control" required>
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
-      </select>
-    </div>
+      <div class="form-group">
+        <label>Industry <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="industry" name="industry" class="form-control" required placeholder="E.g. Technology" />
+      </div>
 
-    <div class="form-group">
-      <label>Received any Awards? <span class="required">*</span></label>
-      <select [(ngModel)]="receivedAwards" name="receivedAwards" class="form-control" required>
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
-      </select>
-    </div>
+      <div class="form-group">
+        <label>Sector <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="sector" name="sector" class="form-control" required placeholder="E.g. Software" />
+      </div>
 
-    <div class="form-group">
-      <label>What is the problem startup solving? <span class="required">*</span></label>
-      <textarea [(ngModel)]="problem" name="problem" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
-    </div>
+      <div class="form-group">
+        <label>Official Address of the Company <span class="required">*</span></label>
+        <textarea [(ngModel)]="address" name="address" class="form-control" rows="3" required placeholder="Complete registered address"></textarea>
+      </div>
 
-    <div class="form-group">
-      <label>How does your startup propose to solve the problem? <span class="required">*</span></label>
-      <textarea [(ngModel)]="solution" name="solution" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
-    </div>
+      <div class="form-group">
+        <label>Authorization details (Name, PAN, mobile, email, designation) <span class="required">*</span></label>
+        <textarea [(ngModel)]="authDetails" name="authDetails" class="form-control" rows="3" required placeholder="Authorized representative details"></textarea>
+      </div>
 
-    <div class="form-group">
-      <label>What uniqueness of solution? <span class="required">*</span></label>
-      <textarea [(ngModel)]="uniqueness" name="uniqueness" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
-    </div>
+      <div class="form-group">
+        <label>Current number of employees <span class="required">*</span></label>
+        <input type="number" [(ngModel)]="employees" name="employees" class="form-control" required placeholder="E.g. 10" />
+      </div>
 
-    <div class="form-group">
-      <label>Have your Startup generated revenue? (Mention last year revenue) <span class="required">*</span></label>
-      <textarea [(ngModel)]="revenue" name="revenue" class="form-control" rows="3" maxlength="400" required placeholder="E.g. No revenue generated yet, or 5 Lakhs"></textarea>
+      <div class="form-group">
+        <label>Applied for IPR? (Mention if any) <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="ipr" name="ipr" class="form-control" required placeholder="Trademarks, Patents, etc. or 'None'" />
+      </div>
+
+      <div class="form-group">
+        <label>Nature of startup <span class="required">*</span></label>
+        <select [(ngModel)]="startupNature" name="startupNature" class="form-control" required>
+          <option value="Innovative">Innovative</option>
+          <option value="Scalable">Scalable</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Received any Funds? <span class="required">*</span></label>
+        <select [(ngModel)]="receivedFunds" name="receivedFunds" class="form-control" required>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Received any Awards? <span class="required">*</span></label>
+        <select [(ngModel)]="receivedAwards" name="receivedAwards" class="form-control" required>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>What is the problem startup solving? <span class="required">*</span></label>
+        <textarea [(ngModel)]="problem" name="problem" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>How does your startup propose to solve the problem? <span class="required">*</span></label>
+        <textarea [(ngModel)]="solution" name="solution" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>What uniqueness of solution? <span class="required">*</span></label>
+        <textarea [(ngModel)]="uniqueness" name="uniqueness" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Have your Startup generated revenue? (Mention last year revenue) <span class="required">*</span></label>
+        <textarea [(ngModel)]="revenue" name="revenue" class="form-control" rows="3" maxlength="400" required placeholder="E.g. No revenue generated yet, or 5 Lakhs"></textarea>
+      </div>
     </div>
 
     <div class="document-section">

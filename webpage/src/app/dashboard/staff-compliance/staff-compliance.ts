@@ -1,3 +1,4 @@
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { Component, signal, computed, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +10,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 @Component({
   selector: 'app-staff-compliance',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, ResizableColumnDirective],
   templateUrl: './staff-compliance.html',
   styleUrl: './staff-compliance.css'
 })

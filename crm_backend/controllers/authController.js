@@ -598,17 +598,26 @@ const deleteUser = async (req, res) => {
 const editUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role, phone } = req.body;
-    const updateData = { 
-      owner_name: name, 
-      email: email.trim(), 
-      role 
-    };
+    const { name, email, role, phone, password } = req.body;
+    
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.owner_name = name;
+    user.email = email.trim();
+    user.role = role;
+    
     if (phone !== undefined) {
-      updateData.phone = phone.trim();
+      user.phone = phone.trim();
     }
     
-    const user = await User.findByIdAndUpdate(id, updateData, { new: true });
+    if (password && password.trim() !== '') {
+      user.password = password;
+    }
+
+    await user.save();
 
     if (user && req.user) {
       await logActivity(

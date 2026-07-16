@@ -1,3 +1,4 @@
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,7 +8,7 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 @Component({
   selector: 'app-service-tracker-table',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent, ResizableColumnDirective],
   templateUrl: './service-tracker-table.html',
   styles: [`
     .bucket-table-container {

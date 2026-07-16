@@ -123,6 +123,11 @@ app.use('/api/ocr', ocrRoutes);
 require('./utils/cronJobs');
 
 // Start Express Server
+// 404 Handler for undefined API routes
+app.use("/api/*", (req, res) => {
+  res.status(404).json({ success: false, message: "API route not found or invalid URL" });
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Access URL: http://localhost:${PORT}`);

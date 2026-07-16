@@ -806,7 +806,25 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       autoCancelSeconds: 6
     }).then((confirmed) => {
       if (confirmed) {
-        this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, {}).subscribe({
+        let resolution_note = '';
+        if (isSupportItem) {
+          const note = prompt('Please enter a description/resolution for closing this support ticket:');
+          if (note === null) {
+            // User cancelled the prompt
+            revertCheckbox();
+            return;
+          }
+          if (!note.trim()) {
+            alert('A description is required to close a support ticket.');
+            revertCheckbox();
+            return;
+          }
+          resolution_note = note.trim();
+        }
+
+        const payload = resolution_note ? { resolution_note } : {};
+
+        this.api.patch<any>(`checklists/${cl._id}/items/${itemIndex}`, payload).subscribe({
           next: () => {
             if (itemIndex === cl.items.length - 1) {
               this.api.patch<any>(`checklists/${cl._id}`, { status: 'under_review' }).subscribe({

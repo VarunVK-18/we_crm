@@ -6,16 +6,16 @@
   @if (isLoading()) {
   <div class="bucket-table-container">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="bucket-col-1">
         <tr>
-          <th>Client ID</th>
-          <th>Updated on</th>
-          <th>Service</th>
-          <th>Company Name</th>
-          <th>Client Name</th>
-          <th>Phone Number</th>
+          <th appResizableColumn="bucket-col-2">Client ID</th>
+          <th appResizableColumn="bucket-col-3">Updated on</th>
+          <th appResizableColumn="bucket-col-4">Service</th>
+          <th appResizableColumn="bucket-col-5">Company Name</th>
+          <th appResizableColumn="bucket-col-6">Client Name</th>
+          <th appResizableColumn="bucket-col-7">Phone Number</th>
           @if (role !== 'admin') {
-          <th>Actions</th>
+          <th appResizableColumn="bucket-col-8">Actions</th>
           }
         </tr>
       </thead>
@@ -76,41 +76,41 @@
   } @else {
   <div class="bucket-table-container">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="bucket-col-9">
         <tr>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-10">
             <div>Client ID</div>
             <input type="text" [(ngModel)]="mClientIdFilter" (ngModelChange)="onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-11">
             <div>Updated on</div>
             <input type="text" onfocus="(this.type='date')"
               onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="mDateFilter"
               (ngModelChange)="onSearchChange()" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-12">
             <div>Service</div>
             <input type="text" [(ngModel)]="mServiceFilter" (ngModelChange)="onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-13">
             <div>Company Name</div>
             <input type="text" [(ngModel)]="mCompanyNameFilter" (ngModelChange)="onSearchChange()"
               class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-14">
             <div>Client Name</div>
             <input type="text" [(ngModel)]="mClientNameFilter" (ngModelChange)="onSearchChange()"
               class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-15">
             <div>Phone Number</div>
             <input type="text" [(ngModel)]="mPhoneFilter" (ngModelChange)="onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
           @if (role !== 'admin') {
-          <th style="text-align: center; vertical-align: top;">Actions</th>
+          <th style="text-align: center; vertical-align: top;" appResizableColumn="bucket-col-16">Actions</th>
           }
         </tr>
       </thead>
@@ -185,17 +185,17 @@
   @if (isLoading()) {
   <div class="bucket-table-container">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="bucket-col-17">
         <tr>
-          <th>Service ID</th>
-          <th>Client ID</th>
-          <th>Updated On Date</th>
-          <th>Service</th>
-          <th>Company Name</th>
-          <th>Due Date</th>
-          <th>Priority</th>
+          <th appResizableColumn="bucket-col-18">Service ID</th>
+          <th appResizableColumn="bucket-col-19">Client ID</th>
+          <th appResizableColumn="bucket-col-20">Updated On Date</th>
+          <th appResizableColumn="bucket-col-21">Service</th>
+          <th appResizableColumn="bucket-col-22">Company Name</th>
+          <th appResizableColumn="bucket-col-23">Due Date</th>
+          <th appResizableColumn="bucket-col-24">Priority</th>
           @if (user()?.role !== 'filling_staff') {
-          <th>Team</th>
+          <th appResizableColumn="bucket-col-25">Team</th>
           }
         </tr>
       </thead>
@@ -261,43 +261,43 @@
   } @else {
   <div class="bucket-table-container">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="bucket-col-26">
         <tr>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-27">
             <div>Service ID</div>
             <input type="text" [(ngModel)]="sServiceIdFilter" (ngModelChange)="onSearchChange()"
               class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-28">
             <div>Client ID</div>
             <input type="text" [(ngModel)]="sClientIdFilter" (ngModelChange)="onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-29">
             <div>Updated On Date</div>
             <input type="text" onfocus="(this.type='date')"
               onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="sDateFilter"
               (ngModelChange)="onSearchChange()" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-30">
             <div>Service</div>
             <input type="text" [(ngModel)]="sServiceFilter" (ngModelChange)="onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-31">
             <div>Company Name</div>
             <input type="text" [(ngModel)]="sCompanyFilter" (ngModelChange)="onSearchChange()" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-32">
             <div>Due Date</div>
             <input type="text" onfocus="(this.type='date')"
               onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="sDueDateFilter"
               (ngModelChange)="onSearchChange()" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">Priority</th>
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-33">Priority</th>
           @if (user()?.role !== 'filling_staff') {
-          <th style="vertical-align: top;">Team</th>
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-34">Team</th>
           }
         </tr>
       </thead>

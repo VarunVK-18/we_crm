@@ -2,8 +2,6 @@
   <!-- Header Section -->
   <div class="team-header">
     <div>
-
-      <h2 class="page-title">Team Management & Access Control</h2>
       <p class="page-subtitle">{{ getFlatEmployees().length }} Active Members across Departments</p>
     </div>
     <div class="header-actions" style="display: flex; gap: 16px; align-items: center;">
@@ -26,7 +24,7 @@
       <button class="tab-btn" [class.active]="currentDirectoryTab() === 'admins'" (click)="currentDirectoryTab.set('admins')">Admins</button>
       <button class="tab-btn" [class.active]="currentDirectoryTab() === 'filing'" (click)="currentDirectoryTab.set('filing')">Filing Staff</button>
       <button class="tab-btn" [class.active]="currentDirectoryTab() === 'clients'" (click)="currentDirectoryTab.set('clients')">Client Managers</button>
-      <button class="tab-btn" [class.active]="currentDirectoryTab() === 'teams'" (click)="currentDirectoryTab.set('teams')">Bucket Teams</button>
+      <button class="tab-btn" [class.active]="currentDirectoryTab() === 'teams'" (click)="currentDirectoryTab.set('teams')">Teams</button>
     </div>
     
     <!-- Table -->
@@ -99,7 +97,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px 0 16px;">
       <div>
         <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: #1e293b;">Teams</h3>
-        <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Define teams that link a Client Manager to Filing Staff for the job bucket system.</p>
+        <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Define teams that link a Client Manager to Filing Staff for the job system.</p>
       </div>
       <button class="btn-add-user" (click)="openCreateTeamModal()" style="background: #000; color: #fff;">
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">group_add</span>
@@ -264,6 +262,11 @@
             }
           </div>
           <div class="form-group-item">
+            <label class="form-input-label">New Password (optional)</label>
+            <input type="password" name="edit_emp_password" placeholder="Enter new password to change" class="form-control-input" [(ngModel)]="editEmployee.password" />
+            <div style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">Leave blank to keep current password</div>
+          </div>
+          <div class="form-group-item">
             <label class="form-input-label">System Access Role *</label>
             <select name="edit_emp_role" class="form-control-input" [(ngModel)]="editEmployee.role" required>
               <option value="client_manager">Client Manager</option>
@@ -313,7 +316,7 @@
   <div class="modal-overlay" (click)="closeTeamModal()">
     <div class="modal-card-box" style="max-width: 560px; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h3 style="display:flex; align-items:center; gap:8px;">{{ isEditTeamMode() ? 'Edit' : 'Create' }} Bucket Team</h3>
+        <h3 style="display:flex; align-items:center; gap:8px;">{{ isEditTeamMode() ? 'Edit' : 'Create' }} Team</h3>
         <button class="close-modal-btn" (click)="closeTeamModal()">
           <span class="material-symbols-outlined">close</span>
         </button>

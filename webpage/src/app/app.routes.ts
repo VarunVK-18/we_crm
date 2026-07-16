@@ -60,6 +60,8 @@ import { TeamServiceTrackComponent } from './dashboard/team-service-track/team-s
 import { DscTokens } from './dashboard/dsc-tokens/dsc-tokens';
 import { ComplianceDetails } from './dashboard/compliance-details/compliance-details';
 
+import { NotFoundComponent } from "./not-found/not-found";
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: Login },
@@ -140,4 +142,5 @@ export const routes: Routes = [
   },
   // Redirect old routes for backward compatibility
   { path: 'client-dashboard', redirectTo: 'client/dashboard', pathMatch: 'full' },
+  { path: "**", component: NotFoundComponent }
 ];

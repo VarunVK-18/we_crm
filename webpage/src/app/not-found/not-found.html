@@ -1,0 +1,19 @@
+<div class="not-found-container fade-in">
+  <div class="not-found-content">
+    <img src="assets/404-illustration.svg" alt="404 Illustration" class="illustration" />
+    <h1 class="error-code">404</h1>
+    <h2 class="error-title">Page Not Found</h2>
+    <p class="error-desc">Oops! The URL you requested could not be found or you don't have access to it.</p>
+    
+    <div class="actions">
+      <button class="btn-primary" routerLink="/">
+        <span class="material-symbols-outlined">home</span>
+        Return Home
+      </button>
+      <button class="btn-secondary" (click)="goBack()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Go Back
+      </button>
+    </div>
+  </div>
+</div>

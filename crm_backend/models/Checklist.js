@@ -29,6 +29,10 @@ const ChecklistItemSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  resolution_note: {
+    type: String,
+    default: ''
+  },
   getBill: {
     type: Boolean,
     default: false

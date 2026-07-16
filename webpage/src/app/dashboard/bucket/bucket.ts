@@ -1,3 +1,4 @@
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 import { Component, OnInit, AfterViewChecked, signal, computed, inject, ElementRef, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -16,7 +17,7 @@ const bucketCache = {
 @Component({
   selector: 'app-bucket',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ResizableColumnDirective],
   templateUrl: './bucket.html',
   styleUrl: './bucket.css'
 })

@@ -246,7 +246,6 @@
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
-  resize: horizontal;
   overflow: auto;
   position: relative;
   min-width: 100px;

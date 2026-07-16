@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
@@ -97,6 +97,10 @@ export class Dashboard implements OnInit, OnDestroy {
   isMobileSidebarOpen = signal<boolean>(false);
   isNotificationOpen = signal<boolean>(false);
   isProfileDropdownOpen = signal<boolean>(false);
+
+  systemNotifications = computed(() => {
+    return this.notifService.notifications().filter((n: any) => n.type !== 'chat');
+  });
 
   constructor(private router: Router, public api: Api, public notifService: NotificationService, private confirmDialog: ConfirmDialogService) {}
 

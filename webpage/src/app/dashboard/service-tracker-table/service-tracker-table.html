@@ -20,33 +20,33 @@
   } @else {
   <div class="bucket-table-container">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="service-tracker-table-col-1">
         <tr>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-tracker-table-col-2">
             <div>Service ID</div>
             <input type="text"  [ngModel]="colSearch_serviceId()" (ngModelChange)="colSearch_serviceId.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-tracker-table-col-3">
             <div>Client ID</div>
             <input type="text"  [ngModel]="colSearch_clientId()" (ngModelChange)="colSearch_clientId.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-tracker-table-col-4">
             <div>Company Name</div>
             <input type="text"  [ngModel]="colSearch_companyName()" (ngModelChange)="colSearch_companyName.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-tracker-table-col-5">
             <div>Service Name</div>
             <input type="text"  [ngModel]="colSearch_serviceName()" (ngModelChange)="colSearch_serviceName.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-tracker-table-col-6">
             <div>Upcoming Task</div>
             <input type="text"  [ngModel]="colSearch_task()" (ngModelChange)="colSearch_task.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-tracker-table-col-7">
             <div>Updated On</div>
             <input type="text"  [ngModel]="colSearch_updatedOn()" (ngModelChange)="colSearch_updatedOn.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-tracker-table-col-8">
             <div>Assigned To</div>
             <input type="text"  [ngModel]="colSearch_assignedTo()" (ngModelChange)="colSearch_assignedTo.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>

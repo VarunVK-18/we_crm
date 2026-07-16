@@ -542,6 +542,15 @@
                 <div style="font-size: 13px; color: #64748b; white-space: pre-wrap;">{{ item.staff_description }}</div>
               </div>
               }
+              
+              @if (item.resolution_note) {
+              <div style="margin-top: 8px; padding: 8px; background-color: #f8fafc; border-left: 3px solid #10b981; border-radius: 4px;">
+                <div style="font-size: 11px; font-weight: 700; margin-bottom: 2px; text-transform: uppercase; letter-spacing: 0.05em; color: #10b981;">
+                  Resolution Note
+                </div>
+                <div style="font-size: 13px; color: #334155; white-space: pre-wrap;">{{ item.resolution_note }}</div>
+              </div>
+              }
 
               <!-- Custom Input Field for Step -->
               @if (item.has_custom_input) {

@@ -161,6 +161,23 @@
   padding-right: 4px;
 }
 
+.st-column-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.st-column-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.st-column-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.st-column-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
 .st-card {
   border-bottom: 1px solid var(--border);
   padding: 0 0 12px 0;

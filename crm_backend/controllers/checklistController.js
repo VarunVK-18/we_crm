@@ -491,6 +491,12 @@ const toggleChecklistItem = async (req, res) => {
     item.checkedAt = item.isChecked ? new Date() : null;
     item.checkedBy = item.isChecked ? req.user._id : null;
 
+    if (item.isChecked && req.body.resolution_note) {
+      item.resolution_note = req.body.resolution_note;
+    } else if (!item.isChecked) {
+      item.resolution_note = ''; // clear on uncheck
+    }
+
     if (item.title && item.title.startsWith('[Support]')) {
       const Ticket = require('../models/Ticket');
       await Ticket.updateOne(

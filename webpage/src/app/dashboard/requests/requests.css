@@ -798,7 +798,6 @@
   color: var(--text-secondary);
   border-bottom: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
-  resize: horizontal;
   overflow: auto;
   position: relative;
   min-width: 100px;

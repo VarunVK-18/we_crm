@@ -82,41 +82,41 @@
   } @else {
   <div class="bucket-table-container" style="margin-top: 16px;">
     <table class="bucket-table">
-      <thead>
+      <thead appResizableColumn="service-checklists-col-1">
         <tr>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-2">
             <div>SERVICE ID</div>
             <input type="text" [(ngModel)]="serviceIdFilter" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-3">
             <div>CLIENT ID</div>
             <input type="text" [(ngModel)]="clientIdFilter" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-4">
             <div>DATE</div>
             <input type="text" onfocus="(this.type='date')"
               onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="dateFilter"
               class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-5">
             <div>SERVICE NAME</div>
             <input type="text" [(ngModel)]="serviceFilter" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-6">
             <div>COMPANY NAME</div>
             <input type="text" [(ngModel)]="companyFilter" class="col-search-input"
               (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-7">
             <div>DUE DATE</div>
             <input type="text" onfocus="(this.type='date')"
               onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="dueDateFilter"
               class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-8">
             <div>PRIORITY</div>
             <select [(ngModel)]="priorityFilter" class="col-search-input" (click)="$event.stopPropagation()"
               style="padding: 4px 8px; height: 26px;">
@@ -126,9 +126,9 @@
               <option value="Low">Low</option>
             </select>
           </th>
-          <th style="vertical-align: top;">PROGRESS</th>
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-9">PROGRESS</th>
           @if (user()?.role !== 'filling_staff') {
-          <th style="vertical-align: top;">
+          <th style="vertical-align: top;" appResizableColumn="service-checklists-col-10">
             <div>ASSIGNEE</div>
             <input type="text" [(ngModel)]="assigneeFilter" class="col-search-input"
               (click)="$event.stopPropagation()" />

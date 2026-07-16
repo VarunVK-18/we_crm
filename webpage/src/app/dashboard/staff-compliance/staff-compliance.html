@@ -27,25 +27,25 @@
 
     <div class="bucket-table-container">
       <table class="bucket-table">
-        <thead>
+        <thead appResizableColumn="staff-compliance-col-1">
           <tr>
-            <th style="vertical-align: top;">
+            <th style="vertical-align: top;" appResizableColumn="staff-compliance-col-2">
               <div>SERVICE ID</div>
               <input type="text" [(ngModel)]="serviceIdFilter" class="col-search-input" />
             </th>
-            <th style="vertical-align: top;">
+            <th style="vertical-align: top;" appResizableColumn="staff-compliance-col-3">
               <div>CLIENT ID</div>
               <input type="text" [(ngModel)]="clientIdFilter" class="col-search-input" />
             </th>
-            <th style="vertical-align: top;">
+            <th style="vertical-align: top;" appResizableColumn="staff-compliance-col-4">
               <div>COMPANY NAME</div>
               <input type="text" [(ngModel)]="entityFilter" class="col-search-input" />
             </th>
-            <th style="vertical-align: top;">
+            <th style="vertical-align: top;" appResizableColumn="staff-compliance-col-5">
               <div>CLIENT</div>
               <input type="text" [(ngModel)]="clientNameFilter" class="col-search-input" />
             </th>
-            <th style="vertical-align: top;">TOTAL TASKS</th>
+            <th style="vertical-align: top;" appResizableColumn="staff-compliance-col-6">TOTAL TASKS</th>
           </tr>
         </thead>
         <tbody>
