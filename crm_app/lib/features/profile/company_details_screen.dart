@@ -433,7 +433,8 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
           'Company Details',
           style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
           ),
         ),
         backgroundColor: AppTheme.backgroundLight,

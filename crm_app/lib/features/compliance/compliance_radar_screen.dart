@@ -397,8 +397,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final currentEntity = ref.watch(selectedEntityProvider);
 
     final remindersAsync = ref.watch(complianceRemindersProvider);
-    final reminders = remindersAsync.value ?? [];
-    final isLoading = remindersAsync.isLoading && reminders.isEmpty;
+    final allReminders = remindersAsync.value ?? [];
+    final dismissedIds = ref.watch(dismissedRemindersProvider);
+    final reminders = allReminders.where((r) => !dismissedIds.contains(r.id)).toList();
+    final isLoading = remindersAsync.isLoading && allReminders.isEmpty;
     final user = ref.watch(userProfileProvider).value;
 
     // Removed auto-correct to allow selecting entities with zero reminders
@@ -1841,7 +1843,7 @@ class _ReminderItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEntity = ref.watch(selectedEntityProvider);
 
-    return InkWell(
+    final cardContent = InkWell(
       onTap: () => _showTaskDetailsBottomSheet(context),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 12),
@@ -1934,6 +1936,42 @@ class _ReminderItem extends ConsumerWidget {
         ),
       ),
     );
+
+    if (reminder.status == TaskStatus.completed) {
+      return Dismissible(
+        key: Key('reminder_${reminder.id}'),
+        direction: DismissDirection.endToStart,
+        onDismissed: (direction) {
+          final removedId = reminder.id;
+          final dismissedIds = ref.read(dismissedRemindersProvider);
+          ref.read(dismissedRemindersProvider.notifier).state = [...dismissedIds, removedId];
+
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Reminder dismissed'),
+              action: SnackBarAction(
+                label: 'UNDO',
+                onPressed: () {
+                  final currentIds = ref.read(dismissedRemindersProvider);
+                  ref.read(dismissedRemindersProvider.notifier).state = currentIds.where((id) => id != removedId).toList();
+                },
+              ),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        },
+        background: Container(
+          color: Colors.redAccent,
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          child: const Icon(LucideIcons.trash2, color: Colors.white),
+        ),
+        child: cardContent,
+      );
+    }
+    
+    return cardContent;
   }
 }
 

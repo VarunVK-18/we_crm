@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -44,10 +45,10 @@ class ProfileScreen extends ConsumerWidget {
               padding: EdgeInsets.only(left: 12.r, top: 12.r),
               child: Text(
                 'My Profile',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                style: GoogleFonts.outfit(
                       fontSize: 18.sp,
-                      fontWeight: FontWeight.w800,
-                      height: 1.0,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
                     ),
               ),
             ),

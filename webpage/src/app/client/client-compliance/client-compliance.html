@@ -455,12 +455,7 @@
         </div>
         
         <div class="entity-list">
-          <div class="entity-option" [class.active]="currentEntity() === 'All Entities'" (click)="switchEntity('All Entities')">
-            <span class="entity-option-name">All Entities</span>
-            @if (currentEntity() === 'All Entities') {
-              <hugeicons-icon [icon]="CheckmarkCircle01Icon" [size]="20" color="var(--palette-dark)" [strokeWidth]="2"></hugeicons-icon>
-            }
-          </div>
+
           
           @for (entity of availableEntities(); track entity) {
             <div class="entity-option" [class.active]="currentEntity() === entity" (click)="switchEntity(entity)">

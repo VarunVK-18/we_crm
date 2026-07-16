@@ -95,8 +95,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _contactSupport() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
-      path: 'kumarvarun43255@gmail.com',
-      queryParameters: {'subject': 'Support Request: CRM Account Access'},
+      path: 'support@wealthempires.in',
+      queryParameters: {'subject': 'Support Request: Requst to create me an new account For We CRM'},
     );
 
     try {

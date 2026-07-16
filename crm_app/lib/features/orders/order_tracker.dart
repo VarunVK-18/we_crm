@@ -269,7 +269,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     const SizedBox(height: 10),
                     DropdownButtonFormField2<String>(
                       isExpanded: true,
-                      valueListenable: ValueNotifier(selectedEntity),
+                      valueListenable: ValueNotifier(selectedEntity == 'All Entities' ? null : selectedEntity),
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 12,
@@ -284,7 +284,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         ),
                       ),
                       hint: const Text(
-                        'All Entities',
+                        'Select Entity',
                         style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                       iconStyleData: const IconStyleData(
@@ -306,10 +306,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       ),
                       selectedItemBuilder: (BuildContext context) {
                         return [
-                          const Text(
-                            'All Entities',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-                          ),
                           ...entities.map((e) => Text(
                                 e,
                                 style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
@@ -319,20 +315,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         ];
                       },
                       items: [
-                        DropdownItem<String>(
-                          value: 'All Entities',
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'All Entities',
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-                              ),
-                              if (selectedEntity == 'All Entities')
-                                const Icon(LucideIcons.check, size: 16, color: AppTheme.deepTeal),
-                            ],
-                          ),
-                        ),
                         ...entities.map(
                           (e) => DropdownItem<String>(
                             value: e,

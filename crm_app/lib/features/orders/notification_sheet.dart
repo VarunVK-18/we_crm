@@ -189,9 +189,30 @@ class _NotificationSheetState extends ConsumerState<NotificationSheet> {
                         key: Key(notification.id),
                         direction: DismissDirection.startToEnd,
                         onDismissed: (direction) {
-                          ref
-                              .read(notificationProvider.notifier)
-                              .clearNotification(notification.id);
+                          final removedNotif = notification;
+                          
+                          // Hide locally first
+                          ref.read(notificationProvider.notifier).hideLocally(removedNotif.id);
+
+                          ScaffoldMessenger.of(context).clearSnackBars();
+                          final snackbarController = ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: const Text('Notification dismissed'),
+                              action: SnackBarAction(
+                                label: 'UNDO',
+                                onPressed: () {
+                                  ref.read(notificationProvider.notifier).undoHide(removedNotif);
+                                },
+                              ),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+
+                          snackbarController.closed.then((reason) {
+                            if (reason != SnackBarClosedReason.action) {
+                              ref.read(notificationProvider.notifier).clearNotification(removedNotif.id);
+                            }
+                          });
                         },
                         background: Container(
                           color: Colors.redAccent,

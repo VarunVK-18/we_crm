@@ -225,7 +225,7 @@ export class ClientProfile implements OnInit, OnDestroy {
     if (name.includes('LLP') || name.includes('LIMITED LIABILITY PARTNERSHIP')) return 'LLP (Limited Liability Partnership)';
     if (name.includes('OPC') || name.includes('ONE PERSON COMPANY')) return 'OPC (One Person Company)';
     
-    return 'N/A';
+    return 'Not Incorporated';
   }
 
   constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) { }

@@ -12,6 +12,9 @@ final selectedEntityProvider = StateProvider<String>((ref) {
   return 'All Entities'; // Default to all entities
 });
 
+// Provider to track dismissed completed reminders locally
+final dismissedRemindersProvider = StateProvider<List<String>>((ref) => []);
+
 Future<bool> uploadClientReplyDocument({
   required String taskId,
   required String documentType,

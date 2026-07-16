@@ -64,37 +64,21 @@
                   </div>
                   <h3 class="info-card-title">Basic Information</h3>
                 </div>
-                <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit Profile' }}</button>
               </div>
               
               <div class="info-card-content">
                 <div class="info-field">
                   <span class="info-label">Entity Name</span>
-                  @if(isEditing()) {
-                    <input type="text" class="form-input" [(ngModel)]="editData.company_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                  } @else {
-                    <span class="info-val">{{ user()?.company_name || 'N/A' }}</span>
-                  }
+                  <span class="info-val">{{ user()?.company_name || 'N/A' }}</span>
                 </div>
                 <div class="info-field">
                   <span class="info-label">Entity Type</span>
-                  @if(isEditing()) {
-                    <input type="text" class="form-input" [(ngModel)]="editData.business_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                  } @else {
-                    <span class="info-val">{{ entityType }}</span>
-                  }
+                  <span class="info-val">{{ entityType }}</span>
                 </div>
-                <div class="info-field">
-                  <span class="info-label">Status</span>
-                  <span class="info-val">{{ user()?.status || 'ACTIVE' }}</span>
-                </div>
+
                 <div class="info-field">
                   <span class="info-label">Owner Name</span>
-                  @if(isEditing()) {
-                    <input type="text" class="form-input" [(ngModel)]="editData.owner_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                  } @else {
-                    <span class="info-val">{{ user()?.company_name || 'N/A' }}</span>
-                  }
+                  <span class="info-val">{{ user()?.owner_name || 'N/A' }}</span>
                 </div>
               </div>
             </div>
@@ -108,70 +92,30 @@
                   </div>
                   <h3 class="info-card-title">Contact Information</h3>
                 </div>
+                <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
               </div>
               
               <div class="info-card-content">
                 <div class="info-field">
                   <span class="info-label">Email</span>
-                  @if(isEditing()) {
-                    <input type="email" class="form-input" [(ngModel)]="editData.email" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                  } @else {
-                    <span class="info-val" style="word-break: break-all;">{{ user()?.email || 'N/A' }}</span>
-                  }
+                  <span class="info-val" style="word-break: break-all;">{{ user()?.email || 'N/A' }}</span>
                 </div>
                 <div class="info-field">
                   <span class="info-label">Phone</span>
-                  @if(isEditing()) {
-                    <input type="text" class="form-input" [(ngModel)]="editData.phone" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
-                  } @else {
-                    <span class="info-val">{{ user()?.phone || 'N/A' }}</span>
-                  }
+                  <span class="info-val">{{ user()?.phone || 'N/A' }}</span>
                 </div>
                 <div class="info-field">
                   <span class="info-label">Website</span>
-                  <span class="info-val">{{ user()?.website || 'N/A' }}</span>
+                  @if(isEditing()) {
+                    <input type="text" class="form-input" [(ngModel)]="editData.website" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
+                  } @else {
+                    <span class="info-val">{{ user()?.website || 'N/A' }}</span>
+                  }
                 </div>
-                <div class="info-field">
-                  <span class="info-label">State of Registration</span>
-                  <span class="info-val">{{ user()?.state || 'N/A' }}</span>
-                </div>
+
               </div>
             </div>
 
-            <!-- Bank Details Card -->
-            <div class="info-card" style="grid-column: 1 / -1;">
-              <div class="info-card-header">
-                <div class="info-card-header-left">
-                  <div class="info-card-icon">
-                    <span class="material-symbols-outlined" style="font-size: 18px;">account_balance</span>
-                  </div>
-                  <h3 class="info-card-title">Bank Details</h3>
-                </div>
-              </div>
-              
-              <div class="info-card-content">
-                <div class="info-field">
-                  <span class="info-label">Bank Name</span>
-                  <span class="info-val">{{ user()?.bank_details?.bankName || 'N/A' }}</span>
-                </div>
-                <div class="info-field">
-                  <span class="info-label">Account Number</span>
-                  <span class="info-val">{{ user()?.bank_details?.accountNumber || 'N/A' }}</span>
-                </div>
-                <div class="info-field">
-                  <span class="info-label">IFSC Code</span>
-                  <span class="info-val">{{ user()?.bank_details?.ifscCode || 'N/A' }}</span>
-                </div>
-                <div class="info-field">
-                  <span class="info-label">Account Type</span>
-                  <span class="info-val">{{ user()?.bank_details?.accountType || 'N/A' }}</span>
-                </div>
-                <div class="info-field">
-                  <span class="info-label">Branch Name</span>
-                  <span class="info-val">{{ user()?.bank_details?.branchName || 'N/A' }}</span>
-                </div>
-              </div>
-            </div>
           </div>
           
           <!-- Statutory Details Categorized Cards -->
@@ -371,11 +315,33 @@
                 <div class="info-card-icon">
                   <span class="material-symbols-outlined" style="font-size: 18px;">account_balance</span>
                 </div>
-                <h3 class="info-card-title">Capital & Financials</h3>
+                <h3 class="info-card-title">Bank Details and Financials</h3>
               </div>
               <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
             </div>
             <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+              <!-- Bank Details -->
+              <div class="info-field">
+                <span class="info-label">Bank Name</span>
+                <span class="info-val">{{ user()?.bank_details?.bankName || 'N/A' }}</span>
+              </div>
+              <div class="info-field">
+                <span class="info-label">Account Number</span>
+                <span class="info-val">{{ user()?.bank_details?.accountNumber || 'N/A' }}</span>
+              </div>
+              <div class="info-field">
+                <span class="info-label">IFSC Code</span>
+                <span class="info-val">{{ user()?.bank_details?.ifscCode || 'N/A' }}</span>
+              </div>
+              <div class="info-field">
+                <span class="info-label">Account Type</span>
+                <span class="info-val">{{ user()?.bank_details?.accountType || 'N/A' }}</span>
+              </div>
+              <div class="info-field">
+                <span class="info-label">Branch Name</span>
+                <span class="info-val">{{ user()?.bank_details?.branchName || 'N/A' }}</span>
+              </div>
+              <!-- Financials -->
               <div class="info-field">
                 <span class="info-label">Authorised Capital</span>
                 @if(isEditing()) {
@@ -518,7 +484,7 @@
                       </div>
                       <h3 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0;">{{ opp.name }}</h3>
                       <p style="font-size: 14px; color: #64748b; margin: 0 0 20px 0; line-height: 1.5; flex: 1;">{{ opp.desc }}</p>
-                      <button (click)="applyService(opp.name)" style="width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Add Service &rarr;</button>
+                      <button (click)="applyService(opp.name)" style="width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">Add Service</button>
                     </div>
                   }
                 } @else {
@@ -564,7 +530,7 @@
                       }
                       }
                       
-                      <button (click)="viewServiceDetails(service._id || service.id)" style="width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">View Details &rarr;</button>
+                      <button (click)="viewServiceDetails(service._id || service.id)" style="width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">View Details</button>
                     </div>
                   }
                   

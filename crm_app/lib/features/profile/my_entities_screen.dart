@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -34,7 +35,7 @@ class MyEntitiesScreen extends ConsumerWidget {
     }
 
     // Fallback: If the user's primary companyName isn't in the list, add it automatically
-    final primaryCompanyName = userAsync.value?.companyName?.trim() ?? '';
+    final primaryCompanyName = userAsync.value?.companyName.trim() ?? '';
     if (primaryCompanyName.isNotEmpty && !mergedEntities.containsKey(primaryCompanyName.toLowerCase())) {
       mergedEntities[primaryCompanyName.toLowerCase()] = ClientEntity(
         entityName: primaryCompanyName,
@@ -96,11 +97,11 @@ class MyEntitiesScreen extends ConsumerWidget {
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Switch Entities',
-          style: TextStyle(
+          style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
         ),
@@ -232,7 +233,7 @@ class _EntityCard extends ConsumerWidget {
                     entityName,
                     style: const TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.deepTeal,
                     ),
                   ),
@@ -250,7 +251,7 @@ class _EntityCard extends ConsumerWidget {
                           entityType,
                           style: const TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                             color: AppTheme.deepTeal,
                           ),
                         ),
@@ -317,7 +318,7 @@ class _EntitiesEmptyState extends StatelessWidget {
             'No Registered Entities',
             style: TextStyle(
               fontSize: 22,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
               color: AppTheme.deepTeal,
             ),
           ),

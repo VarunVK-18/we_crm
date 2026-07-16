@@ -346,11 +346,11 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
           padding: const EdgeInsets.only(left: 12, top: 12),
           child: Text(
             widget.toolName,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  height: 1.0,
-                ),
+            style: GoogleFonts.outfit(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.deepTeal,
+            ),
           ),
         ),
       ),
@@ -1367,7 +1367,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
               amount,
               style: GoogleFonts.outfit(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.deepTeal,
                 letterSpacing: -0.5,
               ),

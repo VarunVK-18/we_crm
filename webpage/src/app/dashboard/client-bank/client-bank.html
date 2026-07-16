@@ -100,7 +100,7 @@
         @for (client of filteredClients(); track client._id) {
         <tr class="table-row-hover">
           <td>
-            <span class="hover-text-link" style="font-family: monospace; color: #64748b; cursor: pointer;" (click)="viewClient($event, client._id)">{{ client.custom_client_id || '-' }}</span>
+            <span class="hover-text-link" style="font-family: monospace; color: #64748b; cursor: pointer;" (click)="viewClient(client._id || ''); $event.stopPropagation()">{{ client.custom_client_id || '-' }}</span>
           </td>
           <td>
             <span class="ellipsis-text" style="font-weight: 500; color: var(--text-primary);">{{ client.company_name || '-' }}</span>

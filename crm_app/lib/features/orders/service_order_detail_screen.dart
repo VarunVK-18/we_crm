@@ -18,6 +18,7 @@ import '../../providers/orders_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import 'notification_sheet.dart';
+import '../../core/widgets/we_loader.dart';
 import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
@@ -156,18 +157,10 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppTheme.backgroundLight,
-        appBar: AppBar(
-          backgroundColor: Colors.black,
-          leading: IconButton(
-            icon: const Icon(LucideIcons.arrowLeft, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(widget.order.serviceType, style: const TextStyle(color: Colors.white, fontSize: 16)),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(color: AppTheme.neonPurple),
+        body: Center(
+          child: WeLoader(),
         ),
       );
     }

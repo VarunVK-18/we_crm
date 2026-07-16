@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:http/http.dart' as http;
@@ -268,7 +269,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           'Raise Support Ticket',
                           style: TextStyle(
                             color: AppTheme.deepTeal,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             fontSize: 17,
                           ),
                         ),
@@ -331,7 +332,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                         decoration: InputDecoration(
                           labelText: 'Select Completed Service',
                           prefixIcon: Icon(
-                            selectedCategory != null 
+                            selectedCategory.isNotEmpty 
                               ? _getServiceIcon((filteredCompletedServices.firstWhere(
                                   (s) => (s as Map)['_id'] == selectedCategory, 
                                   orElse: () => {'service_name': ''}) as Map)['service_name']?.toString() ?? '')
@@ -494,7 +495,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                           'Submit',
                           style: TextStyle(
                             color: Colors.white,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w600,
                             fontSize: 14,
                           ),
                         ),
@@ -536,11 +537,11 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Support Tickets',
-          style: TextStyle(
+          style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
         ),
@@ -584,7 +585,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                         'Active Tickets',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.deepTeal,
                         ),
                       ),
@@ -609,7 +610,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                         'Previous Tickets',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.deepTeal,
                         ),
                       ),
@@ -672,7 +673,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                 Text(
                   subject,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     fontSize: 14,
                     color: AppTheme.deepTeal,
                   ),
@@ -718,7 +719,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
               style: TextStyle(
                 color: statusColor,
                 fontSize: 11,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ),

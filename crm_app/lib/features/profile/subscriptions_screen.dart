@@ -34,11 +34,11 @@ class SubscriptionsScreen extends ConsumerWidget {
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'My Subscriptions',
-          style: TextStyle(
+          style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
         ),
@@ -52,7 +52,7 @@ class SubscriptionsScreen extends ConsumerWidget {
               'Current Plan',
               style: TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.deepTeal,
               ),
             ),
@@ -82,7 +82,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                     child: const Center(
                       child: Text(
                         'No Plans Found',
-                        style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
                       ),
                     ),
                   );
@@ -92,7 +92,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (activePlans.isNotEmpty) ...[
-                      const Text('ACTIVE PLANS', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('ACTIVE PLANS', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ...activePlans.map((sub) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -100,7 +100,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       )).toList(),
                     ],
                     if (expiringPlans.isNotEmpty) ...[
-                      const Text('EXPIRING SOON', style: TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('EXPIRING SOON', style: TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ...expiringPlans.map((sub) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -128,7 +128,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       )).toList(),
                     ],
                     if (expiredPlans.isNotEmpty) ...[
-                      const Text('EXPIRED PLANS', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('EXPIRED PLANS', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ...expiredPlans.map((sub) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -156,7 +156,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       )).toList(),
                     ],
                     if (renewedPlans.isNotEmpty) ...[
-                      const Text('PREVIOUS PLANS (RENEWED)', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('PREVIOUS PLANS (RENEWED)', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
                       ...renewedPlans.map((sub) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -174,7 +174,7 @@ class SubscriptionsScreen extends ConsumerWidget {
               selectedEntity == 'All Entities' ? 'Completed Services' : 'Completed Services of $selectedEntity',
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.deepTeal,
               ),
             ),
@@ -253,12 +253,12 @@ class SubscriptionsScreen extends ConsumerWidget {
                           showDialog(
                             context: context,
                             builder: (context) => AlertDialog(
-                              title: Text('Payment Pending', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
+                              title: Text('Payment Pending', style: GoogleFonts.outfit(fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
                               content: Text('This service has a pending payment. Please contact your manager or complete the payment to access your invoice.', style: GoogleFonts.outfit(color: Colors.grey.shade700)),
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.pop(context),
-                                  child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.grey, fontWeight: FontWeight.bold)),
+                                  child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.grey, fontWeight: FontWeight.w600)),
                                 ),
                                 TextButton.icon(
                                   onPressed: () async {
@@ -268,7 +268,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                                     }
                                   },
                                   icon: const HugeIcon(icon: HugeIcons.strokeRoundedCallOutgoing03, color: AppTheme.deepTeal, size: 18),
-                                  label: Text('Call Manager', style: GoogleFonts.outfit(color: AppTheme.deepTeal, fontWeight: FontWeight.bold)),
+                                  label: Text('Call Manager', style: GoogleFonts.outfit(color: AppTheme.deepTeal, fontWeight: FontWeight.w600)),
                                 ),
                               ],
                             ),
@@ -368,7 +368,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                   color: Colors.white,
                   letterSpacing: 1.5,
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
               HugeIcon(icon: planIcon, color: Colors.amber.shade400, size: 24),
@@ -380,7 +380,7 @@ class SubscriptionsScreen extends ConsumerWidget {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 28,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
               height: 1.1,
             ),
           ),
@@ -397,7 +397,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       color: Colors.white60,
                       fontSize: 10,
                       letterSpacing: 1.2,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -406,7 +406,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                     style: TextStyle(
                       color: isExpired ? Colors.white70 : Colors.greenAccent,
                       fontSize: 14,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -420,7 +420,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       color: Colors.white60,
                       fontSize: 10,
                       letterSpacing: 1.2,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -429,7 +429,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
@@ -451,7 +451,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                 ),
                 child: Text(
                   status == 'Expired' ? 'Reactivate' : 'Renew Now',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -518,7 +518,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                   Text(
                     service,
                     style: const TextStyle(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                       fontSize: 14,
                       color: AppTheme.deepTeal,
                     ),
@@ -540,7 +540,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       isPaymentPending ? 'Pending Payment' : 'Download',
                       style: TextStyle(
                         fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: isPaymentPending ? Colors.red.withOpacity(0.8) : AppTheme.deepTeal.withOpacity(0.6),
                       ),
                     ),

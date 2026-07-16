@@ -132,7 +132,7 @@ class _NameCheckScreenState extends State<NameCheckScreen> {
           'Name Availability',
           style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
         ),

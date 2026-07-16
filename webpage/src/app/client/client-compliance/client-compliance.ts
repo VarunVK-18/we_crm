@@ -32,7 +32,7 @@ export class ClientCompliance implements OnInit, OnDestroy {
   user = signal<any>(null);
   isPendingModalOpen = signal(false);
   isEntityModalOpen = signal(false);
-  currentEntity = signal<string>('All Entities');
+  currentEntity = signal<string>('');
   taskFilter = signal<'pending' | 'completed' | 'all'>('pending');
   timelineTab = signal<'all' | 'pending' | 'completed'>('all');
 

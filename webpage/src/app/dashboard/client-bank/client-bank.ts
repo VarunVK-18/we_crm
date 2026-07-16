@@ -98,8 +98,7 @@ export class ClientBank implements OnInit {
 
   constructor(private api: Api, private router: Router) {}
 
-  viewClient(event: Event, id: string) {
-    event.stopPropagation();
+  viewClient(id: string) {
     if (id) {
       this.router.navigate(['/dashboard/client-details', id]);
     }

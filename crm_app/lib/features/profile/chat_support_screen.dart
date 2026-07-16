@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
@@ -41,7 +42,7 @@ class ChatSupportScreen extends ConsumerWidget {
                       'Select a Service',
                       style: TextStyle(
                         fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         color: AppTheme.deepTeal,
                       ),
                     ),
@@ -148,11 +149,11 @@ class ChatSupportScreen extends ConsumerWidget {
           icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Help Center',
-          style: TextStyle(
+          style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
             fontSize: 20,
           ),
         ),
@@ -179,7 +180,7 @@ class ChatSupportScreen extends ConsumerWidget {
               'How can we help you?',
               style: TextStyle(
                 fontSize: 24,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.deepTeal,
               ),
             ),
@@ -220,7 +221,7 @@ class ChatSupportScreen extends ConsumerWidget {
                 'Frequently Asked Questions',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w600,
                   color: AppTheme.deepTeal,
                 ),
               ),
@@ -294,7 +295,7 @@ class ChatSupportScreen extends ConsumerWidget {
                         title,
                         style: const TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                           color: AppTheme.deepTeal,
                         ),
                       ),

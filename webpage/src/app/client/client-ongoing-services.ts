@@ -81,28 +81,25 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
         const active: any[] = [];
         
         for (const c of services) {
-          const isAssigned = !!c.assigned_to;
-          if (isAssigned) {
-            let status = c.status === 'completed' ? 'completed' : 'in-progress';
-            
-            if (status === 'in-progress') {
-              if (c.hasPendingDocUpload || !c.details?.clientFormSubmitted || c.action_required) {
-                status = 'action-required';
-              }
-            } else if (status === 'completed') {
-              if (!this.showCongratsModal()) {
-                const hasBeenCongratulated = localStorage.getItem(`congrats_shown_${c._id}`);
-                if (!hasBeenCongratulated) {
-                  this.congratsServiceName.set(c.service_name || 'Service');
-                  this.showCongratsModal.set(true);
-                  localStorage.setItem(`congrats_shown_${c._id}`, 'true');
-                }
+          let status = c.status === 'completed' ? 'completed' : 'in-progress';
+          
+          if (status === 'in-progress') {
+            if (c.hasPendingDocUpload || !c.details?.clientFormSubmitted || c.action_required) {
+              status = 'action-required';
+            }
+          } else if (status === 'completed') {
+            if (!this.showCongratsModal()) {
+              const hasBeenCongratulated = localStorage.getItem(`congrats_shown_${c._id}`);
+              if (!hasBeenCongratulated) {
+                this.congratsServiceName.set(c.service_name || 'Service');
+                this.showCongratsModal.set(true);
+                localStorage.setItem(`congrats_shown_${c._id}`, 'true');
               }
             }
-            
-            c.derivedStatus = status;
-            active.push(c);
           }
+          
+          c.derivedStatus = status;
+          active.push(c);
         }
         
         this.activeOrders.set(active);

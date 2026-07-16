@@ -603,7 +603,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     ];
 
     const headerRow = worksheet.getRow(1);
-    headerRow.eachCell((cell) => {
+    headerRow.eachCell((cell: any) => {
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',
@@ -663,7 +663,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
       pendingAmount: totalPendingSum
     });
 
-    totalRow.eachCell((cell) => {
+    totalRow.eachCell((cell: any) => {
       cell.fill = {
         type: 'pattern',
         pattern: 'solid',

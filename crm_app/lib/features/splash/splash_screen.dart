@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:in_app_update/in_app_update.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 import '../auth/auth_wrapper.dart';
 
@@ -43,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _initAppAndCheckForUpdate() async {
     // Check for updates on Android
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       try {
         final updateInfo = await InAppUpdate.checkForUpdate();
         if (updateInfo.updateAvailability == UpdateAvailability.updateAvailable) {

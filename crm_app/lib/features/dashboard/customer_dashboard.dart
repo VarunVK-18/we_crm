@@ -86,39 +86,48 @@ class CustomerDashboard extends ConsumerWidget {
             toolbarHeight: 70.r,
             backgroundColor: AppTheme.backgroundLight,
             centerTitle: true,
-            title: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '$displayName',
-                  style: GoogleFonts.poppins(
-                    color: Colors.black87,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16.sp, // slightly smaller to fit better
+            title: Container(
+              height: 70.r,
+              padding: EdgeInsets.only(top: 8.r),
+              alignment: Alignment.topCenter,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    displayName.trim(),
+                    style: GoogleFonts.poppins(
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16.sp, // slightly smaller to fit better
+                      height: 1.2,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  greeting,
-                  style: GoogleFonts.poppins(
-                    color: Colors.black54,
-                    fontWeight: FontWeight.w400,
-                    fontSize: 12.sp,
+                  SizedBox(height: 2.r),
+                  Text(
+                    greeting,
+                    style: GoogleFonts.poppins(
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 12.sp,
+                      height: 1.2,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             systemOverlayStyle: const SystemUiOverlayStyle(
               statusBarColor: Colors.transparent,
               statusBarIconBrightness: Brightness.dark,
               statusBarBrightness: Brightness.light,
             ),
-            leadingWidth: 70.r,
-            leading: Center(
-              child: Padding(
-                padding: EdgeInsets.only(left: 20.r),
+            leadingWidth: 64.r,
+            leading: Padding(
+              padding: EdgeInsets.only(left: 20.r, top: 8.r),
+              child: Align(
+                alignment: Alignment.topCenter,
                 child: GestureDetector(
                   onTap: () {
                     ref.read(navigationIndexProvider.notifier).state = 3;
@@ -158,8 +167,9 @@ class CustomerDashboard extends ConsumerWidget {
             ),
             actions: [
               Padding(
-                padding: EdgeInsets.only(right: 20.r),
-                child: Center(
+                padding: EdgeInsets.only(right: 20.r, top: 8.r),
+                child: Align(
+                  alignment: Alignment.topCenter,
                   child: Container(
                     width: 44.r,
                     height: 44.r,
@@ -1208,8 +1218,6 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                             fontSize: 13.sp,
                           ),
                         ),
-                        SizedBox(width: 6.r),
-                        Icon(LucideIcons.arrowRight, size: 14.ip),
                       ],
                     ),
                   ),

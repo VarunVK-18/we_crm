@@ -139,6 +139,16 @@ class NotificationNotifier extends StateNotifier<List<ServiceNotification>> {
     }
   }
 
+  void hideLocally(String id) {
+    state = state.where((n) => n.id != id).toList();
+  }
+
+  void undoHide(ServiceNotification notification) {
+    state = [notification, ...state];
+    // Sort by timestamp to maintain order
+    state.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+  }
+
   void addNewNotification(ServiceNotification notification) {
     state = [notification, ...state];
   }
