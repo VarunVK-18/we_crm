@@ -22,10 +22,10 @@
 }
 
 .branding-header {
-  padding: 24px 20px 16px;
+  padding: 0px 20px;
   display: flex;
   align-items: center;
-  height: 80px;
+  height: 70px;
   border-bottom: 1px solid rgba(15, 23, 42, 0.04);
 }
 

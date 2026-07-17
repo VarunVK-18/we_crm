@@ -529,7 +529,22 @@
                       }
                       }
                       
-                      <button (click)="viewServiceDetails(service._id || service.id)" style="width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">View Details</button>
+                      <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px; width: 100%;">
+                        <button (click)="viewServiceDetails(service._id || service.id)" style="flex: 1; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">View Details</button>
+                        
+                        @if (service.status === 'completed' || service.status === 'Completed' || service.status === 'done' || service.status === 'Done') {
+                          <button (click)="handleServiceInvoiceClick($event, service)" 
+                            style="flex: 1; padding: 12px; background: white; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+                            @if (isPaymentPending(service)) {
+                              <span class="material-symbols-outlined" style="font-size: 16px; color: #64748b;">lock</span>
+                              <span style="color: #64748b;">View Invoice</span>
+                            } @else {
+                              <span class="material-symbols-outlined" style="font-size: 16px;">description</span>
+                              <span>View Invoice</span>
+                            }
+                          </button>
+                        }
+                      </div>
                     </div>
                   }
                   

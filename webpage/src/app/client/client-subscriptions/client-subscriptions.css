@@ -17,15 +17,28 @@
 /* 1. Hero Banner */
 .ho-hero {
   position: relative;
-  background-color: var(--palette-dark);
-  background-image: radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 15%, transparent) 0%, transparent 40%),
-                    radial-gradient(circle at 80% 50%, color-mix(in srgb, var(--palette-purple) 10%, transparent) 0%, transparent 60%);
+  background: linear-gradient(135deg, #F8F5FF 0%, #EFE4FF 50%, #E5D5FF 100%);
   border-radius: 24px;
   padding: 40px;
   margin-bottom: 32px;
-  color: var(--palette-light);
+  color: #1F2937;
   overflow: hidden;
-  box-shadow: 0 12px 35px color-mix(in srgb, var(--palette-dark) 20%, transparent);
+  box-shadow: 0 12px 35px rgba(229, 213, 255, 0.3);
+}
+
+.ho-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .ho-hero-content {
@@ -45,9 +58,10 @@
 .ho-hero-subtitle {
   font-family: var(--font-body, 'Inter');
   font-size: 15px;
-  line-height: 1.6;
-  opacity: 0.9;
+  font-weight: 500;
+  line-height: 1.5;
   margin: 0;
+  color: #4B5563;
 }
 
 /* Decorative waves */
@@ -120,9 +134,10 @@
 
 .section-title {
   font-size: 18px;
-  font-weight: 800;
+  font-weight: 500;
   color: var(--palette-dark);
   margin: 0;
+  letter-spacing: 0.02em;
 }
 
 /* Left Column: History Cards */
@@ -174,7 +189,7 @@
 .hc-content h3 {
   margin: 0;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 400;
   color: var(--palette-dark);
 }
 

@@ -243,7 +243,7 @@
         </div>
         <div class="terms-block">
           <h3 class="terms-kicker">Terms and Conditions:</h3>
-          <div *ngIf="false" 
+          <div *ngIf="false; else defaultTerms" 
                style="white-space: pre-wrap; font-size: 0.8rem; line-height: 1.4; color: #475569;">{{ '' }}</div>
           <ng-template #defaultTerms>
             <ol>

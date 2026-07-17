@@ -1,6 +1,6 @@
 import { Component, signal, OnInit } from '@angular/core';
 
-import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
+import { CommonModule, DatePipe, CurrencyPipe, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -36,7 +36,8 @@ export class ClientInvoice implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private api: Api
+    private api: Api,
+    private location: Location
   ) {}
 
   ngOnInit() {
@@ -150,7 +151,7 @@ export class ClientInvoice implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/client/subscriptions']);
+    this.location.back();
   }
 
   formatMoney(amount: number): string {

@@ -605,7 +605,12 @@ class InvoiceScreen extends ConsumerWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('TERMS AND CONDITIONS:', style: TextStyle(fontSize: 6, color: Color(0xFF475569))),
+                                  const Text('TERMS AND CONDITIONS:', style: TextStyle(fontSize: 6, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                                  const SizedBox(height: 4),
+                                  const Text('1. Goods once sold cannot be taken back or exchanged.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
+                                  const Text('2. We stand for warranty as per company terms.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
+                                  const Text('3. Interest @24% p.a. charged after 15 days.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
+                                  const Text('4. Subject to local Jurisdiction.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
                                 ],
                               ),
                             ),
@@ -1130,7 +1135,12 @@ class InvoiceScreen extends ConsumerWidget {
                           child: pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
-                              pw.Text('TERMS AND CONDITIONS:', style: pw.TextStyle(fontSize: 6, color: const PdfColor.fromInt(0xFF475569))),
+                              pw.Text('TERMS AND CONDITIONS:', style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold, color: const PdfColor.fromInt(0xFF475569))),
+                              pw.SizedBox(height: 4),
+                              pw.Text('1. Goods once sold cannot be taken back or exchanged.', style: const pw.TextStyle(fontSize: 5, color: PdfColor.fromInt(0xFF475569))),
+                              pw.Text('2. We stand for warranty as per company terms.', style: const pw.TextStyle(fontSize: 5, color: PdfColor.fromInt(0xFF475569))),
+                              pw.Text('3. Interest @24% p.a. charged after 15 days.', style: const pw.TextStyle(fontSize: 5, color: PdfColor.fromInt(0xFF475569))),
+                              pw.Text('4. Subject to local Jurisdiction.', style: const pw.TextStyle(fontSize: 5, color: PdfColor.fromInt(0xFF475569))),
                             ],
                           ),
                         ),

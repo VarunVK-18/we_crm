@@ -1,6 +1,6 @@
 import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket02Icon, GiftIcon, Briefcase02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, Search01Icon, BankIcon, PercentIcon, Call02Icon, MailOpenIcon, ApartmentIcon } from '@hugeicons/core-free-icons';
@@ -10,7 +10,7 @@ import confetti from 'canvas-confetti';
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, HugeiconsIconComponent, WeLoaderComponent, RouterModule],
   templateUrl: './client-dashboard.html',
   styleUrl: './client-dashboard.css',
 })
@@ -124,20 +124,9 @@ export class ClientDashboard implements OnInit, OnDestroy {
   });
 
   getSlideStyle(index: number) {
-    const colors = ['#d7d98a', '#dcfce7', '#fef08a', '#bae6fd', '#e0f2fe', '#ccfbf1'];
-    const bg = colors[index % colors.length];
-    
-    // Determine text color based on background luminance
-    const hex = bg.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-    const isLight = yiq >= 128;
-    
     return {
-      'background': bg,
-      'color': isLight ? '#0f172a' : '#ffffff'
+      'background': '#F4F4F5',
+      'color': '#0f172a'
     };
   }
 

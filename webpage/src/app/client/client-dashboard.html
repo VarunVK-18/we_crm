@@ -20,189 +20,191 @@
     </header>
 
     <!-- Promotional Slider (1.5/4 width) -->
-    <div class="ho-slider-container" (mouseenter)="stopSlider()" (mouseleave)="startSlider()">
-      <div class="ho-slider-track" [style.transform]="'translateX(-' + (currentSlideIndex() * 100) + '%)'">
-        <!-- Default Slide 1: Get Started (always show first) -->
-        <div class="ho-slide slide-purple">
-          <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" fill="#ffffff"
-            class="slide-bg-icon bi bi-rocket-takeoff" viewBox="0 0 16 16">
-            <path
-              d="M9.752 6.193c.599.6 1.73.437 2.528-.362s.96-1.932.362-2.531c-.599-.6-1.73-.438-2.528.361-.798.8-.96 1.933-.362 2.532" />
-            <path
-              d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z" />
-            <path
-              d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z" />
-          </svg>
-          <div class="slide-content col-layout refer-layout">
-            <div class="refer-header">
-              <div class="slide-icon-box register-icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#111827"
-                  class="bi bi-rocket-takeoff" viewBox="0 0 16 16">
-                  <path
-                    d="M9.752 6.193c.599.6 1.73.437 2.528-.362s.96-1.932.362-2.531c-.599-.6-1.73-.438-2.528.361-.798.8-.96 1.933-.362 2.532" />
-                  <path
-                    d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z" />
-                  <path
-                    d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z" />
-                </svg>
+    <div class="ho-slider-container">
+      <div class="ho-slider-inner-box" (mouseenter)="stopSlider()" (mouseleave)="startSlider()">
+        <div class="ho-slider-track" [style.transform]="'translateX(-' + (currentSlideIndex() * 100) + '%)'">
+          <!-- Default Slide 1: Get Started (always show first) -->
+          <div class="ho-slide slide-purple">
+            <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" fill="#ffffff"
+              class="slide-bg-icon bi bi-rocket-takeoff" viewBox="0 0 16 16">
+              <path
+                d="M9.752 6.193c.599.6 1.73.437 2.528-.362s.96-1.932.362-2.531c-.599-.6-1.73-.438-2.528.361-.798.8-.96 1.933-.362 2.532" />
+              <path
+                d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z" />
+              <path
+                d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z" />
+            </svg>
+            <div class="slide-content col-layout refer-layout">
+              <div class="refer-header">
+                <div class="slide-icon-box register-icon-box">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#111827"
+                    class="bi bi-rocket-takeoff" viewBox="0 0 16 16">
+                    <path
+                      d="M9.752 6.193c.599.6 1.73.437 2.528-.362s.96-1.932.362-2.531c-.599-.6-1.73-.438-2.528.361-.798.8-.96 1.933-.362 2.532" />
+                    <path
+                      d="M15.811 3.312c-.363 1.534-1.334 3.626-3.64 6.218l-.24 2.408a2.56 2.56 0 0 1-.732 1.526L8.817 15.85a.51.51 0 0 1-.867-.434l.27-1.899c.04-.28-.013-.593-.131-.956a9 9 0 0 0-.249-.657l-.082-.202c-.815-.197-1.578-.662-2.191-1.277-.614-.615-1.079-1.379-1.275-2.195l-.203-.083a10 10 0 0 0-.655-.248c-.363-.119-.675-.172-.955-.132l-1.896.27A.51.51 0 0 1 .15 7.17l2.382-2.386c.41-.41.947-.67 1.524-.734h.006l2.4-.238C9.005 1.55 11.087.582 12.623.208c.89-.217 1.59-.232 2.08-.188.244.023.435.06.57.093q.1.026.16.045c.184.06.279.13.351.295l.029.073a3.5 3.5 0 0 1 .157.721c.055.485.051 1.178-.159 2.065m-4.828 7.475.04-.04-.107 1.081a1.54 1.54 0 0 1-.44.913l-1.298 1.3.054-.38c.072-.506-.034-.993-.172-1.418a9 9 0 0 0-.164-.45c.738-.065 1.462-.38 2.087-1.006M5.205 5c-.625.626-.94 1.351-1.004 2.09a9 9 0 0 0-.45-.164c-.424-.138-.91-.244-1.416-.172l-.38.054 1.3-1.3c.245-.246.566-.401.91-.44l1.08-.107zm9.406-3.961c-.38-.034-.967-.027-1.746.163-1.558.38-3.917 1.496-6.937 4.521-.62.62-.799 1.34-.687 2.051.107.676.483 1.362 1.048 1.928.564.565 1.25.941 1.924 1.049.71.112 1.429-.067 2.048-.688 3.079-3.083 4.192-5.444 4.556-6.987.183-.771.18-1.345.138-1.713a3 3 0 0 0-.045-.283 3 3 0 0 0-.3-.041Z" />
+                    <path
+                      d="M7.009 12.139a7.6 7.6 0 0 1-1.804-1.352A7.6 7.6 0 0 1 3.794 8.86c-1.102.992-1.965 5.054-1.839 5.18.125.126 3.936-.896 5.054-1.902Z" />
+                  </svg>
+                </div>
+                <div class="refer-header-text">
+                  <span class="register-badge">READY TO SCALE?</span>
+                  <h3 class="register-title">Register Your Business</h3>
+                </div>
               </div>
-              <div class="refer-header-text">
-                <span class="register-badge">READY TO SCALE?</span>
-                <h3 class="register-title">Register Your Business</h3>
+              <div class="refer-body register-body">
+                <p>Get expert assistance for company registration and ongoing professional compliance services.</p>
               </div>
+              <button class="register-btn" routerLink="/client/services">
+                Get Started Now
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </button>
             </div>
-            <div class="refer-body register-body">
-              <p>Get expert assistance for company registration and ongoing professional compliance services.</p>
-            </div>
-            <button class="register-btn">
-              Get Started Now
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Dynamic Banners -->
-        @for (banner of banners(); track banner._id) {
-        <div class="ho-slide slide-theme-{{ banner.theme || 'light' }}">
-          <div class="slide-content col-layout refer-layout" style="z-index: 1; position: relative;">
-            <div class="refer-header">
-              <div class="slide-icon-box register-icon-box" style="padding: 0; overflow: hidden;">
-                <img [src]="api.getFileUrl(banner.imageUrl)" style="width: 100%; height: 100%; object-fit: cover;"
-                  alt="Banner Icon">
-              </div>
-              <div class="refer-header-text">
-                <span class="register-badge">LATEST UPDATE</span>
-                <h3 class="register-title">{{ banner.title }}</h3>
-              </div>
-            </div>
-            <div class="refer-body register-body">
-              <p>{{ banner.subtitle || 'Check out the latest updates and offers from Wealth Empires.' }}</p>
-            </div>
-            <a *ngIf="banner.targetUrl" [href]="banner.targetUrl" target="_blank" class="register-btn"
-              style="text-decoration: none;">
-              {{ banner.buttonText || 'Learn More' }}
-              <span class="material-symbols-outlined">arrow_forward</span>
-            </a>
-          </div>
-        </div>
-        }
-
-
-        <!-- Dynamic Action Required / In Progress Slides -->
-        @for (order of sliderOrders(); track order._id) {
-        <div class="ho-slide"
-          [ngStyle]="getSlideStyle($index)"
-          style="position: relative; overflow: hidden; padding: 24px 24px 48px 24px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1);"
-          (click)="openServiceDetails(order)">
-
-          <!-- Background Pattern Blobs -->
-          <div
-            style="position: absolute; top: -40px; right: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(0,0,0,0.06); z-index: 0;">
-          </div>
-          <div
-            style="position: absolute; bottom: -50px; left: 10px; width: 140px; height: 140px; border-radius: 50%; background: rgba(0,0,0,0.05); z-index: 0;">
           </div>
 
-          <div style="display: flex; align-items: flex-start; gap: 16px; position: relative; z-index: 1;">
+          <!-- Dynamic Banners -->
+          @for (banner of banners(); track banner._id) {
+          <div class="ho-slide slide-theme-{{ banner.theme || 'light' }}">
+            <div class="slide-content col-layout refer-layout" style="z-index: 1; position: relative;">
+              <div class="refer-header">
+                <div class="slide-icon-box register-icon-box" style="padding: 0; overflow: hidden;">
+                  <img [src]="api.getFileUrl(banner.imageUrl)" style="width: 100%; height: 100%; object-fit: cover;"
+                    alt="Banner Icon">
+                </div>
+                <div class="refer-header-text">
+                  <span class="register-badge">LATEST UPDATE</span>
+                  <h3 class="register-title">{{ banner.title }}</h3>
+                </div>
+              </div>
+              <div class="refer-body register-body">
+                <p>{{ banner.subtitle || 'Check out the latest updates and offers from Wealth Empires.' }}</p>
+              </div>
+              <a *ngIf="banner.targetUrl" [href]="banner.targetUrl" target="_blank" class="register-btn"
+                style="text-decoration: none;">
+                {{ banner.buttonText || 'Learn More' }}
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+          }
+
+
+          <!-- Dynamic Action Required / In Progress Slides -->
+          @for (order of sliderOrders(); track order._id) {
+          <div class="ho-slide"
+            [ngStyle]="getSlideStyle($index)"
+            style="position: relative; overflow: hidden; padding: 24px 24px 48px 24px; display: flex; flex-direction: column; justify-content: space-between; border-radius: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1);"
+            (click)="openServiceDetails(order)">
+
+            <!-- Background Pattern Blobs -->
             <div
-              style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
-              <span class="material-symbols-outlined" style="font-size: 24px; color: inherit;">task</span>
+              style="position: absolute; top: -40px; right: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(0,0,0,0.06); z-index: 0;">
             </div>
-            <div style="display: flex; flex-direction: column; gap: 4px; overflow: hidden; padding-top: 2px;">
-              <span
-                style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: inherit; opacity: 0.8; text-transform: uppercase;">
-                {{ order.derivedStatus === 'action-required' ? 'ACTION REQUIRED' : 'ACTIVE SERVICE TRACKER' }}
-              </span>
-              <h3
-                style="margin: 0; font-size: 16px; font-weight: 800; color: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                {{ order.service_name || order.checklist_name || 'Service Order' }}
-              </h3>
-            </div>
-          </div>
-
-          <div
-            style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 1;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-              <span style="font-size: 12px; font-weight: 600; color: inherit; opacity: 0.8;">
-                Stage: {{ order.derivedStatus === 'action-required' ? 'Action Required' : 'Work in Progress' }}
-              </span>
-              <span style="font-size: 12px; font-weight: 700; color: inherit;">
-                {{ getProgressPercentage(order) }}%
-              </span>
+            <div
+              style="position: absolute; bottom: -50px; left: 10px; width: 140px; height: 140px; border-radius: 50%; background: rgba(0,0,0,0.05); z-index: 0;">
             </div>
 
-            <div style="height: 8px; background: rgba(0,0,0,0.15); border-radius: 6px; overflow: hidden;">
+            <div style="display: flex; align-items: flex-start; gap: 16px; position: relative; z-index: 1;">
               <div
-                style="height: 100%; background: currentColor; border-radius: 6px; transition: width 0.4s ease; opacity: 0.8; box-shadow: 0 0 8px rgba(0,0,0,0.1);"
-                [style.width.%]="getProgressPercentage(order)">
+                style="background: rgba(0,0,0,0.1); padding: 10px; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                <span class="material-symbols-outlined" style="font-size: 24px; color: inherit;">task</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; overflow: hidden; padding-top: 2px;">
+                <span
+                  style="font-size: 9px; font-weight: 800; letter-spacing: 1px; color: inherit; opacity: 0.8; text-transform: uppercase;">
+                  {{ order.derivedStatus === 'action-required' ? 'ACTION REQUIRED' : 'ACTIVE SERVICE TRACKER' }}
+                </span>
+                <h3
+                  style="margin: 0; font-size: 16px; font-weight: 800; color: inherit; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  {{ order.service_name || order.checklist_name || 'Service Order' }}
+                </h3>
               </div>
             </div>
-          </div>
 
-        </div>
-        }
+            <div
+              style="margin-top: auto; display: flex; flex-direction: column; gap: 8px; position: relative; z-index: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <span style="font-size: 12px; font-weight: 600; color: inherit; opacity: 0.8;">
+                  Stage: {{ order.derivedStatus === 'action-required' ? 'Action Required' : 'Work in Progress' }}
+                </span>
+                <span style="font-size: 12px; font-weight: 700; color: inherit;">
+                  {{ getProgressPercentage(order) }}%
+                </span>
+              </div>
 
-        <!-- Slide 3: Fallback (if no active orders) -->
-        @if (sliderOrders().length === 0) {
-        <div class="ho-slide slide-dark">
-          <div class="slide-content row-layout">
-            <div class="slide-icon-box">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
-                <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
-                <path d="M10 12l4 4m0 -4l-4 4" />
-              </svg>
+              <div style="height: 8px; background: rgba(0,0,0,0.15); border-radius: 6px; overflow: hidden;">
+                <div
+                  style="height: 100%; background: currentColor; border-radius: 6px; transition: width 0.4s ease; opacity: 0.8; box-shadow: 0 0 8px rgba(0,0,0,0.1);"
+                  [style.width.%]="getProgressPercentage(order)">
+                </div>
+              </div>
             </div>
-            <div class="slide-text">
-              <h3>No Active Tasks</h3>
-              <p>You're all caught up!</p>
-            </div>
-            <div class="slide-arrow"><span class="material-symbols-outlined">arrow_forward</span></div>
-          </div>
-        </div>
-        }
 
-        <!-- Slide 4: Refer & Earn -->
-        @if (false) {
-        <div class="ho-slide slide-refer">
-          <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" fill="currentColor"
-            class="slide-bg-icon bi bi-gift" viewBox="0 0 16 16">
-            <path
-              d="M3 2.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1 5 0v.006c0 .07 0 .27-.038.494H15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 14.5V7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.038A3 3 0 0 1 3 2.506zm1.068.5H7v-.5a1.5 1.5 0 1 0-3 0c0 .085.002.274.045.43zM9 3h2.932l.023-.07c.043-.156.045-.345.045-.43a1.5 1.5 0 0 0-3 0zM1 4v2h6V4zm8 0v2h6V4zm5 3H9v8h4.5a.5.5 0 0 0 .5-.5zm-7 8V7H2v7.5a.5.5 0 0 0 .5.5z" />
-          </svg>
-          <div class="slide-content col-layout refer-layout">
-            <div class="refer-header">
-              <div class="slide-icon-box refer-icon-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffc107" class="bi bi-gift"
-                  viewBox="0 0 16 16">
-                  <path
-                    d="M3 2.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1 5 0v.006c0 .07 0 .27-.038.494H15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 14.5V7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.038A3 3 0 0 1 3 2.506zm1.068.5H7v-.5a1.5 1.5 0 1 0-3 0c0 .085.002.274.045.43zM9 3h2.932l.023-.07c.043-.156.045-.345.045-.43a1.5 1.5 0 0 0-3 0zM1 4v2h6V4zm8 0v2h6V4zm5 3H9v8h4.5a.5.5 0 0 0 .5-.5zm-7 8V7H2v7.5a.5.5 0 0 0 .5.5z" />
+          </div>
+          }
+
+          <!-- Slide 3: Fallback (if no active orders) -->
+          @if (sliderOrders().length === 0) {
+          <div class="ho-slide slide-dark">
+            <div class="slide-content row-layout">
+              <div class="slide-icon-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                  stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2" />
+                  <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z" />
+                  <path d="M10 12l4 4m0 -4l-4 4" />
                 </svg>
               </div>
-              <div class="refer-header-text">
-                <span class="refer-badge">REFER & EARN</span>
-                <h3>Earn up to ₹10,000</h3>
+              <div class="slide-text">
+                <h3>No Active Tasks</h3>
+                <p>You're all caught up!</p>
               </div>
+              <div class="slide-arrow"><span class="material-symbols-outlined">arrow_forward</span></div>
             </div>
-            <div class="refer-body">
-              <p>Share Wealth Empires with your network and get rewarded for every referral.</p>
-            </div>
-            <button class="refer-btn">
-              Invite Friends Now
-              <span class="material-symbols-outlined">share</span>
-            </button>
           </div>
-        </div>
-        }
-      </div>
+          }
 
-      <!-- Slider Navigation Arrows -->
-      <div class="slider-arrow prev" (click)="prevSlide($event)">
-        <span class="material-symbols-outlined">chevron_left</span>
-      </div>
-      <div class="slider-arrow next" (click)="nextSlide($event)">
-        <span class="material-symbols-outlined">chevron_right</span>
+          <!-- Slide 4: Refer & Earn -->
+          @if (false) {
+          <div class="ho-slide slide-refer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" fill="currentColor"
+              class="slide-bg-icon bi bi-gift" viewBox="0 0 16 16">
+              <path
+                d="M3 2.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1 5 0v.006c0 .07 0 .27-.038.494H15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 14.5V7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.038A3 3 0 0 1 3 2.506zm1.068.5H7v-.5a1.5 1.5 0 1 0-3 0c0 .085.002.274.045.43zM9 3h2.932l.023-.07c.043-.156.045-.345.045-.43a1.5 1.5 0 0 0-3 0zM1 4v2h6V4zm8 0v2h6V4zm5 3H9v8h4.5a.5.5 0 0 0 .5-.5zm-7 8V7H2v7.5a.5.5 0 0 0 .5.5z" />
+            </svg>
+            <div class="slide-content col-layout refer-layout">
+              <div class="refer-header">
+                <div class="slide-icon-box refer-icon-box">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#ffc107" class="bi bi-gift"
+                    viewBox="0 0 16 16">
+                    <path
+                      d="M3 2.5a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1 5 0v.006c0 .07 0 .27-.038.494H15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1v7.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 1 14.5V7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h2.038A3 3 0 0 1 3 2.506zm1.068.5H7v-.5a1.5 1.5 0 1 0-3 0c0 .085.002.274.045.43zM9 3h2.932l.023-.07c.043-.156.045-.345.045-.43a1.5 1.5 0 0 0-3 0zM1 4v2h6V4zm8 0v2h6V4zm5 3H9v8h4.5a.5.5 0 0 0 .5-.5zm-7 8V7H2v7.5a.5.5 0 0 0 .5.5z" />
+                  </svg>
+                </div>
+                <div class="refer-header-text">
+                  <span class="refer-badge">REFER & EARN</span>
+                  <h3>Earn up to ₹10,000</h3>
+                </div>
+              </div>
+              <div class="refer-body">
+                <p>Share Wealth Empires with your network and get rewarded for every referral.</p>
+              </div>
+              <button class="refer-btn">
+                Invite Friends Now
+                <span class="material-symbols-outlined">share</span>
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+
+        <!-- Slider Navigation Arrows -->
+        <div class="slider-arrow prev" (click)="prevSlide($event)">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </div>
+        <div class="slider-arrow next" (click)="nextSlide($event)">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </div>
       </div>
 
       <!-- Slider Pagination Dots -->

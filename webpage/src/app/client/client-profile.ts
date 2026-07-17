@@ -330,6 +330,26 @@ export class ClientProfile implements OnInit, OnDestroy {
   viewServiceDetails(serviceId: string) {
     this.router.navigate(['/client/service', serviceId]);
   }
+
+  isPaymentPending(service: any): boolean {
+    const closed = service.dealClosedAmount || 0;
+    const paid = service.advanceAmountPaid || 0;
+    return closed > paid;
+  }
+
+  async handleServiceInvoiceClick(event: Event, service: any) {
+    event.stopPropagation();
+    if (this.isPaymentPending(service)) {
+      await this.confirmDialog.confirm({
+        title: 'Payment Pending',
+        message: 'This service has a pending payment. Please contact your manager or complete the payment to access your invoice.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      return;
+    }
+    this.router.navigate(['/client/invoice', service._id || service.id]);
+  }
   
   
   hasActionRequired(c: any): boolean {

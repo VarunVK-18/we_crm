@@ -11,87 +11,115 @@
     <div class="service-list-wrapper">
       <div class="service-list-container">
         @if (isLoading()) {
-          <div class="loading-state">
-            <app-we-loader></app-we-loader>
-            <p>Loading ongoing services...</p>
-          </div>
+        <div class="loading-state">
+          <app-we-loader></app-we-loader>
+          <p>Loading ongoing services...</p>
+        </div>
         } @else {
-          <div class="filter-controls">
-            <div class="tabs-container">
-              <button class="tab-btn" [class.active]="activeTab() === 'All'" (click)="setTab('All')" style="display: inline-flex; align-items: center;">All <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('All') }}</span></button>
-              <button class="tab-btn" [class.active]="activeTab() === 'Action Required'" (click)="setTab('Action Required')" style="display: inline-flex; align-items: center;">Action Required <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('Action Required') }}</span></button>
-              <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')" style="display: inline-flex; align-items: center;">In Progress <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('In Progress') }}</span></button>
-              <button class="tab-btn" [class.active]="activeTab() === 'Completed'" (click)="setTab('Completed')" style="display: inline-flex; align-items: center;">Completed <span style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{ getTabCount('Completed') }}</span></button>
-            </div>
-            <div class="search-container">
-              <span class="material-symbols-outlined search-icon">search</span>
-              <input type="text" placeholder="Search service name..." [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)">
-            </div>
+        <div class="filter-controls">
+          <div class="tabs-container">
+            <button class="tab-btn" [class.active]="activeTab() === 'All'" (click)="setTab('All')"
+              style="display: inline-flex; align-items: center;">All <span
+                style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+                getTabCount('All') }}</span></button>
+            <button class="tab-btn" [class.active]="activeTab() === 'Action Required'"
+              (click)="setTab('Action Required')" style="display: inline-flex; align-items: center;">Action Required
+              <span
+                style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+                getTabCount('Action Required') }}</span></button>
+            <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')"
+              style="display: inline-flex; align-items: center;">In Progress <span
+                style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+                getTabCount('In Progress') }}</span></button>
+            <button class="tab-btn" [class.active]="activeTab() === 'Completed'" (click)="setTab('Completed')"
+              style="display: inline-flex; align-items: center;">Completed <span
+                style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+                getTabCount('Completed') }}</span></button>
           </div>
+          <div class="search-container">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" placeholder="Search service name..." [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)">
+          </div>
+        </div>
 
-          @if (getFilteredOrders().length === 0) {
-            <div class="empty-state">
-              <span class="material-symbols-outlined">inbox</span>
-              <h3>No Services Found</h3>
-              <p>Try adjusting your filters or search query.</p>
-            </div>
-          } @else {
-            <div class="table-container">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Service Name</th>
-                    <th>Application Date</th>
-                    <th>Expert</th>
-                    <th>Progress</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (order of getFilteredOrders(); track order._id) {
-                    <tr (click)="openServiceDetails(order)">
-                      <td>
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
-                          <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name || order.checklist_name || 'Service Order' }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
-                          {{ order.createdAt | date:'dd/MM/yy' }}
-                        </span>
-                      </td>
-                      <td>
-                        <div class="msc-expert" [class.unassigned]="!order.assigned_to" style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
-                          <span class="material-symbols-outlined" style="font-size: 16px; opacity: 0.7;">person</span>
-                          <span>{{ order.assigned_to?.owner_name || order.assigned_to?.name || 'Unassigned' }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="progress-bar-container" style="display: flex; align-items: center; gap: 8px; min-width: 120px;">
-                          <div class="progress-bar-bg" style="flex: 1; height: 6px; background-color: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden;">
-                            <div class="progress-bar-fill" style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 3px; transition: width 0.3s ease;" [style.width.%]="order.totalItems ? (order.completedItems / order.totalItems) * 100 : 0"></div>
-                          </div>
-                          <span class="progress-text-sm" style="font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); min-width: 32px;">{{ order.completedItems || 0 }}/{{ order.totalItems || 0 }}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span class="ho-status-badge" [ngClass]="order.derivedStatus" style="white-space: nowrap;">
-                          <span class="ho-status-dot"></span>
-                          {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'in-progress' ? 'In Progress' : (order.derivedStatus | titlecase)) }}
-                        </span>
-                      </td>
-                      <td>
-                        <button class="action-btn-sm" title="View Details" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background-color: transparent; color: color-mix(in srgb, var(--palette-dark) 50%, transparent); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;">
-                          <svg height="18" width="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/></svg>
-                        </button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-          }
+        @if (getFilteredOrders().length === 0) {
+        <div class="empty-state">
+          <span class="material-symbols-outlined">inbox</span>
+          <h3>No Services Found</h3>
+          <p>Try adjusting your filters or search query.</p>
+        </div>
+        } @else {
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Service Name</th>
+                <th>Application Date</th>
+                <th>Expert</th>
+                <th>Progress</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of getFilteredOrders(); track order._id) {
+              <tr (click)="openServiceDetails(order)">
+                <td>
+                  <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <span style="font-size: 14px; font-weight: 600; color: var(--palette-dark);">{{ order.service_name
+                      || order.checklist_name || 'Service Order' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
+                    {{ order.createdAt | date:'dd/MM/yy' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="msc-expert" [class.unassigned]="!order.assigned_to"
+                    style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 70%, transparent);">
+                    <span class="material-symbols-outlined" style="font-size: 16px; opacity: 0.7;">person</span>
+                    <span>{{ order.assigned_to?.owner_name || order.assigned_to?.name || 'Unassigned' }}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="progress-bar-container"
+                    style="display: flex; align-items: center; gap: 8px; min-width: 120px;">
+                    <div class="progress-bar-bg"
+                      style="flex: 1; height: 6px; background-color: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden;">
+                      <div class="progress-bar-fill"
+                        style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); border-radius: 3px; transition: width 0.3s ease;"
+                        [style.width.%]="order.totalItems ? (order.completedItems / order.totalItems) * 100 : 0"></div>
+                    </div>
+                    <span class="progress-text-sm"
+                      style="font-size: 12px; font-weight: 600; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); min-width: 32px;">{{
+                      order.completedItems || 0 }}/{{ order.totalItems || 0 }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="ho-status-badge" [ngClass]="order.derivedStatus" style="white-space: nowrap;">
+                    <span class="ho-status-dot"></span>
+                    {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus ===
+                    'in-progress' ? 'In Progress' : (order.derivedStatus | titlecase)) }}
+                  </span>
+                </td>
+                <td>
+                  <button class="action-btn-sm" title="View Details"
+                    style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background-color: transparent; color: color-mix(in srgb, var(--palette-dark) 50%, transparent); border: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;">
+                    <svg height="18" width="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
+                      fill="currentColor">
+                      <path
+                        d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z" />
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
         }
       </div>
     </div>
@@ -110,37 +138,38 @@
       </div>
 
       @if (clientManager()) {
-        <div class="manager-card">
-          <div class="manager-avatar">
-            @if (clientManager()?.profile_image) {
-              <div class="avatar-circle" style="padding: 0; overflow: hidden; border: 2px solid var(--palette-purple);">
-                <img [src]="api.getFileUrl(clientManager()?.profile_image)" alt="Manager Profile" style="width: 100%; height: 100%; object-fit: cover;">
-              </div>
-            } @else {
-              <div class="avatar-circle">
-                <span class="material-symbols-outlined">person</span>
-              </div>
-            }
+      <div class="manager-card">
+        <div class="manager-avatar">
+          @if (clientManager()?.profile_image) {
+          <div class="avatar-circle" style="padding: 0; overflow: hidden; border: 2px solid var(--palette-purple);">
+            <img [src]="api.getFileUrl(clientManager()?.profile_image)" alt="Manager Profile"
+              style="width: 100%; height: 100%; object-fit: cover;">
           </div>
-          <div class="manager-info">
-            <h3 class="manager-name">{{ clientManager().owner_name || clientManager().name || 'Support Team' }}</h3>
-            <p class="manager-desc">
-              Your
-              <span class="manager-role">Client Manager</span>
-              is available to assist you with any queries.
-            </p>
+          } @else {
+          <div class="avatar-circle">
+            <span class="material-symbols-outlined">person</span>
           </div>
-          <div class="manager-contact-links">
-            <a [href]="'tel:' + (clientManager().phone || '')" class="mc-link">
-              <span class="material-symbols-outlined">call</span>
-              <span>{{ clientManager().phone || '+918072286963' }}</span>
-            </a>
-            <a [href]="'mailto:' + (clientManager().email || '')" class="mc-link">
-              <span class="material-symbols-outlined">mail</span>
-              <span>{{ clientManager().email || 'varun@gmail.com' }}</span>
-            </a>
-          </div>
+          }
         </div>
+        <div class="manager-info">
+          <h3 class="manager-name">{{ clientManager().owner_name || clientManager().name || 'Support Team' }}</h3>
+          <p class="manager-desc">
+            Your
+            <span class="manager-role">Client Manager</span>
+            is available to assist you with any queries.
+          </p>
+        </div>
+        <div class="manager-contact-links">
+          <a [href]="'tel:' + (clientManager().phone || '')" class="mc-link">
+            <span class="material-symbols-outlined">call</span>
+            <span>{{ clientManager().phone || '+918072286963' }}</span>
+          </a>
+          <a [href]="'mailto:' + (clientManager().email || '')" class="mc-link">
+            <span class="material-symbols-outlined">mail</span>
+            <span>{{ clientManager().email || 'varun@gmail.com' }}</span>
+          </a>
+        </div>
+      </div>
       }
     </div>
   </div>
@@ -153,16 +182,18 @@
     style="background: white; border-radius: 24px; padding: 40px 32px; max-width: 420px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.1), 0 10px 20px -5px rgba(15, 23, 42, 0.05); position: relative; text-align: center; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
 
     <!-- Confetti / Success Icon -->
-    <div style="width: 80px; height: 80px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; background: #ecfdf5; border-radius: 50%;">
+    <div
+      style="width: 80px; height: 80px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; background: #ecfdf5; border-radius: 50%;">
       <span class="material-symbols-outlined" style="font-size: 40px; color: #10b981;">celebration</span>
     </div>
 
     <!-- Content -->
-    <h3 style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0;">
+    <h3
+      style="font-family: var(--font-heading); font-size: 24px; font-weight: 700; color: #0f172a; margin: 0 0 16px 0;">
       Congratulations!
     </h3>
     <p style="font-size: 15px; color: #475569; line-height: 1.6; margin: 0 0 32px 0;">
-      Your service <strong>{{ congratsServiceName() }}</strong> has been successfully completed. 
+      Your service <strong>{{ congratsServiceName() }}</strong> has been successfully completed.
       Thank you for choosing Wealth Empires.
     </p>
 
