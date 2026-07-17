@@ -1,0 +1,64 @@
+.privacy-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 40px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.privacy-header {
+  text-align: center;
+  margin-bottom: 40px;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 24px;
+}
+
+.privacy-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.privacy-header p {
+  color: #64748b;
+  font-size: 15px;
+  margin: 0;
+}
+
+.privacy-content section {
+  margin-bottom: 32px;
+}
+
+.privacy-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+}
+
+.privacy-content p {
+  margin: 0 0 16px 0;
+  font-size: 15px;
+}
+
+.privacy-content ul {
+  margin: 0 0 16px 0;
+  padding-left: 24px;
+}
+
+.privacy-content li {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+@media (max-width: 768px) {
+  .privacy-container {
+    margin: 20px;
+    padding: 24px;
+  }
+}

@@ -229,26 +229,8 @@
         <div class="footer-col-sig">
           <span class="sig-header">For {{ (companyDetails()?.company_name || 'Company Name') | uppercase }}</span>
           <div class="sig-stamp-container">
-            
-            
-              <svg viewBox="0 0 120 120" width="95" height="95" class="signature-stamp">
-                <circle cx="60" cy="60" r="50" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="3 3"/>
-                <circle cx="60" cy="60" r="45" fill="none" stroke="#2563eb" stroke-width="1.2"/>
-                <path id="stamp-text-path-top" d="M 20 60 A 40 40 0 0 1 100 60" fill="none" stroke="none"/>
-                <path id="stamp-text-path-bottom" d="M 100 60 A 40 40 0 0 1 20 60" fill="none" stroke="none"/>
-                <text fill="#2563eb" font-size="7.5" font-family="monospace" letter-spacing="1">
-                  <textPath href="#stamp-text-path-top" startOffset="50%" text-anchor="middle">★ SIGNATURE ★</textPath>
-                </text>
-                <text fill="#2563eb" font-size="7" font-family="monospace" letter-spacing="1">
-                  <textPath href="#stamp-text-path-bottom" startOffset="50%" text-anchor="middle">OFFICIAL SEAL</textPath>
-                </text>
-                <g transform="rotate(-15 60 60)">
-                  <rect x="20" y="47" width="80" height="26" rx="3" fill="#ffffff" fill-opacity="0.9" stroke="#2563eb" stroke-width="1.2"/>
-                  <text x="60" y="61" fill="#2563eb" font-size="9.5" font-weight="bold" font-family="sans-serif" text-anchor="middle">{{ 'WEALTH EMPIRES' | uppercase }}</text>
-                  <text x="60" y="70" fill="#2563eb" font-size="6.5" font-family="sans-serif" text-anchor="middle">VERIFIED</text>
-                </g>
-              </svg>
-            </div>
+            <img src="assets/sign.png" alt="Authorized Signature" class="signature-stamp" style="max-height: 95px; width: auto; object-fit: contain;">
+          </div>
           <span class="sig-footer">Authorized Signatory</span>
         </div>
       </div>

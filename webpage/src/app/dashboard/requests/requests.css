@@ -102,7 +102,7 @@
 .filter-tab.active {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .count-pill {
@@ -135,7 +135,8 @@
 }
 
 /* Loading & Empty States */
-.loading-state, .no-results-placeholder {
+.loading-state,
+.no-results-placeholder {
   text-align: center;
   padding: 64px 20px;
   background-color: var(--bg-secondary);
@@ -157,7 +158,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .placeholder-icon-circle {
@@ -222,7 +225,7 @@
 
 .request-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
 }
 
 .card-header {
@@ -450,8 +453,15 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Toast Notification */
@@ -478,8 +488,15 @@
 }
 
 @keyframes slideInToast {
-  from { opacity: 0; transform: translateY(20px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Documents list styling inside request cards */
@@ -564,7 +581,7 @@
   border: 1px solid var(--border-color);
   padding: 6px;
   border-radius: 8px;
-  box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
   opacity: 0;
   visibility: hidden;
   transition: all 0.2s ease-out;
@@ -616,7 +633,7 @@
   max-width: 450px;
   z-index: 9999;
   background-color: var(--bg-primary);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   padding: 16px;
   border: 1px solid var(--border-color);
@@ -709,13 +726,31 @@
   animation: dotPulse 1.4s infinite ease-in-out both;
 }
 
-.dot-spinner .dot:nth-child(1) { animation-delay: -0.32s; }
-.dot-spinner .dot:nth-child(2) { animation-delay: -0.16s; }
-.dot-spinner .dot:nth-child(3) { animation-delay: 0s; }
+.dot-spinner .dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.dot-spinner .dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.dot-spinner .dot:nth-child(3) {
+  animation-delay: 0s;
+}
 
 @keyframes dotPulse {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
+
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Hover Container & Content Tooltip */
@@ -736,7 +771,7 @@
   background-color: white;
   border: 1px solid var(--border-color, #e2e8f0);
   border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
   padding: 16px;
   min-width: 250px;
   margin-top: 8px;
@@ -816,7 +851,7 @@
 }
 
 .bucket-table td {
-  padding: 8px 24px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border-color);
   border-right: 1px solid var(--border-color);
 }
@@ -828,7 +863,8 @@
 
 .bucket-table td:has(.service-name) {
   max-width: 0;
-  width: 150px; /* Initial width */
+  width: 150px;
+  /* Initial width */
 }
 
 .service-name {
@@ -856,8 +892,15 @@
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
-.btn-claim-sm:hover:not(:disabled) { opacity: 0.9; }
-.btn-claim-sm:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-claim-sm:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-claim-sm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 .btn-decline-sm {
   background-color: var(--bg-primary);
@@ -870,7 +913,10 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.btn-decline-sm:hover { background-color: var(--bg-secondary); }
+
+.btn-decline-sm:hover {
+  background-color: var(--bg-secondary);
+}
 
 .pagination-controls {
   display: flex;
@@ -890,4 +936,3 @@
 .text-muted {
   color: #64748b;
 }
-

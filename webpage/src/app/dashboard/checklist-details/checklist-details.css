@@ -430,7 +430,7 @@ details.collapsible-card summary .material-symbols-outlined:last-child {
 }
 
 .bucket-table td {
-  padding: 12px 24px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--border-color);
   vertical-align: middle;
 }

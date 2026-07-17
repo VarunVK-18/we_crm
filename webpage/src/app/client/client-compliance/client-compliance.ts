@@ -1,7 +1,7 @@
 import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon, FilterIcon, DocumentAttachmentIcon } from '@hugeicons/core-free-icons';
@@ -11,7 +11,7 @@ import { McaFormComponent } from '../forms/mca-form/mca-form';
 @Component({
   selector: 'app-client-compliance',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, McaFormComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, McaFormComponent, RouterModule],
   templateUrl: './client-compliance.html',
   styleUrl: './client-compliance.css'
 })
@@ -28,6 +28,7 @@ export class ClientCompliance implements OnInit, OnDestroy {
   reminders = signal<any[]>([]);
   checklists = signal<any[]>([]);
   certificates = signal<any[]>([]);
+  activeSubscriptions = signal<any[]>([]);
   isLoading = signal(true);
   user = signal<any>(null);
   isPendingModalOpen = signal(false);
@@ -369,6 +370,7 @@ export class ClientCompliance implements OnInit, OnDestroy {
       this.fetchReminders();
       this.fetchChecklists();
       this.fetchCertificates();
+      this.fetchActiveSubscriptions();
       this.fetchUserComplianceProfile();
     } else {
       this.isLoading.set(false);
@@ -411,6 +413,15 @@ export class ClientCompliance implements OnInit, OnDestroy {
         this.checklists.set(res.checklists || []);
       },
       error: (err) => console.error('Failed to fetch checklists for entities:', err)
+    });
+  }
+
+  fetchActiveSubscriptions() {
+    this.api.get<any>('active-subscriptions').subscribe({
+      next: (res) => {
+        this.activeSubscriptions.set(res.subscriptions || []);
+      },
+      error: (err) => console.error('Failed to fetch active subscriptions:', err)
     });
   }
 

@@ -1,2 +1,8 @@
-<router-outlet />
-<app-confirm-dialog />
+<ng-container *ngIf="!isMobileDevice()">
+  <router-outlet />
+  <app-confirm-dialog />
+</ng-container>
+
+<ng-container *ngIf="isMobileDevice()">
+  <app-mobile-promo />
+</ng-container>

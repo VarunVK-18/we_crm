@@ -100,6 +100,7 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   mPhoneFilter = signal<string>('');
   mDateFilter = signal<string>('');
   mDueDateFilter = signal<string>('');
+  mPriorityFilter = signal<string>('All');
 
   filteredRequests = computed(() => {
     let list = this.requests();
@@ -117,6 +118,11 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     if (email) list = list.filter(r => (r.client_email || r.client_id?.email || '').toLowerCase().includes(email));
     if (phone) list = list.filter(r => (r.client_phone || r.client_id?.phone || '').toLowerCase().includes(phone));
     
+    const prio = this.mPriorityFilter();
+    if (prio && prio !== 'All') {
+      list = list.filter(r => (r.checklist_id?.priority || 'High') === prio);
+    }
+    
     return list;
   });
 
@@ -129,6 +135,7 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   sCompanyFilter = signal<string>('');
   sDateFilter = signal<string>('');
   sDueDateFilter = signal<string>('');
+  sPriorityFilter = signal<string>('All');
 
   filteredJobs = computed(() => {
     let list = this.jobs();
@@ -142,6 +149,11 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     if (svc) list = list.filter(j => (j.service_name || '').toLowerCase().includes(svc));
     if (cmp) list = list.filter(j => (j.client_company_name || j.client_id?.company_name || '').toLowerCase().includes(cmp));
     
+    const prio = this.sPriorityFilter();
+    if (prio && prio !== 'All') {
+      list = list.filter(j => (j.checklist_id?.priority || 'High') === prio);
+    }
+    
     return list;
   });
   bucketTeams = signal<any[]>([]);
@@ -150,6 +162,20 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   activeTab = signal<string>('open');
   claimingId = signal<string | null>(null);
   assigningId = signal<string | null>(null);
+
+  getPriorityStyle(priority: string) {
+    if (!priority) priority = 'High';
+    switch (priority) {
+      case 'High':
+        return { 'color': '#dc2626', 'background': '#fee2e2', 'padding': '4px 12px', 'border-radius': '8px', 'font-size': '12px', 'font-weight': '600' };
+      case 'Medium':
+        return { 'color': '#d97706', 'background': '#fef3c7', 'padding': '4px 12px', 'border-radius': '8px', 'font-size': '12px', 'font-weight': '600' };
+      case 'Low':
+        return { 'color': '#2563eb', 'background': '#dbeafe', 'padding': '4px 12px', 'border-radius': '8px', 'font-size': '12px', 'font-weight': '600' };
+      default:
+        return { 'color': '#dc2626', 'background': '#fee2e2', 'padding': '4px 12px', 'border-radius': '8px', 'font-size': '12px', 'font-weight': '600' };
+    }
+  }
 
   // Pagination State
   currentPage = signal<number>(1);

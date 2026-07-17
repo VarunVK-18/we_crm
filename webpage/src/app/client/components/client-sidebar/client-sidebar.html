@@ -8,198 +8,149 @@
         <span class="branding-title">Wealth Empires</span>
         <span class="branding-subtitle">Client Portal</span>
       </div>
-      </div>
     </div>
-  
+  </div>
+
   <button class="collapse-toggle-btn" (click)="toggleCollapse()" title="Toggle Sidebar">
     @if (isCollapsed()) {
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="9 18 15 12 9 6"></polyline>
-      </svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+      stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
     } @else {
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+      stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
     }
   </button>
-  
+
   <div class="navigation-list">
     <div class="group-items">
       <div class="nav-item-wrapper" routerLink="/client/dashboard" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="Home07Icon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
+          <hugeicons-icon [icon]="Home07Icon" [size]="18" color="currentColor" class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Home</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Home</div>
+        <div class="nav-tooltip">Home</div>
         }
       </div>
 
       <div class="nav-item-wrapper" routerLink="/client/ongoing-services" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="PackageIcon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
+          <hugeicons-icon [icon]="PackageIcon" [size]="18" color="currentColor" class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">My Service</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">My Service</div>
+        <div class="nav-tooltip">My Service</div>
         }
       </div>
 
       <div class="nav-item-wrapper" routerLink="/client/compliance" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="Shield01Icon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
+          <hugeicons-icon [icon]="Shield01Icon" [size]="18" color="currentColor" class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Compliance</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Compliance</div>
+        <div class="nav-tooltip">Compliance</div>
         }
       </div>
 
       <div class="nav-item-wrapper" routerLink="/client/document-hub" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="File01Icon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
+          <hugeicons-icon [icon]="File01Icon" [size]="18" color="currentColor" class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Document Hub</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Document Hub</div>
+        <div class="nav-tooltip">Document Hub</div>
         }
       </div>
 
       <div class="nav-item-wrapper" routerLink="/client/services" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="DashboardSquare01Icon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
+          <hugeicons-icon [icon]="DashboardSquare01Icon" [size]="18" color="currentColor" class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Services</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Services</div>
+        <div class="nav-tooltip">Services</div>
         }
       </div>
 
       <div class="nav-item-wrapper" routerLink="/client/subscriptions" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="CrownIcon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
-            [strokeWidth]="1.5">
+          <hugeicons-icon [icon]="CrownIcon" [size]="18" color="currentColor" class="nav-item-icon" [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Subscriptions</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Subscriptions</div>
+        <div class="nav-tooltip">Subscriptions</div>
         }
       </div>
 
       <div class="nav-item-wrapper" routerLink="/client/profile" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="UserIcon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
-            [strokeWidth]="1.5">
+          <hugeicons-icon [icon]="UserIcon" [size]="18" color="currentColor" class="nav-item-icon" [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Profile</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Profile</div>
+        <div class="nav-tooltip">Profile</div>
         }
       </div>
 
-      <div class="nav-item-wrapper" routerLink="/client/company-details" routerLinkActive="selected">
-        <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="ApartmentIcon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
-            [strokeWidth]="1.5">
-          </hugeicons-icon>
-          <span class="nav-item-label">Company Details</span>
-        </div>
-        @if (isCollapsed()) {
-          <div class="nav-tooltip">Company Details</div>
-        }
-      </div>
+
 
       <div class="nav-item-wrapper" routerLink="/client/support-tickets" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="MentoringIcon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
+          <hugeicons-icon [icon]="MentoringIcon" [size]="18" color="currentColor" class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Support Tickets</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Support Tickets</div>
+        <div class="nav-tooltip">Support Tickets</div>
         }
       </div>
 
       <div class="nav-item-wrapper" routerLink="/client/support" routerLinkActive="selected">
         <div class="nav-item-content">
-          <hugeicons-icon 
-            [icon]="CustomerSupportIcon" 
-            [size]="18" 
-            color="currentColor"
-            class="nav-item-icon"
+          <hugeicons-icon [icon]="CustomerSupportIcon" [size]="18" color="currentColor" class="nav-item-icon"
             [strokeWidth]="1.5">
           </hugeicons-icon>
           <span class="nav-item-label">Help & Support</span>
         </div>
         @if (isCollapsed()) {
-          <div class="nav-tooltip">Help & Support</div>
+        <div class="nav-tooltip">Help & Support</div>
         }
       </div>
     </div>
-    
+
   </div>
 
   @if (!isCollapsed()) {
-    <div class="trusted-companies">
-      <div class="trusted-title">Trusted by Wealth Empires</div>
+  <div class="trusted-companies">
+    <div class="trusted-title">Trusted by Wealth Empires</div>
     <div class="trusted-slider">
       @for (company of trustedCompanies; track company.name; let idx = $index) {
-        <a [href]="company.url" target="_blank" class="trusted-slide" [class.active]="currentTrustedIndex() === idx" title="Visit {{ company.name }}">
-          <img [src]="company.image" [alt]="company.name" class="trusted-img">
-          <div class="trusted-info">
-            <span class="trusted-name">{{ company.name }}</span>
-            <span class="trusted-desc">{{ company.desc }}</span>
-          </div>
-        </a>
+      <a [href]="company.url" target="_blank" class="trusted-slide" [class.active]="currentTrustedIndex() === idx"
+        title="Visit {{ company.name }}">
+        <img [src]="company.image" [alt]="company.name" class="trusted-img">
+        <div class="trusted-info">
+          <span class="trusted-name">{{ company.name }}</span>
+          <span class="trusted-desc">{{ company.desc }}</span>
+        </div>
+      </a>
       }
     </div>
   </div>

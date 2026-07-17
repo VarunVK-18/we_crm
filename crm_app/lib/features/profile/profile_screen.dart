@@ -469,13 +469,23 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
                 ),
                 if (widget.companyName.isNotEmpty) ...[
                   SizedBox(height: 4.r),
-                  Text(
-                    widget.name,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey.shade600,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12.sp,
-                    ),
+                  Row(
+                    children: [
+                      Icon(LucideIcons.user, size: 14.sp, color: Colors.grey.shade600),
+                      SizedBox(width: 4.r),
+                      Expanded(
+                        child: Text(
+                          widget.name,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12.sp,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
                 SizedBox(height: 12.r),

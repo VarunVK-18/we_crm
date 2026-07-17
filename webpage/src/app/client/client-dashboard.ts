@@ -5,6 +5,7 @@ import { Api } from '../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { DashboardSquareRemoveIcon, UserAccountIcon, Notification01Icon, Rocket02Icon, GiftIcon, Briefcase02Icon, OfficeIcon, Briefcase01Icon, LicenseIcon, CalculatorIcon, Search01Icon, BankIcon, PercentIcon, Call02Icon, MailOpenIcon, ApartmentIcon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../components/we-loader/we-loader';
+import confetti from 'canvas-confetti';
 
 @Component({
   selector: 'app-client-dashboard',
@@ -189,6 +190,18 @@ export class ClientDashboard implements OnInit, OnDestroy {
     }, 4000);
     this.startSlider();
     window.addEventListener('entityChanged', this.entityChangeHandler);
+
+    // TODO: Remove this after testing
+    // setTimeout(() => {
+    //   this.congratsServiceName.set('Test Service');
+    //   this.showCongratsModal.set(true);
+    //   confetti({
+    //     particleCount: 150,
+    //     spread: 70,
+    //     origin: { y: 0.6 },
+    //     zIndex: 10000
+    //   });
+    // }, 1000);
   }
 
   startSlider() {
@@ -396,6 +409,12 @@ export class ClientDashboard implements OnInit, OnDestroy {
           if (!hasBeenCongratulated) {
             this.congratsServiceName.set(c.service_name || c.checklist_name || 'Service');
             this.showCongratsModal.set(true);
+            confetti({
+              particleCount: 150,
+              spread: 70,
+              origin: { y: 0.6 },
+              zIndex: 10000
+            });
             localStorage.setItem(`congrats_shown_${c._id || c.id}`, 'true');
           }
         }

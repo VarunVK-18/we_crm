@@ -134,12 +134,21 @@ export class ClientTopbarComponent implements OnInit {
     });
   }
 
-  selectEntity(name: string) {
-    this.selectedEntity.set(name);
-    localStorage.setItem('client_selected_entity', name);
+  async selectEntity(name: string) {
     this.isEntityDropdownOpen.set(false);
-    // Dispatch a custom event so other components can react immediately
-    window.dispatchEvent(new CustomEvent('entityChanged', { detail: name }));
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Change Active Entity',
+      message: `Are you sure you want to switch the active entity to "${name}"? Your dashboard data will be refreshed to reflect this change.`,
+      confirmText: 'Confirm',
+      cancelText: 'Cancel'
+    });
+
+    if (confirmed) {
+      this.selectedEntity.set(name);
+      localStorage.setItem('client_selected_entity', name);
+      // Dispatch a custom event so other components can react immediately
+      window.dispatchEvent(new CustomEvent('entityChanged', { detail: name }));
+    }
   }
 
   toggleEntityDropdown() {

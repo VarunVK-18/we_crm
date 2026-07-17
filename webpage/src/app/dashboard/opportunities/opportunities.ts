@@ -5,12 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Search01Icon, PlusSignIcon, CheckmarkCircle02Icon, TrendingUpDownIcon, Mail01Icon, UserAccountIcon } from '@hugeicons/core-free-icons';
-import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
+
 
 @Component({
   selector: 'app-opportunities',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, ResizableColumnDirective],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
   templateUrl: './opportunities.html',
   styleUrl: './opportunities.css'
 })

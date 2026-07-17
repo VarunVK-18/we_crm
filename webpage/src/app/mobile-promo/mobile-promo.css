@@ -1,0 +1,109 @@
+.mobile-promo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100vw;
+  background: #f8fafc;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'DM Sans', 'Outfit', sans-serif;
+}
+
+.glass-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  padding: 40px 30px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.logo-wrapper {
+  margin: 0 auto 32px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.promo-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+h1 {
+  color: #0f172a;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  letter-spacing: -0.5px;
+}
+
+p {
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0 0 32px;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #0f172a;
+  color: white;
+  text-decoration: none;
+  padding: 14px 24px;
+  border-radius: 16px;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.download-btn:active {
+  transform: scale(0.98);
+  background: #1e293b;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.btn-text small {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+}
+
+.btn-text strong {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}

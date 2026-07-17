@@ -554,10 +554,11 @@ class InvoiceScreen extends ConsumerWidget {
                               children: [
                                 Text('For ${companyName.toUpperCase()}', style: const TextStyle(fontSize: 4, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
                                 const SizedBox(height: 10),
-                                SvgPicture.string(
-                                  svgStamp,
+                                Image.asset(
+                                  'assets/sign.png',
                                   width: 60,
                                   height: 60,
+                                  fit: BoxFit.contain,
                                 ),
                                 const SizedBox(height: 10),
                                 const Text('Authorized Signatory', style: TextStyle(fontSize: 4, fontWeight: FontWeight.bold, color: Color(0xFF4B5563))),
@@ -640,6 +641,16 @@ class InvoiceScreen extends ConsumerWidget {
       );
     } catch (e) {
       debugPrint('Error loading logo: $e');
+    }
+
+    pw.MemoryImage? signImage;
+    try {
+      final signData = await rootBundle.load('assets/sign.png');
+      signImage = pw.MemoryImage(
+        signData.buffer.asUint8List(signData.offsetInBytes, signData.lengthInBytes),
+      );
+    } catch (e) {
+      debugPrint('Error loading signature image: $e');
     }
 
     final dateStr = DateFormat('dd MMM yyyy').format(order.createdAt);
@@ -1078,11 +1089,9 @@ class InvoiceScreen extends ConsumerWidget {
                           children: [
                             pw.Text('For ${companyName.toUpperCase()}', style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold, color: const PdfColor.fromInt(0xFF374151))),
                             pw.SizedBox(height: 10),
-                            pw.SvgImage(
-                              svg: svgStamp,
-                              width: 60,
-                              height: 60,
-                            ),
+                            signImage != null
+                                ? pw.Image(signImage!, width: 60, height: 60, fit: pw.BoxFit.contain)
+                                : pw.SizedBox(height: 60),
                             pw.SizedBox(height: 10),
                             pw.Text('Authorized Signatory', style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold, color: const PdfColor.fromInt(0xFF4B5563))),
                           ],

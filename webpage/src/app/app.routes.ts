@@ -59,12 +59,14 @@ import { StaffCompliance } from './dashboard/staff-compliance/staff-compliance';
 import { TeamServiceTrackComponent } from './dashboard/team-service-track/team-service-track';
 import { DscTokens } from './dashboard/dsc-tokens/dsc-tokens';
 import { ComplianceDetails } from './dashboard/compliance-details/compliance-details';
+import { PrivacyPolicy } from './privacy-policy/privacy-policy';
 
 import { NotFoundComponent } from "./not-found/not-found";
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: Login },
+  { path: 'privacypolicy', component: PrivacyPolicy },
   { 
     path: 'dashboard', 
     component: Dashboard,

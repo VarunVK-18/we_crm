@@ -393,7 +393,7 @@ class CustomerDashboard extends ConsumerWidget {
                     },
                     borderRadius: BorderRadius.circular(8.r),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6.r),
+                      padding: EdgeInsets.symmetric(vertical: 6.r, horizontal: 8.r),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
@@ -432,7 +432,7 @@ class CustomerDashboard extends ConsumerWidget {
                     },
                     borderRadius: BorderRadius.circular(8.r),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8.r),
+                      padding: EdgeInsets.symmetric(vertical: 8.r, horizontal: 8.r),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,

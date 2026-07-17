@@ -24,12 +24,15 @@ class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
 
   void _showNotificationPanel(BuildContext context, WidgetRef ref) {
-    final selectedEntity = ref.read(selectedEntityProvider);
+    final rawEntity = ref.read(selectedEntityProvider);
+    final user = ref.read(userProfileProvider).value;
+    final selectedEntity = (rawEntity == 'All Entities' || rawEntity.isEmpty)
+        ? (user?.companyName ?? '')
+        : rawEntity;
     final reminders = ref.read(complianceRemindersProvider).value ?? [];
     final filteredReminders = reminders
         .where((r) =>
-            (selectedEntity == 'All Entities' ||
-                r.entityName == selectedEntity) &&
+            r.entityName == selectedEntity &&
             r.daysLeft <= 3)
         .toList()
       ..sort((a, b) {
@@ -147,7 +150,11 @@ class ComplianceRadarScreen extends ConsumerWidget {
   }
 
   void _showPendingCompliancesPanel(BuildContext context, WidgetRef ref) {
-    final selectedEntity = ref.read(selectedEntityProvider);
+    final rawEntity = ref.read(selectedEntityProvider);
+    final user = ref.read(userProfileProvider).value;
+    final selectedEntity = (rawEntity == 'All Entities' || rawEntity.isEmpty)
+        ? (user?.companyName ?? '')
+        : rawEntity;
     final reminders = ref.read(complianceRemindersProvider).value ?? [];
     showModalBottomSheet(
       context: context,
@@ -163,8 +170,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
           builder: (context, setState) {
             final filteredReminders = reminders
                 .where((r) =>
-                    (selectedEntity == 'All Entities' ||
-                        r.entityName == selectedEntity) &&
+                    r.entityName == selectedEntity &&
                     (filterType == 'all' ||
                         (filterType == 'pending' &&
                             r.status != TaskStatus.completed) ||
@@ -326,11 +332,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
 
                             final grouped = <String, List<dynamic>>{};
                             for (final r in filteredReminders) {
-                              final key = selectedEntity == 'All Entities'
-                                  ? (r.entityName.isNotEmpty
-                                      ? r.entityName
-                                      : 'Other')
-                                  : r.status
+                              final key = r.status
                                       .toString()
                                       .split('.')
                                       .last
@@ -394,21 +396,24 @@ class ComplianceRadarScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Responsive.init(context);
-    final currentEntity = ref.watch(selectedEntityProvider);
+    final rawEntity = ref.watch(selectedEntityProvider);
+    final user = ref.watch(userProfileProvider).value;
+    final currentEntity = (rawEntity == 'All Entities' || rawEntity.isEmpty)
+        ? (user?.companyName ?? '')
+        : rawEntity;
 
     final remindersAsync = ref.watch(complianceRemindersProvider);
     final allReminders = remindersAsync.value ?? [];
     final dismissedIds = ref.watch(dismissedRemindersProvider);
     final reminders = allReminders.where((r) => !dismissedIds.contains(r.id)).toList();
     final isLoading = remindersAsync.isLoading && allReminders.isEmpty;
-    final user = ref.watch(userProfileProvider).value;
+
 
     // Removed auto-correct to allow selecting entities with zero reminders
 
     final pendingReminders = reminders
         .where((r) =>
-            (currentEntity == 'All Entities' ||
-                r.entityName == currentEntity) &&
+            r.entityName == currentEntity &&
             r.status != TaskStatus.completed)
         .toList();
     final pendingCountStr = pendingReminders.length.toString().padLeft(2, '0');
@@ -451,15 +456,13 @@ class ComplianceRadarScreen extends ConsumerWidget {
 
     final certsAsync = ref.watch(certificatesProvider);
     final certs = certsAsync.value ?? [];
-    final filteredCerts = certs.where((c) => currentEntity == 'All Entities' || c.entityName == currentEntity).toList();
+    final filteredCerts = certs.where((c) => c.entityName == currentEntity).toList();
     final warningCerts = filteredCerts.where((c) => ['Due Soon', 'Action Required', 'Critical', 'Expired'].contains(c.renewalStatus)).toList();
 
     // Map upcoming items dynamically to the timeline card
     final List<Map<String, String>> timelineItems = pendingReminders
         .map((r) => <String, String>{
-              'title': currentEntity == 'All Entities'
-                  ? '${r.title} (${r.entityName})'
-                  : r.title,
+              'title': r.title,
               'status': r.message,
               'type': (r.status == TaskStatus.critical ||
                       r.status == TaskStatus.overdue)
@@ -638,8 +641,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                   ),
                                   if (reminders
                                       .where((r) =>
-                                          (currentEntity == 'All Entities' ||
-                                              r.entityName == currentEntity) &&
+                                          r.entityName == currentEntity &&
                                           (r.status == TaskStatus.critical ||
                                               r.status == TaskStatus.overdue))
                                       .isNotEmpty)
@@ -1539,7 +1541,7 @@ class _BentoTimelineCard extends StatelessWidget {
             style: GoogleFonts.outfit(
               fontSize: 10.sp,
               fontWeight: FontWeight.w600,
-              color: AppTheme.deepTeal.withOpacity(0.3),
+              color: AppTheme.deepTeal.withOpacity(0.5),
               letterSpacing: 2,
             ),
           ),
@@ -1904,18 +1906,7 @@ class _ReminderItem extends ConsumerWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  if (currentEntity == 'All Entities')
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        'Entity: ${reminder.entityName}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey.shade500,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
+                  // Removed Entity name label since we strictly filter by selected entity now
                   if (reminder.daysLeft <= 3 && reminder.status != TaskStatus.completed) ...[
                     const SizedBox(height: 6),
                     Text(

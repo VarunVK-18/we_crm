@@ -244,7 +244,7 @@
           <div style="display: flex; gap: 16px;">
             <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
               <label style="font-size: 13px; font-weight: 600; color: #475569;">Due Date</label>
-              <input type="date" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-weight: 500; outline: none; box-sizing: border-box; font-family: var(--font-body);" 
+              <input type="date" [min]="minDate" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; font-weight: 500; outline: none; box-sizing: border-box; font-family: var(--font-body);" 
                 [value]="dueDateForOrder()[selectedOrderForApproval()._id] || ''" (input)="onDueDateChange(selectedOrderForApproval()._id, $event)">
             </div>
             

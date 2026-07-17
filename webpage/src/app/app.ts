@@ -1,15 +1,32 @@
-import { Component, signal, HostListener } from '@angular/core';
+import { Component, signal, HostListener, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog';
+import { MobilePromoComponent } from './mobile-promo/mobile-promo';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ConfirmDialogComponent],
+  imports: [RouterOutlet, ConfirmDialogComponent, MobilePromoComponent, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit {
   protected readonly title = signal('webpage');
+  isMobileDevice = signal(false);
+
+  ngOnInit() {
+    this.checkIfMobile();
+  }
+
+  private checkIfMobile() {
+    if (typeof window !== 'undefined' && window.navigator) {
+      const userAgent = window.navigator.userAgent || window.navigator.vendor || (window as any).opera;
+      // Basic detection for iOS and Android
+      if (/android/i.test(userAgent) || /iPad|iPhone|iPod/.test(userAgent)) {
+        this.isMobileDevice.set(true);
+      }
+    }
+  }
 
   @HostListener('document:dragover', ['$event'])
   onDragOver(event: DragEvent) {

@@ -20,16 +20,16 @@
           </div>
           <div class="phn-info">
             <div class="phn-title-row">
-              <h1 class="phn-title">{{ (selectedEntity() === 'All' ? (user()?.company_name || user()?.name || 'Client') : selectedEntity()) | titlecase }}</h1>
+              <h1 class="phn-title">{{ (selectedEntity() === 'All' ? (activeEntity()?.entityName || 'Client') : selectedEntity()) | titlecase }}</h1>
               <span class="phn-badge type">{{ selectedEntityType | uppercase }}</span>
             </div>
             <div class="phn-subtitle-row">
               <span class="phn-location">
                 <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span>
-                {{ user()?.state || 'INDIA' }}
+                {{ activeEntity()?.state || 'INDIA' }}
               </span>
               <span>&bull;</span>
-              <span>CIN: {{ user()?.cin || 'N/A' }}</span>
+              <span>CIN: {{ activeEntity()?.cin || 'N/A' }}</span>
             </div>
           </div>
         </div>
@@ -69,7 +69,7 @@
               <div class="info-card-content">
                 <div class="info-field">
                   <span class="info-label">Entity Name</span>
-                  <span class="info-val">{{ user()?.company_name || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.entityName || 'N/A' }}</span>
                 </div>
                 <div class="info-field">
                   <span class="info-label">Entity Type</span>
@@ -77,8 +77,8 @@
                 </div>
 
                 <div class="info-field">
-                  <span class="info-label">Owner Name</span>
-                  <span class="info-val">{{ user()?.owner_name || 'N/A' }}</span>
+                  <span class="info-label">Director Name</span>
+                  <span class="info-val">{{ activeEntity()?.owner_name || 'N/A' }}</span>
                 </div>
               </div>
             </div>
@@ -98,18 +98,18 @@
               <div class="info-card-content">
                 <div class="info-field">
                   <span class="info-label">Email</span>
-                  <span class="info-val" style="word-break: break-all;">{{ user()?.email || 'N/A' }}</span>
+                  <span class="info-val" style="word-break: break-all;">{{ activeEntity()?.email || 'N/A' }}</span>
                 </div>
                 <div class="info-field">
                   <span class="info-label">Phone</span>
-                  <span class="info-val">{{ user()?.phone || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.phone || 'N/A' }}</span>
                 </div>
                 <div class="info-field">
                   <span class="info-label">Website</span>
                   @if(isEditing()) {
                     <input type="text" class="form-input" [(ngModel)]="editData.website" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                   } @else {
-                    <span class="info-val">{{ user()?.website || 'N/A' }}</span>
+                    <span class="info-val">{{ activeEntity()?.website || 'N/A' }}</span>
                   }
                 </div>
 
@@ -137,7 +137,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.pan || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.pan || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -145,7 +145,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.pan_name || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.pan_name || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -153,7 +153,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan_father_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.pan_father_name || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.pan_father_name || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -161,7 +161,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan_dob" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.pan_dob || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.pan_dob || 'N/A' }}</span>
                 }
               </div>
             </div>
@@ -182,7 +182,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.gstin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.gstin || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.gstin || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -190,7 +190,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.tan" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.tan || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.tan || 'N/A' }}</span>
                 }
               </div>
             </div>
@@ -211,7 +211,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.cin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.cin || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.cin || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -219,7 +219,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.registration_number" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.registration_number || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.registration_number || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -227,7 +227,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.date_of_incorporation" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.date_of_incorporation || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.date_of_incorporation || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -235,7 +235,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.roc" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.roc || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.roc || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -243,7 +243,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_origin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.company_origin || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.company_origin || 'N/A' }}</span>
                 }
               </div>
             </div>
@@ -264,7 +264,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.company_type || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.company_type || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -272,7 +272,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.class_of_company" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.class_of_company || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.class_of_company || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -280,7 +280,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_category" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.company_category || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.company_category || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -288,7 +288,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_subcategory" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.company_subcategory || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.company_subcategory || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -296,7 +296,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.main_division_description" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.main_division_description || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.main_division_description || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -304,7 +304,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.main_division_no" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.main_division_no || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.main_division_no || 'N/A' }}</span>
                 }
               </div>
             </div>
@@ -323,23 +323,23 @@
               <!-- Bank Details -->
               <div class="info-field">
                 <span class="info-label">Bank Name</span>
-                <span class="info-val">{{ user()?.bank_details?.bankName || 'N/A' }}</span>
+                <span class="info-val">{{ activeEntity()?.bank_details?.bankName || 'N/A' }}</span>
               </div>
               <div class="info-field">
                 <span class="info-label">Account Number</span>
-                <span class="info-val">{{ user()?.bank_details?.accountNumber || 'N/A' }}</span>
+                <span class="info-val">{{ activeEntity()?.bank_details?.accountNumber || 'N/A' }}</span>
               </div>
               <div class="info-field">
                 <span class="info-label">IFSC Code</span>
-                <span class="info-val">{{ user()?.bank_details?.ifscCode || 'N/A' }}</span>
+                <span class="info-val">{{ activeEntity()?.bank_details?.ifscCode || 'N/A' }}</span>
               </div>
               <div class="info-field">
                 <span class="info-label">Account Type</span>
-                <span class="info-val">{{ user()?.bank_details?.accountType || 'N/A' }}</span>
+                <span class="info-val">{{ activeEntity()?.bank_details?.accountType || 'N/A' }}</span>
               </div>
               <div class="info-field">
                 <span class="info-label">Branch Name</span>
-                <span class="info-val">{{ user()?.bank_details?.branchName || 'N/A' }}</span>
+                <span class="info-val">{{ activeEntity()?.bank_details?.branchName || 'N/A' }}</span>
               </div>
               <!-- Financials -->
               <div class="info-field">
@@ -347,7 +347,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.authorised_capital" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.authorised_capital || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.authorised_capital || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -355,7 +355,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.paidup_capital" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.paidup_capital || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.paidup_capital || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -363,7 +363,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.obligation_of_contribution" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.obligation_of_contribution || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.obligation_of_contribution || 'N/A' }}</span>
                 }
               </div>
             </div>
@@ -384,7 +384,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_email" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.company_email || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.company_email || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -392,7 +392,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.address_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.address_type || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.address_type || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -400,7 +400,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.street_address_line_1" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.street_address_line_1 || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.street_address_line_1 || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -408,7 +408,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.street_address_line_2" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.street_address_line_2 || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.street_address_line_2 || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -416,7 +416,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.city" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.city || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.city || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -424,7 +424,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.state" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.state || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.state || 'N/A' }}</span>
                 }
               </div>
               <div class="info-field">
@@ -432,7 +432,7 @@
                 @if(isEditing()) {
                   <input type="text" class="form-input" [(ngModel)]="editData.postal_code" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
-                  <span class="info-val">{{ user()?.postal_code || 'N/A' }}</span>
+                  <span class="info-val">{{ activeEntity()?.postal_code || 'N/A' }}</span>
                 }
               </div>
             </div>
@@ -492,7 +492,6 @@
                     <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column;">
                       <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 8px; color: #64748b; font-size: 13px;">
-                          <hugeicons-icon [icon]="getServiceIcon(service.details?.category)" [size]="18" color="var(--primary)"></hugeicons-icon>
                           {{ service.details?.category || 'Business Service' }}
                         </div>
                         @if (service.status === 'completed' || service.status === 'Completed' || service.status === 'done' || service.status === 'Done') {

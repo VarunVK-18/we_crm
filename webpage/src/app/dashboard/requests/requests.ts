@@ -80,6 +80,9 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
   phoneFilter = signal<string>('');
   requestDateFilter = signal<string>('');
 
+  // Minimum date for date pickers (today)
+  minDate = new Date().toISOString().split('T')[0];
+
   // Pagination state
   currentPage = signal<number>(1);
   limit = signal<number>(15);

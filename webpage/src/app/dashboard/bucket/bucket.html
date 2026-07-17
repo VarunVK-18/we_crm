@@ -295,7 +295,15 @@
               onblur="(this.value == '' ? this.type='text' : this.type='date')" [(ngModel)]="sDueDateFilter"
               (ngModelChange)="onSearchChange()" class="col-search-input" (click)="$event.stopPropagation()" />
           </th>
-          <th style="vertical-align: top;" appResizableColumn="bucket-col-33">Priority</th>
+          <th style="vertical-align: top;" appResizableColumn="bucket-col-33">
+            <div>Priority</div>
+            <select [(ngModel)]="sPriorityFilter" (ngModelChange)="onSearchChange()" class="col-search-input" (click)="$event.stopPropagation()">
+              <option value="All">All</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </th>
           @if (user()?.role !== 'filling_staff') {
           <th style="vertical-align: top;" appResizableColumn="bucket-col-34">Team</th>
           }
@@ -332,7 +340,7 @@
             <span>{{ job.checklist_id?.dueDate ? (job.checklist_id.dueDate | date:'mediumDate') : '-' }}</span>
           </td>
           <td>
-            <span>{{ job.checklist_id?.priority || '-' }}</span>
+            <span [ngStyle]="getPriorityStyle(job.checklist_id?.priority)">{{ job.checklist_id?.priority || 'High' }}</span>
           </td>
           @if (user()?.role !== 'filling_staff') {
           <td>

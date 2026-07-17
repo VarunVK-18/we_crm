@@ -6,6 +6,7 @@
     </div>
   } @else {
     <div class="compliance-content">
+
       @if (hasWarningCertificates()) {
         <div class="warning-banner" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px 20px;display: flex; gap: 16px; align-items: flex-start;">
           <hugeicons-icon [icon]="Alert01Icon" [size]="24" color="#dc2626" [strokeWidth]="2" style="flex-shrink: 0; margin-top: 2px;"></hugeicons-icon>
@@ -130,6 +131,20 @@
             <div class="stat-label">Pending</div>
           </div>
         </div>
+
+        <!-- No Active Compliance Plans Card -->
+        @if (activeSubscriptions().length === 0) {
+          <div class="premium-plan-card" style="flex: 1.5; display: flex; flex-direction: column; justify-content: space-between; min-height: 140px; padding: 20px; box-sizing: border-box; text-align: left;">
+            <div class="ppc-glow"></div>
+            <div class="ppc-content" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; width: 100%;">
+              <div>
+                <h3 class="ppc-title" style="font-size: 13px; color: rgba(255,255,255,0.9); margin: 0 0 4px 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">No Active Plan</h3>
+                <p style="font-size: 11px; color: rgba(255,255,255,0.6); margin: 0 0 12px 0; line-height: 1.4; max-width: 220px;">Protect your business by keeping your company compliant with MCA.</p>
+              </div>
+              <button [routerLink]="['/client/services']" [queryParams]="{ serviceName: 'MCA Compliance' }" style="width: 100%; padding: 10px; background: white; color: #1e293b; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; margin-top: auto; text-align: center;">Apply for MCA Compliance</button>
+            </div>
+          </div>
+        }
       </div>
 
       <!-- Urgent Deadlines -->

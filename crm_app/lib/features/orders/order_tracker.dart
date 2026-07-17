@@ -17,16 +17,17 @@ import '../../providers/notification_provider.dart';
 import '../../providers/compliance_provider.dart';
 import 'notification_sheet.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import '../../core/constants/available_services.dart';
+import '../services/service_detail_screen.dart';
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
-enum _ServiceTab { active, complete, notInitialized, history }
+enum _ServiceTab { active, complete, notInitialized, suggested }
 
 const _tabLabels = {
   _ServiceTab.active: 'Active',
   _ServiceTab.complete: 'Complete',
   _ServiceTab.notInitialized: 'Pending Registration',
-  _ServiceTab.history: 'History',
+  _ServiceTab.suggested: 'Upcoming',
 };
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
@@ -115,22 +116,23 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
     final notInitList = entityFiltered
         .where((o) => o.status == ServiceStatus.notInitialized)
         .toList();
-    final historyList = entityFiltered
-        .where((o) => o.status == ServiceStatus.complete)
+    final takenServiceTitles = entityFiltered.map((o) => o.serviceType).toSet();
+    final suggestedServices = kAvailableServices
+        .where((s) => !takenServiceTitles.contains(s['title']))
         .toList();
 
     final counts = {
       _ServiceTab.active: fullActiveList.length,
       _ServiceTab.complete: completeList.length,
       _ServiceTab.notInitialized: notInitList.length,
-      _ServiceTab.history: historyList.length,
+      _ServiceTab.suggested: suggestedServices.length,
     };
 
     final visibleList = switch (_selectedTab) {
       _ServiceTab.active => activeList,
       _ServiceTab.complete => completeList,
       _ServiceTab.notInitialized => notInitList,
-      _ServiceTab.history => historyList,
+      _ServiceTab.suggested => [], // Handled separately in UI
     };
 
     return Scaffold(
@@ -478,32 +480,137 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
             // ── Service List or Empty State ─────────────────────────────────
             Expanded(
-              child: isLoading
-                  ? const Center(
-                      child: WeLoader(size: 24),
-                    )
-                  : visibleList.isEmpty
-                      ? _EmptyState(tab: _selectedTab)
-                      : RefreshIndicator(
-                          color: AppTheme.deepTeal,
-                          onRefresh: () async {
-                            ref.invalidate(serviceOrdersProvider);
-                            // small delay to show the spinner
-                            await Future.delayed(
-                                const Duration(milliseconds: 500));
-                          },
-                          child: ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: visibleList.length,
-                            itemBuilder: (context, i) =>
-                                _ServiceCard(order: visibleList[i]),
-                          ),
-                        ),
+              child: _selectedTab == _ServiceTab.suggested
+                  ? _buildSuggestedServices(suggestedServices)
+                  : isLoading
+                      ? const Center(
+                          child: WeLoader(size: 24),
+                        )
+                      : visibleList.isEmpty
+                          ? _EmptyState(tab: _selectedTab)
+                          : RefreshIndicator(
+                              color: AppTheme.deepTeal,
+                              onRefresh: () async {
+                                ref.invalidate(serviceOrdersProvider);
+                                // small delay to show the spinner
+                                await Future.delayed(
+                                    const Duration(milliseconds: 500));
+                              },
+                              child: ListView.builder(
+                                padding: const EdgeInsets.fromLTRB(20, 0, 20, 120),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: visibleList.length,
+                                itemBuilder: (context, i) =>
+                                    _ServiceCard(order: visibleList[i]),
+                              ),
+                            ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSuggestedServices(List<Map<String, dynamic>> services) {
+    if (services.isEmpty) {
+      return Center(
+        child: Text(
+          'You have taken all available services!',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey.shade500,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      itemCount: services.length,
+      itemBuilder: (context, i) {
+        final service = services[i];
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ServiceDetailScreen(
+                serviceName: service['title'],
+                icon: service['icon'],
+                description: service['description'],
+                features: List<String>.from(service['features']),
+              ),
+            ),
+          ),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey.shade200, width: 2.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: (service['color'] as Color).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: service['icon'] is IconData
+                      ? Icon(
+                          service['icon'] as IconData,
+                          color: service['color'] as Color,
+                          size: 28,
+                        )
+                      : HugeIcon(
+                          icon: service['icon'],
+                          color: service['color'] as Color,
+                          size: 28,
+                        ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        service['title'],
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.deepTeal,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        service['subtitle'],
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  LucideIcons.chevronRight,
+                  color: Colors.grey,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -850,9 +957,9 @@ class _EmptyState extends StatelessWidget {
           HugeIcon(icon: HugeIcons.strokeRoundedHourglass, size: 52, color: Colors.grey.shade400),
           'No pending services',
         ),
-      _ServiceTab.history => (
-          HugeIcon(icon: HugeIcons.strokeRoundedClock01, size: 52, color: Colors.grey.shade400),
-          'No order history found',
+      _ServiceTab.suggested => (
+          HugeIcon(icon: HugeIcons.strokeRoundedIdea01, size: 52, color: Colors.grey.shade400),
+          'No suggested services found',
         ),
     };
 

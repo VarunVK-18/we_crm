@@ -65,6 +65,18 @@ class AuthRepository {
 
   // Sign In with Email/Password (Real API)
   Future<void> signIn(String email, String password) async {
+    // Play Store Testing Bypass
+    if (email == 'test@wealthempires.in' && password == 'Test@1234') {
+      _currentUser = MockAuthUser(
+        uid: 'playstore_test_user_id',
+        email: email,
+        displayName: 'Play Store Tester',
+      );
+      _authStateController.add(_currentUser);
+      await _saveUser(_currentUser!);
+      return;
+    }
+
     try {
       final response = await http
           .post(

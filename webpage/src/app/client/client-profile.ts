@@ -179,57 +179,154 @@ export class ClientProfile implements OnInit, OnDestroy {
   }
 
   
-  get selectedEntityType(): string {
+  activeEntity = computed(() => {
     const sel = this.selectedEntity();
     const u = this.user();
-    
+    if (!u) return null;
+
     if (sel === 'All') {
-      if (u?.business_type && u.business_type !== 'N/A') return u.business_type;
-      if (u?.company_type_expanded && u.company_type_expanded !== 'N/A') return u.company_type_expanded;
-      if (u?.class_of_company && u.class_of_company !== 'N/A') {
-        const cls = u.class_of_company.toLowerCase();
-        if (cls.includes('private')) return 'Private Limited Company';
-        if (cls.includes('public')) return 'Public Limited Company';
-        return u.class_of_company;
-      }
-      return 'COMPANY';
-    } else {
-      // Derive from selected entity name
-      const name = sel.toUpperCase();
-      if (name.includes('PRIVATE LIMITED') || name.includes('PVT LTD') || name.includes('PVT. LTD.')) return 'Private Limited Company';
-      if (name.includes('LIMITED') || name.includes('LTD')) return 'Public Limited Company';
-      if (name.includes('LLP') || name.includes('LIMITED LIABILITY PARTNERSHIP')) return 'Limited Liability Partnership';
-      if (name.includes('OPC') || name.includes('ONE PERSON COMPANY')) return 'One Person Company';
-      if (name.includes('INC') || name.includes('INCORPORATED')) return 'Corporation';
-      if (name.includes('LLC')) return 'Limited Liability Company';
-      return 'COMPANY';
+      return {
+        entityName: u.company_name || u.name || 'Client',
+        entityType: u.business_type || u.company_type_expanded || 'COMPANY',
+        cin: u.cin || 'N/A',
+        pan: u.pan || 'N/A',
+        tan: u.tan || 'N/A',
+        gstin: u.gstin || 'N/A',
+        registration_number: u.registration_number || 'N/A',
+        date_of_incorporation: u.date_of_incorporation || 'N/A',
+        roc: u.roc || 'N/A',
+        company_origin: u.company_origin || 'N/A',
+        company_type: u.company_type || 'N/A',
+        class_of_company: u.class_of_company || 'N/A',
+        company_category: u.company_category || 'N/A',
+        company_subcategory: u.company_subcategory || 'N/A',
+        main_division_description: u.main_division_description || 'N/A',
+        main_division_no: u.main_division_no || 'N/A',
+        authorised_capital: u.authorised_capital || 'N/A',
+        paidup_capital: u.paidup_capital || 'N/A',
+        obligation_of_contribution: u.obligation_of_contribution || 'N/A',
+        address_type: u.address_type || 'N/A',
+        street_address_line_1: u.street_address_line_1 || 'N/A',
+        street_address_line_2: u.street_address_line_2 || 'N/A',
+        city: u.city || 'N/A',
+        state: u.state || 'N/A',
+        postal_code: u.postal_code || 'N/A',
+        company_email: u.company_email || 'N/A',
+        website: u.website || 'N/A',
+        bank_details: u.bank_details || {},
+        pan_name: u.pan_name || 'N/A',
+        pan_father_name: u.pan_father_name || 'N/A',
+        pan_dob: u.pan_dob || 'N/A',
+        owner_name: u.owner_name || 'N/A',
+        email: u.email || 'N/A',
+        phone: u.phone || 'N/A'
+      };
     }
+
+    const entity = (u.client_entities || []).find((e: any) =>
+      e.entityName && e.entityName.trim().toLowerCase() === sel.toLowerCase()
+    );
+
+    if (entity) {
+      return {
+        entityName: entity.entityName,
+        entityType: entity.entityType || 'COMPANY',
+        cin: entity.cin || 'N/A',
+        pan: entity.pan || 'N/A',
+        tan: entity.tan || 'N/A',
+        gstin: entity.gstin || 'N/A',
+        registration_number: entity.registration_number || 'N/A',
+        date_of_incorporation: entity.incorporationDate || 'N/A',
+        roc: entity.roc || 'N/A',
+        company_origin: entity.company_origin || 'N/A',
+        company_type: entity.company_type || 'N/A',
+        class_of_company: entity.class_of_company || 'N/A',
+        company_category: entity.company_category || 'N/A',
+        company_subcategory: entity.company_subcategory || 'N/A',
+        main_division_description: entity.main_division_description || 'N/A',
+        main_division_no: entity.main_division_no || 'N/A',
+        authorised_capital: entity.authorised_capital || 'N/A',
+        paidup_capital: entity.paidup_capital || 'N/A',
+        obligation_of_contribution: entity.obligation_of_contribution || 'N/A',
+        address_type: entity.address_type || 'N/A',
+        street_address_line_1: entity.street_address_line_1 || 'N/A',
+        street_address_line_2: entity.street_address_line_2 || 'N/A',
+        city: entity.city || 'N/A',
+        state: entity.state || 'N/A',
+        postal_code: entity.postal_code || 'N/A',
+        company_email: entity.company_email || 'N/A',
+        website: entity.website || 'N/A',
+        bank_details: entity.bank_details || {},
+        pan_name: entity.pan_name || 'N/A',
+        pan_father_name: entity.pan_father_name || 'N/A',
+        pan_dob: entity.pan_dob || 'N/A',
+        owner_name: entity.directorName || u.owner_name || 'N/A',
+        email: entity.email || u.email || 'N/A',
+        phone: entity.phone || u.phone || 'N/A'
+      };
+    }
+
+    return {
+      entityName: sel,
+      entityType: 'COMPANY',
+      cin: 'N/A',
+      pan: 'N/A',
+      tan: 'N/A',
+      gstin: 'N/A',
+      registration_number: 'N/A',
+      date_of_incorporation: 'N/A',
+      roc: 'N/A',
+      company_origin: 'N/A',
+      company_type: 'N/A',
+      class_of_company: 'N/A',
+      company_category: 'N/A',
+      company_subcategory: 'N/A',
+      main_division_description: 'N/A',
+      main_division_no: 'N/A',
+      authorised_capital: 'N/A',
+      paidup_capital: 'N/A',
+      obligation_of_contribution: 'N/A',
+      address_type: 'N/A',
+      street_address_line_1: 'N/A',
+      street_address_line_2: 'N/A',
+      city: 'N/A',
+      state: 'N/A',
+      postal_code: 'N/A',
+      company_email: 'N/A',
+      website: 'N/A',
+      bank_details: {},
+      pan_name: 'N/A',
+      pan_father_name: 'N/A',
+      pan_dob: 'N/A',
+      owner_name: u.owner_name || 'N/A',
+      email: u.email || 'N/A',
+      phone: u.phone || 'N/A'
+    };
+  });
+
+  get selectedEntityType(): string {
+    const ent = this.activeEntity();
+    if (!ent) return 'COMPANY';
+    return ent.entityType || 'COMPANY';
   }
 
   get entityType(): string {
-    const u = this.user();
-    if (!u) return 'N/A';
-    if (u.business_type && u.business_type !== 'N/A') return u.business_type;
-    if (u.company_type_expanded && u.company_type_expanded !== 'N/A') return u.company_type_expanded;
-    if (u.class_of_company && u.class_of_company !== 'N/A') {
-      const cls = u.class_of_company.toLowerCase();
-      if (cls.includes('private')) return 'Private Limited Company';
-      if (cls.includes('public')) return 'Public Limited Company';
-      return u.class_of_company;
-    }
-    
+    const ent = this.activeEntity();
+    if (!ent) return 'N/A';
+    if (ent.entityType && ent.entityType !== 'N/A') return ent.entityType;
+
     // Derive from name if fields are empty
-    const name = (u.company_name || '').toUpperCase();
+    const name = (ent.entityName || '').toUpperCase();
     if (name.includes('PRIVATE LIMITED') || name.includes('PVT LTD') || name.includes('PVT. LTD.')) return 'Private Limited Company';
     if (name.includes('LIMITED') || name.includes('LTD')) return 'Public Limited Company';
     if (name.includes('LLP') || name.includes('LIMITED LIABILITY PARTNERSHIP')) return 'LLP (Limited Liability Partnership)';
     if (name.includes('OPC') || name.includes('ONE PERSON COMPANY')) return 'OPC (One Person Company)';
-    
+
     return 'Not Incorporated';
   }
 
   constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) { }
-  
+
   viewServiceDetails(serviceId: string) {
     this.router.navigate(['/client/service', serviceId]);
   }
@@ -273,6 +370,50 @@ export class ClientProfile implements OnInit, OnDestroy {
     this.api.get<any>(`users/profile/${id}`).subscribe({
       next: (res: any) => {
         if (res.user) {
+          // Fallback: Ensure primary company_name is in client_entities
+          if (res.user.company_name && res.user.company_name.trim() !== '') {
+            if (!res.user.client_entities) res.user.client_entities = [];
+            const primaryName = res.user.company_name.trim();
+            const exists = res.user.client_entities.some((e: any) => 
+              e.entityName && e.entityName.trim().toLowerCase() === primaryName.toLowerCase()
+            );
+            if (!exists) {
+              res.user.client_entities.unshift({
+                entityName: primaryName,
+                entityType: res.user.business_type || 'Company',
+                pan: res.user.pan || '',
+                gstin: res.user.gstin || '',
+                cin: res.user.cin || '',
+                tan: res.user.tan || '',
+                incorporationDate: res.user.incorporation_date || res.user.date_of_incorporation || '',
+                registration_number: res.user.registration_number || '',
+                roc: res.user.roc || '',
+                company_origin: res.user.company_origin || '',
+                company_type: res.user.company_type || '',
+                class_of_company: res.user.class_of_company || '',
+                company_category: res.user.company_category || '',
+                company_subcategory: res.user.company_subcategory || '',
+                main_division_description: res.user.main_division_description || '',
+                main_division_no: res.user.main_division_no || '',
+                authorised_capital: res.user.authorised_capital || '',
+                paidup_capital: res.user.paidup_capital || '',
+                obligation_of_contribution: res.user.obligation_of_contribution || '',
+                address_type: res.user.address_type || '',
+                street_address_line_1: res.user.street_address_line_1 || '',
+                street_address_line_2: res.user.street_address_line_2 || '',
+                city: res.user.city || '',
+                state: res.user.state || '',
+                postal_code: res.user.postal_code || '',
+                company_email: res.user.company_email || '',
+                website: res.user.website || '',
+                bank_details: res.user.bank_details || {},
+                pan_name: res.user.pan_name || '',
+                pan_father_name: res.user.pan_father_name || '',
+                pan_dob: res.user.pan_dob || ''
+              });
+            }
+          }
+
           this.user.set(res.user);
           if (res.user.assigned_to) {
             this.clientManager.set(res.user.assigned_to);
