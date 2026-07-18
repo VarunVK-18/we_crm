@@ -13,11 +13,12 @@ import {
 import { Api } from '../../api';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 import { OcrService } from '../../services/ocr.service';
+import { ResizableColumnDirective } from '../../directives/resizable-column.directive';
 
 @Component({
   selector: 'app-clients-directory',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, ResizableColumnDirective],
   templateUrl: './clients-directory.html',
   styleUrl: './clients-directory.css'
 })

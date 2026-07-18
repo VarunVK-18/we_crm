@@ -16,29 +16,29 @@
   } @else {
     <div class="bucket-table-container">
       <table class="bucket-table">
-        <thead>
+        <thead appResizableColumn="client-dir-thead">
           <tr>
-            <th style="vertical-align: top; font-weight: 700;">
+            <th style="vertical-align: top; font-weight: 700;" appResizableColumn="client-dir-col-id">
               <div>Client ID</div>
               <input type="text"  [ngModel]="colSearch_clientId()" (ngModelChange)="colSearch_clientId.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
-            <th style="vertical-align: top; font-weight: 700;">
+            <th style="vertical-align: top; font-weight: 700;" appResizableColumn="client-dir-col-company">
               <div>Company Name</div>
               <input type="text"  [ngModel]="colSearch_companyName()" (ngModelChange)="colSearch_companyName.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
-            <th style="vertical-align: top; font-weight: 700;">
+            <th style="vertical-align: top; font-weight: 700;" appResizableColumn="client-dir-col-name">
               <div>Client Name</div>
               <input type="text"  [ngModel]="colSearch_clientName()" (ngModelChange)="colSearch_clientName.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
-            <th style="vertical-align: top; font-weight: 700;">
+            <th style="vertical-align: top; font-weight: 700;" appResizableColumn="client-dir-col-phone">
               <div>Phone Number</div>
               <input type="text"  [ngModel]="colSearch_phone()" (ngModelChange)="colSearch_phone.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
-            <th style="vertical-align: top; font-weight: 700;">
+            <th style="vertical-align: top; font-weight: 700;" appResizableColumn="client-dir-col-mail">
               <div>Mail</div>
               <input type="text"  [ngModel]="colSearch_mail()" (ngModelChange)="colSearch_mail.set($event)" class="col-search-input" (click)="$event.stopPropagation()" />
             </th>
-            <th style="font-weight: 700; text-align: center;">Chat</th>
+            <th style="font-weight: 700; text-align: center;" appResizableColumn="client-dir-col-chat">Chat</th>
           </tr>
         </thead>
         <tbody>

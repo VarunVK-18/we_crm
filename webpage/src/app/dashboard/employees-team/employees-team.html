@@ -35,8 +35,6 @@
             <th>Name & Identification</th>
             <th>Role / Title</th>
             <th>Phone Number</th>
-            <th>Last Active</th>
-            <th>Status</th>
             <th style="text-align: right;">Actions</th>
           </tr>
         </thead>
@@ -57,13 +55,6 @@
               </td>
               <td style="color: var(--text-primary);">{{ getRoleLabel(member.role) }}</td>
               <td style="color: var(--text-primary);">{{ member.phone || 'N/A' }}</td>
-              <td style="color: var(--text-secondary);">Recently</td>
-              <td>
-                <div class="status-active">
-                  <div class="status-dot"></div>
-                  <span class="status-text">Active</span>
-                </div>
-              </td>
               <td>
                 <div class="action-buttons">
                   <button class="btn-action" title="Edit Profile" (click)="openEditEmployeeModal(member); $event.stopPropagation()">
@@ -78,7 +69,7 @@
           }
           @if (filteredEmployees().length === 0) {
             <tr>
-              <td colspan="7" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+              <td colspan="5" style="text-align: center; padding: 48px; color: var(--text-secondary);">
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
                   <span class="material-symbols-outlined" style="font-size: 32px;">group_off</span>
                   <p style="margin: 0;">No personnel found for this tab.</p>

@@ -213,8 +213,8 @@ class InvoiceScreen extends ConsumerWidget {
                                           children: [
                                             Text(companyName.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 7), maxLines: 1, overflow: TextOverflow.ellipsis),
                                             const SizedBox(height: 2),
-                                            Text('GSTIN: $gstin', style: const TextStyle(fontSize: 5, fontWeight: FontWeight.bold)),
-                                            const SizedBox(height: 2),
+                                            // Text('GSTIN: $gstin', style: const TextStyle(fontSize: 5, fontWeight: FontWeight.bold)),
+                                            // const SizedBox(height: 2),
                                             Text(address, style: const TextStyle(fontSize: 5, color: Color(0xFF4B5563)), maxLines: 2, overflow: TextOverflow.ellipsis),
                                             const SizedBox(height: 2),
                                             Text('Mobile: $phone\nEmail: $email', style: const TextStyle(fontSize: 5, color: Color(0xFF4B5563)), maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -750,8 +750,8 @@ class InvoiceScreen extends ConsumerWidget {
                                       children: [
                                         pw.Text(companyName.toUpperCase(), style: pw.TextStyle(font: fontExtraBold, fontSize: 7)),
                                         pw.SizedBox(height: 2),
-                                        pw.Text('GSTIN: $gstin', style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold)),
-                                        pw.SizedBox(height: 4),
+                                        // pw.Text('GSTIN: $gstin', style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold)),
+                                        // pw.SizedBox(height: 4),
                                         pw.Text(address, style: const pw.TextStyle(fontSize: 5, color: PdfColor.fromInt(0xFF4B5563))),
                                         pw.SizedBox(height: 2),
                                         pw.Text('Mobile: $phone\nEmail: $email', style: const pw.TextStyle(fontSize: 5, color: PdfColor.fromInt(0xFF4B5563))),

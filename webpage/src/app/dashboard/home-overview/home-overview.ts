@@ -128,7 +128,8 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
     { title: 'Active Services', value: '0', detail: 'No in process services', isTrendUp: true },
     { title: 'Compliance Score', value: '100%', detail: 'Excellent Standing', isTrendUp: true },
     { title: 'Open Audit Tasks', value: '0', detail: 'All caught up', isGood: true },
-    { title: 'Actions Pending', value: '0', detail: 'All clear', isGood: true }
+    { title: 'Actions Pending', value: '0', detail: 'All clear', isGood: true },
+    { title: 'Opportunities', value: '0', detail: 'Total available services', isGood: true }
   ];
 
   constructor(private api: Api) {

@@ -114,6 +114,13 @@ export class Opportunities implements OnInit {
   dealAmountStr = signal<string>('');
   advanceAmountStr = signal<string>('');
   dueDate = signal<string>('');
+  minDueDate = computed(() => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  });
   priority = signal<string>('High');
   claimingId = signal<string | null>(null);
   systemSettings = signal<any>(null);

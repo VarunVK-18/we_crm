@@ -183,7 +183,7 @@
     }
 
     <!-- Active Tab Screen Content -->
-    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat' || currentTab() === 'team-service-track'" [class.no-padding-scrollable]="currentTab() === 'payment-tracker'">
+    <div class="screen-content-wrapper" [class.no-padding]="currentTab() === 'staff-chat'" [class.no-padding-scrollable]="currentTab() === 'payment-tracker' || currentTab() === 'team-service-track'">
       @if (currentTab() === 'dashboard') {
       <app-home-overview (viewRequests)="handleTabChanged('requests')" (viewChecklist)="viewChecklist($event)"
         (navigateTab)="handleTabChanged($event)"

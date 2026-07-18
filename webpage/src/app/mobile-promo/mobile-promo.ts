@@ -13,30 +13,32 @@ export class MobilePromoComponent implements OnInit {
   }
 
   attemptDeepLink() {
-    // Attempt to open the Android App via Intent
-    // If the app is installed, it opens. If not, it falls back to the Play Store link after a short delay.
-    const packageName = 'com.softrate.wecrm'; // TODO: Update to your exact Play Store package name
+    if (typeof window === 'undefined') return;
+
+    const packageName = 'com.softrate.wecrm';
     const fallbackUrl = `https://play.google.com/store/apps/details?id=${packageName}`;
-    
-    // Set a timeout to redirect to the Play Store if the app fails to open
-    const timeout = setTimeout(() => {
-      if (typeof window !== 'undefined') {
+    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+    const isAndroid = /android/i.test(userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
+
+    if (isAndroid) {
+      // Try opening the Android intent (opens app directly if installed, otherwise redirects to Play Store)
+      window.location.href = `intent://#Intent;scheme=wecrm;package=${packageName};end`;
+    } else if (isIOS) {
+      // iOS custom scheme try
+      window.location.href = 'wecrm://';
+      const timeout = setTimeout(() => {
         window.location.href = fallbackUrl;
-      }
-    }, 2000);
+      }, 2500);
 
-    // Try opening the Android intent
-    if (typeof window !== 'undefined') {
-      window.location.href = `intent://wecrm/#Intent;scheme=wecrm;package=${packageName};end`;
-    }
-
-    // Clear timeout if they leave the page (app opened)
-    if (typeof window !== 'undefined') {
       window.addEventListener('visibilitychange', () => {
         if (document.hidden) {
           clearTimeout(timeout);
         }
       });
+    } else {
+      // Fallback for other platforms
+      window.location.href = fallbackUrl;
     }
   }
 }

@@ -36,7 +36,7 @@
             
             <div class="sender-details">
               <h2 class="company-title">{{ companyDetails()?.company_name || 'Company Name' }}</h2>
-              <p class="company-gst" *ngIf="companyDetails()?.gstin">GSTIN: <strong>{{ companyDetails().gstin }}</strong></p>
+              <p class="company-gst" *ngIf="false">GSTIN: <strong>{{ companyDetails().gstin }}</strong></p>
               <p class="company-addr">{{ companyDetails()?.address || 'Company Address' }}</p>
               <p class="company-contact">
                 <span *ngIf="companyDetails()?.phone">Mobile: {{ companyDetails().phone }}</span>

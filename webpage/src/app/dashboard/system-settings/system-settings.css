@@ -21,7 +21,7 @@
   flex-direction: column;
   height: calc(100vh - 140px);
   position: sticky;
-  top: 32px;
+  top: 0;
 }
 
 .sidebar-header {

@@ -65,9 +65,6 @@
                 {{ client.opportunities?.length || 0 }}
               </div>
             </div>
-            <div style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">
-              {{ client.email || client.phone || 'No Contact Info' }}
-            </div>
           </div>
           }
         </div>
@@ -99,7 +96,7 @@
         <!-- 1. Service Orders (WE) -->
         @if (getWeDone(currentClient).length > 0) {
         <div style="margin-bottom: 32px;">
-          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Completed
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 16px 0;">Applied
             Service Orders (WE)</h3>
           <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             @for (done of getWeDone(currentClient); track done.name) {
@@ -226,7 +223,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
           <div>
             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Due Date</label>
-            <input type="date" [(ngModel)]="dueDate" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #0f172a; outline: none;">
+            <input type="date" [(ngModel)]="dueDate" [min]="minDueDate()" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; color: #0f172a; outline: none;">
           </div>
           <div>
             <label style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Priority</label>
