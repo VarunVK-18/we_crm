@@ -250,6 +250,16 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   async confirmClearAll() {
+    if (this.notifService.notifications().length === 0) {
+      await this.confirmDialog.confirm({
+        title: 'Nothing to clear',
+        message: 'There are no recent updates to clear.',
+        confirmText: 'OK',
+        hideCancel: true
+      });
+      return;
+    }
+
     const confirmed = await this.confirmDialog.confirm({
       title: 'Clear All Notifications',
       message: 'Are you sure you want to clear all your notifications?',
