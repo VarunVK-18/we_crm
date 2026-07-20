@@ -271,8 +271,9 @@ textarea {
 }
 
 /* Professional File Upload Styling (Applies to all form Document Uploads) */
-.file-group {
+.file-group, .file-upload-wrapper {
   transition: all 0.2s ease;
+  margin-bottom: 24px;
 }
 
 .file-group:hover, .file-upload-wrapper:hover {
@@ -401,4 +402,16 @@ input[type="file"] {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: middle;
+}
+
+/* Global focus override to remove dark line borders on active inputs */
+input:focus, 
+textarea:focus, 
+select:focus, 
+.form-input:focus, 
+.form-control:focus, 
+.search-input:focus {
+  border-color: rgba(59, 130, 246, 0.15) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+  outline: none !important;
 }

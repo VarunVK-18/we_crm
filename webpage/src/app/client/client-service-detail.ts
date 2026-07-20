@@ -770,7 +770,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
       });
     }
     this.showReviewModal.set(false);
-    window.open('https://search.google.com/local/writereview?placeid=ChIJx9xW-mloFjoRz1W0KjBexmE', '_blank');
+    window.open('https://g.page/r/Ce7dyD1SlQ40EAI/review', '_blank');
   }
 
   closeReviewModal() {

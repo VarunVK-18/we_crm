@@ -641,7 +641,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
 
   Widget _buildListTicketCard(dynamic ticket) {
     final t = ticket as Map<String, dynamic>;
-    final ticketId = t['ticketId'] ?? 'INC-0000';
+    final ticketId = t['ticketId'] ?? 'INC0000';
     final subject = t['subject'] ?? 'No Subject';
     final status = t['status'] ?? 'Open';
     final entityName = _resolveEntityName(t);
