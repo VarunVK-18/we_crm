@@ -808,50 +808,7 @@ class _ServiceRequestSummarySheetState
                   children: [
                     if (_currentPage == 0) ...[
                       _buildServiceHeader(),
-                      const SizedBox(height: 32),
-                      Text(
-                        'Service Request Details',
-                        style: GoogleFonts.outfit(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: AppTheme.deepTeal,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      _EditableField(
-                        label: 'Full Name',
-                        controller: _nameController,
-                        icon: LucideIcons.user,
-                        hint: 'Enter your name',
-                        isRequired: true,
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Name is required' : null,
-                      ),
-                      const SizedBox(height: 20),
-                      _EditableField(
-                        label: 'Email Address',
-                        controller: _emailController,
-                        icon: LucideIcons.mail,
-                        hint: 'name@example.com',
-                        keyboardType: TextInputType.emailAddress,
-                        isRequired: true,
-                        validator: (v) => ValidationUtils.isValidEmail(v) ? null : 'Enter a valid email address',
-                      ),
-                      const SizedBox(height: 20),
-                      _EditableField(
-                        label: 'Verification Phone Number',
-                        controller: _phoneController,
-                        icon: LucideIcons.phone,
-                        hint: 'Enter 10 digit number',
-                        keyboardType: TextInputType.phone,
-                        maxLength: 10,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
-                        ],
-                        isPhoneField: true,
-                        isPhoneValid: _isPhoneValid,
-                        isRequired: true,
-                        validator: (v) => ValidationUtils.isValidPhone(v) ? null : 'Enter a valid 10-digit phone number',
-                      ),
+                      // User Profile Fields (Name, Email, Phone) are hidden in UI but still submitted from controllers
                       // Always show the entity dropdown for all services
                       if (true) ...[
                         const SizedBox(height: 24),
