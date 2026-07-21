@@ -6,9 +6,6 @@ import '../../core/theme/app_theme.dart';
 import '../orders/order_chat_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 

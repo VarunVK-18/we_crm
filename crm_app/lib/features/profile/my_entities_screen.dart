@@ -10,6 +10,8 @@ import '../../providers/compliance_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 import '../services/registration_services_screen.dart';
+import '../../core/constants/port.dart';
+import '../../core/utils/error_handler.dart';
 
 class MyEntitiesScreen extends ConsumerWidget {
   const MyEntitiesScreen({super.key});
@@ -185,18 +187,26 @@ class _EntityCard extends ConsumerWidget {
 
     return InkWell(
       onTap: () {
+        // Grab navigator before updating state
+        final nav = Navigator.of(context);
+        
         // Store entityName as the canonical selector key
         ref.read(selectedEntityProvider.notifier).state = entityName;
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Switched to $entityName'),
-            backgroundColor: AppTheme.deepTeal,
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
+        
+        nav.pop();
+        
+        // Use global messenger to bypass context-based build errors entirely
+        Future.delayed(const Duration(milliseconds: 200), () {
+          globalScaffoldMessengerKey.currentState?.showSnackBar(
+            SnackBar(
+              content: Text('Switched to $entityName'),
+              backgroundColor: AppTheme.deepTeal,
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        });
       },
       borderRadius: BorderRadius.circular(20),
       child: Container(
@@ -222,7 +232,28 @@ class _EntityCard extends ConsumerWidget {
               width: 48,
               height: 48,
               alignment: Alignment.center,
-              child: Icon(icon, color: AppTheme.deepTeal, size: 24),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.deepTeal.withOpacity(0.1),
+              ),
+              child: entity.entityLogo.isNotEmpty
+                  ? ClipOval(
+                      child: Image.network(
+                        '$kBaseUrl/${entity.entityLogo}',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Icon(icon, color: AppTheme.deepTeal, size: 24),
+                      ),
+                    )
+                  : Text(
+                      entityName.isNotEmpty ? entityName[0].toUpperCase() : 'C',
+                      style: const TextStyle(
+                        color: AppTheme.deepTeal,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
             const SizedBox(width: 16),
             Expanded(

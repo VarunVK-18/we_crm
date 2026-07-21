@@ -1,10 +1,11 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -61,6 +62,7 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
     _loadDraft();
   }
 
+  @override
   void dispose() {
     _businessNameController.dispose();
     _gstinController.dispose();
@@ -69,8 +71,8 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+  Future<void> _pickFile(Function(String) onPicked) async {
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'xlsx', 'xls', 'csv', 'zip'],
     );
@@ -198,6 +200,7 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
         throw Exception('Failed to submit form: ${response.body}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (!mounted) return;
       _showError('Error: $e');
     } finally {
@@ -265,7 +268,7 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [],
+        actions: const [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 
@@ -363,7 +366,7 @@ class _GstFilingFormScreenState extends ConsumerState<GstFilingFormScreen> {
           ),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
-            value: currentValue,
+            initialValue: currentValue,
             decoration: InputDecoration(
               hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll("*", "").trim()}',
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),

@@ -4,6 +4,7 @@ enum UserRole {
 
 class ClientEntity {
   final String entityName;
+  final String entityLogo;
   final String entityType;
   final String cin;
   final String pan;
@@ -26,6 +27,7 @@ class ClientEntity {
 
   ClientEntity({
     required this.entityName,
+    this.entityLogo = '',
     required this.entityType,
     required this.cin,
     required this.pan,
@@ -50,6 +52,7 @@ class ClientEntity {
   factory ClientEntity.fromMap(Map<String, dynamic> data) {
     return ClientEntity(
       entityName: data['entityName']?.toString() ?? '',
+      entityLogo: data['entityLogo']?.toString() ?? '',
       entityType: data['entityType']?.toString() ?? '',
       cin: data['cin']?.toString() ?? '',
       pan: data['pan']?.toString() ?? '',

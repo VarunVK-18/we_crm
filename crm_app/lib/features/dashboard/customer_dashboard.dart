@@ -1,10 +1,9 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:async';
-import 'dart:ui';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'dart:math' as math;
 import '../../providers/compliance_provider.dart';
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,7 +32,6 @@ import '../search/search_screen.dart';
 import '../services/registration_services_screen.dart';
 import '../orders/service_order_detail_screen.dart';
 import '../../core/utils/responsive.dart';
-import '../../core/constants/port.dart';
 import '../../core/widgets/we_loader.dart';
 
 class CustomerDashboard extends ConsumerWidget {
@@ -51,8 +49,12 @@ class CustomerDashboard extends ConsumerWidget {
         ? user.companyName
         : rawName;
 
-    final displayName = (selectedEntity != 'All Entities' && selectedEntity.isNotEmpty)
+    final String actualSelectedEntity = (selectedEntity.isNotEmpty && selectedEntity != 'All Entities')
         ? selectedEntity
+        : (user?.clientEntities.isNotEmpty == true ? user!.clientEntities.first.entityName : primaryCompanyName);
+
+    final displayName = actualSelectedEntity.isNotEmpty
+        ? actualSelectedEntity
         : primaryCompanyName;
         
     final hour = DateTime.now().hour;
@@ -63,6 +65,16 @@ class CustomerDashboard extends ConsumerWidget {
       greeting = 'Good Afternoon';
     } else {
       greeting = 'Good Evening';
+    }
+
+    String? displayLogo = user?.profileImage;
+    if (actualSelectedEntity.isNotEmpty && user?.clientEntities != null) {
+      final match = user!.clientEntities.where((e) => e.entityName.trim().toLowerCase() == actualSelectedEntity.toLowerCase());
+      if (match.isNotEmpty && match.first.entityLogo.isNotEmpty) {
+        displayLogo = match.first.entityLogo;
+      } else if (match.isNotEmpty) {
+        displayLogo = '';
+      }
     }
 
     return Scaffold(
@@ -142,14 +154,14 @@ class CustomerDashboard extends ConsumerWidget {
                         color: Colors.transparent,
                         width: 0,
                       ),
-                      image: (user?.profileImage != null && user!.profileImage.isNotEmpty)
+                      image: (displayLogo != null && displayLogo.isNotEmpty)
                           ? DecorationImage(
-                              image: NetworkImage('$kBaseUrl/${user.profileImage}'),
+                              image: NetworkImage('$kBaseUrl/$displayLogo'),
                               fit: BoxFit.cover,
                             )
                           : null,
                     ),
-                    child: (user?.profileImage == null || user!.profileImage.isEmpty)
+                    child: (displayLogo == null || displayLogo.isEmpty)
                         ? Center(
                             child: Text(
                               displayName.isNotEmpty ? displayName[0].toUpperCase() : 'U',
@@ -560,6 +572,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     final activeOrdersRaw = ref.watch(activeOrdersProvider);
     final notInitRaw = ref.watch(notInitializedOrdersProvider);
@@ -773,6 +786,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                   try {
                     http.post(Uri.parse('$kBaseUrl/api/banners/${banner.id}/click')).catchError((_) => http.Response('', 200));
                   } catch (e) {
+      showGlobalError(e);
                     // Ignore tracking errors
                   }
                   
@@ -928,18 +942,16 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                             children: [
                               Text(
                                 'READY TO SCALE?',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelLarge
-                                    ?.copyWith(
-                                      fontSize: 9.sp,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white60, // Better contrast
-                                      letterSpacing: 1.0,
-                                    ),
+                                style: GoogleFonts.outfit(
+                                  textStyle: Theme.of(context).textTheme.labelLarge,
+                                  fontSize: 9.sp,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white60, // Better contrast
+                                  letterSpacing: 1.0,
+                                ),
                               ),
                               Text(
-                                'Register Your Business',
+                                'Start With A Service',
                                 style: Theme.of(context)
                                     .textTheme
                                     .titleMedium
@@ -955,7 +967,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
                       ],
                     ),
                     Text(
-                      'Get expert assistance for company registration and ongoing professional compliance services.',
+                      'Select The Right Service To Grow Your Business With Our Expert Guidance Every Step Of Way..!',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             height: 1.4,
                             fontSize: 12.sp,
@@ -1644,7 +1656,7 @@ class _LinePatternPainter extends CustomPainter {
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
-    final step = 20.0;
+    const step = 20.0;
     // Draw diagonal lines
     for (double i = -size.height; i < size.width; i += step) {
       canvas.drawLine(
@@ -1713,6 +1725,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
         });
       }
     } catch (e) {
+      showGlobalError(e);
       setState(() {
         _error = 'Error: $e';
         _isLoading = false;
@@ -1773,7 +1786,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                   ),
                 )
               : SfPdfViewerTheme(
-                  data: SfPdfViewerThemeData(
+                  data: const SfPdfViewerThemeData(
                     backgroundColor: Colors.white,
                   ),
                   child: SfPdfViewer.network(

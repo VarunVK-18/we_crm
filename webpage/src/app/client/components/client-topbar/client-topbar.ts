@@ -95,6 +95,23 @@ export class ClientTopbarComponent implements OnInit {
     return u.company_name || u.owner_name || u.name || 'Company Name';
   }
 
+  get displayLogo(): string | null {
+    const u = this.user();
+    if (!u) return null;
+    
+    let logo = u.profile_image;
+    const sel = this.selectedEntity();
+    if (sel && sel !== 'All' && u.client_entities?.length) {
+      const match = u.client_entities.find((e: any) => e.entityName.trim().toLowerCase() === sel.toLowerCase());
+      if (match && match.entityLogo) {
+        logo = match.entityLogo;
+      } else {
+        logo = null;
+      }
+    }
+    return logo;
+  }
+
   fetchEntities() {
     this.api.get<any>('my-checklists').subscribe({
       next: (res: any) => {

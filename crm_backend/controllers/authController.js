@@ -1230,6 +1230,63 @@ const removeProfileImage = async (req, res) => {
   }
 };
 
+const uploadEntityLogo = async (req, res) => {
+  try {
+    const { id, entityName } = req.params;
+    const User = require('../models/User');
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!req.file) return res.status(400).json({ message: 'No image file uploaded' });
+
+    let entityIndex = user.client_entities.findIndex(e => e.entityName.trim().toLowerCase() === entityName.trim().toLowerCase());
+    if (entityIndex === -1) {
+      // Auto-add to client_entities if it exists in orders but not here
+      user.client_entities.push({
+        entityName: entityName.trim(),
+        entityType: 'Company',
+        entityLogo: ''
+      });
+      entityIndex = user.client_entities.length - 1;
+    }
+
+    const Document = require('../models/Document');
+    const doc = await Document.create({
+      filename: req.file.originalname,
+      contentType: req.file.mimetype,
+      data: req.file.buffer,
+      uploadedBy: user._id
+    });
+
+    user.client_entities[entityIndex].entityLogo = `api/documents/${doc._id}`;
+    user.markModified('client_entities');
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Entity logo uploaded successfully', entityLogo: user.client_entities[entityIndex].entityLogo });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const removeEntityLogo = async (req, res) => {
+  try {
+    const { id, entityName } = req.params;
+    const User = require('../models/User');
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const entityIndex = user.client_entities.findIndex(e => e.entityName.toLowerCase() === entityName.toLowerCase());
+    if (entityIndex !== -1) {
+      user.client_entities[entityIndex].entityLogo = '';
+      user.markModified('client_entities');
+      await user.save();
+    }
+
+    res.status(200).json({ success: true, message: 'Entity logo removed successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Update client entities array
 // @route   PUT /api/users/profile/:id/entities
 // @access  Private
@@ -1906,6 +1963,8 @@ module.exports = {
   migrateChecklistAssignments,
   uploadProfileImage,
   removeProfileImage,
+  uploadEntityLogo,
+  removeEntityLogo,
   updateClientEntities,
   getPublicManagers,
   editClientProfile,

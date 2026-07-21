@@ -228,6 +228,7 @@ const UserSchema = new mongoose.Schema({
   client_entities: {
     type: [{
       entityName: String,
+      entityLogo: { type: String, default: '' },
       entityType: String,
       cin: String,
       pan: String,

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/network_overlay_wrapper.dart';
-import 'features/auth/auth_wrapper.dart';
+import 'core/utils/error_handler.dart';
 
 import 'features/splash/splash_screen.dart';
 
@@ -49,6 +49,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'We CRM',
       navigatorKey: navigatorKey,
+      scaffoldMessengerKey: globalScaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

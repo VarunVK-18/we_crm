@@ -1,3 +1,4 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,10 +8,9 @@ import '../../core/theme/app_theme.dart';
 import '../../core/constants/nic_codes.dart';
 import '../../core/constants/tm_classes.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'dart:convert';
 import '../../core/constants/port.dart';
-import '../dashboard/customer_dashboard.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/widgets/we_loader.dart';
@@ -38,7 +38,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
   // Calculation Results
   double _primaryResult = 0.0;
-  double _secondaryResult = 0.0;
+  final double _secondaryResult = 0.0;
   String _detailMessage = '';
 
   // GST Calculator Variables
@@ -55,7 +55,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
   List<NicCode> _allNicCodes = [];
   List<NicCode> _filteredNicCodes = [];
-  Map<NicCode, List<NicCode>> _groupedNicCodes = {};
+  final Map<NicCode, List<NicCode>> _groupedNicCodes = {};
   bool _isLoadingNic = false;
 
   List<TmClass> _allTmClasses = [];
@@ -155,6 +155,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
         }
       }
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error loading compliance data: $e');
     }
     setState(() => _isLoadingCompliance = false);
@@ -664,10 +665,10 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
   Widget _buildNICFinder() {
     if (_isLoadingNic) {
-      return Center(
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: const WeLoader(),
+          padding: EdgeInsets.all(40.0),
+          child: WeLoader(),
         ),
       );
     }
@@ -845,7 +846,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
                                     const Divider(height: 1, color: Color(0xFFF0F0F0)),
                                 ],
                               );
-                            }).toList(),
+                            }),
                           ],
                   ),
                 ),
@@ -859,10 +860,10 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
   Widget _buildComplianceCalendar() {
     if (_isLoadingCompliance) {
-      return Center(
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: const WeLoader(),
+          padding: EdgeInsets.all(40.0),
+          child: WeLoader(),
         ),
       );
     }
@@ -1058,10 +1059,10 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
   Widget _buildTradeMarkClassFinder() {
     if (_isLoadingTm) {
-      return Center(
+      return const Center(
         child: Padding(
-          padding: const EdgeInsets.all(40.0),
-          child: const WeLoader(),
+          padding: EdgeInsets.all(40.0),
+          child: WeLoader(),
         ),
       );
     }
@@ -1393,9 +1394,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
   }
 
   void _onNumpadPress(String value) {
-    if (_focusedController == null) {
-      _focusedController = _amountController;
-    }
+    _focusedController ??= _amountController;
     
     if (value == 'clear') {
       _focusedController!.clear();
@@ -1419,7 +1418,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
     return Container(
       padding: const EdgeInsets.only(left: 12, right: 12, bottom: 16, top: 12),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
       ),
       child: Column(

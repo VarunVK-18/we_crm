@@ -1,12 +1,11 @@
-import 'dart:convert';
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:crm_app/core/utils/validation_utils.dart';
 
 import '../../core/constants/port.dart';
@@ -58,6 +57,7 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
     _loadDraft();
   }
 
+  @override
   void dispose() {
     _companyNameController.dispose();
     _udyamNumberController.dispose();
@@ -73,7 +73,7 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
   }
 
   Future<void> _pickFile(String field) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
@@ -249,6 +249,7 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
         throw Exception('Failed to submit form: ${response.body}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Error: $e'),
@@ -303,7 +304,8 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
     return shouldPop ?? false;
   }
 
-Widget build(BuildContext context) {
+@override
+  Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -313,7 +315,7 @@ Widget build(BuildContext context) {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [],
+        actions: const [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 
@@ -470,7 +472,7 @@ Widget build(BuildContext context) {
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

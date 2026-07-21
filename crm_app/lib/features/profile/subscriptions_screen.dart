@@ -97,7 +97,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       ...activePlans.map((sub) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate),
-                      )).toList(),
+                      )),
                     ],
                     if (expiringPlans.isNotEmpty) ...[
                       const Text('EXPIRING SOON', style: TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.w600)),
@@ -125,7 +125,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                             }
                           }
                         }),
-                      )).toList(),
+                      )),
                     ],
                     if (expiredPlans.isNotEmpty) ...[
                       const Text('EXPIRED PLANS', style: TextStyle(color: Colors.red, fontSize: 12, fontWeight: FontWeight.w600)),
@@ -153,7 +153,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                             }
                           }
                         }),
-                      )).toList(),
+                      )),
                     ],
                     if (renewedPlans.isNotEmpty) ...[
                       const Text('PREVIOUS PLANS (RENEWED)', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w600)),
@@ -161,7 +161,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                       ...renewedPlans.map((sub) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
                         child: _buildPlanCard(sub.planName, sub.status, sub.expiryDate, isExpired: true),
-                      )).toList(),
+                      )),
                     ],
                   ],
                 );
@@ -391,7 +391,7 @@ class SubscriptionsScreen extends ConsumerWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'STATUS',
                     style: TextStyle(
                       color: Colors.white60,
@@ -416,7 +416,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                 children: [
                   Text(
                     isExpired ? 'EXPIRED ON' : 'EXPIRES',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.white60,
                       fontSize: 10,
                       letterSpacing: 1.2,

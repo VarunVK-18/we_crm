@@ -58,16 +58,16 @@
           <div class="section-header-row">
             <h2 class="card-title">Knowledge Base</h2>
             <div class="standard-filters">
-              <button class="filter-btn active">All</button>
-              <button class="filter-btn">Services</button>
-              <button class="filter-btn">Billing</button>
+              <button class="filter-btn" [class.active]="activeCategory() === 'All'" (click)="setCategory('All')">All</button>
+              <button class="filter-btn" [class.active]="activeCategory() === 'Services'" (click)="setCategory('Services')">Services</button>
+              <button class="filter-btn" [class.active]="activeCategory() === 'Billing'" (click)="setCategory('Billing')">Billing</button>
             </div>
           </div>
           
           <div class="faq-container">
-            @for (faq of faqs; track faq.question; let i = $index) {
+            @for (faq of filteredFaqs(); track faq.question; let i = $index) {
               <div class="standard-accordion" [class.expanded]="faq.isOpen">
-                <button class="accordion-trigger" (click)="toggleFaq(i)">
+                <button class="accordion-trigger" (click)="toggleFaq(faq)">
                   <span class="faq-q">{{ faq.question }}</span>
                   <div class="accordion-icon">
                     <hugeicons-icon [icon]="faq.isOpen ? ArrowUp01Icon : ArrowDown01Icon" [size]="20" color="currentColor" [strokeWidth]="2"></hugeicons-icon>

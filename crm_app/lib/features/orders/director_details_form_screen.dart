@@ -1,14 +1,12 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -114,7 +112,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
   }
 
   Future<void> _pickFile(DirectorFormData data, String field, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
       allowedExtensions: allowedExtensions,
     );
@@ -262,6 +260,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
         throw Exception('Failed to upload files: ${response.body}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('Error: $e'),
@@ -316,7 +315,8 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
     return shouldPop ?? false;
   }
 
-Widget build(BuildContext context) {
+@override
+  Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -326,7 +326,7 @@ Widget build(BuildContext context) {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [],
+        actions: const [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 

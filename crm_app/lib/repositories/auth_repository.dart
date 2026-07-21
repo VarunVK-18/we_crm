@@ -1,6 +1,7 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../models/user_model.dart';
 import '../core/constants/port.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -127,6 +128,7 @@ class AuthRepository {
         throw Exception(errorData['message'] ?? 'Failed to sign in');
       }
     } catch (e) {
+      showGlobalError(e);
       // Keep mock sign in as a fallback if the server is not reachable for testing?
       // No, user requested REAL structure. Let's throw error.
       rethrow;
@@ -185,6 +187,7 @@ class AuthRepository {
         throw Exception(errorData['message'] ?? 'Failed to sign up');
       }
     } catch (e) {
+      showGlobalError(e);
       rethrow;
     }
   }
@@ -224,6 +227,7 @@ class AuthRepository {
         );
       }
     } catch (e) {
+      showGlobalError(e);
       // Fallback
       yield UserModel(
         id: uid,
@@ -257,6 +261,7 @@ class AuthRepository {
           final errorData = jsonDecode(response.body);
           errorMessage = errorData['message'] ?? errorMessage;
         } catch (_) {
+      showGlobalError(_);
           // If body is HTML (like from an Express MulterError limit), just use the status code message
           if (response.statusCode == 413) {
             errorMessage = 'Image file is too large. Please select a smaller image.';
@@ -267,6 +272,7 @@ class AuthRepository {
         throw Exception(errorMessage);
       }
     } catch (e) {
+      showGlobalError(e);
       rethrow;
     }
   }
@@ -284,6 +290,62 @@ class AuthRepository {
         throw Exception('Failed to remove image (Status: ${response.statusCode})');
       }
     } catch (e) {
+      showGlobalError(e);
+      rethrow;
+    }
+  }
+
+  // Upload Entity Logo
+  Future<String> uploadEntityLogo(String uid, String entityName, String filePath) async {
+    try {
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$kBaseUrl/api/users/profile/$uid/entity/${Uri.encodeComponent(entityName)}/upload-logo'),
+      );
+      
+      request.files.add(await http.MultipartFile.fromPath('entityLogo', filePath));
+      
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['entityLogo'];
+      } else {
+        String errorMessage = 'Failed to upload entity logo (Status: ${response.statusCode})';
+        try {
+          final errorData = jsonDecode(response.body);
+          errorMessage = errorData['message'] ?? errorMessage;
+        } catch (_) {
+      showGlobalError(_);
+          if (response.statusCode == 413) {
+            errorMessage = 'Image file is too large. Please select a smaller image.';
+          } else if (response.body.isNotEmpty && !response.body.contains('<!DOCTYPE')) {
+             errorMessage = response.body.length > 100 ? response.body.substring(0, 100) : response.body;
+          }
+        }
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      showGlobalError(e);
+      rethrow;
+    }
+  }
+
+  // Remove Entity Logo
+  Future<void> removeEntityLogo(String uid, String entityName) async {
+    try {
+      final response = await http
+          .delete(
+            Uri.parse('$kBaseUrl/api/users/profile/$uid/entity/${Uri.encodeComponent(entityName)}/remove-logo'),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to remove entity logo (Status: ${response.statusCode})');
+      }
+    } catch (e) {
+      showGlobalError(e);
       rethrow;
     }
   }

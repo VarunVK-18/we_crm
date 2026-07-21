@@ -1,7 +1,8 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../core/constants/port.dart';
 import '../models/chat_message_model.dart';
 import 'auth_provider.dart';
@@ -79,6 +80,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         }
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted && !isBackground) {
         state = state.copyWith(
           isLoading: false,
@@ -120,6 +122,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
       }
       return false;
     } catch (e) {
+      showGlobalError(e);
       return false;
     }
   }
@@ -132,6 +135,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         body: jsonEncode({'viewerRole': 'client'}),
       );
     } catch (e) {
+      showGlobalError(e);
       // ignore
     }
   }

@@ -1,3 +1,5 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -10,16 +12,14 @@ import 'package:intl/intl.dart';
 import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../../core/constants/port.dart';
 import '../../core/widgets/local_document_viewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/orders_provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/notification_provider.dart';
 import 'notification_sheet.dart';
 import '../../core/widgets/we_loader.dart';
-import 'invoice_screen.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
 import '../profile/chat_support_screen.dart';
@@ -47,7 +47,6 @@ import 'patent_form_screen.dart';
 import 'pf_form_screen.dart';
 import 'proprietorship_form_screen.dart';
 import 'tds_form_screen.dart';
-import '../services/service_request_summary_sheet.dart';
 
 
 class ServiceOrderDetailScreen extends ConsumerStatefulWidget {
@@ -149,6 +148,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
         if (mounted) setState(() => _isLoading = false);
       }
     } catch (e) {
+      showGlobalError(e);
       print("Error fetching full order detail: $e");
       if (mounted) setState(() => _isLoading = false);
     }
@@ -306,7 +306,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                               Row(
                                 children: [
                                   _StatusChip(status: order.status),
-                                  if (order.details != null && order.details!['applicationId'] != null)
+                                  if (order.details['applicationId'] != null)
                                     Padding(
                                       padding: const EdgeInsets.only(left: 8.0),
                                       child: Container(
@@ -321,7 +321,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                             const Icon(LucideIcons.tag, color: Colors.white70, size: 12),
                                             const SizedBox(width: 4),
                                             Text(
-                                              '${order.details!['applicationId']}',
+                                              '${order.details['applicationId']}',
                                               style: const TextStyle(
                                                 color: Colors.white,
                                                 fontSize: 11,
@@ -735,9 +735,9 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                                     borderRadius: BorderRadius.circular(6),
                                                     border: Border.all(color: const Color(0xFF1E3BB3).withOpacity(0.3)),
                                                   ),
-                                                  child: Row(
+                                                  child: const Row(
                                                     mainAxisSize: MainAxisSize.min,
-                                                    children: const [
+                                                    children: [
                                                       Icon(LucideIcons.checkCircle2, size: 12, color: Color(0xFF1E3BB3)),
                                                       SizedBox(width: 4),
                                                       Text(
@@ -824,9 +824,9 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
+                                  const Row(
                                     children: [
-                                      const Text(
+                                      Text(
                                         'Service Information',
                                         style: TextStyle(
                                           fontSize: 14,
@@ -876,7 +876,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                         ),
                                       ],
                                     ),
-                                  )).toList(),
+                                  )),
                                 ],
                               ),
                             ),
@@ -1121,13 +1121,14 @@ class _TemporaryDocumentsSectionState extends ConsumerState<_TemporaryDocumentsS
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open document')));
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error downloading document')));
     }
   }
 
   Future<void> _uploadReply(String docId) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePickerUtil.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf'],
       );
@@ -1165,6 +1166,7 @@ class _TemporaryDocumentsSectionState extends ConsumerState<_TemporaryDocumentsS
         }
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.toString())),
@@ -1203,10 +1205,10 @@ class _TemporaryDocumentsSectionState extends ConsumerState<_TemporaryDocumentsS
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Action Required',
                   style: TextStyle(
                     fontSize: 16,
@@ -1214,7 +1216,7 @@ class _TemporaryDocumentsSectionState extends ConsumerState<_TemporaryDocumentsS
                     color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   'Please review the documents below and provide a signed copy if needed.',
                   style: TextStyle(
@@ -1313,7 +1315,7 @@ class _TemporaryDocumentsSectionState extends ConsumerState<_TemporaryDocumentsS
                                     child: OutlinedButton.icon(
                                       icon: Icon(LucideIcons.download, size: 16, color: Colors.green.shade700),
                                       label: Text('View Reply', style: TextStyle(color: Colors.green.shade700, fontSize: 13)),
-                                      onPressed: () => _downloadDoc(doc.replyDocumentId, 'Reply: ' + doc.name),
+                                      onPressed: () => _downloadDoc(doc.replyDocumentId, 'Reply: ${doc.name}'),
                                       style: OutlinedButton.styleFrom(
                                         side: BorderSide(color: Colors.green.shade200),
                                         backgroundColor: Colors.green.shade50,
@@ -1379,7 +1381,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
 
   Future<void> _uploadDocument(String docName, int index) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePickerUtil.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
       );
@@ -1567,6 +1569,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
         }
       }
     } catch (e) {
+      showGlobalError(e);
       if (!mounted) return;
       setState(() {
         _uploadingDocs.remove(index);
@@ -1698,8 +1701,8 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
                             elevation: 0,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
-                                side: BorderSide(
-                                    color: const Color.fromARGB(255, 158, 157, 157), width: 1)),
+                                side: const BorderSide(
+                                    color: Color.fromARGB(255, 158, 157, 157), width: 1)),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 0),
                             minimumSize: const Size(0, 32),
@@ -1889,7 +1892,7 @@ class _StepTimeline extends StatelessWidget {
                     borderRadius: BorderRadius.circular(18),
                     child: Container(
                       padding: const EdgeInsets.all(0),
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         color: Colors.transparent,
 
 
@@ -2191,6 +2194,7 @@ class _DirectorDetailsSection extends StatelessWidget {
         directors = order.details['directors'] ?? [];
       }
     } catch (e) {
+      showGlobalError(e);
       directors = [];
     }
 
@@ -2419,7 +2423,7 @@ bool _shouldShowFillForm(ServiceStep step, ServiceOrder order) {
 }
 
 void _routeToForm(BuildContext context, ServiceOrder order) {
-  final WidgetRef? ref = null; // Note: In a real app, retrieve ref via context or ConsumerState
+  const WidgetRef? ref = null; // Note: In a real app, retrieve ref via context or ConsumerState
 
   if (order.serviceType.toLowerCase().contains('duns')) {
       Navigator.push(context, MaterialPageRoute(builder: (_) => DunsFormScreen(order: order)));

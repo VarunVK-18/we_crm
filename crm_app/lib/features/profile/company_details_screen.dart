@@ -1,3 +1,5 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,22 +10,51 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../providers/compliance_provider.dart';
 
-class _EntityExpandableCard extends StatefulWidget {
+import 'package:image_picker/image_picker.dart';
+import '../../core/constants/port.dart';
+
+class _EntityExpandableCard extends ConsumerStatefulWidget {
   final ClientEntity entity;
   const _EntityExpandableCard({required this.entity});
 
   @override
-  State<_EntityExpandableCard> createState() => _EntityExpandableCardState();
+  ConsumerState<_EntityExpandableCard> createState() => _EntityExpandableCardState();
 }
 
-class _EntityExpandableCardState extends State<_EntityExpandableCard> {
-  bool _isExpanded = false;
+class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
   int _selectedTabIndex = 0;
   
   bool _isTrademarkExpanded = false;
   bool _isPatentExpanded = false;
   bool _isCopyrightExpanded = false;
+
+  bool _isUploadingLogo = false;
+
+  Future<void> _uploadLogo() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await FilePickerUtil.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+
+    setState(() => _isUploadingLogo = true);
+    try {
+      final user = ref.read(userProfileProvider).value;
+      if (user == null) return;
+      await ref.read(authRepositoryProvider).uploadEntityLogo(user.id, widget.entity.entityName, image.path);
+      ref.invalidate(userProfileProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Logo uploaded successfully')));
+      }
+    } catch (e) {
+      showGlobalError(e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload logo: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingLogo = false);
+    }
+  }
 
   void _copyToClipboard(BuildContext context, String label, String text) {
     if (text.isEmpty) return;
@@ -237,36 +268,69 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header (Click to expand/collapse)
-          InkWell(
-            onTap: () => setState(() => _isExpanded = !_isExpanded),
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.entity.entityName,
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.deepTeal,
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: _isUploadingLogo ? null : _uploadLogo,
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[200],
+                          border: Border.all(color: Colors.grey[300]!, width: 1),
+                          image: widget.entity.entityLogo.isNotEmpty
+                              ? DecorationImage(
+                                  image: NetworkImage('$kBaseUrl/${widget.entity.entityLogo}'),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: widget.entity.entityLogo.isEmpty
+                            ? Icon(Icons.business_rounded, color: Colors.grey[500])
+                            : null,
                       ),
+                      if (_isUploadingLogo)
+                        const Positioned.fill(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: const BoxDecoration(
+                            color: AppTheme.corporateBlue,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.edit, size: 10, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    widget.entity.entityName,
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
                     ),
                   ),
-                  Icon(
-                    _isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                    color: AppTheme.deepTeal,
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           
-          if (_isExpanded) ...[
-            // Tabs
+          // Always expanded content
+          // Tabs
             Stack(
               children: [
                 // Base background border
@@ -388,7 +452,6 @@ class _EntityExpandableCardState extends State<_EntityExpandableCard> {
                 ),
               ),
             ),
-          ]
         ],
       ),
     );
@@ -425,6 +488,7 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final userAsync = ref.watch(userProfileProvider);
+    final selectedEntity = ref.watch(selectedEntityProvider);
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundLight,
@@ -462,7 +526,53 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
       ),
       body: userAsync.when(
         data: (user) {
-          if (user == null || user.clientEntities.isEmpty) {
+          if (user == null) {
+            return const Center(child: Text('User not found.'));
+          }
+
+          // Build merged entities to ensure primary company is also available if needed
+          final Map<String, ClientEntity> mergedEntities = {};
+          
+          for (final ce in user.clientEntities) {
+            if (ce.entityName.trim().isNotEmpty) {
+              mergedEntities[ce.entityName.trim().toLowerCase()] = ce;
+            }
+          }
+
+          final primaryCompanyName = user.companyName.trim();
+          if (primaryCompanyName.isNotEmpty && !mergedEntities.containsKey(primaryCompanyName.toLowerCase())) {
+            mergedEntities[primaryCompanyName.toLowerCase()] = ClientEntity(
+              entityName: primaryCompanyName,
+              entityType: 'Company',
+              cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
+              trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
+              patentApplicationNumber: '', patentStatus: '', patentNumber: '',
+              copyrightRegistrationNumber: '', copyrightCertificate: '',
+            );
+          }
+
+          List<ClientEntity> entitiesToShow = [];
+          if (selectedEntity == 'All Entities') {
+            entitiesToShow = mergedEntities.values.toList();
+          } else {
+            final target = selectedEntity.trim().toLowerCase();
+            if (mergedEntities.containsKey(target)) {
+              entitiesToShow = [mergedEntities[target]!];
+            } else {
+              entitiesToShow = [
+                ClientEntity(
+                  entityName: selectedEntity,
+                  entityType: 'Company',
+                  cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
+                  trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
+                  patentApplicationNumber: '', patentStatus: '', patentNumber: '',
+                  copyrightRegistrationNumber: '', copyrightCertificate: '',
+                )
+              ];
+            }
+          }
+
+          if (entitiesToShow.isEmpty) {
             return RefreshIndicator(
               color: AppTheme.deepTeal,
               onRefresh: () async {
@@ -515,9 +625,9 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.all(20),
-              itemCount: user.clientEntities.length,
+              itemCount: entitiesToShow.length,
               itemBuilder: (context, index) {
-                final entity = user.clientEntities[index];
+                final entity = entitiesToShow[index];
                 return _EntityExpandableCard(entity: entity);
               },
             ),

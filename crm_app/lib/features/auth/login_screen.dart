@@ -1,3 +1,4 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
@@ -71,6 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.read(navigationIndexProvider.notifier).state = 0;
       TextInput.finishAutofillContext();
     } catch (e) {
+      showGlobalError(e);
       String title = 'Sign In Failed';
       String message = e.toString().replaceAll('Exception: ', '');
 
@@ -110,6 +112,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       }
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error launching email: $e');
     }
   }
@@ -199,12 +202,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               color: Colors.black)),
                                     ),
                                     validator: (val) {
-                                      if (val == null || val.isEmpty)
+                                      if (val == null || val.isEmpty) {
                                         return 'Email is required';
+                                      }
                                       if (!RegExp(
                                               r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                          .hasMatch(val))
+                                          .hasMatch(val)) {
                                         return 'Enter a valid email address';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -271,10 +276,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       ),
                                     ),
                                     validator: (val) {
-                                      if (val == null || val.isEmpty)
+                                      if (val == null || val.isEmpty) {
                                         return 'Password is required';
-                                      if (val.length < 6)
+                                      }
+                                      if (val.length < 6) {
                                         return 'Password must be at least 6 characters';
+                                      }
                                       return null;
                                     },
                                   ),
@@ -441,7 +448,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
 class _AutoScrollingLogos extends StatefulWidget {
   final List<String> logos;
-  const _AutoScrollingLogos({Key? key, required this.logos}) : super(key: key);
+  const _AutoScrollingLogos({required this.logos});
 
   @override
   _AutoScrollingLogosState createState() => _AutoScrollingLogosState();

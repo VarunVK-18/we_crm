@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -44,7 +45,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
   bool _isSearching = false;
   String _searchQuery = '';
   int _currentMatchIndex = 0;
-  List<int> _matchedMessageIndices = [];
+  final List<int> _matchedMessageIndices = [];
   final Map<int, GlobalKey> _itemKeys = {};
   
   // Smart Mentions State
@@ -819,8 +820,9 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
     final timeStr = DateFormat('hh:mm a').format(timestamp);
     
     String badgeText = '';
-    if (senderRole == 'admin') badgeText = 'Manager';
-    else if (senderRole == 'client_manager') badgeText = 'Client Manager';
+    if (senderRole == 'admin') {
+      badgeText = 'Manager';
+    } else if (senderRole == 'client_manager') badgeText = 'Client Manager';
     else if (senderRole == 'filing_staff') badgeText = 'Filing Staff';
     else if (senderRole == 'staff') badgeText = 'Client Support';
     else if (senderRole.startsWith('director_')) {
@@ -871,28 +873,31 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                         if (!isMe)
                           Text(
                             senderName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF4B9BFF), // Light blue
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
                             ),
                           ),
-                        if (!isMe) const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: senderRole.startsWith('director_') ? Colors.orange.shade50 : Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            badgeText,
+                        if (!isMe && badgeText.isNotEmpty) ...[
+                          const SizedBox(width: 6),
+                          Text(
+                            '•',
                             style: TextStyle(
                               fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: senderRole.startsWith('director_') ? Colors.orange.shade700 : Colors.blue.shade700,
+                              color: Colors.grey.shade400,
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          Text(
+                            badgeText,
+                            style: GoogleFonts.outfit(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.grey.shade500,
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -935,7 +940,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
                             if (isMe) ...[
                               const SizedBox(width: 4),
                               seen
-                                  ? HugeIcon(
+                                  ? const HugeIcon(
                                       icon: HugeIcons.strokeRoundedTickDouble02,
                                       size: 16,
                                       color: Colors.green,

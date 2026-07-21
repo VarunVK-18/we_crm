@@ -1,21 +1,21 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
-import '../profile/name_check_screen.dart';
 import '../profile/my_entities_screen.dart';
 import 'compliance_reminder_model.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/compliance_provider.dart';
-import '../services/service_request_summary_sheet.dart';
 import '../../core/utils/responsive.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/port.dart';
 import '../../core/widgets/we_loader.dart';
 import '../../providers/auth_provider.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import '../orders/order_chat_screen.dart';
 import 'mca_profile_form_screen.dart';
@@ -253,11 +253,6 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 side: BorderSide(color: Colors.grey.withOpacity(0.2)),
                               ),
                               offset: const Offset(0, 40),
-                              child: const Padding(
-                                padding: EdgeInsets.all(6),
-                                child: Icon(LucideIcons.listFilter,
-                                    color: Colors.grey, size: 16),
-                              ),
                               tooltip: 'Filter Tasks',
                               onSelected: (value) {
                                 setState(() => filterType = value);
@@ -285,6 +280,11 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                             color: AppTheme.deepTeal,
                                             fontWeight: FontWeight.w500))),
                               ],
+                              child: const Padding(
+                                padding: EdgeInsets.all(6),
+                                child: Icon(LucideIcons.listFilter,
+                                    color: Colors.grey, size: 16),
+                              ),
                             ),
                           ),
                           IconButton(
@@ -424,9 +424,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
       minScore = 1.0;
     } else {
       for (final r in pendingReminders) {
-        if (r.status == TaskStatus.overdue)
+        if (r.status == TaskStatus.overdue) {
           minScore = minScore > 0.25 ? 0.25 : minScore;
-        else if (r.status == TaskStatus.critical)
+        } else if (r.status == TaskStatus.critical)
           minScore = minScore > 0.5 ? 0.5 : minScore;
         else if (r.status == TaskStatus.dueSoon)
           minScore = minScore > 0.75 ? 0.75 : minScore;
@@ -501,7 +501,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                 backgroundColor: AppTheme.deepTeal,
                 elevation: 6,
                 shape: const CircleBorder(),
-                child: HugeIcon(
+                child: const HugeIcon(
                   icon: HugeIcons.strokeRoundedMessage01,
                   color: Colors.white,
                   size: 26,
@@ -521,7 +521,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
                       ref.invalidate(complianceRemindersProvider);
                       try {
                         await ref.read(complianceRemindersProvider.future);
-                      } catch (_) {}
+                      } catch (_) {
+      showGlobalError(_);}
                     },
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
@@ -918,7 +919,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6.r)),
                                                           ),
                                                           onPressed: () async {
-                                                            final result = await FilePicker.platform.pickFiles(
+                                                            final result = await FilePickerUtil.pickFiles(
                                                               type: FileType.custom,
                                                               allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
                                                             );
@@ -1358,7 +1359,7 @@ class _BentoDeadlineCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   width: 64.r,
                   height: 64.r,
 
@@ -2031,11 +2032,12 @@ class _BentoRenewalsCard extends ConsumerWidget {
                       );
                       setState(() => isSubmitting = false);
                       Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Renewal request submitted!')));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Renewal request submitted!')));
                       ref.refresh(certificatesProvider);
                     } catch (e) {
+      showGlobalError(e);
                       setState(() => isSubmitting = false);
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to submit renewal')));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to submit renewal')));
                     }
                   },
                   child: Text(isSubmitting ? 'Submitting...' : 'Submit Request', style: GoogleFonts.outfit(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),

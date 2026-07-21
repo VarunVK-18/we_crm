@@ -1,8 +1,9 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'dart:convert';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -153,6 +154,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
         });
       }
     } catch (e) {
+      showGlobalError(e);
       setState(() {
         _errorMessage = "Connection error. Please try again.";
         _isLoading = false;
@@ -198,6 +200,7 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
         throw Exception(body['message'] ?? "Server returned ${response.statusCode}");
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -641,90 +644,11 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
 
   Widget _buildListTicketCard(dynamic ticket) {
     final t = ticket as Map<String, dynamic>;
-    final ticketId = t['ticketId'] ?? 'INC0000';
-    final subject = t['subject'] ?? 'No Subject';
-    final status = t['status'] ?? 'Open';
     final entityName = _resolveEntityName(t);
 
-    final isResolved = status.toLowerCase() == 'resolved' || status.toLowerCase() == 'closed';
-    final statusColor = isResolved ? Colors.green : Colors.orange.shade700;
-    final statusBgColor = isResolved ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1);
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  subject,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14,
-                    color: AppTheme.deepTeal,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      ticketId,
-                      style:
-                          TextStyle(color: Colors.grey.shade500, fontSize: 11),
-                    ),
-                    if (entityName.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      Text('•',
-                          style: TextStyle(
-                              color: Colors.grey.shade400, fontSize: 11)),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          entityName,
-                          style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusBgColor,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                color: statusColor,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return _ExpandableTicketCard(
+      ticket: t,
+      entityName: entityName,
     );
   }
 
@@ -742,3 +666,161 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
     return LucideIcons.fileText;
   }
 }
+
+class _ExpandableTicketCard extends StatefulWidget {
+  final Map<String, dynamic> ticket;
+  final String entityName;
+
+  const _ExpandableTicketCard({
+    required this.ticket,
+    required this.entityName,
+  });
+
+  @override
+  State<_ExpandableTicketCard> createState() => _ExpandableTicketCardState();
+}
+
+class _ExpandableTicketCardState extends State<_ExpandableTicketCard> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = widget.ticket;
+    final ticketId = t['ticketId'] ?? 'INC0000';
+    final subject = t['subject'] ?? 'No Subject';
+    final description = t['description'] ?? 'No description provided.';
+    final status = t['status'] ?? 'Open';
+    final entityName = widget.entityName;
+
+    final isResolved = status.toLowerCase() == 'resolved' || status.toLowerCase() == 'closed';
+    final statusColor = isResolved ? Colors.green : Colors.orange.shade700;
+    final statusBgColor = isResolved ? Colors.green.withValues(alpha: 0.1) : Colors.orange.withValues(alpha: 0.1);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => setState(() => _isExpanded = !_isExpanded),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            subject,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              color: AppTheme.deepTeal,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            children: [
+                              Text(
+                                ticketId,
+                                style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
+                              ),
+                              if (entityName.isNotEmpty) ...[
+                                const SizedBox(width: 6),
+                                Text('•', style: TextStyle(color: Colors.grey.shade400, fontSize: 11)),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    entityName,
+                                    style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusBgColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        status,
+                        style: TextStyle(
+                          color: statusColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (_isExpanded) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+                  ),
+                  Text(
+                    'Description',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade700,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (t['createdAt'] != null) ...[
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(LucideIcons.calendar, size: 12, color: Colors.grey.shade400),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Raised on ${t['createdAt'].toString().substring(0, 10)}',
+                          style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

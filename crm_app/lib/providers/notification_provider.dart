@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/constants/port.dart';
 import 'auth_provider.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
 
 class ServiceNotification {
   final String id;
@@ -84,6 +85,7 @@ class NotificationNotifier extends StateNotifier<List<ServiceNotification>> {
         }).toList();
       }
     } catch (e) {
+      showGlobalError(e);
       // ignore
     }
   }
@@ -103,6 +105,7 @@ class NotificationNotifier extends StateNotifier<List<ServiceNotification>> {
         headers: {'x-user-id': uid},
       );
     } catch (e) {
+      showGlobalError(e);
       // ignore
     }
   }
@@ -119,6 +122,7 @@ class NotificationNotifier extends StateNotifier<List<ServiceNotification>> {
         headers: {'x-user-id': uid},
       );
     } catch (e) {
+      showGlobalError(e);
       // ignore
     }
   }
@@ -135,6 +139,7 @@ class NotificationNotifier extends StateNotifier<List<ServiceNotification>> {
         headers: {'x-user-id': uid},
       );
     } catch (e) {
+      showGlobalError(e);
       // ignore
     }
   }

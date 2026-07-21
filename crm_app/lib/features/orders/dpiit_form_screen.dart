@@ -1,11 +1,12 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -148,7 +149,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
 
   Future<void> _pickFile(String type, List<String> allowedExtensions) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePickerUtil.pickFiles(
         type: FileType.custom,
         allowedExtensions: allowedExtensions,
       );
@@ -191,6 +192,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
         });
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error picking file: $e')),
@@ -282,6 +284,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
         throw Exception('Failed to submit form: ${response.statusCode}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Submission error: $e'), backgroundColor: Colors.red),
@@ -336,7 +339,8 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
     return shouldPop ?? false;
   }
 
-Widget build(BuildContext context) {
+@override
+  Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(

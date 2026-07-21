@@ -1,9 +1,9 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:printing/printing.dart';
-import 'package:pdf/pdf.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:syncfusion_flutter_core/theme.dart';
 import '../../core/constants/port.dart';
@@ -61,6 +61,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
         throw Exception('Failed to load document');
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         setState(() {
           _errorMessage = e.toString();
@@ -84,6 +85,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
           throw Exception('Failed to download');
         }
       } catch (e) {
+      showGlobalError(e);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to download: $e'), backgroundColor: Colors.red));
         }
@@ -101,6 +103,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
         filename: widget.documentName,
       );
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -147,7 +150,7 @@ class _DocumentViewerScreenState extends State<DocumentViewerScreen> {
 
     if (_isPdf) {
       return SfPdfViewerTheme(
-        data: SfPdfViewerThemeData(
+        data: const SfPdfViewerThemeData(
           backgroundColor: Colors.black,
         ),
         child: SfPdfViewer.network(

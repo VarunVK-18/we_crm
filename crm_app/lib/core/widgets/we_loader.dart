@@ -88,7 +88,7 @@ class _WeLoaderState extends State<WeLoader> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final color = widget.color ?? AppTheme.deepTeal;
     final size = widget.size;
-    final fontWeight = FontWeight.w600;
+    const fontWeight = FontWeight.w600;
 
     return Row(
       mainAxisSize: MainAxisSize.min,

@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../core/constants/port.dart';
 import '../models/banner_model.dart';
 import 'auth_provider.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
 
 final bannerProvider = FutureProvider<List<BannerModel>>((ref) async {
   final authState = ref.watch(authStateProvider).value;
@@ -24,6 +25,7 @@ final bannerProvider = FutureProvider<List<BannerModel>>((ref) async {
     }
     return [];
   } catch (e) {
+      showGlobalError(e);
     print('Error fetching banners: $e');
     return [];
   }

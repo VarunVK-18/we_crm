@@ -25,6 +25,8 @@ const {
   migrateChecklistAssignments,
   uploadProfileImage,
   removeProfileImage,
+  uploadEntityLogo,
+  removeEntityLogo,
   updateClientEntities,
   getPublicManagers,
   editClientProfile,
@@ -65,6 +67,8 @@ router.post('/users/profile/:id/pan', upload.single('panFile'), savePanDetails);
 router.put('/users/profile/:id/entities', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), updateClientEntities);
 router.post('/users/profile/:id/upload-image', upload.single('profileImage'), uploadProfileImage);
 router.delete('/users/profile/:id/remove-image', removeProfileImage);
+router.post('/users/profile/:id/entity/:entityName/upload-logo', upload.single('entityLogo'), uploadEntityLogo);
+router.delete('/users/profile/:id/entity/:entityName/remove-logo', removeEntityLogo);
 router.put('/users/profile/:id/documents/reupload', checkUser, upload.single('file'), reuploadProfileDocument);
 router.post('/users/me/mca-profile', checkUser, upload.any(), updateMcaProfile);
 

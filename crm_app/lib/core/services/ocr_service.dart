@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
 
 class ExtractedPanData {
   final String panNumber;
@@ -34,6 +35,7 @@ class OcrService {
       
       return _parsePanData(recognizedText.text);
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error processing OCR: $e');
       return ExtractedPanData(panNumber: '', name: '', fatherName: '', dob: '');
     }

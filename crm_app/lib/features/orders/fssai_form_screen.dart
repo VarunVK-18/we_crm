@@ -1,11 +1,12 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -84,6 +85,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
     _loadDraft();
   }
 
+  @override
   void dispose() {
     _fullNameController.dispose();
     _mobileController.dispose();
@@ -103,7 +105,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
   }
 
   Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
     );
@@ -306,6 +308,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
         throw Exception('Failed to submit form: ${response.body}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (!mounted) return;
       _showError('Error: $e');
     } finally {
@@ -364,7 +367,8 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
     return shouldPop ?? false;
   }
 
-Widget build(BuildContext context) {
+@override
+  Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -374,7 +378,7 @@ Widget build(BuildContext context) {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [],
+        actions: const [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 
@@ -582,7 +586,7 @@ Widget build(BuildContext context) {
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -636,7 +640,7 @@ Widget build(BuildContext context) {
                 ),
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );

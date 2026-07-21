@@ -187,6 +187,7 @@ export class ClientProfile implements OnInit, OnDestroy {
     if (sel === 'All') {
       return {
         entityName: u.company_name || u.name || 'Client',
+        entityLogo: u.profile_image || '',
         entityType: u.business_type || u.company_type_expanded || 'COMPANY',
         cin: u.cin || 'N/A',
         pan: u.pan || 'N/A',
@@ -230,6 +231,7 @@ export class ClientProfile implements OnInit, OnDestroy {
     if (entity) {
       return {
         entityName: entity.entityName,
+        entityLogo: entity.entityLogo || '',
         entityType: entity.entityType || 'COMPANY',
         cin: entity.cin || 'N/A',
         pan: entity.pan || 'N/A',
@@ -877,6 +879,45 @@ export class ClientProfile implements OnInit, OnDestroy {
       complete: () => {
         this.activeLoadingAction.set(null);
         event.target.value = '';
+      }
+    });
+  }
+
+  uploadEntityLogo(event: any) {
+    const file = event.target.files[0];
+    if (event.target) event.target.value = '';
+    if (!file) return;
+
+    const u = this.user();
+    if (!u || !u._id) return;
+    
+    const entityName = this.activeEntity()?.entityName;
+    if (!entityName) return;
+
+    this.activeLoadingAction.set(`upload-entity-logo`);
+    const formData = new FormData();
+    formData.append('entityLogo', file);
+
+    this.api.post<any>(`users/profile/${u._id}/entity/${encodeURIComponent(entityName)}/upload-logo`, formData).subscribe({
+      next: (res) => {
+        if (res.success && res.entityLogo) {
+          // Manually update the entity logo in the local state
+          const updatedUser = { ...u };
+          const entityIndex = updatedUser.client_entities?.findIndex((e: any) => e.entityName.toLowerCase() === entityName.toLowerCase());
+          if (entityIndex !== undefined && entityIndex !== -1) {
+            updatedUser.client_entities[entityIndex].entityLogo = res.entityLogo;
+            this.user.set(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            
+            // Dispatch event to update topbar
+            window.dispatchEvent(new CustomEvent('entityChanged', { detail: this.selectedEntity() }));
+          }
+        }
+        this.activeLoadingAction.set(null);
+      },
+      error: (err) => {
+        console.error('Failed to upload entity logo', err);
+        this.activeLoadingAction.set(null);
       }
     });
   }

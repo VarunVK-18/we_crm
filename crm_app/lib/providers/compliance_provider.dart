@@ -1,15 +1,16 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../core/constants/port.dart';
 import '../features/compliance/compliance_reminder_model.dart';
 import 'auth_provider.dart';
 
 // Provider to track the currently selected business entity for compliance views
 final selectedEntityProvider = StateProvider<String>((ref) {
-  return 'All Entities'; // Default to all entities
+  return ''; // Default to empty string since All Entities is removed
 });
 
 // Provider to track dismissed completed reminders locally
@@ -45,6 +46,7 @@ Future<bool> uploadClientReplyDocument({
       return false;
     }
   } catch (e) {
+      showGlobalError(e);
     debugPrint("Error uploading document: $e");
     return false;
   }
@@ -105,6 +107,7 @@ final certificatesProvider = StreamProvider<List<CertificateModel>>((ref) {
         if (!controller.isClosed) controller.add(certs);
       }
     } catch (e) {
+      showGlobalError(e);
       debugPrint("Error fetching certificates API: $e");
     }
   }
@@ -186,8 +189,9 @@ final complianceRemindersProvider =
             
             TaskStatus status = TaskStatus.upcoming;
             final lowerStatus = rawStatus.toLowerCase();
-            if (lowerStatus == 'due soon') status = TaskStatus.dueSoon;
-            else if (lowerStatus == 'critical') status = TaskStatus.critical;
+            if (lowerStatus == 'due soon') {
+              status = TaskStatus.dueSoon;
+            } else if (lowerStatus == 'critical') status = TaskStatus.critical;
             else if (lowerStatus == 'overdue') status = TaskStatus.overdue;
             else if (lowerStatus == 'completed') status = TaskStatus.completed;
 
@@ -237,6 +241,7 @@ final complianceRemindersProvider =
           }
         }
       } catch (e) {
+      showGlobalError(e);
         debugPrint("Error fetching compliance tasks API: $e");
       }
 
@@ -244,6 +249,7 @@ final complianceRemindersProvider =
         controller.add(allTasks);
       }
     } catch (e) {
+      showGlobalError(e);
       debugPrint("Error in fetchReminders: $e");
       if (!controller.isClosed) {
         controller.add([]);

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
 import '../../models/order_model.dart';
@@ -11,6 +11,8 @@ import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/draft_provider.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 
 class DunsFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -152,7 +154,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
   }
 
   Future<void> _pickFile(String type) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
     );
@@ -248,6 +250,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
         throw Exception('Failed to submit form: ${response.statusCode}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
@@ -270,25 +273,25 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
     String? Function(String?)? validator,
   }) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
             text: TextSpan(
               text: label,
-              style: TextStyle(
+              style: const TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14.0,
                 fontWeight: FontWeight.w500,
                 color: AppTheme.deepTeal,
               ),
               children: [
-                if (isRequired) TextSpan(text: ' *', style: TextStyle(color: Colors.red, fontSize: 14.0)),
+                if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red, fontSize: 14.0)),
               ],
             ),
           ),
-          SizedBox(height: 8.0),
+          const SizedBox(height: 8.0),
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
@@ -298,7 +301,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(color: Colors.grey.shade600.withOpacity(0.5), fontSize: 14.0),
-              contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: Colors.grey.shade300)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: Colors.grey.shade300)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: const BorderSide(color: AppTheme.corporateBlue)),
@@ -317,7 +320,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
 
   Widget _buildRadioGroup(String label, List<String> options) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -325,10 +328,10 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
             text: TextSpan(
               text: label,
               style: GoogleFonts.inter( fontSize: 14.0, fontWeight: FontWeight.w500, color: AppTheme.deepTeal),
-              children: [TextSpan(text: ' *', style: TextStyle(color: Colors.red, fontSize: 14.0))],
+              children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red, fontSize: 14.0))],
             ),
           ),
-          SizedBox(height: 8.0),
+          const SizedBox(height: 8.0),
           Wrap(
             spacing: 12.0,
             runSpacing: 8.0,
@@ -350,7 +353,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
           ),
           if (_businessType == 'Other')
             Padding(
-              padding: EdgeInsets.only(top: 8.0),
+              padding: const EdgeInsets.only(top: 8.0),
               child: TextFormField(
                 controller: _businessTypeOtherCtrl,
                 onChanged: (_) => _saveDraft(),
@@ -369,7 +372,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
 
   Widget _buildFileRow(String title, File? file, String type) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -377,20 +380,20 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
             text: TextSpan(
               text: title,
               style: GoogleFonts.inter( fontSize: 14.0, fontWeight: FontWeight.w500, color: AppTheme.deepTeal),
-              children: [TextSpan(text: ' *', style: TextStyle(color: Colors.red, fontSize: 14.0))],
+              children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red, fontSize: 14.0))],
             ),
           ),
-          SizedBox(height: 4.0),
+          const SizedBox(height: 4.0),
           Text(
             'Upload 1 supported file. Max 2 MB.',
             style: GoogleFonts.inter( fontSize: 12.0, color: Colors.grey.shade600),
           ),
-          SizedBox(height: 8.0),
+          const SizedBox(height: 8.0),
           Row(
             children: [
               ElevatedButton.icon(
                 onPressed: () => _pickFile(type),
-                icon: Icon(LucideIcons.upload, size: 16.0),
+                icon: const Icon(LucideIcons.upload, size: 16.0),
                 label: const Text('Choose File'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.surfaceLight,
@@ -398,10 +401,10 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                   elevation: 0,
                   side: BorderSide(color: Colors.grey.shade300),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                  padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                 ),
               ),
-              SizedBox(width: 12.0),
+              const SizedBox(width: 12.0),
               Expanded(
                 child: Text(
                   file != null ? p.basename(file.path) : 'No file chosen',
@@ -434,26 +437,26 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
           style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal),
         ),
         leading: IconButton(
-          icon: Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal, size: 24.0),
+          icon: const Icon(LucideIcons.arrowLeft, color: AppTheme.deepTeal, size: 24.0),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.corporateBlue))
           : SingleChildScrollView(
-              padding: EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24.0),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(color: AppTheme.corporateBlue.withOpacity(0.05), borderRadius: BorderRadius.circular(12.0)),
                       child: Row(
                         children: [
-                          Icon(LucideIcons.info, color: AppTheme.corporateBlue, size: 24.0),
-                          SizedBox(width: 12.0),
+                          const Icon(LucideIcons.info, color: AppTheme.corporateBlue, size: 24.0),
+                          const SizedBox(width: 12.0),
                           Expanded(
                             child: Text(
                               'Standard processing typically takes 5–30 business days, depending on verification by Dun & Bradstreet.',
@@ -463,38 +466,38 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 24.0),
+                    const SizedBox(height: 24.0),
 
                     Text('Company Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     _buildField(label: 'Legal Business Name', controller: _legalBusinessNameCtrl, isRequired: true),
                     _buildField(label: 'Trade Name (if any)', controller: _tradeNameCtrl),
                     _buildRadioGroup('Business Type', ['Private Limited', 'LLP', 'Sole Proprietorship', 'Partnership', 'Other']),
                     _buildField(label: 'Year of Establishment', controller: _yearOfEstCtrl, isRequired: true, keyboardType: TextInputType.number),
                     _buildField(label: 'Number of Employees', controller: _numEmployeesCtrl, isRequired: true, keyboardType: TextInputType.number),
 
-                    SizedBox(height: 24.0),
+                    const SizedBox(height: 24.0),
                     Text('Business Address Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     _buildField(label: 'Registered Address', controller: _regAddressCtrl, isRequired: true, maxLines: 3),
                     Row(
                       children: [
                         Expanded(child: _buildField(label: 'City', controller: _cityCtrl, isRequired: true)),
-                        SizedBox(width: 16.0),
+                        const SizedBox(width: 16.0),
                         Expanded(child: _buildField(label: 'State', controller: _stateCtrl, isRequired: true)),
                       ],
                     ),
                     Row(
                       children: [
                         Expanded(child: _buildField(label: 'PIN Code', controller: _pinCodeCtrl, isRequired: true, keyboardType: TextInputType.number)),
-                        SizedBox(width: 16.0),
+                        const SizedBox(width: 16.0),
                         Expanded(child: _buildField(label: 'Country', controller: _countryCtrl, isRequired: true)),
                       ],
                     ),
 
-                    SizedBox(height: 24.0),
+                    const SizedBox(height: 24.0),
                     Text('Business Registration Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     _buildField(label: 'Official Email ID', controller: _emailCtrl, isRequired: true, keyboardType: TextInputType.emailAddress),
                     _buildField(
                       label: 'Business Phone Number',
@@ -524,9 +527,9 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                     _buildField(label: 'Main Products / Services', controller: _mainProductsCtrl, isRequired: true),
                     _buildField(label: 'Annual Revenue (Approx)', controller: _revenueCtrl, isRequired: true, keyboardType: TextInputType.number),
 
-                    SizedBox(height: 24.0),
+                    const SizedBox(height: 24.0),
                     Text('Director/Founder Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     _buildField(label: 'Founder / Director Name', controller: _founderNameCtrl, isRequired: true),
                     _buildField(label: 'Designation', controller: _designationCtrl, isRequired: true),
                     _buildField(
@@ -541,16 +544,16 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                       },
                     ),
 
-                    SizedBox(height: 24.0),
+                    const SizedBox(height: 24.0),
                     Text('Document Uploads', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                    SizedBox(height: 16.0),
+                    const SizedBox(height: 16.0),
                     _buildFileRow('Upload Incorporation Certificate', _incorpCertFile, 'incorpCert'),
                     _buildFileRow('Upload PAN Card of Company', _panCardFile, 'panCard'),
                     _buildFileRow('Upload Address Proof (Utility bill / Bank statement)', _addressProofFile, 'addressProof'),
 
-                    SizedBox(height: 32.0),
+                    const SizedBox(height: 32.0),
                     Container(
-                      padding: EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(16.0),
                       decoration: BoxDecoration(color: Colors.red.withOpacity(0.05), border: Border.all(color: Colors.red.withOpacity(0.2)), borderRadius: BorderRadius.circular(12.0)),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -567,13 +570,13 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                               activeColor: AppTheme.corporateBlue,
                             ),
                           ),
-                          SizedBox(width: 12.0),
+                          const SizedBox(width: 12.0),
                           Expanded(
                             child: RichText(
                               text: TextSpan(
                                 text: 'I confirm that the above information is accurate and authorize submission for D-U-N-S registration via Dun & Bradstreet. ',
                                 style: GoogleFonts.inter( fontSize: 13.0, color: AppTheme.deepTeal, height: 1.5),
-                                children: [TextSpan(text: '*', style: TextStyle(color: Colors.red))],
+                                children: const [TextSpan(text: '*', style: TextStyle(color: Colors.red))],
                               ),
                             ),
                           ),
@@ -581,7 +584,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                       ),
                     ),
 
-                    SizedBox(height: 32.0),
+                    const SizedBox(height: 32.0),
                     SizedBox(
                       width: double.infinity,
                       height: 50.0,
@@ -594,7 +597,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 40.0),
+                    const SizedBox(height: 40.0),
                   ],
                 ),
               ),

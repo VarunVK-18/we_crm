@@ -1,9 +1,11 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -331,6 +333,7 @@ class DSCOrdersScreen extends ConsumerWidget {
                                     throw Exception('Failed to apply: ${response.statusCode}');
                                   }
                                 } catch (e) {
+      showGlobalError(e);
                                   if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
@@ -470,7 +473,7 @@ class DSCOrdersScreen extends ConsumerWidget {
                 onPressed: () async {
                   try {
                     // 1. Pick document
-                    final result = await FilePicker.platform.pickFiles(
+                    final result = await FilePickerUtil.pickFiles(
                       type: FileType.custom,
                       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
                     );
@@ -588,6 +591,7 @@ class DSCOrdersScreen extends ConsumerWidget {
                       throw Exception('Failed to update order: ${response.statusCode}');
                     }
                   } catch (e) {
+      showGlobalError(e);
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

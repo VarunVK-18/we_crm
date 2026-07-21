@@ -1,8 +1,7 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -19,21 +18,21 @@ String numberToWords(double number) {
   
   String convertWholeNumber(int n) {
     if (n < 20) return units[n];
-    if (n < 100) return tens[n ~/ 10] + (n % 10 != 0 ? ' ' + units[n % 10] : '');
-    if (n < 1000) return units[n ~/ 100] + ' Hundred' + (n % 100 != 0 ? ' and ' + convertWholeNumber(n % 100) : '');
-    if (n < 100000) return convertWholeNumber(n ~/ 1000) + ' Thousand' + (n % 1000 != 0 ? ' ' + convertWholeNumber(n % 1000) : '');
-    if (n < 10000000) return convertWholeNumber(n ~/ 100000) + ' Lakh' + (n % 100000 != 0 ? ' ' + convertWholeNumber(n % 100000) : '');
-    return convertWholeNumber(n ~/ 10000000) + ' Crore' + (n % 10000000 != 0 ? ' ' + convertWholeNumber(n % 10000000) : '');
+    if (n < 100) return tens[n ~/ 10] + (n % 10 != 0 ? ' ${units[n % 10]}' : '');
+    if (n < 1000) return '${units[n ~/ 100]} Hundred${n % 100 != 0 ? ' and ${convertWholeNumber(n % 100)}' : ''}';
+    if (n < 100000) return '${convertWholeNumber(n ~/ 1000)} Thousand${n % 1000 != 0 ? ' ${convertWholeNumber(n % 1000)}' : ''}';
+    if (n < 10000000) return '${convertWholeNumber(n ~/ 100000)} Lakh${n % 100000 != 0 ? ' ${convertWholeNumber(n % 100000)}' : ''}';
+    return '${convertWholeNumber(n ~/ 10000000)} Crore${n % 10000000 != 0 ? ' ${convertWholeNumber(n % 10000000)}' : ''}';
   }
   
   int rupees = number.floor();
   int paise = ((number - rupees) * 100).round();
   
-  String result = convertWholeNumber(rupees) + ' Rupees';
+  String result = '${convertWholeNumber(rupees)} Rupees';
   if (paise > 0) {
-    result += ' and ' + convertWholeNumber(paise) + ' Paise';
+    result += ' and ${convertWholeNumber(paise)} Paise';
   }
-  return result + ' Only';
+  return '$result Only';
 }
 
 // ─── Invoice Screen ───────────────────────────────────────────────────────────
@@ -71,7 +70,7 @@ class InvoiceScreen extends ConsumerWidget {
     final gstin = settings.companyDetails.gstin.isNotEmpty ? settings.companyDetails.gstin : '33AAICA9876C1Z4';
     final address = settings.companyDetails.address.isNotEmpty ? settings.companyDetails.address : 'No 1, Wealth Empires Tower, Chennai';
     final phone = settings.companyDetails.phone.isNotEmpty ? settings.companyDetails.phone : '+91 9876543210';
-    final email = 'contact@wealthempires.com'; 
+    const email = 'contact@wealthempires.com'; 
 
     final qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=256x256&margin=1&data=${Uri.encodeComponent("https://wealthempires.com/invoice/$_invoiceNumber")}';
     
@@ -161,7 +160,7 @@ class InvoiceScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: const BoxDecoration(
                       color: Color(0xFFF8FAFC),
-                      border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5)),
+                      border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
                     ),
                     child: const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -182,7 +181,7 @@ class InvoiceScreen extends ConsumerWidget {
                           flex: 6,
                           child: Container(
                             decoration: const BoxDecoration(
-                              border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5), bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5)),
+                              border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1.5), bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -191,7 +190,7 @@ class InvoiceScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: const BoxDecoration(
-                                    border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1)),
+                                    border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1)),
                                   ),
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +249,7 @@ class InvoiceScreen extends ConsumerWidget {
                           flex: 4,
                           child: Container(
                             decoration: const BoxDecoration(
-                              border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5)),
+                              border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -261,7 +260,7 @@ class InvoiceScreen extends ConsumerWidget {
                                       Expanded(
                                         child: Container(
                                           padding: const EdgeInsets.all(8),
-                                          decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1), bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1))),
+                                          decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1), bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1))),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
@@ -274,7 +273,7 @@ class InvoiceScreen extends ConsumerWidget {
                                       Expanded(
                                         child: Container(
                                           padding: const EdgeInsets.all(8),
-                                          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1))),
+                                          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1))),
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
@@ -375,8 +374,8 @@ class InvoiceScreen extends ConsumerWidget {
                             padding: const EdgeInsets.all(8),
                             decoration: const BoxDecoration(
                               border: Border(
-                                right: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5),
-                                bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5),
+                                right: BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                                bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
                               ),
                             ),
                             child: const Text('Total Items / Qty : 1 / 1.000', style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
@@ -388,7 +387,7 @@ class InvoiceScreen extends ConsumerWidget {
                           child: Container(
                             decoration: const BoxDecoration(
                               border: Border(
-                                bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5),
+                                bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
                               ),
                             ),
                             child: Column(
@@ -401,7 +400,7 @@ class InvoiceScreen extends ConsumerWidget {
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                                   decoration: const BoxDecoration(
                                     color: Color(0xFFF8FAFC),
-                                    border: Border(top: BorderSide(color: const Color(0xFFCBD5E1), width: 1)),
+                                    border: Border(top: BorderSide(color: Color(0xFFCBD5E1), width: 1)),
                                   ),
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -425,7 +424,7 @@ class InvoiceScreen extends ConsumerWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: const BoxDecoration(
                       color: Color(0xFFF8FAFC),
-                      border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5)),
+                      border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
                     ),
                     child: Text(
                       'Total amount (in words): ${numberToWords(total)}',
@@ -437,9 +436,9 @@ class InvoiceScreen extends ConsumerWidget {
                   if (order.isGstApplicable)
                     Table(
                       border: const TableBorder(
-                        bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1.5),
-                        verticalInside: BorderSide(color: const Color(0xFFCBD5E1), width: 1),
-                        horizontalInside: BorderSide(color: const Color(0xFFCBD5E1), width: 1),
+                        bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                        verticalInside: BorderSide(color: Color(0xFFCBD5E1), width: 1),
+                        horizontalInside: BorderSide(color: Color(0xFFCBD5E1), width: 1),
                       ),
                       columnWidths: const {
                         0: FlexColumnWidth(1.0),
@@ -463,7 +462,7 @@ class InvoiceScreen extends ConsumerWidget {
                                   Container(height: 1, color: const Color(0xFFCBD5E1)),
                                   Row(
                                     children: [
-                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
+                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
                                       Expanded(child: Container(padding: const EdgeInsets.all(4), child: const Text('AMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
                                     ],
                                   ),
@@ -479,7 +478,7 @@ class InvoiceScreen extends ConsumerWidget {
                                   Container(height: 1, color: const Color(0xFFCBD5E1)),
                                   Row(
                                     children: [
-                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
+                                      Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1))), padding: const EdgeInsets.all(4), child: const Text('RATE', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
                                       Expanded(child: Container(padding: const EdgeInsets.all(4), child: const Text('AMOUNT', textAlign: TextAlign.center, style: TextStyle(fontSize: 5, fontWeight: FontWeight.bold)))),
                                     ],
                                   ),
@@ -494,8 +493,8 @@ class InvoiceScreen extends ConsumerWidget {
                           children: [
                             _buildSmallTd('998311', align: TextAlign.center),
                             _buildSmallTd(fmt.format(_servicePrice), align: TextAlign.right),
-                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('${(cgstRate*100).toStringAsFixed(0)}%', align: TextAlign.center))), Expanded(child: _buildSmallTd(fmt.format(cgstAmount), align: TextAlign.right)) ]),
-                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('${(sgstRate*100).toStringAsFixed(0)}%', align: TextAlign.center))), Expanded(child: _buildSmallTd(fmt.format(sgstAmount), align: TextAlign.right)) ]),
+                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('${(cgstRate*100).toStringAsFixed(0)}%', align: TextAlign.center))), Expanded(child: _buildSmallTd(fmt.format(cgstAmount), align: TextAlign.right)) ]),
+                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('${(sgstRate*100).toStringAsFixed(0)}%', align: TextAlign.center))), Expanded(child: _buildSmallTd(fmt.format(sgstAmount), align: TextAlign.right)) ]),
                             _buildSmallTd(fmt.format(cgstAmount + sgstAmount), align: TextAlign.right),
                           ],
                         ),
@@ -505,8 +504,8 @@ class InvoiceScreen extends ConsumerWidget {
                           children: [
                             _buildSmallTd('TOTAL', align: TextAlign.center, bold: true),
                             _buildSmallTd(fmt.format(_servicePrice), align: TextAlign.right, bold: true),
-                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('—', align: TextAlign.center, bold: true))), Expanded(child: _buildSmallTd(fmt.format(cgstAmount), align: TextAlign.right, bold: true)) ]),
-                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('—', align: TextAlign.center, bold: true))), Expanded(child: _buildSmallTd(fmt.format(sgstAmount), align: TextAlign.right, bold: true)) ]),
+                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('—', align: TextAlign.center, bold: true))), Expanded(child: _buildSmallTd(fmt.format(cgstAmount), align: TextAlign.right, bold: true)) ]),
+                            Row(children: [ Expanded(child: Container(decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1))), child: _buildSmallTd('—', align: TextAlign.center, bold: true))), Expanded(child: _buildSmallTd(fmt.format(sgstAmount), align: TextAlign.right, bold: true)) ]),
                             _buildSmallTd(fmt.format(cgstAmount + sgstAmount), align: TextAlign.right, bold: true),
                           ],
                         ),
@@ -524,7 +523,7 @@ class InvoiceScreen extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: const BoxDecoration(
-                              border: Border(right: BorderSide(color: const Color(0xFFCBD5E1), width: 1)),
+                              border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -588,12 +587,12 @@ class InvoiceScreen extends ConsumerWidget {
                               decoration: const BoxDecoration(
                                 border: Border(right: BorderSide(color: Color(0xFFCBD5E1), width: 1.5)),
                               ),
-                              child: Column(
+                              child: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('NOTES:', style: TextStyle(fontSize: 6, color: Color(0xFF475569))),
-                                  const SizedBox(height: 8),
-                                  const Text('Thank you for the Business', style: TextStyle(fontSize: 6, color: Color(0xFF475569))),
+                                  Text('NOTES:', style: TextStyle(fontSize: 6, color: Color(0xFF475569))),
+                                  SizedBox(height: 8),
+                                  Text('Thank you for the Business', style: TextStyle(fontSize: 6, color: Color(0xFF475569))),
                                 ],
                               ),
                             ),
@@ -602,15 +601,15 @@ class InvoiceScreen extends ConsumerWidget {
                             flex: 1,
                             child: Container(
                               padding: const EdgeInsets.all(12),
-                              child: Column(
+                              child: const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text('TERMS AND CONDITIONS:', style: TextStyle(fontSize: 6, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
-                                  const SizedBox(height: 4),
-                                  const Text('1. Goods once sold cannot be taken back or exchanged.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
-                                  const Text('2. We stand for warranty as per company terms.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
-                                  const Text('3. Interest @24% p.a. charged after 15 days.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
-                                  const Text('4. Subject to local Jurisdiction.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
+                                  Text('TERMS AND CONDITIONS:', style: TextStyle(fontSize: 6, fontWeight: FontWeight.bold, color: Color(0xFF475569))),
+                                  SizedBox(height: 4),
+                                  Text('1. Goods once sold cannot be taken back or exchanged.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
+                                  Text('2. We stand for warranty as per company terms.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
+                                  Text('3. Interest @24% p.a. charged after 15 days.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
+                                  Text('4. Subject to local Jurisdiction.', style: TextStyle(fontSize: 5, color: Color(0xFF475569))),
                                 ],
                               ),
                             ),
@@ -645,6 +644,7 @@ class InvoiceScreen extends ConsumerWidget {
         logoData.buffer.asUint8List(logoData.offsetInBytes, logoData.lengthInBytes),
       );
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error loading logo: $e');
     }
 
@@ -655,6 +655,7 @@ class InvoiceScreen extends ConsumerWidget {
         signData.buffer.asUint8List(signData.offsetInBytes, signData.lengthInBytes),
       );
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error loading signature image: $e');
     }
 
@@ -668,7 +669,7 @@ class InvoiceScreen extends ConsumerWidget {
     final gstin = settings.companyDetails.gstin.isNotEmpty ? settings.companyDetails.gstin : '33AAICA9876C1Z4';
     final address = settings.companyDetails.address.isNotEmpty ? settings.companyDetails.address : 'No 1, Wealth Empires Tower, Chennai';
     final phone = settings.companyDetails.phone.isNotEmpty ? settings.companyDetails.phone : '+91 9876543210';
-    final email = 'contact@wealthempires.com';
+    const email = 'contact@wealthempires.com';
     final bankName = settings.bankDetails.bankName.isNotEmpty ? settings.bankDetails.bankName : '';
     final accNo = settings.bankDetails.accountNumber;
     final ifsc = settings.bankDetails.ifsc;
@@ -687,7 +688,7 @@ class InvoiceScreen extends ConsumerWidget {
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
-        margin: pw.EdgeInsets.all(24),
+        margin: const pw.EdgeInsets.all(24),
         theme: pw.ThemeData.withFont(base: font, bold: fontBold),
         build: (pw.Context context) {
           return pw.Container(
@@ -699,9 +700,9 @@ class InvoiceScreen extends ConsumerWidget {
               children: [
                 // TAX INVOICE TOP BAR
                 pw.Container(
-                  padding: pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const pw.EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: pw.BoxDecoration(
-                    color: PdfColor.fromInt(0xFFF8FAFC),
+                    color: const PdfColor.fromInt(0xFFF8FAFC),
                     border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1.5)),
                   ),
                   child: pw.Row(
@@ -732,7 +733,7 @@ class InvoiceScreen extends ConsumerWidget {
                           children: [
                             // Sender Info
                             pw.Container(
-                              padding: pw.EdgeInsets.all(12),
+                              padding: const pw.EdgeInsets.all(12),
                               decoration:  pw.BoxDecoration(
                                 border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1)),
                               ),
@@ -763,7 +764,7 @@ class InvoiceScreen extends ConsumerWidget {
                             ),
                             // Client Info
                             pw.Container(
-                              padding: pw.EdgeInsets.all(12),
+                              padding: const pw.EdgeInsets.all(12),
                               child: pw.Column(
                                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                                 children: [
@@ -799,7 +800,7 @@ class InvoiceScreen extends ConsumerWidget {
                               children: [
                                 pw.Expanded(
                                   child: pw.Container(
-                                    padding: pw.EdgeInsets.all(8),
+                                    padding: const pw.EdgeInsets.all(8),
                                     decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1), bottom: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))),
                                     child: pw.Column(
                                       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -812,7 +813,7 @@ class InvoiceScreen extends ConsumerWidget {
                                 ),
                                 pw.Expanded(
                                   child: pw.Container(
-                                    padding: pw.EdgeInsets.all(8),
+                                    padding: const pw.EdgeInsets.all(8),
                                     decoration: pw.BoxDecoration(border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))),
                                     child: pw.Column(
                                       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -826,7 +827,7 @@ class InvoiceScreen extends ConsumerWidget {
                               ],
                             ),
                             pw.Container(
-                              padding: pw.EdgeInsets.all(12),
+                              padding: const pw.EdgeInsets.all(12),
                               child: pw.Column(
                                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                                 children: [
@@ -867,7 +868,7 @@ class InvoiceScreen extends ConsumerWidget {
                   children: [
                     // Header
                     pw.TableRow(
-                      decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
+                      decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
                       children: [
                         _pdfTh('#'),
                         _pdfTh('ITEM'),
@@ -904,7 +905,7 @@ class InvoiceScreen extends ConsumerWidget {
                     pw.Expanded(
                       flex: 90,
                       child: pw.Container(
-                        padding: pw.EdgeInsets.all(8),
+                        padding: const pw.EdgeInsets.all(8),
                         decoration: pw.BoxDecoration(
                           border: pw.Border(
                             right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1.5),
@@ -930,9 +931,9 @@ class InvoiceScreen extends ConsumerWidget {
                             if (order.isGstApplicable) _pdfSummaryLine('CGST (${(cgstRate * 100).toStringAsFixed(1)}%)', fmt.format(cgstAmount)),
                             if (order.isGstApplicable) _pdfSummaryLine('SGST (${(sgstRate * 100).toStringAsFixed(1)}%)', fmt.format(sgstAmount)),
                             pw.Container(
-                              padding: pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: pw.BoxDecoration(
-                                color: PdfColor.fromInt(0xFFF8FAFC),
+                                color: const PdfColor.fromInt(0xFFF8FAFC),
                                 border: pw.Border(top: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1)),
                               ),
                               child: pw.Row(
@@ -953,9 +954,9 @@ class InvoiceScreen extends ConsumerWidget {
                 // Amount in words
                 pw.Container(
                   width: double.infinity,
-                  padding: pw.EdgeInsets.all(8),
+                  padding: const pw.EdgeInsets.all(8),
                   decoration: pw.BoxDecoration(
-                    color: PdfColor.fromInt(0xFFF8FAFC),
+                    color: const PdfColor.fromInt(0xFFF8FAFC),
                     border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1.5)),
                   ),
                   child: pw.Text(
@@ -981,24 +982,24 @@ class InvoiceScreen extends ConsumerWidget {
                     },
                     children: [
                       pw.TableRow(
-                        decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
+                        decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
                         children: [
-                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('HSN/SAC', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
-                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('TAXABLE VALUE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('HSN/SAC', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('TAXABLE VALUE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
                           pw.Padding(
                             padding: pw.EdgeInsets.zero,
                             child: pw.Column(
                               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                               children: [
-                                pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('CENTRAL TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text('CENTRAL TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                 pw.Container(height: 1, color: PdfColor.fromHex("#CBD5E1")),
                                 pw.Table(
-                                  columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()},
+                                  columnWidths: {0: const pw.FlexColumnWidth(), 1: const pw.FlexColumnWidth()},
                                   children: [
                                     pw.TableRow(
                                       children: [
-                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
-                                        pw.Container(padding: pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: const pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(padding: const pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                       ],
                                     ),
                                   ],
@@ -1011,15 +1012,15 @@ class InvoiceScreen extends ConsumerWidget {
                             child: pw.Column(
                               crossAxisAlignment: pw.CrossAxisAlignment.stretch,
                               children: [
-                                pw.Padding(padding: pw.EdgeInsets.all(4), child: pw.Text('STATE TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                pw.Padding(padding: const pw.EdgeInsets.all(4), child: pw.Text('STATE TAX', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                 pw.Container(height: 1, color: PdfColor.fromHex("#CBD5E1")),
                                 pw.Table(
-                                  columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()},
+                                  columnWidths: {0: const pw.FlexColumnWidth(), 1: const pw.FlexColumnWidth()},
                                   children: [
                                     pw.TableRow(
                                       children: [
-                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
-                                        pw.Container(padding: pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), padding: const pw.EdgeInsets.all(4), child: pw.Text('RATE', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
+                                        pw.Container(padding: const pw.EdgeInsets.all(4), child: pw.Text('AMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 7, fontWeight: pw.FontWeight.bold))),
                                       ],
                                     ),
                                   ],
@@ -1027,7 +1028,7 @@ class InvoiceScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          pw.Padding(padding: pw.EdgeInsets.all(6), child: pw.Text('TOTAL TAX\nAMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('TOTAL TAX\nAMOUNT', textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold))),
                         ],
                       ),
                       // Data Row
@@ -1035,19 +1036,19 @@ class InvoiceScreen extends ConsumerWidget {
                         children: [
                           _pdfSmallTd('998311', align: pw.TextAlign.center),
                           _pdfSmallTd(fmt.format(_servicePrice), align: pw.TextAlign.right),
-                          pw.Table(columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('${(cgstRate*100).toStringAsFixed(0)}%', align: pw.TextAlign.center)), _pdfSmallTd(fmt.format(cgstAmount), align: pw.TextAlign.right)])]),
-                          pw.Table(columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('${(sgstRate*100).toStringAsFixed(0)}%', align: pw.TextAlign.center)), _pdfSmallTd(fmt.format(sgstAmount), align: pw.TextAlign.right)])]),
+                          pw.Table(columnWidths: {0: const pw.FlexColumnWidth(), 1: const pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('${(cgstRate*100).toStringAsFixed(0)}%', align: pw.TextAlign.center)), _pdfSmallTd(fmt.format(cgstAmount), align: pw.TextAlign.right)])]),
+                          pw.Table(columnWidths: {0: const pw.FlexColumnWidth(), 1: const pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('${(sgstRate*100).toStringAsFixed(0)}%', align: pw.TextAlign.center)), _pdfSmallTd(fmt.format(sgstAmount), align: pw.TextAlign.right)])]),
                           _pdfSmallTd(fmt.format(cgstAmount + sgstAmount), align: pw.TextAlign.right),
                         ],
                       ),
                       // Total Row
                       pw.TableRow(
-                        decoration: pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
+                        decoration: const pw.BoxDecoration(color: PdfColor.fromInt(0xFFF8FAFC)),
                         children: [
                           _pdfSmallTd('TOTAL', align: pw.TextAlign.center, bold: true),
                           _pdfSmallTd(fmt.format(_servicePrice), align: pw.TextAlign.right, bold: true),
-                          pw.Table(columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('—', align: pw.TextAlign.center, bold: true)), _pdfSmallTd(fmt.format(cgstAmount), align: pw.TextAlign.right, bold: true)])]),
-                          pw.Table(columnWidths: {0: pw.FlexColumnWidth(), 1: pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('—', align: pw.TextAlign.center, bold: true)), _pdfSmallTd(fmt.format(sgstAmount), align: pw.TextAlign.right, bold: true)])]),
+                          pw.Table(columnWidths: {0: const pw.FlexColumnWidth(), 1: const pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('—', align: pw.TextAlign.center, bold: true)), _pdfSmallTd(fmt.format(cgstAmount), align: pw.TextAlign.right, bold: true)])]),
+                          pw.Table(columnWidths: {0: const pw.FlexColumnWidth(), 1: const pw.FlexColumnWidth()}, children: [pw.TableRow(children: [pw.Container(decoration: pw.BoxDecoration(border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1))), child: _pdfSmallTd('—', align: pw.TextAlign.center, bold: true)), _pdfSmallTd(fmt.format(sgstAmount), align: pw.TextAlign.right, bold: true)])]),
                           _pdfSmallTd(fmt.format(cgstAmount + sgstAmount), align: pw.TextAlign.right, bold: true),
                         ],
                       ),
@@ -1062,7 +1063,7 @@ class InvoiceScreen extends ConsumerWidget {
                     pw.Expanded(
                       flex: 6,
                       child: pw.Container(
-                        padding: pw.EdgeInsets.all(12),
+                        padding: const pw.EdgeInsets.all(12),
                         decoration: pw.BoxDecoration(
                           border: pw.Border(right: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1)),
                         ),
@@ -1087,7 +1088,7 @@ class InvoiceScreen extends ConsumerWidget {
                     pw.Expanded(
                       flex: 4,
                       child: pw.Container(
-                        padding: pw.EdgeInsets.all(12),
+                        padding: const pw.EdgeInsets.all(12),
                         child: pw.Column(
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: pw.CrossAxisAlignment.center,
@@ -1095,7 +1096,7 @@ class InvoiceScreen extends ConsumerWidget {
                             pw.Text('For ${companyName.toUpperCase()}', style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold, color: const PdfColor.fromInt(0xFF374151))),
                             pw.SizedBox(height: 10),
                             signImage != null
-                                ? pw.Image(signImage!, width: 60, height: 60, fit: pw.BoxFit.contain)
+                                ? pw.Image(signImage, width: 60, height: 60, fit: pw.BoxFit.contain)
                                 : pw.SizedBox(height: 60),
                             pw.SizedBox(height: 10),
                             pw.Text('Authorized Signatory', style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold, color: const PdfColor.fromInt(0xFF4B5563))),
@@ -1120,18 +1121,18 @@ class InvoiceScreen extends ConsumerWidget {
                     pw.TableRow(
                       children: [
                         pw.Padding(
-                          padding: pw.EdgeInsets.all(12),
+                          padding: const pw.EdgeInsets.all(12),
                           child: pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
-                              pw.Text('NOTES:', style: pw.TextStyle(fontSize: 6, color: const PdfColor.fromInt(0xFF475569))),
+                              pw.Text('NOTES:', style: const pw.TextStyle(fontSize: 6, color: PdfColor.fromInt(0xFF475569))),
                               pw.SizedBox(height: 8),
-                              pw.Text('Thank you for the Business', style: pw.TextStyle(fontSize: 6, color: const PdfColor.fromInt(0xFF475569))),
+                              pw.Text('Thank you for the Business', style: const pw.TextStyle(fontSize: 6, color: PdfColor.fromInt(0xFF475569))),
                             ],
                           ),
                         ),
                         pw.Padding(
-                          padding: pw.EdgeInsets.all(12),
+                          padding: const pw.EdgeInsets.all(12),
                           child: pw.Column(
                             crossAxisAlignment: pw.CrossAxisAlignment.start,
                             children: [
@@ -1161,28 +1162,28 @@ class InvoiceScreen extends ConsumerWidget {
 
   pw.Widget _pdfTh(String text) {
     return pw.Padding(
-      padding: pw.EdgeInsets.all(6),
+      padding: const pw.EdgeInsets.all(6),
       child: pw.Text(text, textAlign: pw.TextAlign.center, style: pw.TextStyle(fontSize: 5, fontWeight: pw.FontWeight.bold)),
     );
   }
 
   pw.Widget _pdfTd(String text, {pw.TextAlign align = pw.TextAlign.left, bool bold = false}) {
     return pw.Padding(
-      padding: pw.EdgeInsets.all(6),
+      padding: const pw.EdgeInsets.all(6),
       child: pw.Text(text, textAlign: align, style: pw.TextStyle(fontSize: 6, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
     );
   }
 
   pw.Widget _pdfSmallTd(String text, {pw.TextAlign align = pw.TextAlign.left, bool bold = false}) {
     return pw.Padding(
-      padding: pw.EdgeInsets.all(4),
+      padding: const pw.EdgeInsets.all(4),
       child: pw.Text(text, textAlign: align, style: pw.TextStyle(fontSize: 7, fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal)),
     );
   }
 
   pw.Widget _pdfSummaryLine(String label, String value) {
     return pw.Container(
-      padding: pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: pw.BoxDecoration(
         border: pw.Border(bottom: pw.BorderSide(color: PdfColor.fromHex("#CBD5E1"), width: 1)),
       ),
@@ -1198,7 +1199,7 @@ class InvoiceScreen extends ConsumerWidget {
 
   pw.Widget _pdfBankLine(String label, String value) {
     return pw.Padding(
-      padding: pw.EdgeInsets.only(bottom: 4),
+      padding: const pw.EdgeInsets.only(bottom: 4),
       child: pw.Row(
         children: [
           pw.SizedBox(width: 70, child: pw.Text(label, style: pw.TextStyle(fontSize: 6, fontWeight: pw.FontWeight.bold, color: const PdfColor.fromInt(0xFF4B5563)))),
@@ -1233,7 +1234,7 @@ class InvoiceScreen extends ConsumerWidget {
   Widget _buildSummaryLine(String label, String value) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: const Color(0xFFCBD5E1), width: 1))),
+      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFCBD5E1), width: 1))),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1261,6 +1262,7 @@ class InvoiceScreen extends ConsumerWidget {
       final doc = await _buildPdf(settings, cgstRate, sgstRate);
       await Printing.sharePdf(bytes: await doc.save(), filename: 'Invoice_$_invoiceNumber.pdf');
     } catch (e) {
+      showGlobalError(e);
       if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error generating PDF: $e')));
     }
   }

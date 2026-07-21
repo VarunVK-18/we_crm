@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-
 import 'package:in_app_update/in_app_update.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-
 import '../auth/auth_wrapper.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -52,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
           await InAppUpdate.performImmediateUpdate();
         }
       } catch (e) {
-        debugPrint('Update check failed: $e');
+        debugPrint('Update check failed (likely no Play Store context): $e');
       }
     }
 

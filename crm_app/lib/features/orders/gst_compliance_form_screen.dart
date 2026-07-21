@@ -1,9 +1,11 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -27,7 +29,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
   String _annualTurnover = 'Less than ₹20 Lakhs';
 
   Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
       allowedExtensions: allowedExtensions,
     );
@@ -126,6 +128,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
         throw Exception('Failed to submit form: ${response.body}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (!mounted) return;
       _showError('Error: $e');
     } finally {
@@ -200,7 +203,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [],
+        actions: const [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 

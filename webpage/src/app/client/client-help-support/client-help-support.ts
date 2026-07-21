@@ -159,42 +159,61 @@ export class ClientHelpSupport implements OnInit {
     {
       question: 'How long does DSC registration take?',
       answer: 'DSC registration typically takes 1-2 business days after all necessary documents are verified and processed.',
-      isOpen: false
+      isOpen: false,
+      category: 'Services'
     },
     {
       question: 'Can I change my company name after search?',
       answer: 'If the name hasn\'t been formally registered yet, you can do a new name search. If already registered, a formal name change process with MCA must be initiated.',
-      isOpen: false
+      isOpen: false,
+      category: 'Services'
     },
     {
       question: 'What documents are needed for GST filing?',
       answer: 'You will generally need your PAN card, Aadhaar card, business registration proof, bank statements, and relevant sales/purchase invoices.',
-      isOpen: false
+      isOpen: false,
+      category: 'Services'
     },
     {
       question: 'How do I upgrade my service plan?',
       answer: 'You can upgrade your plan at any time from the Subscriptions page by selecting a new tier, and the prorated difference will be applied.',
-      isOpen: false
+      isOpen: false,
+      category: 'Billing'
     },
     {
       question: 'What payment methods do you accept?',
       answer: 'We accept all major credit cards, UPI, net banking, and standard digital wallets for your convenience.',
-      isOpen: false
+      isOpen: false,
+      category: 'Billing'
     },
     {
       question: 'How can I track my application status?',
       answer: 'You can monitor real-time progress for all your active applications in the "Ongoing Services" section of your dashboard.',
-      isOpen: false
+      isOpen: false,
+      category: 'Services'
     },
     {
       question: 'How do I update my profile details?',
       answer: 'Go to your Profile page to update your contact information, address, and business details at any time.',
-      isOpen: false
+      isOpen: false,
+      category: 'General'
     }
   ];
 
-  toggleFaq(index: number) {
-    this.faqs[index].isOpen = !this.faqs[index].isOpen;
+  activeCategory = signal<string>('All');
+
+  filteredFaqs = computed(() => {
+    const category = this.activeCategory();
+    if (category === 'All') return this.faqs;
+    return this.faqs.filter(faq => faq.category === category);
+  });
+
+  setCategory(cat: string) {
+    this.activeCategory.set(cat);
+  }
+
+  toggleFaq(faq: any) {
+    faq.isOpen = !faq.isOpen;
   }
 
   getSupportPhone(): string {

@@ -1,14 +1,13 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../core/theme/app_theme.dart';
-import '../services/service_selection_screen.dart';
 import '../services/service_detail_screen.dart';
 import '../services/tool_detail_screen.dart';
 import '../services/registration_services_screen.dart';
-import '../compliance/compliance_radar_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'dart:convert';
 import '../../core/constants/port.dart';
 import '../../core/utils/responsive.dart';
@@ -575,6 +574,7 @@ class _SearchScreenState extends State<SearchScreen> {
         }
       }
     } catch (e) {
+      showGlobalError(e);
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));

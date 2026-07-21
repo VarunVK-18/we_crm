@@ -1,3 +1,5 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -103,22 +105,42 @@ class ProfileScreen extends ConsumerWidget {
                   // ── User Info Card ────────────────────────────────────────
                   Builder(builder: (context) {
                     final selectedEntity = ref.watch(selectedEntityProvider);
-                    final displayedCompany = (selectedEntity.isNotEmpty && selectedEntity != 'All Entities')
+                    final String actualSelectedEntity = (selectedEntity.isNotEmpty && selectedEntity != 'All Entities')
                         ? selectedEntity
-                        : (user?.companyName ?? '');
+                        : (user?.clientEntities.isNotEmpty == true ? user!.clientEntities.first.entityName : (user?.companyName ?? ''));
+                        
+                    final displayedCompany = actualSelectedEntity;
+                        
+                    String displayLogo = user?.profileImage ?? '';
+                    if (actualSelectedEntity.isNotEmpty && user?.clientEntities != null) {
+                      try {
+                        final matchedEntity = user!.clientEntities.firstWhere(
+                          (ce) => ce.entityName.trim().toLowerCase() == actualSelectedEntity.trim().toLowerCase(),
+                        );
+                        if (matchedEntity.entityLogo.isNotEmpty) {
+                          displayLogo = matchedEntity.entityLogo;
+                        } else {
+                          displayLogo = ''; // Ensure we don't show the global profile image if entity has no logo
+                        }
+                      } catch (e) {
+                        displayLogo = '';
+                      }
+                    }
+                        
                     return _UserInfoCard(
                       uid: user?.id ?? '',
                       name: user?.name ?? 'User',
                       email: user?.email ?? '---',
                       phone: user?.phone ?? '---',
-                      profileImage: user?.profileImage ?? '',
+                      profileImage: displayLogo,
                       companyName: displayedCompany,
+                      selectedEntity: actualSelectedEntity,
                     );
                   }),
 
                   SizedBox(height: 24.r),
 
-                  // ── Quick Actions ─────────────────────────────────────────
+                  // ── Quick Actions ───────────────────────────────────────── //
                   Text(
                     'Quick Actions',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -207,6 +229,7 @@ class _UserInfoCard extends ConsumerStatefulWidget {
   final String phone;
   final String profileImage;
   final String companyName;
+  final String selectedEntity;
 
   const _UserInfoCard({
     required this.uid,
@@ -215,6 +238,7 @@ class _UserInfoCard extends ConsumerStatefulWidget {
     required this.phone,
     required this.profileImage,
     required this.companyName,
+    required this.selectedEntity,
   });
 
   @override
@@ -315,7 +339,7 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
   Future<void> _pickAndUploadImage(ImageSource source) async {
     if (widget.uid.isEmpty) return;
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
+    final pickedFile = await FilePickerUtil.pickImage(
       source: source,
       imageQuality: 50,
     );
@@ -342,9 +366,14 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
       if (croppedFile != null) {
         setState(() => _isUploading = true);
         try {
-          await ref.read(authRepositoryProvider).uploadProfileImage(widget.uid, croppedFile.path);
+          if (widget.selectedEntity.isNotEmpty && widget.selectedEntity != 'All Entities') {
+            await ref.read(authRepositoryProvider).uploadEntityLogo(widget.uid, widget.selectedEntity, croppedFile.path);
+          } else {
+            await ref.read(authRepositoryProvider).uploadProfileImage(widget.uid, croppedFile.path);
+          }
           ref.invalidate(userProfileProvider);
         } catch (e) {
+      showGlobalError(e);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image: $e')));
           }
@@ -359,9 +388,15 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
     if (widget.uid.isEmpty) return;
     setState(() => _isUploading = true);
     try {
-      await ref.read(authRepositoryProvider).removeProfileImage(widget.uid);
-      ref.invalidate(userProfileProvider);
+      if (widget.selectedEntity.isNotEmpty && widget.selectedEntity != 'All Entities') {
+        await ref.read(authRepositoryProvider).removeEntityLogo(widget.uid, widget.selectedEntity);
+        ref.invalidate(userProfileProvider);
+      } else {
+        await ref.read(authRepositoryProvider).removeProfileImage(widget.uid);
+        ref.invalidate(userProfileProvider);
+      }
     } catch (e) {
+      showGlobalError(e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to remove image: $e')));
       }

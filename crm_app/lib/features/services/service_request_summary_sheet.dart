@@ -1,3 +1,5 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,17 +8,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:crm_app/core/utils/validation_utils.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/services/ocr_service.dart';
 import '../../providers/pan_provider.dart';
 import '../../core/constants/service_documents.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'dart:convert';
 import '../../core/constants/port.dart';
 import 'package:hugeicons/hugeicons.dart';
-import '../../models/director_form_data.dart';
 import 'package:open_filex/open_filex.dart';
 
 class ServiceRequestSummarySheet extends ConsumerStatefulWidget {
@@ -309,7 +309,7 @@ class _ServiceRequestSummarySheetState
 
   Future<void> _pickFiles(String slotName) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePickerUtil.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
         allowMultiple: true,
@@ -367,6 +367,7 @@ class _ServiceRequestSummarySheetState
         });
       }
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error picking files for $slotName: $e');
     }
   }
@@ -551,6 +552,7 @@ class _ServiceRequestSummarySheetState
         return false;
       }
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error registering service: $e');
       return false;
     }
@@ -616,7 +618,7 @@ class _ServiceRequestSummarySheetState
       }
     }
 
-    Map<String, String>? _getCompatibilityWarning() {
+    Map<String, String>? getCompatibilityWarning() {
       if (_selectedEntity == null || _selectedEntity == 'Add New Entity...') return null;
       
       final reqService = widget.packageName;
@@ -699,6 +701,7 @@ class _ServiceRequestSummarySheetState
                 isTrulyIncorporated = true;
               }
             } catch (e) {
+      showGlobalError(e);
               // Not found in client entities directly
             }
           }
@@ -968,23 +971,23 @@ class _ServiceRequestSummarySheetState
                               ),
                             ),
                         ],
-                        if (_getCompatibilityWarning() != null) ...[
+                        if (getCompatibilityWarning() != null) ...[
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade50 : Colors.amber.shade50,
+                              color: getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade50 : Colors.amber.shade50,
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade200 : Colors.amber.shade200,
+                                color: getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade200 : Colors.amber.shade200,
                               ),
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Icon(
-                                  _getCompatibilityWarning()!['type'] == 'error' ? LucideIcons.alertCircle : LucideIcons.alertTriangle,
-                                  color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade600 : Colors.amber.shade700,
+                                  getCompatibilityWarning()!['type'] == 'error' ? LucideIcons.alertCircle : LucideIcons.alertTriangle,
+                                  color: getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade600 : Colors.amber.shade700,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 12),
@@ -993,19 +996,19 @@ class _ServiceRequestSummarySheetState
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        _getCompatibilityWarning()!['header']!,
+                                        getCompatibilityWarning()!['header']!,
                                         style: GoogleFonts.outfit(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
-                                          color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade900 : Colors.amber.shade900,
+                                          color: getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade900 : Colors.amber.shade900,
                                         ),
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        _getCompatibilityWarning()!['message']!,
+                                        getCompatibilityWarning()!['message']!,
                                         style: GoogleFonts.outfit(
                                           fontSize: 13,
-                                          color: _getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade800 : Colors.amber.shade900,
+                                          color: getCompatibilityWarning()!['type'] == 'error' ? Colors.red.shade800 : Colors.amber.shade900,
                                         ),
                                       ),
                                     ],
@@ -1030,8 +1033,6 @@ class _ServiceRequestSummarySheetState
                           ),
                         ],
                       ],
-                      const SizedBox(height: 12),
-                      _DetailRow(label: 'Package:', value: widget.packageName),
                       const SizedBox(height: 12),
                       ..._buildServiceSpecificForms(),
                     ] else ...[
@@ -1123,7 +1124,7 @@ class _ServiceRequestSummarySheetState
                 if (_currentPage == 0 && _isTwoStepForm)
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: (_getCompatibilityWarning() != null && _getCompatibilityWarning()!['type'] == 'error') ? null : () {
+                      onPressed: (getCompatibilityWarning() != null && getCompatibilityWarning()!['type'] == 'error') ? null : () {
                         if (_formKey.currentState!.validate()) {
                           setState(() {
                             _currentPage = 1;
@@ -1165,7 +1166,7 @@ class _ServiceRequestSummarySheetState
                               (!_isTwoStepForm
                                   ? false
                                   : !_areAllRequiredDocsUploaded) ||
-                              (_getCompatibilityWarning() != null && _getCompatibilityWarning()!['type'] == 'error')
+                              (getCompatibilityWarning() != null && getCompatibilityWarning()!['type'] == 'error')
                           ? null
                           : () async {
                               bool isTurnoverValid = true;

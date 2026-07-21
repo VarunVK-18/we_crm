@@ -1,16 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../providers/notification_provider.dart';
 import '../../core/theme/app_theme.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
-import '../../core/constants/port.dart';
 import 'order_chat_screen.dart';
 import 'service_order_detail_screen.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 
 class NotificationSheet extends ConsumerStatefulWidget {

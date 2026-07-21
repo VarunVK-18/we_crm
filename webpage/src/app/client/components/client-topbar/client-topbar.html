@@ -78,8 +78,8 @@
     @if (user()) {
       <div class="user-dropdown-container">
         <button class="user-pill-btn" (click)="toggleDropdown()" [class.active]="isDropdownOpen()">
-          @if (user()?.profile_image) {
-            <img [src]="api.getFileUrl(user().profile_image)" class="pill-avatar-img" alt="Profile" />
+          @if (displayLogo) {
+            <img [src]="api.getFileUrl(displayLogo)" class="pill-avatar-img" alt="Profile" />
           } @else {
             <div class="pill-avatar">
               {{ getInitials(displayName) }}
@@ -92,8 +92,8 @@
         @if (isDropdownOpen()) {
           <div class="user-dropdown-menu">
             <div class="dropdown-header">
-              @if (user()?.profile_image) {
-                <img [src]="api.getFileUrl(user().profile_image)" class="dropdown-avatar-img" alt="Profile" />
+              @if (displayLogo) {
+                <img [src]="api.getFileUrl(displayLogo)" class="dropdown-avatar-img" alt="Profile" />
               } @else {
                 <div class="dropdown-avatar">
                   {{ getInitials(displayName) }}

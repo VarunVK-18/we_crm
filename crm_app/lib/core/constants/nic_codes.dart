@@ -1,3 +1,4 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -81,6 +82,7 @@ class NicCodeService {
       }
       return codes;
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error loading NIC codes: $e');
       return [];
     }

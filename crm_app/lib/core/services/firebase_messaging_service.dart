@@ -1,9 +1,10 @@
+import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:developer';
 import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
 import 'package:crm_app/main.dart';
@@ -106,6 +107,7 @@ class FirebaseMessagingService {
         log('Failed to send token to server. Status: ${response.statusCode}', name: 'FCM Sync Error');
       }
     } catch (e) {
+      showGlobalError(e);
       log('Error syncing token to server: $e', name: 'FCM Sync Error');
     }
   }
@@ -131,6 +133,7 @@ class FirebaseMessagingService {
             final data = jsonDecode(response.payload!);
             _handleNotificationClick(data);
           } catch (e) {
+      showGlobalError(e);
             log('Error parsing payload: $e', name: 'FCM Tap');
           }
         }
@@ -223,6 +226,7 @@ class FirebaseMessagingService {
              log('Order not found in state for ID: $orderId', name: 'FCM Tap');
           }
         } catch (e) {
+      showGlobalError(e);
           log('Error resolving order from provider: $e', name: 'FCM Tap');
         }
       }

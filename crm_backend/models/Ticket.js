@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const GlobalCounter = require('./GlobalCounter');
 
 const TicketSchema = new mongoose.Schema({
   ticketId: { 
@@ -52,19 +53,24 @@ const TicketSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 /**
- * Generate a unique ticket ID using last 4 digits of timestamp + 3 random digits.
- * Format: INCXXXXXXX  (e.g. INC4271853)
- * This gives ~10M combinations vs the old 9K, making collisions extremely rare.
+ * Generate a sequential ticket ID starting from 1001.
+ * Format: INC1001, INC1002, etc.
  */
-function generateTicketId() {
-  const tsPart = Date.now().toString().slice(-4);   // last 4 digits of ms timestamp
-  const randPart = Math.floor(100 + Math.random() * 900); // 3-digit random
-  return `INC${tsPart}${randPart}`;
-}
-
-TicketSchema.pre('save', function() {
+TicketSchema.pre('save', async function(next) {
   if (!this.ticketId) {
-    this.ticketId = generateTicketId();
+    try {
+      const counter = await GlobalCounter.findOneAndUpdate(
+        { entity: 'ticket' },
+        { $inc: { seq: 1 } },
+        { new: true, upsert: true, setDefaultsOnInsert: true }
+      );
+      this.ticketId = `INC${1000 + counter.seq}`;
+      next();
+    } catch (err) {
+      next(err);
+    }
+  } else {
+    next();
   }
 });
 

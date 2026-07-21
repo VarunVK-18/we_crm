@@ -139,6 +139,17 @@ export class ClientSupportTickets implements OnInit, OnDestroy {
     checklistId: ''
   };
 
+  // Ticket Details Modal State
+  selectedTicket = signal<any>(null);
+
+  viewTicketDetails(ticket: any) {
+    this.selectedTicket.set(ticket);
+  }
+
+  closeTicketDetails() {
+    this.selectedTicket.set(null);
+  }
+
   user: any = null;
 
   constructor(private api: Api, private confirmDialog: ConfirmDialogService) {}

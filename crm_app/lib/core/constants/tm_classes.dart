@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
 
 class TmClass {
   final int classNum;
@@ -44,6 +45,7 @@ class TmClassService {
       
       return classes;
     } catch (e) {
+      showGlobalError(e);
       debugPrint('Error loading Trade Mark classes: $e');
       return [];
     }

@@ -12,6 +12,7 @@ import '../../models/order_model.dart';
 import 'order_chat_screen.dart';
 import 'service_order_detail_screen.dart';
 import '../../providers/orders_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../core/widgets/we_loader.dart';
 import '../../providers/notification_provider.dart';
 import '../../providers/compliance_provider.dart';
@@ -21,13 +22,13 @@ import '../../core/constants/available_services.dart';
 import '../services/service_detail_screen.dart';
 // ─── Tab definition ───────────────────────────────────────────────────────────
 
-enum _ServiceTab { active, complete, notInitialized, suggested }
+enum _ServiceTab { active, notInitialized, suggested, complete }
 
 const _tabLabels = {
   _ServiceTab.active: 'Active',
-  _ServiceTab.complete: 'Complete',
   _ServiceTab.notInitialized: 'Pending Registration',
   _ServiceTab.suggested: 'Upcoming',
+  _ServiceTab.complete: 'Completed',
 };
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
@@ -42,11 +43,13 @@ class OrderTrackerScreen extends ConsumerStatefulWidget {
 class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
   _ServiceTab _selectedTab = _ServiceTab.active;
   final ValueNotifier<String> _activeFilter = ValueNotifier<String>('All');
+  final ValueNotifier<String?> _selectedEntityNotifier = ValueNotifier<String?>(null);
   String _searchQuery = '';
 
   @override
   void dispose() {
     _activeFilter.dispose();
+    _selectedEntityNotifier.dispose();
     super.dispose();
   }
   @override
@@ -56,19 +59,52 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
     final isLoading = ordersAsync.isLoading && orders.isEmpty;
     final totalNotificationsCount = ref.watch(notificationProvider).length;
 
-    final selectedEntity = ref.watch(selectedEntityProvider);
+    final rawSelectedEntity = ref.watch(selectedEntityProvider);
+    final user = ref.watch(userProfileProvider).value;
+    
+    final rawName = user?.name ?? 'Explorer';
+    final primaryCompanyName = (user?.companyName != null && user!.companyName.trim().isNotEmpty)
+        ? user.companyName.trim()
+        : rawName;
 
-    // Build entity list using entityName (canonical key matching selectedEntityProvider)
-    // Falls back to companyName if entityName is missing or equals 'Default'
-    final entities = orders
-        .map((o) {
-          final en = o.entityName.trim();
-          return (en.isNotEmpty && en != 'Default') ? en : o.companyName.trim();
-        })
-        .where((c) => c.isNotEmpty)
-        .toSet()
-        .toList()
-        ..sort();
+    final String actualSelectedEntity = (rawSelectedEntity.isNotEmpty && rawSelectedEntity != 'All Entities')
+        ? rawSelectedEntity
+        : (user?.clientEntities.isNotEmpty == true ? user!.clientEntities.first.entityName : primaryCompanyName);
+
+    final selectedEntity = actualSelectedEntity;
+    
+    // Sync notifier value safely
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _selectedEntityNotifier.value = selectedEntity;
+    });
+
+    // Build entity list including user profile entities and order entities
+    final entitySet = <String>{};
+    
+    // 1. Primary Company
+    if (user?.companyName != null && user!.companyName.trim().isNotEmpty) {
+      entitySet.add(user.companyName.trim());
+    }
+    
+    // 2. Client Entities
+    if (user?.clientEntities != null) {
+      for (final ce in user!.clientEntities) {
+        if (ce.entityName.trim().isNotEmpty) {
+          entitySet.add(ce.entityName.trim());
+        }
+      }
+    }
+
+    // 3. Order Entities (fallback)
+    for (final o in orders) {
+      final en = o.entityName.trim();
+      final name = (en.isNotEmpty && en != 'Default') ? en : o.companyName.trim();
+      if (name.isNotEmpty) {
+        entitySet.add(name);
+      }
+    }
+
+    final entities = entitySet.toList()..sort();
 
     // Prevent Dropdown assertion crash if selectedEntity is not yet in the list
     if (selectedEntity != 'All Entities' && !entities.contains(selectedEntity)) {
@@ -78,14 +114,12 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
     // Filter by selected entity — compare against both entityName and companyName
     // so we catch any mismatch in the data gracefully
-    final entityFilteredRaw = selectedEntity == 'All Entities'
-        ? orders
-        : orders.where((o) {
-            final en = o.entityName.trim();
-            final cn = o.companyName.trim();
-            return en.toLowerCase() == selectedEntity.toLowerCase() ||
-                cn.toLowerCase() == selectedEntity.toLowerCase();
-          }).toList();
+    final entityFilteredRaw = orders.where((o) {
+      final en = o.entityName.trim();
+      final cn = o.companyName.trim();
+      return en.toLowerCase() == selectedEntity.toLowerCase() ||
+          cn.toLowerCase() == selectedEntity.toLowerCase();
+    }).toList();
 
     final entityFiltered = List<ServiceOrder>.from(entityFilteredRaw)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -271,7 +305,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     const SizedBox(height: 10),
                     DropdownButtonFormField2<String>(
                       isExpanded: true,
-                      valueListenable: ValueNotifier(selectedEntity == 'All Entities' ? null : selectedEntity),
+                      valueListenable: _selectedEntityNotifier,
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 12,

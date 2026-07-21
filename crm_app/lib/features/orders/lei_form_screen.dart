@@ -1,10 +1,11 @@
-import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -50,6 +51,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
     _loadDraft();
   }
 
+  @override
   void dispose() {
     _authorizedPersonController.dispose();
     _designationController.dispose();
@@ -59,7 +61,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
   }
 
   Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
       allowedExtensions: allowedExtensions,
     );
@@ -195,6 +197,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
         throw Exception('Failed to submit form: ${response.body}');
       }
     } catch (e) {
+      showGlobalError(e);
       if (!mounted) return;
       _showError('Error: $e');
     } finally {
@@ -262,7 +265,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
-        actions: [],
+        actions: const [],
       ),
       body: _isLoading 
           ? const Center(child: CircularProgressIndicator()) 
@@ -298,7 +301,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
-                              value: _turnoverType,
+                              initialValue: _turnoverType,
                               decoration: InputDecoration(
                                 hintText: 'Select Turnover Details',
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),

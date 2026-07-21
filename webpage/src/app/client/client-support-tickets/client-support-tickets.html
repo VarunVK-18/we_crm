@@ -57,7 +57,7 @@
               </tr>
             } @else {
               @for (ticket of filteredTickets(); track ticket._id) {
-                <tr>
+                <tr (click)="viewTicketDetails(ticket)" class="clickable-row">
                   <td class="ticket-id-cell">{{ ticket.ticketId || 'INC0000' }}</td>
                   <td>{{ resolveTicketEntity(ticket) || ticket.category || 'General Support' }}</td>
                   <td class="ticket-subject-cell"><strong>{{ ticket.subject || 'No Subject' }}</strong></td>
@@ -149,6 +149,58 @@
             }
           </button>
           </div>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- Ticket Details Modal -->
+  @if (selectedTicket()) {
+    <div class="modal-overlay" (click)="closeTicketDetails()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        
+        <div class="modal-header">
+          <div class="modal-icon">
+            <hugeicons-icon [icon]="MessageMultiple01Icon" [size]="24" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
+          </div>
+          <div class="modal-titles">
+            <h2>Ticket Details</h2>
+            <p>{{ selectedTicket().ticketId || 'INC0000' }}</p>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <div class="details-section">
+            <label>Subject</label>
+            <p><strong>{{ selectedTicket().subject || 'No Subject' }}</strong></p>
+          </div>
+          
+          <div class="details-section" style="margin-top: 20px;">
+            <label>Description</label>
+            <p style="white-space: pre-wrap; line-height: 1.5; color: #4b5563;">{{ selectedTicket().description || 'No description provided.' }}</p>
+          </div>
+          
+          <div class="details-section" style="margin-top: 20px; display: flex; flex-direction: row; gap: 40px;">
+            <div>
+              <label>Status</label>
+              <p>
+                @if (selectedTicket().status === 'Resolved') {
+                  <span class="status-badge resolved-badge">RESOLVED</span>
+                } @else {
+                  <span class="status-badge pending-badge">PENDING</span>
+                }
+              </p>
+            </div>
+            <div>
+              <label>Date Created</label>
+              <p>{{ formatDate(selectedTicket().createdAt) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="justify-content: flex-end;">
+          <button class="cancel-btn" (click)="closeTicketDetails()">Close</button>
         </div>
 
       </div>

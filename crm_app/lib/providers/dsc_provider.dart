@@ -2,10 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../core/constants/port.dart';
 import '../models/dsc_order_model.dart';
 import 'auth_provider.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
 
 /// Real-time stream of [DscOrder] documents from the database.
 final dscOrdersProvider = StreamProvider<List<DscOrder>>((ref) {
@@ -32,6 +33,7 @@ final dscOrdersProvider = StreamProvider<List<DscOrder>>((ref) {
         }
       }
     } catch (e) {
+      showGlobalError(e);
       debugPrint("Error fetching real-time DSC orders: $e");
     }
   }

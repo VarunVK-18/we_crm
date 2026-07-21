@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import 'package:http/http.dart' as http;
+import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../../providers/network_provider.dart';
 import '../constants/port.dart';
 import '../theme/app_theme.dart';
+import 'package:crm_app/core/utils/error_handler.dart';
 
 class NetworkOverlayWrapper extends ConsumerStatefulWidget {
   final Widget child;
@@ -51,6 +52,7 @@ class _NetworkOverlayWrapperState extends ConsumerState<NetworkOverlayWrapper> {
         });
       }
     } catch (e) {
+      showGlobalError(e);
       // Might be offline, let the network provider handle offline UI
       if (mounted) {
         setState(() {
