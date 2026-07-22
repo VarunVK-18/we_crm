@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const BucketRequest = require('../models/BucketRequest');
-const { getNextClientId } = require('../utils/counterHelper');
 
 // @desc    Receive client onboarding data from DealVoice
 // @route   POST /api/intake/onboard
@@ -23,7 +22,8 @@ const onboardFromDealVoice = async (req, res) => {
       address,
       businessType,
       serviceName,     // The service they signed up for (e.g. "GST Registration")
-      dealvoiceClientId
+      dealvoiceClientId,
+      softrateClientId // Softrate CL-series client ID (e.g. CL1000)
     } = req.body;
 
     if (!companyId || !email || !serviceName) {
@@ -35,14 +35,9 @@ const onboardFromDealVoice = async (req, res) => {
     let isNew = false;
 
     if (!clientUser) {
-      let custom_client_id = null;
-      try {
-        custom_client_id = await getNextClientId(companyId);
-      } catch (e) { console.error('Failed to generate custom_client_id', e); }
-
       clientUser = await User.create({
         company_id: companyId,
-        custom_client_id,
+        custom_client_id: softrateClientId || null,
         owner_name: ownerName || companyName || 'New Client',
         email: email.trim(),
         phone: phone || '',
