@@ -41,6 +41,7 @@
   gap: 24px;
   color: var(--palette-light);
   box-shadow: 0 12px 24px rgba(13, 16, 27, 0.1);
+  flex-shrink: 0;
 }
 
 .ep-hero-card::before {

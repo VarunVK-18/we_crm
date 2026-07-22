@@ -241,10 +241,6 @@ export class ClientServicesComponent implements OnInit {
 
   // Form State
   quoteForm = {
-    name: '',
-    phone: '',
-    email: '',
-    requirements: '',
     numberOfDirectors: '',
     selectedEntity: '',
     customEntity: '',
@@ -287,9 +283,6 @@ export class ClientServicesComponent implements OnInit {
       try {
         const parsedUser = JSON.parse(savedUser);
         this.user.set(parsedUser);
-        this.quoteForm.name = parsedUser.owner_name || parsedUser.name || '';
-        this.quoteForm.phone = (parsedUser.phone || '').replace(/^\+91\s*/, '');
-        this.quoteForm.email = parsedUser.email || '';
       } catch (e) {
         console.error('Failed to parse user', e);
       }
@@ -569,9 +562,9 @@ export class ClientServicesComponent implements OnInit {
 
     const formData = new FormData();
     formData.append('serviceName', serviceName);
-    formData.append('owner_name', this.quoteForm.name || this.user()?.owner_name || '');
-    formData.append('phone', this.quoteForm.phone || this.user()?.phone || '');
-    formData.append('email', this.quoteForm.email || this.user()?.email || '');
+    formData.append('owner_name', this.user()?.owner_name || '');
+    formData.append('phone', this.user()?.phone || '');
+    formData.append('email', this.user()?.email || '');
 
     if (this.showEntityDropdown()) {
       const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...'
@@ -583,12 +576,11 @@ export class ClientServicesComponent implements OnInit {
     }
 
     const details: any = {
-      'Applicant Name': this.quoteForm.name || this.user()?.owner_name || '',
-      'Applicant Email': this.quoteForm.email || this.user()?.email || '',
-      'Applicant Phone': this.quoteForm.phone || this.user()?.phone || '',
+      'Applicant Name': this.user()?.owner_name || '',
+      'Applicant Email': this.user()?.email || '',
+      'Applicant Phone': this.user()?.phone || '',
       Status: 'Pending Client Form Submission',
-      'Next Step': 'Assign expert to unlock form for client',
-      Requirements: this.quoteForm.requirements
+      'Next Step': 'Assign expert to unlock form for client'
     };
 
     if (this.showDirectorCount()) {
@@ -608,7 +600,7 @@ export class ClientServicesComponent implements OnInit {
         this.formSubmitting.set(false);
         if (res && res.success) {
           this.formSuccess.set(true);
-          this.quoteForm = { name: this.user()?.owner_name || '', phone: (this.user()?.phone || '').replace(/^\+91\s*/, ''), email: this.user()?.email || '', requirements: '', numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '', annualTurnover: 'Less than ₹20 Lakhs' };
+          this.quoteForm = { numberOfDirectors: '', selectedEntity: this.availableEntities()[0], customEntity: '', annualTurnover: 'Less than ₹20 Lakhs' };
           this.fetchEntities(); // Refetch checklists to update duplicate validation
         } else {
           alert('Failed to submit quote request.');

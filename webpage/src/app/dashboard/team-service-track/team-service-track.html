@@ -105,7 +105,7 @@
                   <td>
                     <div class="member-info" style="display: flex; align-items: center; gap: 10px;">
                       @if (member.profile_image) {
-                        <img [src]="member.profile_image" alt="Profile" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                        <img [src]="api.getFileUrl(member.profile_image!)" alt="Profile" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
                       } @else {
                         <div class="member-avatar">
                           {{ (member.owner_name || 'U')[0] | uppercase }}

@@ -473,6 +473,19 @@ const toggleChecklistItem = async (req, res) => {
 
     // Check if we are checking the item
     if (!item.isChecked) {
+      const formServices = [
+        'duns', 'dpiit', 'private limited', 'trademark', 'trade mark', 'llp', 'msme',
+        'gst', 'iso', 'fssai', 'one person company', 'opc', 'lei', 'lie', 'bis',
+        'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'pf', 'patent',
+        'copyright', 'itr', 'ce', 'rohs'
+      ];
+      const svcLower = checklist.service_name ? checklist.service_name.toLowerCase() : '';
+      const requiresForm = formServices.some(s => svcLower.includes(s));
+      
+      if (requiresForm && (!checklist.details || !checklist.details.clientFormSubmitted)) {
+        return res.status(400).json({ success: false, message: 'Cannot update progress until client submits the required details.' });
+      }
+
       // Enforce action step check
       if (item.isActionStep && (!checklist.details || !checklist.details.clientFormSubmitted)) {
         return res.status(400).json({ success: false, message: 'Client needs to do form filling.' });

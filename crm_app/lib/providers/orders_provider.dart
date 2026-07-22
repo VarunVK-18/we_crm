@@ -1,4 +1,3 @@
-import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,7 +92,8 @@ final serviceOrdersProvider = StreamProvider<List<ServiceOrder>>((ref) async* {
         yield orders;
       }
     } catch (e) {
-      showGlobalError(e);
+      // Silently ignore background polling errors — these fire every 10s and
+      // would spam the user with snackbars when the app resumes from background.
       print("Error fetching service orders summary: $e");
     }
 

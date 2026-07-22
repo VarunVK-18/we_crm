@@ -32,7 +32,7 @@ interface TeamStats {
   styleUrls: ['./team-service-track.css']
 })
 export class TeamServiceTrackComponent implements OnInit {
-  private api = inject(Api);
+  public api = inject(Api);
 
   allTeams = signal<TeamStats[]>([]);
   isLoading = signal<boolean>(true);
