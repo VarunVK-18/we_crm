@@ -8,11 +8,12 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 
 import { OcrService } from '../../services/ocr.service';
 import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
+import { ServiceDetailsComponent } from '../service-details/service-details';
 
 @Component({
   selector: 'app-checklist-details',
   standalone: true,
-  imports: [CommonModule, FormsModule, PdfViewerModule, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, PdfViewerModule, WeLoaderComponent, ServiceDetailsComponent],
   templateUrl: './checklist-details.html',
   styleUrl: './checklist-details.css'
 })
@@ -153,6 +154,26 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   }
 
   constructor(public api: Api, private ocrService: OcrService, private confirmDialog: ConfirmDialogService, private sanitizer: DomSanitizer) { }
+
+  /** Returns the clientId string for the current checklist, used by ServiceDetailsComponent */
+  getClientId(): string {
+    const cl = this.checklist();
+    if (!cl) return '';
+    return cl.client_id?._id || cl.client_id || '';
+  }
+
+  /** Returns director count from the client profile embedded in the checklist */
+  getDirectorCount(): number {
+    const cl = this.checklist();
+    return cl?.client_id?.director_count || cl?.client_id?.directors?.length || 0;
+  }
+
+  /** True only for filling_staff, admin, client_manager (not customer) */
+  canViewServiceDetails(): boolean {
+    const u = this.user();
+    if (!u) return false;
+    return ['admin', 'client_manager', 'filling_staff', 'account_manager'].includes(u.role);
+  }
 
   viewSop() {
     const cl = this.checklist();

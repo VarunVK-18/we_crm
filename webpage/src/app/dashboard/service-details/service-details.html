@@ -1,0 +1,516 @@
+<div class="sd-panel">
+
+  <!-- Panel Header -->
+  <div class="sd-panel-header">
+    <h3 class="sd-panel-title">
+      <div class="sd-panel-icon">
+        <span class="material-symbols-outlined" style="font-size:18px;">shield_lock</span>
+      </div>
+      Service Details &amp; Credentials
+    </h3>
+    <div style="font-size:12px;color:var(--text-secondary);">Filing Staff Access Only</div>
+  </div>
+
+  <!-- Loading state -->
+  @if (isLoading()) {
+    <div class="sd-empty-state">
+      <div class="sd-spinner" style="border-color:rgba(99,102,241,0.3);border-top-color:#6366f1;width:28px;height:28px;margin:0 auto 12px;"></div>
+      Loading service details...
+    </div>
+  } @else {
+
+  <!-- Services List -->
+  <div class="sd-services-body">
+    @for (svc of filteredServiceList; track svc.type) {
+      <div class="sd-card"
+           [class.saved]="!!getRecord(svc.type)"
+           [class.expanded]="isExpanded(svc.type)">
+
+        <!-- Card Header (click to expand) -->
+        <div class="sd-card-header" (click)="toggleCard(svc.type)">
+          <div class="sd-card-left">
+            <div class="sd-service-dot"
+                 [class.saved]="!!getRecord(svc.type)"
+                 [class.unsaved]="editingMap[svc.type] && !isSaving[svc.type]"></div>
+            <div>
+              <span class="sd-service-name">{{ svc.label }}</span>
+              @if (svc.sub) { <span class="sd-service-sub">{{ svc.sub }}</span> }
+            </div>
+          </div>
+          <div class="sd-card-right">
+            <!-- Expiry badge -->
+            @if (getRecord(svc.type)?.expiryStatus && getRecord(svc.type).expiryStatus !== 'none') {
+              <span class="sd-status-badge" [class]="getRecord(svc.type).expiryStatus">
+                {{ getRecord(svc.type).expiryStatus === 'active' ? 'Active' :
+                   getRecord(svc.type).expiryStatus === 'expiringSoon' ? 'Expiring Soon' : 'Expired' }}
+              </span>
+            }
+            @if (!getRecord(svc.type)) {
+              <span style="font-size:12px;color:var(--text-secondary);font-weight:500;">Not set</span>
+            }
+            <span class="material-symbols-outlined sd-chevron" [class.open]="isExpanded(svc.type)">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Card Body -->
+        @if (isExpanded(svc.type)) {
+          <div class="sd-card-body">
+
+            <!-- ════════════ MCA ════════════ -->
+            @if (svc.type === 'MCA') {
+              <div>
+                <div class="sd-section-label">Company Credentials</div>
+                <div class="sd-field-grid">
+                  <div class="sd-field">
+                    <label class="sd-label">Username</label>
+                    <input class="sd-input" type="text" [(ngModel)]="forms['MCA'].username" placeholder="MCA Portal Username" autocomplete="new-password" />
+                  </div>
+                  <div class="sd-field">
+                    <label class="sd-label">Password</label>
+                    <div class="sd-input-wrap">
+                      <input class="sd-input password-input" [class.shown]="showPass['MCA_company']"
+                             [type]="showPass['MCA_company'] ? 'text' : 'password'"
+                             [(ngModel)]="forms['MCA'].password" placeholder="••••••••" autocomplete="new-password" />
+                      <button class="sd-show-hide" (click)="togglePass('MCA_company')">
+                        <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['MCA_company'] ? 'visibility_off' : 'visibility' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Director Credentials -->
+              <div>
+                <div class="sd-section-label" style="margin-bottom:10px;">Director Credentials ({{ directorCount }} Directors)</div>
+                @for (dir of forms['MCA'].directorCredentials; track dir.index) {
+                  <div class="sd-director-block" style="margin-bottom:10px;">
+                    <div class="sd-director-title">
+                      <span class="material-symbols-outlined" style="font-size:16px;color:#6366f1;">person</span>
+                      {{ dir.label }}
+                    </div>
+                    <div class="sd-field-grid">
+                      <div class="sd-field">
+                        <label class="sd-label">Username</label>
+                        <input class="sd-input" type="text" [(ngModel)]="dir.username" placeholder="Enter Username" autocomplete="new-password" />
+                      </div>
+                      <div class="sd-field">
+                        <label class="sd-label">Password</label>
+                        <div class="sd-input-wrap">
+                          <input class="sd-input password-input" [class.shown]="showPass['MCA_dir_'+dir.index]"
+                                 [type]="showPass['MCA_dir_'+dir.index] ? 'text' : 'password'"
+                                 [(ngModel)]="dir.password" placeholder="••••••••" autocomplete="new-password" />
+                          <button class="sd-show-hide" (click)="togglePass('MCA_dir_'+dir.index)">
+                            <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['MCA_dir_'+dir.index] ? 'visibility_off' : 'visibility' }}</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="sd-field">
+                        <label class="sd-label">Expiry Date</label>
+                        <input class="sd-input" type="date" [(ngModel)]="dir.expiryDate" />
+                        @if (dir.expiryDate) {
+                          <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(dir.expiryDate)">
+                            {{ getExpiryLabel(dir.expiryDate) }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- ════════════ DPIIT ════════════ -->
+            @if (svc.type === 'DPIIT') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">Username</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['DPIIT'].username" placeholder="DPIIT Portal Username" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Password</label>
+                  <div class="sd-input-wrap">
+                    <input class="sd-input password-input" [class.shown]="showPass['DPIIT']"
+                           [type]="showPass['DPIIT'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['DPIIT'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('DPIIT')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['DPIIT'] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ GST ════════════ -->
+            @if (svc.type === 'GST') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">Temporary Reference Number (TRN)</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['GST'].gstTrn" placeholder="TRN Number" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Username</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['GST'].username" placeholder="GST Portal Username" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Password</label>
+                  <div class="sd-input-wrap">
+                    <input class="sd-input password-input" [class.shown]="showPass['GST']"
+                           [type]="showPass['GST'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['GST'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('GST')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['GST'] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Expiry Date</label>
+                  <input class="sd-input" type="date" [(ngModel)]="forms['GST'].expiryDate" />
+                  @if (forms['GST'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['GST'].expiryDate)">
+                      {{ getExpiryLabel(forms['GST'].expiryDate) }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ ISO / Trademark / BIS / RoHS / CE / Copyright / Patent ════════════ -->
+            @if (isOcrService(svc.type)) {
+              <!-- Tracking Number display -->
+              @if (getRecord(svc.type)?.trackingNumber) {
+                <div class="sd-tracking-display">
+                  <span class="material-symbols-outlined" style="color:#16a34a;font-size:20px;">verified</span>
+                  <div>
+                    <div style="font-size:11px;color:#16a34a;font-weight:600;text-transform:uppercase;letter-spacing:0.4px;">Application Tracking Number</div>
+                    <div class="sd-tracking-num">{{ getRecord(svc.type).trackingNumber }}</div>
+                  </div>
+                </div>
+              }
+
+              <!-- Manual override field -->
+              <div class="sd-field">
+                <label class="sd-label">Application Tracking Number (manual entry)</label>
+                <input class="sd-input" type="text" [(ngModel)]="forms[svc.type].trackingNumber"
+                       [placeholder]="'Enter or verify ' + svc.label + ' tracking number'" autocomplete="new-password" />
+              </div>
+
+              <!-- OCR Upload Zone -->
+              <div class="sd-ocr-zone"
+                   [class.processing]="isOcrProcessing[svc.type]"
+                   [class.success]="ocrSuccess[svc.type]"
+                   (click)="!isOcrProcessing[svc.type] && ocrFileInput.click()">
+                <span class="material-symbols-outlined sd-ocr-icon">document_scanner</span>
+                <div class="sd-ocr-text">
+                  <div class="sd-ocr-title">{{ isOcrProcessing[svc.type] ? 'Extracting tracking number...' : 'Upload Acknowledgement / Receipt' }}</div>
+                  <div class="sd-ocr-sub">Upload image or PDF to auto-extract the tracking number using AI OCR</div>
+                </div>
+                <button class="sd-ocr-btn" [disabled]="isOcrProcessing[svc.type]"
+                        (click)="$event.stopPropagation(); ocrFileInput.click()">
+                  @if (isOcrProcessing[svc.type]) { <span class="sd-spinner"></span> } @else { Scan }
+                </button>
+                <input #ocrFileInput type="file" accept="image/*,application/pdf" style="display:none"
+                       (change)="onOcrFileSelected($event, svc.type)" />
+              </div>
+
+              @if (ocrError[svc.type]) {
+                <div class="sd-ocr-error">
+                  <span class="material-symbols-outlined" style="font-size:18px;flex-shrink:0;">error</span>
+                  {{ ocrError[svc.type] }}
+                </div>
+              }
+            }
+
+            <!-- ════════════ ITR ════════════ -->
+            @if (svc.type === 'ITR') {
+              <div>
+                <div class="sd-section-label">Company Credentials</div>
+                <div class="sd-field-grid">
+                  <div class="sd-field">
+                    <label class="sd-label">Username</label>
+                    <input class="sd-input" type="text" [(ngModel)]="forms['ITR'].username" placeholder="Income Tax Portal Username" autocomplete="new-password" />
+                  </div>
+                  <div class="sd-field">
+                    <label class="sd-label">Password</label>
+                    <div class="sd-input-wrap">
+                      <input class="sd-input password-input" [class.shown]="showPass['ITR_company']"
+                             [type]="showPass['ITR_company'] ? 'text' : 'password'"
+                             [(ngModel)]="forms['ITR'].password" placeholder="••••••••" autocomplete="new-password" />
+                      <button class="sd-show-hide" (click)="togglePass('ITR_company')">
+                        <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['ITR_company'] ? 'visibility_off' : 'visibility' }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- Director Credentials -->
+              <div>
+                <div class="sd-section-label" style="margin-bottom:10px;">Director Credentials ({{ directorCount }} Directors)</div>
+                @for (dir of forms['ITR'].directorCredentials; track dir.index) {
+                  <div class="sd-director-block" style="margin-bottom:10px;">
+                    <div class="sd-director-title">
+                      <span class="material-symbols-outlined" style="font-size:16px;color:#6366f1;">person</span>
+                      {{ dir.label }}
+                    </div>
+                    <div class="sd-field-grid">
+                      <div class="sd-field">
+                        <label class="sd-label">Username</label>
+                        <input class="sd-input" type="text" [(ngModel)]="dir.username" autocomplete="new-password" />
+                      </div>
+                      <div class="sd-field">
+                        <label class="sd-label">Password</label>
+                        <div class="sd-input-wrap">
+                          <input class="sd-input password-input" [class.shown]="showPass['ITR_dir_'+dir.index]"
+                                 [type]="showPass['ITR_dir_'+dir.index] ? 'text' : 'password'"
+                                 [(ngModel)]="dir.password" placeholder="••••••••" autocomplete="new-password" />
+                          <button class="sd-show-hide" (click)="togglePass('ITR_dir_'+dir.index)">
+                            <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['ITR_dir_'+dir.index] ? 'visibility_off' : 'visibility' }}</span>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="sd-field">
+                        <label class="sd-label">Expiry Date</label>
+                        <input class="sd-input" type="date" [(ngModel)]="dir.expiryDate" />
+                        @if (dir.expiryDate) {
+                          <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(dir.expiryDate)">
+                            {{ getExpiryLabel(dir.expiryDate) }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- ════════════ DSC ════════════ -->
+            @if (svc.type === 'DSC') {
+              <div style="font-size:12px;color:var(--text-secondary);padding:4px 0 8px 0;">
+                Default Token PIN is <strong>wealthempires</strong>. Update DSC password whenever it changes.
+              </div>
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">Token PIN</label>
+                  <div class="sd-input-wrap">
+                    <input class="sd-input password-input" [class.shown]="showPass['DSC_pin']"
+                           [type]="showPass['DSC_pin'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['DSC'].tokenPin" placeholder="wealthempires" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('DSC_pin')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['DSC_pin'] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">DSC Password</label>
+                  <div class="sd-input-wrap">
+                    <input class="sd-input password-input" [class.shown]="showPass['DSC_pass']"
+                           [type]="showPass['DSC_pass'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['DSC'].password" placeholder="DSC Password" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('DSC_pass')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['DSC_pass'] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ FSSAI ════════════ -->
+            @if (svc.type === 'FSSAI') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">Username</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['FSSAI'].username" placeholder="FSSAI Portal Username" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Password</label>
+                  <div class="sd-input-wrap">
+                    <input class="sd-input password-input" [class.shown]="showPass['FSSAI']"
+                           [type]="showPass['FSSAI'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['FSSAI'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('FSSAI')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['FSSAI'] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Expiry Date</label>
+                  <input class="sd-input" type="date" [(ngModel)]="forms['FSSAI'].expiryDate" />
+                  @if (forms['FSSAI'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['FSSAI'].expiryDate)">
+                      {{ getExpiryLabel(forms['FSSAI'].expiryDate) }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ TDS ════════════ -->
+            @if (svc.type === 'TDS') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">TAN</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['TDS'].tan" placeholder="Tax Deduction and Collection Account Number" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">TRACES Username</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['TDS'].username" placeholder="TRACES Username" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">TRACES Password</label>
+                  <div class="sd-input-wrap">
+                    <input class="sd-input password-input" [class.shown]="showPass['TDS']"
+                           [type]="showPass['TDS'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['TDS'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('TDS')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['TDS'] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Expiry Date</label>
+                  <input class="sd-input" type="date" [(ngModel)]="forms['TDS'].expiryDate" />
+                  @if (forms['TDS'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['TDS'].expiryDate)">
+                      {{ getExpiryLabel(forms['TDS'].expiryDate) }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ PF (EPFO) ════════════ -->
+            @if (svc.type === 'PF') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">Establishment PF Code</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['PF'].pfCode" placeholder="Establishment PF Code" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">EPFO Username</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['PF'].username" placeholder="EPFO Employer Portal Username" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">EPFO Password</label>
+                  <div class="sd-input-wrap">
+                    <input class="sd-input password-input" [class.shown]="showPass['PF']"
+                           [type]="showPass['PF'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['PF'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('PF')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['PF'] ? 'visibility_off' : 'visibility' }}</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Password Expiry Date</label>
+                  <input class="sd-input" type="date" [(ngModel)]="forms['PF'].expiryDate" />
+                  @if (forms['PF'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['PF'].expiryDate)">
+                      {{ getExpiryLabel(forms['PF'].expiryDate) }}
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ LEI ════════════ -->
+            @if (svc.type === 'LEI') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">LEI Number</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['LEI'].leiNumber" placeholder="LEI Number" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Issue Date</label>
+                  <input class="sd-input" type="date" [(ngModel)]="forms['LEI'].issueDate" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Expiry / Renewal Date</label>
+                  <input class="sd-input" type="date" [(ngModel)]="forms['LEI'].expiryDate" />
+                  @if (forms['LEI'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['LEI'].expiryDate)">
+                      {{ getExpiryLabel(forms['LEI'].expiryDate) }}
+                    </span>
+                  }
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Status</label>
+                  <select class="sd-input" [(ngModel)]="forms['LEI'].status" style="appearance: auto;">
+                    <option value="active">Active</option>
+                    <option value="expired">Expired</option>
+                  </select>
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ IEC ════════════ -->
+            @if (svc.type === 'IEC') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">IEC Number</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['IEC'].iecNumber" placeholder="IEC Number" autocomplete="new-password" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Issue Date</label>
+                  <input class="sd-input" type="date" [(ngModel)]="forms['IEC'].issueDate" />
+                </div>
+                <div class="sd-field">
+                  <label class="sd-label">Expiry Status</label>
+                  <select class="sd-input" [(ngModel)]="forms['IEC'].status" style="appearance: auto;">
+                    <option value="active">Active (No Expiry)</option>
+                    <option value="suspended">Suspended</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ MSME ════════════ -->
+            @if (svc.type === 'MSME') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">Udyam Registration Number</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['MSME'].udyamNumber" placeholder="Enter Udyam Number" autocomplete="new-password" />
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ DUNS ════════════ -->
+            @if (svc.type === 'DUNS') {
+              <div class="sd-field-grid">
+                <div class="sd-field">
+                  <label class="sd-label">Application ID</label>
+                  <input class="sd-input" type="text" [(ngModel)]="forms['DUNS'].trackingNumber" placeholder="Enter Application ID" autocomplete="new-password" />
+                </div>
+              </div>
+            }
+
+            <!-- ════════════ Action Bar ════════════ -->
+            <div class="sd-action-bar">
+              @if (getRecord(svc.type)) {
+                <button class="sd-btn sd-btn-delete" (click)="deleteRecord(svc.type)">
+                  <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
+                  Delete
+                </button>
+              }
+              <button class="sd-btn sd-btn-save" [disabled]="isSaving[svc.type]" (click)="saveRecord(svc.type)">
+                @if (isSaving[svc.type]) { <span class="sd-spinner"></span> } @else {
+                  <span class="material-symbols-outlined" style="font-size:16px;">save</span>
+                }
+                {{ isSaving[svc.type] ? 'Saving...' : (getRecord(svc.type) ? 'Update' : 'Save') }}
+              </button>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  </div>
+  }
+
+</div>
+
+<!-- Toast -->
+@if (toastMessage()) {
+  <div class="sd-toast" [class.success]="toastType() === 'success'" [class.error]="toastType() === 'error'">
+    <span class="material-symbols-outlined" style="font-size:20px;">{{ toastType() === 'success' ? 'check_circle' : 'error' }}</span>
+    {{ toastMessage() }}
+  </div>
+}

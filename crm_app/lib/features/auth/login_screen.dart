@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../../providers/auth_provider.dart';
+import 'auth_wrapper.dart';
 import '../../providers/navigation_provider.dart';
 import 'client_onboarding_screen.dart';
 
@@ -44,7 +45,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               color: isError ? Colors.redAccent : AppTheme.deepTeal,
             ),
             const SizedBox(width: 12),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
         content: Text(message, style: TextStyle(color: Colors.grey[700])),
@@ -72,6 +78,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           );
       ref.read(navigationIndexProvider.notifier).state = 0;
       TextInput.finishAutofillContext();
+      if (mounted) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const AuthWrapper()),
+          (route) => false,
+        );
+      }
     } catch (e) {
       showGlobalError(e);
       String title = 'Sign In Failed';

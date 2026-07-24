@@ -46,7 +46,12 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
               color: isError ? Colors.redAccent : AppTheme.deepTeal,
             ),
             const SizedBox(width: 12),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
         content: Text(message, style: TextStyle(color: Colors.grey[700])),
@@ -81,7 +86,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
       await ref.read(authRepositoryProvider).submitClientOnboarding(payload);
 
       _showAuthDialog(
-        title: 'Onboarding Request Submitted',
+        title: 'Request Submitted',
         message: 'Our team will reach out to you soon.',
         isError: false,
       );

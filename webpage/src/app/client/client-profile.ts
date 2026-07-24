@@ -365,6 +365,22 @@ export class ClientProfile implements OnInit, OnDestroy {
     this.router.navigate(['/client/services'], { queryParams: { serviceName: serviceName } });
   }
 
+  // ── Application Tracking Numbers (read-only, client-safe) ──
+  trackingNumbers = signal<any[]>([]);
+  readonly TRACKING_SERVICES = ['ISO', 'Trademark', 'BIS', 'RoHS', 'CE', 'Copyright', 'Patent'];
+
+  loadTrackingNumbers(clientId: string) {
+    this.api.get<any>(`service-details/${clientId}`).subscribe({
+      next: (res: any) => {
+        if (res?.success) {
+          const filtered = res.data.filter((r: any) => this.TRACKING_SERVICES.includes(r.serviceType) && r.trackingNumber);
+          this.trackingNumbers.set(filtered);
+        }
+      },
+      error: () => {} // Silently fail for clients
+    });
+  }
+
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (!savedUser) {
@@ -379,7 +395,9 @@ export class ClientProfile implements OnInit, OnDestroy {
 
     // We start with the local user data to render quickly
     this.user.set(parsedUser);
-    this.fetchFullProfile(parsedUser._id || parsedUser.id);
+    const uid = parsedUser._id || parsedUser.id;
+    this.fetchFullProfile(uid);
+    this.loadTrackingNumbers(uid);
     window.addEventListener('entityChanged', this.entityChangeHandler);
   }
 

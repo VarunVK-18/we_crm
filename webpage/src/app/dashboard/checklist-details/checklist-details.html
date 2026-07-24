@@ -1085,12 +1085,24 @@
         }
       </section>
 
+      <!-- ══════════════════════════════════════════════════ -->
+      <!-- Service Details Section — Filing Staff Only       -->
+      <!-- ══════════════════════════════════════════════════ -->
+      @if (canViewServiceDetails() && getClientId()) {
+        <app-service-details
+          [clientId]="getClientId()"
+          [directorCount]="getDirectorCount()"
+          [currentServiceName]="checklist()?.service_name || ''">
+        </app-service-details>
+      }
+
       <!-- Final Documents Section -->
       @if (checklist().items && checklist().items.length > 0 && (checklist().items.length === 1 ||
       checklist().items[checklist().items.length - 2].isChecked)) {
       <section
         style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px; padding-top: 32px; border-top: 1px solid var(--border-color);">
         <h3 class="section-title">Final Delivery Documents</h3>
+
 
         @if (checklist().final_documents && checklist().final_documents.length > 0) {
         <div class="bucket-table-container">
@@ -1327,70 +1339,6 @@
             </button>
           </div>
           }
-        </div>
-      </section>
-      }
-      <!-- Application Tracking Section -->
-      @if (checklist().service_name?.toLowerCase().includes('trademark') ||
-      checklist().service_name?.toLowerCase().includes('trade mark') ||
-      checklist().service_name?.toLowerCase().includes('patent') ||
-      checklist().service_name?.toLowerCase().includes('copyright')) {
-      <section class="info-card" style="margin-top: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <div style="display: flex; flex-direction: column; gap: 4px;">
-            <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0;">Application Tracking
-            </h4>
-            <p style="font-size: 13px; color: var(--text-secondary); margin: 0;">
-              Application/Registration ID for client tracking.
-            </p>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 12px;">
-            @if (isEditingApplicationId()) {
-            <input type="text" [(ngModel)]="applicationIdInput" placeholder="Enter Application ID"
-              style="width: 200px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-primary); color: var(--text-primary); font-size: 14px;">
-            <button (click)="saveApplicationId()" [disabled]="isSavingApplicationId()"
-              style="padding: 8px 16px; background-color: var(--accent-primary); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-              @if (isSavingApplicationId()) {
-              <span class="material-symbols-outlined"
-                style="font-size: 16px; animation: spin 1s linear infinite;">progress_activity</span> Saving...
-              } @else {
-              Save
-              }
-            </button>
-            <button (click)="cancelEditApplicationId()"
-              style="padding: 8px 16px; background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-weight: 600; cursor: pointer;">
-              Cancel
-            </button>
-            } @else {
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-size: 16px; font-weight: 700; color: var(--accent-primary);">{{
-                checklist().details?.applicationId || 'Not Added' }}</span>
-              @if (canManage() || (user() && user().role === 'filling_staff')) {
-              <button (click)="startEditApplicationId()"
-                style="background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 4px; transition: color 0.2s;"
-                title="Edit ID" onmouseover="this.style.color='var(--accent-primary)'"
-                onmouseout="this.style.color='var(--text-secondary)'">
-                <span class="material-symbols-outlined" style="font-size: 18px;">edit</span>
-              </button>
-
-              <input type="file" #appReceiptInput style="display: none;" accept="image/*,application/pdf"
-                (change)="uploadApplicationReceiptForOCR($event)">
-              <button (click)="appReceiptInput.click()" [disabled]="isScanningApplicationReceipt()"
-                style="background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 4px; transition: color 0.2s;"
-                title="Extract via OCR" onmouseover="this.style.color='var(--color-success)'"
-                onmouseout="this.style.color='var(--text-secondary)'">
-                @if (isScanningApplicationReceipt()) {
-                <span class="material-symbols-outlined"
-                  style="font-size: 18px; animation: spin 1s linear infinite;">progress_activity</span>
-                } @else {
-                <span class="material-symbols-outlined" style="font-size: 18px;">document_scanner</span>
-                }
-              </button>
-              }
-            </div>
-            }
-          </div>
         </div>
       </section>
       }

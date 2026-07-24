@@ -3,6 +3,7 @@ const Certificate = require('../models/Certificate');
 const Notification = require('../models/Notification');
 const Checklist = require('../models/Checklist');
 const ComplianceTask = require('../models/ComplianceTask');
+const ServiceDetails = require('../models/ServiceDetails');
 
 // Run daily at 15:37 (3:37 PM)
 cron.schedule('44 15 * * *', async () => {
@@ -112,6 +113,79 @@ cron.schedule('44 15 * * *', async () => {
     }
   } catch (err) {
     console.error('Error in cron job:', err);
+  }
+});
+
+// ─── Service Details Credential Expiry Cron ─────────────────────────────────
+// Runs daily at 15:44 - checks all service credentials for expiry
+cron.schedule('44 15 * * *', async () => {
+  try {
+    console.log('[ServiceDetails Cron] Checking credential expiry...');
+    const User = require('../models/User');
+    const now = new Date();
+
+    // Collect admin and manager user IDs for targeted notifications
+    const staffUsers = await User.find({ role: { $in: ['admin', 'client_manager'] } }).select('_id');
+    const staffIds = staffUsers.map(u => u._id);
+
+    const records = await ServiceDetails.find({
+      $or: [
+        { expiryDate: { $ne: null } },
+        { 'directorCredentials.expiryDate': { $ne: null } }
+      ]
+    }).populate('clientId', 'owner_name company_name');
+
+    for (const rec of records) {
+      const clientLabel = rec.clientId?.company_name || rec.clientId?.owner_name || 'Client';
+      const serviceLabel = rec.serviceType;
+
+      // Check top-level expiry
+      if (rec.expiryDate) {
+        const diff = Math.ceil((new Date(rec.expiryDate) - now) / (1000 * 60 * 60 * 24));
+        let msg = '';
+        if (diff === 30) msg = `${serviceLabel} credentials for ${clientLabel} expire in 30 days.`;
+        else if (diff === 10) msg = `${serviceLabel} credentials for ${clientLabel} expire in 10 days.`;
+        else if (diff === 7)  msg = `${serviceLabel} credentials for ${clientLabel} expire in 7 days! Action required.`;
+        else if (diff === 1)  msg = `${serviceLabel} credentials for ${clientLabel} expire TOMORROW!`;
+        else if (diff === 0)  msg = `${serviceLabel} credentials for ${clientLabel} expire TODAY!`;
+        else if (diff < 0 && (diff === -1 || diff % 5 === 0)) msg = `${serviceLabel} credentials for ${clientLabel} are EXPIRED by ${Math.abs(diff)} days!`;
+
+        if (msg) {
+          for (const staffId of staffIds) {
+            await Notification.create({
+              client_id: staffId,
+              title: 'Credential Expiry Alert',
+              message: msg,
+              type: 'status_update'
+            });
+          }
+        }
+      }
+
+      // Check director credentials
+      for (const dir of (rec.directorCredentials || [])) {
+        if (!dir.expiryDate) continue;
+        const diff = Math.ceil((new Date(dir.expiryDate) - now) / (1000 * 60 * 60 * 24));
+        let msg = '';
+        if (diff === 10) msg = `${serviceLabel} ${dir.label || 'Director'} credentials for ${clientLabel} expire in 10 days.`;
+        else if (diff === 1) msg = `${serviceLabel} ${dir.label || 'Director'} credentials for ${clientLabel} expire TOMORROW!`;
+        else if (diff === 0) msg = `${serviceLabel} ${dir.label || 'Director'} credentials for ${clientLabel} expire TODAY!`;
+
+        if (msg) {
+          for (const staffId of staffIds) {
+            await Notification.create({
+              client_id: staffId,
+              title: 'Director Credential Expiry',
+              message: msg,
+              type: 'status_update'
+            });
+          }
+        }
+      }
+    }
+    console.log('[ServiceDetails Cron] Expiry check complete.');
+  } catch (err) {
+    console.error('[ServiceDetails Cron] Error:', err);
   }
 });
 

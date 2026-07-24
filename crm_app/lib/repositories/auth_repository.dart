@@ -265,7 +265,7 @@ class AuthRepository {
           )
           .timeout(const Duration(seconds: 15));
 
-      if (response.statusCode != 200) {
+      if (response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
         final errorData = jsonDecode(response.body);
         throw Exception(errorData['message'] ?? 'Failed to add entity');
       }
@@ -322,7 +322,7 @@ class AuthRepository {
           )
           .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode != 200) {
+      if (response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
         throw Exception('Failed to remove image (Status: ${response.statusCode})');
       }
     } catch (e) {
@@ -377,7 +377,7 @@ class AuthRepository {
           )
           .timeout(const Duration(seconds: 10));
 
-      if (response.statusCode != 200) {
+      if (response.statusCode != 200 && response.statusCode != 201 && response.statusCode != 202) {
         throw Exception('Failed to remove entity logo (Status: ${response.statusCode})');
       }
     } catch (e) {
