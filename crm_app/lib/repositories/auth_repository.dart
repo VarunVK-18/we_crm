@@ -240,7 +240,12 @@ class AuthRepository {
   }
 
   // Request a new entity (Secondary Company)
-  Future<void> addEntity(String entityName) async {
+  Future<void> addEntity({
+    required String companyName,
+    String companyType = '',
+    String directorCount = '',
+    String stateOfRegistration = '',
+  }) async {
     if (_currentUser == null) throw Exception('Not authenticated');
 
     try {
@@ -252,7 +257,10 @@ class AuthRepository {
               'x-user-id': _currentUser!.uid,
             },
             body: jsonEncode({
-              'entityName': entityName,
+              'company_name': companyName,
+              'company_type': companyType,
+              'director_count': directorCount,
+              'state_of_registration': stateOfRegistration,
             }),
           )
           .timeout(const Duration(seconds: 15));

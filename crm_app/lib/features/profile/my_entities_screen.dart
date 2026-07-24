@@ -153,6 +153,10 @@ class _AddEntityBottomSheet extends ConsumerStatefulWidget {
 class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _typeController = TextEditingController();
+  final _directorController = TextEditingController();
+  final _stateController = TextEditingController();
+  
   bool _isLoading = false;
 
   Future<void> _submitRequest() async {
@@ -162,7 +166,12 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.addEntity(_nameController.text.trim());
+      await authRepo.addEntity(
+        companyName: _nameController.text.trim(),
+        companyType: _typeController.text.trim(),
+        directorCount: _directorController.text.trim(),
+        stateOfRegistration: _stateController.text.trim(),
+      );
       
       if (!mounted) return;
       
@@ -262,6 +271,82 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                 if (v.trim().length < 3) return 'Name too short';
                 return null;
               },
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _typeController,
+              style: GoogleFonts.poppins(color: Colors.black87),
+              decoration: InputDecoration(
+                labelText: 'Type of Company',
+                hintText: 'e.g. Private Limited',
+                labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.deepTeal),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _directorController,
+                    keyboardType: TextInputType.number,
+                    style: GoogleFonts.poppins(color: Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: 'Number of Directors',
+                      hintText: 'e.g. 2',
+                      labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.black12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.black12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.deepTeal),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _stateController,
+                    style: GoogleFonts.poppins(color: Colors.black87),
+                    decoration: InputDecoration(
+                      labelText: 'State of Registration',
+                      hintText: 'e.g. Maharashtra',
+                      labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.black12),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Colors.black12),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.deepTeal),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 32),
             ElevatedButton(
