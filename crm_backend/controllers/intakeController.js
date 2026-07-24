@@ -14,16 +14,17 @@ const onboardFromDealVoice = async (req, res) => {
     }
 
     const {
-      companyId,       // WE_CRM_COMPANYID from env
+      companyId,           // WE_CRM_COMPANYID from env
       companyName,
       ownerName,
       phone,
       email,
       address,
       businessType,
-      serviceName,     // The service they signed up for (e.g. "GST Registration")
+      serviceName,         // The service they signed up for (e.g. "GST Registration")
       dealvoiceClientId,
-      softrateClientId // Softrate CL-series client ID (e.g. CL1000)
+      softrateClientId,    // Softrate CL-series client ID (e.g. CL1000)
+      entityName           // Secondary entity name (only present for Add Entity requests)
     } = req.body;
 
     if (!companyId || !email || !serviceName) {
@@ -54,6 +55,21 @@ const onboardFromDealVoice = async (req, res) => {
       if (!clientUser.services.includes(serviceName)) {
         clientUser.services.push(serviceName);
         await clientUser.save();
+      }
+    }
+
+    // --- Handle secondary entity addition (from Add Entity flow) ---
+    if (entityName && entityName.trim()) {
+      const trimmedEntity = entityName.trim();
+      const alreadyExists = (clientUser.client_entities || []).some(
+        (e) => e.entityName.trim().toLowerCase() === trimmedEntity.toLowerCase()
+      );
+      if (!alreadyExists) {
+        if (!clientUser.client_entities) clientUser.client_entities = [];
+        clientUser.client_entities.push({ entityName: trimmedEntity, entityType: 'Company', pan: '', gstin: '' });
+        clientUser.markModified('client_entities');
+        await clientUser.save();
+        console.log(`[Intake] Added entity "${trimmedEntity}" to client ${clientUser.email}`);
       }
     }
 

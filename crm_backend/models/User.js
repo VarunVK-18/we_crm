@@ -314,7 +314,21 @@ const UserSchema = new mongoose.Schema({
     ifscCode: { type: String, default: '' },
     accountType: { type: String, default: '' },
     branchName: { type: String, default: '' }
-  }
+  },
+  entity_requests: [{
+    company_name: String,
+    company_type: String,
+    director_count: Number,
+    state_of_registration: String,
+    status: {
+      type: String,
+      default: 'pending' // 'pending', 'approved', 'rejected'
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 }, { timestamps: true });
 
 // Pre-save middleware to encrypt password before saving to database

@@ -1,5 +1,6 @@
 import { Component, OnInit, signal, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Notification01Icon, UserAccountIcon, Logout01Icon, ArrowDown01Icon, ArrowUp01Icon, Message02Icon } from '@hugeicons/core-free-icons';
 import { Router, NavigationEnd } from '@angular/router';
@@ -7,11 +8,12 @@ import { filter } from 'rxjs/operators';
 import { NotificationService, Notification } from '../../services/notification.service';
 import { Api } from '../../../api';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-client-topbar',
   standalone: true,
-  imports: [CommonModule, HugeiconsIconComponent],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent],
   templateUrl: './client-topbar.html',
   styleUrl: './client-topbar.css'
 })
@@ -36,6 +38,12 @@ export class ClientTopbarComponent implements OnInit {
   availableEntities = signal<string[]>([]);
   selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || '');
 
+  // Add entity modal
+  isAddEntityModalOpen = signal(false);
+  addEntityLoading = signal(false);
+  addEntityError = signal('');
+  addEntityData = { company_name: '', company_type: '', director_count: '', state_of_registration: '' };
+
   constructor(
     private router: Router, 
     private eRef: ElementRef, 
@@ -51,13 +59,14 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.fetchEntities();
     this.notifService.startPolling();
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       this.user.set(parsedUser);
       
+      this.fetchEntities();
+
       // Fetch latest profile to keep topbar and local storage in sync with mobile updates
       const uid = parsedUser._id || parsedUser.id;
       if (uid) {
@@ -113,37 +122,22 @@ export class ClientTopbarComponent implements OnInit {
   }
 
   fetchEntities() {
-    this.api.get<any>('my-checklists').subscribe({
+    this.api.get<any>('auth/my-entities').subscribe({
       next: (res: any) => {
-        const checklists: any[] = res.checklists || [];
-        const entitySet = new Set<string>();
-        checklists.forEach((c: any) => {
-          const name = (
-            c.entityName ||
-            c.companyName ||
-            c.details?.entityName ||
-            c.details?.companyName ||
-            c.details?.proposed_company_name ||
-            c.details?.businessName ||
-            c.details?.entity_name ||
-            ''
-          ).trim();
-          if (name && name.toLowerCase() !== 'client') {
-            entitySet.add(name);
-          }
-        });
-        const entities = Array.from(entitySet).sort();
-        this.availableEntities.set(entities);
+        if (res.success && res.entities) {
+          const entities = res.entities;
+          this.availableEntities.set(entities);
 
-        // Validate saved selection still exists
-        const saved = localStorage.getItem('client_selected_entity');
-        if (entities.length > 0) {
-          if (!saved || saved === 'All' || !entitySet.has(saved)) {
-            this.selectedEntity.set(entities[0]);
-            localStorage.setItem('client_selected_entity', entities[0]);
-            window.dispatchEvent(new CustomEvent('entityChanged', { detail: entities[0] }));
-          } else {
-            this.selectedEntity.set(saved);
+          // Validate saved selection still exists
+          const saved = localStorage.getItem('client_selected_entity');
+          if (entities.length > 0) {
+            if (!saved || saved === 'All' || !entities.includes(saved)) {
+              this.selectedEntity.set(entities[0]);
+              localStorage.setItem('client_selected_entity', entities[0]);
+              window.dispatchEvent(new CustomEvent('entityChanged', { detail: entities[0] }));
+            } else {
+              this.selectedEntity.set(saved);
+            }
           }
         }
       },
@@ -172,6 +166,51 @@ export class ClientTopbarComponent implements OnInit {
     this.isEntityDropdownOpen.update(v => !v);
     this.isDropdownOpen.set(false);
     this.isNotificationOpen.set(false);
+  }
+
+  openAddEntityModal() {
+    this.addEntityData = { company_name: '', company_type: '', director_count: '', state_of_registration: '' };
+    this.addEntityError.set('');
+    this.isAddEntityModalOpen.set(true);
+    this.isDropdownOpen.set(false);
+  }
+
+  closeAddEntityModal() {
+    this.isAddEntityModalOpen.set(false);
+    this.addEntityError.set('');
+  }
+
+  async submitAddEntity() {
+    this.addEntityError.set('');
+    if (!this.addEntityData.company_name.trim()) {
+      this.addEntityError.set('Company Name is required');
+      return;
+    }
+    this.addEntityLoading.set(true);
+    try {
+      const res: any = await firstValueFrom(
+        this.api.post<any>('auth/add-entity', {
+          company_name: this.addEntityData.company_name.trim(),
+          company_type: this.addEntityData.company_type.trim(),
+          director_count: this.addEntityData.director_count,
+          state_of_registration: this.addEntityData.state_of_registration.trim()
+        })
+      );
+      this.isAddEntityModalOpen.set(false);
+      // Refresh entity list
+      this.fetchEntities();
+      await this.confirmDialog.confirm({
+        title: 'Request Sent!',
+        message: `Your request to add "${this.addEntityData.company_name}" has been received. Our manager will review and reach you soon. The entity will appear in your account once approved.`,
+        confirmText: 'Got it!',
+        hideCancel: true
+      });
+    } catch (err: any) {
+      const msg = err?.error?.message || err?.message || 'Failed to add entity.';
+      this.addEntityError.set(msg);
+    } finally {
+      this.addEntityLoading.set(false);
+    }
   }
 
   ngOnDestroy() {

@@ -118,6 +118,20 @@
                     }
                   </button>
                 }
+                <!-- Add Entity Button -->
+                <button class="dropdown-item" (click)="openAddEntityModal(); $event.stopPropagation()" style="color: #0f172a; font-weight: 600; gap: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                  <span>Add Entity</span>
+                </button>
+                <div class="divider" style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+              }
+
+              <!-- if there's no entities yet, still show Add Entity -->
+              @if (availableEntities().length === 0) {
+                <button class="dropdown-item" (click)="openAddEntityModal(); $event.stopPropagation()" style="color: #0f172a; font-weight: 600; gap: 6px;">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+                  <span>Add Entity</span>
+                </button>
                 <div class="divider" style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
               }
 
@@ -131,4 +145,50 @@
       </div>
     }
   </div>
+</div>
 
+
+<!-- Add Entity Modal -->
+@if (isAddEntityModalOpen()) {
+  <div class="dialog-backdrop fade-in" (click)="closeAddEntityModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="dialog-card" (click)="$event.stopPropagation()" style="background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+      <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 6px;">Add New Entity</h2>
+      <p style="font-size: 14px; color: #64748b; margin: 0 0 24px;">Register a secondary company under your account</p>
+
+      <form (ngSubmit)="submitAddEntity()" #addEntityForm="ngForm">
+
+        <div class="form-field-group">
+          <label class="input-label">Company Name *</label>
+          <input [(ngModel)]="addEntityData.company_name" name="company_name" type="text" placeholder="Enter company name" class="styled-text-input" style="padding-left: 16px;" required />
+          @if (addEntityError()) {
+            <span style="color: #ef4444; font-size: 12px; margin-top: 4px; display: block;">{{ addEntityError() }}</span>
+          }
+        </div>
+
+        <div class="form-field-group">
+          <label class="input-label">Type of Company</label>
+          <input [(ngModel)]="addEntityData.company_type" name="company_type" type="text" placeholder="e.g. Private Limited" class="styled-text-input" style="padding-left: 16px;" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-field-group">
+            <label class="input-label">Number of Directors</label>
+            <input [(ngModel)]="addEntityData.director_count" name="director_count" type="number" placeholder="e.g. 2" class="styled-text-input" style="padding-left: 16px;" />
+          </div>
+          <div class="form-field-group">
+            <label class="input-label">State of Registration</label>
+            <input [(ngModel)]="addEntityData.state_of_registration" name="state_of_registration" type="text" placeholder="e.g. Maharashtra" class="styled-text-input" style="padding-left: 16px;" />
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 8px;">
+          <button type="button" (click)="closeAddEntityModal()" style="flex: 1; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; color: #475569; font-size: 14px; font-weight: 600; cursor: pointer;">Cancel</button>
+          <button type="submit" [disabled]="addEntityLoading()" style="flex: 2; padding: 12px; border: none; border-radius: 10px; background: #0f172a; color: white; font-size: 14px; font-weight: 700; cursor: pointer;">
+            @if (addEntityLoading()) { <span>Adding...</span> } @else { <span>Add Entity</span> }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

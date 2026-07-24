@@ -124,17 +124,173 @@ class MyEntitiesScreen extends ConsumerWidget {
                 ),
       floatingActionButton: entityCards.isNotEmpty
           ? FloatingActionButton(
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const RegistrationServicesScreen(),
-                ),
-              ),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder: (context) => const _AddEntityBottomSheet(),
+                );
+              },
               backgroundColor: AppTheme.deepTeal,
               shape: const CircleBorder(),
               child: const HugeIcon(icon: HugeIcons.strokeRoundedAddCircle, color: Colors.white, size: 24),
             )
           : null,
+    );
+  }
+}
+
+// ── Add Entity Bottom Sheet ──────────────────────────────────────────────────
+
+class _AddEntityBottomSheet extends ConsumerStatefulWidget {
+  const _AddEntityBottomSheet();
+
+  @override
+  ConsumerState<_AddEntityBottomSheet> createState() => _AddEntityBottomSheetState();
+}
+
+class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
+  final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _submitRequest() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isLoading = true);
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      await authRepo.addEntity(_nameController.text.trim());
+      
+      if (!mounted) return;
+      
+      Navigator.pop(context);
+      
+      globalScaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text('Your request to add "${_nameController.text.trim()}" has been sent.'),
+          backgroundColor: AppTheme.deepTeal,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        left: 24,
+        right: 24,
+        top: 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Add New Entity',
+                  style: GoogleFonts.outfit(
+                    color: AppTheme.deepTeal,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20,
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(LucideIcons.x, color: Colors.black54),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Submit a request to add a secondary company to your profile.',
+              style: GoogleFonts.poppins(
+                color: Colors.black54,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            TextFormField(
+              controller: _nameController,
+              autofocus: true,
+              style: GoogleFonts.poppins(color: Colors.black87),
+              decoration: InputDecoration(
+                labelText: 'Entity Name',
+                labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.deepTeal),
+                ),
+              ),
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) return 'Required';
+                if (v.trim().length < 3) return 'Name too short';
+                return null;
+              },
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _submitRequest,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.deepTeal,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text(
+                      'Submit Request',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

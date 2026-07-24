@@ -38,7 +38,10 @@ const {
   getClientsWithNoBankDetails,
   updateClientBankDetails,
   clientOnboard,
-  getClientOnboardRequests
+  getClientOnboardRequests,
+  addEntity,
+  approveEntity,
+  myEntities
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -100,5 +103,12 @@ router.get('/audit-logs', checkUser, permit('admin', 'auditor'), getAuditLogs);
 
 // Migration: re-assign pending checklists from filing_staff to client_manager
 router.post('/admin/migrate-checklist-assignments', checkUser, permit('admin'), migrateChecklistAssignments);
+
+// Add secondary entity (used by logged-in clients to register another company)
+router.post('/auth/add-entity', checkUser, addEntity);
+// Approve a secondary entity request from the admin dashboard
+router.post('/auth/approve-entity', approveEntity);
+// Get list of entities for logged in client
+router.get('/auth/my-entities', checkUser, myEntities);
 
 module.exports = router;

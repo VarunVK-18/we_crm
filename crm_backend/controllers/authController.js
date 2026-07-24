@@ -42,9 +42,11 @@ const registerUser = async (req, res) => {
       company_id   // company scope passed from admin dashboard
     } = req.body;
 
+
     // Check if user already exists
-    const userExists = await User.findOne({ email: email.trim() });
-    if (userExists) {
+    let existingUser = await User.findOne({ email: email.trim() });
+    if (existingUser && existingUser.onboard) {
+      // Fully onboarded user — do not allow re-registration
       return res.status(400).json({ message: 'User already exists with this email address' });
     }
 
@@ -116,30 +118,58 @@ const registerUser = async (req, res) => {
        } catch (e) { console.error('Failed to generate custom_client_id', e); }
     }
 
-    // Create user (password is automatically hashed via mongoose pre-save hook)
-    const user = await User.create({
-      company_id: finalCompanyId,
-      custom_client_id,
-      email: email.trim(),
-      password: password || '',
-      owner_name,
-      phone: phone || '',
-      role: role || 'customer',
-      company_name: company_name || '',
-      business_type: business_type || '',
-      pan: pan || '',
-      gstin: gstin || '',
-      address: address || '',
-      status: status || 'active',
-      revenue: revenue ? Number(revenue) : 0,
-      director_count: director_count ? Number(director_count) : 0,
-      gstin_file,
-      pan_file,
-      services: parsedServices || [],
-      created_by: creatorId,
-      onboarding_status,
-      client_entities: initialClientEntities
-    });
+    let user;
+    if (existingUser) {
+      // Upgrade existing Prospect user to a fully registered client
+      existingUser.company_id = finalCompanyId || existingUser.company_id;
+      if (custom_client_id) existingUser.custom_client_id = custom_client_id;
+      if (password) existingUser.password = password;
+      if (owner_name) existingUser.owner_name = owner_name;
+      if (phone) existingUser.phone = phone;
+      if (company_name) existingUser.company_name = company_name;
+      if (business_type) existingUser.business_type = business_type;
+      if (pan) existingUser.pan = pan;
+      if (gstin) existingUser.gstin = gstin;
+      if (address) existingUser.address = address;
+      existingUser.status = status || 'active';
+      if (revenue) existingUser.revenue = Number(revenue);
+      if (director_count) existingUser.director_count = Number(director_count);
+      if (gstin_file) existingUser.gstin_file = gstin_file;
+      if (pan_file) existingUser.pan_file = pan_file;
+      existingUser.services = parsedServices || existingUser.services || [];
+      existingUser.created_by = creatorId || existingUser.created_by;
+      existingUser.onboarding_status = onboarding_status;
+      existingUser.onboard = true;
+      if (initialClientEntities.length > 0) existingUser.client_entities = initialClientEntities;
+      await existingUser.save();
+      user = existingUser;
+    } else {
+      // Create a new user
+      user = await User.create({
+        company_id: finalCompanyId,
+        custom_client_id,
+        email: email.trim(),
+        password: password || '',
+        owner_name,
+        phone: phone || '',
+        role: role || 'customer',
+        company_name: company_name || '',
+        business_type: business_type || '',
+        pan: pan || '',
+        gstin: gstin || '',
+        address: address || '',
+        status: status || 'active',
+        revenue: revenue ? Number(revenue) : 0,
+        director_count: director_count ? Number(director_count) : 0,
+        gstin_file,
+        pan_file,
+        services: parsedServices || [],
+        created_by: creatorId,
+        onboarding_status,
+        client_entities: initialClientEntities
+      });
+    }
+
 
     if (user) {
       // Remove password from response
@@ -1977,6 +2007,9 @@ module.exports = {
   updateClientBankDetails
 };
 
+const http = require('http');
+const https = require('https');
+
 // @desc    Client Onboarding Form Submission
 // @route   POST /api/auth/client-onboard
 // @access  Public
@@ -1998,29 +2031,133 @@ const clientOnboard = async (req, res) => {
     }
     
     // Check if user already exists
-    const userExists = await User.findOne({ email: email.trim() });
-    if (userExists) {
-      return res.status(400).json({ message: 'User already exists with this email address' });
+    let user = await User.findOne({ email: email.trim() });
+    if (user) {
+      if (user.onboard) {
+        return res.status(400).json({ message: 'User already exists and is fully onboarded. Please log in.' });
+      }
+      
+      // Update existing prospect user
+      user.owner_name = name;
+      user.phone = phone || user.phone;
+      user.company_name = company_name || user.company_name;
+      user.business_type = company_type || user.business_type;
+      if (director_count) user.director_count = Number(director_count);
+      user.state = state_of_registration || user.state;
+      await user.save();
+    } else {
+      user = await User.create({
+        owner_name: name,
+        phone: phone || '',
+        company_name: company_name || '',
+        business_type: company_type || '',
+        director_count: director_count ? Number(director_count) : 0,
+        state: state_of_registration || '',
+        email: email.trim(),
+        password: '', // Blank password since they are not fully onboarded yet
+        role: 'customer',
+        onboard: false,
+        onboarding_status: 'Prospect'
+      });
     }
-
-    const user = await User.create({
-      owner_name: name,
-      phone: phone || '',
-      company_name: company_name || '',
-      business_type: company_type || '',
-      director_count: director_count ? Number(director_count) : 0,
-      state: state_of_registration || '',
-      email: email.trim(),
-      password: '', // Blank password since they are not fully onboarded yet
-      role: 'customer',
-      onboard: false,
-      onboarding_status: 'Prospect'
-    });
 
     res.status(201).json({
       success: true,
       message: 'Onboarding request submitted successfully.'
     });
+
+    // Fire and forget request to DealVoice to create a Converted Lead
+    try {
+      const dealvoiceUrl = process.env.DEALVOICE_API_URL || 'http://localhost:4000';
+      const leadPayload = JSON.stringify({
+        companyCode: 'WEE-0306-2026',
+        assignedEmployeePhone: 'admin',
+        leadCompanyName: company_name || name || 'Prospect Company',
+        contactName: name,
+        contactNumber: phone || '0000000000',
+        directorEmailAddress: email.trim(),
+        status: 'Converted'
+      });
+
+      const urlObj = new URL(`${dealvoiceUrl}/api/leads`);
+      const lib = urlObj.protocol === 'https:' ? https : http;
+
+      const options = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+        path: urlObj.pathname,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(leadPayload)
+        }
+      };
+
+      const dvReq = lib.request(options, (dvRes) => {
+        let data = '';
+        dvRes.on('data', chunk => { data += chunk; });
+        dvRes.on('end', () => {
+          console.log(`[DealVoice sync] Response ${dvRes.statusCode}:`, data);
+        });
+      });
+
+      dvReq.on('error', (e) => {
+        console.error(`[DealVoice sync] Error:`, e.message);
+      });
+
+      dvReq.write(leadPayload);
+      dvReq.end();
+    } catch (err) {
+      console.error(`[DealVoice sync] Setup Error:`, err.message);
+    }
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc    Add secondary entity for a logged-in client
+// @route   POST /api/auth/add-entity
+// @access  Private (logged-in customer)
+const addEntity = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { company_name, company_type, director_count, state_of_registration } = req.body;
+
+    if (!company_name) {
+      return res.status(400).json({ message: 'Company Name is required' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check entity name is unique for this user
+    const entityExists = (user.client_entities || []).some(
+      (e) => e.entityName.trim().toLowerCase() === company_name.trim().toLowerCase()
+    );
+    if (entityExists) {
+      return res.status(400).json({ message: 'An entity with this name already exists on your account.' });
+    }
+
+    // Add to pending entity_requests
+    if (!user.entity_requests) user.entity_requests = [];
+    user.entity_requests.push({
+      company_name: company_name.trim(),
+      company_type: company_type || '',
+      director_count: director_count ? Number(director_count) : 0,
+      state_of_registration: state_of_registration || '',
+      status: 'pending'
+    });
+    user.markModified('entity_requests');
+    await user.save();
+
+    res.status(202).json({
+      success: true,
+      message: 'Your request has been sent. Our manager will reach you soon.',
+    });
+
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -2060,24 +2197,74 @@ module.exports = {
   updateMcaProfile,
   getClientsWithNoBankDetails,
   updateClientBankDetails,
-  clientOnboard
+  clientOnboard,
+  addEntity
 };
 
 const getClientOnboardRequests = async (req, res) => {
   try {
     const userCompanyId = req.user ? req.user.company_id : req.query.company_id;
-    const filter = { role: 'customer', onboard: false };
+    
+    // Find users who are either not onboarded, or have pending entity_requests
+    const filter = { 
+      role: 'customer',
+      $or: [
+        { onboard: false },
+        { 'entity_requests.status': 'pending' }
+      ]
+    };
+
     if (userCompanyId) {
-      filter.$or = [
-        { company_id: userCompanyId },
-        { company_id: null },
-        { company_id: { $exists: false } }
+      filter.$and = [
+        {
+          $or: [
+            { company_id: userCompanyId },
+            { company_id: null },
+            { company_id: { $exists: false } }
+          ]
+        }
       ];
     }
 
-    const requests = await User.find(filter)
-      .select('-password')
-      .lean();
+    const users = await User.find(filter).select('-password').lean();
+
+    const requests = [];
+
+    for (const user of users) {
+      // 1. If the user is not fully onboarded, add them as a standard request
+      if (user.onboard === false) {
+        requests.push({
+          ...user,
+          isEntityRequest: false
+        });
+      }
+
+      // 2. If the user has pending entity requests, add each as a separate row
+      if (user.entity_requests && user.entity_requests.length > 0) {
+        for (const er of user.entity_requests) {
+          if (er.status === 'pending') {
+            requests.push({
+              _id: user._id, // Keep user ID for reference
+              owner_name: user.owner_name,
+              email: user.email,
+              phone: user.phone,
+              // Map entity request details to row fields
+              company_name: er.company_name,
+              business_type: er.company_type,
+              director_count: er.director_count,
+              state: er.state_of_registration,
+              // Special flags
+              isEntityRequest: true,
+              entityRequestId: er._id,
+              createdAt: er.createdAt
+            });
+          }
+        }
+      }
+    }
+
+    // Sort combined requests by createdAt descending
+    requests.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.status(200).json(requests);
   } catch (error) {
@@ -2086,4 +2273,122 @@ const getClientOnboardRequests = async (req, res) => {
   }
 };
 
+// @desc    Approve a pending entity request from the admin dashboard
+// @route   POST /api/auth/approve-entity
+// @access  Protected (admin/manager)
+const approveEntity = async (req, res) => {
+  try {
+    const { userId, requestId } = req.body;
+    if (!userId || !requestId) {
+      return res.status(400).json({ message: 'User ID and Request ID are required.' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    const entityRequest = (user.entity_requests || []).find(er => er._id.toString() === requestId);
+    if (!entityRequest) {
+      return res.status(404).json({ message: 'Entity request not found.' });
+    }
+
+    if (entityRequest.status === 'approved') {
+      return res.status(400).json({ message: 'Entity request is already approved.' });
+    }
+
+    // Add to client_entities
+    if (!user.client_entities) user.client_entities = [];
+    user.client_entities.push({
+      entityName: entityRequest.company_name,
+      entityType: entityRequest.company_type || 'Company',
+      pan: '',
+      gstin: ''
+    });
+
+    // Mark as approved
+    entityRequest.status = 'approved';
+    
+    user.markModified('client_entities');
+    user.markModified('entity_requests');
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Entity approved successfully.',
+    });
+
+    // Fire-and-forget: Sync to DealVoice as a Converted lead (secondary company)
+    try {
+      const dealvoiceUrl = process.env.DEALVOICE_API_URL || 'http://localhost:4000';
+      const leadPayload = JSON.stringify({
+        companyCode: 'WEE-0306-2026',
+        assignedEmployeePhone: 'admin',
+        leadCompanyName: entityRequest.company_name,
+        contactName: user.owner_name || user.company_name || 'Client',
+        contactNumber: user.phone || '0000000000',
+        directorEmailAddress: user.email,
+        status: 'Converted'
+      });
+      const urlObj = new URL(`${dealvoiceUrl}/api/leads`);
+      const lib = urlObj.protocol === 'https:' ? https : http;
+      const options = {
+        hostname: urlObj.hostname,
+        port: urlObj.port || (urlObj.protocol === 'https:' ? 443 : 80),
+        path: urlObj.pathname,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(leadPayload) }
+      };
+      const dvReq = lib.request(options, (dvRes) => {
+        let data = '';
+        dvRes.on('data', chunk => { data += chunk; });
+        dvRes.on('end', () => console.log(`[DealVoice sync] Response ${dvRes.statusCode}:`, data));
+      });
+      dvReq.on('error', (e) => console.error(`[DealVoice sync] Error:`, e.message));
+      dvReq.write(leadPayload);
+      dvReq.end();
+    } catch (err) {
+      console.error(`[DealVoice sync] Setup Error:`, err.message);
+    }
+
+  } catch (error) {
+    console.error('Error approving entity:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get a flat list of entity names for the logged-in user
+// @route   GET /api/auth/my-entities
+// @access  Protected
+const myEntities = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).lean();
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const entities = new Set();
+    
+    if (user.company_name) {
+      entities.add(user.company_name.trim());
+    }
+
+    if (user.client_entities && user.client_entities.length > 0) {
+      user.client_entities.forEach(c => {
+        if (c.entityName) entities.add(c.entityName.trim());
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      entities: Array.from(entities).sort()
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports.getClientOnboardRequests = getClientOnboardRequests;
+module.exports.approveEntity = approveEntity;
+module.exports.myEntities = myEntities;

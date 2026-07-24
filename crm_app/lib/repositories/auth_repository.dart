@@ -239,6 +239,34 @@ class AuthRepository {
     }
   }
 
+  // Request a new entity (Secondary Company)
+  Future<void> addEntity(String entityName) async {
+    if (_currentUser == null) throw Exception('Not authenticated');
+
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$kBaseUrl/api/auth/add-entity'),
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': _currentUser!.uid,
+            },
+            body: jsonEncode({
+              'entityName': entityName,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode != 200) {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Failed to add entity');
+      }
+    } catch (e) {
+      showGlobalError(e);
+      rethrow;
+    }
+  }
+
   // Upload Profile Image
   Future<String> uploadProfileImage(String uid, String filePath) async {
     try {

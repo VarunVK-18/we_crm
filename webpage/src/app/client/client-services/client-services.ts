@@ -319,16 +319,16 @@ export class ClientServicesComponent implements OnInit {
 
   fetchEntities() {
     this.isLoadingEntities.set(true);
+
+    // 1. Fetch checklists to populate this.myChecklists for duplicate checking
     this.api.get<any>('my-checklists').subscribe({
       next: (res) => {
-        let entities = new Set<string>();
         if (res.checklists) {
           this.myChecklists.set(res.checklists);
+          // Still build entityTypesMap from checklists just in case
           res.checklists.forEach((c: any) => {
             if (c.details && c.details.entityName && c.details.entityName.toLowerCase() !== 'client') {
               const name = c.details.entityName;
-              entities.add(name);
-
               if (c.service_name) {
                 const sName = c.service_name.toLowerCase();
                 if (sName.includes('private limited incorporation')) {
@@ -344,38 +344,44 @@ export class ClientServicesComponent implements OnInit {
             }
           });
         }
+      },
+      error: (err) => console.error('Failed to fetch checklists', err)
+    });
 
-        const userVal = this.user();
-        if (userVal?.company_name) {
-          entities.add(userVal.company_name);
-        }
+    // 2. Fetch proper entities from backend API
+    this.api.get<any>('auth/my-entities').subscribe({
+      next: (res) => {
+        if (res.success && res.entities) {
+          const entityArray = res.entities;
 
-        const entityArray = Array.from(entities);
+          // Fallback inference for entities without known type
+          entityArray.forEach((name: string) => {
+            if (!this.entityTypesMap.has(name)) {
+              const lower = name.toLowerCase();
+              if (lower.endsWith('pvt ltd') || lower.endsWith('private limited')) {
+                this.entityTypesMap.set(name, 'Private Limited Company');
+              } else if (lower.endsWith('llp')) {
+                this.entityTypesMap.set(name, 'LLP');
+              } else {
+                this.entityTypesMap.set(name, 'Unknown');
+              }
+            }
+          });
 
-        // Fallback inference for entities without known type
-        entityArray.forEach(name => {
-          if (!this.entityTypesMap.has(name)) {
-            const lower = name.toLowerCase();
-            if (lower.endsWith('pvt ltd') || lower.endsWith('private limited')) {
-              this.entityTypesMap.set(name, 'Private Limited Company');
-            } else if (lower.endsWith('llp')) {
-              this.entityTypesMap.set(name, 'LLP');
-            } else {
-              this.entityTypesMap.set(name, 'Unknown');
+          entityArray.push('Add New Entity...');
+          this.availableEntities.set(entityArray);
+
+          const currentSelection = this.quoteForm.selectedEntity;
+          if (!currentSelection || !entityArray.includes(currentSelection)) {
+            if (entityArray.length > 0) {
+              this.quoteForm.selectedEntity = entityArray[0];
             }
           }
-        });
-
-        entityArray.push('Add New Entity...');
-
-        this.availableEntities.set(entityArray);
-        if (entityArray.length > 0) {
-          this.quoteForm.selectedEntity = entityArray[0];
         }
         this.isLoadingEntities.set(false);
       },
       error: (err) => {
-        console.error('Failed to fetch entities:', err);
+        console.error('Failed to fetch user entities:', err);
         this.isLoadingEntities.set(false);
       }
     });

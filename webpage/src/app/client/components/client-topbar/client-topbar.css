@@ -596,3 +596,36 @@
   color: var(--text-muted);
   opacity: 0.5;
 }
+
+/* Modal Form Styles */
+.form-field-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.input-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.styled-text-input {
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  box-sizing: border-box;
+  background-color: #fff;
+  color: #0f172a;
+  transition: border-color 0.2s;
+}
+
+.styled-text-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
