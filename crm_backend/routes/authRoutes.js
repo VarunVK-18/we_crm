@@ -36,7 +36,9 @@ const {
   externalOnboard,
   updateMcaProfile,
   getClientsWithNoBankDetails,
-  updateClientBankDetails
+  updateClientBankDetails,
+  clientOnboard,
+  getClientOnboardRequests
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -57,6 +59,7 @@ router.post('/register', (req, res, next) => {
 router.post('/login', loginUser);
 router.post('/auth/register-direct', checkUser, preventAuditorWrite, permit('admin'), registerDirect);
 router.post('/auth/register-company', registerCompany);
+router.post('/auth/client-onboard', clientOnboard);
 
 // User profile route
 router.get('/users/profile/:id', getUserProfile);
@@ -77,6 +80,7 @@ router.get('/users/clients/summary', checkUser, getClientsSummary); // Lightweig
 router.get('/users/clients/no-bank-details', checkUser, permit('admin', 'client_manager'), getClientsWithNoBankDetails);
 router.patch('/users/clients/:id/bank-details', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), updateClientBankDetails);
 router.get('/users/clients', checkUser, getClients);
+router.get('/users/client-onboard-requests', getClientOnboardRequests);
 router.post('/users/clients/opportunities/query', checkUser, getClientsOpportunities);
 router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), assignClient);
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);

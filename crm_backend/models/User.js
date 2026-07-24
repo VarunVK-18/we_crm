@@ -145,6 +145,10 @@ const UserSchema = new mongoose.Schema({
     enum: ['active', 'inactive'],
     default: 'active'
   },
+  onboard: {
+    type: Boolean,
+    default: false
+  },
   director_count: {
     type: Number,
     default: 0

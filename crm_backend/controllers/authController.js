@@ -1976,3 +1976,114 @@ module.exports = {
   getClientsWithNoBankDetails,
   updateClientBankDetails
 };
+
+// @desc    Client Onboarding Form Submission
+// @route   POST /api/auth/client-onboard
+// @access  Public
+const clientOnboard = async (req, res) => {
+  try {
+    const {
+      name,
+      phone,
+      company_name,
+      company_type,
+      director_count,
+      state_of_registration,
+      email
+    } = req.body;
+
+    // Validate
+    if (!name || !company_name || !email) {
+      return res.status(400).json({ message: 'Name, Company Name, and Email are required' });
+    }
+    
+    // Check if user already exists
+    const userExists = await User.findOne({ email: email.trim() });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists with this email address' });
+    }
+
+    const user = await User.create({
+      owner_name: name,
+      phone: phone || '',
+      company_name: company_name || '',
+      business_type: company_type || '',
+      director_count: director_count ? Number(director_count) : 0,
+      state: state_of_registration || '',
+      email: email.trim(),
+      password: '', // Blank password since they are not fully onboarded yet
+      role: 'customer',
+      onboard: false,
+      onboarding_status: 'Prospect'
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Onboarding request submitted successfully.'
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  getClients,
+  getClientsOpportunities,
+  getClientsSummary,
+  outsourceService,
+  registerDirect,
+  getTeamGroups,
+  deleteUser,
+  editUser,
+  resetPassword,
+  registerCompany,
+  assignClient,
+  approveClient,
+  getAuditLogs,
+  subscribeService,
+  savePanDetails,
+  migrateChecklistAssignments,
+  uploadProfileImage,
+  removeProfileImage,
+  uploadEntityLogo,
+  removeEntityLogo,
+  updateClientEntities,
+  getPublicManagers,
+  editClientProfile,
+  uploadDirectorDocument,
+  toggleComplianceRadar,
+  reuploadProfileDocument,
+  externalOnboard,
+  updateMcaProfile,
+  getClientsWithNoBankDetails,
+  updateClientBankDetails,
+  clientOnboard
+};
+
+const getClientOnboardRequests = async (req, res) => {
+  try {
+    const userCompanyId = req.user ? req.user.company_id : req.query.company_id;
+    const filter = { role: 'customer', onboard: false };
+    if (userCompanyId) {
+      filter.$or = [
+        { company_id: userCompanyId },
+        { company_id: null },
+        { company_id: { $exists: false } }
+      ];
+    }
+
+    const requests = await User.find(filter)
+      .select('-password')
+      .lean();
+
+    res.status(200).json(requests);
+  } catch (error) {
+    console.error('Error fetching client onboard requests:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports.getClientOnboardRequests = getClientOnboardRequests;

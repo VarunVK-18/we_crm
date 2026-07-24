@@ -349,4 +349,24 @@ class AuthRepository {
       rethrow;
     }
   }
+  // Client Onboarding Request
+  Future<void> submitClientOnboarding(Map<String, dynamic> payload) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse('$kBaseUrl/api/auth/client-onboard'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        final errorData = jsonDecode(response.body);
+        throw Exception(errorData['message'] ?? 'Failed to submit onboarding request');
+      }
+    } catch (e) {
+      showGlobalError(e);
+      rethrow;
+    }
+  }
 }

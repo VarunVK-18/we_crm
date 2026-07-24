@@ -10,6 +10,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/navigation_provider.dart';
+import 'client_onboarding_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -389,9 +390,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           fontSize: 14),
                                     ),
                                     GestureDetector(
-                                      onTap: _contactSupport,
+                                      onTap: () {
+                                        Navigator.of(context).pushReplacement(
+                                          PageRouteBuilder(
+                                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                                const ClientOnboardingScreen(),
+                                            transitionDuration: Duration.zero,
+                                            reverseTransitionDuration: Duration.zero,
+                                          ),
+                                        );
+                                      },
                                       child: Text(
-                                        'Sign up',
+                                        'Apply for Onboarding',
                                         style: GoogleFonts.inter(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,

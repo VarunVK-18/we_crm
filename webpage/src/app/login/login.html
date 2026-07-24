@@ -8,6 +8,19 @@
     <div class="custom-branding-content animate-slide-up">
       <img src="/logo.jpg" alt="WE CRM Logo" class="custom-brand-logo" />
       <img src="/we-crm-clients.webp" alt="WE CRM Clients" class="custom-brand-clients" />
+      
+      <!-- Full Width Client Logos Section -->
+      <div class="client-logos-section animate-fade-in" style="animation-delay: 0.3s; margin-top: 2rem;">
+        <p class="client-logos-title">Our Trusted Partners</p>
+        <div class="client-logos-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+          <img src="/assets/Client/IDFC FIRST Bank Logo.png" alt="IDFC FIRST Bank" style="max-height: 30px; object-fit: contain; width: 100%;" />
+          <img src="/assets/Client/Softrate Logo.png" alt="Softrate" style="max-height: 30px; object-fit: contain; width: 100%;" />
+          <img src="/assets/Client/dbs.png" alt="DBS" style="max-height: 30px; object-fit: contain; width: 100%;" />
+          <img src="/assets/Client/logo 6.png" alt="DBS" style="max-height: 30px; object-fit: contain; width: 100%;" />
+          <img src="/assets/Client/PVR Near Me DLF Promenade Mall copy.png" alt="PVR" style="max-height: 30px; object-fit: contain; width: 100%;" />
+          <img src="/assets/Client/HCL Tech CUS.png" alt="HCL Tech" style="max-height: 30px; object-fit: contain; width: 100%;" />
+        </div>
+      </div>
     </div>
   </div>
 
@@ -119,128 +132,51 @@
             <!-- Register Company Link -->
             <div class="support-link-container">
               <button (click)="showRegisterForm()" type="button" class="btn-contact-support">
-                Don't have an account? Register your company
+                Don't have an account? Apply for Onboarding
               </button>
             </div>
 
           </form>
 
-          <!-- Full Width Client Logos Section -->
-          <div class="client-logos-section animate-fade-in" style="animation-delay: 0.3s; margin-top: 2rem;">
-            <p class="client-logos-title">Our Trusted Partners</p>
-            <div class="client-logos-grid" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
-              <img src="/assets/Client/IDFC FIRST Bank Logo.png" alt="IDFC FIRST Bank" style="max-height: 30px; object-fit: contain; width: 100%;" />
-              <img src="/assets/Client/Softrate Logo.png" alt="Softrate" style="max-height: 30px; object-fit: contain; width: 100%;" />
-              <img src="/assets/Client/dbs.png" alt="DBS" style="max-height: 30px; object-fit: contain; width: 100%;" />
-              <img src="/assets/Client/logo 6.png" alt="DBS" style="max-height: 30px; object-fit: contain; width: 100%;" />
-              <img src="/assets/Client/PVR Near Me DLF Promenade Mall copy.png" alt="PVR" style="max-height: 30px; object-fit: contain; width: 100%;" />
-              <img src="/assets/Client/HCL Tech CUS.png" alt="HCL Tech" style="max-height: 30px; object-fit: contain; width: 100%;" />
-            </div>
-          </div>
         </div>
 
-        <!-- Company Registration Form -->
+        <!-- Client Onboarding Form -->
         <div *ngIf="isRegistering()" class="login-box fade-in">
-          <h1 class="main-title">Register company</h1>
-          <p class="main-subtitle">Enter your company and ownership details to begin</p>
+          <h1 class="main-title">Client Onboarding</h1>
+          <p class="main-subtitle">Apply for onboarding to begin our services</p>
 
-          <form (submit)="handleRegisterCompany()" class="auth-form">
-            <!-- Grid for code and name -->
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
-              <div class="form-field-group">
-                <label class="input-label">Code</label>
-                <input 
-                  [ngModel]="companyCode()" 
-                  (ngModelChange)="companyCode.set($event)" 
-                  name="companyCode"
-                  type="text" 
-                  placeholder="Enter code" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="companyCodeError()"
-                  required />
-                <span *ngIf="companyCodeError()" class="validation-error-text">{{ companyCodeError() }}</span>
-              </div>
-              <div class="form-field-group">
-                <label class="input-label">Company Name</label>
-                <input 
-                  [ngModel]="companyName()" 
-                  (ngModelChange)="companyName.set($event)" 
-                  name="companyName"
-                  type="text" 
-                  placeholder="Enter company name" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="companyNameError()"
-                  required />
-                <span *ngIf="companyNameError()" class="validation-error-text">{{ companyNameError() }}</span>
-              </div>
+          <form (submit)="handleOnboardingSubmit()" class="auth-form">
+            
+            <div class="form-field-group">
+              <label class="input-label">Name</label>
+              <input 
+                [ngModel]="ownerName()" 
+                (ngModelChange)="ownerName.set($event)" 
+                name="ownerName"
+                type="text" 
+                placeholder="Enter your name" 
+                class="styled-text-input" 
+                style="padding-left: 16px;"
+                [class.error-border]="ownerNameError()"
+                required />
+              <span *ngIf="ownerNameError()" class="validation-error-text">{{ ownerNameError() }}</span>
             </div>
 
-            <!-- GSTIN & Owner Name -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="form-field-group">
-                <label class="input-label">GSTIN (Optional)</label>
-                <input 
-                  [ngModel]="gstin()" 
-                  (ngModelChange)="gstin.set($event)" 
-                  name="gstin"
-                  type="text" 
-                  placeholder="Enter 15-digit GSTIN" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="gstinError()" />
-                <span *ngIf="gstinError()" class="validation-error-text">{{ gstinError() }}</span>
-              </div>
-              <div class="form-field-group">
-                <label class="input-label">Owner Name</label>
-                <input 
-                  [ngModel]="ownerName()" 
-                  (ngModelChange)="ownerName.set($event)" 
-                  name="ownerName"
-                  type="text" 
-                  placeholder="Enter owner name" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="ownerNameError()"
-                  required />
-                <span *ngIf="ownerNameError()" class="validation-error-text">{{ ownerNameError() }}</span>
-              </div>
+            <div class="form-field-group">
+              <label class="input-label">Email Address</label>
+              <input 
+                [ngModel]="registerEmail()" 
+                (ngModelChange)="registerEmail.set($event)" 
+                name="registerEmail"
+                type="email" 
+                placeholder="Enter email address" 
+                class="styled-text-input" 
+                style="padding-left: 16px;"
+                [class.error-border]="registerEmailError()"
+                required />
+              <span *ngIf="registerEmailError()" class="validation-error-text">{{ registerEmailError() }}</span>
             </div>
 
-            <!-- Email & Password -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="form-field-group">
-                <label class="input-label">Email Address</label>
-                <input 
-                  [ngModel]="registerEmail()" 
-                  (ngModelChange)="registerEmail.set($event)" 
-                  name="registerEmail"
-                  type="email" 
-                  placeholder="Enter email address" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="registerEmailError()"
-                  required />
-                <span *ngIf="registerEmailError()" class="validation-error-text">{{ registerEmailError() }}</span>
-              </div>
-              <div class="form-field-group">
-                <label class="input-label">Password</label>
-                <input 
-                  [ngModel]="registerPassword()" 
-                  (ngModelChange)="registerPassword.set($event)" 
-                  name="registerPassword"
-                  type="password" 
-                  placeholder="Enter password" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="registerPasswordError()"
-                  required />
-                <span *ngIf="registerPasswordError()" class="validation-error-text">{{ registerPasswordError() }}</span>
-              </div>
-            </div>
-
-            <!-- Phone & Address -->
             <div class="form-field-group">
               <label class="input-label">Phone Number</label>
               <input 
@@ -250,19 +186,67 @@
                 type="tel" 
                 placeholder="Enter phone number" 
                 class="styled-text-input" 
-                style="padding-left: 16px;" />
+                style="padding-left: 16px;"
+                [class.error-border]="phoneError()" />
+              <span *ngIf="phoneError()" class="validation-error-text">{{ phoneError() }}</span>
             </div>
 
             <div class="form-field-group">
-              <label class="input-label">Corporate Address</label>
+              <label class="input-label">Company Name</label>
               <input 
-                [ngModel]="address()" 
-                (ngModelChange)="address.set($event)" 
-                name="address"
+                [ngModel]="companyName()" 
+                (ngModelChange)="companyName.set($event)" 
+                name="companyName"
                 type="text" 
-                placeholder="Enter corporate address" 
+                placeholder="Enter company name" 
                 class="styled-text-input" 
-                style="padding-left: 16px;" />
+                style="padding-left: 16px;"
+                [class.error-border]="companyNameError()"
+                required />
+              <span *ngIf="companyNameError()" class="validation-error-text">{{ companyNameError() }}</span>
+            </div>
+
+            <div class="form-field-group">
+              <label class="input-label">Type of Company</label>
+              <input 
+                [ngModel]="companyType()" 
+                (ngModelChange)="companyType.set($event)" 
+                name="companyType"
+                type="text" 
+                placeholder="Enter type of company" 
+                class="styled-text-input" 
+                style="padding-left: 16px;"
+                [class.error-border]="companyTypeError()" />
+              <span *ngIf="companyTypeError()" class="validation-error-text">{{ companyTypeError() }}</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-field-group">
+                <label class="input-label">Number of Directors</label>
+                <input 
+                  [ngModel]="directorCount()" 
+                  (ngModelChange)="directorCount.set($event)" 
+                  name="directorCount"
+                  type="number" 
+                  placeholder="e.g. 2" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="directorCountError()" />
+                <span *ngIf="directorCountError()" class="validation-error-text">{{ directorCountError() }}</span>
+              </div>
+              <div class="form-field-group">
+                <label class="input-label">State of Registration</label>
+                <input 
+                  [ngModel]="stateOfRegistration()" 
+                  (ngModelChange)="stateOfRegistration.set($event)" 
+                  name="stateOfRegistration"
+                  type="text" 
+                  placeholder="e.g. Maharashtra" 
+                  class="styled-text-input" 
+                  style="padding-left: 16px;"
+                  [class.error-border]="stateOfRegistrationError()" />
+                <span *ngIf="stateOfRegistrationError()" class="validation-error-text">{{ stateOfRegistrationError() }}</span>
+              </div>
             </div>
 
             <!-- Submit Button -->
@@ -272,7 +256,7 @@
                 type="submit" 
                 class="btn-primary-submit">
                 <span *ngIf="isLoading()" class="button-loading-spinner"></span>
-                <span *ngIf="!isLoading()">Register Company</span>
+                <span *ngIf="!isLoading()">Submit Onboarding Request</span>
               </button>
             </div>
 

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Api } from '../api';
 import { firstValueFrom } from 'rxjs';
+import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
 
 @Component({
   selector: 'app-login',
@@ -26,27 +27,25 @@ export class Login implements OnInit {
   passwordError = signal('');
 
   // Registration state
-  isRegistering = signal(false);
+  isRegistering = signal(true);
 
   // Registration form inputs
-  companyCode = signal('');
-  companyName = signal('');
-  gstin = signal('');
   ownerName = signal('');
-  registerEmail = signal('');
-  registerPassword = signal('');
   phone = signal('');
-  address = signal('');
+  companyName = signal('');
+  companyType = signal('');
+  directorCount = signal('');
+  stateOfRegistration = signal('');
+  registerEmail = signal('');
 
   // Registration errors
-  companyCodeError = signal('');
-  companyNameError = signal('');
-  gstinError = signal('');
   ownerNameError = signal('');
-  registerEmailError = signal('');
-  registerPasswordError = signal('');
   phoneError = signal('');
-  addressError = signal('');
+  companyNameError = signal('');
+  companyTypeError = signal('');
+  directorCountError = signal('');
+  stateOfRegistrationError = signal('');
+  registerEmailError = signal('');
 
   // Seeded/Authenticated user state
   loggedInUser = signal<any>(null);
@@ -57,7 +56,7 @@ export class Login implements OnInit {
   dialogMessage = signal('');
   dialogIsError = signal(true);
 
-  constructor(private router: Router, private api: Api) {}
+  constructor(private router: Router, private api: Api, private confirmDialog: ConfirmDialogService) {}
 
   ngOnInit() {
     // Check if user is already logged in
@@ -206,29 +205,25 @@ export class Login implements OnInit {
   clearErrors() {
     this.emailError.set('');
     this.passwordError.set('');
-    this.companyCodeError.set('');
-    this.companyNameError.set('');
-    this.gstinError.set('');
     this.ownerNameError.set('');
-    this.registerEmailError.set('');
-    this.registerPasswordError.set('');
     this.phoneError.set('');
-    this.addressError.set('');
+    this.companyNameError.set('');
+    this.companyTypeError.set('');
+    this.directorCountError.set('');
+    this.stateOfRegistrationError.set('');
+    this.registerEmailError.set('');
   }
 
-  async handleRegisterCompany() {
+  async handleOnboardingSubmit() {
     // Reset errors
     this.clearErrors();
 
     let hasError = false;
 
-    // Validate Company Code
-    const codeVal = this.companyCode().trim();
-    if (!codeVal) {
-      this.companyCodeError.set('Company Code is required');
-      hasError = true;
-    } else if (codeVal.length < 2) {
-      this.companyCodeError.set('Code must be at least 2 characters');
+    // Validate Name
+    const ownerVal = this.ownerName().trim();
+    if (!ownerVal) {
+      this.ownerNameError.set('Name is required');
       hasError = true;
     }
 
@@ -236,13 +231,6 @@ export class Login implements OnInit {
     const companyVal = this.companyName().trim();
     if (!companyVal) {
       this.companyNameError.set('Company Name is required');
-      hasError = true;
-    }
-
-    // Validate Owner Name
-    const ownerVal = this.ownerName().trim();
-    if (!ownerVal) {
-      this.ownerNameError.set('Owner Name is required');
       hasError = true;
     }
 
@@ -256,75 +244,50 @@ export class Login implements OnInit {
       hasError = true;
     }
 
-    // Validate Password
-    const passwordVal = this.registerPassword().trim();
-    if (!passwordVal) {
-      this.registerPasswordError.set('Password is required');
-      hasError = true;
-    } else if (passwordVal.length < 6) {
-      this.registerPasswordError.set('Password must be at least 6 characters');
-      hasError = true;
-    }
-
-    // Validate GST (optional, but if present must be 15 chars)
-    const gstinVal = this.gstin().trim();
-    if (gstinVal && gstinVal.length !== 15) {
-      this.gstinError.set('GSTIN must be exactly 15 characters');
-      hasError = true;
-    }
-
     if (hasError) return;
 
     this.isLoading.set(true);
 
     try {
       const payload = {
-        company_code: codeVal,
-        company_name: companyVal,
-        gstin: gstinVal,
-        owner_name: ownerVal,
-        email: emailVal,
-        password: passwordVal,
+        name: ownerVal,
         phone: this.phone().trim(),
-        address: this.address().trim()
+        company_name: companyVal,
+        company_type: this.companyType().trim(),
+        director_count: this.directorCount(),
+        state_of_registration: this.stateOfRegistration().trim(),
+        email: emailVal
       };
 
       // Call API using dynamic post method
-      await firstValueFrom(this.api.post<any>('auth/register-company', payload));
+      await firstValueFrom(this.api.post<any>('auth/client-onboard', payload));
 
-      this.showAuthDialog(
-        'Registration Successful',
-        `Company "${companyVal}" has been registered successfully! You can now log in.`,
-        false
-      );
+      await this.confirmDialog.confirm({
+        title: 'Onboarding Request Submitted',
+        message: 'Our team will Reach You soon',
+        hideCancel: true
+      });
 
       // Reset registration form inputs
-      this.companyCode.set('');
-      this.companyName.set('');
-      this.gstin.set('');
       this.ownerName.set('');
-      this.registerEmail.set('');
-      this.registerPassword.set('');
       this.phone.set('');
-      this.address.set('');
+      this.companyName.set('');
+      this.companyType.set('');
+      this.directorCount.set('');
+      this.stateOfRegistration.set('');
+      this.registerEmail.set('');
 
-      // Redirect to login view after success dialog
-      setTimeout(() => {
-        this.closeAuthDialog();
-        this.isRegistering.set(false);
-        // Pre-fill email for login convenience
-        this.email.set(emailVal);
-      }, 2500);
+      this.isRegistering.set(false);
 
     } catch (err: any) {
-      console.error('Registration Error:', err);
-      let message = 'An unexpected registration error occurred.';
+      console.error('Onboarding Error:', err);
+      let message = 'An unexpected error occurred.';
       if (err.error && err.error.message) {
         message = err.error.message;
       } else if (err.message) {
         message = err.message;
       }
-      this.showAuthDialog('Registration Failed', message, true);
+      this.showAuthDialog('Onboarding Failed', message, true);
     } finally {
       this.isLoading.set(false);
     }

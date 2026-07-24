@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../common/main_navigation.dart';
 import 'login_screen.dart';
-
+import 'client_onboarding_screen.dart';
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
 
@@ -17,7 +17,7 @@ class AuthWrapper extends ConsumerWidget {
         if (user != null) {
           return const MainNavigationScreen();
         }
-        return const LoginScreen();
+        return const ClientOnboardingScreen();
       },
       loading: () {
         debugPrint('AuthWrapper Loading...');
