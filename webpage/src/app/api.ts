@@ -9,8 +9,8 @@ export class Api {
 
 
 
-  private readonly baseUrl = 'http://localhost:5001/api';
-  // private readonly baseUrl = 'https://crm.wealthempires.in/api';
+  // private readonly baseUrl = 'http://localhost:5001/api';
+  private readonly baseUrl = 'https://crm.wealthempires.in/api';
 
 
 
