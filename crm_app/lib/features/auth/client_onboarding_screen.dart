@@ -108,7 +108,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
         'company_name': _companyNameController.text.trim(),
-        'service_requested': _serviceController.text.trim(),
+        'company_type': _serviceController.text.trim(),
       };
 
       await ref.read(authRepositoryProvider).submitClientOnboarding(payload);
