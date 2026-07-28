@@ -25,7 +25,7 @@ String getBaseUrl() {
     // Windows / Mac / Linux
     return 'http://127.0.0.1:5001';
   }
-  return 'https://crm.wealthempires.in'; // Develop Backend
+  return 'https://aistartupdoctor.com'; // Develop Backend
 }
 
 final String kBaseUrl = getBaseUrl();
