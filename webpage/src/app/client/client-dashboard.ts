@@ -119,8 +119,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
   currentSlideIndex = signal<number>(0);
   sliderInterval: any;
   totalSlides = computed(() => {
-    const defaultBanners = this.banners().length > 0 ? this.banners().length : 1;
-    return defaultBanners + this.sliderOrders().length;
+    return 3;
   });
 
   getSlideStyle(index: number) {

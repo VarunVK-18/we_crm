@@ -43,7 +43,7 @@ class _NetworkOverlayWrapperState extends ConsumerState<NetworkOverlayWrapper> {
     try {
       // Just a simple ping to wake up the server if it's asleep
       // Using a quick timeout to check if it's fast
-      await http.get(Uri.parse('$kBaseUrl/api/auth/health-check')).timeout(const Duration(seconds: 40));
+      await http.get(Uri.parse('$kBaseUrl/api/auth/health-check')).timeout(const Duration(seconds: 3));
       
       if (mounted) {
         setState(() {

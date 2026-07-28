@@ -30,4 +30,4 @@ def pad_image(input_path, output_path, padding_factor):
     print(f"Padded image saved to {output_path} with background {bg_color}")
 
 if __name__ == '__main__':
-    pad_image('C:/projects/we_crm/crm_app/assets/launcher_icon.png', 'C:/projects/we_crm/crm_app/assets/launcher_icon_padded.png', 1.25)
+    pad_image('C:/projects/we_crm/crm_app/assets/launcher_icon.png', 'C:/projects/we_crm/crm_app/assets/launcher_icon_padded.png', 1.6)

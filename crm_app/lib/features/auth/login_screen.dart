@@ -140,8 +140,42 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
       ),
-      child: Scaffold(
+      child: PopScope(
+        canPop: false,
+        onPopInvoked: (didPop) {
+          if (didPop) return;
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const ClientOnboardingScreen(),
+              transitionDuration: Duration.zero,
+              reverseTransitionDuration: Duration.zero,
+            ),
+          );
+        },
+        child: Scaffold(
         backgroundColor: const Color(0xFFFDFBF7),
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 80,
+          leading: Padding(
+            padding: const EdgeInsets.only(top: 24.0, left: 8.0),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+            onPressed: () {
+              Navigator.of(context).pushReplacement(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      const ClientOnboardingScreen(),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
+            },
+          ),
+          ),
+        ),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 500),
@@ -149,6 +183,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   return CustomScrollView(
+                    physics: const ClampingScrollPhysics(),
                     slivers: [
                       SliverToBoxAdapter(
                         child: Padding(
@@ -159,21 +194,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
-                                  SizedBox(height: constraints.maxHeight * 0.04),
+                                  SizedBox(height: constraints.maxHeight * 0.02),
                                   Center(
-                                    child: Image.asset(
-                                      'assets/sdlogo.png',
-                                      height: constraints.maxHeight < 700 ? 100 : 130,
-                                      width: constraints.maxHeight < 700 ? 100 : 130,
-                                      fit: BoxFit.contain,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(30),
+                                      child: Image.asset(
+                                        'assets/Startup Doctor logo (1).png',
+                                        height: constraints.maxHeight < 700 ? 115 : 145,
+                                        width: constraints.maxHeight < 700 ? 115 : 145,
+                                        fit: BoxFit.cover,
+                                        color: const Color(0xFFFDFBF7),
+                                        colorBlendMode: BlendMode.multiply,
+                                      ),
                                     ),
                                   ),
 
-                                  SizedBox(height: constraints.maxHeight * 0.04),
+                                  SizedBox(height: constraints.maxHeight * 0.02),
 
                                   // Email Field
                                   Text(
-                                    'Enter Your Email',
+                                  'Email',
                                     style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
@@ -200,19 +240,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               horizontal: 16, vertical: 18),
                                       border: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12),
+                                              BorderRadius.circular(30),
                                           borderSide: BorderSide(
                                               color: Colors.grey[300]!)),
                                       enabledBorder: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12),
+                                              BorderRadius.circular(30),
                                           borderSide: BorderSide(
                                               color: Colors.grey[300]!)),
                                       focusedBorder: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12),
-                                          borderSide: const BorderSide(
-                                              color: Colors.black)),
+                                              BorderRadius.circular(30),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey[300]!)),
                                     ),
                                     validator: (val) {
                                       if (val == null || val.isEmpty) {
@@ -227,11 +267,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     },
                                   ),
 
-                                  SizedBox(height: constraints.maxHeight * 0.025),
+                                  SizedBox(height: constraints.maxHeight * 0.015),
 
                                   // Password Field
                                   Text(
-                                    'Enter Your Password',
+                                    'Password',
                                     style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
@@ -263,19 +303,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                               horizontal: 16, vertical: 18),
                                       border: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12),
+                                              BorderRadius.circular(30),
                                           borderSide: BorderSide(
                                               color: Colors.grey[300]!)),
                                       enabledBorder: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12),
+                                              BorderRadius.circular(30),
                                           borderSide: BorderSide(
                                               color: Colors.grey[300]!)),
                                       focusedBorder: OutlineInputBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12),
-                                          borderSide: const BorderSide(
-                                              color: Colors.black)),
+                                              BorderRadius.circular(30),
+                                          borderSide: BorderSide(
+                                              color: Colors.grey[300]!)),
                                       suffixIcon: IconButton(
                                         icon: Icon(
                                             _isPasswordVisible
@@ -299,16 +339,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     },
                                   ),
 
-                                  SizedBox(height: constraints.maxHeight * 0.02),
+                                  SizedBox(height: constraints.maxHeight * 0.01),
 
                                   Align(
                                     alignment: Alignment.centerRight,
                                     child: TextButton(
                                       style: TextButton.styleFrom(
-                                        padding: EdgeInsets.zero,
-                                        minimumSize: Size.zero,
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
+                                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                       ),
                                       onPressed: () {
                                         _showAuthDialog(
@@ -329,7 +366,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   ),
 
-                                  SizedBox(height: constraints.maxHeight * 0.03),
+                                  SizedBox(height: constraints.maxHeight * 0.01),
 
                                   ElevatedButton(
                                     style: ElevatedButton.styleFrom(
@@ -339,7 +376,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           vertical: 18),
                                       shape: RoundedRectangleBorder(
                                           borderRadius:
-                                              BorderRadius.circular(12)),
+                                              BorderRadius.circular(30)),
                                       elevation: 0,
                                     ),
                                     onPressed:
@@ -351,7 +388,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                             child: CircularProgressIndicator(
                                                 color: Colors.white,
                                                 strokeWidth: 2))
-                                        : Text('Log in',
+                                        : Text('Login',
                                             style: GoogleFonts.inter(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.w800,
@@ -371,10 +408,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              SizedBox(height: constraints.maxHeight * 0.02),
+                              const SizedBox(height: 4),
                               Container(
                                 constraints: const BoxConstraints(maxHeight: 180),
-                                padding: EdgeInsets.symmetric(vertical: constraints.maxHeight * 0.02),
+                                padding: EdgeInsets.symmetric(vertical: constraints.maxHeight * 0.01),
                                 child: Image.asset(
                                   'assets/Client/whatsapp_image.jpeg',
                                   fit: BoxFit.contain,
@@ -386,7 +423,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                               _AutoScrollingLogos(logos: _clientLogos),
 
-                              SizedBox(height: constraints.maxHeight * 0.04),
+                              SizedBox(height: constraints.maxHeight * 0.02),
 
                               // Footer Sign Up Link
                               Padding(
@@ -413,7 +450,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         );
                                       },
                                       child: Text(
-                                        'Apply for Onboarding',
+                                        'Join Now',
                                         style: GoogleFonts.inter(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
@@ -436,6 +473,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
+        ),
         ),
       ),
     );

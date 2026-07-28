@@ -7,6 +7,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'login_screen.dart';
 
 class ClientOnboardingScreen extends ConsumerStatefulWidget {
@@ -23,9 +24,38 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _companyNameController = TextEditingController();
-  final _companyTypeController = TextEditingController();
-  final _directorCountController = TextEditingController();
-  final _stateOfRegistrationController = TextEditingController();
+  final _serviceController = TextEditingController();
+  
+  late final ValueNotifier<String?> _serviceNotifier = ValueNotifier(_serviceController.text.isEmpty ? null : _serviceController.text);
+  final _serviceSearchController = TextEditingController();
+
+  final List<String> _servicesList = [
+    'Private Limited Incorporation',
+    'LLP Incorporation',
+    'OPC',
+    'Proprietorship',
+    'MSME',
+    'MCA Compliance',
+    'TDS',
+    'PF',
+    'Trade Mark',
+    'Copyright',
+    'Patent',
+    'GST Registration',
+    'GST filing',
+    'GST Cancelation',
+    'ITR',
+    'DUNS',
+    'DPIIT',
+    'ISO',
+    'FSSAI',
+    'DSC',
+    'IE code',
+    'LEI',
+    'BIS',
+    'RoHS',
+    'CE',
+  ];
 
   bool _isLoading = false;
 
@@ -78,9 +108,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
         'email': _emailController.text.trim(),
         'phone': _phoneController.text.trim(),
         'company_name': _companyNameController.text.trim(),
-        'company_type': _companyTypeController.text.trim(),
-        'director_count': _directorCountController.text.trim(),
-        'state_of_registration': _stateOfRegistrationController.text.trim(),
+        'service_requested': _serviceController.text.trim(),
       };
 
       await ref.read(authRepositoryProvider).submitClientOnboarding(payload);
@@ -96,9 +124,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
       _emailController.clear();
       _phoneController.clear();
       _companyNameController.clear();
-      _companyTypeController.clear();
-      _directorCountController.clear();
-      _stateOfRegistrationController.clear();
+      _serviceController.clear();
       
       TextInput.finishAutofillContext();
     } catch (e) {
@@ -141,7 +167,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
               fontWeight: FontWeight.w700,
               color: Colors.grey[700]),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
@@ -156,21 +182,21 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                 fontWeight: FontWeight.w600,
                 fontSize: 14),
             contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide(color: Colors.grey[300]!)),
             enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide(color: Colors.grey[300]!)),
             focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.black, width: 2)),
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide(color: Colors.grey[300]!)),
             errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.redAccent)),
             focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(30),
                 borderSide: const BorderSide(color: Colors.redAccent, width: 2)),
             filled: true,
             fillColor: Colors.white,
@@ -186,162 +212,227 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBF7),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Center(
-                      child: Image.asset(
-                        'assets/sdlogo.png',
-                        height: 80,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      'Client Onboarding',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Apply for onboarding to begin our services',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    
-                    _buildTextField(
-                      controller: _nameController,
-                      label: 'Name',
-                      hintText: 'Enter your name',
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Name is required' : null,
-                    ),
-                    
-                    _buildTextField(
-                      controller: _emailController,
-                      label: 'Email Address',
-                      hintText: 'Enter email address',
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Email is required';
-                        }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                          return 'Enter a valid email address';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    _buildTextField(
-                      controller: _phoneController,
-                      label: 'Phone Number',
-                      hintText: 'Enter phone number',
-                      keyboardType: TextInputType.phone,
-                    ),
-
-                    _buildTextField(
-                      controller: _companyNameController,
-                      label: 'Company Name',
-                      hintText: 'Enter company name',
-                      validator: (value) =>
-                          value == null || value.isEmpty ? 'Company Name is required' : null,
-                    ),
-
-                    _buildTextField(
-                      controller: _companyTypeController,
-                      label: 'Type of Company',
-                      hintText: 'Enter type of company',
-                    ),
-
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildTextField(
-                            controller: _directorCountController,
-                            label: 'Number of Directors',
-                            hintText: 'e.g. 2',
-                            keyboardType: TextInputType.number,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildTextField(
-                            controller: _stateOfRegistrationController,
-                            label: 'State of Registration',
-                            hintText: 'e.g. Maharashtra',
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
-                        elevation: 0,
-                      ),
-                      onPressed: _isLoading ? null : _handleOnboardingSubmit,
-                      child: _isLoading
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2))
-                          : Text('Submit Request',
-                              style: GoogleFonts.inter(
-                                  fontSize: 16,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return CustomScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Center(
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.asset(
+                                    'assets/Startup Doctor logo (1).png',
+                                    height: 110,
+                                    width: 110,
+                                    fit: BoxFit.cover,
+                                    color: const Color(0xFFFDFBF7),
+                                    colorBlendMode: BlendMode.multiply,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Start With A Service',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 26,
                                   fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5)),
-                    ),
+                                  letterSpacing: -0.5,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Staying Legally Sound In One Click',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              
+                              _buildTextField(
+                                controller: _nameController,
+                                label: 'Name',
+                                hintText: 'Enter your name',
+                                validator: (value) =>
+                                    value == null || value.isEmpty ? 'Name is required' : null,
+                              ),
+                              
+                              _buildTextField(
+                                controller: _emailController,
+                                label: 'Email Address',
+                                hintText: 'Enter email address',
+                                keyboardType: TextInputType.emailAddress,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Email is required';
+                                  }
+                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                    return 'Enter a valid email address';
+                                  }
+                                  return null;
+                                },
+                              ),
 
-                    const SizedBox(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Already have an account? ',
-                          style: GoogleFonts.inter(
-                              color: Colors.grey[600], fontSize: 14),
-                        ),
-                        GestureDetector(
-                          onTap: _navigateToLogin,
-                          child: Text(
-                            'Log in',
-                            style: GoogleFonts.inter(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              decoration: TextDecoration.underline,
-                            ),
+                              _buildTextField(
+                                controller: _phoneController,
+                                label: 'Phone Number',
+                                hintText: 'Enter phone number',
+                                keyboardType: TextInputType.phone,
+                              ),
+
+                              _buildTextField(
+                                controller: _companyNameController,
+                                label: 'Company Name',
+                                hintText: 'Enter company name',
+                                validator: (value) =>
+                                    value == null || value.isEmpty ? 'Company Name is required' : null,
+                              ),
+
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Select a Service', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.grey[700])),
+                                  const SizedBox(height: 4),
+                                  DropdownButtonFormField2<String>(
+                                    isExpanded: true,
+                                    valueListenable: _serviceNotifier,
+                                    decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide(color: Colors.grey[300]!)),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                    ),
+                                    hint: Text('Select a Service', style: GoogleFonts.inter(color: Colors.grey[400], fontWeight: FontWeight.w600, fontSize: 14)),
+                                    items: _servicesList.map((item) => DropdownItem<String>(
+                                      value: item,
+                                      child: Text(item, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15, color: Colors.black87)),
+                                    )).toList(),
+                                    onChanged: (value) {
+                                      _serviceNotifier.value = value;
+                                      _serviceController.text = value ?? '';
+                                    },
+                                    buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.only(right: 8)),
+                                    iconStyleData: const IconStyleData(icon: Icon(Icons.arrow_drop_down, color: Colors.black45)),
+                                    dropdownStyleData: DropdownStyleData(
+                                      maxHeight: 250,
+                                      decoration: BoxDecoration(borderRadius: BorderRadius.circular(30)),
+                                    ),
+                                    menuItemStyleData: const MenuItemStyleData(padding: EdgeInsets.symmetric(horizontal: 16)),
+                                    dropdownSearchData: DropdownSearchData(
+                                      searchController: _serviceSearchController,
+                                      searchBarWidgetHeight: 50,
+                                      searchBarWidget: Container(
+                                        height: 50,
+                                        padding: const EdgeInsets.only(top: 8, bottom: 4, right: 8, left: 8),
+                                        child: TextFormField(
+                                          expands: true,
+                                          maxLines: null,
+                                          controller: _serviceSearchController,
+                                          decoration: InputDecoration(
+                                            isDense: true,
+                                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                            hintText: 'Search service...',
+                                            hintStyle: const TextStyle(fontSize: 12),
+                                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(30)),
+                                          ),
+                                        ),
+                                      ),
+                                      searchMatchFn: (item, searchValue) {
+                                        return (item.value.toString().toLowerCase().contains(searchValue.toLowerCase()));
+                                      },
+                                    ),
+                                    onMenuStateChange: (isOpen) {
+                                      if (!isOpen) _serviceSearchController.clear();
+                                    },
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+
+                              const SizedBox(height: 24),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(30)),
+                                  elevation: 0,
+                                ),
+                                onPressed: _isLoading ? null : _handleOnboardingSubmit,
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                            color: Colors.white, strokeWidth: 2))
+                                    : Text('Lets Begin',
+                                        style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.5)),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
+                    ),
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 24),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Already have an account? ',
+                                    style: GoogleFonts.inter(
+                                        color: Colors.grey[600], fontSize: 14),
+                                  ),
+                                  GestureDetector(
+                                    onTap: _navigateToLogin,
+                                    child: Text(
+                                      'Log in',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
-                ),
-              ),
+                );
+              },
             ),
           ),
         ),
@@ -355,9 +446,9 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
     _emailController.dispose();
     _phoneController.dispose();
     _companyNameController.dispose();
-    _companyTypeController.dispose();
-    _directorCountController.dispose();
-    _stateOfRegistrationController.dispose();
+    _serviceController.dispose();
+    _serviceNotifier.dispose();
+    _serviceSearchController.dispose();
     super.dispose();
   }
 }

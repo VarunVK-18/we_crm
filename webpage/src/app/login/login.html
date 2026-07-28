@@ -207,46 +207,39 @@
             </div>
 
             <div class="form-field-group">
-              <label class="input-label">Type of Company</label>
-              <input 
+              <label class="input-label">Select a Service</label>
+              <select 
                 [ngModel]="companyType()" 
                 (ngModelChange)="companyType.set($event)" 
                 name="companyType"
-                type="text" 
-                placeholder="Enter type of company" 
                 class="styled-text-input" 
                 style="padding-left: 16px;"
-                [class.error-border]="companyTypeError()" />
+                [class.error-border]="companyTypeError()"
+                required>
+                <option value="" disabled selected>Select a Service</option>
+                <option value="Private Limited Company">Private Limited Company</option>
+                <option value="Limited Liability Partnership (LLP)">Limited Liability Partnership (LLP)</option>
+                <option value="One Person Company (OPC)">One Person Company (OPC)</option>
+                <option value="Public Limited Company">Public Limited Company</option>
+                <option value="Section 8 Company">Section 8 Company</option>
+                <option value="Nidhi Company">Nidhi Company</option>
+                <option value="Producer Company">Producer Company</option>
+                <option value="Partnership Firm">Partnership Firm</option>
+                <option value="Sole Proprietorship">Sole Proprietorship</option>
+                <option value="GST Registration">GST Registration</option>
+                <option value="Trademark Registration">Trademark Registration</option>
+                <option value="MSME / Udyam Registration">MSME / Udyam Registration</option>
+                <option value="FSSAI License">FSSAI License</option>
+                <option value="Import Export Code (IEC)">Import Export Code (IEC)</option>
+                <option value="ISO Certification">ISO Certification</option>
+                <option value="Digital Signature Certificate (DSC)">Digital Signature Certificate (DSC)</option>
+                <option value="Startup India Registration">Startup India Registration</option>
+                <option value="Legal Entity Identifier (LEI)">Legal Entity Identifier (LEI)</option>
+                <option value="BIS Registration">BIS Registration</option>
+                <option value="RoHS Certification">RoHS Certification</option>
+                <option value="CE Mark Certification">CE Mark Certification</option>
+              </select>
               <span *ngIf="companyTypeError()" class="validation-error-text">{{ companyTypeError() }}</span>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div class="form-field-group">
-                <label class="input-label">Number of Directors</label>
-                <input 
-                  [ngModel]="directorCount()" 
-                  (ngModelChange)="directorCount.set($event)" 
-                  name="directorCount"
-                  type="number" 
-                  placeholder="e.g. 2" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="directorCountError()" />
-                <span *ngIf="directorCountError()" class="validation-error-text">{{ directorCountError() }}</span>
-              </div>
-              <div class="form-field-group">
-                <label class="input-label">State of Registration</label>
-                <input 
-                  [ngModel]="stateOfRegistration()" 
-                  (ngModelChange)="stateOfRegistration.set($event)" 
-                  name="stateOfRegistration"
-                  type="text" 
-                  placeholder="e.g. Maharashtra" 
-                  class="styled-text-input" 
-                  style="padding-left: 16px;"
-                  [class.error-border]="stateOfRegistrationError()" />
-                <span *ngIf="stateOfRegistrationError()" class="validation-error-text">{{ stateOfRegistrationError() }}</span>
-              </div>
             </div>
 
             <!-- Submit Button -->
