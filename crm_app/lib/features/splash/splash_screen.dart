@@ -82,14 +82,19 @@ class _SplashScreenState extends State<SplashScreen>
       backgroundColor: Colors.white,
       body: FadeTransition(
         opacity: _opacity,
-        child: Center(
-          child: Transform.scale(
-            scale: 1.02, // Slight zoom to hide the edge line artifact in the image
-            child: Image.asset(
-              'assets/images/splash_screen.jpg',
-              fit: BoxFit.fitWidth,
-              width: double.infinity,
-            ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                  child: Image.asset(
+                    'assets/Startup Doctor logo (1).png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

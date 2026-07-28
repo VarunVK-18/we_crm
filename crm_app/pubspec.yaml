@@ -42,14 +42,15 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "ic_launcher"
   ios: true
-  image_path: "assets/icon_foreground.png"
-  adaptive_icon_background: "#000000"
-  adaptive_icon_foreground: "assets/icon_foreground.png"
+  image_path: "assets/launcher_icon_padded.png"
+  adaptive_icon_background: "#2b2b2c"
+  adaptive_icon_foreground: "assets/launcher_icon_padded.png"
   remove_alpha_ios: true
   min_sdk_android: 21
 flutter:
   uses-material-design: true
   assets:
+    - assets/banner images/
     - assets/WE CRM logo .png
     - assets/WE CRM logo01.png
     - assets/chart.png
@@ -57,6 +58,7 @@ flutter:
     - assets/google.png
     - assets/sdlogo.png
     - assets/sign.png
+    - assets/Startup Doctor logo (1).png
     - assets/fonts/
     - assets/images/
     - assets/Client/dbs.png
@@ -74,5 +76,7 @@ flutter:
         - asset: assets/fonts/Outfit-VariableFont_wght.ttf
 flutter_native_splash:
   color: "#ffffff"
+  image: "assets/sdlogo.png"
   android_12:
     color: "#ffffff"
+    image: "assets/sdlogo.png"

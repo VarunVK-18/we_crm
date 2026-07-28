@@ -199,7 +199,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                   children: [
                     Center(
                       child: Image.asset(
-                        'assets/WE CRM logo01.png',
+                        'assets/sdlogo.png',
                         height: 80,
                         fit: BoxFit.contain,
                       ),

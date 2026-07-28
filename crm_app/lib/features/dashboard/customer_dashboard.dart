@@ -53,18 +53,15 @@ class CustomerDashboard extends ConsumerWidget {
         ? selectedEntity
         : (user?.clientEntities.isNotEmpty == true ? user!.clientEntities.first.entityName : primaryCompanyName);
 
-    final displayName = actualSelectedEntity.isNotEmpty
+    final displayNameRaw = actualSelectedEntity.isNotEmpty
         ? actualSelectedEntity
         : primaryCompanyName;
         
-    final hour = DateTime.now().hour;
-    String greeting;
-    if (hour < 12) {
-      greeting = 'Good Morning';
-    } else if (hour < 17) {
-      greeting = 'Good Afternoon';
-    } else {
-      greeting = 'Good Evening';
+    // Shorten entity name
+    String displayName = displayNameRaw.replaceAll(RegExp(r'\s+(private|pvt\.?|limited|ltd\.?|inc\.?|llc)\b', caseSensitive: false), '').trim();
+    final words = displayName.split(RegExp(r'\s+'));
+    if (words.length > 2) {
+      displayName = words.take(2).join(' ');
     }
 
     String? displayLogo = user?.profileImage;
@@ -100,34 +97,18 @@ class CustomerDashboard extends ConsumerWidget {
             centerTitle: true,
             title: Container(
               height: 70.r,
-              padding: EdgeInsets.only(top: 8.r),
-              alignment: Alignment.topCenter,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    displayName.trim(),
-                    style: GoogleFonts.poppins(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16.sp, // slightly smaller to fit better
-                      height: 1.2,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 2.r),
-                  Text(
-                    greeting,
-                    style: GoogleFonts.poppins(
-                      color: Colors.black54,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 12.sp,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
+              alignment: Alignment.center,
+              child: Text(
+                displayName.trim(),
+                style: GoogleFonts.poppins(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16.sp,
+                  height: 1.2,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             systemOverlayStyle: const SystemUiOverlayStyle(
@@ -137,9 +118,9 @@ class CustomerDashboard extends ConsumerWidget {
             ),
             leadingWidth: 64.r,
             leading: Padding(
-              padding: EdgeInsets.only(left: 20.r, top: 8.r),
+              padding: EdgeInsets.only(left: 20.r),
               child: Align(
-                alignment: Alignment.topCenter,
+                alignment: Alignment.center,
                 child: GestureDetector(
                   onTap: () {
                     ref.read(navigationIndexProvider.notifier).state = 3;
@@ -179,9 +160,9 @@ class CustomerDashboard extends ConsumerWidget {
             ),
             actions: [
               Padding(
-                padding: EdgeInsets.only(right: 20.r, top: 8.r),
+                padding: EdgeInsets.only(right: 20.r),
                 child: Align(
-                  alignment: Alignment.topCenter,
+                  alignment: Alignment.center,
                   child: Container(
                     width: 44.r,
                     height: 44.r,
@@ -545,10 +526,11 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 3500), (timer) {
       if (!mounted) return;
-      final activeOrdersRaw = ref.read(activeOrdersProvider);
-      final notInitRaw = ref.read(notInitializedOrdersProvider);
-      final combinedOrders = [...activeOrdersRaw, ...notInitRaw];
-      final totalCards = 2 + (combinedOrders.isEmpty ? 1 : combinedOrders.length);
+      // final activeOrdersRaw = ref.read(activeOrdersProvider);
+      // final notInitRaw = ref.read(notInitializedOrdersProvider);
+      // final combinedOrders = [...activeOrdersRaw, ...notInitRaw];
+      // final totalCards = 2 + (combinedOrders.isEmpty ? 1 : combinedOrders.length);
+      final totalCards = 3;
 
       int nextPage = _currentPage + 1;
       if (nextPage >= totalCards) {
@@ -595,13 +577,62 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
       orElse: () => <BannerModel>[],
     );
 
+    // final List<Widget> cards = [
+    //   _buildGetStartedCard(context),
+    //   ...banners.map((banner) => _buildBannerCard(context, banner)),
+    //   if (combinedOrders.isNotEmpty)
+    //     ...combinedOrders.map((order) => _buildActiveOrderCard(context, order))
+    //   else
+    //     _buildNoActiveTasksCard(context),
+    // ];
+
     final List<Widget> cards = [
-      _buildGetStartedCard(context),
-      ...banners.map((banner) => _buildBannerCard(context, banner)),
-      if (combinedOrders.isNotEmpty)
-        ...combinedOrders.map((order) => _buildActiveOrderCard(context, order))
-      else
-        _buildNoActiveTasksCard(context),
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const RegistrationServicesScreen(initialCategory: 'All'),
+            ),
+          );
+        },
+        child: Card(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.r),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Image.asset(
+            'assets/banner images/banner01.png',
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
+      Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Image.asset(
+          'assets/banner images/banner02.png',
+          fit: BoxFit.cover,
+        ),
+      ),
+      Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Image.asset(
+          'assets/banner images/banner03.png',
+          fit: BoxFit.cover,
+        ),
+      ),
     ];
 
     final totalCards = cards.length;

@@ -52,8 +52,8 @@ class _NetworkOverlayWrapperState extends ConsumerState<NetworkOverlayWrapper> {
         });
       }
     } catch (e) {
-      showGlobalError(e);
-      // Might be offline, let the network provider handle offline UI
+      // Silently fail, let the network provider handle offline UI
+      // and do NOT show a global error for a background ping
       if (mounted) {
         setState(() {
           _isConnectingToServer = false; 

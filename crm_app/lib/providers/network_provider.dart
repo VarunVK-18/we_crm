@@ -8,6 +8,12 @@ enum NetworkStatus { online, offline, checking }
 class NetworkNotifier extends StateNotifier<NetworkStatus> {
   late StreamSubscription _connectivitySubscription;
   final Connectivity _connectivity = Connectivity();
+  
+  // Custom checker for faster offline detection
+  final InternetConnectionChecker _checker = InternetConnectionChecker.createInstance(
+    checkTimeout: const Duration(seconds: 3),
+    checkInterval: const Duration(seconds: 5),
+  );
 
   NetworkNotifier() : super(NetworkStatus.checking) {
     _init();
@@ -26,8 +32,8 @@ class NetworkNotifier extends StateNotifier<NetworkStatus> {
     if (results.contains(ConnectivityResult.none)) {
       state = NetworkStatus.offline;
     } else {
-      // Actually check internet reachability
-      bool isConnected = await InternetConnectionChecker.instance.hasConnection;
+      // Actually check internet reachability with our fast checker
+      bool isConnected = await _checker.hasConnection;
       state = isConnected ? NetworkStatus.online : NetworkStatus.offline;
     }
   }

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as raw_http;
 export 'package:http/http.dart' show MultipartFile, Response, StreamedResponse, Client, Request;
 
-const timeoutDuration = Duration(seconds: 15);
+const timeoutDuration = Duration(seconds: 40);
 
 Future<raw_http.Response> get(Uri url, {Map<String, String>? headers}) {
   return raw_http.get(url, headers: headers).timeout(timeoutDuration);

@@ -1045,8 +1045,16 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                Text(
-                                  'The service has been completed successfully. Please clear your pending balance of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}.',
+                                Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      const TextSpan(text: 'The service has been completed successfully. Please clear your pending balance of '),
+                                      TextSpan(
+                                        text: '₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}.',
+                                        style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
+                                      ),
+                                    ],
+                                  ),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,

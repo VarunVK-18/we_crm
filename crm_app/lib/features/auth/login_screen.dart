@@ -162,7 +162,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                   SizedBox(height: constraints.maxHeight * 0.04),
                                   Center(
                                     child: Image.asset(
-                                      'assets/WE CRM logo01.png',
+                                      'assets/sdlogo.png',
                                       height: constraints.maxHeight < 700 ? 100 : 130,
                                       width: constraints.maxHeight < 700 ? 100 : 130,
                                       fit: BoxFit.contain,

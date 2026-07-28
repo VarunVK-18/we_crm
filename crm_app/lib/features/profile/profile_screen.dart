@@ -173,17 +173,17 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      ProfileTile(
-                        icon: HugeIcons.strokeRoundedMentoring,
-                        title: 'Support Tickets',
-                        subtitle: 'View and manage support tickets',
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SupportTicketsScreen(),
-                          ),
-                        ),
-                      ),
+                      // ProfileTile(
+                      //   icon: HugeIcons.strokeRoundedMentoring,
+                      //   title: 'Support Tickets',
+                      //   subtitle: 'View and manage support tickets',
+                      //   onTap: () => Navigator.push(
+                      //     context,
+                      //     MaterialPageRoute(
+                      //       builder: (_) => const SupportTicketsScreen(),
+                      //     ),
+                      //   ),
+                      // ),
                       ProfileTile(
                         icon: HugeIcons.strokeRoundedCustomerSupport,
                         title: 'Help & Support',
