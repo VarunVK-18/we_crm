@@ -98,7 +98,14 @@
                   </div>
                   <h3 class="info-card-title">Contact Information</h3>
                 </div>
-                <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
+                <div style="display: flex; gap: 8px;">
+                  @if (editingCard() === 'contact') {
+                    <button class="btn btn-primary" style="padding: 4px 12px; font-size: 13px;" (click)="saveProfile()" [disabled]="isSaving()">
+                      {{ isSaving() ? 'Saving...' : 'Save' }}
+                    </button>
+                  }
+                  <button class="edit-btn" (click)="toggleEdit('contact')">{{ editingCard() === 'contact' ? 'Cancel' : 'Edit' }}</button>
+                </div>
               </div>
               
               <div class="info-card-content">
@@ -112,7 +119,7 @@
                 </div>
                 <div class="info-field">
                   <span class="info-label">Website</span>
-                  @if(isEditing()) {
+                  @if(editingCard() === 'contact') {
                     <input type="text" class="form-input" [(ngModel)]="editData.website" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                   } @else {
                     <span class="info-val">{{ activeEntity()?.website || 'N/A' }}</span>
@@ -135,12 +142,19 @@
                 </div>
                 <h3 class="info-card-title">PAN Card Details</h3>
               </div>
-              <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
+              <div style="display: flex; gap: 8px;">
+                @if (editingCard() === 'pan') {
+                  <button class="btn btn-primary" style="padding: 4px 12px; font-size: 13px;" (click)="saveProfile()" [disabled]="isSaving()">
+                    {{ isSaving() ? 'Saving...' : 'Save' }}
+                  </button>
+                }
+                <button class="edit-btn" (click)="toggleEdit('pan')">{{ editingCard() === 'pan' ? 'Cancel' : 'Edit' }}</button>
+              </div>
             </div>
             <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
               <div class="info-field">
                 <span class="info-label">PAN</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'pan') {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.pan || 'N/A' }}</span>
@@ -148,7 +162,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">PAN Verified Name</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'pan') {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.pan_name || 'N/A' }}</span>
@@ -156,7 +170,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">PAN Father's Name</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'pan') {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan_father_name" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.pan_father_name || 'N/A' }}</span>
@@ -164,7 +178,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">PAN DOB</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'pan') {
                   <input type="text" class="form-input" [(ngModel)]="editData.pan_dob" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.pan_dob || 'N/A' }}</span>
@@ -180,12 +194,19 @@
                 </div>
                 <h3 class="info-card-title">Tax Registrations</h3>
               </div>
-              <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
+              <div style="display: flex; gap: 8px;">
+                @if (editingCard() === 'tax') {
+                  <button class="btn btn-primary" style="padding: 4px 12px; font-size: 13px;" (click)="saveProfile()" [disabled]="isSaving()">
+                    {{ isSaving() ? 'Saving...' : 'Save' }}
+                  </button>
+                }
+                <button class="edit-btn" (click)="toggleEdit('tax')">{{ editingCard() === 'tax' ? 'Cancel' : 'Edit' }}</button>
+              </div>
             </div>
             <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
               <div class="info-field">
                 <span class="info-label">GSTIN</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'tax') {
                   <input type="text" class="form-input" [(ngModel)]="editData.gstin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.gstin || 'N/A' }}</span>
@@ -193,7 +214,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">TAN</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'tax') {
                   <input type="text" class="form-input" [(ngModel)]="editData.tan" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.tan || 'N/A' }}</span>
@@ -209,12 +230,19 @@
                 </div>
                 <h3 class="info-card-title">Company Registration</h3>
               </div>
-              <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
+              <div style="display: flex; gap: 8px;">
+                @if (editingCard() === 'company_registration') {
+                  <button class="btn btn-primary" style="padding: 4px 12px; font-size: 13px;" (click)="saveProfile()" [disabled]="isSaving()">
+                    {{ isSaving() ? 'Saving...' : 'Save' }}
+                  </button>
+                }
+                <button class="edit-btn" (click)="toggleEdit('company_registration')">{{ editingCard() === 'company_registration' ? 'Cancel' : 'Edit' }}</button>
+              </div>
             </div>
             <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
               <div class="info-field">
                 <span class="info-label">CIN</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_registration') {
                   <input type="text" class="form-input" [(ngModel)]="editData.cin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.cin || 'N/A' }}</span>
@@ -222,7 +250,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Registration Number</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_registration') {
                   <input type="text" class="form-input" [(ngModel)]="editData.registration_number" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.registration_number || 'N/A' }}</span>
@@ -230,7 +258,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Date Of Incorporation</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_registration') {
                   <input type="text" class="form-input" [(ngModel)]="editData.date_of_incorporation" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.date_of_incorporation || 'N/A' }}</span>
@@ -238,7 +266,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">ROC</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_registration') {
                   <input type="text" class="form-input" [(ngModel)]="editData.roc" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.roc || 'N/A' }}</span>
@@ -246,7 +274,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Company Origin</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_registration') {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_origin" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.company_origin || 'N/A' }}</span>
@@ -262,12 +290,19 @@
                 </div>
                 <h3 class="info-card-title">Company Classification</h3>
               </div>
-              <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
+              <div style="display: flex; gap: 8px;">
+                @if (editingCard() === 'company_classification') {
+                  <button class="btn btn-primary" style="padding: 4px 12px; font-size: 13px;" (click)="saveProfile()" [disabled]="isSaving()">
+                    {{ isSaving() ? 'Saving...' : 'Save' }}
+                  </button>
+                }
+                <button class="edit-btn" (click)="toggleEdit('company_classification')">{{ editingCard() === 'company_classification' ? 'Cancel' : 'Edit' }}</button>
+              </div>
             </div>
             <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
               <div class="info-field">
                 <span class="info-label">Company Type</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_classification') {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.company_type || 'N/A' }}</span>
@@ -275,7 +310,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Class Of Company</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_classification') {
                   <input type="text" class="form-input" [(ngModel)]="editData.class_of_company" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.class_of_company || 'N/A' }}</span>
@@ -283,7 +318,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Company Category</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_classification') {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_category" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.company_category || 'N/A' }}</span>
@@ -291,7 +326,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Company Subcategory</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_classification') {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_subcategory" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.company_subcategory || 'N/A' }}</span>
@@ -299,7 +334,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Main Division Description</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_classification') {
                   <input type="text" class="form-input" [(ngModel)]="editData.main_division_description" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.main_division_description || 'N/A' }}</span>
@@ -307,7 +342,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Main Division No</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'company_classification') {
                   <input type="text" class="form-input" [(ngModel)]="editData.main_division_no" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.main_division_no || 'N/A' }}</span>
@@ -323,7 +358,14 @@
                 </div>
                 <h3 class="info-card-title">Bank Details and Financials</h3>
               </div>
-              <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
+              <div style="display: flex; gap: 8px;">
+                @if (editingCard() === 'bank') {
+                  <button class="btn btn-primary" style="padding: 4px 12px; font-size: 13px;" (click)="saveProfile()" [disabled]="isSaving()">
+                    {{ isSaving() ? 'Saving...' : 'Save' }}
+                  </button>
+                }
+                <button class="edit-btn" (click)="toggleEdit('bank')">{{ editingCard() === 'bank' ? 'Cancel' : 'Edit' }}</button>
+              </div>
             </div>
             <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
               <!-- Bank Details -->
@@ -350,7 +392,7 @@
               <!-- Financials -->
               <div class="info-field">
                 <span class="info-label">Authorised Capital</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'bank') {
                   <input type="text" class="form-input" [(ngModel)]="editData.authorised_capital" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.authorised_capital || 'N/A' }}</span>
@@ -358,7 +400,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">PaidUp Capital</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'bank') {
                   <input type="text" class="form-input" [(ngModel)]="editData.paidup_capital" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.paidup_capital || 'N/A' }}</span>
@@ -366,7 +408,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Obligation Of Contribution (LLP)</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'bank') {
                   <input type="text" class="form-input" [(ngModel)]="editData.obligation_of_contribution" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.obligation_of_contribution || 'N/A' }}</span>
@@ -382,12 +424,19 @@
                 </div>
                 <h3 class="info-card-title">Registered Address & Contact</h3>
               </div>
-              <button class="edit-btn" (click)="toggleEdit()">{{ isEditing() ? 'Cancel' : 'Edit' }}</button>
+              <div style="display: flex; gap: 8px;">
+                @if (editingCard() === 'address') {
+                  <button class="btn btn-primary" style="padding: 4px 12px; font-size: 13px;" (click)="saveProfile()" [disabled]="isSaving()">
+                    {{ isSaving() ? 'Saving...' : 'Save' }}
+                  </button>
+                }
+                <button class="edit-btn" (click)="toggleEdit('address')">{{ editingCard() === 'address' ? 'Cancel' : 'Edit' }}</button>
+              </div>
             </div>
             <div class="info-card-content" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
               <div class="info-field">
                 <span class="info-label">Company Email</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'address') {
                   <input type="text" class="form-input" [(ngModel)]="editData.company_email" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.company_email || 'N/A' }}</span>
@@ -395,7 +444,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Address Type</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'address') {
                   <input type="text" class="form-input" [(ngModel)]="editData.address_type" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.address_type || 'N/A' }}</span>
@@ -403,7 +452,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Street Address Line 1</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'address') {
                   <input type="text" class="form-input" [(ngModel)]="editData.street_address_line_1" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.street_address_line_1 || 'N/A' }}</span>
@@ -411,7 +460,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Street Address Line 2</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'address') {
                   <input type="text" class="form-input" [(ngModel)]="editData.street_address_line_2" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.street_address_line_2 || 'N/A' }}</span>
@@ -419,7 +468,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">City</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'address') {
                   <input type="text" class="form-input" [(ngModel)]="editData.city" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.city || 'N/A' }}</span>
@@ -427,7 +476,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">State</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'address') {
                   <input type="text" class="form-input" [(ngModel)]="editData.state" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.state || 'N/A' }}</span>
@@ -435,7 +484,7 @@
               </div>
               <div class="info-field">
                 <span class="info-label">Postal Code</span>
-                @if(isEditing()) {
+                @if(editingCard() === 'address') {
                   <input type="text" class="form-input" [(ngModel)]="editData.postal_code" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;" />
                 } @else {
                   <span class="info-val">{{ activeEntity()?.postal_code || 'N/A' }}</span>
@@ -444,14 +493,6 @@
             </div>
           </div>
           </div> <!-- End of Statutory Details Grid -->
-          @if (isEditing()) {
-            <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 12px;">
-              <button class="btn btn-outline" (click)="toggleEdit()">Cancel</button>
-              <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isSaving()">
-                {{ isSaving() ? 'Saving...' : 'Save Changes' }}
-              </button>
-            </div>
-          }
         }
 
         @if (activeTab() === 'services') {
@@ -701,12 +742,12 @@
                 <div>
                   <h2>Directors &amp; Partners</h2>
                 </div>
-                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" (click)="toggleEdit()">
-                  {{ isEditing() ? 'Cancel' : 'Edit Directors' }}
+                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 13px;" (click)="toggleEdit('directors')">
+                  {{ editingCard() === 'directors' ? 'Cancel' : 'Edit Directors' }}
                 </button>
               </div>
               <div class="directors-accordion-list" style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
-                @for (dir of (isEditing() ? editData.directors : filteredDirectors()); track $index) {
+                @for (dir of (editingCard() === 'directors' ? editData.directors : filteredDirectors()); track $index) {
                    <div class="director-accordion-card" style="border: 1px solid var(--border); border-radius: 12px; background: white; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                       <!-- Header -->
                       <div class="director-card-header" 
@@ -748,7 +789,7 @@
                            <div class="detail-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px;">
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Name</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.fullName" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.fullName || 'N/A' }}</div>
@@ -756,7 +797,7 @@
                              </div>
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Role</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.role" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.role || 'Director' }}</div>
@@ -764,7 +805,7 @@
                              </div>
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Email</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.email" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.email || 'N/A' }}</div>
@@ -772,7 +813,7 @@
                              </div>
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Phone</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.phone" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.phone || 'N/A' }}</div>
@@ -780,7 +821,7 @@
                              </div>
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">PAN</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.pan" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.pan || 'N/A' }}</div>
@@ -788,7 +829,7 @@
                              </div>
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">Aadhaar</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.aadhaar" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.aadhaar || 'N/A' }}</div>
@@ -796,7 +837,7 @@
                              </div>
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DOB</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.dob" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.dob || 'N/A' }}</div>
@@ -804,7 +845,7 @@
                              </div>
                              <div class="detail-item">
                                <label style="font-size: 11px; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; display: block;">DIN</label>
-                               @if(isEditing()) {
+                               @if(editingCard() === 'directors') {
                                  <input type="text" class="form-input" [(ngModel)]="dir.din" style="width: 100%; padding: 8px 12px; font-size: 13px; border: 1px solid var(--border); border-radius: 6px;" />
                                } @else {
                                  <div style="font-size: 14px; font-weight: 500; color: var(--palette-dark);">{{ dir.din || 'N/A' }}</div>
@@ -835,7 +876,7 @@
                                  } @else {
                                    <span style="font-size: 13px; color: #94a3b8;">N/A</span>
                                  }
-                                 @if(isEditing()) {
+                                 @if(editingCard() === 'directors') {
                                    <div style="margin-top: 8px;">
                                      <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
                                        Upload Photo
@@ -870,7 +911,7 @@
                                  } @else {
                                    <span style="font-size: 13px; color: #94a3b8;">N/A</span>
                                  }
-                                 @if(isEditing()) {
+                                 @if(editingCard() === 'directors') {
                                    <div style="margin-top: 8px;">
                                      <label style="font-size: 11px; cursor: pointer; color: #4b5563; background: #f3f4f6; padding: 6px 12px; border-radius: 6px; border: 1px solid #e5e7eb; font-weight: 600;">
                                        Upload Signature
@@ -887,9 +928,9 @@
                 }
               </div>
               
-              @if (isEditing()) {
+              @if (editingCard() === 'directors') {
                 <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
-                  <button class="btn btn-outline" (click)="toggleEdit()" [disabled]="isSaving()">Cancel</button>
+                  <button class="btn btn-outline" (click)="toggleEdit('directors')" [disabled]="isSaving()">Cancel</button>
                   <button class="btn btn-primary" (click)="saveProfile()" [disabled]="isSaving()">
                     {{ isSaving() ? 'Saving...' : 'Save Changes' }}
                   </button>
