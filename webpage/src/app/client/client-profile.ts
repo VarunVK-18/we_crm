@@ -735,12 +735,12 @@ export class ClientProfile implements OnInit, OnDestroy {
     return lowerUrl.endsWith('.jpg') || lowerUrl.endsWith('.jpeg') || lowerUrl.endsWith('.png') || lowerUrl.endsWith('.webp') || lowerUrl.endsWith('.gif');
   }
 
-  isEditing = signal(false);
+  editingCard = signal<string | null>(null);
   isSaving = signal(false);
   editData: any = {};
 
-  toggleEdit() {
-    if (!this.isEditing()) {
+  toggleEdit(card: string) {
+    if (this.editingCard() !== card) {
       // Enter edit mode, copy user data
       const current = this.user();
       this.editData = {
@@ -786,10 +786,10 @@ export class ClientProfile implements OnInit, OnDestroy {
           return d;
         })
       };
-      this.isEditing.set(true);
+      this.editingCard.set(card);
     } else {
       // Cancel edit mode
-      this.isEditing.set(false);
+      this.editingCard.set(null);
     }
   }
 
@@ -804,7 +804,7 @@ export class ClientProfile implements OnInit, OnDestroy {
           this.user.set(res.user);
           localStorage.setItem('user', JSON.stringify(res.user));
           this.directors.set(this.editData.directors);
-          this.isEditing.set(false);
+          this.editingCard.set(null);
         }
         this.isSaving.set(false);
       },
