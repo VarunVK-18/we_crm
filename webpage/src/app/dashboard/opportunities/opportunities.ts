@@ -69,37 +69,37 @@ export class Opportunities implements OnInit {
     // Incorporation
     { category: 'Incorporation', name: 'Private Limited Incorporation', desc: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.' },
     { category: 'Incorporation', name: 'LLP Incorporation', desc: 'Statutory compliance for Limited Liability Partnerships.' },
-    { category: 'Incorporation', name: 'OPC', desc: 'One Person Company registration for solo entrepreneurs.' },
-    { category: 'Incorporation', name: 'MSME', desc: 'Official Udyam Registration for small and medium enterprises.' },
-    { category: 'Incorporation', name: 'Proprietorship', desc: 'Sole vendor formation with business identification.' },
+    { category: 'Incorporation', name: 'OPC Incorporation', desc: 'One Person Company registration for solo entrepreneurs.' },
+    { category: 'Incorporation', name: 'MSME Registration', desc: 'Official Udyam Registration for small and medium enterprises.' },
+    { category: 'Incorporation', name: 'Proprietorship Registration', desc: 'Sole vendor formation with business identification.' },
     
     // Compliance
     { category: 'Compliance', name: 'MCA Compliance', desc: 'Annual return filings and MCA statutory compliance.' },
-    { category: 'Compliance', name: 'TDS', desc: 'TDS return filing and certificate issuance.' },
-    { category: 'Compliance', name: 'PF', desc: 'Provident Fund registration and monthly compliance.' },
+    { category: 'Compliance', name: 'TDS Return Filing', desc: 'TDS return filing and certificate issuance.' },
+    { category: 'Compliance', name: 'PF Registration & Compliance', desc: 'Provident Fund registration and monthly compliance.' },
 
     // IP
-    { category: 'IP', name: 'Trade Mark', desc: 'Brand protection and intellectual property rights.' },
-    { category: 'IP', name: 'Copyright', desc: 'Protection for original creative literary or artistic works.' },
-    { category: 'IP', name: 'Patent', desc: 'Exclusive rights for your inventions.' },
+    { category: 'IP', name: 'Trademark Registration', desc: 'Brand protection and intellectual property rights.' },
+    { category: 'IP', name: 'Copyright Registration', desc: 'Protection for original creative literary or artistic works.' },
+    { category: 'IP', name: 'Patent Registration', desc: 'Exclusive rights for your inventions.' },
 
     // Tax
-    { category: 'Tax', name: 'ITR', desc: 'Income Tax Return filing for individuals and businesses.' },
+    { category: 'Tax', name: 'Income Tax Return (ITR)', desc: 'Income Tax Return filing for individuals and businesses.' },
     { category: 'Tax', name: 'GST Registration', desc: 'GST Registration for your business! Thank you for choosing Wealth Empires.' },
-    { category: 'Tax', name: 'GST filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
-    { category: 'Tax', name: 'GST Cancelation', desc: 'Surrender and cancel your GST registration.' },
+    { category: 'Tax', name: 'GST Returns Filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
+    { category: 'Tax', name: 'GST Cancellation', desc: 'Surrender and cancel your GST registration.' },
 
     // Licensing
-    { category: 'Licensing', name: 'DPIIT', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
-    { category: 'Licensing', name: 'ISO', desc: 'Quality management certification (ISO 9001 and others).' },
-    { category: 'Licensing', name: 'FSSAI', desc: 'Registration for food business operators, manufacturers, and startups.' },
-    { category: 'Licensing', name: 'IE code', desc: 'Import Export Code registration for cross-border trade.' },
-    { category: 'Licensing', name: 'DSC', desc: 'Digital Signature Certificate for individuals & organizations.' },
-    { category: 'Licensing', name: 'DUNS', desc: 'Data Universal Numbering System for global business identity.' },
-    { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
-    { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
-    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' },
-    { category: 'Licensing', name: 'RoHS', desc: 'Restriction of Hazardous Substances directive certification.' },
+    { category: 'Licensing', name: 'DPIIT Recognition', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
+    { category: 'Licensing', name: 'ISO Certification', desc: 'Quality management certification (ISO 9001 and others).' },
+    { category: 'Licensing', name: 'FSSAI Registration', desc: 'Registration for food business operators, manufacturers, and startups.' },
+    { category: 'Licensing', name: 'Import Export Code (IEC)', desc: 'Import Export Code registration for cross-border trade.' },
+    { category: 'Licensing', name: 'Digital Signature Certificate (DSC)', desc: 'Digital Signature Certificate for individuals & organizations.' },
+    { category: 'Licensing', name: 'DUNS Number', desc: 'Data Universal Numbering System for global business identity.' },
+    { category: 'Licensing', name: 'BIS Certification', desc: 'Bureau of Indian Standards product certification.' },
+    { category: 'Licensing', name: 'LEI Registration', desc: 'Legal Entity Identifier registration for financial transactions.' },
+    { category: 'Licensing', name: 'CE Certification', desc: 'European standard certifications for electronics and products.' },
+    { category: 'Licensing', name: 'RoHS Certification', desc: 'Restriction of Hazardous Substances directive certification.' },
   ];
 
   // Modal State
@@ -169,7 +169,7 @@ export class Opportunities implements OnInit {
     if (isNaN(dealAmount) || dealAmount <= 0) return false;
 
     const advanceAmount = Number(this.advanceAmountPaid());
-    if (isNaN(advanceAmount) || advanceAmount <= 0) return false;
+    if (isNaN(advanceAmount) || advanceAmount < 0) return false;
 
     if (advanceAmount > dealAmount) return false;
 
@@ -273,7 +273,7 @@ export class Opportunities implements OnInit {
     const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName);
     const doneSet = new Set([...weDone, ...outsourced]);
     
-    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC Incorporation', 'Proprietorship Registration'];
     const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
 
     return this.recommendationPool.filter(s => {

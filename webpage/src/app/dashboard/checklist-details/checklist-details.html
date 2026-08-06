@@ -1151,78 +1151,9 @@
         <div
           style="background: var(--bg-secondary); padding: 24px; border-radius: 8px; border: 1px dashed var(--accent-primary);">
 
-          @if (checklist()?.service_name === 'Private Limited Incorporation') {
+          @if (getSortedFinalDocsForService(checklist()?.service_name).length > 0) {
           <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-            @for (type of getSortedPrivateLimitedFinalDocs(); track type) {
-            <label class="custom-file-upload"
-              [style.background]="hasFinalDocUploaded(type) ? 'var(--bg-secondary)' : 'var(--bg-primary)'"
-              [style.border-color]="hasFinalDocUploaded(type) ? 'var(--color-success)' : 'var(--border-color)'"
-              style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px; font-weight: 600; text-align: center; transition: all 0.2s;">
-              <input type="file" (change)="onSpecificFinalFileSelected($event, type)" style="display: none;" />
-              @if (hasFinalDocUploaded(type)) {
-              <span class="material-symbols-outlined"
-                style="font-size: 16px; color: var(--color-success); font-weight: bold;">check_circle</span>
-              } @else {
-              <span>+</span>
-              }
-              Upload {{ type }}
-            </label>
-            }
-          </div>
-
-          <div style="width: 100%; height: 1px; background: var(--border-color); margin-bottom: 24px;"></div>
-          }
-
-          @if (checklist()?.service_name === 'LLP Incorporation') {
-          <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-            @for (type of llpFinalDocs; track type) {
-            @if (type !== 'Other') {
-            <label class="custom-file-upload"
-              [style.background]="hasFinalDocUploaded(type) ? 'var(--bg-secondary)' : 'var(--bg-primary)'"
-              [style.border-color]="hasFinalDocUploaded(type) ? 'var(--color-success)' : 'var(--border-color)'"
-              style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px; font-weight: 600; text-align: center; transition: all 0.2s;">
-              <input type="file" (change)="onSpecificFinalFileSelected($event, type)" style="display: none;" />
-              @if (hasFinalDocUploaded(type)) {
-              <span class="material-symbols-outlined"
-                style="font-size: 16px; color: var(--color-success); font-weight: bold;">check_circle</span>
-              } @else {
-              <span>+</span>
-              }
-              Upload {{ type }}
-            </label>
-            }
-            }
-          </div>
-
-          <div style="width: 100%; height: 1px; background: var(--border-color); margin-bottom: 24px;"></div>
-          }
-
-          @if (checklist()?.service_name === 'One Person Company') {
-          <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-            @for (type of getSortedOpcFinalDocs(); track type) {
-            <label class="custom-file-upload"
-              [style.background]="hasFinalDocUploaded(type) ? 'var(--bg-secondary)' : 'var(--bg-primary)'"
-              [style.border-color]="hasFinalDocUploaded(type) ? 'var(--color-success)' : 'var(--border-color)'"
-              style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 13px; font-weight: 600; text-align: center; transition: all 0.2s;">
-              <input type="file" (change)="onSpecificFinalFileSelected($event, type)" style="display: none;" />
-              @if (hasFinalDocUploaded(type)) {
-              <span class="material-symbols-outlined"
-                style="font-size: 16px; color: var(--color-success); font-weight: bold;">check_circle</span>
-              } @else {
-              <span>+</span>
-              }
-              Upload {{ type }}
-            </label>
-            }
-          </div>
-
-          <div style="width: 100%; height: 1px; background: var(--border-color); margin-bottom: 24px;"></div>
-          }
-
-          @if (checklist()?.service_name === 'MSME Registration' || checklist()?.service_name === 'MSME Certification'
-          || checklist()?.service_name === 'MSME') {
-          <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px;">
-            @for (type of getSortedMsmeFinalDocs(); track type) {
+            @for (type of getSortedFinalDocsForService(checklist()?.service_name); track type) {
             <label class="custom-file-upload"
               [style.background]="hasFinalDocUploaded(type) ? 'var(--bg-secondary)' : 'var(--bg-primary)'"
               [style.border-color]="hasFinalDocUploaded(type) ? 'var(--color-success)' : 'var(--border-color)'"
@@ -1263,37 +1194,16 @@
                   style="background: none; border: none; cursor: pointer; color: var(--color-danger); font-size: 14px; font-weight: 600;">Remove</button>
               </div>
 
-              @if (checklist()?.service_name === 'Private Limited Incorporation') {
+              @if (getFinalDocsOptionsForService(checklist()?.service_name).length > 0) {
               <div style="display: flex; align-items: center; gap: 12px;">
                 <label style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Document Type <span
                     style="color: var(--color-danger);">*</span></label>
                 <select [(ngModel)]="doc.docType"
                   style="flex: 1; padding: 8px 16px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);">
-                  @for (type of privateLimitedFinalDocs; track type) {
+                  @for (type of getFinalDocsOptionsForService(checklist()?.service_name); track type) {
                   <option [value]="type">{{ type }}</option>
                   }
-                </select>
-              </div>
-              } @else if (checklist()?.service_name === 'LLP Incorporation') {
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <label style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Document Type <span
-                    style="color: var(--color-danger);">*</span></label>
-                <select [(ngModel)]="doc.docType"
-                  style="flex: 1; padding: 8px 16px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);">
-                  @for (type of llpFinalDocs; track type) {
-                  <option [value]="type">{{ type }}</option>
-                  }
-                </select>
-              </div>
-              } @else if (checklist()?.service_name === 'One Person Company') {
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <label style="font-size: 14px; color: var(--text-secondary); font-weight: 500;">Document Type <span
-                    style="color: var(--color-danger);">*</span></label>
-                <select [(ngModel)]="doc.docType"
-                  style="flex: 1; padding: 8px 16px; font-size: 14px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary);">
-                  @for (type of opcFinalDocs; track type) {
-                  <option [value]="type">{{ type }}</option>
-                  }
+                  <option value="Other">Other</option>
                 </select>
               </div>
               }
@@ -1445,8 +1355,8 @@
 
 <!-- Add Checklist Item Modal -->
 @if (isAddChecklistItemModalOpen()) {
-<div class="modal-overlay" (click)="closeAddChecklistItemModal()">
-  <div class="modal-card-box" style="max-width: 420px;" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (mousedown)="closeAddChecklistItemModal()">
+  <div class="modal-card-box" style="max-width: 420px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Add Checklist Item</h3>
       <button class="close-modal-btn" (click)="closeAddChecklistItemModal()" style="color: #64748B;">
@@ -1477,8 +1387,8 @@
 
 <!-- Request Document Modal -->
 @if (isRequestDocModalOpen()) {
-<div class="modal-overlay" (click)="closeRequestDocModal()">
-  <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (mousedown)="closeRequestDocModal()">
+  <div class="modal-card-box" style="max-width: 400px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Request Document</h3>
       <button class="close-modal-btn" (click)="closeRequestDocModal()" style="color: #64748B;">

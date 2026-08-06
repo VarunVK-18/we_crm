@@ -44,11 +44,11 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
   String? _incorpCertPath;
 
   final List<String> _entityTypes = [
-    'Proprietorship',
+    'Proprietorship Registration',
     'Partnership',
     'LLP',
     'Private Limited',
-    'OPC',
+    'OPC Incorporation',
   ];
 
   @override

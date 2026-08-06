@@ -151,8 +151,8 @@
 
 <!-- Create Employee Modal -->
 @if (isCreateEmployeeModalOpen()) {
-  <div class="modal-overlay" (click)="closeCreateEmployeeModal()">
-    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="closeCreateEmployeeModal()">
+    <div class="modal-card-box" style="max-width: 500px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Add New Employee</h3>
         <button class="close-modal-btn" (click)="closeCreateEmployeeModal()">
@@ -217,8 +217,8 @@
 
 <!-- Edit Employee Modal -->
 @if (isEditEmployeeModalOpen()) {
-  <div class="modal-overlay" (click)="closeEditEmployeeModal()">
-    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="closeEditEmployeeModal()">
+    <div class="modal-card-box" style="max-width: 500px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Edit Employee Details</h3>
         <button class="close-modal-btn" (click)="closeEditEmployeeModal()">
@@ -276,8 +276,8 @@
 
 <!-- Delete Employee Modal -->
 @if (isDeleteEmployeeModalOpen()) {
-  <div class="modal-overlay" (click)="closeDeleteEmployeeModal()">
-    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="closeDeleteEmployeeModal()">
+    <div class="modal-card-box" style="max-width: 400px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Remove Employee</h3>
         <button class="close-modal-btn" (click)="closeDeleteEmployeeModal()">
@@ -304,8 +304,8 @@
 
 <!-- Create / Edit Bucket Team Modal -->
 @if (isTeamModalOpen()) {
-  <div class="modal-overlay" (click)="closeTeamModal()">
-    <div class="modal-card-box" style="max-width: 560px; max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="closeTeamModal()">
+    <div class="modal-card-box" style="max-width: 560px; max-height: 90vh; overflow-y: auto;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3 style="display:flex; align-items:center; gap:8px;">{{ isEditTeamMode() ? 'Edit' : 'Create' }} Team</h3>
         <button class="close-modal-btn" (click)="closeTeamModal()">

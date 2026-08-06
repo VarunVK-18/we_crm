@@ -32,7 +32,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
 
   // Business Details
   final _businessNameController = TextEditingController();
-  String _businessType = 'Proprietorship';
+  String _businessType = 'Proprietorship Registration';
   final _otherBusinessTypeController = TextEditingController();
 
   // Nature of Food Business (Multi-Select)
@@ -406,7 +406,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
                     children: [
                       _buildField('Name of Business', '', _businessNameController, isRequired: true),
                       
-                      _buildRadioGroup('Type of Business', '', ['Proprietorship', 'Partnership', 'LLP', 'Private Limited Company', 'One Person Company', 'Other'], _businessType, (v) => setState(() => _businessType = v)),
+                      _buildRadioGroup('Type of Business', '', ['Proprietorship Registration', 'Partnership', 'LLP', 'Private Limited Company', 'One Person Company', 'Other'], _businessType, (v) => setState(() => _businessType = v)),
                       if (_businessType == 'Other')
                         _buildField('Specify Other Business Type', '', _otherBusinessTypeController, isRequired: true),
                       

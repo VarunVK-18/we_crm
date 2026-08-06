@@ -1,6 +1,9 @@
+import { AutoFillUtils } from '../../../utils/autofill-utils';
+import { DocumentMatcher } from '../../../utils/document-matcher';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PanFormatDirective, AadhaarFormatDirective } from '../../../utils/form-format.directives';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
-import { Component, signal, OnInit } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,8 +19,20 @@ import { DraftService } from '../../../services/draft.service';
   styleUrl: '../forms-shared.css',
 })
 export class ProprietorshipForm implements OnInit {
+  currentUser: any = null;
   existingDocs: any = {};
   removeExistingDoc(fieldName: string) { delete this.existingDocs[fieldName]; }
+
+  documentViewerUrl: string | null = null;
+  safeDocumentViewerUrl: SafeResourceUrl | null = null;
+  sanitizer = inject(DomSanitizer);
+  viewDocument(url: string) {
+    this.documentViewerUrl = this.api.getFileUrl(url);
+    this.safeDocumentViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.documentViewerUrl);
+  }
+  closeDocumentViewer() {
+    this.documentViewerUrl = null;
+  }
 
   orderId = signal<string>('');
   isLoading = signal<boolean>(false);
@@ -71,6 +86,7 @@ export class ProprietorshipForm implements OnInit {
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
+        this.currentUser = user;
         
         if (user.owner_name) {
           if ('fullName' in this) (this as any).fullName = user.owner_name;
@@ -128,7 +144,8 @@ export class ProprietorshipForm implements OnInit {
           
           for (const field of Object.keys(keywordMap)) {
             const keywords = keywordMap[field];
-            const matchedDoc = docs.find((d: any) => d.name && keywords.some((k: string) => d.name.toLowerCase().includes(k)));
+            const eName = (this as any).companyName || (this as any).enterpriseName || (this as any).entityName || (this as any).businessName || '';
+            const matchedDoc = DocumentMatcher.findExistingDoc(eName, docs, keywords);
             if (matchedDoc) {
               this.existingDocs[field] = matchedDoc;
             }
@@ -280,5 +297,11 @@ export class ProprietorshipForm implements OnInit {
         this.errorMessage.set(err.error?.message || 'Failed to submit form.');
       }
     });
+  }
+
+  onEntityNameChange(newName: string) {
+    if (this.currentUser) {
+      AutoFillUtils.autoFillTextData(this, newName, this.currentUser);
+    }
   }
 }

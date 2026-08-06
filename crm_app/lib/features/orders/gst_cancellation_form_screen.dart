@@ -41,11 +41,11 @@ class _GstCancellationFormScreenState extends ConsumerState<GstCancellationFormS
   String? _supportDocsPath;
 
   final List<String> _entityTypes = [
-    'Proprietorship',
+    'Proprietorship Registration',
     'Partnership',
     'LLP',
     'Private Limited',
-    'OPC',
+    'OPC Incorporation',
   ];
 
   @override

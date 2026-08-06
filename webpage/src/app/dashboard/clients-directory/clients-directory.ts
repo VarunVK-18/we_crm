@@ -71,29 +71,29 @@ export class ClientsDirectory implements OnInit {
   availableServices = [
     'Private Limited Incorporation',
     'LLP Incorporation',
-    'OPC',
-    'MSME',
-    'Proprietorship',
+    'OPC Incorporation',
+    'MSME Registration',
+    'Proprietorship Registration',
     'MCA Compliance',
-    'TDS',
-    'PF',
-    'Copyright',
+    'TDS Return Filing',
+    'PF Registration & Compliance',
+    'Copyright Registration',
     'GST Compliance',
-    'GST Cancelation',
-    'GST filing',
-    'ITR',
-    'DPIIT', 'DUNS',
-    'Trade Mark',
+    'GST Cancellation',
+    'GST Returns Filing',
+    'Income Tax Return (ITR)',
+    'DPIIT Recognition', 'DUNS Number',
+    'Trademark Registration',
     'GST Registration',
-    'ISO',
-    'Patent',
-    'FSSAI',
-    'DSC',
-    'IE code',
-    'LEI',
-    'BIS',
-    'RoHS',
-    'CE'
+    'ISO Certification',
+    'Patent Registration',
+    'FSSAI Registration',
+    'Digital Signature Certificate (DSC)',
+    'Import Export Code (IEC)',
+    'LEI Registration',
+    'BIS Certification',
+    'RoHS Certification',
+    'CE Certification'
   ];
 
   // Task Creation Modal inside clients context
@@ -325,7 +325,7 @@ export class ClientsDirectory implements OnInit {
         const details = await this.ocrService.extractIncorporationDetails(file);
         // Autofill form
         if (details.companyName) this.externalClient.companyName = details.companyName;
-        if (details.entityType && ['Private Limited Company', 'LLP', 'OPC', 'Proprietorship', 'Other'].includes(details.entityType)) {
+        if (details.entityType && ['Private Limited Company', 'LLP', 'OPC Incorporation', 'Proprietorship Registration', 'Other'].includes(details.entityType)) {
           this.externalClient.entityType = details.entityType;
         }
         if (details.incorporationDate) this.externalClient.incorporationDate = details.incorporationDate;

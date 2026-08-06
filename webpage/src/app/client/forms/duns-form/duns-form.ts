@@ -1,3 +1,5 @@
+import { AutoFillUtils } from '../../../utils/autofill-utils';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +16,7 @@ import { Location } from '@angular/common';
   styleUrl: '../forms-shared.css'
 })
 export class DunsForm implements OnInit {
+  currentUser: any = null;
   orderId = signal<string>('');
   
   // Fields
@@ -145,5 +148,11 @@ export class DunsForm implements OnInit {
         alert('Error submitting form: ' + (err.error?.message || err.message));
       }
     });
+  }
+
+  onEntityNameChange(newName: string) {
+    if (this.currentUser) {
+      AutoFillUtils.autoFillTextData(this, newName, this.currentUser);
+    }
   }
 }

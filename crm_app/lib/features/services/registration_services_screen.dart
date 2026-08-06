@@ -42,7 +42,7 @@ class _RegistrationServicesScreenState
       'features': ['Digital Signature Certificate (DSC)', 'Form 8 Statement of Account', 'Form 11 Annual Return', 'DIR-3 KYC of Partners', 'Income Tax Return Filing', 'LLP Agreement Maintenance'],
     },
     {
-      'title': 'OPC',
+      'title': 'OPC Incorporation',
       'description': 'One Person Company registration for solo entrepreneurs.',
       'icon': HugeIcons.strokeRoundedUser,
       'color': const Color(0xFF10B981),
@@ -50,7 +50,7 @@ class _RegistrationServicesScreenState
       'features': ['Name Reservation', 'DSC & DIN', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Bank Setup Support'],
     },
     {
-      'title': 'Proprietorship',
+      'title': 'Proprietorship Registration',
       'description': 'Sole vendor formation with business identification.',
       'icon': HugeIcons.strokeRoundedUser,
       'color': const Color(0xFF3B82F6),
@@ -58,7 +58,7 @@ class _RegistrationServicesScreenState
       'features': ['Document support', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance'],
     },
     {
-      'title': 'MSME',
+      'title': 'MSME Registration',
       'description': 'Official Udyam Registration for small and medium enterprises.',
       'icon': LucideIcons.medal,
       'color': const Color(0xFFF59E0B),
@@ -76,7 +76,7 @@ class _RegistrationServicesScreenState
       'features': ['Auditor appointment', '360° Accounting & Bookkeeping', 'Statutory Auditing', 'AOC 4 & MGT 7 filing', 'Director KYC', 'AGM & Notice', 'ITR filing'],
     },
     {
-      'title': 'TDS',
+      'title': 'TDS Return Filing',
       'description': 'TDS return filing and certificate issuance.',
       'icon': HugeIcons.strokeRoundedCalculator,
       'color': const Color(0xFF8B5CF6),
@@ -84,7 +84,7 @@ class _RegistrationServicesScreenState
       'features': ['TDS Computation', 'Quarterly Return Filing', 'Form 16/16A Generation', 'Challan Payment', 'Notice Reply'],
     },
     {
-      'title': 'PF',
+      'title': 'PF Registration & Compliance',
       'description': 'Provident Fund registration and monthly compliance.',
       'icon': HugeIcons.strokeRoundedDocumentValidation,
       'color': const Color(0xFF3B82F6),
@@ -94,7 +94,7 @@ class _RegistrationServicesScreenState
 
     // --- IP ---
     {
-      'title': 'Trade Mark',
+      'title': 'Trademark Registration',
       'description': 'Brand protection and intellectual property rights.',
       'icon': HugeIcons.strokeRoundedTradeMark,
       'color': const Color(0xFFEC4899),
@@ -102,7 +102,7 @@ class _RegistrationServicesScreenState
       'features': ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Reimbursement Advisory'],
     },
     {
-      'title': 'Copyright',
+      'title': 'Copyright Registration',
       'description': 'Protection for original creative literary or artistic works.',
       'icon': LucideIcons.copyright,
       'color': const Color(0xFF6366F1),
@@ -110,7 +110,7 @@ class _RegistrationServicesScreenState
       'features': ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate'],
     },
     {
-      'title': 'Patent',
+      'title': 'Patent Registration',
       'description': 'Exclusive rights for your inventions.',
       'icon': LucideIcons.lightbulb,
       'color': const Color(0xFFF59E0B),
@@ -128,7 +128,7 @@ class _RegistrationServicesScreenState
       'features': ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate'],
     },
     {
-      'title': 'GST filing',
+      'title': 'GST Returns Filing',
       'description': 'Monthly/Quarterly GST returns and reconciliations.',
       'icon': HugeIcons.strokeRoundedCalculate,
       'color': const Color(0xFF3B82F6),
@@ -136,7 +136,7 @@ class _RegistrationServicesScreenState
       'features': ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support'],
     },
     {
-      'title': 'GST Cancelation',
+      'title': 'GST Cancellation',
       'description': 'Surrender and cancel your GST registration.',
       'icon': LucideIcons.fileX,
       'color': const Color(0xFFEF4444),
@@ -144,7 +144,7 @@ class _RegistrationServicesScreenState
       'features': ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order'],
     },
     {
-      'title': 'ITR',
+      'title': 'Income Tax Return (ITR)',
       'description': 'Income Tax Return filing for individuals and businesses.',
       'icon': 'assets/icons/itr.svg',
       'color': const Color(0xFF8B5CF6),
@@ -154,7 +154,7 @@ class _RegistrationServicesScreenState
 
     // --- Licensing ---
     {
-      'title': 'DUNS',
+      'title': 'DUNS Number',
       'description': 'Data Universal Numbering System for global business identity.',
       'icon': LucideIcons.globe,
       'color': const Color(0xFF10B981),
@@ -162,7 +162,7 @@ class _RegistrationServicesScreenState
       'features': ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing'],
     },
     {
-      'title': 'DPIIT',
+      'title': 'DPIIT Recognition',
       'description': 'Startup India Certification for your startup! Please provide your details correctly.',
       'icon': HugeIcons.strokeRoundedRocket,
       'color': const Color(0xFF10B981),
@@ -170,7 +170,7 @@ class _RegistrationServicesScreenState
       'features': ['Pitch deck preparation', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Government approval', 'IPR Fast Track'],
     },
     {
-      'title': 'ISO',
+      'title': 'ISO Certification',
       'description': 'Quality management certification (ISO 9001 and others).',
       'icon': LucideIcons.award,
       'color': const Color(0xFF14B8A6),
@@ -178,7 +178,7 @@ class _RegistrationServicesScreenState
       'features': ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training'],
     },
     {
-      'title': 'BIS',
+      'title': 'BIS Certification',
       'description': 'Bureau of Indian Standards product certification.',
       'icon': LucideIcons.shieldCheck,
       'color': const Color(0xFFF59E0B),
@@ -186,7 +186,7 @@ class _RegistrationServicesScreenState
       'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
     },
     {
-      'title': 'RoHS',
+      'title': 'RoHS Certification',
       'description': 'European standard certifications for electronics and products.',
       'icon': LucideIcons.checkCircle,
       'color': const Color(0xFF14B8A6),
@@ -194,7 +194,7 @@ class _RegistrationServicesScreenState
       'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
     },
     {
-      'title': 'CE',
+      'title': 'CE Certification',
       'description': 'European standard certifications for electronics and products.',
       'icon': LucideIcons.checkCircle,
       'color': const Color(0xFF14B8A6),
@@ -202,7 +202,7 @@ class _RegistrationServicesScreenState
       'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
     },
     {
-      'title': 'FSSAI',
+      'title': 'FSSAI Registration',
       'description': 'Registration for food business operators, manufacturers, and startups.',
       'icon': LucideIcons.utensils,
       'color': const Color(0xFF10B981),
@@ -218,7 +218,7 @@ class _RegistrationServicesScreenState
       'features': ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate'],
     },
     {
-      'title': 'LEI',
+      'title': 'LEI Registration',
       'description': 'Legal Entity Identifier registration for financial transactions.',
       'icon': LucideIcons.barcode,
       'color': const Color(0xFF6366F1),
@@ -227,7 +227,7 @@ class _RegistrationServicesScreenState
     },
 
     {
-      'title': 'DSC',
+      'title': 'Digital Signature Certificate (DSC)',
       'description': 'Digital Signature Certificate for individuals & organizations.',
       'icon': LucideIcons.usb,
       'color': const Color(0xFF8B5CF6),

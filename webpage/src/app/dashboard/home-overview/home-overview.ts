@@ -957,32 +957,32 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   readonly RECOMMENDATION_POOL = [
     { category: 'Incorporation', name: 'Private Limited Incorporation' },
     { category: 'Incorporation', name: 'LLP Incorporation' },
-    { category: 'Incorporation', name: 'OPC' },
-    { category: 'Incorporation', name: 'MSME' },
-    { category: 'Incorporation', name: 'Proprietorship' },
+    { category: 'Incorporation', name: 'OPC Incorporation' },
+    { category: 'Incorporation', name: 'MSME Registration' },
+    { category: 'Incorporation', name: 'Proprietorship Registration' },
     { category: 'Compliance', name: 'MCA Compliance' },
-    { category: 'Compliance', name: 'TDS' },
-    { category: 'Compliance', name: 'PF' },
-    { category: 'IP', name: 'Copyright' },
-    { category: 'IP', name: 'Trade Mark' },
-    { category: 'IP', name: 'Patent' },
-    { category: 'Tax', name: 'GST filing' },
-    { category: 'Tax', name: 'GST Cancelation' },
-    { category: 'Tax', name: 'ITR' },
+    { category: 'Compliance', name: 'TDS Return Filing' },
+    { category: 'Compliance', name: 'PF Registration & Compliance' },
+    { category: 'IP', name: 'Copyright Registration' },
+    { category: 'IP', name: 'Trademark Registration' },
+    { category: 'IP', name: 'Patent Registration' },
+    { category: 'Tax', name: 'GST Returns Filing' },
+    { category: 'Tax', name: 'GST Cancellation' },
+    { category: 'Tax', name: 'Income Tax Return (ITR)' },
     { category: 'Tax', name: 'GST Registration' },
-    { category: 'Licensing', name: 'DPIIT' },
-    { category: 'Licensing', name: 'ISO' },
-    { category: 'Licensing', name: 'FSSAI' },
-    { category: 'Licensing', name: 'DSC' },
-    { category: 'Licensing', name: 'IE code' },
-    { category: 'Licensing', name: 'LEI' },
-    { category: 'Licensing', name: 'BIS' },
-    { category: 'Licensing', name: 'RoHS' },
-    { category: 'Licensing', name: 'CE' },
+    { category: 'Licensing', name: 'DPIIT Recognition' },
+    { category: 'Licensing', name: 'ISO Certification' },
+    { category: 'Licensing', name: 'FSSAI Registration' },
+    { category: 'Licensing', name: 'Digital Signature Certificate (DSC)' },
+    { category: 'Licensing', name: 'Import Export Code (IEC)' },
+    { category: 'Licensing', name: 'LEI Registration' },
+    { category: 'Licensing', name: 'BIS Certification' },
+    { category: 'Licensing', name: 'RoHS Certification' },
+    { category: 'Licensing', name: 'CE Certification' },
   ];
 
   getUpscalingDataForClients(): { label: string; done: number; remaining: number }[] {
-    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC Incorporation', 'Proprietorship Registration'];
     const poolSize = this.RECOMMENDATION_POOL.length;
 
     return this.filteredRoleClients()
@@ -1149,28 +1149,28 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
   recommendationPool = [
     { category: 'Incorporation', name: 'Private Limited Incorporation' },
     { category: 'Incorporation', name: 'LLP Incorporation' },
-    { category: 'Incorporation', name: 'OPC' },
-    { category: 'Incorporation', name: 'MSME' },
-    { category: 'Incorporation', name: 'Proprietorship' },
+    { category: 'Incorporation', name: 'OPC Incorporation' },
+    { category: 'Incorporation', name: 'MSME Registration' },
+    { category: 'Incorporation', name: 'Proprietorship Registration' },
     { category: 'Compliance', name: 'MCA Compliance' },
-    { category: 'Compliance', name: 'TDS' },
-    { category: 'Compliance', name: 'PF' },
-    { category: 'IP', name: 'Copyright' },
-    { category: 'IP', name: 'Trade Mark' },
-    { category: 'IP', name: 'Patent' },
-    { category: 'Tax', name: 'GST filing' },
-    { category: 'Tax', name: 'GST Cancelation' },
-    { category: 'Tax', name: 'ITR' },
+    { category: 'Compliance', name: 'TDS Return Filing' },
+    { category: 'Compliance', name: 'PF Registration & Compliance' },
+    { category: 'IP', name: 'Copyright Registration' },
+    { category: 'IP', name: 'Trademark Registration' },
+    { category: 'IP', name: 'Patent Registration' },
+    { category: 'Tax', name: 'GST Returns Filing' },
+    { category: 'Tax', name: 'GST Cancellation' },
+    { category: 'Tax', name: 'Income Tax Return (ITR)' },
     { category: 'Tax', name: 'GST Registration' },
-    { category: 'Licensing', name: 'DPIIT' },
-    { category: 'Licensing', name: 'ISO' },
-    { category: 'Licensing', name: 'FSSAI' },
-    { category: 'Licensing', name: 'DSC' },
-    { category: 'Licensing', name: 'IE code' },
-    { category: 'Licensing', name: 'LEI' },
-    { category: 'Licensing', name: 'BIS' },
-    { category: 'Licensing', name: 'RoHS' },
-    { category: 'Licensing', name: 'CE' },
+    { category: 'Licensing', name: 'DPIIT Recognition' },
+    { category: 'Licensing', name: 'ISO Certification' },
+    { category: 'Licensing', name: 'FSSAI Registration' },
+    { category: 'Licensing', name: 'Digital Signature Certificate (DSC)' },
+    { category: 'Licensing', name: 'Import Export Code (IEC)' },
+    { category: 'Licensing', name: 'LEI Registration' },
+    { category: 'Licensing', name: 'BIS Certification' },
+    { category: 'Licensing', name: 'RoHS Certification' },
+    { category: 'Licensing', name: 'CE Certification' },
     { category: 'Compliance', name: 'ISO Certification' },
     { category: 'Compliance', name: 'FSSAI Registration' }
   ];
@@ -1185,7 +1185,7 @@ export class HomeOverview implements OnInit, AfterViewInit, OnDestroy {
             const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName);
             const doneSet = new Set([...weDone, ...outsourced]);
             
-            const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+            const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC Incorporation', 'Proprietorship Registration'];
             const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
 
             const oppsForClient = this.recommendationPool.filter(s => {

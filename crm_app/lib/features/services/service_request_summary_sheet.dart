@@ -18,6 +18,7 @@ import 'dart:convert';
 import '../../core/constants/port.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class ServiceRequestSummarySheet extends ConsumerStatefulWidget {
   final String packageName;
@@ -103,7 +104,7 @@ class _ServiceRequestSummarySheetState
   final bool _tmVerification = false;
 
   // FSSAI State
-  String _fssaiBusinessType = 'Proprietorship';
+  String _fssaiBusinessType = 'Proprietorship Registration';
   String _fssaiTurnover = 'Below ₹12 Lakhs';
   String _fssaiPremisesType = 'Own';
   bool _isCorrespondenceSame = true;
@@ -127,7 +128,7 @@ class _ServiceRequestSummarySheetState
   ];
 
   // MSME State
-  String _msmeOrgSelection = 'Proprietorship';
+  String _msmeOrgSelection = 'Proprietorship Registration';
   String _msmeActivity = 'Services';
 
   // DUNS State
@@ -154,6 +155,139 @@ class _ServiceRequestSummarySheetState
   // Map to store files per document slot
   // Key is the document name from kServiceRequiredDocuments or 'Other Documents'
   final Map<String, List<PlatformFile>> _documentSlots = {};
+  
+  // Existing documents fetched from user profile
+  final Map<String, Map<String, dynamic>> _existingDocs = {};
+
+  void _updateExistingDocs() {
+    _existingDocs.clear();
+    final userProfile = ref.read(userProfileProvider).value;
+    if (userProfile == null) return;
+    
+    final entityName = _selectedEntity ?? userProfile.companyName;
+    if (entityName.isEmpty || entityName == 'Add New Entity...') return;
+    
+    final Map<String, List<String>> keywordMap = {
+      'Company PAN': ['pan'],
+      'PAN Card': ['pan'],
+      'PAN of Firm': ['pan'],
+      'LLP PAN': ['pan'],
+      'Company PAN Card': ['pan'],
+      'Aadhaar Card': ['aadhaar', 'address proof', 'passport', 'voter'],
+      'Address Proof': ['aadhaar', 'address proof', 'passport', 'voter'],
+      'Address Proof of Partners': ['aadhaar', 'address proof', 'passport', 'voter'],
+      'Business Address Proof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
+      'EB Bill / Wifi Bill < 2 months PDF': ['business address', 'rent agreement', 'eb bill', 'property tax'],
+      'Incorporation Certificate (PDF)': ['incorporation', 'incorp'],
+      'Company Incorporation Copy': ['incorporation', 'incorp'],
+      'Proprietor Photo': ['photo', 'passport size'],
+      'Passport Size Photo': ['photo', 'passport size'],
+      'Personal ID Proofs': ['identity', 'id proof'],
+      'ID Proof of Partners': ['identity', 'id proof'],
+      'Bank Proof (Cancelled Cheque)': ['cheque', 'bank'],
+      'Bank Statements': ['cheque', 'bank'],
+      'Bank Details': ['cheque', 'bank'],
+      'Company logo (JPEG)': ['logo', 'brand'],
+      'GST Certificate': ['gst'],
+    };
+
+    for (var slot in _allSlots) {
+      final keywords = keywordMap[slot] ?? [slot.toLowerCase()];
+      final matchedDoc = userProfile.onboardingDocuments.where((d) {
+        final docName = (d['name']?.toString() ?? '').toLowerCase();
+        
+        // Normalization function
+        String normalize(String s) {
+          var n = s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+          final suffixes = ['pvtltd', 'privatelimited', 'llp', 'opc', 'co', 'inc', 'corp', 'corporation', 'limited', 'ltd'];
+          for (var suffix in suffixes) {
+            if (n.endsWith(suffix)) {
+              n = n.substring(0, n.length - suffix.length);
+            }
+          }
+          return n;
+        }
+
+        final normalizedEntity = normalize(entityName);
+        
+        final parts = docName.split('-');
+        final docEntityPart = parts.length > 1 ? parts[0] : docName;
+        final normalizedDocEntity = normalize(docEntityPart);
+
+        final startsWithEntity = normalizedEntity.isEmpty || 
+                                 normalizedDocEntity.startsWith(normalizedEntity) || 
+                                 normalizedEntity.startsWith(normalizedDocEntity);
+                                 
+        final hasKeyword = keywords.any((k) => docName.contains(k.toLowerCase()));
+        
+        return startsWithEntity && hasKeyword;
+      }).firstOrNull;
+
+      if (matchedDoc != null) {
+        _existingDocs[slot] = matchedDoc;
+      }
+    }
+  }
+
+
+  void _updateTextData() {
+    final userProfile = ref.read(userProfileProvider).value;
+    if (userProfile == null) return;
+    
+    final entityName = _selectedEntity ?? userProfile.companyName;
+    if (entityName.isEmpty || entityName == 'Add New Entity...') return;
+
+    // Normalization function (same as in docs)
+    String normalize(String s) {
+      var n = s.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final suffixes = ['pvtltd', 'privatelimited', 'llp', 'opc', 'co', 'inc', 'corp', 'corporation', 'limited', 'ltd'];
+      for (var suffix in suffixes) {
+        if (n.endsWith(suffix)) {
+          n = n.substring(0, n.length - suffix.length);
+        }
+      }
+      return n;
+    }
+
+    final normalizedEntity = normalize(entityName);
+    
+    // Find matching entity
+    final matchedEntity = userProfile.clientEntities.where((e) {
+      final name = normalize(e.entityName);
+      return name == normalizedEntity || name.startsWith(normalizedEntity) || normalizedEntity.startsWith(name);
+    }).firstOrNull;
+
+    if (matchedEntity != null) {
+      void setIfEmpty(TextEditingController ctrl, String? val) {
+        if (val != null && val.isNotEmpty && ctrl.text.isEmpty) {
+          ctrl.text = val;
+        }
+      }
+
+      setIfEmpty(_gstPanController, matchedEntity.gstin.isNotEmpty ? matchedEntity.gstin : matchedEntity.pan);
+      setIfEmpty(_msmeGstNumberController, matchedEntity.gstin.isNotEmpty ? matchedEntity.gstin : matchedEntity.pan);
+      setIfEmpty(_companyPhoneController, userProfile.phone);
+      setIfEmpty(_companyEmailController, userProfile.email);
+    }
+
+    if (userProfile.directors.isNotEmpty) {
+      final director = userProfile.directors.first;
+      void setIfEmpty(TextEditingController ctrl, String? val) {
+        if (val != null && val.isNotEmpty && ctrl.text.isEmpty) {
+          ctrl.text = val;
+        }
+      }
+      
+      final dName = '${director['firstName'] ?? ''} ${director['lastName'] ?? ''}'.trim();
+      setIfEmpty(_ownerNameController, dName);
+      setIfEmpty(_nameController, dName);
+      setIfEmpty(_tmApplicantNameController, dName);
+      setIfEmpty(_partnersNameController, dName);
+      
+      setIfEmpty(_phoneController, director['mobileNumber'] ?? director['phone'] ?? userProfile.phone);
+      setIfEmpty(_emailController, director['email'] ?? userProfile.email);
+    }
+  }
 
   // Helper to get all slots (required + general)
   List<String> get _allSlots {
@@ -205,7 +339,7 @@ class _ServiceRequestSummarySheetState
           lowerValue.contains('one person company')) {
         return 'You are applying for LLP. Enter company name as [Name] LLP.';
       }
-    } else if (widget.packageName.contains('OPC') ||
+    } else if (widget.packageName.contains('OPC Incorporation') ||
                widget.packageName.contains('One Person Company')) {
       if (lowerValue.contains('private limited') ||
           lowerValue.contains('pvt ltd') ||
@@ -234,6 +368,8 @@ class _ServiceRequestSummarySheetState
     _nameController = TextEditingController(text: userProfile?.name ?? '');
     _emailController = TextEditingController(text: userProfile?.email ?? '');
     _gstPanController = TextEditingController();
+
+    _updateExistingDocs();
 
     // Initialize Incorporation Controllers
     _numberOfDirectorsController = TextEditingController();
@@ -305,6 +441,38 @@ class _ServiceRequestSummarySheetState
       _isCompanyPhoneValid =
           value.length == 10 && RegExp(r'^[0-9]+$').hasMatch(value);
     });
+  }
+
+  void _viewExistingDocument(String urlPath, String name) {
+    final fullUrl = urlPath.startsWith('http') ? urlPath : '$kBaseUrl/$urlPath';
+    final isPdf = fullUrl.toLowerCase().endsWith('.pdf');
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        insetPadding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(child: Text(name, style: GoogleFonts.outfit(fontWeight: FontWeight.bold))),
+                  IconButton(icon: const Icon(LucideIcons.x), onPressed: () => Navigator.pop(context)),
+                ],
+              ),
+            ),
+            Expanded(
+              child: isPdf 
+                ? SfPdfViewer.network(fullUrl) 
+                : Image.network(fullUrl, fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Center(child: Text('Failed to load image')),
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _pickFiles(String slotName) async {
@@ -451,14 +619,14 @@ class _ServiceRequestSummarySheetState
       if (_companyNameController.text.isNotEmpty) {
         if (widget.packageName.contains('Incorporation')) {
           request.fields['company_name'] = _companyNameController.text;
-        } else if (widget.packageName == 'MSME Certification') {
+        } else if (widget.packageName == 'MSME Registration') {
           request.fields['entity_name'] = _companyNameController.text;
         }
       }
 
       // Always populate entity_name properly from custom entity if Add New Entity is selected
       // except if it is MSME Certification where entity_name is already populated from companyNameController
-      if (widget.packageName != 'MSME Certification') {
+      if (widget.packageName != 'MSME Registration') {
         String finalEntity = _selectedEntity == 'Add New Entity...' 
             ? _customEntityController.text 
             : (_selectedEntity ?? '');
@@ -482,7 +650,7 @@ class _ServiceRequestSummarySheetState
         if (widget.packageName.contains('Incorporation') || widget.packageName == '360° Compliance') {
            details['numberOfDirectors'] = _numberOfDirectorsController.text;
         }
-        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST filing') || widget.packageName.contains('360° Compliance')) {
+        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Returns Filing') || widget.packageName.contains('360° Compliance')) {
           if (_selectedTurnover != null) {
             details['turnoverCategory'] = _selectedTurnover!;
           }
@@ -516,7 +684,7 @@ class _ServiceRequestSummarySheetState
         details['duns_trade_name'] = _dunsTradeNameController.text;
         details['duns_year'] = _dunsYearController.text;
         details['duns_employees'] = _fssaiEmployeesController.text;
-      } else if (widget.packageName == 'GST filing' || widget.packageName == 'MCA Compliance') {
+      } else if (widget.packageName == 'GST Returns Filing' || widget.packageName == 'MCA Compliance') {
         details['annualTurnover'] = _annualTurnover;
       }
 
@@ -535,6 +703,17 @@ class _ServiceRequestSummarySheetState
                 file.path!,
               ),
             );
+          }
+        }
+      }
+
+      // Add existing documents that were not overwritten
+      for (var entry in _existingDocs.entries) {
+        final slotName = entry.key;
+        if (!(_documentSlots[slotName]?.isNotEmpty ?? false)) {
+          final fileUrl = entry.value['fileUrl'];
+          if (fileUrl != null) {
+            request.fields['${slotName}_existing'] = fileUrl.toString();
           }
         }
       }
@@ -597,9 +776,9 @@ class _ServiceRequestSummarySheetState
           } else if (sName.contains('llp incorporation')) {
             entityTypesMap[name] = 'LLP';
           } else if (sName.contains('proprietorship')) {
-            entityTypesMap[name] = 'Proprietorship';
+            entityTypesMap[name] = 'Proprietorship Registration';
           } else if (sName.contains('opc')) {
-            entityTypesMap[name] = 'OPC';
+            entityTypesMap[name] = 'OPC Incorporation';
           }
         }
       }
@@ -688,7 +867,7 @@ class _ServiceRequestSummarySheetState
 
       final entityType = entityTypesMap[_selectedEntity] ?? 'Unknown';
       
-      bool isIncorporationService = reqService.contains('Incorporation') || reqService.contains('Proprietorship') || reqService == 'OPC';
+      bool isIncorporationService = reqService.contains('Incorporation') || reqService.contains('Proprietorship Registration') || reqService == 'OPC Incorporation';
 
       if (isIncorporationService && _selectedEntity != 'Add New Entity...') {
           bool isTrulyIncorporated = false;
@@ -714,7 +893,7 @@ class _ServiceRequestSummarySheetState
             };
           }
 
-          final incorporationTypes = ['Private Limited Company', 'LLP', 'Proprietorship', 'OPC'];
+          final incorporationTypes = ['Private Limited Company', 'LLP', 'Proprietorship Registration', 'OPC Incorporation'];
           
           if (incorporationTypes.contains(entityType)) {
             return {
@@ -862,6 +1041,8 @@ class _ServiceRequestSummarySheetState
                           onChanged: (val) {
                             setState(() {
                               _selectedEntity = val;
+                              _updateExistingDocs();
+                              _updateTextData();
                               if (val != null && val != 'Add New Entity...') {
                                 _companyNameController.text = val;
                               } else {
@@ -870,7 +1051,7 @@ class _ServiceRequestSummarySheetState
                             });
                           },
                         ),
-                        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST filing') || widget.packageName.contains('360° Compliance')) ...[
+                        if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Returns Filing') || widget.packageName.contains('360° Compliance')) ...[
                           const SizedBox(height: 24),
                           Row(
                             children: [
@@ -977,8 +1158,8 @@ class _ServiceRequestSummarySheetState
                         ],
                         if (_selectedEntity == 'Add New Entity...' && 
                             !(widget.packageName.contains('Incorporation') || 
-                              widget.packageName.contains('Proprietorship') || 
-                              widget.packageName.contains('OPC'))) ...[
+                              widget.packageName.contains('Proprietorship Registration') || 
+                              widget.packageName.contains('OPC Incorporation'))) ...[
                           const SizedBox(height: 12),
                           _EditableField(
                             label: 'New Entity Name',
@@ -1127,7 +1308,7 @@ class _ServiceRequestSummarySheetState
                           ? null
                           : () async {
                               bool isTurnoverValid = true;
-                              if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST filing') || widget.packageName.contains('360° Compliance')) {
+                              if (widget.packageName.contains('MCA Compliance') || widget.packageName.contains('GST Returns Filing') || widget.packageName.contains('360° Compliance')) {
                                 if (_selectedTurnover == null) {
                                   isTurnoverValid = false;
                                 }
@@ -1351,15 +1532,15 @@ class _ServiceRequestSummarySheetState
     return [
       if (widget.packageName == 'Private Limited Incorporation')
         ..._buildPrivateLimitedForm(),
-      if (widget.packageName == 'OPC')
+      if (widget.packageName == 'OPC Incorporation')
         ..._buildOpcForm(),
-      if (widget.packageName == 'Proprietorship')
+      if (widget.packageName == 'Proprietorship Registration')
         ..._buildProprietorshipForm(),
-      if (widget.packageName == 'Trade Mark' || widget.packageName == 'Trademark Registration')
+      if (widget.packageName == 'Trademark Registration' || widget.packageName == 'Trademark Registration')
         ..._buildTrademarkForm(),
       if (widget.packageName == 'DUNS Number Registration') ..._buildDunsForm(),
       if (widget.packageName == 'LLP Incorporation') ..._buildLlpForm(),
-      if (widget.packageName == 'GST filing') ..._buildComplianceForm(),
+      if (widget.packageName == 'GST Returns Filing') ..._buildComplianceForm(),
     ];
   }
 
@@ -1565,11 +1746,11 @@ class _ServiceRequestSummarySheetState
       const SizedBox(height: 24),
       _buildSectionHeader('Type of organization'),
       ...[
-        'Proprietorship',
+        'Proprietorship Registration',
         'Partnership',
         'LLP',
         'Private Limited',
-        'OPC',
+        'OPC Incorporation',
         'Trust',
         'Society'
       ].map((type) => _buildModernRadio(type, type, _msmeOrgSelection,
@@ -1861,7 +2042,7 @@ class _ServiceRequestSummarySheetState
       const SizedBox(height: 20),
       _buildSectionHeader('Type of Business'),
       ...[
-        'Proprietorship',
+        'Proprietorship Registration',
         'Partnership',
         'LLP',
         'Private Limited Company',
@@ -2087,6 +2268,7 @@ class _ServiceRequestSummarySheetState
         ..._allSlots.map((slotName) {
           final files = _documentSlots[slotName] ?? [];
           final isOther = slotName == 'Other Documents';
+          final existingDoc = _existingDocs[slotName];
           return Container(
             margin: const EdgeInsets.only(bottom: 20),
             child: Column(
@@ -2113,6 +2295,46 @@ class _ServiceRequestSummarySheetState
                   ],
                 ),
                 const SizedBox(height: 12),
+                if (existingDoc != null && files.isEmpty)
+                  Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                                child: Text('${existingDoc['name']} (From Profile)',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.deepTeal))),
+                            IconButton(
+                                icon: const Icon(LucideIcons.eye, size: 14),
+                                color: AppTheme.corporateBlue,
+                                onPressed: () => _viewExistingDocument(existingDoc['fileUrl']?.toString() ?? '', existingDoc['name']?.toString() ?? ''),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints()),
+                            const SizedBox(width: 8),
+                            IconButton(
+                                icon: const Icon(LucideIcons.trash2, size: 14),
+                                color: Colors.red[400],
+                                tooltip: 'Change Document',
+                                onPressed: () {
+                                  setState(() {
+                                    _existingDocs.remove(slotName);
+                                  });
+                                },
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints()),
+                          ],
+                        ),
+                      ),
                 if (files.isNotEmpty)
                   ...files.asMap().entries.map((entry) => Container(
                         margin: const EdgeInsets.only(bottom: 8),

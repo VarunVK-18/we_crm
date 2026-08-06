@@ -1001,8 +1001,8 @@ const subscribeService = async (req, res) => {
     const orderDocuments = [];
     if (req.files && req.files.length > 0) {
       for (const f of req.files) {
-        // Clean duplicate documents with the same name if user uploads them again
-        const docName = `${serviceName} - ${f.fieldname}`;
+        // Clean duplicate documents with the same name if user uploads them again for the same entity
+        const docName = `${requestedEntityName} - ${f.fieldname}`;
         user.onboarding_documents = user.onboarding_documents.filter(d => d.name !== docName);
         
         const doc = await Document.create({
@@ -1023,6 +1023,26 @@ const subscribeService = async (req, res) => {
           fileUrl: `api/documents/${doc._id}`
         });
       }
+    }
+
+    // Process existing documents passed from frontend
+    if (req.body) {
+      Object.keys(req.body).forEach(key => {
+        if (key.endsWith('_existing')) {
+          const fieldName = key.replace('_existing', '');
+          const fileUrl = req.body[key];
+          
+          // Only add if not overwritten by a newly uploaded file
+          if (!orderDocuments.find(d => d.name === fieldName)) {
+             const existingDoc = user.onboarding_documents.find(d => d.fileUrl === fileUrl);
+             orderDocuments.push({
+               name: fieldName,
+               filename: existingDoc ? (existingDoc.name || fieldName) : fieldName,
+               fileUrl: fileUrl
+             });
+          }
+        }
+      });
     }
 
     await user.save();
@@ -1373,7 +1393,8 @@ const editClientProfile = async (req, res) => {
       company_email, main_division_description, authorised_capital, paidup_capital,
       total_obligation_of_contribution, address_type, street_address_line_1, street_address_line_2,
       city, state, postal_code, main_division_no, company_type_expanded, class_of_company,
-      company_category, company_subcategory, registration_number, company_origin, roc
+      company_category, company_subcategory, registration_number, company_origin, roc,
+      pan, pan_name, pan_father_name, pan_dob, tan, cin, gstin, website
     } = req.body;
     
     // Only update allowed fields
@@ -1403,6 +1424,14 @@ const editClientProfile = async (req, res) => {
       registration_number, 
       company_origin, 
       roc,
+      pan,
+      pan_name,
+      pan_father_name,
+      pan_dob,
+      tan,
+      cin,
+      gstin,
+      website,
       ...(directors !== undefined && { directors })
     }, { new: true });
 

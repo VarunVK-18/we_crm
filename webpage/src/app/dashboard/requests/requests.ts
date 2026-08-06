@@ -471,7 +471,7 @@ export class RequestsComponent implements OnInit, AfterViewChecked {
     if (amount <= 0) return false;
 
     const advance = this.advanceAmountPaidForOrder()[orderId] || 0;
-    if (advance <= 0) return false;
+    if (advance < 0) return false;
     if (advance > amount) return false;
 
     const requireVerification = this.requirePaymentVerification();

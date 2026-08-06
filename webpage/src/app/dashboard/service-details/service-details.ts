@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
 
-type ServiceType = 'MCA' | 'DPIIT' | 'GST' | 'Trademark' | 'BIS' | 'Copyright' | 'Patent' | 'ITR' | 'DSC' | 'FSSAI' | 'DUNS' | 'TDS' | 'PF' | 'LEI' | 'IEC' | 'MSME';
+type ServiceType = 'MCA' | 'DPIIT Recognition' | 'GST' | 'Trademark Registration' | 'BIS Certification' | 'Copyright Registration' | 'Patent Registration' | 'Income Tax Return (ITR)' | 'Digital Signature Certificate (DSC)' | 'FSSAI Registration' | 'DUNS Number' | 'TDS Return Filing' | 'PF Registration & Compliance' | 'LEI Registration' | 'IEC' | 'MSME Registration';
 
 interface DirectorCred {
   index: number;
@@ -30,7 +30,7 @@ interface ServiceForm {
   directorCredentials: DirectorCred[];
 }
 
-const OCR_SERVICES: ServiceType[] = ['Trademark', 'BIS', 'Copyright', 'Patent'];
+const OCR_SERVICES: ServiceType[] = ['Trademark Registration', 'BIS Certification', 'Copyright Registration', 'Patent Registration'];
 
 @Component({
   selector: 'app-service-details',
@@ -46,16 +46,16 @@ export class ServiceDetailsComponent implements OnInit, OnChanges {
 
   serviceList: { type: ServiceType; label: string; sub?: string }[] = [
     { type: 'MCA',       label: 'MCA',       sub: 'Ministry of Corporate Affairs' },
-    { type: 'DPIIT',     label: 'DPIIT',     sub: 'Startup India' },
+    { type: 'DPIIT Recognition',     label: 'DPIIT Recognition',     sub: 'Startup India' },
     { type: 'GST',       label: 'GST',       sub: 'Goods & Services Tax' },
-    { type: 'Trademark', label: 'Trademark', sub: 'IPO India' },
-    { type: 'BIS',       label: 'BIS',       sub: 'Bureau of Indian Standards' },
-    { type: 'Copyright', label: 'Copyright', sub: 'Copyright Office' },
-    { type: 'Patent',    label: 'Patent',    sub: 'Patent Office' },
-    { type: 'ITR',       label: 'ITR',       sub: 'Income Tax Return' },
-    { type: 'DSC',       label: 'DSC',       sub: 'Digital Signature Certificate' },
-    { type: 'FSSAI',     label: 'FSSAI',     sub: 'Food Safety' },
-    { type: 'DUNS',      label: 'DUNS',      sub: 'Data Universal Numbering System' },
+    { type: 'Trademark Registration', label: 'Trademark Registration', sub: 'IPO India' },
+    { type: 'BIS Certification',       label: 'BIS Certification',       sub: 'Bureau of Indian Standards' },
+    { type: 'Copyright Registration', label: 'Copyright Registration', sub: 'Copyright Office' },
+    { type: 'Patent Registration',    label: 'Patent Registration',    sub: 'Patent Office' },
+    { type: 'Income Tax Return (ITR)',       label: 'Income Tax Return (ITR)',       sub: 'Income Tax Return' },
+    { type: 'Digital Signature Certificate (DSC)',       label: 'Digital Signature Certificate (DSC)',       sub: 'Digital Signature Certificate' },
+    { type: 'FSSAI Registration',     label: 'FSSAI Registration',     sub: 'Food Safety' },
+    { type: 'DUNS Number',      label: 'DUNS Number',      sub: 'Data Universal Numbering System' },
   ];
 
   get filteredServiceList() {
@@ -65,21 +65,21 @@ export class ServiceDetailsComponent implements OnInit, OnChanges {
     let matchType: ServiceType | null = null;
     
     if (s.includes('private limited') || s.includes('llp') || s.includes('opc') || s.includes('incorporation') || s.includes('mca') || s.includes('company')) matchType = 'MCA';
-    else if (s.includes('startup') || s.includes('dpiit')) matchType = 'DPIIT';
-    else if (s.includes('msme') || s.includes('udyam')) matchType = 'MSME';
+    else if (s.includes('startup') || s.includes('dpiit')) matchType = 'DPIIT Recognition';
+    else if (s.includes('msme') || s.includes('udyam')) matchType = 'MSME Registration';
     else if (s.includes('gst')) matchType = 'GST';
-    else if (s.includes('trademark') || s.includes('trade mark')) matchType = 'Trademark';
-    else if (s.includes('bis')) matchType = 'BIS';
-    else if (s.includes('copyright')) matchType = 'Copyright';
-    else if (s.includes('patent')) matchType = 'Patent';
-    else if (s.includes('tds')) matchType = 'TDS';
-    else if (s.includes('lei') || s.includes('legal entity')) matchType = 'LEI';
+    else if (s.includes('trademark') || s.includes('trade mark')) matchType = 'Trademark Registration';
+    else if (s.includes('bis')) matchType = 'BIS Certification';
+    else if (s.includes('copyright')) matchType = 'Copyright Registration';
+    else if (s.includes('patent')) matchType = 'Patent Registration';
+    else if (s.includes('tds')) matchType = 'TDS Return Filing';
+    else if (s.includes('lei') || s.includes('legal entity')) matchType = 'LEI Registration';
     else if (s.includes('iec') || s.includes('import export')) matchType = 'IEC';
-    else if (s.includes('pf') || s.includes('epfo')) matchType = 'PF';
-    else if (s.includes('itr') || s.includes('income tax')) matchType = 'ITR';
-    else if (s.includes('dsc') || s.includes('digital signature')) matchType = 'DSC';
-    else if (s.includes('fssai') || s.includes('food')) matchType = 'FSSAI';
-    else if (s.includes('duns')) matchType = 'DUNS';
+    else if (s.includes('pf') || s.includes('epfo')) matchType = 'PF Registration & Compliance';
+    else if (s.includes('itr') || s.includes('income tax')) matchType = 'Income Tax Return (ITR)';
+    else if (s.includes('dsc') || s.includes('digital signature')) matchType = 'Digital Signature Certificate (DSC)';
+    else if (s.includes('fssai') || s.includes('food')) matchType = 'FSSAI Registration';
+    else if (s.includes('duns')) matchType = 'DUNS Number';
     
     if (matchType) {
       return this.serviceList.filter(svc => svc.type === matchType);
@@ -138,7 +138,7 @@ export class ServiceDetailsComponent implements OnInit, OnChanges {
 
   rebuildDirectorFields() {
     const count = Math.max(0, this.directorCount || 0);
-    for (const type of ['MCA', 'ITR'] as ServiceType[]) {
+    for (const type of ['MCA', 'Income Tax Return (ITR)'] as ServiceType[]) {
       if (!this.forms[type]) this.forms[type] = this.blankForm();
       const existing = this.forms[type].directorCredentials;
       const next: DirectorCred[] = [];

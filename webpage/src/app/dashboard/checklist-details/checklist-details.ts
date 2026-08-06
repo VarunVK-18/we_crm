@@ -77,44 +77,32 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   applicationIdInput: string = '';
 
 
-  privateLimitedFinalDocs = [
-    'Certificate of Incorporation (COI)',
-    'PAN',
-    'TAN',
-    'e-MOA (INC-33)',
-    'e-AOA (INC-34)',
-    'SPICe+ (INC-32)',
-    'AGILE-PRO-S (INC-35)',
-    'DIN Allotment Details for Directors',
-    'Other'
-  ];
-
-  opcFinalDocs = [
-    'Certificate of Incorporation',
-    'PAN',
-    'TAN',
-    'e-MOA',
-    'e-AOA',
-    'SPICe+',
-    'DIN Details',
-    'Other'
-  ];
-
-  llpFinalDocs = [
-    'LLP Certificate of Incorporation',
-    'PAN Letter',
-    'TAN Letter',
-    'LLP Agreement',
-    'Form 3 Acknowledgement',
-    'FiLLiP Form',
-    'DPIN/DIN Details',
-    'Other'
-  ];
-
-  msmeFinalDocs = [
-    'Udyam Registration Certificate',
-    'Other'
-  ];
+  SERVICE_FINAL_DOCUMENTS: Record<string, string[]> = {
+    'Private Limited Incorporation': ['Certificate of Incorporation (COI)', 'PAN Card', 'TAN Allotment Letter', 'Memorandum of Association (MOA)', 'Articles of Association (AOA)', 'Incorporation Forms (SPICe+)'],
+    'LLP Incorporation': ['Certificate of Incorporation', 'LLP Agreement', 'PAN Card', 'TAN Allotment Letter'],
+    'OPC Incorporation': ['Certificate of Incorporation (COI)', 'PAN Card', 'TAN Allotment Letter', 'Memorandum of Association (MOA)', 'Articles of Association (AOA)', 'Incorporation Forms (SPICe+)'],
+    'MSME Registration': ['Udyam Registration Certificate'],
+    'Proprietorship Registration': ['GST Registration Certificate', 'MSME Registration'],
+    'TDS Return Filing': ['TDS Return Filing Acknowledgement', 'Form 27A', 'Filed Return Copy', 'Challan Details'],
+    'PF Registration & Compliance': ['EPFO Registration Certificate', 'PF Registration Number', 'Monthly/Periodic PF Filing Challans & ECR Acknowledgements'],
+    'Trademark Registration': ['Trademark Application Receipt (TM-A)', 'Application Number'],
+    'Copyright Registration': ['Copyright Registration Certificate'],
+    'Patent Registration': ['Patent Application Receipt', 'Application Number', 'Patent Certificate', 'Filed Patent Documents'],
+    'Income Tax Return (ITR)': ['ITR-V Acknowledgement', 'Filed Income Tax Return Copy'],
+    'GST Registration': ['GST Registration Certificate', 'GSTIN'],
+    'GST Returns Filing': ['GST Return Filing Acknowledgement', 'Challan'],
+    'GST Cancellation': ['GST Cancellation Order', 'GST Cancellation Acknowledgement'],
+    'DPIIT Recognition': ['DPIIT Startup Recognition Certificate'],
+    'ISO Certification': ['ISO Certificate'],
+    'FSSAI Registration': ['FSSAI License'],
+    'DUNS Number': ['D-U-N-S® Number Confirmation Letter/Certificate'],
+    'Import Export Code (IEC)': ['IEC Certificate'],
+    'BIS Certification': ['BIS License'],
+    'CE Certification': ['CE Certificate'],
+    'RoHS Certification': ['RoHS Compliance Certificate'],
+    'LEI Registration': ['Legal Entity Identifier (LEI) Certificate'],
+    'Digital Signature Certificate (DSC)': ['Digital Signature Certificate (DSC)', 'USB Token'],
+  };
 
   // --- Chat Feature ---
   isChatModalOpen = signal<boolean>(false);
@@ -251,36 +239,36 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     // Incorporation
     { category: 'Incorporation', name: 'Private Limited Incorporation', desc: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.' },
     { category: 'Incorporation', name: 'LLP Incorporation', desc: 'Statutory compliance for Limited Liability Partnerships.' },
-    { category: 'Incorporation', name: 'OPC', desc: 'One Person Company registration for solo entrepreneurs.' },
-    { category: 'Incorporation', name: 'MSME', desc: 'Official Udyam Registration for small and medium enterprises.' },
-    { category: 'Incorporation', name: 'Proprietorship', desc: 'Sole vendor formation with business identification.' },
+    { category: 'Incorporation', name: 'OPC Incorporation', desc: 'One Person Company registration for solo entrepreneurs.' },
+    { category: 'Incorporation', name: 'MSME Registration', desc: 'Official Udyam Registration for small and medium enterprises.' },
+    { category: 'Incorporation', name: 'Proprietorship Registration', desc: 'Sole vendor formation with business identification.' },
     
     // Compliance
     { category: 'Compliance', name: 'MCA Compliance', desc: 'Annual return filings and MCA statutory compliance.' },
-    { category: 'Compliance', name: 'TDS', desc: 'TDS return filing and certificate issuance.' },
-    { category: 'Compliance', name: 'PF', desc: 'Provident Fund registration and monthly compliance.' },
+    { category: 'Compliance', name: 'TDS Return Filing', desc: 'TDS return filing and certificate issuance.' },
+    { category: 'Compliance', name: 'PF Registration & Compliance', desc: 'Provident Fund registration and monthly compliance.' },
 
     // IP
-    { category: 'IP', name: 'Copyright', desc: 'Protection for original creative literary or artistic works.' },
-    { category: 'IP', name: 'Trade Mark', desc: 'Brand protection and intellectual property rights.' },
-    { category: 'IP', name: 'Patent', desc: 'Exclusive rights for your inventions.' },
+    { category: 'IP', name: 'Copyright Registration', desc: 'Protection for original creative literary or artistic works.' },
+    { category: 'IP', name: 'Trademark Registration', desc: 'Brand protection and intellectual property rights.' },
+    { category: 'IP', name: 'Patent Registration', desc: 'Exclusive rights for your inventions.' },
 
     // Tax
-    { category: 'Tax', name: 'GST filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
-    { category: 'Tax', name: 'GST Cancelation', desc: 'Surrender and cancel your GST registration.' },
-    { category: 'Tax', name: 'ITR', desc: 'Income Tax Return filing for individuals and businesses.' },
+    { category: 'Tax', name: 'GST Returns Filing', desc: 'Monthly/Quarterly GST returns and reconciliations.' },
+    { category: 'Tax', name: 'GST Cancellation', desc: 'Surrender and cancel your GST registration.' },
+    { category: 'Tax', name: 'Income Tax Return (ITR)', desc: 'Income Tax Return filing for individuals and businesses.' },
     { category: 'Tax', name: 'GST Registration', desc: 'GST Registration for your business! Thank you for choosing Wealth Empires.' },
 
     // Licensing
-    { category: 'Licensing', name: 'DPIIT', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
-    { category: 'Licensing', name: 'ISO', desc: 'Quality management certification (ISO 9001 and others).' },
-    { category: 'Licensing', name: 'FSSAI', desc: 'Registration for food business operators, manufacturers, and startups.' },
-    { category: 'Licensing', name: 'DSC', desc: 'Digital Signature Certificate for individuals & organizations.' },
-    { category: 'Licensing', name: 'IE code', desc: 'Import Export Code registration for cross-border trade.' },
-    { category: 'Licensing', name: 'LEI', desc: 'Legal Entity Identifier registration for financial transactions.' },
-    { category: 'Licensing', name: 'BIS', desc: 'Bureau of Indian Standards product certification.' },
-    { category: 'Licensing', name: 'RoHS', desc: 'Restriction of Hazardous Substances directive certification.' },
-    { category: 'Licensing', name: 'CE', desc: 'European standard certifications for electronics and products.' },
+    { category: 'Licensing', name: 'DPIIT Recognition', desc: 'Startup India Certification for your startup! Please provide your details correctly.' },
+    { category: 'Licensing', name: 'ISO Certification', desc: 'Quality management certification (ISO 9001 and others).' },
+    { category: 'Licensing', name: 'FSSAI Registration', desc: 'Registration for food business operators, manufacturers, and startups.' },
+    { category: 'Licensing', name: 'Digital Signature Certificate (DSC)', desc: 'Digital Signature Certificate for individuals & organizations.' },
+    { category: 'Licensing', name: 'Import Export Code (IEC)', desc: 'Import Export Code registration for cross-border trade.' },
+    { category: 'Licensing', name: 'LEI Registration', desc: 'Legal Entity Identifier registration for financial transactions.' },
+    { category: 'Licensing', name: 'BIS Certification', desc: 'Bureau of Indian Standards product certification.' },
+    { category: 'Licensing', name: 'RoHS Certification', desc: 'Restriction of Hazardous Substances directive certification.' },
+    { category: 'Licensing', name: 'CE Certification', desc: 'European standard certifications for electronics and products.' },
     
     // Fallback original pool ones just in case naming was different
     { category: 'Compliance', name: 'ISO Certification', desc: 'Quality management system certification' },
@@ -314,7 +302,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName);
     const doneSet = new Set([...weDone, ...outsourced]);
     
-    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'Proprietorship'];
+    const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC Incorporation', 'Proprietorship Registration'];
     const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
 
     return this.recommendationPool.filter(s => {
@@ -1608,38 +1596,14 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     return cl.final_documents.some((d: any) => d.name && d.name.startsWith(docType));
   }
 
-  getSortedPrivateLimitedFinalDocs(): string[] {
-    const uploaded: string[] = [];
-    const pending: string[] = [];
-    for (const doc of this.privateLimitedFinalDocs) {
-      if (doc === 'Other') continue;
-      if (this.hasFinalDocUploaded(doc)) {
-        uploaded.push(doc);
-      } else {
-        pending.push(doc);
-      }
-    }
-    return [...pending, ...uploaded];
+  getFinalDocsOptionsForService(serviceName: string): string[] {
+    return this.SERVICE_FINAL_DOCUMENTS[serviceName] || [];
   }
-
-  getSortedOpcFinalDocs(): string[] {
+  getSortedFinalDocsForService(serviceName: string): string[] {
     const uploaded: string[] = [];
     const pending: string[] = [];
-    for (const doc of this.opcFinalDocs) {
-      if (doc === 'Other') continue;
-      if (this.hasFinalDocUploaded(doc)) {
-        uploaded.push(doc);
-      } else {
-        pending.push(doc);
-      }
-    }
-    return [...pending, ...uploaded];
-  }
-
-  getSortedMsmeFinalDocs(): string[] {
-    const uploaded: string[] = [];
-    const pending: string[] = [];
-    for (const doc of this.msmeFinalDocs) {
+    const docs = this.SERVICE_FINAL_DOCUMENTS[serviceName] || [];
+    for (const doc of docs) {
       if (doc === 'Other') continue;
       if (this.hasFinalDocUploaded(doc)) {
         uploaded.push(doc);

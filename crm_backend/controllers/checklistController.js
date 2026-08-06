@@ -743,6 +743,26 @@ const updateChecklist = async (req, res) => {
             checklist.markModified('items');
           }
         }
+        
+        try {
+          const User = require('../models/User');
+          const user = await User.findById(req.user._id);
+          if (user) {
+            let updated = false;
+            if (details.panNumber) { user.pan = details.panNumber; updated = true; }
+            if (details.tanNumber) { user.tan = details.tanNumber; updated = true; }
+            if (details.cin) { user.cin = details.cin; updated = true; }
+            if (details.gstin) { user.gstin = details.gstin; updated = true; }
+            if (details.entityName) { user.company_name = details.entityName; updated = true; }
+            if (details.businessName) { user.company_name = details.businessName; updated = true; }
+            if (details.website) { user.website = details.website; updated = true; }
+            if (updated) {
+              await user.save();
+            }
+          }
+        } catch(err) {
+          console.error('Error syncing profile details from checklist form:', err);
+        }
       }
     } else {
       if (assigned_team !== undefined) {
@@ -1036,7 +1056,7 @@ const getMyServicesSummary = async (req, res) => {
       service_name: { $ne: 'Live Chat Support' }
     })
       .select('service_name status stage createdAt assigned_to action_required details items requested_documents')
-      .populate('assigned_to', 'owner_name')
+      .populate('assigned_to', 'owner_name phone')
       .sort({ updatedAt: -1 })
       .lean();
 

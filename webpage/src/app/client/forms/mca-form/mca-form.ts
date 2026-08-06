@@ -1,3 +1,4 @@
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Component, OnInit, signal, effect, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';

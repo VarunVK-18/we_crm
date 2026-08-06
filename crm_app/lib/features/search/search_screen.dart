@@ -62,17 +62,17 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Incorporation',
     },
     {
-      'label': 'OPC',
+      'label': 'OPC Incorporation',
       'icon': HugeIcons.strokeRoundedUser,
       'category': 'Incorporation',
     },
     {
-      'label': 'Proprietorship',
+      'label': 'Proprietorship Registration',
       'icon': HugeIcons.strokeRoundedUser,
       'category': 'Incorporation',
     },
     {
-      'label': 'MSME',
+      'label': 'MSME Registration',
       'icon': LucideIcons.medal,
       'category': 'Incorporation',
     },
@@ -84,29 +84,29 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Compliance',
     },
     {
-      'label': 'TDS',
+      'label': 'TDS Return Filing',
       'icon': HugeIcons.strokeRoundedCalculator,
       'category': 'Compliance',
     },
     {
-      'label': 'PF',
+      'label': 'PF Registration & Compliance',
       'icon': HugeIcons.strokeRoundedDocumentValidation,
       'category': 'Compliance',
     },
 
     // --- IP ---
     {
-      'label': 'Trade Mark',
+      'label': 'Trademark Registration',
       'icon': LucideIcons.tag,
       'category': 'IP',
     },
     {
-      'label': 'Copyright',
+      'label': 'Copyright Registration',
       'icon': LucideIcons.copyright,
       'category': 'IP',
     },
     {
-      'label': 'Patent',
+      'label': 'Patent Registration',
       'icon': LucideIcons.lightbulb,
       'category': 'IP',
     },
@@ -118,74 +118,74 @@ class _SearchScreenState extends State<SearchScreen> {
       'category': 'Tax',
     },
     {
-      'label': 'GST filing',
+      'label': 'GST Returns Filing',
       'icon': HugeIcons.strokeRoundedFile02,
       'category': 'Tax',
     },
     {
-      'label': 'GST Cancelation',
+      'label': 'GST Cancellation',
       'icon': LucideIcons.fileX,
       'category': 'Tax',
     },
     {
-      'label': 'GST filing',
+      'label': 'GST Returns Filing',
       'icon': HugeIcons.strokeRoundedTask01,
       'category': 'Tax',
     },
     {
-      'label': 'ITR',
+      'label': 'Income Tax Return (ITR)',
       'icon': HugeIcons.strokeRoundedInvoice02,
       'category': 'Tax',
     },
 
     // --- Licensing ---
     {
-      'label': 'DUNS',
+      'label': 'DUNS Number',
       'icon': LucideIcons.globe,
       'category': 'Licensing',
     },
     {
-      'label': 'DPIIT',
+      'label': 'DPIIT Recognition',
       'icon': LucideIcons.award,
       'category': 'Licensing',
     },
     {
-      'label': 'ISO',
+      'label': 'ISO Certification',
       'icon': LucideIcons.checkCircle,
       'category': 'Licensing',
     },
     {
-      'label': 'FSSAI',
+      'label': 'FSSAI Registration',
       'icon': LucideIcons.coffee,
       'category': 'Licensing',
     },
     {
-      'label': 'DSC',
+      'label': 'Digital Signature Certificate (DSC)',
       'icon': LucideIcons.key,
       'category': 'Licensing',
     },
     {
-      'label': 'IE code',
+      'label': 'Import Export Code (IEC)',
       'icon': LucideIcons.plane,
       'category': 'Licensing',
     },
     {
-      'label': 'LEI',
+      'label': 'LEI Registration',
       'icon': LucideIcons.fileText,
       'category': 'Licensing',
     },
     {
-      'label': 'BIS',
+      'label': 'BIS Certification',
       'icon': LucideIcons.shield,
       'category': 'Licensing',
     },
     {
-      'label': 'RoHS',
+      'label': 'RoHS Certification',
       'icon': LucideIcons.globe,
       'category': 'Licensing',
     },
     {
-      'label': 'CE',
+      'label': 'CE Certification',
       'icon': LucideIcons.globe,
       'category': 'Licensing',
     },

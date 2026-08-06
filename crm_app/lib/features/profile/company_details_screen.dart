@@ -176,7 +176,7 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Trademark', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                  Text('Trademark Registration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
                   Icon(_isTrademarkExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
                 ],
               ),
@@ -200,7 +200,7 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Patent', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                  Text('Patent Registration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
                   Icon(_isPatentExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
                 ],
               ),
@@ -224,7 +224,7 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Copyright', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                  Text('Copyright Registration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
                   Icon(_isCopyrightExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
                 ],
               ),

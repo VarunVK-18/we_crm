@@ -26,7 +26,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
 
   // Enterprise details
   final _enterpriseNameController = TextEditingController();
-  String _orgType = 'Proprietorship';
+  String _orgType = 'Proprietorship Registration';
   String _majorActivity = 'Service';
   final _addressController = TextEditingController();
   final _unitNameController = TextEditingController();
@@ -358,11 +358,11 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
                       _buildField('Name of the Enterprise / Business', '', _enterpriseNameController, isRequired: true),
                       
                       _buildRadioGroup('Type of organization', '', [
-                        'Proprietorship',
+                        'Proprietorship Registration',
                         'Partnership',
                         'LLP',
                         'Private Limited',
-                        'OPC',
+                        'OPC Incorporation',
                         'Trust',
                         'Society'
                       ], _orgType, (v) => setState(() => _orgType = v)),

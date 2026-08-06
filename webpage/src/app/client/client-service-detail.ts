@@ -26,6 +26,76 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
   newChatMessage: string = '';
   selectedSenderRole: string = 'client';
 
+  SERVICE_FINAL_DOCUMENTS: Record<string, string[]> = {
+    'Private Limited Incorporation': ['Certificate of Incorporation (COI)', 'PAN Card', 'TAN Allotment Letter', 'Memorandum of Association (MOA)', 'Articles of Association (AOA)', 'Incorporation Forms (SPICe+)'],
+    'LLP Incorporation': ['Certificate of Incorporation', 'LLP Agreement', 'PAN Card', 'TAN Allotment Letter'],
+    'OPC Incorporation': ['Certificate of Incorporation (COI)', 'PAN Card', 'TAN Allotment Letter', 'Memorandum of Association (MOA)', 'Articles of Association (AOA)', 'Incorporation Forms (SPICe+)'],
+    'MSME Registration': ['Udyam Registration Certificate'],
+    'Proprietorship Registration': ['GST Registration Certificate', 'MSME Registration'],
+    'TDS Return Filing': ['TDS Return Filing Acknowledgement', 'Form 27A', 'Filed Return Copy', 'Challan Details'],
+    'PF Registration & Compliance': ['EPFO Registration Certificate', 'PF Registration Number', 'Monthly/Periodic PF Filing Challans & ECR Acknowledgements'],
+    'Trademark Registration': ['Trademark Application Receipt (TM-A)', 'Application Number'],
+    'Copyright Registration': ['Copyright Registration Certificate'],
+    'Patent Registration': ['Patent Application Receipt', 'Application Number', 'Patent Certificate', 'Filed Patent Documents'],
+    'Income Tax Return (ITR)': ['ITR-V Acknowledgement', 'Filed Income Tax Return Copy'],
+    'GST Registration': ['GST Registration Certificate', 'GSTIN'],
+    'GST Returns Filing': ['GST Return Filing Acknowledgement', 'Challan'],
+    'GST Cancellation': ['GST Cancellation Order', 'GST Cancellation Acknowledgement'],
+    'DPIIT Recognition': ['DPIIT Startup Recognition Certificate'],
+    'ISO Certification': ['ISO Certificate'],
+    'FSSAI Registration': ['FSSAI License'],
+    'DUNS Number': ['D-U-N-S® Number Confirmation Letter/Certificate'],
+    'Import Export Code (IEC)': ['IEC Certificate'],
+    'BIS Certification': ['BIS License'],
+    'CE Certification': ['CE Certificate'],
+    'RoHS Certification': ['RoHS Compliance Certificate'],
+    'LEI Registration': ['Legal Entity Identifier (LEI) Certificate'],
+    'Digital Signature Certificate (DSC)': ['Digital Signature Certificate (DSC)', 'USB Token'],
+  };
+
+  getExpectedFinalDocuments() {
+    const ord = this.order();
+    if (!ord) return [];
+    
+    const serviceName = ord.service_name;
+    const requiredDocs = this.SERVICE_FINAL_DOCUMENTS[serviceName] || [];
+    const uploadedDocs = this.filterFinalDocs(ord.final_documents) || [];
+    
+    const result = [];
+    
+    for (const docName of requiredDocs) {
+      if (docName === 'Other') continue;
+      // check if it is uploaded
+      const uploadedDoc = uploadedDocs.find((d: any) => d.name && d.name.startsWith(docName));
+      if (uploadedDoc) {
+        result.push({
+          name: docName,
+          isUploaded: true,
+          doc: uploadedDoc
+        });
+      } else {
+        result.push({
+          name: docName,
+          isUploaded: false,
+          doc: null
+        });
+      }
+    }
+    
+    // Also include any 'Other' documents that were uploaded and don't match the required list
+    for (const uDoc of uploadedDocs) {
+      if (!requiredDocs.some(req => uDoc.name && uDoc.name.startsWith(req))) {
+        result.push({
+          name: uDoc.name,
+          isUploaded: true,
+          doc: uDoc
+        });
+      }
+    }
+    
+    return result;
+  }
+
   // Smart Mentions logic
   showMentionDropdown = false;
   mentionSearch = '';
