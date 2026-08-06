@@ -143,8 +143,8 @@
 
 <!-- Consolidated Task Details Modal Overlay -->
 @if (isDetailModalOpen() && selectedDetailTask()) {
-  <div class="modal-overlay" (click)="closeTaskDetailModal()">
-    <div class="modal-card-box detail-modal-card" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="closeTaskDetailModal()">
+    <div class="modal-card-box detail-modal-card" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       
       <!-- Modal Header -->
       <div class="modal-header task-detail-header">
@@ -464,8 +464,8 @@
 
 <!-- Create Filing Task Dialog Modal Overlay -->
 @if (isCreateTaskModalOpen()) {
-  <div class="modal-overlay" (click)="isCreateTaskModalOpen.set(false)">
-    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="isCreateTaskModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 500px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       
       <div class="modal-header">
         <h3>Create New Filing Task</h3>

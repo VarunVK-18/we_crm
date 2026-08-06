@@ -34,7 +34,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
   final _productSpecsController = TextEditingController();
   
   String? _certificationType;
-  final List<String> _certificationTypes = ['CE', 'RoHS', 'CE & RoHS'];
+  final List<String> _certificationTypes = ['CE Certification', 'RoHS Certification', 'CE & RoHS'];
 
   // Document Uploads
   String? _productDatasheetPath;

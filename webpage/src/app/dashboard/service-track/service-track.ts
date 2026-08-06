@@ -37,11 +37,11 @@ export class ServiceTrackComponent implements OnInit {
   visibleCategories = signal<string[]>(this.categoryOrder.map(c => c.id));
 
   servicesDatabase: Record<string, string[]> = {
-    'incorporation': ['Proprietorship', 'Partnership Firm Registration', 'Private Limited Incorporation', 'LLP Incorporation', 'OPC', 'MSME', 'Company Incorporation'],
-    'compliance': ['MCA Compliance', 'TDS', 'PF', 'DUNS', 'PAN, TAN', 'Compliance'],
-    'ip': ['Copyright', 'IP', 'Trade Mark', 'Trademark', 'Patent'],
-    'licensing': ['DPIIT', 'ISO', 'FSSAI', 'DSC', 'IE code', 'LEI', 'BIS', 'ROSH', 'CE', 'Licensing', 'DUNS'],
-    'tax': ['GST Registration', 'GST Cancelation', 'GST filing', 'ITR', 'Tax']
+    'incorporation': ['Proprietorship Registration', 'Partnership Firm Registration', 'Private Limited Incorporation', 'LLP Incorporation', 'OPC Incorporation', 'MSME Registration', 'Company Incorporation'],
+    'compliance': ['MCA Compliance', 'TDS Return Filing', 'PF Registration & Compliance', 'DUNS Number', 'PAN, TAN', 'Compliance'],
+    'ip': ['Copyright Registration', 'IP', 'Trademark Registration', 'Trademark Registration', 'Patent Registration'],
+    'licensing': ['DPIIT Recognition', 'ISO Certification', 'FSSAI Registration', 'Digital Signature Certificate (DSC)', 'Import Export Code (IEC)', 'LEI Registration', 'BIS Certification', 'RoHS Certification', 'CE Certification', 'Licensing', 'DUNS Number'],
+    'tax': ['GST Registration', 'GST Cancellation', 'GST Returns Filing', 'Income Tax Return (ITR)', 'Tax']
   };
 
   constructor(private api: Api) {}

@@ -50,136 +50,136 @@ export class ClientServicesComponent implements OnInit {
     'incorporation': [
       {
         title: 'Private Limited Incorporation',
-        description: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.',
-        features: ['Name Reservation (RUN)', 'Digital Signature (DSC)', 'Director Identification (DIN)', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'PAN & TAN', 'Corporate Bank Account', 'Processing Time: 5-7 business days']
+        description: 'Complete company incorporation with name approval, DSC, DIN, and MCA filing.',
+        features: ['Name Reservation (RUN)', 'Digital Signature (DSC)', 'Director Identification (DIN)', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'PAN & TAN', 'Corporate Bank Account', 'Processing Time: 7-10 days']
       },
       {
         title: 'LLP Incorporation',
-        description: 'Statutory compliance for Limited Liability Partnerships.',
-        features: ['Name Reservation (RUN)', 'Digital Signature Certificate (DSC)', 'PAN & TAN', 'LLP Incorporation Certificate', 'DIN Approval Letters', 'Corporate Bank Account', 'Processing Time: 5-7 business days']
+        description: 'Register your LLP with name approval, incorporation, PAN, and MCA filing.',
+        features: ['Name Reservation (RUN)', 'Digital Signature Certificate (DSC)', 'PAN & TAN', 'LLP Incorporation Certificate', 'DIN Approval Letters', 'Corporate Bank Account', 'Processing Time: 7-10 days']
       },
       {
-        title: 'OPC',
-        description: 'One Person Company registration for solo entrepreneurs.',
-        features: ['Name Reservation', 'DSC & DIN', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Bank Setup Support', 'Processing Time: 5-7 business days']
+        title: 'OPC Incorporation',
+        description: 'Register your One Person Company with complete MCA incorporation support.',
+        features: ['Name Reservation', 'DSC & DIN', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Bank Setup Support', 'Processing Time: 7-10 days']
       },
       {
-        title: 'MSME',
-        description: 'Official Udyam Registration for small and medium enterprises.',
-        features: ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'IP Reimbursement Advisory', 'Processing Time: 5-7 business days']
+        title: 'MSME Registration',
+        description: 'Obtain Udyam Registration to access MSME benefits and business recognition.',
+        features: ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'IP Reimbursement Advisory', 'Processing Time: 1-2 days']
       },
       {
-        title: 'Proprietorship',
-        description: 'Sole vendor formation with business identification.',
-        features: ['Document support', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Processing Time: 5-7 business days']
+        title: 'Proprietorship Registration',
+        description: 'Start your sole proprietorship with essential business registration support.',
+        features: ['Document support', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance', 'Processing Time: 5-7 days']
       }
     ],
     'compliance': [
       {
         title: 'MCA Compliance',
-        description: 'Annual return filings and MCA statutory compliance.',
-        features: ['Auditor appointment', '360° Accounting & Bookkeeping', 'Statutory Auditing', 'AOC 4 & MGT 7 filing', 'Director KYC', 'AGM & Notice', 'ITR filing', 'Processing Time: 5-7 business days']
+        description: 'Complete annual ROC filings and MCA compliance for your company.',
+        features: ['Auditor appointment', '360° Accounting & Bookkeeping', 'Statutory Auditing', 'AOC 4 & MGT 7 filing', 'Director KYC', 'AGM & Notice', 'ITR filing', 'Processing Time: On time']
       },
       {
-        title: 'TDS',
-        description: 'TDS return filing and certificate issuance.',
-        features: ['TDS Computation', 'Quarterly Return Filing', 'Form 16/16A Generation', 'Challan Payment', 'Notice Reply', 'Processing Time: 5-7 business days']
+        title: 'TDS Return Filing',
+        description: 'Prepare and file TDS returns with corrections and certificate generation.',
+        features: ['TDS Computation', 'Quarterly Return Filing', 'Form 16/16A Generation', 'Challan Payment', 'Notice Reply', 'Processing Time: 2-4 days']
       },
       {
-        title: 'PF',
-        description: 'Provident Fund registration and monthly compliance.',
-        features: ['PF Registration', 'Monthly ECR Filing', 'Challan Generation', 'Employee Addition/Deletion', 'KYC Updates', 'Processing Time: 5-7 business days']
+        title: 'PF Registration & Compliance',
+        description: 'Complete PF registration with employee enrollment and monthly compliance.',
+        features: ['PF Registration', 'Monthly ECR Filing', 'Challan Generation', 'Employee Addition/Deletion', 'KYC Updates', 'Processing Time: 5-7 days']
       }
     ],
     'ip': [
       {
-        title: 'Copyright',
-        description: 'Protection for original creative literary or artistic works.',
-        features: ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate', 'Processing Time: 5-7 business days']
+        title: 'Trademark Registration',
+        description: 'Protect your business name, logo, and brand through trademark registration.',
+        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Reimbursement Advisory', 'Processing Time: 5-7 days']
       },
       {
-        title: 'Trade Mark',
-        description: 'Brand protection and intellectual property rights.',
-        features: ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Reimbursement Advisory', 'Processing Time: 5-7 business days']
+        title: 'Copyright Registration',
+        description: 'Register your original creative work with official copyright protection.',
+        features: ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate', 'Processing Time: 12-15 days']
       },
       {
-        title: 'Patent',
-        description: 'Exclusive rights for your inventions.',
-        features: ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant', 'Processing Time: 5-7 business days']
+        title: 'Patent Registration',
+        description: 'Secure legal protection for your invention through professional patent filing.',
+        features: ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant', 'Processing Time: 12-15 days']
       }
     ],
     'tax': [
       {
-        title: 'GST filing',
-        description: 'Monthly/Quarterly GST returns and reconciliations.',
-        features: ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'GST Cancelation',
-        description: 'Surrender and cancel your GST registration.',
-        features: ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'ITR',
+        title: 'Income Tax Return (ITR)',
         description: 'Income Tax Return filing for individuals and businesses.',
-        features: ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support', 'Processing Time: 5-7 business days']
+        features: ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support', 'Processing Time: 1-3 days']
       },
       {
         title: 'GST Registration',
-        description: 'GST Registration for your business! Thank you for choosing Wealth Empires.',
-        features: ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate', 'Processing Time: 5-7 business days']
+        description: 'Register for GST and receive your GSTIN with complete filing support.',
+        features: ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate', 'Processing Time: 5-7 days']
+      },
+      {
+        title: 'GST Returns Filing',
+        description: 'File monthly or quarterly GST returns with accurate reconciliation support.',
+        features: ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support', 'Processing Time: 1-3 days']
+      },
+      {
+        title: 'GST Cancellation',
+        description: 'Cancel your GST registration with proper filing and legal compliance.',
+        features: ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order', 'Processing Time: 5-10 days']
       }
     ],
     'licensing': [
       {
-        title: 'DUNS',
-        description: 'Data Universal Numbering System for global business identity.',
-        features: ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing', 'Processing Time: 5-7 business days']
+        title: 'DPIIT Recognition',
+        description: 'Get Startup India recognition with complete DPIIT registration support.',
+        features: ['Pitch deck preparation', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Government approval', 'IPR Fast Track', 'Processing Time: 5-7 days']
       },
       {
-        title: 'DPIIT',
-        description: 'Startup India Certification for your startup! Please provide your details correctly.',
-        features: ['Pitch deck preparation', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Government approval', 'IPR Fast Track', 'Processing Time: 5-7 business days']
+        title: 'ISO Certification',
+        description: 'Obtain ISO certification with documentation and audit support services.',
+        features: ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training', 'Processing Time: 5-7 days']
       },
       {
-        title: 'ISO',
-        description: 'Quality management certification (ISO 9001 and others).',
-        features: ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training', 'Processing Time: 5-7 business days']
+        title: 'FSSAI Registration',
+        description: 'Register your food business and obtain the required FSSAI license.',
+        features: ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping', 'Processing Time: 1-3 days']
       },
       {
-        title: 'FSSAI',
-        description: 'Registration for food business operators, manufacturers, and startups.',
-        features: ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping', 'Processing Time: 5-7 business days']
+        title: 'DUNS Number',
+        description: 'Obtain a D-U-N-S Number for global business identification and credibility.',
+        features: ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing', 'Processing Time: 1-3 days']
       },
       {
-        title: 'DSC',
-        description: 'Digital Signature Certificate for individuals & organizations.',
-        features: ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity', 'Processing Time: 5-7 business days']
-      },
-      {
-        title: 'IE code',
+        title: 'Import Export Code (IEC)',
         description: 'Import Export Code registration for cross-border trade.',
-        features: ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate', 'Processing Time: 5-7 business days']
+        features: ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate', 'Processing Time: 1-3 days']
       },
       {
-        title: 'LEI',
-        description: 'Legal Entity Identifier registration for financial transactions.',
-        features: ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation', 'Processing Time: 5-7 business days']
+        title: 'BIS Certification',
+        description: 'Obtain BIS certification for products meeting Indian quality standards.',
+        features: ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support', 'Processing Time: 30-90 days']
       },
       {
-        title: 'BIS',
-        description: 'Bureau of Indian Standards product certification.',
-        features: ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support', 'Processing Time: 5-7 business days']
+        title: 'CE Certification',
+        description: 'Meet regulatory certification requirements before product launch.',
+        features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 days']
       },
       {
-        title: 'RoHS',
-        description: 'Restriction of Hazardous Substances directive certification.',
-        features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 business days']
+        title: 'RoHS Certification',
+        description: 'Obtain RoHS certification for products meeting hazardous substance regulations.',
+        features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 days']
       },
       {
-        title: 'CE',
-        description: 'European standard certifications for electronics and products.',
-        features: ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant', 'Processing Time: 5-7 business days']
+        title: 'LEI Registration',
+        description: 'Obtain a Legal Entity Identifier for financial and banking transactions.',
+        features: ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation', 'Processing Time: 1-3 days']
+      },
+      {
+        title: 'Digital Signature Certificate (DSC)',
+        description: 'Digital Signature Certificate for individuals & organizations.',
+        features: ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity', 'Processing Time: 1-2 days']
       }
     ]
   };

@@ -150,7 +150,7 @@
 
 <!-- Add Entity Modal -->
 @if (isAddEntityModalOpen()) {
-  <div class="dialog-backdrop fade-in" (click)="closeAddEntityModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+  <div class="dialog-backdrop fade-in" (mousedown)="closeAddEntityModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
     <div class="dialog-card" (click)="$event.stopPropagation()" style="background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
       <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 6px;">Add New Entity</h2>
       <p style="font-size: 14px; color: #64748b; margin: 0 0 24px;">Register a secondary company under your account</p>

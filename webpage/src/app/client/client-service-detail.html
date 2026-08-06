@@ -202,7 +202,7 @@
           }
 
           <!-- Final Deliverables Section -->
-          @if (!isPaymentPending() && isFinalBoxTicked() && order()?.derivedStatus === 'completed') {
+          @if (getExpectedFinalDocuments().length > 0) {
           <div class="final-deliverables-area">
             <div class="progress-header">
               <h3>Final Deliverables</h3>
@@ -210,21 +210,29 @@
 
             <div class="deliverables-list">
               <!-- Final Documents -->
-              @for (doc of filterFinalDocs(order()?.final_documents); track doc.document_id) {
-              <div class="deliverable-item" (click)="downloadDocument(doc)">
+              @for (item of getExpectedFinalDocuments(); track item.name) {
+              <div class="deliverable-item" [style.opacity]="item.isUploaded ? '1' : '0.6'" [style.cursor]="item.isUploaded ? 'pointer' : 'default'" (click)="item.isUploaded ? downloadDocument(item.doc) : null">
                 <div class="deliverable-icon doc-icon">
                   <span class="material-symbols-outlined">description</span>
                 </div>
                 <div class="deliverable-content">
-                  <h4>{{ doc.name }}</h4>
-                  @if (doc.expiry_date) {
-                  <p class="expiry-text">Expires: {{ doc.expiry_date | date:'dd MMM yyyy' }}</p>
+                  <h4>{{ item.name }}</h4>
+                  @if (item.isUploaded) {
+                    @if (item.doc?.expiry_date) {
+                    <p class="expiry-text">Expires: {{ item.doc.expiry_date | date:'dd MMM yyyy' }}</p>
+                    } @else {
+                    <p style="color: var(--color-success); font-weight: 500;">Ready</p>
+                    }
                   } @else {
-                  <p>Final Document</p>
+                    <p style="color: var(--text-secondary); font-style: italic;">Pending Generation</p>
                   }
                 </div>
                 <div class="deliverable-action">
-                  <span class="material-symbols-outlined">download</span>
+                  @if (item.isUploaded) {
+                  <span class="material-symbols-outlined" style="color: var(--accent-primary);">download</span>
+                  } @else {
+                  <svg fill="var(--text-secondary)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M4.75 2h14.5a.75.75 0 0 1 0 1.5h-.75v2.982a4.75 4.75 0 0 1-2.215 4.017l-2.044 1.29a.25.25 0 0 0 0 .422l2.044 1.29a4.75 4.75 0 0 1 2.215 4.017V20.5h.75a.75.75 0 0 1 0 1.5H4.75a.75.75 0 0 1 0-1.5h.75v-2.982a4.75 4.75 0 0 1 2.215-4.017l2.044-1.29a.25.25 0 0 0 0-.422l-2.044-1.29A4.75 4.75 0 0 1 5.5 6.482V3.5h-.75a.75.75 0 0 1 0-1.5ZM17 3.5H7v2.982A3.25 3.25 0 0 0 8.516 9.23l2.044 1.29a1.75 1.75 0 0 1 0 2.96l-2.044 1.29A3.25 3.25 0 0 0 7 17.518V20.5h10v-2.982a3.25 3.25 0 0 0-1.516-2.748l-2.044-1.29a1.75 1.75 0 0 1 0-2.96l2.044-1.29A3.25 3.25 0 0 0 17 6.482Z"/></svg>
+                  }
                 </div>
               </div>
               }

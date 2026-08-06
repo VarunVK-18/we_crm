@@ -134,9 +134,9 @@
 
   <!-- Update Bank Details Modal -->
   @if (isModalOpen() && selectedClient()) {
-  <div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-overlay" (mousedown)="closeModal()">
     <div class="modal-card-box" style="max-width: 500px; max-height: 90vh; overflow-y: auto;"
-      (click)="$event.stopPropagation()">
+      (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Update Bank Details</h3>
         <button class="close-modal-btn" (click)="closeModal()">

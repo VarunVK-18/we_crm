@@ -154,8 +154,7 @@
           @if (isProfileDropdownOpen()) {
           <div (click)="isProfileDropdownOpen.set(false)" style="position: fixed; inset: 0; z-index: 998;"></div>
           <div class="profile-dropdown-menu" style="z-index: 999; position: absolute;">
-
-            <button class="logout-btn" (click)="handleLogout(); toggleProfileDropdown()">
+            <button class="logout-btn" (click)="handleLogout(); $event.stopPropagation()">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -272,7 +271,7 @@
 
   <!-- Mobile Sidebar Drawer Overlay -->
   @if (isMobileSidebarOpen()) {
-  <div class="mobile-sidebar-overlay" (click)="toggleMobileSidebar()">
+  <div class="mobile-sidebar-overlay" (mousedown)="toggleMobileSidebar()">
     <div class="mobile-sidebar-drawer" (click)="$event.stopPropagation()">
       <app-sidebar [currentTab]="currentTab()" (tabChanged)="handleTabChanged($event); toggleMobileSidebar()"
         (logoutClicked)="handleLogout()">

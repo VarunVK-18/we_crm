@@ -1,7 +1,6 @@
 :host {
   display: block;
-  height: 100vh;
-  overflow-y: auto;
+  min-height: 100%;
 }
 
 .services-container {

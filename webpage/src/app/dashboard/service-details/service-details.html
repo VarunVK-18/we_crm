@@ -119,20 +119,20 @@
             }
 
             <!-- ════════════ DPIIT ════════════ -->
-            @if (svc.type === 'DPIIT') {
+            @if (svc.type === 'DPIIT Recognition') {
               <div class="sd-field-grid">
                 <div class="sd-field">
                   <label class="sd-label">Username</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['DPIIT'].username" placeholder="DPIIT Portal Username" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['DPIIT Recognition'].username" placeholder="DPIIT Portal Username" autocomplete="new-password" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Password</label>
                   <div class="sd-input-wrap">
-                    <input class="sd-input password-input" [class.shown]="showPass['DPIIT']"
-                           [type]="showPass['DPIIT'] ? 'text' : 'password'"
-                           [(ngModel)]="forms['DPIIT'].password" placeholder="••••••••" autocomplete="new-password" />
-                    <button class="sd-show-hide" (click)="togglePass('DPIIT')">
-                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['DPIIT'] ? 'visibility_off' : 'visibility' }}</span>
+                    <input class="sd-input password-input" [class.shown]="showPass['DPIIT Recognition']"
+                           [type]="showPass['DPIIT Recognition'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['DPIIT Recognition'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('DPIIT Recognition')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['DPIIT Recognition'] ? 'visibility_off' : 'visibility' }}</span>
                     </button>
                   </div>
                 </div>
@@ -220,20 +220,20 @@
             }
 
             <!-- ════════════ ITR ════════════ -->
-            @if (svc.type === 'ITR') {
+            @if (svc.type === 'Income Tax Return (ITR)') {
               <div>
                 <div class="sd-section-label">Company Credentials</div>
                 <div class="sd-field-grid">
                   <div class="sd-field">
                     <label class="sd-label">Username</label>
-                    <input class="sd-input" type="text" [(ngModel)]="forms['ITR'].username" placeholder="Income Tax Portal Username" autocomplete="new-password" />
+                    <input class="sd-input" type="text" [(ngModel)]="forms['Income Tax Return (ITR)'].username" placeholder="Income Tax Portal Username" autocomplete="new-password" />
                   </div>
                   <div class="sd-field">
                     <label class="sd-label">Password</label>
                     <div class="sd-input-wrap">
                       <input class="sd-input password-input" [class.shown]="showPass['ITR_company']"
                              [type]="showPass['ITR_company'] ? 'text' : 'password'"
-                             [(ngModel)]="forms['ITR'].password" placeholder="••••••••" autocomplete="new-password" />
+                             [(ngModel)]="forms['Income Tax Return (ITR)'].password" placeholder="••••••••" autocomplete="new-password" />
                       <button class="sd-show-hide" (click)="togglePass('ITR_company')">
                         <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['ITR_company'] ? 'visibility_off' : 'visibility' }}</span>
                       </button>
@@ -244,7 +244,7 @@
               <!-- Director Credentials -->
               <div>
                 <div class="sd-section-label" style="margin-bottom:10px;">Director Credentials ({{ directorCount }} Directors)</div>
-                @for (dir of forms['ITR'].directorCredentials; track dir.index) {
+                @for (dir of forms['Income Tax Return (ITR)'].directorCredentials; track dir.index) {
                   <div class="sd-director-block" style="margin-bottom:10px;">
                     <div class="sd-director-title">
                       <span class="material-symbols-outlined" style="font-size:16px;color:#6366f1;">person</span>
@@ -282,7 +282,7 @@
             }
 
             <!-- ════════════ DSC ════════════ -->
-            @if (svc.type === 'DSC') {
+            @if (svc.type === 'Digital Signature Certificate (DSC)') {
               <div style="font-size:12px;color:var(--text-secondary);padding:4px 0 8px 0;">
                 Default Token PIN is <strong>wealthempires</strong>. Update DSC password whenever it changes.
               </div>
@@ -292,7 +292,7 @@
                   <div class="sd-input-wrap">
                     <input class="sd-input password-input" [class.shown]="showPass['DSC_pin']"
                            [type]="showPass['DSC_pin'] ? 'text' : 'password'"
-                           [(ngModel)]="forms['DSC'].tokenPin" placeholder="wealthempires" autocomplete="new-password" />
+                           [(ngModel)]="forms['Digital Signature Certificate (DSC)'].tokenPin" placeholder="wealthempires" autocomplete="new-password" />
                     <button class="sd-show-hide" (click)="togglePass('DSC_pin')">
                       <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['DSC_pin'] ? 'visibility_off' : 'visibility' }}</span>
                     </button>
@@ -303,7 +303,7 @@
                   <div class="sd-input-wrap">
                     <input class="sd-input password-input" [class.shown]="showPass['DSC_pass']"
                            [type]="showPass['DSC_pass'] ? 'text' : 'password'"
-                           [(ngModel)]="forms['DSC'].password" placeholder="DSC Password" autocomplete="new-password" />
+                           [(ngModel)]="forms['Digital Signature Certificate (DSC)'].password" placeholder="DSC Password" autocomplete="new-password" />
                     <button class="sd-show-hide" (click)="togglePass('DSC_pass')">
                       <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['DSC_pass'] ? 'visibility_off' : 'visibility' }}</span>
                     </button>
@@ -313,29 +313,29 @@
             }
 
             <!-- ════════════ FSSAI ════════════ -->
-            @if (svc.type === 'FSSAI') {
+            @if (svc.type === 'FSSAI Registration') {
               <div class="sd-field-grid">
                 <div class="sd-field">
                   <label class="sd-label">Username</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['FSSAI'].username" placeholder="FSSAI Portal Username" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['FSSAI Registration'].username" placeholder="FSSAI Portal Username" autocomplete="new-password" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Password</label>
                   <div class="sd-input-wrap">
-                    <input class="sd-input password-input" [class.shown]="showPass['FSSAI']"
-                           [type]="showPass['FSSAI'] ? 'text' : 'password'"
-                           [(ngModel)]="forms['FSSAI'].password" placeholder="••••••••" autocomplete="new-password" />
-                    <button class="sd-show-hide" (click)="togglePass('FSSAI')">
-                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['FSSAI'] ? 'visibility_off' : 'visibility' }}</span>
+                    <input class="sd-input password-input" [class.shown]="showPass['FSSAI Registration']"
+                           [type]="showPass['FSSAI Registration'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['FSSAI Registration'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('FSSAI Registration')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['FSSAI Registration'] ? 'visibility_off' : 'visibility' }}</span>
                     </button>
                   </div>
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Expiry Date</label>
-                  <input class="sd-input" type="date" [(ngModel)]="forms['FSSAI'].expiryDate" />
-                  @if (forms['FSSAI'].expiryDate) {
-                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['FSSAI'].expiryDate)">
-                      {{ getExpiryLabel(forms['FSSAI'].expiryDate) }}
+                  <input class="sd-input" type="date" [(ngModel)]="forms['FSSAI Registration'].expiryDate" />
+                  @if (forms['FSSAI Registration'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['FSSAI Registration'].expiryDate)">
+                      {{ getExpiryLabel(forms['FSSAI Registration'].expiryDate) }}
                     </span>
                   }
                 </div>
@@ -343,33 +343,33 @@
             }
 
             <!-- ════════════ TDS ════════════ -->
-            @if (svc.type === 'TDS') {
+            @if (svc.type === 'TDS Return Filing') {
               <div class="sd-field-grid">
                 <div class="sd-field">
                   <label class="sd-label">TAN</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['TDS'].tan" placeholder="Tax Deduction and Collection Account Number" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['TDS Return Filing'].tan" placeholder="Tax Deduction and Collection Account Number" autocomplete="new-password" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">TRACES Username</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['TDS'].username" placeholder="TRACES Username" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['TDS Return Filing'].username" placeholder="TRACES Username" autocomplete="new-password" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">TRACES Password</label>
                   <div class="sd-input-wrap">
-                    <input class="sd-input password-input" [class.shown]="showPass['TDS']"
-                           [type]="showPass['TDS'] ? 'text' : 'password'"
-                           [(ngModel)]="forms['TDS'].password" placeholder="••••••••" autocomplete="new-password" />
-                    <button class="sd-show-hide" (click)="togglePass('TDS')">
-                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['TDS'] ? 'visibility_off' : 'visibility' }}</span>
+                    <input class="sd-input password-input" [class.shown]="showPass['TDS Return Filing']"
+                           [type]="showPass['TDS Return Filing'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['TDS Return Filing'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('TDS Return Filing')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['TDS Return Filing'] ? 'visibility_off' : 'visibility' }}</span>
                     </button>
                   </div>
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Expiry Date</label>
-                  <input class="sd-input" type="date" [(ngModel)]="forms['TDS'].expiryDate" />
-                  @if (forms['TDS'].expiryDate) {
-                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['TDS'].expiryDate)">
-                      {{ getExpiryLabel(forms['TDS'].expiryDate) }}
+                  <input class="sd-input" type="date" [(ngModel)]="forms['TDS Return Filing'].expiryDate" />
+                  @if (forms['TDS Return Filing'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['TDS Return Filing'].expiryDate)">
+                      {{ getExpiryLabel(forms['TDS Return Filing'].expiryDate) }}
                     </span>
                   }
                 </div>
@@ -377,33 +377,33 @@
             }
 
             <!-- ════════════ PF (EPFO) ════════════ -->
-            @if (svc.type === 'PF') {
+            @if (svc.type === 'PF Registration & Compliance') {
               <div class="sd-field-grid">
                 <div class="sd-field">
                   <label class="sd-label">Establishment PF Code</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['PF'].pfCode" placeholder="Establishment PF Code" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['PF Registration & Compliance'].pfCode" placeholder="Establishment PF Code" autocomplete="new-password" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">EPFO Username</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['PF'].username" placeholder="EPFO Employer Portal Username" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['PF Registration & Compliance'].username" placeholder="EPFO Employer Portal Username" autocomplete="new-password" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">EPFO Password</label>
                   <div class="sd-input-wrap">
-                    <input class="sd-input password-input" [class.shown]="showPass['PF']"
-                           [type]="showPass['PF'] ? 'text' : 'password'"
-                           [(ngModel)]="forms['PF'].password" placeholder="••••••••" autocomplete="new-password" />
-                    <button class="sd-show-hide" (click)="togglePass('PF')">
-                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['PF'] ? 'visibility_off' : 'visibility' }}</span>
+                    <input class="sd-input password-input" [class.shown]="showPass['PF Registration & Compliance']"
+                           [type]="showPass['PF Registration & Compliance'] ? 'text' : 'password'"
+                           [(ngModel)]="forms['PF Registration & Compliance'].password" placeholder="••••••••" autocomplete="new-password" />
+                    <button class="sd-show-hide" (click)="togglePass('PF Registration & Compliance')">
+                      <span class="material-symbols-outlined" style="font-size:18px;">{{ showPass['PF Registration & Compliance'] ? 'visibility_off' : 'visibility' }}</span>
                     </button>
                   </div>
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Password Expiry Date</label>
-                  <input class="sd-input" type="date" [(ngModel)]="forms['PF'].expiryDate" />
-                  @if (forms['PF'].expiryDate) {
-                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['PF'].expiryDate)">
-                      {{ getExpiryLabel(forms['PF'].expiryDate) }}
+                  <input class="sd-input" type="date" [(ngModel)]="forms['PF Registration & Compliance'].expiryDate" />
+                  @if (forms['PF Registration & Compliance'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['PF Registration & Compliance'].expiryDate)">
+                      {{ getExpiryLabel(forms['PF Registration & Compliance'].expiryDate) }}
                     </span>
                   }
                 </div>
@@ -411,28 +411,28 @@
             }
 
             <!-- ════════════ LEI ════════════ -->
-            @if (svc.type === 'LEI') {
+            @if (svc.type === 'LEI Registration') {
               <div class="sd-field-grid">
                 <div class="sd-field">
                   <label class="sd-label">LEI Number</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['LEI'].leiNumber" placeholder="LEI Number" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['LEI Registration'].leiNumber" placeholder="LEI Number" autocomplete="new-password" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Issue Date</label>
-                  <input class="sd-input" type="date" [(ngModel)]="forms['LEI'].issueDate" />
+                  <input class="sd-input" type="date" [(ngModel)]="forms['LEI Registration'].issueDate" />
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Expiry / Renewal Date</label>
-                  <input class="sd-input" type="date" [(ngModel)]="forms['LEI'].expiryDate" />
-                  @if (forms['LEI'].expiryDate) {
-                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['LEI'].expiryDate)">
-                      {{ getExpiryLabel(forms['LEI'].expiryDate) }}
+                  <input class="sd-input" type="date" [(ngModel)]="forms['LEI Registration'].expiryDate" />
+                  @if (forms['LEI Registration'].expiryDate) {
+                    <span class="sd-status-badge" style="width:fit-content;margin-top:4px;" [class]="getExpiryStatus(forms['LEI Registration'].expiryDate)">
+                      {{ getExpiryLabel(forms['LEI Registration'].expiryDate) }}
                     </span>
                   }
                 </div>
                 <div class="sd-field">
                   <label class="sd-label">Status</label>
-                  <select class="sd-input" [(ngModel)]="forms['LEI'].status" style="appearance: auto;">
+                  <select class="sd-input" [(ngModel)]="forms['LEI Registration'].status" style="appearance: auto;">
                     <option value="active">Active</option>
                     <option value="expired">Expired</option>
                   </select>
@@ -463,21 +463,21 @@
             }
 
             <!-- ════════════ MSME ════════════ -->
-            @if (svc.type === 'MSME') {
+            @if (svc.type === 'MSME Registration') {
               <div class="sd-field-grid">
                 <div class="sd-field">
                   <label class="sd-label">Udyam Registration Number</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['MSME'].udyamNumber" placeholder="Enter Udyam Number" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['MSME Registration'].udyamNumber" placeholder="Enter Udyam Number" autocomplete="new-password" />
                 </div>
               </div>
             }
 
             <!-- ════════════ DUNS ════════════ -->
-            @if (svc.type === 'DUNS') {
+            @if (svc.type === 'DUNS Number') {
               <div class="sd-field-grid">
                 <div class="sd-field">
                   <label class="sd-label">Application ID</label>
-                  <input class="sd-input" type="text" [(ngModel)]="forms['DUNS'].trackingNumber" placeholder="Enter Application ID" autocomplete="new-password" />
+                  <input class="sd-input" type="text" [(ngModel)]="forms['DUNS Number'].trackingNumber" placeholder="Enter Application ID" autocomplete="new-password" />
                 </div>
               </div>
             }

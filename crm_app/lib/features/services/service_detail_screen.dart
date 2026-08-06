@@ -4,6 +4,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/service_documents.dart';
+import '../../core/constants/available_services.dart';
 import 'service_request_summary_sheet.dart';
 
 class ServiceDetailScreen extends StatelessWidget {
@@ -27,6 +28,12 @@ class ServiceDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final serviceInfo = kAvailableServices.firstWhere(
+      (s) => s['title'] == serviceName,
+      orElse: () => <String, dynamic>{'averageWorkingDays': '5-7 days'}
+    );
+    final String processingTime = serviceInfo['averageWorkingDays'] ?? '5-7 days';
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
@@ -130,7 +137,7 @@ class ServiceDetailScreen extends StatelessWidget {
                                   Icon(LucideIcons.clock, size: 14, color: Colors.white.withValues(alpha: 0.9)),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Processing time: 5-7 business days',
+                                    'Processing time: $processingTime',
                                     style: TextStyle(
                                       color: Colors.white.withValues(alpha: 0.9),
                                       fontSize: 12,
@@ -219,6 +226,62 @@ class ServiceDetailScreen extends StatelessWidget {
                                         const Icon(LucideIcons.fileText,
                                             size: 14,
                                             color: AppTheme.corporateBlue),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          doc,
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: AppTheme.deepTeal,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                      ],
+
+                      // Final Delivered Documents (Dynamic)
+                      if (kServiceFinalDocuments.containsKey(serviceName)) ...[
+                        const SizedBox(height: 32),
+                        const Text(
+                          'Final Deliverables',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: AppTheme.deepTeal,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Upon completion, you will receive the following final documents:',
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 10,
+                          children: kServiceFinalDocuments[serviceName]!
+                              .map((doc) => Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF0FDF4), // Light green tint
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: const Color(0xFFBBF7D0)), // Green border
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(LucideIcons.checkCircle,
+                                            size: 14,
+                                            color: Color(0xFF16A34A)), // Green check icon
                                         const SizedBox(width: 8),
                                         Text(
                                           doc,

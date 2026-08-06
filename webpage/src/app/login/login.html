@@ -132,7 +132,7 @@
             <!-- Register Company Link -->
             <div class="support-link-container">
               <button (click)="showRegisterForm()" type="button" class="btn-contact-support">
-                Don't have an account? Apply for Onboarding
+                Don't have an account? Join Now
               </button>
             </div>
 
@@ -142,8 +142,8 @@
 
         <!-- Client Onboarding Form -->
         <div *ngIf="isRegistering()" class="login-box fade-in">
-          <h1 class="main-title">Client Onboarding</h1>
-          <p class="main-subtitle">Apply for onboarding to begin our services</p>
+          <h1 class="main-title">Start With A Service</h1>
+          <p class="main-subtitle">Staying Legally Sound In One Click</p>
 
           <form (submit)="handleOnboardingSubmit()" class="auth-form">
             
@@ -249,7 +249,7 @@
                 type="submit" 
                 class="btn-primary-submit">
                 <span *ngIf="isLoading()" class="button-loading-spinner"></span>
-                <span *ngIf="!isLoading()">Submit Onboarding Request</span>
+                <span *ngIf="!isLoading()">Let's Begin</span>
               </button>
             </div>
 
@@ -271,7 +271,7 @@
 
 
   <!-- Custom Dialog Modal Overlay (Replicates Flutter's _showAuthDialog) -->
-  <div *ngIf="isDialogVisible()" class="dialog-backdrop fade-in" (click)="closeAuthDialog()">
+  <div *ngIf="isDialogVisible()" class="dialog-backdrop fade-in" (mousedown)="closeAuthDialog()">
     <div class="dialog-card scale-in" (click)="$event.stopPropagation()">
       <div class="dialog-title-row">
         <!-- LucideIcons.alertTriangle vs checkCircle2 -->

@@ -276,8 +276,8 @@
   </div>
 
   @if (isNewChatModalOpen()) {
-    <div class="chat-modal-overlay" (click)="closeNewChatModal()">
-      <div class="chat-modal-content" (click)="$event.stopPropagation()">
+    <div class="chat-modal-overlay" (mousedown)="closeNewChatModal()">
+      <div class="chat-modal-content" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
         <div class="chat-modal-header">
           <h3>Start New Chat</h3>
           <button class="icon-btn" (click)="closeNewChatModal()">

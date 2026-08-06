@@ -54,8 +54,8 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
   final List<String> _entityTypes = [
     'Private Limited',
     'LLP',
-    'OPC',
-    'Proprietorship',
+    'OPC Incorporation',
+    'Proprietorship Registration',
     'Partnership',
   ];
 

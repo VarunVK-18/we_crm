@@ -554,8 +554,8 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     }
 
     const advanceAmount = Number(this.advanceAmountPaid());
-    if (isNaN(advanceAmount) || advanceAmount <= 0) {
-      alert('Please enter a valid Advance Amount Paid. It must be greater than 0.');
+    if (isNaN(advanceAmount) || advanceAmount < 0) {
+      alert('Please enter a valid Advance Amount Paid. It cannot be negative.');
       return;
     }
 

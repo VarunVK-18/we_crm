@@ -237,8 +237,8 @@
 
 <!-- Create Checklist Modal -->
 @if (isCreateChecklistModalOpen()) {
-<div class="modal-overlay" (click)="closeCreateChecklistModal()">
-  <div class="modal-card-box" style="max-width: 520px;" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (mousedown)="closeCreateChecklistModal()">
+  <div class="modal-card-box" style="max-width: 520px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>New Service Checklist</h3>
       <button class="close-modal-btn" (click)="closeCreateChecklistModal()">
@@ -345,8 +345,8 @@
 
 <!-- Add Checklist Item Modal -->
 @if (isAddChecklistItemModalOpen()) {
-<div class="modal-overlay" (click)="closeAddChecklistItemModal()">
-  <div class="modal-card-box" style="max-width: 420px;" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (mousedown)="closeAddChecklistItemModal()">
+  <div class="modal-card-box" style="max-width: 420px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Add Checklist Item</h3>
       <button class="close-modal-btn" (click)="closeAddChecklistItemModal()">
@@ -377,8 +377,8 @@
 
 <!-- Request Document Modal -->
 @if (isRequestDocModalOpen()) {
-<div class="modal-overlay" (click)="closeRequestDocModal()">
-  <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+<div class="modal-overlay" (mousedown)="closeRequestDocModal()">
+  <div class="modal-card-box" style="max-width: 400px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h3>Request Document</h3>
       <button class="close-modal-btn" (click)="closeRequestDocModal()">

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/network_overlay_wrapper.dart';
 import 'core/utils/error_handler.dart';
@@ -13,6 +14,9 @@ import 'core/services/firebase_messaging_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Use locally bundled fonts — disables runtime download from fonts.gstatic.com
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Initialize Firebase (will use google-services.json for config on Android)
   await Firebase.initializeApp();

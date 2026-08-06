@@ -40,7 +40,7 @@ class _TdsFormScreenState extends ConsumerState<TdsFormScreen> {
   String? _incorpCertPath;
 
   final List<String> _entityTypes = [
-    'Proprietorship',
+    'Proprietorship Registration',
     'Partnership',
     'LLP',
     'Private Limited',

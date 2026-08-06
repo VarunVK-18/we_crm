@@ -8,7 +8,6 @@ import { Observable } from 'rxjs';
 export class Api {
 
 
-
   // private readonly baseUrl = 'http://localhost:5001/api';
   private readonly baseUrl = 'https://aistartupdoctor.com/api';
 

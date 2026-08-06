@@ -295,10 +295,11 @@ const UserSchema = new mongoose.Schema({
   directors: {
     type: [{
       firstName: String,
-      lastName: String,
-      role: String,
-      email: String,
-      phone: String,
+        lastName: String,
+        role: String,
+        isAuthSignatory: { type: String, enum: ['Yes', 'No'], default: 'No' },
+        email: String,
+        phone: String,
       mobileNumber: String,
       pan: String,
       aadhaar: String,

@@ -363,8 +363,8 @@
 
   <!-- Pending Modal -->
   @if (isPendingModalOpen()) {
-    <div class="modal-overlay" (click)="isPendingModalOpen.set(false)">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (mousedown)="isPendingModalOpen.set(false)">
+      <div class="modal-content" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
         <div class="modal-drag-handle"></div>
         <div class="modal-header" style="align-items: center;">
           <div>
@@ -456,8 +456,8 @@
 
   <!-- Entity Switcher Modal -->
   @if (isEntityModalOpen()) {
-    <div class="modal-overlay" (click)="isEntityModalOpen.set(false)">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (mousedown)="isEntityModalOpen.set(false)">
+      <div class="modal-content" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
         <div class="modal-drag-handle"></div>
         <div class="modal-header">
           <div>
@@ -487,8 +487,8 @@
 
   <!-- Renew Confirmation Modal -->
   @if (isRenewModalOpen()) {
-    <div class="modal-overlay" (click)="isRenewModalOpen.set(false)">
-      <div class="modal-content" style="max-width: 400px; padding: 32px;" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (mousedown)="isRenewModalOpen.set(false)">
+      <div class="modal-content" style="max-width: 400px; padding: 32px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
         <div class="modal-header" style="border: none; padding-bottom: 0; margin-bottom: 16px;">
           <div style="width: 100%;">
             <h2 style="font-size: 20px; text-align: center; color: var(--text-dark); margin-bottom: 8px;">Renew Service</h2>

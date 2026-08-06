@@ -10,7 +10,7 @@
   'Compliance Audit': ['Company PAN', 'Previous Audit Reports', 'Statutory Registers', 'GST & TDS Filings'],
   'MCA Compliance Package (Private Ltd)': ['Company PAN', 'AOC-4 & MGT-7', 'DSC & DIN of Directors', 'Bank Statements'],
   'MCA Compliance Package (LLP)': ['LLP PAN', 'Form 8 & Form 11', 'DSC of Partners', 'Bank Statements'],
-  'GST filing': ['GST Certificate', 'Invoices List', 'Bank Statements', 'Purchase/Sales Register'],
+  'GST Returns Filing': ['GST Certificate', 'Invoices List', 'Bank Statements', 'Purchase/Sales Register'],
   'Comprehensive MCA + GST + TDS': ['Company PAN', 'GST Certificate', 'TDS Records', 'Annual Audit Report'],
   
   // Business Licenses
@@ -36,3 +36,31 @@
   'DUNS Registration': ['Business Registration Proof', 'PAN Card', 'Aadhaar of Authorized Signatory'],
   'LLP Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)', 'Payment Screenshot'],
 };
+
+const Map<String, List<String>> kServiceFinalDocuments = {
+  'Private Limited Incorporation': ['Certificate of Incorporation (COI)', 'PAN Card', 'TAN Allotment Letter', 'Memorandum of Association (MOA)', 'Articles of Association (AOA)', 'Incorporation Forms (SPICe+)'],
+  'LLP Incorporation': ['Certificate of Incorporation', 'LLP Agreement', 'PAN Card', 'TAN Allotment Letter'],
+  'OPC Incorporation': ['Certificate of Incorporation (COI)', 'PAN Card', 'TAN Allotment Letter', 'Memorandum of Association (MOA)', 'Articles of Association (AOA)', 'Incorporation Forms (SPICe+)'],
+  'MSME Registration': ['Udyam Registration Certificate'],
+  'Proprietorship Registration': ['GST Registration Certificate', 'MSME Registration'],
+  'TDS Return Filing': ['TDS Return Filing Acknowledgement', 'Form 27A', 'Filed Return Copy', 'Challan Details'],
+  'PF Registration & Compliance': ['EPFO Registration Certificate', 'PF Registration Number', 'Monthly/Periodic PF Filing Challans & ECR Acknowledgements'],
+  'Trademark Registration': ['Trademark Application Receipt (TM-A)', 'Application Number'],
+  'Copyright Registration': ['Copyright Registration Certificate'],
+  'Patent Registration': ['Patent Application Receipt', 'Application Number', 'Patent Certificate', 'Filed Patent Documents'],
+  'Income Tax Return (ITR)': ['ITR-V Acknowledgement', 'Filed Income Tax Return Copy'],
+  'GST Registration': ['GST Registration Certificate', 'GSTIN'],
+  'GST Returns Filing': ['GST Return Filing Acknowledgement', 'Challan'],
+  'GST Cancellation': ['GST Cancellation Order', 'GST Cancellation Acknowledgement'],
+  'DPIIT Recognition': ['DPIIT Startup Recognition Certificate'],
+  'ISO Certification': ['ISO Certificate'],
+  'FSSAI Registration': ['FSSAI License'],
+  'DUNS Number': ['D-U-N-S® Number Confirmation Letter/Certificate'],
+  'Import Export Code (IEC)': ['IEC Certificate'],
+  'BIS Certification': ['BIS License'],
+  'CE Certification': ['CE Certificate'],
+  'RoHS Certification': ['RoHS Compliance Certificate'],
+  'LEI Registration': ['Legal Entity Identifier (LEI) Certificate'],
+  'Digital Signature Certificate (DSC)': ['Digital Signature Certificate (DSC)', 'USB Token'],
+};
+

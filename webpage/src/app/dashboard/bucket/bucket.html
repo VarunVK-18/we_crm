@@ -368,9 +368,9 @@
 
   <!-- Accept Request Modal -->
   @if (isAcceptModalOpen() && selectedBucketReq()) {
-  <div class="modal-overlay" (click)="closeAcceptModal()">
+  <div class="modal-overlay" (mousedown)="closeAcceptModal()">
     <div class="modal-card-box" style="max-width: 500px; max-height: 90vh; overflow-y: auto;"
-      (click)="$event.stopPropagation()">
+      (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Accept Bucket Request</h3>
         <button class="close-modal-btn" (click)="closeAcceptModal()">
@@ -445,8 +445,8 @@
                 <option value="Private Limited Company">Private Limited Company</option>
                 <option value="Public Limited Company">Public Limited Company</option>
                 <option value="LLP">LLP</option>
-                <option value="OPC">OPC</option>
-                <option value="Proprietorship">Proprietorship</option>
+                <option value="OPC Incorporation">OPC</option>
+                <option value="Proprietorship Registration">Proprietorship</option>
               </select>
             </div>
             <div style="flex: 1;">
@@ -463,7 +463,7 @@
       </div>
 
       <!-- Compliance Case Selector: only for external compliance (Private Limited / Public Limited) -->
-      @if (!['LLP', 'OPC', 'Proprietorship'].includes(coiDetails().entityType)) {
+      @if (!['LLP', 'OPC Incorporation', 'Proprietorship Registration'].includes(coiDetails().entityType)) {
       <div class="form-group-item" style="margin-top: 16px;">
         <label class="form-input-label" style="color: #0369a1; margin-bottom: 8px; display: block;">
           <span class="material-symbols-outlined"
@@ -546,7 +546,7 @@
         </div>
 
         <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-          <label class="form-input-label">Advance Amount Paid (INR) *</label>
+          <label class="form-input-label">Advance Amount Paid (INR)</label>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; gap: 8px; width: 100%;">
               <input type="text" class="form-control-input" placeholder="0" [ngModel]="advanceAmountStr()"

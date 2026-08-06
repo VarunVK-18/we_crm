@@ -90,8 +90,8 @@
 
   <!-- New Ticket Modal -->
   @if (showNewTicketModal()) {
-    <div class="modal-overlay" (click)="closeNewTicketModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (mousedown)="closeNewTicketModal()">
+      <div class="modal-content" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
         
         <div class="modal-header">
           <div class="modal-icon">
@@ -157,8 +157,8 @@
 
   <!-- Ticket Details Modal -->
   @if (selectedTicket()) {
-    <div class="modal-overlay" (click)="closeTicketDetails()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (mousedown)="closeTicketDetails()">
+      <div class="modal-content" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
         
         <div class="modal-header">
           <div class="modal-icon">

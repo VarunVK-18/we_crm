@@ -475,6 +475,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   async handleLogout() {
+    this.isProfileDropdownOpen.set(false);
     const choice = await this.confirmDialog.confirm({
       title: 'Log Out',
       message: 'Are you sure you want to log out?',

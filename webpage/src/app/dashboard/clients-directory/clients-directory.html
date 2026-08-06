@@ -90,8 +90,8 @@
 
 <!-- Create Client Dialog Modal Overlay -->
 @if (isCreateModalOpen()) {
-  <div class="modal-overlay" (click)="closeCreateModal()">
-    <div class="modal-card-box" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="closeCreateModal()">
+    <div class="modal-card-box" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       
       <div class="modal-header">
         <h3>Create New Client Profile</h3>
@@ -259,8 +259,8 @@
 
 <!-- Assign Service Modal Overlay -->
 @if (isAssignServiceModalOpen()) {
-  <div class="modal-overlay" (click)="isAssignServiceModalOpen.set(false)">
-    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="isAssignServiceModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 400px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Assign Service</h3>
         <button class="close-modal-btn" (click)="isAssignServiceModalOpen.set(false)">
@@ -304,8 +304,8 @@
 
 <!-- Create Filing Task Dialog Modal Overlay -->
 @if (isCreateTaskModalOpen()) {
-  <div class="modal-overlay" (click)="isCreateTaskModalOpen.set(false)">
-    <div class="modal-card-box" style="max-width: 500px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="isCreateTaskModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 500px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       
       <div class="modal-header">
         <h3>Create New Filing Task</h3>
@@ -358,8 +358,8 @@
 
 <!-- Assign Manager Modal Overlay -->
 @if (isAssignManagerModalOpen()) {
-  <div class="modal-overlay" (click)="isAssignManagerModalOpen.set(false)">
-    <div class="modal-card-box" style="max-width: 400px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="isAssignManagerModalOpen.set(false)">
+    <div class="modal-card-box" style="max-width: 400px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Map Client to Manager</h3>
         <button class="close-modal-btn" (click)="isAssignManagerModalOpen.set(false)">
@@ -404,8 +404,8 @@
 
 <!-- Add External Client Modal -->
 @if (isExternalModalOpen()) {
-  <div class="modal-overlay" (click)="closeExternalModal()">
-    <div class="modal-card-box" style="max-width: 700px;" (click)="$event.stopPropagation()">
+  <div class="modal-overlay" (mousedown)="closeExternalModal()">
+    <div class="modal-card-box" style="max-width: 700px;" (mousedown)="$event.stopPropagation()" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>Add External Client Service</h3>
         <button class="close-modal-btn" (click)="closeExternalModal()">
@@ -462,8 +462,8 @@
             <select class="form-control-input" [(ngModel)]="externalClient.entityType">
               <option value="Private Limited Company">Private Limited Company</option>
               <option value="LLP">LLP (Limited Liability Partnership)</option>
-              <option value="OPC">OPC (One Person Company)</option>
-              <option value="Proprietorship">Proprietorship</option>
+              <option value="OPC Incorporation">OPC (One Person Company)</option>
+              <option value="Proprietorship Registration">Proprietorship</option>
               <option value="Other">Other</option>
             </select>
           </div>

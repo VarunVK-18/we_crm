@@ -31,8 +31,8 @@
             <label>Certification Type *</label>
             <select [(ngModel)]="certificationType" name="certificationType" required>
               <option value="" disabled>Select Certification Type</option>
-              <option value="CE">CE</option>
-              <option value="RoHS">RoHS</option>
+              <option value="CE Certification">CE</option>
+              <option value="RoHS Certification">RoHS</option>
               <option value="CE & RoHS">CE & RoHS</option>
             </select>
           </div>
@@ -49,7 +49,7 @@
           
           <div class="form-group full-width">
             <label>Manufacturer Name *</label>
-            <input type="text" [(ngModel)]="manufacturerName" name="manufacturerName" required placeholder="Enter manufacturer name">
+            <input type="text" [(ngModel)]="manufacturerName" (ngModelChange)="onEntityNameChange($event)" name="manufacturerName" required placeholder="Enter manufacturer name">
           </div>
           
           <div class="form-group full-width">
@@ -87,6 +87,12 @@
                 </svg>
                 {{ existingDocs['productDatasheet'].name }} (From Profile)
               </div>
+              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['productDatasheet'].fileUrl)" title="View Document">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('productDatasheet')">Change</button>
             </div>
           } @else {
@@ -104,6 +110,12 @@
                 </svg>
                 {{ existingDocs['userManual'].name }} (From Profile)
               </div>
+              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['userManual'].fileUrl)" title="View Document">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('userManual')">Change</button>
             </div>
           } @else {
@@ -121,6 +133,12 @@
                 </svg>
                 {{ existingDocs['bom'].name }} (From Profile)
               </div>
+              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['bom'].fileUrl)" title="View Document">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('bom')">Change</button>
             </div>
           } @else {
@@ -138,6 +156,12 @@
                 </svg>
                 {{ existingDocs['productImages'].name }} (From Profile)
               </div>
+              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['productImages'].fileUrl)" title="View Document">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('productImages')">Change</button>
             </div>
           } @else {
@@ -156,6 +180,12 @@
                 </svg>
                 {{ existingDocs['circuitDiagram'].name }} (From Profile)
               </div>
+              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['circuitDiagram'].fileUrl)" title="View Document">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('circuitDiagram')">Change</button>
             </div>
           } @else {
@@ -173,6 +203,12 @@
                 </svg>
                 {{ existingDocs['testReports'].name }} (From Profile)
               </div>
+              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['testReports'].fileUrl)" title="View Document">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              </button>
               <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('testReports')">Change</button>
             </div>
           } @else {
@@ -211,3 +247,21 @@
     </div>
   }
 </div>
+
+
+@if (safeDocumentViewerUrl) {
+  <div class="doc-viewer-modal-backdrop" (mousedown)="closeDocumentViewer()" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
+    <div class="doc-viewer-modal" (click)="$event.stopPropagation()" style="background:#fff;border-radius:8px;width:90%;max-width:800px;height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+      <div class="doc-viewer-header" style="display:flex;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #ddd;">
+        <h3 style="margin:0;font-size:18px;">Document Viewer</h3>
+        <button type="button" class="close-viewer-btn" (click)="closeDocumentViewer()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
+      </div>
+      <div class="doc-viewer-body" style="flex:1;padding:0;">
+        <object [data]="safeDocumentViewerUrl" type="application/pdf" width="100%" height="100%">
+          <embed [src]="safeDocumentViewerUrl" width="100%" height="100%" />
+          <p style="text-align:center; margin-top:20px;">Your browser does not support inline document viewing. <a [href]="documentViewerUrl" target="_blank" style="color: blue; text-decoration: underline;">Click here to view it directly</a>.</p>
+        </object>
+      </div>
+    </div>
+  </div>
+}
