@@ -2069,8 +2069,9 @@ const clientOnboard = async (req, res) => {
     // Fire and forget request to DealVoice to create a Converted Lead
     try {
       const dealvoiceUrl = process.env.DEALVOICE_API_URL || 'http://localhost:4000';
+      const dealvoiceCompanyCode = process.env.DEALVOICE_COMPANY_CODE || 'WEE-0306-2026';
       const leadPayload = JSON.stringify({
-        companyCode: 'WEE-0306-2026',
+        companyCode: dealvoiceCompanyCode,
         assignedEmployeePhone: 'admin',
         leadCompanyName: company_name || name || 'Prospect Company',
         contactName: name,
@@ -2321,8 +2322,9 @@ const approveEntity = async (req, res) => {
     // Fire-and-forget: Sync to DealVoice as a Converted lead (secondary company)
     try {
       const dealvoiceUrl = process.env.DEALVOICE_API_URL || 'http://localhost:4000';
+      const dealvoiceCompanyCode = process.env.DEALVOICE_COMPANY_CODE || 'WEE-0306-2026';
       const leadPayload = JSON.stringify({
-        companyCode: 'WEE-0306-2026',
+        companyCode: dealvoiceCompanyCode,
         assignedEmployeePhone: 'admin',
         leadCompanyName: entityRequest.company_name,
         contactName: user.owner_name || user.company_name || 'Client',

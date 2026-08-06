@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Hero() {
+  const { currentUser } = useAuth();
   const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set(['hero-subtitle', 'hero-title', 'hero-description']));
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -70,7 +73,7 @@ export default function Hero() {
             Think of it as a health report for your startup — smart, automated, and investor-ready
           </p>
 
-          {/* <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4 sm:px-0 max-w-md sm:max-w-none mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4 sm:px-0 max-w-md sm:max-w-none mx-auto">
             <Link
               to="/health-check"
               className="bg-gray-900 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-gray-800 transition-all text-sm sm:text-base font-medium inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1 w-full sm:w-auto text-center min-w-0"
@@ -85,7 +88,7 @@ export default function Hero() {
                 Sign Up Free
               </Link>
             )}
-          </div> */}
+          </div>
         </div>
 
         {/* Mobile-optimized grid layout */}

@@ -132,8 +132,7 @@ export default function Navigation() {
                 </div>
               ) : (
                 <a
-                  href={import.meta.env.VITE_CRM_URL || 'https://crm.wealthempires.in/login'}
-                  target="_blank"
+                  href={import.meta.env.VITE_CRM_URL || 'https://aistartupdoctor.com/crm/login'}
                   rel="noopener noreferrer"
                   className="text-gray-700 hover:text-gray-900 transition-all duration-300 text-sm font-medium px-3 lg:px-4 py-2 rounded-lg hover:bg-white/50"
                 >

@@ -34,13 +34,13 @@ export class ClientSidebarComponent implements OnInit {
     {
       name: 'Softrate',
       desc: 'Premium Web & Mobile Application Development to scale your digital presence.',
-      image: '/assets/Softrate Logo.png',
+      image: 'assets/Softrate Logo.png',
       url: 'https://softrateglobal.com'
     },
     {
       name: 'Startup Doctor',
       desc: 'Expert mentorship and tailored strategies to accelerate your startup growth.',
-      image: '/assets/sdlogo (1).svg',
+      image: 'assets/sdlogo (1).svg',
       url: 'https://aistartupdoctor.com'
     }
   ];

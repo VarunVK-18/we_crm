@@ -21,7 +21,7 @@ echo "================================================="
 docker build -f Dockerfile.aistartupdoctor-frontend -t $FRONTEND_IMAGE .
 docker stop $FRONTEND_CONTAINER 2>/dev/null || true
 docker rm $FRONTEND_CONTAINER 2>/dev/null || true
-docker run -d --restart unless-stopped -p $FRONTEND_PORT:80 --name $FRONTEND_CONTAINER $FRONTEND_IMAGE
+docker run -d --network aistartupdoctor_default --restart unless-stopped -p $FRONTEND_PORT:80 --name $FRONTEND_CONTAINER $FRONTEND_IMAGE
 
 echo ""
 echo "================================================="
@@ -30,7 +30,7 @@ echo "================================================="
 docker build -f Dockerfile.aistartupdoctor-crm -t $CRM_IMAGE .
 docker stop $CRM_CONTAINER 2>/dev/null || true
 docker rm $CRM_CONTAINER 2>/dev/null || true
-docker run -d --restart unless-stopped -p $CRM_PORT:80 --name $CRM_CONTAINER $CRM_IMAGE
+docker run -d --network aistartupdoctor_default --restart unless-stopped -p $CRM_PORT:80 --name $CRM_CONTAINER $CRM_IMAGE
 
 echo ""
 echo "================================================="
@@ -39,7 +39,7 @@ echo "================================================="
 docker build -f Dockerfile.aistartupdoctor-backend -t $BACKEND_IMAGE .
 docker stop $BACKEND_CONTAINER 2>/dev/null || true
 docker rm $BACKEND_CONTAINER 2>/dev/null || true
-docker run -d --restart unless-stopped -p $BACKEND_PORT:5001 --name $BACKEND_CONTAINER $BACKEND_IMAGE
+docker run -d --network aistartupdoctor_default --restart unless-stopped -p $BACKEND_PORT:5001 --name $BACKEND_CONTAINER $BACKEND_IMAGE
 
 echo ""
 echo "================================================="
