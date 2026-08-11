@@ -77,6 +77,8 @@
 		<string>This app requires access to your camera to capture your profile picture.</string>
 		<key>NSMicrophoneUsageDescription</key>
 		<string>This app requires access to your microphone to capture videos when required.</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>This app requires Face ID to securely authenticate you and log you in.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>

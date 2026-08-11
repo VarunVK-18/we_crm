@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../common/main_navigation.dart';
-import 'login_screen.dart';
+import 'biometric_lock_screen.dart';
 import 'client_onboarding_screen.dart';
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
@@ -15,7 +15,7 @@ class AuthWrapper extends ConsumerWidget {
       data: (user) {
         debugPrint('AuthWrapper Data: ${user?.uid}');
         if (user != null) {
-          return const MainNavigationScreen();
+          return const BiometricLockScreen();
         }
         return const ClientOnboardingScreen();
       },

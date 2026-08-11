@@ -5,9 +5,8 @@
 
 .services-container {
   padding: 32px;
-  max-width: 1400px;
-  margin: 0 auto;
-  min-height: 100%;
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   background-color: #f8fafc;
@@ -32,15 +31,16 @@
 .catalog-grid {
   display: flex;
   gap: 24px;
-  flex: 1;
-  min-height: 0;
   margin-bottom: 24px;
 }
 
 /* Columns */
-.col-categories, .col-services, .col-details {
+.col-categories,
+.col-services,
+.col-details {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .col-categories {
@@ -52,7 +52,8 @@
 }
 
 .col-details {
-  flex: 0 0 calc(50% - 48px);
+  flex: 1;
+  min-width: 0;
 }
 
 .col-title {
@@ -64,7 +65,8 @@
 }
 
 /* Lists */
-.category-list, .service-list {
+.category-list,
+.service-list {
   flex: 1;
   overflow: visible;
   padding-right: 0;
@@ -180,7 +182,8 @@
 }
 
 /* Details Panel */
-.detail-card-top, .detail-card-bottom {
+.detail-card-top,
+.detail-card-bottom {
   background: white;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
@@ -362,7 +365,8 @@
   text-align: center;
 }
 
-.empty-detail, .empty-state {
+.empty-detail,
+.empty-state {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -376,13 +380,11 @@
 /* Expert Assistance Banner */
 .expert-assistance-banner {
   background: linear-gradient(135deg, #1e1b4b, #312e81);
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.03) 0px,
-    rgba(255, 255, 255, 0.03) 2px,
-    transparent 2px,
-    transparent 12px
-  ), linear-gradient(135deg, #1e1b4b, #312e81);
+  background-image: repeating-linear-gradient(45deg,
+      rgba(255, 255, 255, 0.03) 0px,
+      rgba(255, 255, 255, 0.03) 2px,
+      transparent 2px,
+      transparent 12px), linear-gradient(135deg, #1e1b4b, #312e81);
   border-radius: 12px;
   padding: 32px 40px;
   display: flex;
@@ -455,7 +457,7 @@ a.eab-value:hover {
 }
 
 .skeleton-text {
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.05) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -482,6 +484,7 @@ a.eab-value:hover {
   0% {
     background-position: 200% 0;
   }
+
   100% {
     background-position: -200% 0;
   }
@@ -494,7 +497,7 @@ a.eab-value:hover {
     gap: 32px;
     padding: 24px;
   }
-  
+
   .eab-contact {
     flex-direction: row;
     flex-wrap: wrap;

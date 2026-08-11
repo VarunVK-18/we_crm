@@ -387,7 +387,7 @@ export class ClientServicesComponent implements OnInit {
     });
   }
 
-  getCompatibilityWarning(): { message: string, type: string, header: string } | null {
+  getCompatibilityWarning(): { message: string, type: string, header: string, buttonText?: string } | null {
     const finalEntity = this.quoteForm.selectedEntity === 'Add New Entity...'
       ? this.quoteForm.customEntity
       : this.quoteForm.selectedEntity;
@@ -397,17 +397,30 @@ export class ClientServicesComponent implements OnInit {
     const reqService = this.selectedService()?.title;
     if (!reqService) return null;
 
-    const isDuplicate = this.myChecklists().some(c =>
+    const activeChecklist = this.myChecklists().find(c =>
       c.service_name === reqService &&
       (c.details?.entityName === finalEntity || (!c.details?.entityName && finalEntity === 'Client')) &&
       c.status !== 'completed' && c.status !== 'complete'
     );
 
-    if (isDuplicate) {
+    if (activeChecklist) {
+      let statusText = 'Waiting for manager approval';
+      
+      if (activeChecklist.action_required) {
+        statusText = 'Need to fill the form';
+      } else if (activeChecklist.stage === 'workInProgress' || activeChecklist.stage === 'workAssigned') {
+        statusText = 'Work in progress';
+      } else if (activeChecklist.status === 'notInitialized' || !activeChecklist.assigned_to) {
+        statusText = 'Waiting for manager approval';
+      } else {
+        statusText = 'Work in progress';
+      }
+
       return {
         type: 'error',
         header: 'Service Already Requested',
-        message: 'Service request already done wait for manager approval'
+        message: `Current Status: ${statusText}`,
+        buttonText: statusText
       };
     }
 

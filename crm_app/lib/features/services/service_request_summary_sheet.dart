@@ -802,17 +802,29 @@ class _ServiceRequestSummarySheetState
       
       final reqService = widget.packageName;
 
-      bool isDuplicate = ordersState.value?.any((o) =>
+      final activeOrder = ordersState.value?.where((o) =>
               o.serviceType == reqService &&
               o.entityName == _selectedEntity &&
-              o.status != 'completed' && o.status != 'complete') ??
-          false;
+              o.status != 'completed' && o.status != 'complete').firstOrNull;
 
-      if (isDuplicate) {
+      if (activeOrder != null) {
+        String statusText = 'Waiting for manager approval';
+        
+        if (activeOrder.actionRequired) {
+          statusText = 'Need to fill the form';
+        } else if (activeOrder.stage == 'workInProgress' || activeOrder.stage == 'workAssigned') {
+          statusText = 'Work in progress';
+        } else if (activeOrder.status == 'notInitialized' || activeOrder.assignedExpert == 'To be assigned') {
+          statusText = 'Waiting for manager approval';
+        } else {
+          statusText = 'Work in progress';
+        }
+
         return {
           'type': 'error',
           'header': 'Service Already Requested',
-          'message': 'Service request already done wait for manager approval'
+          'message': 'Current Status: $statusText',
+          'buttonText': statusText
         };
       }
 
@@ -1287,9 +1299,11 @@ class _ServiceRequestSummarySheetState
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const Text(
-                        'Next',
-                        style: TextStyle(
+                      child: Text(
+                        getCompatibilityWarning() != null && getCompatibilityWarning()!['buttonText'] != null
+                            ? getCompatibilityWarning()!['buttonText']!
+                            : 'Next',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1364,9 +1378,11 @@ class _ServiceRequestSummarySheetState
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Text(
-                              'Submit',
-                              style: TextStyle(
+                          : Text(
+                              getCompatibilityWarning() != null && getCompatibilityWarning()!['buttonText'] != null
+                                  ? getCompatibilityWarning()!['buttonText']!
+                                  : 'Submit',
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,

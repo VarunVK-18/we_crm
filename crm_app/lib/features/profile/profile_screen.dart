@@ -19,6 +19,7 @@ import 'company_details_screen.dart';
 import '../../core/utils/responsive.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/compliance_provider.dart';
+import '../../core/utils/biometric_util.dart';
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 
@@ -206,6 +207,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         ),
                       ),
+                      const _BiometricTile(),
                     ],
                   ),
 
@@ -591,3 +593,92 @@ class _SectionCard extends StatelessWidget {
     );
   }
 }
+
+// ─── Biometric Security Tile ───────────────────────────────────────────────
+
+class _BiometricTile extends ConsumerStatefulWidget {
+  const _BiometricTile({super.key});
+
+  @override
+  ConsumerState<_BiometricTile> createState() => _BiometricTileState();
+}
+
+class _BiometricTileState extends ConsumerState<_BiometricTile> {
+  bool _isAvailable = false;
+  bool _isEnabled = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBiometrics();
+  }
+
+  Future<void> _checkBiometrics() async {
+    final util = ref.read(biometricProvider);
+    final available = await util.isBiometricAvailable();
+    if (available) {
+      final enabled = await util.isBiometricEnabled();
+      setState(() {
+        _isAvailable = true;
+        _isEnabled = enabled;
+      });
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _toggleBiometrics(bool value) async {
+    final util = ref.read(biometricProvider);
+    
+    if (value) {
+      // Trying to turn ON
+      final authSuccess = await util.authenticate(reason: 'Authenticate to enable biometric login');
+      if (authSuccess) {
+        await util.setBiometricEnabled(true);
+        setState(() {
+          _isEnabled = true;
+        });
+      } else {
+        // Authentication failed or canceled, don't enable
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to authenticate. Biometric login was not enabled.'),
+              backgroundColor: Colors.redAccent,
+            )
+          );
+        }
+      }
+    } else {
+      // Trying to turn OFF
+      await util.setBiometricEnabled(false);
+      setState(() {
+        _isEnabled = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading || !_isAvailable) {
+      return const SizedBox.shrink(); // Don't show if loading or not available
+    }
+
+    return ProfileTile(
+      icon: Icons.fingerprint,
+      title: 'Biometric Security',
+      subtitle: 'Use fingerprint or Face ID to login',
+      trailing: Switch(
+        value: _isEnabled,
+        onChanged: _toggleBiometrics,
+        activeColor: AppTheme.corporateBlue,
+      ),
+      onTap: () {
+        _toggleBiometrics(!_isEnabled);
+      },
+    );
+  }
+}
+

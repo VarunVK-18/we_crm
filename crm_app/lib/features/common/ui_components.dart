@@ -391,6 +391,7 @@ class ProfileTile extends StatefulWidget {
   final String subtitle;
   final VoidCallback onTap;
   final Color? color;
+  final Widget? trailing;
 
   const ProfileTile({
     super.key,
@@ -399,6 +400,7 @@ class ProfileTile extends StatefulWidget {
     required this.subtitle,
     required this.onTap,
     this.color,
+    this.trailing,
   });
 
   @override
@@ -459,10 +461,9 @@ class _ProfileTileState extends State<ProfileTile> {
                 fontSize: 11.sp,
               ),
             ),
-            trailing: Icon(
-              LucideIcons.chevronRight,
-              size: 18.ip,
-              color: Colors.grey[400],
+            trailing: widget.trailing ?? Icon(
+              Icons.chevron_right,
+              color: Colors.grey.shade400,
             ),
           ),
         ),

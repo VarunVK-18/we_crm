@@ -6,8 +6,11 @@ import '../../core/theme/app_theme.dart';
 import '../../core/constants/service_documents.dart';
 import '../../core/constants/available_services.dart';
 import 'service_request_summary_sheet.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/orders_provider.dart';
+import '../../models/order_model.dart';
 
-class ServiceDetailScreen extends StatelessWidget {
+class ServiceDetailScreen extends ConsumerWidget {
   final String serviceName;
   final dynamic icon;
   final String description;
@@ -27,7 +30,7 @@ class ServiceDetailScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final serviceInfo = kAvailableServices.firstWhere(
       (s) => s['title'] == serviceName,
       orElse: () => <String, dynamic>{'averageWorkingDays': '5-7 days'}
