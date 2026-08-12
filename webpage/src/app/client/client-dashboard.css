@@ -930,7 +930,7 @@
 .ho-hero-title {
   font-family: var(--font-heading, 'Inter');
   font-size: 40px;
-  font-weight: 800;
+  font-weight: 400;
   line-height: 1.15;
   margin: 0 0 16px 0;
   color: #1F2937;

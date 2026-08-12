@@ -21,10 +21,13 @@
     "@hugeicons/core-free-icons": "^4.1.4",
     "canvas-confetti": "^1.9.4",
     "chart.js": "^4.5.1",
+    "docxtemplater": "^3.69.3",
+    "docxtemplater-image-module-free": "^1.1.1",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "ng2-charts": "^10.0.0",
     "ng2-pdf-viewer": "^10.4.0",
+    "pizzip": "^3.2.0",
     "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"

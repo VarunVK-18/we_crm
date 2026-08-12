@@ -7,6 +7,15 @@
     </div>
 
     <div style="display: flex; gap: 12px; align-items: center;">
+      @if (checklist()?.service_name === 'Trademark Registration') {
+      <button class="btn-chat" (click)="downloadTMAcknowledgement()"
+        style="background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+        onmouseover="this.style.backgroundColor='#dbeafe'" onmouseout="this.style.backgroundColor='#eff6ff'">
+        <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+        TM Acknowledgement
+      </button>
+      }
+
       @if (checklist()?.sop_document) {
       <button class="btn-chat" (click)="viewSop()"
         style="background-color: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"

@@ -127,7 +127,6 @@
                         [style.cursor]="!isFormEnabled(order()) ? 'not-allowed' : 'pointer'"
                         (click)="isFormEnabled(order()) ? routeToForm(order()?.service_name) : null; $event.stopPropagation()">
                         <span>Fill Form</span>
-                        <span class="material-symbols-outlined" style="font-size: 18px;">edit_document</span>
                       </button>
                       @if (!isFormEnabled(order())) {
                         <div style="font-size: 11px; color: #666; margin-top: 4px;">Form will be enabled once a filing expert is assigned and service is active.</div>

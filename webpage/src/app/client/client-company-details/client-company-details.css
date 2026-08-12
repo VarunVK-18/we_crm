@@ -31,9 +31,9 @@
 .page-title {
   margin: 0;
   font-size: 28px;
-  font-weight: 800;
+  font-weight: 500;
   color: #0f172a;
-  letter-spacing: -0.5px;
+  letter-spacing: 0.03em;
 }
 
 .page-subtitle {

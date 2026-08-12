@@ -404,22 +404,22 @@ export class ClientServicesComponent implements OnInit {
     );
 
     if (activeChecklist) {
-      let statusText = 'Waiting for manager approval';
+      let statusText = 'We are verifying your documents';
       
       if (activeChecklist.action_required) {
         statusText = 'Need to fill the form';
       } else if (activeChecklist.stage === 'workInProgress' || activeChecklist.stage === 'workAssigned') {
-        statusText = 'Work in progress';
+        statusText = 'Our team is working for you';
       } else if (activeChecklist.status === 'notInitialized' || !activeChecklist.assigned_to) {
-        statusText = 'Waiting for manager approval';
+        statusText = 'We are verifying your documents';
       } else {
-        statusText = 'Work in progress';
+        statusText = 'Our team is working for you';
       }
 
       return {
         type: 'error',
-        header: 'Service Already Requested',
-        message: `Current Status: ${statusText}`,
+        header: 'Request in Progress',
+        message: statusText,
         buttonText: statusText
       };
     }

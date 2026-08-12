@@ -28,7 +28,7 @@
           
           <div class="form-group full-width">
             <label>Company Name *</label>
-            <input type="text" [(ngModel)]="companyName" (ngModelChange)="onEntityNameChange($event)" name="companyName" required #companyNameField="ngModel" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" style="text-transform: uppercase;">
+            <input type="text" [(ngModel)]="companyName" (ngModelChange)="onEntityNameChange($event)" name="companyName" required #companyNameField="ngModel" style="text-transform: uppercase;">
                   <div *ngIf="companyNameField.invalid && companyNameField.touched" class="error-msg">This field is required</div>
           </div>
 

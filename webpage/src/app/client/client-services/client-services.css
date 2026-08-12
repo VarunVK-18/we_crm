@@ -18,9 +18,10 @@
 
 .page-title {
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--palette-dark);
   margin-bottom: 4px;
+  letter-spacing: 0.03em;
 }
 
 .page-subtitle {

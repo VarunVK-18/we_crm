@@ -9,6 +9,11 @@ import { WeLoaderComponent } from '../../components/we-loader/we-loader';
 import { OcrService } from '../../services/ocr.service';
 import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
 import { ServiceDetailsComponent } from '../service-details/service-details';
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
+import { saveAs } from 'file-saver';
+// @ts-ignore
+import ImageModule from 'docxtemplater-image-module-free';
 
 @Component({
   selector: 'app-checklist-details',
@@ -114,11 +119,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   // Smart Mentions logic
   showMentionDropdown = false;
   mentionSearch = '';
-  
-  get currentMentionOptions(): {name: string, role: string, internalRole: string}[] {
+
+  get currentMentionOptions(): { name: string, role: string, internalRole: string }[] {
     const cl = this.checklist();
     if (!cl) return [];
-    
+
     const opts = [];
     if (cl.created_by?.owner_name) {
       opts.push({ name: cl.created_by.owner_name, role: 'Client Manager', internalRole: 'client_manager' });
@@ -131,12 +136,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
     return opts;
   }
-  
+
   get filteredMentionOptions() {
     const search = this.mentionSearch;
     if (!search) return this.currentMentionOptions;
-    return this.currentMentionOptions.filter(o => 
-      o.name.toLowerCase().includes(search) || 
+    return this.currentMentionOptions.filter(o =>
+      o.name.toLowerCase().includes(search) ||
       o.role.toLowerCase().includes(search)
     );
   }
@@ -234,7 +239,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   isOpportunitiesModalOpen = signal(false);
   opportunitiesClient = signal<any>(null);
-  
+
   recommendationPool = [
     // Incorporation
     { category: 'Incorporation', name: 'Private Limited Incorporation', desc: 'Full-scale incorporation service including name reservation, DSC, DIN, MOA/AOA.' },
@@ -242,7 +247,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     { category: 'Incorporation', name: 'OPC Incorporation', desc: 'One Person Company registration for solo entrepreneurs.' },
     { category: 'Incorporation', name: 'MSME Registration', desc: 'Official Udyam Registration for small and medium enterprises.' },
     { category: 'Incorporation', name: 'Proprietorship Registration', desc: 'Sole vendor formation with business identification.' },
-    
+
     // Compliance
     { category: 'Compliance', name: 'MCA Compliance', desc: 'Annual return filings and MCA statutory compliance.' },
     { category: 'Compliance', name: 'TDS Return Filing', desc: 'TDS return filing and certificate issuance.' },
@@ -269,7 +274,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     { category: 'Licensing', name: 'BIS Certification', desc: 'Bureau of Indian Standards product certification.' },
     { category: 'Licensing', name: 'RoHS Certification', desc: 'Restriction of Hazardous Substances directive certification.' },
     { category: 'Licensing', name: 'CE Certification', desc: 'European standard certifications for electronics and products.' },
-    
+
     // Fallback original pool ones just in case naming was different
     { category: 'Compliance', name: 'ISO Certification', desc: 'Quality management system certification' },
     { category: 'Compliance', name: 'FSSAI Registration', desc: 'Food safety and standards registration' }
@@ -301,18 +306,18 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const weDone = (client.we_services || []).filter((s: any) => s.status === 'completed' || s.status === 'complete' || s.stage === 'completed').map((s: any) => s.serviceName);
     const outsourced = (client.outsourced_services || []).map((s: any) => s.serviceName);
     const doneSet = new Set([...weDone, ...outsourced]);
-    
+
     const primaryIncorpServices = ['Private Limited Incorporation', 'LLP Incorporation', 'OPC Incorporation', 'Proprietorship Registration'];
     const hasPrimaryIncorp = primaryIncorpServices.some(s => doneSet.has(s));
 
     return this.recommendationPool.filter(s => {
       if (doneSet.has(s.name)) return false;
-      
+
       // Do not suggest other entity incorporation types if one is already completed
       if (hasPrimaryIncorp && primaryIncorpServices.includes(s.name)) {
         return false;
       }
-      
+
       return true;
     });
   }
@@ -322,7 +327,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const outsourced = (client.outsourced_services || []).map((s: any) => ({ name: s.serviceName, source: 'Outsourced' }));
     return [...weDone, ...outsourced];
   }
-  
+
   getWeDone(client: any) {
     return (client.alreadyDone || []).filter((d: any) => d.source === 'WE');
   }
@@ -374,7 +379,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   markAsOutsourced(client: any, opportunity: any) {
     this.api.post<any>(`users/clients/${client._id}/outsource-service`, { serviceName: opportunity.name }).subscribe({
       next: (res) => {
-        if(res.success) {
+        if (res.success) {
           const updatedClient = { ...client, outsourced_services: res.outsourced_services };
           updatedClient.opportunities = this.generateOpportunitiesForClient(updatedClient);
           updatedClient.alreadyDone = this.getAlreadyDoneServices(updatedClient);
@@ -409,13 +414,13 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       // PDF magic: %PDF
       if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
         this.docViewerType.set('pdf');
-      // JPEG magic
+        // JPEG magic
       } else if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
         this.docViewerType.set('image');
-      // PNG magic
+        // PNG magic
       } else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
         this.docViewerType.set('image');
-      // GIF magic
+        // GIF magic
       } else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
         this.docViewerType.set('image');
       } else {
@@ -449,7 +454,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   forceDownload(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    
+
     let docName = this.docViewerName || 'document';
     const client = this.checklist()?.client_id;
     if (client) {
@@ -458,8 +463,72 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         docName = `${clientName.trim().replace(/\s+/g, '_')}_${docName}`;
       }
     }
-    
+
     this.api.downloadFile(this.docViewerSrc, docName);
+  }
+
+  async downloadTMAcknowledgement() {
+    try {
+      const details = this.checklist()?.details || {};
+      const client = this.checklist()?.client_id || {};
+      const tmForm = details.trademarkForm || {};
+
+      // Fetch trademark logo from backend if available
+      let logoData: Uint8Array | null = null;
+      const trademarkDocs: any[] = details.trademarkDocs || [];
+      const logoDoc = trademarkDocs.find((d: any) => d.name === 'Trademark Logo');
+      if (logoDoc?.fileUrl) {
+        try {
+          const fullLogoUrl = this.api.getFileUrl(logoDoc.fileUrl);
+          const logoRes = await fetch(fullLogoUrl);
+          const buf = await logoRes.arrayBuffer();
+          logoData = new Uint8Array(buf);
+          console.log('Logo fetched, size:', logoData.length, 'bytes');
+        } catch (e) {
+          console.warn('Could not fetch trademark logo:', e);
+        }
+      }
+
+      const opts: any = {
+        paragraphLoop: true,
+        linebreaks: true,
+      };
+
+      if (logoData) {
+        opts.modules = [new ImageModule({
+          centered: true,
+          fileType: 'docx',
+          getImage: (_tagValue: string) => logoData as Uint8Array,
+          getSize: (_img: Uint8Array) => [200, 150],
+        })];
+      }
+
+      const response = await fetch(`/assets/Documents/TM Acknowledgement Form.docx?t=${new Date().getTime()}`);
+      const arrayBuffer = await response.arrayBuffer();
+      const zip = new PizZip(arrayBuffer);
+      const doc = new Docxtemplater(zip, opts);
+
+      const data: any = {
+        companyName: tmForm.companyName || details.companyName || details.entityName || client.company_name || '',
+        companyAddress: tmForm.companyAddress || details.companyAddress || details.address || client.address || '',
+        mobileNumber: tmForm.companyMobile || details.companyMobile || details.mobile || client.phone || '',
+        emailId: tmForm.companyEmail || details.companyEmail || details.email || client.email || '',
+        applicantName: tmForm.applicantName || details.applicantName || details.ownerName || client.owner_name || '',
+        trademarkLogo: logoData ? 'trademarkLogo' : undefined,
+      };
+
+      doc.render(data);
+
+      const out = doc.getZip().generate({
+          type: 'blob',
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      });
+
+      saveAs(out, `TM_Acknowledgement_${data.companyName}.docx`);
+    } catch (error) {
+      console.error('Error generating document:', error);
+      alert('Failed to generate document');
+    }
   }
 
   ngOnInit() {
@@ -469,15 +538,15 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
     this.fetchChecklist();
     this.fetchSystemSettings();
-    
+
     if (this.canManage()) {
       this.api.get<any>('teams').subscribe({
         next: (res: any) => {
           let allTeams = res.teams || [];
           const currentUser = this.user();
-          
+
           if (currentUser && currentUser.role === 'client_manager') {
-            allTeams = allTeams.filter((t: any) => 
+            allTeams = allTeams.filter((t: any) =>
               t.manager_id && (t.manager_id._id === currentUser._id || t.manager_id === currentUser._id)
             );
           }
@@ -566,12 +635,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (!c) return false;
     const serviceNameLower = (c.service_name || '').toLowerCase();
     const SERVICES_WITH_FORMS = [
-      'dpiit', 'duns', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai', 
+      'dpiit', 'duns', 'private limited', 'trade mark', 'trademark', 'copyright', 'llp', 'msme', 'gst', 'iso', 'fssai',
       'one person company', 'opc', 'lei', 'lie', 'bis', 'mca', 'dsc', 'iec', 'proprietorship', 'tds', 'pan, tan', 'itr', 'pf', 'patent', 'ce', 'rohs'
     ];
-    
+
     const requiresForm = SERVICES_WITH_FORMS.some(s => serviceNameLower.includes(s));
-    
+
     if (requiresForm) {
       // These are system-injected fields set at checklist creation time, NOT from client form submission
       const SYSTEM_FIELDS = new Set([
@@ -587,14 +656,14 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       }
       return !isFormFilled;
     }
-    
+
     return false;
   }
 
   getChecklistDisplayStatus(c: any): string {
     if (!c) return 'Pending';
     if (c.status === 'completed') return 'Completed';
-    
+
     const assigneeName = this.getAssigneeName(c);
     const isAssigned = assigneeName !== 'Yet to Assign';
 
@@ -778,7 +847,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
     // Check if it's the last checkbox and we are trying to check it
     const isSupportItem = currentItem && currentItem.title && currentItem.title.startsWith('[Support]');
-    
+
     if (itemIndex === cl.items.length - 1 && !cl.items[itemIndex].isChecked && !isSupportItem) {
       const svcLower = cl.service_name?.toLowerCase() || '';
       if (svcLower.includes('trademark') || svcLower.includes('trade mark') || svcLower.includes('patent') || svcLower.includes('copyright')) {
@@ -807,9 +876,9 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
     this.confirmDialog.confirm({
       title: 'Confirm Completion',
-      message: (itemIndex === cl.items.length - 1) ? 
-               'Are you sure you want to complete this final step? Doing so will automatically submit this service for manager review.' : 
-               'Are you sure you want to complete this step? This cannot be undone.',
+      message: (itemIndex === cl.items.length - 1) ?
+        'Are you sure you want to complete this final step? Doing so will automatically submit this service for manager review.' :
+        'Are you sure you want to complete this step? This cannot be undone.',
       confirmText: 'Yes, Complete',
       cancelText: 'Cancel',
       autoCancelSeconds: 6
@@ -903,10 +972,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
     const cl = this.checklist();
     if (!cl) return;
-    
+
     const newDetails = { ...cl.details };
     newDetails['assignedNumberOfDirectors'] = count;
-    
+
     this.api.patch<any>(`checklists/${cl._id}`, { details: newDetails }).subscribe({
       next: () => {
         this.fetchChecklist();
@@ -944,11 +1013,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
     try {
       const details = await this.ocrService.extractPaymentDetails(file, this.systemBankSettings());
-      
+
       if (details.amount) {
         this.paymentAmountToAdd = details.amount;
       }
-      
+
       if (details.transactionId) {
         this.paymentTidToAdd = details.transactionId;
       }
@@ -976,13 +1045,13 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   submitAddPayment() {
     if (!this.paymentAmountToAdd || this.paymentAmountToAdd <= 0) {
-       alert("Please enter a valid amount to add.");
-       return;
+      alert("Please enter a valid amount to add.");
+      return;
     }
 
     const requireVerification = this.requirePaymentVerification();
     if ((requireVerification && !this.paymentOcrVerifiedToAdd) || this.isSubmittingPayment()) {
-       return;
+      return;
     }
 
     this.isSubmittingPayment.set(true);
@@ -1012,8 +1081,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         this.isSubmittingPayment.set(false);
       },
       error: (err) => {
-         this.isSubmittingPayment.set(false);
-         alert(err.error?.message || 'Failed to add payment.');
+        this.isSubmittingPayment.set(false);
+        alert(err.error?.message || 'Failed to add payment.');
       }
     });
   }
@@ -1470,16 +1539,16 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (!serviceName) return false;
     const nameLower = serviceName.toLowerCase();
     return nameLower.includes('dsc') ||
-           nameLower.includes('digital signature') ||
-           nameLower.includes('fssai') ||
-           nameLower.includes('iso') ||
-           nameLower.includes('trademark') ||
-           nameLower.includes('trade mark') ||
-           nameLower.includes('copyright') ||
-           nameLower.includes('patent') ||
-           nameLower.includes('lei') ||
-           nameLower.includes('lie') ||
-           nameLower.includes('bis');
+      nameLower.includes('digital signature') ||
+      nameLower.includes('fssai') ||
+      nameLower.includes('iso') ||
+      nameLower.includes('trademark') ||
+      nameLower.includes('trade mark') ||
+      nameLower.includes('copyright') ||
+      nameLower.includes('patent') ||
+      nameLower.includes('lei') ||
+      nameLower.includes('lie') ||
+      nameLower.includes('bis');
   }
 
   submitFinalDocuments() {
@@ -1488,8 +1557,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
     if (this.isExpiryService(cl.service_name)) {
       if (!this.certIssueDate || !this.certExpiryDate) {
-         alert('Issue Date and Expiry Date are required for this service.');
-         return;
+        alert('Issue Date and Expiry Date are required for this service.');
+        return;
       }
     }
 
@@ -1500,7 +1569,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     for (const doc of this.finalDocsToUpload) {
       let finalName = doc.file.name;
       const ext = doc.file.name.includes('.') ? doc.file.name.substring(doc.file.name.lastIndexOf('.')) : '';
-      
+
       if (doc.docType && doc.docType !== 'Other') {
         finalName = `${doc.docType}${ext}`;
       } else {
@@ -1636,8 +1705,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const cl = this.checklist();
     if (!cl || !cl.requested_documents) return [];
     const itemTitle = (item.title || '').trim().toLowerCase();
-    return cl.requested_documents.filter((doc: any) => 
-      (doc.name || '').trim().toLowerCase().includes(itemTitle) || 
+    return cl.requested_documents.filter((doc: any) =>
+      (doc.name || '').trim().toLowerCase().includes(itemTitle) ||
       itemTitle.includes((doc.name || '').trim().toLowerCase())
     );
   }
@@ -1690,18 +1759,18 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   uploadApplicationReceiptForOCR(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-    
+
     const file = input.files[0];
     const formData = new FormData();
     formData.append('document', file);
 
     this.isScanningApplicationReceipt.set(true);
-    
+
     this.api.post<any>('ocr/extract-application', formData).subscribe({
       next: (response) => {
         this.isScanningApplicationReceipt.set(false);
         input.value = ''; // Reset input
-        
+
         if (response.success && response.data?.applicationId) {
           this.applicationIdInput = response.data.applicationId;
           this.isEditingApplicationId.set(true);
@@ -1723,7 +1792,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   openChatModal() {
     this.isChatModalOpen.set(true);
-    
+
     const cl = this.checklist();
     const companyId = this.user()?.companyId;
     if (!cl || !companyId) {
@@ -1736,8 +1805,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.api.get<any>(`orders/company/${companyId}`).subscribe({
       next: (res) => {
         const clientId = cl.client_id?._id || cl.client_id;
-        const order = res.orders?.find((o: any) => 
-          o.clientUid === clientId && 
+        const order = res.orders?.find((o: any) =>
+          o.clientUid === clientId &&
           o.serviceType === cl.service_name
         );
         this.orderIdForChat = order ? order._id : cl._id;
@@ -1792,9 +1861,9 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   markChatAsSeen(chatId: string) {
     let userRole = this.user()?.role || 'admin';
-    
+
     this.api.put(`chat/${chatId}/seen`, { viewerRole: userRole }).subscribe({
-      next: () => {},
+      next: () => { },
       error: (err) => console.error('Failed to mark as seen', err)
     });
   }
@@ -1816,7 +1885,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const cursor = event.target.selectionStart;
     const valBeforeCursor = val.substring(0, cursor);
     const lastAtIdx = valBeforeCursor.lastIndexOf('@');
-    
+
     if (lastAtIdx !== -1) {
       const search = valBeforeCursor.substring(lastAtIdx + 1);
       if (!search.includes(' ')) {
@@ -1834,7 +1903,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       const val = input.value;
       const cursor = input.selectionStart;
       if (cursor === null) return;
-      
+
       const beforeCursor = val.substring(0, cursor);
       for (const opt of this.currentMentionOptions) {
         const mentionStr = '@' + opt.name + ' ';
@@ -1864,16 +1933,16 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const inputEl = document.querySelector('.chat-input-area input') as HTMLInputElement;
     const val = this.newChatMessage;
     const cursor = inputEl ? inputEl.selectionStart : val.length;
-    
+
     const beforeCursor = val.substring(0, cursor!);
     const lastAtIdx = beforeCursor.lastIndexOf('@');
-    
+
     if (lastAtIdx !== -1) {
       const before = val.substring(0, lastAtIdx);
       const after = val.substring(cursor!);
       const mentionStr = '@' + opt.name + ' ';
       this.newChatMessage = before + mentionStr + after;
-      
+
       if (inputEl) {
         setTimeout(() => {
           inputEl.focus();
@@ -1923,10 +1992,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const currentMsg = this.chatMessages()[index];
     const prevMsg = this.chatMessages()[index - 1];
     if (!currentMsg || !prevMsg) return false;
-    
+
     const currDate = new Date(currentMsg.createdAt);
     const prevDate = new Date(prevMsg.createdAt);
-    
+
     return currDate.toDateString() !== prevDate.toDateString();
   }
 
@@ -1935,7 +2004,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     if (date.toDateString() === today.toDateString()) {
       return 'Today';
     } else if (date.toDateString() === yesterday.toDateString()) {
@@ -2025,7 +2094,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.selectedItemForDocTemplate.set(item || null);
     this.customInputs.set([]);
     this.showGenerateDocModal.set(true);
-    
+
     const html = tmpl.html_content || '';
     this.editorHtml.set(html);
     if (html) {
@@ -2046,7 +2115,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const currentInputs = this.customInputs();
     const newInputs: any[] = [];
     const seen = new Set();
-    
+
     // Clean HTML tags inside brackets
     const cleanHtml = html.replace(/\{\{([\s\S]*?)\}\}/g, (m: string, p1: string) => {
       const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
@@ -2059,7 +2128,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     while ((match = regex.exec(cleanHtml)) !== null) {
       const fullToken = match[0];
       let rawLabel = match[1].trim();
-      
+
       let label = rawLabel;
       if (rawLabel.startsWith('input:')) {
         label = rawLabel.substring(6).trim();
@@ -2068,7 +2137,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       if (!seen.has(fullToken)) {
         seen.add(fullToken);
         const existing = currentInputs.find(i => i.token === fullToken);
-        
+
         let defaultValue = '';
         if (existing) {
           defaultValue = existing.value;
@@ -2141,7 +2210,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
               const kl = k.toLowerCase();
               return kl.includes('director') || kl.includes('partner');
             });
-            
+
             if (directorKey) {
               directorNameVal = cl.details[directorKey] || '';
             }
@@ -2186,14 +2255,14 @@ export class ChecklistDetails implements OnInit, OnDestroy {
             const numberMatch = tokenLower.match(/\d+/);
             const numStr = numberMatch ? numberMatch[0] : '';
             const idx = numStr ? parseInt(numStr, 10) - 1 : 0;
-            
+
             // Try parsed directorsList first
             if (directorsList && directorsList[idx]) {
               const d = directorsList[idx];
               const isDin = tokenLower.includes('din');
               const isPan = tokenLower.includes('pan');
               const isName = tokenLower.includes('name') || (!isDin && !isPan);
-              
+
               if (isDin) defaultValue = d.din || d.dinNumber || '';
               else if (isPan) defaultValue = d.pan || d.panNumber || '';
               else if (isName) defaultValue = d.fullName || d.name || d.owner_name || '';
@@ -2203,25 +2272,25 @@ export class ChecklistDetails implements OnInit, OnDestroy {
             if (!defaultValue && cl?.details && typeof cl.details === 'object') {
               const keys = Object.keys(cl.details);
               let matchedKey = '';
-              
+
               if (numStr) {
                 const isDin = tokenLower.includes('din');
                 const isPan = tokenLower.includes('pan');
                 const isName = tokenLower.includes('name');
-                
+
                 matchedKey = keys.find(k => {
                   const kl = k.toLowerCase();
                   const hasNum = kl.includes(numStr) || (numStr === '1' && kl.includes('first')) || (numStr === '2' && kl.includes('second')) || (numStr === '3' && kl.includes('third'));
                   const isRole = kl.includes('director') || kl.includes('partner') || kl.includes('proprietor');
                   if (!hasNum || !isRole) return false;
-                  
+
                   if (isDin && (kl.includes('din') || kl.includes('identification'))) return true;
                   if (isPan && kl.includes('pan')) return true;
                   if (isName && kl.includes('name')) return true;
                   return false;
                 }) || '';
               }
-              
+
               if (!matchedKey) {
                 matchedKey = keys.find(k => {
                   const kl = k.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -2229,12 +2298,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
                   return kl.includes(tl) || tl.includes(kl);
                 }) || '';
               }
-              
+
               if (matchedKey) {
                 defaultValue = cl.details[matchedKey] || '';
               }
             }
-            
+
             if (!defaultValue) {
               if (!numStr) {
                 defaultValue = directorNameVal || clientName;
@@ -2247,10 +2316,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
           }
         }
 
-        newInputs.push({ 
-          token: fullToken, 
-          label: label, 
-          value: defaultValue 
+        newInputs.push({
+          token: fullToken,
+          label: label,
+          value: defaultValue
         });
       }
     }
@@ -2260,9 +2329,9 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   getLivePreviewContent(): SafeHtml {
     const tmpl = this.selectedDocTemplate();
     if (!tmpl) return '';
-    
+
     let html = tmpl.html_content || '';
-    
+
     html = html.replace(/\{\{([\s\S]*?)\}\}/g, (m: string, p1: string) => {
       const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
       return `{{${cleanContent}}}`;
@@ -2272,7 +2341,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       const val = inp.value || `<span style="color: #ef4444; font-weight: bold; background: #fee2e2; padding: 2px 4px; border-radius: 4px;">[${inp.label}]</span>`;
       html = html.split(inp.token).join(val);
     }
-    
+
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
@@ -2343,7 +2412,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     const cl = this.checklist();
     if (!cl) return '';
     const key = placeholderName.trim().toLowerCase();
-    
+
     if (key === 'client name' || key === 'client_name' || key === 'owner_name' || key === 'owner name') {
       return cl.client_id?.owner_name || '';
     }
@@ -2362,7 +2431,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (key === 'service_name' || key === 'service name') {
       return cl.service_name || '';
     }
-    
+
     if (cl.details && typeof cl.details === 'object') {
       for (const dk of Object.keys(cl.details)) {
         if (dk.toLowerCase() === key) {
@@ -2377,7 +2446,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         }
       }
     }
-    
+
     return '';
   }
 
@@ -2452,7 +2521,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         selection.removeAllRanges();
         selection.addRange(range);
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   onGenerateEditorInput(event: Event) {
@@ -2473,10 +2542,10 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     if (hasReplaced) {
       // Save state before replacing to allow undo
       this.pushEditorState();
-      
+
       el.innerHTML = html;
       this.editorHtml.set(html);
-      
+
       // Update pushed status
       this.lastPushedHtml = html;
       this.editorUndoStack.push(html);
@@ -2565,25 +2634,25 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       customValues[inp.token] = inp.value || '';
     }
 
-    const payload: any = { 
+    const payload: any = {
       checklist_id: cl._id,
       custom_values: customValues
     };
-    
+
     let compiledHtml = tmpl.html_content || '';
-    
+
     // Fix broken placeholders by removing HTML tags injected inside the curly braces
     compiledHtml = compiledHtml.replace(/\{\{([\s\S]*?)\}\}/g, (match: string, p1: string) => {
       const cleanContent = p1.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
       return `{{${cleanContent}}}`;
     });
-    
+
     // Substitute all placeholders with their current values
     for (const inp of this.customInputs()) {
       const val = inp.value || '';
       compiledHtml = compiledHtml.split(inp.token).join(val);
     }
-    
+
     payload.override_html = compiledHtml;
 
     this.api.post<any>(`document-templates/${tmpl._id}/generate`, payload).subscribe({
@@ -2600,12 +2669,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
             next: () => {
               this.closeGenerateDocModal();
               this.fetchChecklist();
-               this.confirmDialog.confirm({
-                 title: 'Success',
-                 message: `✅ "${tmpl.name}" generated and sent to the client!`,
-                 confirmText: 'OK',
-                 hideCancel: true
-               });
+              this.confirmDialog.confirm({
+                title: 'Success',
+                message: `✅ "${tmpl.name}" generated and sent to the client!`,
+                confirmText: 'OK',
+                hideCancel: true
+              });
             },
             error: (err) => {
               this.isGeneratingDoc.set(false);

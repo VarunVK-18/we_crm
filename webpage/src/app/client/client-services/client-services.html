@@ -202,8 +202,8 @@
                 }
 
                 <button type="submit" class="btn-submit" [disabled]="formSubmitting() || !quoteFormRef.valid || getCompatibilityWarning()?.type === 'error'">
-                  @if (getCompatibilityWarning()?.header === 'Service Already Requested') {
-                    {{ getCompatibilityWarning()?.buttonText || 'Waiting for manager approval' }}
+                  @if (getCompatibilityWarning()?.header === 'Request in Progress') {
+                    {{ getCompatibilityWarning()?.buttonText || 'Verifying documents...' }}
                   } @else {
                     {{ formSubmitting() ? 'Submitting...' : 'Add Service' }}
                   }

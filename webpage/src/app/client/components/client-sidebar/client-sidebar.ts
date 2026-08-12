@@ -38,10 +38,10 @@ export class ClientSidebarComponent implements OnInit {
       url: 'https://softrateglobal.com'
     },
     {
-      name: 'Startup Doctor',
-      desc: 'Expert mentorship and tailored strategies to accelerate your startup growth.',
-      image: 'assets/sdlogo (1).svg',
-      url: 'https://aistartupdoctor.com'
+      name: 'DealVoice',
+      desc: 'Boost your sales and accelerate revenue growth with intelligent insights.',
+      image: 'assets/dealvoice.png',
+      url: 'https://dealvoice.softrateglobal.com'
     }
   ];
   
