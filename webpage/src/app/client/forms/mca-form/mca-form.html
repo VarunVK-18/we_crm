@@ -176,7 +176,8 @@
 
         <!-- Bank Statement -->
         <div class="form-group" style="margin-bottom: 24px;">
-          <label style="font-weight: 600; margin-bottom: 8px; display: block;">Last FY Bank statements *</label>
+          <label style="font-weight: 600; margin-bottom: 2px; display: block;">Last FY Bank statements *</label>
+          <span style="display: block; font-size: 12px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent); margin-bottom: 8px;">(April 1, {{ fyStartYear }} to March 31, {{ fyEndYear }})</span>
           <div class="file-upload-row" style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border: 1px dashed var(--border); border-radius: 10px; background-color: var(--card-bg);">
             <span class="file-name" [class.selected]="bankStatementFile" style="font-size: 13px; color: color-mix(in srgb, var(--palette-dark) 60%, transparent);">
               {{ bankStatementFile ? bankStatementFile.name : 'Upload 1 supported file. Max 2 MB.' }}

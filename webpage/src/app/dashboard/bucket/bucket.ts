@@ -237,6 +237,7 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
   complianceCase = signal<string>('case1');
 
   dueDate = signal<string>('');
+  minDate = new Date().toISOString().split('T')[0];
   priority = signal<string>('High');
 
   isAcceptFormValid = computed(() => {
@@ -260,12 +261,12 @@ export class BucketComponent implements OnInit, AfterViewChecked, OnDestroy {
     }
 
     const advanceAmount = Number(this.advanceAmountPaid());
-    if (isNaN(advanceAmount) || advanceAmount <= 0) return false;
+    if (isNaN(advanceAmount) || advanceAmount < 0) return false;
 
     if (advanceAmount > dealAmount) return false;
 
     const requireVerification = this.systemSettings()?.require_payment_verification !== false;
-    if (requireVerification && !this.isOcrVerified()) return false;
+    if (advanceAmount > 0 && requireVerification && !this.isOcrVerified()) return false;
 
     return true;
   });

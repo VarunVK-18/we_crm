@@ -37,7 +37,14 @@
             }
             }
         </div>
-        <h1 class="appbar-page-title" [class.centered]="navigationTrail().length <= 1">{{ navigationTrail()[navigationTrail().length - 1].label }}</h1>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h1 class="appbar-page-title" [class.centered]="navigationTrail().length <= 1">{{ navigationTrail()[navigationTrail().length - 1].label }}</h1>
+          @if (currentTab() === 'bucket' || currentTab() === 'checklists' || currentTab() === 'requests') {
+            <button (click)="refreshCurrentTab()" title="Refresh" class="refresh-title-btn" [class.centered]="navigationTrail().length <= 1">
+              <span class="material-symbols-outlined" style="font-size: 20px;">refresh</span>
+            </button>
+          }
+        </div>
       </div>
 
       <div class="appbar-actions">

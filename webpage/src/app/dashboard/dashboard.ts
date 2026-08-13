@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { NotificationService } from '../client/services/notification.service';
-import { Notification01Icon, Search01Icon, Message02Icon, ChatNotificationIcon } from '@hugeicons/core-free-icons';
+import { Notification01Icon, Search01Icon, Message02Icon, ChatNotificationIcon, RefreshIcon } from '@hugeicons/core-free-icons';
 import { Api } from '../api';
 import { FormsModule } from '@angular/forms';
 import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
@@ -92,6 +92,7 @@ export class Dashboard implements OnInit, OnDestroy {
   readonly Notification01Icon = Notification01Icon;
   readonly Message02Icon = Message02Icon;
   readonly ChatNotificationIcon = ChatNotificationIcon;
+  readonly RefreshIcon = RefreshIcon;
 
   // Mobile sidebar navigation drawer state
   isMobileSidebarOpen = signal<boolean>(false);
@@ -489,5 +490,13 @@ export class Dashboard implements OnInit, OnDestroy {
       localStorage.removeItem('user');
       this.router.navigate(['/login']);
     }
+  }
+
+  refreshCurrentTab() {
+    const current = this.currentTab();
+    this.currentTab.set('');
+    setTimeout(() => {
+      this.currentTab.set(current);
+    }, 10);
   }
 }

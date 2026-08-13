@@ -39,7 +39,26 @@ const registerUser = async (req, res) => {
       status,
       revenue,
       director_count,
-      company_id   // company scope passed from admin dashboard
+      company_id,   // company scope passed from admin dashboard
+      cin,
+      incorporation_date,
+      company_email,
+      roc,
+      registration_number,
+      company_origin,
+      class_of_company,
+      company_category,
+      company_subcategory,
+      authorised_capital,
+      paidup_capital,
+      address_type,
+      main_division_no,
+      street_address_line_1,
+      street_address_line_2,
+      city,
+      state,
+      postal_code,
+      directors
     } = req.body;
 
 
@@ -140,6 +159,25 @@ const registerUser = async (req, res) => {
       existingUser.created_by = creatorId || existingUser.created_by;
       existingUser.onboarding_status = onboarding_status;
       existingUser.onboard = true;
+      if (cin) existingUser.cin = cin;
+      if (incorporation_date) existingUser.incorporation_date = incorporation_date;
+      if (company_email) existingUser.company_email = company_email;
+      if (roc) existingUser.roc = roc;
+      if (registration_number) existingUser.registration_number = registration_number;
+      if (company_origin) existingUser.company_origin = company_origin;
+      if (class_of_company) existingUser.class_of_company = class_of_company;
+      if (company_category) existingUser.company_category = company_category;
+      if (company_subcategory) existingUser.company_subcategory = company_subcategory;
+      if (authorised_capital) existingUser.authorised_capital = authorised_capital;
+      if (paidup_capital) existingUser.paidup_capital = paidup_capital;
+      if (address_type) existingUser.address_type = address_type;
+      if (main_division_no) existingUser.main_division_no = main_division_no;
+      if (street_address_line_1) existingUser.street_address_line_1 = street_address_line_1;
+      if (street_address_line_2) existingUser.street_address_line_2 = street_address_line_2;
+      if (city) existingUser.city = city;
+      if (state) existingUser.state = state;
+      if (postal_code) existingUser.postal_code = postal_code;
+      if (directors && Array.isArray(directors)) existingUser.directors = directors;
       if (initialClientEntities.length > 0) existingUser.client_entities = initialClientEntities;
       await existingUser.save();
       user = existingUser;
@@ -166,7 +204,26 @@ const registerUser = async (req, res) => {
         services: parsedServices || [],
         created_by: creatorId,
         onboarding_status,
-        client_entities: initialClientEntities
+        client_entities: initialClientEntities,
+        cin: cin || '',
+        incorporation_date: incorporation_date || '',
+        company_email: company_email || '',
+        roc: roc || '',
+        registration_number: registration_number || '',
+        company_origin: company_origin || '',
+        class_of_company: class_of_company || '',
+        company_category: company_category || '',
+        company_subcategory: company_subcategory || '',
+        authorised_capital: authorised_capital || '',
+        paidup_capital: paidup_capital || '',
+        address_type: address_type || '',
+        main_division_no: main_division_no || '',
+        street_address_line_1: street_address_line_1 || '',
+        street_address_line_2: street_address_line_2 || '',
+        city: city || '',
+        state: state || '',
+        postal_code: postal_code || '',
+        directors: (directors && Array.isArray(directors)) ? directors : []
       });
     }
 

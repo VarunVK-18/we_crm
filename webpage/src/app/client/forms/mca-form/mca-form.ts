@@ -16,6 +16,8 @@ import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
   styleUrls: ['../forms-shared.css', './mca-form.css']
 })
 export class McaFormComponent implements OnInit, OnDestroy {
+  fyStartYear = new Date().getMonth() < 3 ? new Date().getFullYear() - 2 : new Date().getFullYear() - 1;
+  fyEndYear = new Date().getMonth() < 3 ? new Date().getFullYear() - 1 : new Date().getFullYear();
   orderId = signal<string | null>(null);
   isSubmitting = signal(false);
   errorMessage = signal('');

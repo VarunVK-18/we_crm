@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal, input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -68,6 +68,34 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   docViewerSrc: string = '';
   docViewerName: string = '';
   docViewerType = signal<'pdf' | 'image' | ''>('');
+
+  // TM Acknowledgement State
+  isTMPanelOpen = signal<boolean>(false);
+  tmApplicationFiledAs = signal<string>('Small Enterprise');
+  tmNatureOfApplication = signal<string>('Standard trademark');
+  tmNatureOfApplicant = signal<string>('Individual');
+  tmCategoryOfMark = signal<string>('Word Mark');
+  tmDescriptionOfMark = signal<string>('');
+  tmMarkInOtherLanguage = signal<string>('Not applicable');
+  tmLanguage = signal<string>('');
+  tmTransliteration = signal<string>('');
+  tmTranslationInEnglish = signal<string>('');
+  tmPriorityClaim = signal<string>('Not applicable');
+  tmPrioritySince = signal<string>('');
+  tmConventionCountry = signal<string>('');
+  tmPriorityAppNo = signal<string>('');
+  allTmClasses = signal<any[]>([]);
+  tmClassSearchQuery = signal<string>('');
+  selectedTmClasses = signal<any[]>([]);
+  
+  filteredTmClasses = computed(() => {
+    const q = this.tmClassSearchQuery().toLowerCase().trim();
+    if (!q) return this.allTmClasses();
+    return this.allTmClasses().filter(c => 
+      c.classCode.toString().includes(q) || 
+      c.description.toLowerCase().includes(q)
+    );
+  });
 
   // Add Payment State
   isAddingPayment = signal<boolean>(false);
@@ -467,26 +495,142 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     this.api.downloadFile(this.docViewerSrc, docName);
   }
 
-  async downloadTMAcknowledgement() {
+  async openTMPanel() {
+    this.isTMPanelOpen.set(true);
+    
+    // Load TM Classes from JSON if not loaded
+    if (this.allTmClasses().length === 0) {
+      const response = await fetch('/assets/json/Trade Marks Classification.json');
+      const data = await response.json();
+      const classes = [];
+      if (data?.goods) classes.push(...data.goods.map((c: any) => ({ ...c, type: 'Goods' })));
+      if (data?.services) classes.push(...data.services.map((c: any) => ({ ...c, type: 'Services' })));
+      this.allTmClasses.set(classes.map(c => ({ classCode: c.class, description: c.description, type: c.type })));
+    }
+    
+    // Pre-fill from existing data
+    const tmData = this.checklist()?.details?.tmAcknowledgementData || {};
+    if (tmData.applicationFiledAs) this.tmApplicationFiledAs.set(tmData.applicationFiledAs);
+    if (tmData.natureOfApplication) this.tmNatureOfApplication.set(tmData.natureOfApplication);
+    if (tmData.natureOfApplicant) this.tmNatureOfApplicant.set(tmData.natureOfApplicant);
+    if (tmData.categoryOfMark) this.tmCategoryOfMark.set(tmData.categoryOfMark);
+    if (tmData.descriptionOfMark) this.tmDescriptionOfMark.set(tmData.descriptionOfMark);
+    if (tmData.markInOtherLanguage) this.tmMarkInOtherLanguage.set(tmData.markInOtherLanguage);
+    if (tmData.language) this.tmLanguage.set(tmData.language);
+    if (tmData.transliteration) this.tmTransliteration.set(tmData.transliteration);
+    if (tmData.translationInEnglish) this.tmTranslationInEnglish.set(tmData.translationInEnglish);
+    if (tmData.priorityClaim) this.tmPriorityClaim.set(tmData.priorityClaim);
+    if (tmData.prioritySince) this.tmPrioritySince.set(tmData.prioritySince);
+    if (tmData.conventionCountry) this.tmConventionCountry.set(tmData.conventionCountry);
+    if (tmData.priorityAppNo) this.tmPriorityAppNo.set(tmData.priorityAppNo);
+    if (tmData.selectedClasses) this.selectedTmClasses.set(tmData.selectedClasses);
+  }
+
+  closeTMPanel() {
+    this.isTMPanelOpen.set(false);
+  }
+
+  addTmClass(c: any) {
+    if (!this.selectedTmClasses().find(sc => sc.classCode === c.classCode)) {
+      this.selectedTmClasses.update(list => [...list, c]);
+    }
+    this.tmClassSearchQuery.set('');
+  }
+
+  removeTmClass(c: any) {
+    this.selectedTmClasses.update(list => list.filter(sc => sc.classCode !== c.classCode));
+  }
+
+  async saveTMData() {
+    const cl = this.checklist();
+    if (!cl) return;
+    const tmData = {
+      applicationFiledAs: this.tmApplicationFiledAs(),
+      natureOfApplication: this.tmNatureOfApplication(),
+      natureOfApplicant: this.tmNatureOfApplicant(),
+      categoryOfMark: this.tmCategoryOfMark(),
+      descriptionOfMark: this.tmDescriptionOfMark(),
+      markInOtherLanguage: this.tmMarkInOtherLanguage(),
+      language: this.tmLanguage(),
+      transliteration: this.tmTransliteration(),
+      translationInEnglish: this.tmTranslationInEnglish(),
+      priorityClaim: this.tmPriorityClaim(),
+      prioritySince: this.tmPrioritySince(),
+      conventionCountry: this.tmConventionCountry(),
+      priorityAppNo: this.tmPriorityAppNo(),
+      selectedClasses: this.selectedTmClasses()
+    };
+    const newDetails = { ...cl.details, tmAcknowledgementData: tmData };
+    
+    return new Promise<void>((resolve, reject) => {
+      this.api.patch<any>(`checklists/${cl._id}`, { details: newDetails }).subscribe({
+        next: () => {
+          this.fetchChecklist();
+          alert('Draft saved successfully!');
+          resolve();
+        },
+        error: (err) => {
+          alert('Failed to save TM Acknowledgement data');
+          reject(err);
+        }
+      });
+    });
+  }
+
+  async generateTMAcknowledgement() {
     try {
+      await this.saveTMData();
+      
       const details = this.checklist()?.details || {};
       const client = this.checklist()?.client_id || {};
       const tmForm = details.trademarkForm || {};
+      const tmData = details.tmAcknowledgementData || {};
 
-      // Fetch trademark logo from backend if available
+      // Helper to calculate bounded size preserving aspect ratio
+      const getScaledSize = async (buf: Uint8Array, maxWidth: number, maxHeight: number): Promise<[number, number]> => {
+        return new Promise((resolve) => {
+          const blob = new Blob([buf as any]);
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.onload = () => {
+            const ratio = Math.min(maxWidth / img.naturalWidth, maxHeight / img.naturalHeight);
+            resolve([Math.round(img.naturalWidth * ratio), Math.round(img.naturalHeight * ratio)]);
+            URL.revokeObjectURL(url);
+          };
+          img.onerror = () => {
+            resolve([maxWidth, maxHeight]);
+            URL.revokeObjectURL(url);
+          };
+          img.src = url;
+        });
+      };
+
+      // Fetch trademark logo & signature
       let logoData: Uint8Array | null = null;
+      let signatureData: Uint8Array | null = null;
+      let logoSize = [200, 150];
+      let sigSize = [150, 50];
+
       const trademarkDocs: any[] = details.trademarkDocs || [];
+      
       const logoDoc = trademarkDocs.find((d: any) => d.name === 'Trademark Logo');
       if (logoDoc?.fileUrl) {
         try {
-          const fullLogoUrl = this.api.getFileUrl(logoDoc.fileUrl);
-          const logoRes = await fetch(fullLogoUrl);
+          const logoRes = await fetch(this.api.getFileUrl(logoDoc.fileUrl));
           const buf = await logoRes.arrayBuffer();
           logoData = new Uint8Array(buf);
-          console.log('Logo fetched, size:', logoData.length, 'bytes');
-        } catch (e) {
-          console.warn('Could not fetch trademark logo:', e);
-        }
+          logoSize = await getScaledSize(logoData, 200, 200); // Max 200x200 for logo
+        } catch (e) { console.warn('Could not fetch logo:', e); }
+      }
+      
+      const signatureDoc = trademarkDocs.find((d: any) => d.name === 'Signature with name' || d.name?.toLowerCase().includes('signature'));
+      if (signatureDoc?.fileUrl) {
+        try {
+          const sigRes = await fetch(this.api.getFileUrl(signatureDoc.fileUrl));
+          const buf = await sigRes.arrayBuffer();
+          signatureData = new Uint8Array(buf);
+          sigSize = await getScaledSize(signatureData, 150, 75); // Max 150x75 for signature
+        } catch (e) { console.warn('Could not fetch signature:', e); }
       }
 
       const opts: any = {
@@ -494,19 +638,39 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         linebreaks: true,
       };
 
-      if (logoData) {
-        opts.modules = [new ImageModule({
-          centered: true,
-          fileType: 'docx',
-          getImage: (_tagValue: string) => logoData as Uint8Array,
-          getSize: (_img: Uint8Array) => [200, 150],
-        })];
-      }
+      opts.modules = [new ImageModule({
+        centered: true,
+        fileType: 'docx',
+        getImage: (tagValue: string) => {
+          if (tagValue === 'trademarkLogo' && logoData) return logoData as Uint8Array;
+          if (tagValue === 'signatureImage' && signatureData) return signatureData as Uint8Array;
+          return false;
+        },
+        getSize: (img: Uint8Array, tagValue: string) => {
+          if (tagValue === 'signatureImage') return sigSize;
+          return logoSize;
+        },
+      })];
 
       const response = await fetch(`/assets/Documents/TM Acknowledgement Form.docx?t=${new Date().getTime()}`);
       const arrayBuffer = await response.arrayBuffer();
       const zip = new PizZip(arrayBuffer);
       const doc = new Docxtemplater(zip, opts);
+      
+      // Format TM classes
+      const classStr = this.selectedTmClasses().map(c => `Class ${c.classCode}\n${c.description}`).join('\n\n');
+
+      // Format Application Filed As Raw XML
+      const options = ['Individual', 'startup', 'Small Enterprise', 'others'];
+      const selected = this.tmApplicationFiledAs();
+      const rawXmlParts = options.map((opt) => {
+        const isSelected = opt.toLowerCase() === selected.toLowerCase();
+        const strikeTag = isSelected ? '' : '<w:strike w:val="true"/>';
+        return `<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/>${strikeTag}</w:rPr><w:t>${opt}</w:t></w:r>`;
+      });
+      const slash = `<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/></w:rPr><w:t xml:space="preserve"> / </w:t></w:r>`;
+      const innerXml = rawXmlParts.join(slash);
+      const applicationFiledAsRaw = `<w:p><w:pPr><w:jc w:val="left"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/></w:rPr><w:t>(</w:t></w:r>${innerXml}<w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/></w:rPr><w:t xml:space="preserve">)  </w:t></w:r><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:cs="Times New Roman"/><w:b/></w:rPr><w:t>${selected}</w:t></w:r></w:p>`;
 
       const data: any = {
         companyName: tmForm.companyName || details.companyName || details.entityName || client.company_name || '',
@@ -515,6 +679,21 @@ export class ChecklistDetails implements OnInit, OnDestroy {
         emailId: tmForm.companyEmail || details.companyEmail || details.email || client.email || '',
         applicantName: tmForm.applicantName || details.applicantName || details.ownerName || client.owner_name || '',
         trademarkLogo: logoData ? 'trademarkLogo' : undefined,
+        signatureImage: signatureData ? 'signatureImage' : undefined,
+        applicationFiledAsRaw: applicationFiledAsRaw,
+        natureOfApplication: this.tmNatureOfApplication(),
+        natureOfApplicant: this.tmNatureOfApplicant(),
+        categoryOfMark: this.tmCategoryOfMark(),
+        descriptionOfMark: this.tmDescriptionOfMark(),
+        markInOtherLanguage: this.tmMarkInOtherLanguage(),
+        language: this.tmMarkInOtherLanguage() === 'Applicable' ? this.tmLanguage() : '',
+        transliteration: this.tmMarkInOtherLanguage() === 'Applicable' ? this.tmTransliteration() : '',
+        translationInEnglish: this.tmMarkInOtherLanguage() === 'Applicable' ? this.tmTranslationInEnglish() : '',
+        trademarkClass: classStr,
+        priorityClaim: this.tmPriorityClaim(),
+        prioritySince: this.tmPriorityClaim() === 'Applicable' ? this.tmPrioritySince() : '',
+        conventionCountry: this.tmPriorityClaim() === 'Applicable' ? this.tmConventionCountry() : '',
+        priorityAppNo: this.tmPriorityClaim() === 'Applicable' ? this.tmPriorityAppNo() : ''
       };
 
       doc.render(data);
@@ -524,7 +703,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
           mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       });
 
-      saveAs(out, `TM_Acknowledgement_${data.companyName}.docx`);
+      saveAs(out, `TM_Acknowledgement_${data.companyName || 'Export'}.docx`);
+      this.closeTMPanel();
     } catch (error) {
       console.error('Error generating document:', error);
       alert('Failed to generate document');

@@ -524,7 +524,7 @@
       <div style="display: flex; gap: 16px; margin-top: 16px;">
         <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
           <label class="form-input-label">Due Date *</label>
-          <input type="date" class="form-control-input" [(ngModel)]="dueDate" style="font-family: var(--font-body);" />
+          <input type="date" class="form-control-input" [(ngModel)]="dueDate" [min]="minDate" style="font-family: var(--font-body);" />
         </div>
 
         <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">

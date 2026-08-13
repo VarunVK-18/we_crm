@@ -8,11 +8,11 @@
 
     <div style="display: flex; gap: 12px; align-items: center;">
       @if (checklist()?.service_name === 'Trademark Registration') {
-      <button class="btn-chat" (click)="downloadTMAcknowledgement()"
+      <button class="btn-chat" (click)="openTMPanel()"
         style="background-color: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
         onmouseover="this.style.backgroundColor='#dbeafe'" onmouseout="this.style.backgroundColor='#eff6ff'">
-        <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
-        TM Acknowledgement
+        <span class="material-symbols-outlined" style="font-size: 20px;">description</span>
+        Generate TM Acknowledgement
       </button>
       }
 
@@ -1964,6 +1964,197 @@
           suggested services.</p>
       </div>
       }
+    </div>
+  </div>
+</div>
+}
+
+<!-- TM Acknowledgement Slide Panel -->
+@if (isTMPanelOpen()) {
+<div class="doc-viewer-modal-backdrop" (click)="closeTMPanel()" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:flex-end;">
+  <div class="tm-slide-panel fade-in" (click)="$event.stopPropagation()" style="background:#fff;width:100%;max-width:600px;height:100vh;display:flex;flex-direction:column;box-shadow:-4px 0 15px rgba(0,0,0,0.1);animation:slideInRight 0.3s ease-out;">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:24px;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+      <div>
+        <h3 style="margin:0;font-size:20px;font-weight:700;color:#1e293b;font-family:var(--font-heading);">TM Acknowledgement</h3>
+        <p style="margin:4px 0 0 0;font-size:13px;color:#64748b;">Configure form details before generating</p>
+      </div>
+      <button (click)="closeTMPanel()" style="background:none;border:none;cursor:pointer;padding:8px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#64748b;transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0';this.style.color='#0f172a'" onmouseout="this.style.background='none';this.style.color='#64748b'">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <div style="flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:24px;">
+      
+
+
+      <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-weight:600;font-size:14px;color:#334155;">Application filed as *</label>
+        <select [ngModel]="tmApplicationFiledAs()" (ngModelChange)="tmApplicationFiledAs.set($event)" style="padding:10px 40px 10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;background:#fff url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e&quot;) no-repeat right 12px center;background-size:16px;appearance:none;-webkit-appearance:none;cursor:pointer;">
+          <option value="Individual">Individual</option>
+          <option value="Startup">Startup</option>
+          <option value="Small Enterprise">Small Enterprise</option>
+          <option value="Others">Others</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-weight:600;font-size:14px;color:#334155;">Nature of the application *</label>
+        <select [ngModel]="tmNatureOfApplication()" (ngModelChange)="tmNatureOfApplication.set($event)" style="padding:10px 40px 10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;background:#fff url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e&quot;) no-repeat right 12px center;background-size:16px;appearance:none;-webkit-appearance:none;cursor:pointer;">
+          <option value="Standard trademark">Standard trademark</option>
+          <option value="Collective Mark">Collective Mark</option>
+          <option value="Certification Mark">Certification Mark</option>
+          <option value="Series Marks">Series Marks</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-weight:600;font-size:14px;color:#334155;">Nature of the applicant *</label>
+        <select [ngModel]="tmNatureOfApplicant()" (ngModelChange)="tmNatureOfApplicant.set($event)" style="padding:10px 40px 10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;background:#fff url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e&quot;) no-repeat right 12px center;background-size:16px;appearance:none;-webkit-appearance:none;cursor:pointer;">
+          <option value="Individual">Individual</option>
+          <option value="Partnership Firm">Partnership Firm</option>
+          <option value="Body-incorporate including Private Limited/limited Company">Body-incorporate including Private Limited/limited Company</option>
+          <option value="Limited Liability Partnership">Limited Liability Partnership</option>
+          <option value="Society">Society</option>
+          <option value="Trust">Trust</option>
+          <option value="Government Department">Government Department</option>
+          <option value="Statutory Organization">Statutory Organization</option>
+          <option value="Association of persons">Association of persons</option>
+          <option value="Hindu Undivided Family">Hindu Undivided Family</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-weight:600;font-size:14px;color:#334155;">Category of mark *</label>
+        <select [ngModel]="tmCategoryOfMark()" (ngModelChange)="tmCategoryOfMark.set($event)" style="padding:10px 40px 10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;background:#fff url(&quot;data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e&quot;) no-repeat right 12px center;background-size:16px;appearance:none;-webkit-appearance:none;cursor:pointer;">
+          <option value="Word Mark">Word Mark</option>
+          <option value="Device Mark">Device Mark</option>
+          <option value="Colour">Colour</option>
+          <option value="Three Dimensional trademark">Three Dimensional trademark</option>
+          <option value="Sound">Sound</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+        <label style="font-weight:600;font-size:14px;color:#334155;">Description of the mark *</label>
+        <textarea [ngModel]="tmDescriptionOfMark()" (ngModelChange)="tmDescriptionOfMark.set($event)" maxlength="180" rows="3" placeholder="Enter description (max 180 chars)" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;resize:vertical;font-family:inherit;"></textarea>
+        <span style="font-size:12px;color:#64748b;text-align:right;">{{ tmDescriptionOfMark().length }}/180</span>
+      </div>
+
+      <!-- Language Section -->
+      <div style="border-top:1px solid #e2e8f0;padding-top:24px;display:flex;flex-direction:column;gap:16px;">
+        <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+          <label style="font-weight:600;font-size:14px;color:#334155;">Mark in a language other than Hindi/English?</label>
+          <div style="display:flex;gap:16px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">
+              <input type="radio" [ngModel]="tmMarkInOtherLanguage()" (ngModelChange)="tmMarkInOtherLanguage.set('Applicable')" value="Applicable" name="tmLanguageOpt"> Applicable
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">
+              <input type="radio" [ngModel]="tmMarkInOtherLanguage()" (ngModelChange)="tmMarkInOtherLanguage.set('Not applicable')" value="Not applicable" name="tmLanguageOpt"> Not Applicable
+            </label>
+          </div>
+        </div>
+
+        @if (tmMarkInOtherLanguage() === 'Applicable') {
+          <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:13px;color:#475569;">Language</label>
+            <input type="text" [ngModel]="tmLanguage()" (ngModelChange)="tmLanguage.set($event)" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;">
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:13px;color:#475569;">Transliteration in roman script</label>
+            <input type="text" [ngModel]="tmTransliteration()" (ngModelChange)="tmTransliteration.set($event)" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;">
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:13px;color:#475569;">Translation in English</label>
+            <input type="text" [ngModel]="tmTranslationInEnglish()" (ngModelChange)="tmTranslationInEnglish.set($event)" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;">
+          </div>
+        }
+      </div>
+
+      <!-- Class Selection -->
+      <div style="border-top:1px solid #e2e8f0;padding-top:24px;display:flex;flex-direction:column;gap:16px;">
+        <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+          <label style="font-weight:600;font-size:14px;color:#334155;">Class of Goods or Service *</label>
+          
+          <!-- Selected Classes -->
+          @if (selectedTmClasses().length > 0) {
+            <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;">
+              @for (c of selectedTmClasses(); track c.classCode) {
+                <div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;padding:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                  <div>
+                    <span style="font-weight:600;font-size:13px;color:#0f172a;background:#e2e8f0;padding:2px 6px;border-radius:4px;margin-right:8px;">Class {{ c.classCode }}</span>
+                    <span style="font-size:12px;color:#64748b;">{{ c.type }}</span>
+                    <p style="margin:4px 0 0 0;font-size:12px;color:#334155;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;" [title]="c.description">{{ c.description }}</p>
+                  </div>
+                  <button (click)="removeTmClass(c)" style="background:none;border:none;cursor:pointer;color:#ef4444;padding:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <span class="material-symbols-outlined" style="font-size:18px;">delete</span>
+                  </button>
+                </div>
+              }
+            </div>
+          }
+
+          <div style="position:relative;">
+            <span class="material-symbols-outlined" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:18px;">search</span>
+            <input type="text" [ngModel]="tmClassSearchQuery()" (ngModelChange)="tmClassSearchQuery.set($event)" placeholder="Search by class number or keyword..." style="width:100%;padding:10px 12px 10px 38px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;">
+            
+            @if (tmClassSearchQuery() && filteredTmClasses().length > 0) {
+              <div style="position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,0.1);max-height:250px;overflow-y:auto;z-index:10;">
+                @for (c of filteredTmClasses(); track c.classCode) {
+                  <div (click)="addTmClass(c)" style="padding:12px;border-bottom:1px solid #f1f5f9;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='none'">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                      <span style="font-weight:600;font-size:13px;color:#0f172a;background:#f1f5f9;padding:2px 6px;border-radius:4px;">Class {{ c.classCode }}</span>
+                      <span style="font-size:12px;color:#64748b;">{{ c.type }}</span>
+                    </div>
+                    <p style="margin:0;font-size:12px;color:#475569;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ c.description }}</p>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Priority Claim Section -->
+      <div style="border-top:1px solid #e2e8f0;padding-top:24px;display:flex;flex-direction:column;gap:16px;">
+        <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+          <label style="font-weight:600;font-size:14px;color:#334155;">Priority Claim, if any</label>
+          <div style="display:flex;gap:16px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">
+              <input type="radio" [ngModel]="tmPriorityClaim()" (ngModelChange)="tmPriorityClaim.set('Applicable')" value="Applicable" name="tmPriorityOpt"> Applicable
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;">
+              <input type="radio" [ngModel]="tmPriorityClaim()" (ngModelChange)="tmPriorityClaim.set('Not applicable')" value="Not applicable" name="tmPriorityOpt"> Not Applicable
+            </label>
+          </div>
+        </div>
+
+        @if (tmPriorityClaim() === 'Applicable') {
+          <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:13px;color:#475569;">Priority claimed since</label>
+            <input type="text" [ngModel]="tmPrioritySince()" (ngModelChange)="tmPrioritySince.set($event)" placeholder="YYYY" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;">
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:13px;color:#475569;">Convention Country or organization</label>
+            <input type="text" [ngModel]="tmConventionCountry()" (ngModelChange)="tmConventionCountry.set($event)" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;">
+          </div>
+          <div class="form-group" style="display:flex;flex-direction:column;gap:8px;">
+            <label style="font-size:13px;color:#475569;">Priority Application No.</label>
+            <input type="text" [ngModel]="tmPriorityAppNo()" (ngModelChange)="tmPriorityAppNo.set($event)" style="padding:10px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:14px;outline:none;">
+          </div>
+        }
+      </div>
+
+    </div>
+
+    <!-- Panel Footer -->
+    <div style="padding:20px 24px;border-top:1px solid #e2e8f0;background:#f8fafc;display:flex;justify-content:flex-end;gap:12px;">
+      <button (click)="saveTMData()" style="padding:10px 20px;background:#fff;border:1px solid #cbd5e1;color:#334155;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;transition:all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#fff'">
+        Save Draft
+      </button>
+      <button (click)="generateTMAcknowledgement()" style="padding:10px 20px;background:#1d4ed8;border:none;color:#fff;border-radius:8px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:14px;transition:all 0.2s;" onmouseover="this.style.background='#1e40af'" onmouseout="this.style.background='#1d4ed8'">
+        <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+        Generate DOCX
+      </button>
     </div>
   </div>
 </div>

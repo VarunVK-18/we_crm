@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const BucketRequest = require('../models/BucketRequest');
 
-// @desc    Receive client onboarding data from DealVoice
+// @desc    Receive client onboarding data from DealVoice / Softrate Sales CRM
 // @route   POST /api/intake/onboard
 // @access  Protected by WE_CRM_ACCESS key in Authorization header
 const onboardFromDealVoice = async (req, res) => {
@@ -20,11 +20,35 @@ const onboardFromDealVoice = async (req, res) => {
       phone,
       email,
       address,
-      businessType,
       serviceName,         // The service they signed up for (e.g. "GST Registration")
       dealvoiceClientId,
       softrateClientId,    // Softrate CL-series client ID (e.g. CL1000)
-      entityName           // Secondary entity name (only present for Add Entity requests)
+      entityName,          // Secondary entity name (only present for Add Entity requests)
+
+      // Full company metadata from Sales CRM
+      businessType,
+      cin,
+      incorporationDate,
+      companyEmail,
+      roc,
+      registrationNumber,
+      companyOrigin,
+      classOfCompany,
+      companyCategory,
+      companySubcategory,
+      authorisedCapital,
+      paidupCapital,
+      totalObligationOfContribution,
+      addressType,
+      mainDivisionNo,
+      streetAddressLine1,
+      streetAddressLine2,
+      city,
+      state,
+      postalCode,
+
+      // Directors array — each entry is one director
+      directors,  // Array<{ firstName, lastName, din, email, phone, mobileNumber, permanentAddress*, presentAddress* }>
     } = req.body;
 
     if (!companyId || !email || !serviceName) {
@@ -47,15 +71,83 @@ const onboardFromDealVoice = async (req, res) => {
         business_type: businessType || '',
         address: address || '',
         onboarding_status: 'Prospect',
-        services: [serviceName]
+        services: [serviceName],
+
+        // Company fields
+        cin: cin || '',
+        incorporation_date: incorporationDate ? new Date(incorporationDate) : null,
+        company_email: companyEmail || '',
+        roc: roc || '',
+        registration_number: registrationNumber || '',
+        company_origin: companyOrigin || '',
+        class_of_company: classOfCompany || '',
+        company_category: companyCategory || '',
+        company_subcategory: companySubcategory || '',
+        authorised_capital: authorisedCapital || '',
+        paidup_capital: paidupCapital || '',
+        total_obligation_of_contribution: totalObligationOfContribution || '',
+        address_type: addressType || '',
+        main_division_no: mainDivisionNo || '',
+        street_address_line_1: streetAddressLine1 || '',
+        street_address_line_2: streetAddressLine2 || '',
+        city: city || '',
+        state: state || '',
+        postal_code: postalCode || '',
+
+        // Directors
+        directors: buildDirectorsArray(directors),
       });
       isNew = true;
     } else {
       // Add the service if not already present
       if (!clientUser.services.includes(serviceName)) {
         clientUser.services.push(serviceName);
-        await clientUser.save();
       }
+
+      // Safe merge — only fill in blank/missing company fields, never overwrite existing data
+      if (!clientUser.custom_client_id && softrateClientId) clientUser.custom_client_id = softrateClientId;
+      if (!clientUser.business_type && businessType) clientUser.business_type = businessType;
+      if (!clientUser.cin && cin) clientUser.cin = cin;
+      if (!clientUser.incorporation_date && incorporationDate) {
+        try { clientUser.incorporation_date = new Date(incorporationDate); } catch (e) {}
+      }
+      if (!clientUser.company_email && companyEmail) clientUser.company_email = companyEmail;
+      if (!clientUser.roc && roc) clientUser.roc = roc;
+      if (!clientUser.registration_number && registrationNumber) clientUser.registration_number = registrationNumber;
+      if (!clientUser.company_origin && companyOrigin) clientUser.company_origin = companyOrigin;
+      if (!clientUser.class_of_company && classOfCompany) clientUser.class_of_company = classOfCompany;
+      if (!clientUser.company_category && companyCategory) clientUser.company_category = companyCategory;
+      if (!clientUser.company_subcategory && companySubcategory) clientUser.company_subcategory = companySubcategory;
+      if (!clientUser.authorised_capital && authorisedCapital) clientUser.authorised_capital = authorisedCapital;
+      if (!clientUser.paidup_capital && paidupCapital) clientUser.paidup_capital = paidupCapital;
+      if (!clientUser.total_obligation_of_contribution && totalObligationOfContribution) clientUser.total_obligation_of_contribution = totalObligationOfContribution;
+      if (!clientUser.address_type && addressType) clientUser.address_type = addressType;
+      if (!clientUser.main_division_no && mainDivisionNo) clientUser.main_division_no = mainDivisionNo;
+      if (!clientUser.street_address_line_1 && streetAddressLine1) clientUser.street_address_line_1 = streetAddressLine1;
+      if (!clientUser.street_address_line_2 && streetAddressLine2) clientUser.street_address_line_2 = streetAddressLine2;
+      if (!clientUser.city && city) clientUser.city = city;
+      if (!clientUser.state && state) clientUser.state = state;
+      if (!clientUser.postal_code && postalCode) clientUser.postal_code = postalCode;
+
+      // Merge directors — add any incoming director not already present (match by DIN, then by name)
+      if (Array.isArray(directors) && directors.length > 0) {
+        if (!clientUser.directors) clientUser.directors = [];
+        for (const incoming of buildDirectorsArray(directors)) {
+          const alreadyExists = clientUser.directors.some(existing => {
+            if (incoming.din && existing.din) return existing.din === incoming.din;
+            return (
+              (existing.firstName || '').toLowerCase() === (incoming.firstName || '').toLowerCase() &&
+              (existing.lastName || '').toLowerCase() === (incoming.lastName || '').toLowerCase()
+            );
+          });
+          if (!alreadyExists) {
+            clientUser.directors.push(incoming);
+          }
+        }
+        clientUser.markModified('directors');
+      }
+
+      await clientUser.save();
     }
 
     // --- Handle secondary entity addition (from Add Entity flow) ---
@@ -116,5 +208,38 @@ const onboardFromDealVoice = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+/**
+ * Transform incoming directors array from Sales CRM into WE-CRM User.directors schema.
+ * Handles both already-structured entries and raw flat objects.
+ */
+function buildDirectorsArray(directors) {
+  if (!Array.isArray(directors) || directors.length === 0) return [];
+  return directors
+    .filter(d => d && (d.firstName || d.din))
+    .map(d => ({
+      firstName: String(d.firstName || '').trim(),
+      lastName: String(d.lastName || '').trim(),
+      role: String(d.role || '').trim(),
+      isAuthSignatory: d.isAuthSignatory || 'No',
+      email: String(d.email || '').trim(),
+      phone: String(d.phone || d.mobileNumber || '').trim(),
+      mobileNumber: String(d.mobileNumber || d.phone || '').trim(),
+      din: String(d.din || '').trim(),
+      pan: String(d.pan || '').trim(),
+      aadhaar: String(d.aadhaar || '').trim(),
+      dob: String(d.dob || '').trim(),
+      permanentAddressLine1: String(d.permanentAddressLine1 || '').trim(),
+      permanentAddressLine2: String(d.permanentAddressLine2 || '').trim(),
+      permanentCity: String(d.permanentCity || '').trim(),
+      permanentState: String(d.permanentState || '').trim(),
+      permanentPincode: String(d.permanentPincode || '').trim(),
+      presentAddressLine1: String(d.presentAddressLine1 || '').trim(),
+      presentAddressLine2: String(d.presentAddressLine2 || '').trim(),
+      presentCity: String(d.presentCity || '').trim(),
+      presentState: String(d.presentState || '').trim(),
+      presentPincode: String(d.presentPincode || '').trim(),
+    }));
+}
 
 module.exports = { onboardFromDealVoice };
