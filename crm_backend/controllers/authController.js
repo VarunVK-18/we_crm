@@ -126,7 +126,21 @@ const registerUser = async (req, res) => {
         entityName: company_name.trim(),
         entityType: business_type || 'Company',
         pan: pan || '',
-        gstin: gstin || ''
+        gstin: gstin || '',
+        cin: cin || '',
+        date_of_incorporation: incorporation_date || null,
+        roc: roc || '',
+        company_origin: company_origin || '',
+        company_email: company_email || email || '',
+        registration_number: registration_number || '',
+        address_type: address_type || '',
+        street_address_line_1: street_address_line_1 || address || '',
+        street_address_line_2: street_address_line_2 || '',
+        city: city || '',
+        state: state || '',
+        postal_code: postal_code || '',
+        authorised_capital: authorised_capital || '',
+        paidup_capital: paidup_capital || ''
       });
     }
 
