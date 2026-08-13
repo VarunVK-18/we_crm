@@ -415,31 +415,26 @@ exports.getCompanyOrders = async (req, res) => {
 exports.submitDpiitForm = async (req, res) => {
   try {
     const { id } = req.params;
-    const formData = req.body;
-    
-    // Process uploaded files if any
+    let formData;
+    try {
+      formData = req.body.data ? JSON.parse(req.body.data) : req.body;
+    } catch(e) {
+      formData = req.body;
+    }
+
     const files = req.files || {};
     const uploadedDocs = [];
+
+    if (files.companyLogo) {
+      uploadedDocs.push({ name: 'Company Logo', fileUrl: files.companyLogo[0].path });
+    } else if (req.body.companyLogo_existing) {
+      uploadedDocs.push({ name: 'Company Logo', fileUrl: req.body.companyLogo_existing });
+    }
 
     if (files.incorpCert) {
       uploadedDocs.push({ name: 'Incorporation Certificate', fileUrl: files.incorpCert[0].path });
     } else if (req.body.incorpCert_existing) {
       uploadedDocs.push({ name: 'Incorporation Certificate', fileUrl: req.body.incorpCert_existing });
-    }
-    if (files.pan) {
-      uploadedDocs.push({ name: 'Company PAN', fileUrl: files.pan[0].path });
-    } else if (req.body.pan_existing) {
-      uploadedDocs.push({ name: 'Company PAN', fileUrl: req.body.pan_existing });
-    }
-    if (files.logo) {
-      uploadedDocs.push({ name: 'Company Logo', fileUrl: files.logo[0].path });
-    } else if (req.body.logo_existing) {
-      uploadedDocs.push({ name: 'Company Logo', fileUrl: req.body.logo_existing });
-    }
-    if (files.pitchDeck) {
-      uploadedDocs.push({ name: 'Pitch Deck', fileUrl: files.pitchDeck[0].path });
-    } else if (req.body.pitchDeck_existing) {
-      uploadedDocs.push({ name: 'Pitch Deck', fileUrl: req.body.pitchDeck_existing });
     }
 
     const Checklist = require('../models/Checklist');
@@ -453,12 +448,15 @@ exports.submitDpiitForm = async (req, res) => {
       ...order.details,
       dpiitForm: formData,
       dpiitDocs: uploadedDocs,
+      companyName: formData.fullName || formData.companyName,
     };
 
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
-    markClientFormFilled(order);
+    if (typeof markClientFormFilled === 'function') {
+      markClientFormFilled(order);
+    }
 
     await order.save();
 
@@ -694,25 +692,11 @@ exports.submitLlpForm = async (req, res) => {
 exports.submitMsmeForm = async (req, res) => {
   try {
     const { id } = req.params;
-    const formData = req.body;
-
-    const files = req.files || {};
-    const uploadedDocs = [];
-
-    if (files.companyPan) {
-      uploadedDocs.push({ name: "Company's PAN Card", fileUrl: files.companyPan[0].path });
-    } else if (req.body.companyPan_existing) {
-      uploadedDocs.push({ name: "Company's PAN Card", fileUrl: req.body.companyPan_existing });
-    }
-    if (files.ownerAadhaar) {
-      uploadedDocs.push({ name: "Owner's Aadhaar Card", fileUrl: files.ownerAadhaar[0].path });
-    } else if (req.body.ownerAadhaar_existing) {
-      uploadedDocs.push({ name: "Owner's Aadhaar Card", fileUrl: req.body.ownerAadhaar_existing });
-    }
-    if (files.ownerPassbook) {
-      uploadedDocs.push({ name: "Owner's Bank Passbook", fileUrl: files.ownerPassbook[0].path });
-    } else if (req.body.ownerPassbook_existing) {
-      uploadedDocs.push({ name: "Owner's Bank Passbook", fileUrl: req.body.ownerPassbook_existing });
+    let formData;
+    try {
+      formData = req.body.data ? JSON.parse(req.body.data) : req.body;
+    } catch(e) {
+      formData = req.body;
     }
 
     const Checklist = require('../models/Checklist');
@@ -725,13 +709,16 @@ exports.submitMsmeForm = async (req, res) => {
     const updatedDetails = {
       ...order.details,
       msmeForm: formData,
-      msmeDocs: uploadedDocs,
+      msmeDocs: [], // no docs for MSME anymore
+      companyName: formData.enterpriseName,
     };
 
     order.details = updatedDetails;
     order.action_required = false; // Form submitted, action no longer required
     order.markModified('details');
-    markClientFormFilled(order);
+    if (typeof markClientFormFilled === 'function') {
+      markClientFormFilled(order);
+    }
 
     await order.save();
 
@@ -1793,5 +1780,138 @@ exports.deleteOrder = async (req, res) => {
   } catch (error) {
     console.error('Delete Order Error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+exports.submitGstForm = async (req, res) => {
+  try {
+    const checklist = await Checklist.findById(req.params.id);
+    if (!checklist) return res.status(404).json({ success: false, message: 'Order not found' });
+
+    let formData = {};
+    if (req.body.data) {
+      try {
+        formData = JSON.parse(req.body.data);
+      } catch (e) {
+        return res.status(400).json({ success: false, message: 'Invalid data payload' });
+      }
+    } else {
+      formData = req.body;
+    }
+
+    const {
+      legalName, panOfBusiness, businessEmail, businessPhone, tradeName, incorpDate,
+      
+      dir1FullName, dir1FatherName, dir1Dob, dir1Phone, dir1Mail, dir1Gender, dir1Din, dir1Pan, dir1Address, dir1AuthSignatory,
+      
+      hasDirector2,
+      dir2FullName, dir2FatherName, dir2Dob, dir2Phone, dir2Mail, dir2Gender, dir2Din, dir2Pan, dir2Address, dir2AuthSignatory,
+      
+      businessAddress, premisesType, businessDescription,
+      
+      hasAdditionalPlaces, secondPlaceAddress, thirdPlaceAddress,
+      
+      accountNumber, accountType, ifscCode
+    } = formData;
+
+    const details = checklist.details || {};
+    details.gstForm = {
+      legalName, panOfBusiness, businessEmail, businessPhone, tradeName, incorpDate,
+      
+      dir1FullName, dir1FatherName, dir1Dob, dir1Phone, dir1Mail, dir1Gender, dir1Din, dir1Pan, dir1Address, dir1AuthSignatory,
+      
+      hasDirector2,
+      dir2FullName, dir2FatherName, dir2Dob, dir2Phone, dir2Mail, dir2Gender, dir2Din, dir2Pan, dir2Address, dir2AuthSignatory,
+      
+      businessAddress, premisesType, businessDescription,
+      
+      hasAdditionalPlaces, secondPlaceAddress, thirdPlaceAddress,
+      
+      accountNumber, accountType, ifscCode
+    };
+
+    checklist.details = details;
+    checklist.markModified('details');
+
+    const uploadedFiles = req.files || {};
+    const pushDoc = (name, fileArray) => {
+      if (fileArray && fileArray[0]) {
+        checklist.requested_documents.push({
+          name: name,
+          fileUrl: '/uploads/' + fileArray[0].filename,
+          isUploaded: true,
+          uploadedAt: new Date()
+        });
+      }
+    };
+
+    const pushExistingDoc = (name, key) => {
+      if (req.body[key]) {
+        checklist.requested_documents.push({
+          name: name,
+          fileUrl: req.body[key],
+          isUploaded: true,
+          uploadedAt: new Date()
+        });
+      }
+    };
+
+    // Business 
+    pushDoc('Incorporation Certificate', uploadedFiles.incorpCert);
+    pushExistingDoc('Incorporation Certificate', 'incorpCert_existing');
+    
+    pushDoc('Company PAN', uploadedFiles.companyPanFile);
+    pushExistingDoc('Company PAN', 'companyPanFile_existing');
+
+    // Dir 1
+    pushDoc('Director 1 Photo', uploadedFiles.dir1Photo);
+    pushExistingDoc('Director 1 Photo', 'dir1Photo_existing');
+    
+    if (dir1AuthSignatory === 'Yes') {
+      pushDoc('Director 1 Authorized Signatory Proof', uploadedFiles.dir1AuthSignatoryDoc);
+      pushExistingDoc('Director 1 Authorized Signatory Proof', 'dir1AuthSignatoryDoc_existing');
+    }
+
+    // Dir 2
+    if (hasDirector2 === 'true' || hasDirector2 === true) {
+      pushDoc('Director 2 Photo', uploadedFiles.dir2Photo);
+      pushExistingDoc('Director 2 Photo', 'dir2Photo_existing');
+      
+      if (dir2AuthSignatory === 'Yes') {
+        pushDoc('Director 2 Authorized Signatory Proof', uploadedFiles.dir2AuthSignatoryDoc);
+        pushExistingDoc('Director 2 Authorized Signatory Proof', 'dir2AuthSignatoryDoc_existing');
+      }
+    }
+
+    // Business Docs
+    pushDoc('Latest EB Bill', uploadedFiles.ebBill);
+    pushExistingDoc('Latest EB Bill', 'ebBill_existing');
+
+    if (premisesType === 'Rent') {
+      pushDoc('Rental Agreement', uploadedFiles.rentalAgreement);
+      pushExistingDoc('Rental Agreement', 'rentalAgreement_existing');
+    } else if (premisesType === 'Own') {
+      pushDoc('Property Tax Receipt', uploadedFiles.propertyTaxReceipt);
+      pushExistingDoc('Property Tax Receipt', 'propertyTaxReceipt_existing');
+    }
+
+    // Bank Docs
+    pushDoc('Bank Statement / Cancelled Cheque / Passbook', uploadedFiles.bankDocument);
+    pushExistingDoc('Bank Statement / Cancelled Cheque / Passbook', 'bankDocument_existing');
+
+    // Check if form filling is done
+    const formFillingItem = checklist.items.find(item => item.title === 'Client Form Filling');
+    if (formFillingItem) {
+      formFillingItem.isChecked = true;
+      formFillingItem.checkedAt = new Date();
+    }
+
+    await checklist.save();
+
+    res.status(200).json({ success: true, message: 'GST form submitted successfully' });
+  } catch (error) {
+    console.error('Error submitting GST form:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 };

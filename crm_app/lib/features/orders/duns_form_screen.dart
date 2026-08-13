@@ -27,6 +27,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
+  final TextEditingController _applicantNameCtrl = TextEditingController();
   final TextEditingController _legalBusinessNameCtrl = TextEditingController();
   final TextEditingController _tradeNameCtrl = TextEditingController();
   final TextEditingController _businessTypeOtherCtrl = TextEditingController();
@@ -46,15 +47,22 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
   final TextEditingController _natureOfBizCtrl = TextEditingController();
   final TextEditingController _mainProductsCtrl = TextEditingController();
   final TextEditingController _revenueCtrl = TextEditingController();
+  final TextEditingController _annualTurnoverCtrl = TextEditingController();
   final TextEditingController _founderNameCtrl = TextEditingController();
   final TextEditingController _designationCtrl = TextEditingController();
   final TextEditingController _contactNumberCtrl = TextEditingController();
+  final TextEditingController _dirFirstNameCtrl = TextEditingController();
+  final TextEditingController _dirLastNameCtrl = TextEditingController();
+  final TextEditingController _dirEmailCtrl = TextEditingController();
+  final TextEditingController _dirMobileCtrl = TextEditingController();
 
   String _businessType = '';
   File? _incorpCertFile;
   File? _panCardFile;
   File? _addressProofFile;
+  File? _gstDocumentFile;
   bool _declaration = false;
+  bool _hasDirectorDetails = false;
 
   @override
   void initState() {
@@ -64,6 +72,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
 
   @override
   void dispose() {
+    _applicantNameCtrl.dispose();
     _legalBusinessNameCtrl.dispose();
     _tradeNameCtrl.dispose();
     _businessTypeOtherCtrl.dispose();
@@ -83,9 +92,14 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
     _natureOfBizCtrl.dispose();
     _mainProductsCtrl.dispose();
     _revenueCtrl.dispose();
+    _annualTurnoverCtrl.dispose();
     _founderNameCtrl.dispose();
     _designationCtrl.dispose();
     _contactNumberCtrl.dispose();
+    _dirFirstNameCtrl.dispose();
+    _dirLastNameCtrl.dispose();
+    _dirEmailCtrl.dispose();
+    _dirMobileCtrl.dispose();
     super.dispose();
   }
 
@@ -94,6 +108,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
     final draft = await draftService.loadDraft(widget.order.id, 'DunsFormScreen');
     if (draft != null && mounted) {
       setState(() {
+        _applicantNameCtrl.text = draft['applicantName'] ?? '';
         _legalBusinessNameCtrl.text = draft['legalBusinessName'] ?? '';
         _tradeNameCtrl.text = draft['tradeName'] ?? '';
         _businessType = draft['businessType'] ?? '';
@@ -114,9 +129,15 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
         _natureOfBizCtrl.text = draft['natureOfBusiness'] ?? '';
         _mainProductsCtrl.text = draft['mainProducts'] ?? '';
         _revenueCtrl.text = draft['annualRevenue'] ?? '';
+        _annualTurnoverCtrl.text = draft['annualTurnover'] ?? '';
         _founderNameCtrl.text = draft['founderName'] ?? '';
         _designationCtrl.text = draft['designation'] ?? '';
         _contactNumberCtrl.text = draft['contactNumber'] ?? '';
+        _hasDirectorDetails = draft['hasDirectorDetails'] ?? false;
+        _dirFirstNameCtrl.text = draft['directorFirstName'] ?? '';
+        _dirLastNameCtrl.text = draft['directorLastName'] ?? '';
+        _dirEmailCtrl.text = draft['directorPersonalEmail'] ?? '';
+        _dirMobileCtrl.text = draft['directorMobile'] ?? '';
         _declaration = draft['declaration'] ?? false;
       });
     }
@@ -125,6 +146,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
   void _saveDraft() {
     final draftService = ref.read(draftServiceProvider);
     final data = {
+      'applicantName': _applicantNameCtrl.text,
       'legalBusinessName': _legalBusinessNameCtrl.text,
       'tradeName': _tradeNameCtrl.text,
       'businessType': _businessType,
@@ -145,9 +167,15 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
       'natureOfBusiness': _natureOfBizCtrl.text,
       'mainProducts': _mainProductsCtrl.text,
       'annualRevenue': _revenueCtrl.text,
+      'annualTurnover': _annualTurnoverCtrl.text,
       'founderName': _founderNameCtrl.text,
       'designation': _designationCtrl.text,
       'contactNumber': _contactNumberCtrl.text,
+      'hasDirectorDetails': _hasDirectorDetails,
+      'directorFirstName': _dirFirstNameCtrl.text,
+      'directorLastName': _dirLastNameCtrl.text,
+      'directorPersonalEmail': _dirEmailCtrl.text,
+      'directorMobile': _dirMobileCtrl.text,
       'declaration': _declaration,
     };
     draftService.saveDraft(widget.order.id, 'DunsFormScreen', data);
@@ -172,6 +200,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
       }
       setState(() {
         if (type == 'incorpCert') _incorpCertFile = file;
+        if (type == 'gstDocument') _gstDocumentFile = file;
         if (type == 'panCard') _panCardFile = file;
         if (type == 'addressProof') _addressProofFile = file;
       });
@@ -186,7 +215,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select a Business Type.')));
       return;
     }
-    if (_incorpCertFile == null || _panCardFile == null || _addressProofFile == null) {
+    if (_incorpCertFile == null || _panCardFile == null || _addressProofFile == null || _gstDocumentFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please upload all required documents.'), backgroundColor: Colors.red),
       );
@@ -210,6 +239,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
       );
       request.headers['x-user-id'] = uid;
 
+      request.fields['applicantName'] = _applicantNameCtrl.text;
       request.fields['legalBusinessName'] = _legalBusinessNameCtrl.text;
       request.fields['tradeName'] = _tradeNameCtrl.text;
       request.fields['businessType'] = _businessType == 'Other' ? _businessTypeOtherCtrl.text : _businessType;
@@ -229,11 +259,20 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
       request.fields['natureOfBusiness'] = _natureOfBizCtrl.text;
       request.fields['mainProducts'] = _mainProductsCtrl.text;
       request.fields['annualRevenue'] = _revenueCtrl.text;
+      request.fields['annualTurnover'] = _annualTurnoverCtrl.text;
       request.fields['founderName'] = _founderNameCtrl.text;
       request.fields['designation'] = _designationCtrl.text;
       request.fields['contactNumber'] = _contactNumberCtrl.text;
+      request.fields['hasDirectorDetails'] = _hasDirectorDetails.toString();
+      if (_hasDirectorDetails) {
+        request.fields['directorFirstName'] = _dirFirstNameCtrl.text;
+        request.fields['directorLastName'] = _dirLastNameCtrl.text;
+        request.fields['directorPersonalEmail'] = _dirEmailCtrl.text;
+        request.fields['directorMobile'] = _dirMobileCtrl.text;
+      }
 
       request.files.add(await http.MultipartFile.fromPath('incorpCert', _incorpCertFile!.path));
+      request.files.add(await http.MultipartFile.fromPath('gstDocument', _gstDocumentFile!.path));
       request.files.add(await http.MultipartFile.fromPath('panCard', _panCardFile!.path));
       request.files.add(await http.MultipartFile.fromPath('addressProof', _addressProofFile!.path));
 
@@ -468,6 +507,10 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                     ),
                     const SizedBox(height: 24.0),
 
+                    Text('Applicant Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                    const SizedBox(height: 16.0),
+                    _buildField(label: 'Applicant Name', controller: _applicantNameCtrl, isRequired: true),
+                    const SizedBox(height: 24.0),
                     Text('Company Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
                     const SizedBox(height: 16.0),
                     _buildField(label: 'Legal Business Name', controller: _legalBusinessNameCtrl, isRequired: true),
@@ -525,29 +568,97 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                     _buildField(label: 'CIN / LLPIN number', controller: _cinCtrl),
                     _buildField(label: 'Nature of Business', controller: _natureOfBizCtrl, isRequired: true),
                     _buildField(label: 'Main Products / Services', controller: _mainProductsCtrl, isRequired: true),
-                    _buildField(label: 'Annual Revenue (Approx)', controller: _revenueCtrl, isRequired: true, keyboardType: TextInputType.number),
-
-                    const SizedBox(height: 24.0),
-                    Text('Director/Founder Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                    const SizedBox(height: 16.0),
-                    _buildField(label: 'Founder / Director Name', controller: _founderNameCtrl, isRequired: true),
-                    _buildField(label: 'Designation', controller: _designationCtrl, isRequired: true),
-                    _buildField(
-                      label: 'Contact Number',
-                      controller: _contactNumberCtrl,
-                      isRequired: true,
-                      keyboardType: TextInputType.phone,
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Contact Number is required';
-                        if (!RegExp(r'^\d{10}$').hasMatch(v)) return 'Enter valid 10-digit number';
-                        return null;
-                      },
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              text: 'Annual Revenue (Approx)',
+                              style: GoogleFonts.inter( fontSize: 14.0, fontWeight: FontWeight.w500, color: AppTheme.deepTeal),
+                              children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red, fontSize: 14.0))],
+                            ),
+                          ),
+                          const SizedBox(height: 8.0),
+                          DropdownButtonFormField<String>(
+                            value: _revenueCtrl.text.isEmpty ? null : _revenueCtrl.text,
+                            items: [
+                              '< 50 Lakhs',
+                              '50 Lakhs - 1 Crore',
+                              '1 Cr - 10 Cr',
+                              '10 – 30 Cr',
+                              '30 - 100 Cr',
+                              '100 - 250 Cr',
+                              '250 - 500 Cr',
+                              'Above 500 Cr'
+                            ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                            onChanged: (val) {
+                              setState(() => _revenueCtrl.text = val ?? '');
+                              _saveDraft();
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0), borderSide: BorderSide(color: Colors.grey.shade300)),
+                              filled: true,
+                              fillColor: AppTheme.surfaceLight,
+                            ),
+                            validator: (v) => v == null || v.isEmpty ? 'This is a required field' : null,
+                          ),
+                        ],
+                      ),
                     ),
+                    _buildField(label: 'Annual Turnover', controller: _annualTurnoverCtrl, isRequired: true, keyboardType: TextInputType.number),
 
                     const SizedBox(height: 24.0),
-                    Text('Document Uploads', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Director Details', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+                        Switch(
+                          value: _hasDirectorDetails,
+                          activeColor: AppTheme.corporateBlue,
+                          onChanged: (val) {
+                            setState(() => _hasDirectorDetails = val);
+                            _saveDraft();
+                          },
+                        ),
+                      ],
+                    ),
+                    if (_hasDirectorDetails) ...[
+                      const SizedBox(height: 16.0),
+                      _buildField(label: 'Director First Name', controller: _dirFirstNameCtrl, isRequired: true),
+                      _buildField(label: 'Director Last Name', controller: _dirLastNameCtrl, isRequired: true),
+                      _buildField(label: 'Personal Mail ID', controller: _dirEmailCtrl, isRequired: true, keyboardType: TextInputType.emailAddress),
+                      _buildField(
+                        label: 'Director Phone Number',
+                        controller: _contactNumberCtrl,
+                        isRequired: true,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Phone is required';
+                          if (!RegExp(r'^\d{10}$').hasMatch(v)) return 'Enter valid 10-digit number';
+                          return null;
+                        },
+                      ),
+                      _buildField(
+                        label: 'Mobile Number',
+                        controller: _dirMobileCtrl,
+                        isRequired: true,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Mobile is required';
+                          if (!RegExp(r'^\d{10}$').hasMatch(v)) return 'Enter valid 10-digit number';
+                          return null;
+                        },
+                      ),
+                      _buildField(label: 'Designation', controller: _designationCtrl, isRequired: true),
+                    ],
+                    const SizedBox(height: 24.0),
+                    Text('Applicant & Company Documents', style: GoogleFonts.outfit( fontSize: 18.0, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
                     const SizedBox(height: 16.0),
                     _buildFileRow('Upload Incorporation Certificate', _incorpCertFile, 'incorpCert'),
+                    _buildFileRow('Upload GST Document', _gstDocumentFile, 'gstDocument'),
                     _buildFileRow('Upload PAN Card of Company', _panCardFile, 'panCard'),
                     _buildFileRow('Upload Address Proof (Utility bill / Bank statement)', _addressProofFile, 'addressProof'),
 

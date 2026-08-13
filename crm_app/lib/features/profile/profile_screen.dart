@@ -606,6 +606,7 @@ class _BiometricTile extends ConsumerStatefulWidget {
 class _BiometricTileState extends ConsumerState<_BiometricTile> {
   bool _isAvailable = false;
   bool _isEnabled = false;
+  bool _isPinEnabled = false;
   bool _isLoading = true;
 
   @override
@@ -617,11 +618,19 @@ class _BiometricTileState extends ConsumerState<_BiometricTile> {
   Future<void> _checkBiometrics() async {
     final util = ref.read(biometricProvider);
     final available = await util.isBiometricAvailable();
+    final pinEnabled = await util.isPinEnabled();
+    
     if (available) {
       final enabled = await util.isBiometricEnabled();
       setState(() {
         _isAvailable = true;
         _isEnabled = enabled;
+        _isPinEnabled = pinEnabled;
+      });
+    } else {
+      setState(() {
+        _isAvailable = false;
+        _isPinEnabled = pinEnabled;
       });
     }
     setState(() {
@@ -633,7 +642,6 @@ class _BiometricTileState extends ConsumerState<_BiometricTile> {
     final util = ref.read(biometricProvider);
     
     if (value) {
-      // Trying to turn ON
       final authSuccess = await util.authenticate(reason: 'Authenticate to enable biometric login');
       if (authSuccess) {
         await util.setBiometricEnabled(true);
@@ -641,7 +649,6 @@ class _BiometricTileState extends ConsumerState<_BiometricTile> {
           _isEnabled = true;
         });
       } else {
-        // Authentication failed or canceled, don't enable
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -652,18 +659,64 @@ class _BiometricTileState extends ConsumerState<_BiometricTile> {
         }
       }
     } else {
-      // Trying to turn OFF
       await util.setBiometricEnabled(false);
       setState(() {
         _isEnabled = false;
       });
     }
   }
+  
+  Future<void> _togglePin(bool value) async {
+    final util = ref.read(biometricProvider);
+    
+    if (value) {
+      // Show dialog to set PIN
+      final pin = await showDialog<String>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const _SetPinDialog(),
+      );
+      
+      if (pin != null && pin.length == 4) {
+        await util.setAppPin(pin);
+        setState(() {
+          _isPinEnabled = true;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('PIN security enabled successfully.'))
+          );
+        }
+      }
+    } else {
+      // Turn off PIN
+      await util.removeAppPin();
+      setState(() {
+        _isPinEnabled = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading || !_isAvailable) {
-      return const SizedBox.shrink(); // Don't show if loading or not available
+    if (_isLoading) {
+      return const SizedBox.shrink();
+    }
+
+    if (!_isAvailable) {
+      return ProfileTile(
+        icon: Icons.pin_outlined,
+        title: '4-Digit PIN Security',
+        subtitle: 'Set a PIN to lock and secure the app',
+        trailing: Switch(
+          value: _isPinEnabled,
+          onChanged: _togglePin,
+          activeColor: AppTheme.corporateBlue,
+        ),
+        onTap: () {
+          _togglePin(!_isPinEnabled);
+        },
+      );
     }
 
     return ProfileTile(
@@ -681,4 +734,79 @@ class _BiometricTileState extends ConsumerState<_BiometricTile> {
     );
   }
 }
+
+class _SetPinDialog extends StatefulWidget {
+  const _SetPinDialog();
+
+  @override
+  State<_SetPinDialog> createState() => _SetPinDialogState();
+}
+
+class _SetPinDialogState extends State<_SetPinDialog> {
+  final _pinController = TextEditingController();
+  final _confirmController = TextEditingController();
+  bool _isConfirming = false;
+  String _error = '';
+
+  void _submit() {
+    setState(() => _error = '');
+    if (!_isConfirming) {
+      if (_pinController.text.length != 4) {
+        setState(() => _error = 'PIN must be 4 digits');
+        return;
+      }
+      setState(() => _isConfirming = true);
+    } else {
+      if (_confirmController.text != _pinController.text) {
+        setState(() {
+          _error = 'PINs do not match. Try again.';
+          _confirmController.clear();
+        });
+        return;
+      }
+      Navigator.pop(context, _pinController.text);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(_isConfirming ? 'Confirm PIN' : 'Set 4-Digit PIN'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextFormField(
+            controller: _isConfirming ? _confirmController : _pinController,
+            keyboardType: TextInputType.number,
+            obscureText: true,
+            maxLength: 4,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: 'Enter 4 digits',
+              counterText: '',
+            ),
+            onChanged: (val) {
+              if (val.length == 4) _submit();
+            },
+          ),
+          if (_error.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(_error, style: const TextStyle(color: Colors.red, fontSize: 12)),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: _submit,
+          child: Text(_isConfirming ? 'Confirm' : 'Next'),
+        ),
+      ],
+    );
+  }
+}
+
 

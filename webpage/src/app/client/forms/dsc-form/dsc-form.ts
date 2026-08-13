@@ -45,6 +45,8 @@ export class DscForm implements OnInit {
   applicantPhone = '';
   organizationName = '';
   organizationType = '';
+  applicantPanNumber = '';
+  applicantDob = '';
   officeAddress = '';
   courierAddress = '';
 
@@ -209,6 +211,8 @@ export class DscForm implements OnInit {
       applicantPhone: this.applicantPhone,
       organizationName: this.organizationName,
       organizationType: this.organizationType,
+      applicantPanNumber: this.applicantPanNumber,
+      applicantDob: this.applicantDob,
       officeAddress: this.officeAddress,
       courierAddress: this.courierAddress,
     };
@@ -217,7 +221,7 @@ export class DscForm implements OnInit {
   }
 
   submitForm() {
-    if (!this.applicantName || !this.applicantMail || !this.applicantPhone || !this.organizationName || !this.organizationType || !this.officeAddress || !this.courierAddress) {
+    if (!this.applicantName || !this.applicantMail || !this.applicantPhone || !this.organizationName || !this.organizationType || !this.officeAddress || !this.courierAddress || !this.applicantPanNumber || !this.applicantDob) {
       this.errorMessage.set('Please fill all required text fields.');
       return;
     }
@@ -262,6 +266,8 @@ export class DscForm implements OnInit {
     formData.append('applicantPhone', this.applicantPhone);
     formData.append('organizationName', this.organizationName);
     formData.append('organizationType', this.organizationType);
+    formData.append('applicantPanNumber', this.applicantPanNumber);
+    formData.append('applicantDob', this.applicantDob);
     formData.append('officeAddress', this.officeAddress);
     formData.append('courierAddress', this.courierAddress);
 

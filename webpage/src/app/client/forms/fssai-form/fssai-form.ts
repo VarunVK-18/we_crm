@@ -18,6 +18,16 @@ import { DraftService } from '../../../services/draft.service';
   styleUrl: '../forms-shared.css',
 })
 export class FssaiForm implements OnInit {
+  companyPanNumber: string = '';
+  aadhaarNumber: string = '';
+
+  onFileChange(event: any, fieldName: string) {
+    if (event.target.files && event.target.files.length > 0) {
+      const file = event.target.files[0];
+      (this as any)[fieldName] = file;
+    }
+  }
+
   currentUser: any = null;
   existingDocs: any = {};
   removeExistingDoc(fieldName: string) { delete this.existingDocs[fieldName]; }

@@ -13,7 +13,7 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-gst-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './gst-form.html',
   styleUrl: '../forms-shared.css',
 })
@@ -39,46 +39,83 @@ export class GstForm implements OnInit {
   isSuccess = signal<boolean>(false);
   errorMessage = signal<string>('');
 
-  // Trade Details
-  tradeName = '';
-  commenceDate = '';
+  // 1. Business Information
+  legalName = '';
+  panOfBusiness = '';
   businessEmail = '';
   businessPhone = '';
+  tradeName = '';
+  incorpDate = '';
+  incorpCert?: File;
 
-  // Personal Information
-  fullName = '';
-  fatherName = '';
-  dob = '';
-  personalPhone = '';
-  personalEmail = '';
-  gender = 'Male';
-  din = '';
-  pan = '';
-  residentialAddress = '';
-  
-  photoFile?: File;
+  // 2. Director 1 Personal Information
+  dir1FullName = '';
+  dir1FatherName = '';
+  dir1Dob = '';
+  dir1Phone = '';
+  dir1Mail = '';
+  dir1Gender = 'Male';
+  dir1Din = '';
+  dir1Pan = '';
+  dir1Address = '';
+  dir1AuthSignatory = 'No';
 
-  // Business Details
+  // 3. Director 1 Documents
+  dir1Photo?: File;
+  dir1AuthSignatoryDoc?: File; // conditional
+
+  // 5. Director 2 Personal Information
+  hasDirector2 = 'No';
+  dir2FullName = '';
+  dir2FatherName = '';
+  dir2Dob = '';
+  dir2Phone = '';
+  dir2Mail = '';
+  dir2Gender = 'Male';
+  dir2Din = '';
+  dir2Pan = '';
+  dir2Address = '';
+  dir2AuthSignatory = 'No';
+
+  // 6. Director 2 Documents
+  dir2Photo?: File;
+  dir2AuthSignatoryDoc?: File; // conditional
+
+  // 7. Business Details
   businessAddress = '';
-  district = '';
   premisesType = 'Own';
-  
-  ebBillFile?: File;
-  houseTaxReceiptFile?: File;
-  rentalAgreementFile?: File;
+  businessDescription = '';
 
-  // Bank Details
+  // 8. Business Property Documents
+  ebBill?: File;
+  rentalAgreement?: File; // conditional
+  propertyTaxReceipt?: File; // conditional
+
+  // 9. Additional Business Places
+  hasAdditionalPlaces = 'No';
+  secondPlaceAddress = '';
+  thirdPlaceAddress = '';
+
+  // 10. Company Document
+  companyPanFile?: File;
+
+  // 11. Bank Details
   accountNumber = '';
+  accountType = 'Current';
   ifscCode = '';
-  branch = '';
 
+  accountTypeOptions = ['Current', 'Savings', 'Cash Credit', 'Overdraft'];
+
+  // 12. Bank Documents
+  bankDocument?: File;
+
+  // 13. Declaration
   isDeclared = false;
 
   constructor(private route: ActivatedRoute,
     private router: Router,
     public location: Location,
-    private api: Api
-  ,
+    private api: Api,
     private draftService: DraftService,
     private confirmDialog: ConfirmDialogService) {}
 
@@ -86,7 +123,7 @@ export class GstForm implements OnInit {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
-          // Auto-fill from user profile
+    // Auto-fill from user profile
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -94,104 +131,66 @@ export class GstForm implements OnInit {
         this.currentUser = user;
         
         if (user.owner_name) {
-          if ('fullName' in this) (this as any).fullName = user.owner_name;
-          else if ('applicantName' in this) (this as any).applicantName = user.owner_name;
-          else if ('proprietorName' in this) (this as any).proprietorName = user.owner_name;
-          else if ('directorName' in this) (this as any).directorName = user.owner_name;
+          this.dir1FullName = user.owner_name;
         }
-
         if (user.email) {
-          if ('emailId' in this) (this as any).emailId = user.email;
-          else if ('email' in this) (this as any).email = user.email;
+          this.businessEmail = user.email;
+          this.dir1Mail = user.email;
         }
-
         if (user.phone) {
-          if ('mobileNumber' in this) (this as any).mobileNumber = user.phone;
-          else if ('mobile' in this) (this as any).mobile = user.phone;
-          else if ('contactNumber' in this) (this as any).contactNumber = user.phone;
+          this.businessPhone = user.phone;
+          this.dir1Phone = user.phone;
         }
-
         if (user.company_name) {
-          if ('businessName' in this) (this as any).businessName = user.company_name;
-          else if ('companyName' in this) (this as any).companyName = user.company_name;
-          else if ('entityName' in this) (this as any).entityName = user.company_name;
+          this.legalName = user.company_name;
         }
-
-        if (user.business_type) {
-          if ('businessType' in this) (this as any).businessType = user.business_type;
-          else if ('entityType' in this) (this as any).entityType = user.business_type;
-        }
-
         if (user.pan) {
-          if ('panNumber' in this) (this as any).panNumber = user.pan;
-          else if ('pan' in this) (this as any).pan = user.pan;
+          this.panOfBusiness = user.pan;
+          this.dir1Pan = user.pan;
         }
+        
         if (user.onboarding_documents) {
           const docs = user.onboarding_documents;
           const keywordMap: any = {
-            'panCard': ['pan'],
-            'panFile': ['pan'],
-            'addressProof': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'addressProofFile': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'businessAddressProof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
             'incorpCert': ['incorporation', 'incorp'],
-            'photoFile': ['photo', 'passport size'],
-            'passportPhoto': ['photo', 'passport size'],
-            'aadhaarFile': ['aadhaar'],
-            'identityProof': ['identity', 'id proof'],
-            'cancelledCheque': ['cheque', 'bank'],
-            'authSignatoryProof': ['authorization', 'signatory'],
-            'signatureFile': ['signature'],
-            'trademarkLogo': ['logo', 'brand'],
-            'msmeCert': ['msme', 'udyam'],
-            'gstCert': ['gst']
+            'companyPanFile': ['company pan', 'pan card', 'pan'],
+            'dir1Photo': ['photo', 'passport size'],
+            'ebBill': ['eb bill', 'electricity'],
+            'rentalAgreement': ['rent agreement', 'rental'],
+            'propertyTaxReceipt': ['property tax', 'house tax'],
+            'bankDocument': ['bank statement', 'cancelled cheque', 'passbook'],
+            'dir1AuthSignatoryDoc': ['authorization', 'signatory']
           };
           
           for (const field of Object.keys(keywordMap)) {
             const keywords = keywordMap[field];
-            const eName = (this as any).companyName || (this as any).enterpriseName || (this as any).entityName || (this as any).businessName || '';
+            const eName = this.legalName || '';
             const matchedDoc = DocumentMatcher.findExistingDoc(eName, docs, keywords);
             if (matchedDoc) {
               this.existingDocs[field] = matchedDoc;
             }
           }
         }
-
       } catch(e) {}
     }
 
     const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
-      if (draft) {
-        if (draft.tradeName !== undefined) this.tradeName = draft.tradeName;
-        if (draft.commenceDate !== undefined) this.commenceDate = draft.commenceDate;
-        if (draft.businessEmail !== undefined) this.businessEmail = draft.businessEmail;
-        if (draft.businessPhone !== undefined) this.businessPhone = draft.businessPhone;
-        if (draft.fullName !== undefined) this.fullName = draft.fullName;
-        if (draft.fatherName !== undefined) this.fatherName = draft.fatherName;
-        if (draft.dob !== undefined) this.dob = draft.dob;
-        if (draft.personalPhone !== undefined) this.personalPhone = draft.personalPhone;
-        if (draft.personalEmail !== undefined) this.personalEmail = draft.personalEmail;
-        if (draft.gender !== undefined) this.gender = draft.gender;
-        if (draft.din !== undefined) this.din = draft.din;
-        if (draft.pan !== undefined) this.pan = draft.pan;
-        if (draft.residentialAddress !== undefined) this.residentialAddress = draft.residentialAddress;
-        if (draft.businessAddress !== undefined) this.businessAddress = draft.businessAddress;
-        if (draft.district !== undefined) this.district = draft.district;
-        if (draft.premisesType !== undefined) this.premisesType = draft.premisesType;
-        if (draft.accountNumber !== undefined) this.accountNumber = draft.accountNumber;
-        if (draft.ifscCode !== undefined) this.ifscCode = draft.ifscCode;
-        if (draft.branch !== undefined) this.branch = draft.branch;
-      }
+    if (draft) {
+      Object.assign(this, draft);
+    }
   }
 
   onFileSelected(event: any, fieldName: string) {
     const file = event.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
+    const maxSize = (fieldName.includes('Photo')) ? 1 * 1024 * 1024 : 2 * 1024 * 1024;
+    const sizeError = (fieldName.includes('Photo')) ? '1 MB' : '2 MB';
+
+    if (file.size > maxSize) {
       this.confirmDialog.confirm({
         title: 'File Too Large',
-        message: 'Please upload a file that is 2 MB or smaller.',
+        message: 'Please upload a file that is ' + sizeError + ' or smaller.',
         confirmText: 'Okay',
         hideCancel: true,
         isDestructive: true
@@ -200,10 +199,7 @@ export class GstForm implements OnInit {
       return;
     }
 
-    if (fieldName === 'photo') this.photoFile = file;
-    else if (fieldName === 'ebBill') this.ebBillFile = file;
-    else if (fieldName === 'houseTaxReceipt') this.houseTaxReceiptFile = file;
-    else if (fieldName === 'rentalAgreement') this.rentalAgreementFile = file;
+    (this as any)[fieldName] = file;
   }
 
   async goBack() {
@@ -213,67 +209,88 @@ export class GstForm implements OnInit {
       confirmText: 'Save Draft',
       cancelText: 'Leave without saving'
     });
-    if (shouldDraft === null) {
-      return;
-    }
-    if (shouldDraft) {
-      this.saveDraft();
-    }
+    if (shouldDraft === null) return;
+    if (shouldDraft) this.saveDraft();
     this.location.back();
   }
 
-  
   saveDraft() {
     const draftData = {
-      tradeName: this.tradeName,
-      commenceDate: this.commenceDate,
+      legalName: this.legalName,
+      panOfBusiness: this.panOfBusiness,
       businessEmail: this.businessEmail,
       businessPhone: this.businessPhone,
-      fullName: this.fullName,
-      fatherName: this.fatherName,
-      dob: this.dob,
-      personalPhone: this.personalPhone,
-      personalEmail: this.personalEmail,
-      gender: this.gender,
-      din: this.din,
-      pan: this.pan,
-      residentialAddress: this.residentialAddress,
+      tradeName: this.tradeName,
+      incorpDate: this.incorpDate,
+      dir1FullName: this.dir1FullName,
+      dir1FatherName: this.dir1FatherName,
+      dir1Dob: this.dir1Dob,
+      dir1Phone: this.dir1Phone,
+      dir1Mail: this.dir1Mail,
+      dir1Gender: this.dir1Gender,
+      dir1Din: this.dir1Din,
+      dir1Pan: this.dir1Pan,
+      dir1Address: this.dir1Address,
+      dir1AuthSignatory: this.dir1AuthSignatory,
+      hasDirector2: this.hasDirector2,
+      dir2FullName: this.dir2FullName,
+      dir2FatherName: this.dir2FatherName,
+      dir2Dob: this.dir2Dob,
+      dir2Phone: this.dir2Phone,
+      dir2Mail: this.dir2Mail,
+      dir2Gender: this.dir2Gender,
+      dir2Din: this.dir2Din,
+      dir2Pan: this.dir2Pan,
+      dir2Address: this.dir2Address,
+      dir2AuthSignatory: this.dir2AuthSignatory,
       businessAddress: this.businessAddress,
-      district: this.district,
       premisesType: this.premisesType,
+      businessDescription: this.businessDescription,
+      hasAdditionalPlaces: this.hasAdditionalPlaces,
+      secondPlaceAddress: this.secondPlaceAddress,
+      thirdPlaceAddress: this.thirdPlaceAddress,
       accountNumber: this.accountNumber,
-      ifscCode: this.ifscCode,
-      branch: this.branch,
+      accountType: this.accountType,
+      ifscCode: this.ifscCode
     };
     this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
     alert('Draft saved successfully!');
   }
 
   submitForm() {
-    if (!this.tradeName || !this.commenceDate || !this.businessEmail || !this.businessPhone ||
-        !this.fullName || !this.fatherName || !this.dob || !this.personalPhone || !this.personalEmail ||
-        !this.pan || !this.residentialAddress || !this.businessAddress || !this.district ||
-        !this.accountNumber || !this.ifscCode || !this.branch) {
+    // Basic validation
+    if (!this.legalName || !this.panOfBusiness || !this.businessEmail || !this.businessPhone || !this.incorpDate ||
+        !this.dir1FullName || !this.dir1FatherName || !this.dir1Dob || !this.dir1Phone || !this.dir1Mail || !this.dir1Din || !this.dir1Pan || !this.dir1Address ||
+        !this.businessAddress || !this.businessDescription || !this.accountNumber || !this.ifscCode) {
       this.errorMessage.set('Please fill all required text fields.');
       return;
     }
 
-    if (!this.photoFile) {
-      this.errorMessage.set('Please upload Photo.');
+    if (this.hasDirector2 === 'Yes') {
+      if (!this.dir2FullName || !this.dir2FatherName || !this.dir2Dob || !this.dir2Phone || !this.dir2Mail || !this.dir2Din || !this.dir2Pan || !this.dir2Address) {
+        this.errorMessage.set('Please fill all required text fields for Director 2.');
+        return;
+      }
+    }
+
+    if (this.hasAdditionalPlaces === 'Yes' && !this.secondPlaceAddress) {
+      this.errorMessage.set('Please fill Second Place of Business Address.');
       return;
     }
-    if (!this.ebBillFile) {
-      this.errorMessage.set('Please upload Latest EB Bill.');
-      return;
+
+    if (!this.incorpCert && !this.existingDocs['incorpCert']) { this.errorMessage.set('Please upload Incorporation Certificate.'); return; }
+    if (!this.companyPanFile && !this.existingDocs['companyPanFile']) { this.errorMessage.set('Please upload Company PAN.'); return; }
+    if (!this.dir1Photo && !this.existingDocs['dir1Photo']) { this.errorMessage.set('Please upload Director 1 Photo.'); return; }
+    if (this.dir1AuthSignatory === 'Yes' && !this.dir1AuthSignatoryDoc && !this.existingDocs['dir1AuthSignatoryDoc']) { this.errorMessage.set('Please upload Director 1 Authorized Signatory Proof.'); return; }
+    
+    if (this.hasDirector2 === 'Yes') {
+      if (!this.dir2Photo && !this.existingDocs['dir2Photo']) { this.errorMessage.set('Please upload Director 2 Photo.'); return; }
+      if (this.dir2AuthSignatory === 'Yes' && !this.dir2AuthSignatoryDoc && !this.existingDocs['dir2AuthSignatoryDoc']) { this.errorMessage.set('Please upload Director 2 Authorized Signatory Proof.'); return; }
     }
-    if (this.premisesType === 'Own' && !this.houseTaxReceiptFile) {
-      this.errorMessage.set('Please upload House Tax Receipt.');
-      return;
-    }
-    if (this.premisesType === 'Rent' && !this.rentalAgreementFile) {
-      this.errorMessage.set('Please upload Rental Agreement.');
-      return;
-    }
+
+    if (this.premisesType === 'Rent' && !this.rentalAgreement && !this.existingDocs['rentalAgreement']) { this.errorMessage.set('Please upload Rental Agreement.'); return; }
+    if (this.premisesType === 'Own' && !this.propertyTaxReceipt && !this.existingDocs['propertyTaxReceipt']) { this.errorMessage.set('Please upload Property Tax Receipt.'); return; }
+    if (!this.bankDocument && !this.existingDocs['bankDocument']) { this.errorMessage.set('Please upload Bank Document.'); return; }
 
     if (!this.isDeclared) {
       this.errorMessage.set('Please check the declaration checkbox.');
@@ -284,36 +301,73 @@ export class GstForm implements OnInit {
     this.errorMessage.set('');
 
     const formData = new FormData();
-    formData.append('tradeName', this.tradeName);
-    formData.append('commenceDate', this.commenceDate);
+    formData.append('legalName', this.legalName);
+    formData.append('panOfBusiness', this.panOfBusiness);
     formData.append('businessEmail', this.businessEmail);
     formData.append('businessPhone', this.businessPhone);
-    
-    formData.append('fullName', this.fullName);
-    formData.append('fatherName', this.fatherName);
-    formData.append('dob', this.dob);
-    formData.append('personalPhone', this.personalPhone);
-    formData.append('personalEmail', this.personalEmail);
-    formData.append('gender', this.gender);
-    formData.append('din', this.din);
-    formData.append('pan', this.pan);
-    formData.append('residentialAddress', this.residentialAddress);
-    
-    formData.append('businessAddress', this.businessAddress);
-    formData.append('district', this.district);
-    formData.append('premisesType', this.premisesType);
-    
-    formData.append('accountNumber', this.accountNumber);
-    formData.append('ifscCode', this.ifscCode);
-    formData.append('branch', this.branch);
+    formData.append('tradeName', this.tradeName);
+    formData.append('incorpDate', this.incorpDate);
+    formData.append('dir1FullName', this.dir1FullName);
+    formData.append('dir1FatherName', this.dir1FatherName);
+    formData.append('dir1Dob', this.dir1Dob);
+    formData.append('dir1Phone', this.dir1Phone);
+    formData.append('dir1Mail', this.dir1Mail);
+    formData.append('dir1Gender', this.dir1Gender);
+    formData.append('dir1Din', this.dir1Din);
+    formData.append('dir1Pan', this.dir1Pan);
+    formData.append('dir1Address', this.dir1Address);
+    formData.append('dir1AuthSignatory', this.dir1AuthSignatory);
 
-    formData.append('photo', this.photoFile as File);
-    formData.append('ebBill', this.ebBillFile as File);
-    if (this.premisesType === 'Own' && this.houseTaxReceiptFile) {
-      formData.append('houseTaxReceipt', this.houseTaxReceiptFile as File);
-    } else if (this.premisesType === 'Rent' && this.rentalAgreementFile) {
-      formData.append('rentalAgreement', this.rentalAgreementFile as File);
+    formData.append('hasDirector2', this.hasDirector2);
+    if (this.hasDirector2 === 'Yes') {
+      formData.append('dir2FullName', this.dir2FullName);
+      formData.append('dir2FatherName', this.dir2FatherName);
+      formData.append('dir2Dob', this.dir2Dob);
+      formData.append('dir2Phone', this.dir2Phone);
+      formData.append('dir2Mail', this.dir2Mail);
+      formData.append('dir2Gender', this.dir2Gender);
+      formData.append('dir2Din', this.dir2Din);
+      formData.append('dir2Pan', this.dir2Pan);
+      formData.append('dir2Address', this.dir2Address);
+      formData.append('dir2AuthSignatory', this.dir2AuthSignatory);
     }
+
+    formData.append('businessAddress', this.businessAddress);
+    formData.append('premisesType', this.premisesType);
+    formData.append('businessDescription', this.businessDescription);
+
+    formData.append('hasAdditionalPlaces', this.hasAdditionalPlaces);
+    if (this.hasAdditionalPlaces === 'Yes') {
+      formData.append('secondPlaceAddress', this.secondPlaceAddress);
+      formData.append('thirdPlaceAddress', this.thirdPlaceAddress);
+    }
+
+    formData.append('accountNumber', this.accountNumber);
+    formData.append('accountType', this.accountType);
+    formData.append('ifscCode', this.ifscCode);
+
+    const appendDoc = (fileVar: any, existingKey: string, formKey: string, isImage = false) => {
+      if (fileVar) {
+        formData.append(formKey, fileVar as File);
+      } else if (this.existingDocs[existingKey]) {
+        formData.append(formKey + '_existing', this.existingDocs[existingKey].fileUrl);
+      }
+    };
+
+    appendDoc(this.incorpCert, 'incorpCert', 'incorpCert');
+    appendDoc(this.companyPanFile, 'companyPanFile', 'companyPanFile');
+    appendDoc(this.dir1Photo, 'dir1Photo', 'dir1Photo', true);
+    if (this.dir1AuthSignatory === 'Yes') appendDoc(this.dir1AuthSignatoryDoc, 'dir1AuthSignatoryDoc', 'dir1AuthSignatoryDoc');
+    
+    if (this.hasDirector2 === 'Yes') {
+      appendDoc(this.dir2Photo, 'dir2Photo', 'dir2Photo', true);
+      if (this.dir2AuthSignatory === 'Yes') appendDoc(this.dir2AuthSignatoryDoc, 'dir2AuthSignatoryDoc', 'dir2AuthSignatoryDoc');
+    }
+
+    appendDoc(this.ebBill, 'ebBill', 'ebBill');
+    if (this.premisesType === 'Rent') appendDoc(this.rentalAgreement, 'rentalAgreement', 'rentalAgreement');
+    if (this.premisesType === 'Own') appendDoc(this.propertyTaxReceipt, 'propertyTaxReceipt', 'propertyTaxReceipt');
+    appendDoc(this.bankDocument, 'bankDocument', 'bankDocument');
 
     this.api.post(`orders/${this.orderId()}/submit-gst-form`, formData).subscribe({
       next: (res: any) => {
@@ -334,8 +388,6 @@ export class GstForm implements OnInit {
   }
 
   onEntityNameChange(newName: string) {
-    if (this.currentUser) {
-      AutoFillUtils.autoFillTextData(this, newName, this.currentUser);
-    }
+    if (this.currentUser) AutoFillUtils.autoFillTextData(this, newName, this.currentUser);
   }
 }

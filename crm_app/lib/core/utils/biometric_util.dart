@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _kBiometricEnabledKey = 'biometric_enabled';
+const String _kAppPinKey = 'app_pin';
 
 final biometricProvider = Provider<BiometricUtil>((ref) {
   return BiometricUtil();
@@ -42,5 +43,25 @@ class BiometricUtil {
   Future<void> setBiometricEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kBiometricEnabledKey, enabled);
+  }
+
+  Future<bool> isPinEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kAppPinKey) != null;
+  }
+  
+  Future<String?> getAppPin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kAppPinKey);
+  }
+  
+  Future<void> setAppPin(String pin) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kAppPinKey, pin);
+  }
+  
+  Future<void> removeAppPin() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kAppPinKey);
   }
 }

@@ -147,7 +147,665 @@
       </section>
       }
 
-      <!-- General Details Section -->
+      
+      <!-- DSC FORM -->
+      @if (checklist().details?.dscForm) {
+        <div class="pf-form-details fade-in" style="margin-top: 16px;">
+          <div class="pf-header">
+            <h3><span class="material-symbols-outlined">badge</span> Digital Signature Certificate (DSC) Details</h3>
+          </div>
+          
+          <div class="pf-section">
+            <h4>1. Organization Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Applying For</span>
+                <span class="pf-value">{{ checklist().details.dscForm.applyingFor || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Organization Name</span>
+                <span class="pf-value">{{ checklist().details.dscForm.organizationName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Organization Type</span>
+                <span class="pf-value">{{ checklist().details.dscForm.organizationType || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Office Address</span>
+                <span class="pf-value">{{ checklist().details.dscForm.officeAddress || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>2. Applicant Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Applicant Name (As per PAN)</span>
+                <span class="pf-value">{{ checklist().details.dscForm.applicantName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Applicant PAN Number</span>
+                <span class="pf-value">{{ checklist().details.dscForm.applicantPanNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Applicant DOB</span>
+                <span class="pf-value">{{ checklist().details.dscForm.applicantDob || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Applicant Mail ID</span>
+                <span class="pf-value">{{ checklist().details.dscForm.applicantMail || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Applicant Phone Number</span>
+                <span class="pf-value">{{ checklist().details.dscForm.applicantPhone || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>3. Courier Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Courier Address</span>
+                <span class="pf-value">{{ checklist().details.dscForm.courierAddress || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>4. Uploaded Documents</h4>
+            <div class="pf-grid">
+              @if (checklist().details.dscDocs && checklist().details.dscDocs.length > 0) {
+                @for (doc of checklist().details.dscDocs; track doc.name) {
+                  <div class="pf-field">
+                    <span class="pf-label">{{ doc.name }}</span>
+                    <a [href]="getFileUrl(doc.fileUrl)" target="_blank" class="doc-link">
+                      <span class="material-symbols-outlined">description</span> View Document
+                    </a>
+                  </div>
+                }
+              } @else {
+                <div class="pf-field">
+                  <span class="pf-label">Documents</span>
+                  <span class="pf-value">No documents uploaded</span>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- FSSAI FORM -->
+      @if (checklist().details?.fssaiForm) {
+        <div class="pf-form-details fade-in" style="margin-top: 16px;">
+          <div class="pf-header">
+            <h3><span class="material-symbols-outlined">restaurant</span> FSSAI / Food License Details</h3>
+          </div>
+          
+          <div class="pf-section">
+            <h4>1. Food Business Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Nature of Food Business</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.natureOfFoodBusiness?.join(', ') || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>2. Business Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Expected Annual Turnover</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.annualTurnover || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Type of Business</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.businessType || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Name of Business</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.businessName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Company PAN Number</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.companyPanNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Business Start Date</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.startDate || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>3. Applicant Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Full Name</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.fullName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Aadhaar Number</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.aadhaarNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Mobile Number</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.mobile || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Email ID</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.email || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">No. of Employees</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.employees || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>4. Premises Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Address of Premises</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.premisesAddress || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Premises Type</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.premisesType || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>5. Address Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Is Correspondence Address Same as Premises?</span>
+                <span class="pf-value">{{ checklist().details.fssaiForm.isCorrespondenceSame || 'N/A' }}</span>
+              </div>
+              @if (checklist().details.fssaiForm.isCorrespondenceSame === 'No') {
+                <div class="pf-field full-width">
+                  <span class="pf-label">Correspondence Address</span>
+                  <span class="pf-value">{{ checklist().details.fssaiForm.corrAddress || 'N/A' }}</span>
+                </div>
+              } @else {
+                <div class="pf-field full-width">
+                  <span class="pf-hint">Correspondence Address is the same as the Premises Address.</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>6. Uploaded Documents</h4>
+            <div class="pf-grid">
+              @if (checklist().details.fssaiDocs && checklist().details.fssaiDocs.length > 0) {
+                @for (doc of checklist().details.fssaiDocs; track doc.name) {
+                  <div class="pf-field">
+                    <span class="pf-label">{{ doc.name }}</span>
+                    <a [href]="getFileUrl(doc.fileUrl)" target="_blank" class="doc-link">
+                      <span class="material-symbols-outlined">description</span> View Document
+                    </a>
+                  </div>
+                }
+              } @else {
+                <div class="pf-field">
+                  <span class="pf-label">Documents</span>
+                  <span class="pf-value">No documents uploaded</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>7. Declaration</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Client Verification Status</span>
+                <span class="pf-value" style="color: green; font-weight: 600;">Accepted</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- LEI CODE FORM -->
+      @if (checklist().details?.leiForm) {
+        <div class="pf-form-details fade-in" style="margin-top: 16px;">
+          <div class="pf-header">
+            <h3><span class="material-symbols-outlined">fingerprint</span> LEI Code Details</h3>
+          </div>
+          
+          <div class="pf-section">
+            <h4>1. Company Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Company Name</span>
+                <span class="pf-value">{{ checklist().details.leiForm.companyName || checklist().details.leiForm.companyLegalName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">CIN Number</span>
+                <span class="pf-value">{{ checklist().details.leiForm.cinNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Company Address</span>
+                <span class="pf-value">{{ checklist().details.leiForm.companyAddress || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>2. Applicant Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Applicant's Full Name</span>
+                <span class="pf-value">{{ checklist().details.leiForm.applicantName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Business Email</span>
+                <span class="pf-value">{{ checklist().details.leiForm.email || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Business Phone Number</span>
+                <span class="pf-value">{{ checklist().details.leiForm.businessPhone || checklist().details.leiForm.whatsapp || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>3. Company Documents</h4>
+            <div class="pf-grid">
+              @if (checklist().details.leiDocs && checklist().details.leiDocs.length > 0) {
+                @for (doc of checklist().details.leiDocs; track doc.name) {
+                  @if (doc.name === 'Incorporation Certificate') {
+                    <div class="pf-field">
+                      <span class="pf-label">{{ doc.name }}</span>
+                      <a [href]="getFileUrl(doc.fileUrl)" target="_blank" class="doc-link">
+                        <span class="material-symbols-outlined">description</span> View Document
+                      </a>
+                    </div>
+                  }
+                }
+              } @else {
+                <div class="pf-field">
+                  <span class="pf-label">Incorporation Certificate</span>
+                  <span class="pf-value">Not uploaded</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>4. Declaration</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Client Verification Status</span>
+                <span class="pf-value" style="color: green; font-weight: 600;">Accepted</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- DPIIT FORM -->
+      @if (checklist().details?.dpiitForm) {
+        <div class="pf-form-details fade-in" style="margin-top: 16px;">
+          <div class="pf-header">
+            <h3><span class="material-symbols-outlined">rocket_launch</span> DPIIT Details</h3>
+          </div>
+          
+          <div class="pf-section">
+            <h4>1. DSC & Company Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Organization DSC Selection</span>
+                <span class="pf-value" [ngStyle]="{'color': checklist().details.dpiitForm.orgDsc === 'No, I want one' ? '#e65100' : 'inherit', 'font-weight': checklist().details.dpiitForm.orgDsc === 'No, I want one' ? '600' : 'normal'}">
+                  {{ checklist().details.dpiitForm.orgDsc || 'Yes' }}
+                </span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Full Name</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.fullName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Company Email</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.companyEmail || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Company Mobile Number</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.companyMobile || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">CIN Number</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.cinNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Company PAN Number</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.companyPan || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Company PAN Card Name</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.companyPanName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Business Address</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.companyAddress || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>2. Authorized Signatory Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">PAN of Authorized Signatory</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.signatoryPan || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">PAN First Name</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.signatoryFirstName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">PAN Last Name</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.signatoryLastName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">PAN DOB</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.signatoryDob || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>3. Company / Business Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Brief about Company</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.companyBrief || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Company Website</span>
+                <span class="pf-value">
+                  <a [href]="checklist().details.dpiitForm.companyWebsite" target="_blank" *ngIf="checklist().details.dpiitForm.companyWebsite">{{ checklist().details.dpiitForm.companyWebsite }}</a>
+                  <span *ngIf="!checklist().details.dpiitForm.companyWebsite">N/A</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>4. Authorized Representative Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">Authorized Representative Name</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.repName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Authorized Representative Mobile</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.repMobile || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Authorized Representative Email</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.repEmail || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>5. Director / Founder Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">Director Name</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.directorName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Director Gender</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.directorGender || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Director Mobile Number</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.directorMobile || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Email Address</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.directorEmail || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">DOB of Founder / Director</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.directorDob || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Current Number of Employees</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.employeeCount || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Director Address</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.directorAddress || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>6. Startup Information</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Applied for IPR?</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.iprApplied || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Received any Funds?</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.fundsReceived || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Received any Awards?</span>
+                <span class="pf-value">{{ checklist().details.dpiitForm.awardsReceived || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>7. Company Documents</h4>
+            <div class="pf-grid">
+              @if (checklist().details.dpiitDocs && checklist().details.dpiitDocs.length > 0) {
+                @for (doc of checklist().details.dpiitDocs; track doc.name) {
+                  <div class="pf-field">
+                    <span class="pf-label">{{ doc.name }}</span>
+                    <a [href]="getFileUrl(doc.fileUrl)" target="_blank" class="doc-link">
+                      <span class="material-symbols-outlined">description</span> View {{ doc.name }}
+                    </a>
+                  </div>
+                }
+              } @else {
+                <div class="pf-field">
+                  <span class="pf-label">Documents</span>
+                  <span class="pf-value">Not uploaded</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>8. Verification</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Client Verification Status</span>
+                <span class="pf-value" style="color: green; font-weight: 600;">Accepted</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- MSME FORM -->
+      @if (checklist().details?.msmeForm) {
+        <div class="pf-form-details fade-in" style="margin-top: 16px;">
+          <div class="pf-header">
+            <h3><span class="material-symbols-outlined">assured_workload</span> MSME / Udyam Details</h3>
+          </div>
+          
+          <div class="pf-section">
+            <h4>1. Applicant / Entrepreneur Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">Aadhar Number</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.aadhaarNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Name of Entrepreneur</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.entrepreneurName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Mobile Number</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.mobileNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Email</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.email || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>2. Organization Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Type of Organization</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.orgType || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Name of Enterprise</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.enterpriseName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Date of Incorporation</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.incorporationDate || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>3. PAN & GST Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">PAN</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.pan || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Name of PAN Holder</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.panName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">DOB OR DOI as per PAN</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.panDob || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Do you have GSTIN</span>
+                <span class="pf-value" [ngStyle]="{'color': checklist().details.msmeForm.hasGstin === 'Yes' ? 'green' : (checklist().details.msmeForm.hasGstin === 'No' ? 'red' : 'orange'), 'font-weight': 'bold'}">{{ checklist().details.msmeForm.hasGstin || 'N/A' }}</span>
+              </div>
+              @if (checklist().details.msmeForm.hasGstin === 'Yes') {
+                <div class="pf-field">
+                  <span class="pf-label">GST Number</span>
+                  <span class="pf-value">{{ checklist().details.msmeForm.gstinNumber || 'N/A' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>4. Business Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">Total Investment</span>
+                <span class="pf-value">₹{{ checklist().details.msmeForm.investment || '0' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Turnover (FY 25-26)</span>
+                <span class="pf-value">₹{{ checklist().details.msmeForm.turnover || '0' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Office Name</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.officeName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Major Activity</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.majorActivity || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Office Address</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.officeAddress || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>5. Social & Category Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">Social Category</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.socialCategory || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Gender</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.gender || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Specially Abled (DIVYANG)</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.isDivyang || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>6. Bank Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Bank Name</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.bankName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">IFS Code</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.ifsCode || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Bank Account Number</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.bankAccount || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>7. Employee Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">Male Employees</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.maleEmployees || '0' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Female Employees</span>
+                <span class="pf-value">{{ checklist().details.msmeForm.femaleEmployees || '0' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Total Employees</span>
+                <span class="pf-value" style="font-weight: bold;">{{ checklist().details.msmeForm.totalEmployees || '0' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>8. TReDS Registration</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Interested in TReDS Registration</span>
+                <span class="pf-value" [ngStyle]="{'color': checklist().details.msmeForm.tredsInterested === 'Yes' ? 'green' : 'red', 'font-weight': 'bold'}">{{ checklist().details.msmeForm.tredsInterested || 'No' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+<!-- General Details Section -->
       @if (getGeneralDetails().length > 0) {
       <section style="display: flex; flex-direction: column; gap: 16px; ">
         <details
@@ -265,20 +923,175 @@
           <i class="lucide-globe"></i>
           DUNS Registration Details
         </div>
-        <div class="details-grid">
-          @for (field of (checklist().details.dunsForm | keyvalue); track field.key) {
+        
+        <h4 style="margin: 16px 0 8px 16px; font-weight: 600; color: var(--text-primary);">Applicant Details</h4>
+        <div class="details-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
           <div class="detail-item">
-            <span class="detail-label">{{ formatLabel(field.key) }}</span>
-            <span class="detail-value">{{ field.value }}</span>
+            <span class="detail-label">Applicant Name</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.applicantName }}</span>
           </div>
-          }
         </div>
+
+        <h4 style="margin: 0 0 8px 16px; font-weight: 600; color: var(--text-primary);">Company Details</h4>
+        <div class="details-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="detail-item">
+            <span class="detail-label">Legal Business Name</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.legalBusinessName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Trade Name</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.tradeName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Business Type</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.businessType }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Year of Establishment</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.yearOfEstablishment }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Number of Employees</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.numberOfEmployees }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Registered Address</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.registeredAddress }}, {{ checklist().details.dunsForm.city }}, {{ checklist().details.dunsForm.state }} - {{ checklist().details.dunsForm.pinCode }} ({{ checklist().details.dunsForm.country }})</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Official Email</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.officialEmail }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Business Phone</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.businessPhone }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Website URL</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.websiteUrl }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">PAN Number</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.panNumber }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">GST Number</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.gstNumber }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">CIN/LLPIN</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.cinLlpinNumber }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Nature of Business</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.natureOfBusiness }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Main Products/Services</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.mainProducts }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Annual Revenue</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.annualRevenue }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Annual Turnover</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.annualTurnover }}</span>
+          </div>
+        </div>
+
+        @if (checklist().details.dunsForm.hasDirectorDetails === 'true') {
+        <h4 style="margin: 0 0 8px 16px; font-weight: 600; color: var(--text-primary);">Director Details</h4>
+        <div class="details-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="detail-item">
+            <span class="detail-label">Director Name</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.directorFirstName }} {{ checklist().details.dunsForm.directorLastName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Designation</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.designation }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Personal Email</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.directorPersonalEmail }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Mobile Number</span>
+            <span class="detail-value">{{ checklist().details.dunsForm.directorMobile }}</span>
+          </div>
+        </div>
+        }
 
         @if (checklist().details?.dunsDocs?.length) {
         <div class="docs-section">
-          <h4><i class="lucide-file-text"></i> DUNS Documents</h4>
+          <h4><i class="lucide-file-text"></i> Applicant & Company Documents</h4>
           <div class="docs-grid">
             @for (doc of checklist().details.dunsDocs; track doc.name) {
+            <div class="doc-card" (click)="openDocViewer(doc.fileUrl, doc.name, $event)">
+              <i class="lucide-download"></i>
+              <span>{{ doc.name }}</span>
+            </div>
+            }
+          </div>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- IEC Form Details Section -->
+      @if (checklist().details?.iecForm) {
+      <div class="service-details-section" style="margin-top: 16px;">
+        <div class="section-header">
+          <i class="lucide-globe"></i>
+          IEC Registration Details
+        </div>
+        
+        <h4 style="margin: 16px 0 8px 16px; font-weight: 600; color: var(--text-primary);">1. Applicant Details</h4>
+        <div class="details-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="detail-item"><span class="detail-label">First Name</span><span class="detail-value">{{ checklist().details.iecForm.applicantFirstName }}</span></div>
+          <div class="detail-item"><span class="detail-label">Last Name</span><span class="detail-value">{{ checklist().details.iecForm.applicantLastName }}</span></div>
+          <div class="detail-item"><span class="detail-label">Email</span><span class="detail-value">{{ checklist().details.iecForm.applicantEmail }}</span></div>
+          <div class="detail-item"><span class="detail-label">Mobile No</span><span class="detail-value">{{ checklist().details.iecForm.applicantMobile }}</span></div>
+          <div class="detail-item"><span class="detail-label">Address</span><span class="detail-value">{{ checklist().details.iecForm.applicantAddress }}</span></div>
+        </div>
+
+        <h4 style="margin: 0 0 8px 16px; font-weight: 600; color: var(--text-primary);">3. Company Details</h4>
+        <div class="details-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="detail-item"><span class="detail-label">Company Name</span><span class="detail-value">{{ checklist().details.iecForm.companyName }}</span></div>
+          <div class="detail-item"><span class="detail-label">Company PAN</span><span class="detail-value">{{ checklist().details.iecForm.companyPanNumber }}</span></div>
+          <div class="detail-item"><span class="detail-label">Name on Company PAN</span><span class="detail-value">{{ checklist().details.iecForm.nameOnCompanyPan }}</span></div>
+          <div class="detail-item"><span class="detail-label">Date of Incorporation</span><span class="detail-value">{{ checklist().details.iecForm.dateOfIncorporation }}</span></div>
+          <div class="detail-item"><span class="detail-label">GSTIN</span><span class="detail-value">{{ checklist().details.iecForm.gstin }}</span></div>
+          <div class="detail-item"><span class="detail-label">Company Mobile</span><span class="detail-value">{{ checklist().details.iecForm.companyMobileNumber }}</span></div>
+          <div class="detail-item"><span class="detail-label">Company Email</span><span class="detail-value">{{ checklist().details.iecForm.companyMailId }}</span></div>
+        </div>
+
+        @if (checklist().details.iecForm.hasDirectorDetails === 'true') {
+        <h4 style="margin: 0 0 8px 16px; font-weight: 600; color: var(--text-primary);">4. Director Details</h4>
+        <div class="details-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="detail-item"><span class="detail-label">DIN</span><span class="detail-value">{{ checklist().details.iecForm.directorDin }}</span></div>
+          <div class="detail-item"><span class="detail-label">PAN Name</span><span class="detail-value">{{ checklist().details.iecForm.directorPanName }}</span></div>
+          <div class="detail-item"><span class="detail-label">PAN Number</span><span class="detail-value">{{ checklist().details.iecForm.directorPanNumber }}</span></div>
+          <div class="detail-item"><span class="detail-label">PAN DOB</span><span class="detail-value">{{ checklist().details.iecForm.directorPanDob }}</span></div>
+          <div class="detail-item"><span class="detail-label">Father Name</span><span class="detail-value">{{ checklist().details.iecForm.directorFatherName }}</span></div>
+          <div class="detail-item"><span class="detail-label">Address</span><span class="detail-value">{{ checklist().details.iecForm.directorAddress }}</span></div>
+          <div class="detail-item"><span class="detail-label">Phone</span><span class="detail-value">{{ checklist().details.iecForm.directorPhoneNumber }}</span></div>
+        </div>
+        }
+
+        <h4 style="margin: 0 0 8px 16px; font-weight: 600; color: var(--text-primary);">6. Bank Details</h4>
+        <div class="details-grid" style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+          <div class="detail-item"><span class="detail-label">Account Number</span><span class="detail-value">{{ checklist().details.iecForm.bankAccountNumber }}</span></div>
+          <div class="detail-item"><span class="detail-label">Account Holder Name</span><span class="detail-value">{{ checklist().details.iecForm.bankAccountHolderName }}</span></div>
+          <div class="detail-item"><span class="detail-label">IFSC Code</span><span class="detail-value">{{ checklist().details.iecForm.ifscCode }}</span></div>
+          <div class="detail-item"><span class="detail-label">Bank Name</span><span class="detail-value">{{ checklist().details.iecForm.bankName }}</span></div>
+        </div>
+
+        @if (checklist().details?.iecDocs?.length) {
+        <div class="docs-section">
+          <h4><i class="lucide-file-text"></i> Submitted Documents</h4>
+          <div class="docs-grid">
+            @for (doc of checklist().details.iecDocs; track doc.name) {
             <div class="doc-card" (click)="openDocViewer(doc.fileUrl, doc.name, $event)">
               <i class="lucide-download"></i>
               <span>{{ doc.name }}</span>
@@ -1262,7 +2075,197 @@
       </section>
       }
 
-    </div>
+    
+      <!-- GST FORM -->
+      @if (checklist().details?.gstForm) {
+        <div class="pf-form-details fade-in" style="margin-top: 16px;">
+          <div class="pf-header">
+            <h3><span class="material-symbols-outlined">receipt_long</span> GST Registration Details</h3>
+          </div>
+          
+          <div class="pf-section">
+            <h4>1. Business Information</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Legal Name of Business</span>
+                <span class="pf-value">{{ checklist().details.gstForm.legalName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">PAN of Business</span>
+                <span class="pf-value">{{ checklist().details.gstForm.panOfBusiness || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Business Email ID</span>
+                <span class="pf-value">{{ checklist().details.gstForm.businessEmail || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Business Phone</span>
+                <span class="pf-value">{{ checklist().details.gstForm.businessPhone || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Trade Name</span>
+                <span class="pf-value">{{ checklist().details.gstForm.tradeName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Date of Incorporation</span>
+                <span class="pf-value">{{ checklist().details.gstForm.incorpDate || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>2. Director 1 Personal Information</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Full Name</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1FullName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Father Name</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1FatherName || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">DOB</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1Dob || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Phone Number</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1Phone || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Mail ID</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1Mail || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Gender</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1Gender || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">DIN</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1Din || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">PAN Number</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1Pan || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Full Residential Address</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1Address || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Authorized Signatory?</span>
+                <span class="pf-value">{{ checklist().details.gstForm.dir1AuthSignatory || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          @if (checklist().details.gstForm.hasDirector2 === 'Yes') {
+            <div class="pf-section">
+              <h4>3. Director 2 Personal Information</h4>
+              <div class="pf-grid">
+                <div class="pf-field full-width">
+                  <span class="pf-label">Full Name</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2FullName || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">Father Name</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2FatherName || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">DOB</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2Dob || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">Phone Number</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2Phone || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">Mail ID</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2Mail || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">Gender</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2Gender || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">DIN</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2Din || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">PAN Number</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2Pan || 'N/A' }}</span>
+                </div>
+                <div class="pf-field full-width">
+                  <span class="pf-label">Full Residential Address</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2Address || 'N/A' }}</span>
+                </div>
+                <div class="pf-field">
+                  <span class="pf-label">Authorized Signatory?</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.dir2AuthSignatory || 'N/A' }}</span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <div class="pf-section">
+            <h4>4. Business Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Full Address with PIN Code</span>
+                <span class="pf-value">{{ checklist().details.gstForm.businessAddress || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Premises Type</span>
+                <span class="pf-value">{{ checklist().details.gstForm.premisesType || 'N/A' }}</span>
+              </div>
+              <div class="pf-field full-width">
+                <span class="pf-label">Business Description</span>
+                <span class="pf-value">{{ checklist().details.gstForm.businessDescription || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>5. Additional Business Places</h4>
+            <div class="pf-grid">
+              <div class="pf-field full-width">
+                <span class="pf-label">Has Additional Places?</span>
+                <span class="pf-value">{{ checklist().details.gstForm.hasAdditionalPlaces || 'N/A' }}</span>
+              </div>
+              @if (checklist().details.gstForm.hasAdditionalPlaces === 'Yes') {
+                <div class="pf-field full-width">
+                  <span class="pf-label">Second Place Address</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.secondPlaceAddress || 'N/A' }}</span>
+                </div>
+                <div class="pf-field full-width">
+                  <span class="pf-label">Third Place Address</span>
+                  <span class="pf-value">{{ checklist().details.gstForm.thirdPlaceAddress || 'N/A' }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="pf-section">
+            <h4>6. Bank Details</h4>
+            <div class="pf-grid">
+              <div class="pf-field">
+                <span class="pf-label">Bank Account Number</span>
+                <span class="pf-value">{{ checklist().details.gstForm.accountNumber || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Type of Account</span>
+                <span class="pf-value">{{ checklist().details.gstForm.accountType || 'N/A' }}</span>
+              </div>
+              <div class="pf-field">
+                <span class="pf-label">Bank IFSC Code</span>
+                <span class="pf-value">{{ checklist().details.gstForm.ifscCode || 'N/A' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+</div>
 
     <!-- Right Column: Sidebar -->
     <aside class="sidebar-col">

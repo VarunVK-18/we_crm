@@ -146,25 +146,6 @@ router.post(
   orderController.submitMsmeForm
 );
 
-// Define fields for GST Registration form
-const gstUploadFields = [
-  { name: 'photo', maxCount: 1 },
-  { name: 'ebBill', maxCount: 1 },
-  { name: 'houseTaxReceipt', maxCount: 1 },
-  { name: 'rentalAgreement', maxCount: 1 }
-];
-
-// @route   POST /api/orders/:id/submit-gst-form
-// @desc    Submit GST form details and docs
-// @access  Private (Cleint)
-router.post(
-  '/:id/submit-gst-form',
-  checkUser,
-  upload.fields(gstUploadFields),
-  saveFilesToDatabase,
-  orderController.submitGstForm
-);
-
 // Define fields for ISO Registration form
 const isoUploadFields = [
   { name: 'msmeCertificate', maxCount: 1 }
@@ -481,6 +462,40 @@ router.post(
   upload.fields(dunsUploadFields),
   saveFilesToDatabase,
   orderController.submitDunsForm
+);
+
+
+router.post(
+  '/:id/submit-gst-form',
+  checkUser,
+  upload.fields([
+    { name: 'incorpCert', maxCount: 1 },
+    { name: 'companyPanFile', maxCount: 1 },
+    { name: 'dir1Photo', maxCount: 1 },
+    { name: 'dir1AuthSignatoryDoc', maxCount: 1 },
+    { name: 'dir2Photo', maxCount: 1 },
+    { name: 'dir2AuthSignatoryDoc', maxCount: 1 },
+    { name: 'ebBill', maxCount: 1 },
+    { name: 'rentalAgreement', maxCount: 1 },
+    { name: 'propertyTaxReceipt', maxCount: 1 },
+    { name: 'bankDocument', maxCount: 1 }
+  ]),
+  (req, res, next) => {
+    // Check sizes for photos specifically (1MB)
+    if (req.files) {
+      const photos = [];
+      if (req.files.dir1Photo) photos.push(req.files.dir1Photo[0]);
+      if (req.files.dir2Photo) photos.push(req.files.dir2Photo[0]);
+      for (const p of photos) {
+        if (p.size > 1 * 1024 * 1024) {
+          return res.status(400).json({ success: false, message: 'Director Photo must be under 1 MB.' });
+        }
+      }
+    }
+    next();
+  },
+  saveFilesToDatabase,
+  orderController.submitGstForm
 );
 
 module.exports = router;

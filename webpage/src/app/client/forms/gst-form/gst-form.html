@@ -1,324 +1,407 @@
-<div class="form-layout">
+<div class="form-container">
   <div class="form-header">
-    <div class="header-container">
-      <button class="back-btn" (click)="goBack()">
-        <span class="material-symbols-outlined">arrow_back</span>
-        Back to Service
-      </button>
-      <div class="title-row">
-        <h1 class="pf-title">GST Registration Form</h1>
-        <p class="pf-subtitle">Provide details for your GST registration</p>
-      </div>
-    </div>
+    <button class="back-btn" (click)="goBack()">
+      <span class="material-icons">arrow_back</span>
+    </button>
+    <h1>Complete Details</h1>
   </div>
 
-  <div class="form-container">
-    @if (errorMessage()) {
-      <div class="error-banner">
-        <span class="material-symbols-outlined">error</span>
-        <span>{{ errorMessage() }}</span>
-      </div>
-    }
+  @if (isLoading()) {
+    <div class="loader-container">
+      <app-we-loader></app-we-loader>
+      <p>Loading details...</p>
+    </div>
+  }
 
-    <form (ngSubmit)="submitForm()" ngNativeValidate #gstForm="ngForm" class="incorp-form">
+  @if (!isLoading() && !isSuccess()) {
+    <form (submit)="submitForm(); $event.preventDefault()">
       
-      <section class="form-section">
-        <h3 class="section-title">Trade Details</h3>
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label>Trade Name *</label>
-            <input type="text" [(ngModel)]="tradeName" (ngModelChange)="onEntityNameChange($event)" name="tradeName" required>
-          </div>
-          <div class="form-group full-width">
-            <label>Date of commencement of Business *</label>
-            <span class="file-hint">DD/MM/YYYY</span>
-            <input type="date" [(ngModel)]="commenceDate" name="commenceDate" required>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Business Email ID *</label>
-              <span class="file-hint">All GST communications will be shared in this mail</span>
-              <input type="email" [(ngModel)]="businessEmail" name="businessEmail" required email #businessEmailField="ngModel" required>
-                  <div *ngIf="businessEmailField.invalid && businessEmailField.touched" class="error-msg">Please enter a valid email address</div>
-            </div>
-            <div class="form-group">
-              <label>Business Phone *</label>
-              <span class="file-hint">All GST communications will be shared in this number</span>
-              <input type="tel" [(ngModel)]="businessPhone" name="businessPhone" required pattern="^[0-9]{10}$" #businessPhoneField="ngModel" required >
-                  <div *ngIf="businessPhoneField.invalid && businessPhoneField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
-            </div>
+      <!-- 1. BUSINESS INFORMATION -->
+      <div class="form-section">
+        <h2>Business Information</h2>
+        <div class="form-group">
+          <label>Legal Name of Business <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="legalName" name="legalName" placeholder="Enter Legal Name of Business" required (ngModelChange)="onEntityNameChange($event)">
+        </div>
+        <div class="form-group">
+          <label>PAN of Business <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="panOfBusiness" name="panOfBusiness" placeholder="Enter PAN of Business" required pattern="[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}">
+        </div>
+        <div class="form-group">
+          <label>Business Email ID <span class="required">*</span></label>
+          <input type="email" [(ngModel)]="businessEmail" name="businessEmail" placeholder="Enter Business Email ID" required>
+        </div>
+        <div class="form-group">
+          <label>Business Phone <span class="required">*</span></label>
+          <input type="tel" [(ngModel)]="businessPhone" name="businessPhone" placeholder="Enter Business Phone" required pattern="[0-9]{10}">
+        </div>
+        <div class="form-group">
+          <label>Trade Name (if Any)</label>
+          <input type="text" [(ngModel)]="tradeName" name="tradeName" placeholder="Enter Trade Name">
+        </div>
+        <div class="form-group">
+          <label>Date of Incorporation <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="incorpDate" name="incorpDate" required>
+        </div>
+        <div class="form-group">
+          <label>Incorporation Certificate <span class="required">*</span></label>
+          <span class="help-text">Upload 1 supported file: PDF. Max 2 MB.</span>
+          <div class="file-upload-wrapper">
+            <span class="file-name" *ngIf="incorpCert">{{ incorpCert.name }}</span>
+            <span class="file-name" *ngIf="!incorpCert && existingDocs['incorpCert']">
+              {{ existingDocs['incorpCert'].name || 'Document Uploaded' }} (From Profile)
+              <a href="javascript:void(0)" (click)="viewDocument(existingDocs['incorpCert'].fileUrl)">(View)</a>
+            </span>
+            <span class="file-name" *ngIf="!incorpCert && !existingDocs['incorpCert']">No file chosen</span>
+            <input type="file" (change)="onFileSelected($event, 'incorpCert')" accept=".pdf" #incorpCertInput hidden>
+            <button type="button" class="btn-upload" (click)="incorpCertInput.click()">
+              {{ incorpCert || existingDocs['incorpCert'] ? 'Change' : 'Upload' }}
+            </button>
+            <button type="button" class="btn-remove" *ngIf="!incorpCert && existingDocs['incorpCert']" (click)="removeExistingDoc('incorpCert')">Remove</button>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="form-section">
-        <h3 class="section-title">Personal Information</h3>
-        <div class="form-grid">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Full Name *</label>
-              <input type="text" [(ngModel)]="fullName" name="fullName" required>
-            </div>
-            <div class="form-group">
-              <label>Father name *</label>
-              <input type="text" [(ngModel)]="fatherName" name="fatherName" required>
-            </div>
+      <!-- 2. DIRECTOR 1 PERSONAL INFORMATION -->
+      <div class="form-section">
+        <h2>Director 1 Personal Information</h2>
+        <div class="form-group">
+          <label>Full Name (As per PAN) <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="dir1FullName" name="dir1FullName" placeholder="Enter Full Name" required>
+        </div>
+        <div class="form-group">
+          <label>Father Name (As per PAN) <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="dir1FatherName" name="dir1FatherName" placeholder="Enter Father Name" required>
+        </div>
+        <div class="form-group">
+          <label>DOB <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="dir1Dob" name="dir1Dob" required>
+        </div>
+        <div class="form-group">
+          <label>Phone Number <span class="required">*</span></label>
+          <input type="tel" [(ngModel)]="dir1Phone" name="dir1Phone" placeholder="Enter Phone Number" required pattern="[0-9]{10}">
+        </div>
+        <div class="form-group">
+          <label>Mail ID <span class="required">*</span></label>
+          <input type="email" [(ngModel)]="dir1Mail" name="dir1Mail" placeholder="Enter Mail ID" required>
+        </div>
+        <div class="form-group">
+          <label>Gender <span class="required">*</span></label>
+          <div class="pf-radio-group">
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir1Gender" name="dir1Gender" value="Male"> Male</label>
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir1Gender" name="dir1Gender" value="Female"> Female</label>
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir1Gender" name="dir1Gender" value="Others"> Others</label>
           </div>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>DOB *</label>
-              <input type="date" [(ngModel)]="dob" name="dob" required>
-            </div>
-            <div class="form-group">
-              <label>Phone number *</label>
-              <input type="tel" [(ngModel)]="personalPhone" name="personalPhone" required pattern="^[0-9]{10}$" #personalPhoneField="ngModel" >
-                  <div *ngIf="personalPhoneField.invalid && personalPhoneField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
-            </div>
+        </div>
+        <div class="form-group">
+          <label>DIN <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="dir1Din" name="dir1Din" placeholder="Enter DIN" required>
+        </div>
+        <div class="form-group">
+          <label>PAN Number <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="dir1Pan" name="dir1Pan" placeholder="Enter PAN Number" required pattern="[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}">
+        </div>
+        <div class="form-group">
+          <label>Enter Full Residential Address <span class="required">*</span></label>
+          <textarea [(ngModel)]="dir1Address" name="dir1Address" rows="3" placeholder="Enter Full Residential Address" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Are you Authorized Signatory? <span class="required">*</span></label>
+          <div class="pf-radio-group">
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir1AuthSignatory" name="dir1AuthSignatory" value="Yes"> Yes</label>
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir1AuthSignatory" name="dir1AuthSignatory" value="No"> No</label>
           </div>
+        </div>
+      </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Mail ID *</label>
-              <input type="email" [(ngModel)]="personalEmail" name="personalEmail" required email #personalEmailField="ngModel">
-                  <div *ngIf="personalEmailField.invalid && personalEmailField.touched" class="error-msg">Please enter a valid email address</div>
-            </div>
-            <div class="form-group">
-              <label>Gender *</label>
-              <select [(ngModel)]="gender" name="gender">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Others">Others</option>
-              </select>
-            </div>
+      <!-- 3. DIRECTOR 1 DOCUMENTS -->
+      <div class="form-section">
+        <h2>Director 1 Documents</h2>
+        <div class="form-group">
+          <label>Director Photo <span class="required">*</span></label>
+          <span class="help-text">Upload 1 supported file: image. Max 1 MB.</span>
+          <div class="file-upload-wrapper">
+            <span class="file-name" *ngIf="dir1Photo">{{ dir1Photo.name }}</span>
+            <span class="file-name" *ngIf="!dir1Photo && existingDocs['dir1Photo']">
+              Document Uploaded (From Profile)
+              <a href="javascript:void(0)" (click)="viewDocument(existingDocs['dir1Photo'].fileUrl)">(View)</a>
+            </span>
+            <span class="file-name" *ngIf="!dir1Photo && !existingDocs['dir1Photo']">No file chosen</span>
+            <input type="file" (change)="onFileSelected($event, 'dir1Photo')" accept="image/*" #dir1PhotoInput hidden>
+            <button type="button" class="btn-upload" (click)="dir1PhotoInput.click()">
+              {{ dir1Photo || existingDocs['dir1Photo'] ? 'Change' : 'Upload' }}
+            </button>
+            <button type="button" class="btn-remove" *ngIf="!dir1Photo && existingDocs['dir1Photo']" (click)="removeExistingDoc('dir1Photo')">Remove</button>
           </div>
+        </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>DIN</label>
-              <span class="file-hint">Director Identification Number</span>
-              <input type="text" [(ngModel)]="din" name="din">
-            </div>
-            <div class="form-group">
-              <label>PAN number *</label>
-              <input type="text" [(ngModel)]="pan" name="pan" required pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #panField="ngModel" style="text-transform: uppercase;" >
-                  <div *ngIf="panField.invalid && panField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label>Enter Full Residential Address *</label>
-            <textarea [(ngModel)]="residentialAddress" name="residentialAddress" required rows="3"></textarea>
-          </div>
-
-          <div class="form-group file-upload-group full-width">
-            <label>Upload Photo *</label>
-            <span class="file-hint">Upload 1 supported file: image. Max 2 MB.</span>
-            @if (existingDocs['photo']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['photo'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['photo'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
+        @if (dir1AuthSignatory === 'Yes') {
+          <div class="form-group">
+            <label>If you are the Authorized Signatory, upload Option 1 <span class="required">*</span></label>
+            <span class="help-text">Upload 1 supported file. Max 2 MB.</span>
+            <div class="file-upload-wrapper">
+              <span class="file-name" *ngIf="dir1AuthSignatoryDoc">{{ dir1AuthSignatoryDoc.name }}</span>
+              <span class="file-name" *ngIf="!dir1AuthSignatoryDoc && existingDocs['dir1AuthSignatoryDoc']">
+                Document Uploaded (From Profile)
+                <a href="javascript:void(0)" (click)="viewDocument(existingDocs['dir1AuthSignatoryDoc'].fileUrl)">(View)</a>
+              </span>
+              <span class="file-name" *ngIf="!dir1AuthSignatoryDoc && !existingDocs['dir1AuthSignatoryDoc']">No file chosen</span>
+              <input type="file" (change)="onFileSelected($event, 'dir1AuthSignatoryDoc')" #dir1AuthSignatoryDocInput hidden>
+              <button type="button" class="btn-upload" (click)="dir1AuthSignatoryDocInput.click()">
+                {{ dir1AuthSignatoryDoc || existingDocs['dir1AuthSignatoryDoc'] ? 'Change' : 'Upload' }}
               </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('photo')">Change</button>
+              <button type="button" class="btn-remove" *ngIf="!dir1AuthSignatoryDoc && existingDocs['dir1AuthSignatoryDoc']" (click)="removeExistingDoc('dir1AuthSignatoryDoc')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'photo')" accept=".jpg,.jpeg,.png" required>
-          }
+          </div>
+        }
+      </div>
+
+      <!-- ADD DIRECTOR 2 OPTION -->
+      <div class="form-section">
+        <div class="form-group">
+          <label>Do you want to add Director 2? <span class="required">*</span></label>
+          <div class="pf-radio-group">
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="hasDirector2" name="hasDirector2" value="Yes"> Yes</label>
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="hasDirector2" name="hasDirector2" value="No"> No</label>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="form-section">
-        <h3 class="section-title">Business Details</h3>
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label>Full Address with PIN code *</label>
-            <span class="file-hint">Enter your business details correctly</span>
-            <textarea [(ngModel)]="businessAddress" name="businessAddress" required rows="3"></textarea>
-          </div>
-          
-          <div class="form-group full-width">
-            <label>District *</label>
-            <input type="text" [(ngModel)]="district" name="district" required>
-          </div>
-
-          <div class="form-group full-width">
-            <label>Premises Type *</label>
-            <div class="radio-group">
-              <label class="radio-label">
-                <input type="radio" name="premisesType" value="Own" [(ngModel)]="premisesType">
-                <span>Own</span>
-              </label>
-              <label class="radio-label">
-                <input type="radio" name="premisesType" value="Rent" [(ngModel)]="premisesType">
-                <span>Rent</span>
-              </label>
+      @if (hasDirector2 === 'Yes') {
+        <!-- 5. DIRECTOR 2 PERSONAL INFORMATION -->
+        <div class="form-section">
+          <h2>Director 2 Personal Information</h2>
+          <div class="form-group"><label>Full Name (As per PAN) <span class="required">*</span></label><input type="text" [(ngModel)]="dir2FullName" name="dir2FullName" required></div>
+          <div class="form-group"><label>Father Name (As per PAN) <span class="required">*</span></label><input type="text" [(ngModel)]="dir2FatherName" name="dir2FatherName" required></div>
+          <div class="form-group"><label>DOB <span class="required">*</span></label><input type="date" [(ngModel)]="dir2Dob" name="dir2Dob" required></div>
+          <div class="form-group"><label>Phone Number <span class="required">*</span></label><input type="tel" [(ngModel)]="dir2Phone" name="dir2Phone" required pattern="[0-9]{10}"></div>
+          <div class="form-group"><label>Mail ID <span class="required">*</span></label><input type="email" [(ngModel)]="dir2Mail" name="dir2Mail" required></div>
+          <div class="form-group"><label>Gender <span class="required">*</span></label>
+            <div class="pf-radio-group">
+              <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir2Gender" name="dir2Gender" value="Male"> Male</label>
+              <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir2Gender" name="dir2Gender" value="Female"> Female</label>
+              <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir2Gender" name="dir2Gender" value="Others"> Others</label>
             </div>
           </div>
-
-          <div class="form-group file-upload-group full-width">
-            <label>Upload Latest EB Bill *</label>
-            <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
-            @if (existingDocs['ebBill']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['ebBill'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['ebBill'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('ebBill')">Change</button>
+          <div class="form-group"><label>DIN <span class="required">*</span></label><input type="text" [(ngModel)]="dir2Din" name="dir2Din" required></div>
+          <div class="form-group"><label>PAN Number <span class="required">*</span></label><input type="text" [(ngModel)]="dir2Pan" name="dir2Pan" required pattern="[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}"></div>
+          <div class="form-group"><label>Enter Full Residential Address <span class="required">*</span></label><textarea [(ngModel)]="dir2Address" name="dir2Address" rows="3" required></textarea></div>
+          <div class="form-group"><label>Are you Authorized Signatory? <span class="required">*</span></label>
+            <div class="pf-radio-group">
+              <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir2AuthSignatory" name="dir2AuthSignatory" value="Yes"> Yes</label>
+              <label class="pf-radio-label"><input type="radio" [(ngModel)]="dir2AuthSignatory" name="dir2AuthSignatory" value="No"> No</label>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'ebBill')" accept=".jpg,.jpeg,.png,.pdf" required>
-          }
           </div>
-
-          @if (premisesType === 'Own') {
-            <div class="form-group file-upload-group full-width">
-              <label>For Own House (Upload House Tax Receipt) *</label>
-              <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
-              @if (existingDocs['houseTaxReceipt']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['houseTaxReceipt'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['houseTaxReceipt'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('houseTaxReceipt')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'houseTaxReceipt')" accept=".jpg,.jpeg,.png,.pdf" required>
-          }
-            </div>
-          } @else if (premisesType === 'Rent') {
-            <div class="form-group file-upload-group full-width">
-              <label>For Rented Office (Upload Rental Agreement) *</label>
-              <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
-              @if (existingDocs['rentalAgreement']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['rentalAgreement'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['rentalAgreement'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('rentalAgreement')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'rentalAgreement')" accept=".jpg,.jpeg,.png,.pdf" required>
-          }
-            </div>
-          }
         </div>
-      </section>
 
-      <section class="form-section">
-        <h3 class="section-title">Bank Account Details</h3>
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label>Account Number *</label>
-            <input type="number" [(ngModel)]="accountNumber" name="accountNumber" required>
+        <!-- 6. DIRECTOR 2 DOCUMENTS -->
+        <div class="form-section">
+          <h2>Director 2 Documents</h2>
+          <div class="form-group">
+            <label>Director Photo <span class="required">*</span></label>
+            <span class="help-text">Upload 1 supported file: image. Max 1 MB.</span>
+            <div class="file-upload-wrapper">
+              <span class="file-name" *ngIf="dir2Photo">{{ dir2Photo.name }}</span>
+              <span class="file-name" *ngIf="!dir2Photo && existingDocs['dir2Photo']">From Profile <a href="javascript:void(0)" (click)="viewDocument(existingDocs['dir2Photo'].fileUrl)">(View)</a></span>
+              <span class="file-name" *ngIf="!dir2Photo && !existingDocs['dir2Photo']">No file chosen</span>
+              <input type="file" (change)="onFileSelected($event, 'dir2Photo')" accept="image/*" #dir2PhotoInput hidden>
+              <button type="button" class="btn-upload" (click)="dir2PhotoInput.click()">{{ dir2Photo || existingDocs['dir2Photo'] ? 'Change' : 'Upload' }}</button>
+            </div>
           </div>
-          <div class="form-row">
+
+          @if (dir2AuthSignatory === 'Yes') {
             <div class="form-group">
-              <label>IFSC Code *</label>
-              <input type="text" [(ngModel)]="ifscCode" name="ifscCode" required>
+              <label>If you are the Authorized Signatory, upload Option 1 <span class="required">*</span></label>
+              <span class="help-text">Upload 1 supported file. Max 2 MB.</span>
+              <div class="file-upload-wrapper">
+                <span class="file-name" *ngIf="dir2AuthSignatoryDoc">{{ dir2AuthSignatoryDoc.name }}</span>
+                <span class="file-name" *ngIf="!dir2AuthSignatoryDoc && existingDocs['dir2AuthSignatoryDoc']">From Profile <a href="javascript:void(0)" (click)="viewDocument(existingDocs['dir2AuthSignatoryDoc'].fileUrl)">(View)</a></span>
+                <span class="file-name" *ngIf="!dir2AuthSignatoryDoc && !existingDocs['dir2AuthSignatoryDoc']">No file chosen</span>
+                <input type="file" (change)="onFileSelected($event, 'dir2AuthSignatoryDoc')" #dir2AuthSignatoryDocInput hidden>
+                <button type="button" class="btn-upload" (click)="dir2AuthSignatoryDocInput.click()">{{ dir2AuthSignatoryDoc || existingDocs['dir2AuthSignatoryDoc'] ? 'Change' : 'Upload' }}</button>
+              </div>
             </div>
-            <div class="form-group">
-              <label>Branch *</label>
-              <input type="text" [(ngModel)]="branch" name="branch" required>
-            </div>
+          }
+        </div>
+      }
+
+      <!-- 7. BUSINESS DETAILS -->
+      <div class="form-section">
+        <h2>Business Details</h2>
+        <span class="help-text">Enter your business details correctly</span>
+        <div class="form-group mt-3">
+          <label>Full Address with PIN Code <span class="required">*</span></label>
+          <textarea [(ngModel)]="businessAddress" name="businessAddress" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Premises Type <span class="required">*</span></label>
+          <div class="pf-radio-group">
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="premisesType" name="premisesType" value="Own"> Own</label>
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="premisesType" name="premisesType" value="Rent"> Rent</label>
           </div>
         </div>
-      </section>
+        <div class="form-group">
+          <label>Explain Your Business Description in Few Words <span class="required">*</span></label>
+          <textarea [(ngModel)]="businessDescription" name="businessDescription" rows="2" required></textarea>
+        </div>
+      </div>
 
-      <section class="form-section">
-        <h3 class="section-title">Declaration</h3>
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="isDeclared" name="isDeclared" required>
-              <span>I hereby declare that all information provided is true and correct to the best of my knowledge.</span>
-            </label>
+      <!-- 9. ADDITIONAL BUSINESS PLACES -->
+      <div class="form-section">
+        <h2>Additional Business Places</h2>
+        <div class="form-group">
+          <label>Do you have Additional Place of Business? <span class="required">*</span></label>
+          <div class="pf-radio-group">
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="hasAdditionalPlaces" name="hasAdditionalPlaces" value="Yes"> Yes</label>
+            <label class="pf-radio-label"><input type="radio" [(ngModel)]="hasAdditionalPlaces" name="hasAdditionalPlaces" value="No"> No</label>
           </div>
         </div>
-      </section>
+        @if (hasAdditionalPlaces === 'Yes') {
+          <div class="form-group">
+            <label>Second Place of Business Full Address with PIN Code <span class="required">*</span></label>
+            <textarea [(ngModel)]="secondPlaceAddress" name="secondPlaceAddress" rows="2" required></textarea>
+          </div>
+          <div class="form-group">
+            <label>Third Place of Business Full Address with PIN Code</label>
+            <textarea [(ngModel)]="thirdPlaceAddress" name="thirdPlaceAddress" rows="2"></textarea>
+          </div>
+        }
+      </div>
 
-      <div class="form-actions">
+      <!-- 8 & 10. BUSINESS & COMPANY DOCUMENTS -->
+      <div class="form-section">
+        <h2>Business Documents</h2>
         
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
-          @if (isSubmitting()) {
-            <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
-          } @else {
-            Submit Application
-          }
+        <div class="form-group">
+          <label>Upload Company PAN <span class="required">*</span></label>
+          <span class="help-text">Max 2 MB.</span>
+          <div class="file-upload-wrapper">
+            <span class="file-name" *ngIf="companyPanFile">{{ companyPanFile.name }}</span>
+            <span class="file-name" *ngIf="!companyPanFile && existingDocs['companyPanFile']">From Profile <a href="javascript:void(0)" (click)="viewDocument(existingDocs['companyPanFile'].fileUrl)">(View)</a></span>
+            <span class="file-name" *ngIf="!companyPanFile && !existingDocs['companyPanFile']">No file chosen</span>
+            <input type="file" (change)="onFileSelected($event, 'companyPanFile')" #companyPanFileInput hidden>
+            <button type="button" class="btn-upload" (click)="companyPanFileInput.click()">{{ companyPanFile || existingDocs['companyPanFile'] ? 'Change' : 'Upload' }}</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Upload Latest EB Bill <span class="required">*</span></label>
+          <span class="help-text">Max 2 MB.</span>
+          <div class="file-upload-wrapper">
+            <span class="file-name" *ngIf="ebBill">{{ ebBill.name }}</span>
+            <span class="file-name" *ngIf="!ebBill && existingDocs['ebBill']">From Profile <a href="javascript:void(0)" (click)="viewDocument(existingDocs['ebBill'].fileUrl)">(View)</a></span>
+            <span class="file-name" *ngIf="!ebBill && !existingDocs['ebBill']">No file chosen</span>
+            <input type="file" (change)="onFileSelected($event, 'ebBill')" #ebBillInput hidden>
+            <button type="button" class="btn-upload" (click)="ebBillInput.click()">{{ ebBill || existingDocs['ebBill'] ? 'Change' : 'Upload' }}</button>
+          </div>
+        </div>
+
+        @if (premisesType === 'Rent') {
+          <div class="form-group">
+            <label>For Rented Office (Upload Rental Agreement) <span class="required">*</span></label>
+            <span class="help-text">Max 2 MB.</span>
+            <div class="file-upload-wrapper">
+              <span class="file-name" *ngIf="rentalAgreement">{{ rentalAgreement.name }}</span>
+              <span class="file-name" *ngIf="!rentalAgreement && existingDocs['rentalAgreement']">From Profile <a href="javascript:void(0)" (click)="viewDocument(existingDocs['rentalAgreement'].fileUrl)">(View)</a></span>
+              <span class="file-name" *ngIf="!rentalAgreement && !existingDocs['rentalAgreement']">No file chosen</span>
+              <input type="file" (change)="onFileSelected($event, 'rentalAgreement')" #rentalAgreementInput hidden>
+              <button type="button" class="btn-upload" (click)="rentalAgreementInput.click()">{{ rentalAgreement || existingDocs['rentalAgreement'] ? 'Change' : 'Upload' }}</button>
+            </div>
+          </div>
+        }
+        @if (premisesType === 'Own') {
+          <div class="form-group">
+            <label>For Own Property (Upload Property Tax Receipt) <span class="required">*</span></label>
+            <span class="help-text">Max 2 MB.</span>
+            <div class="file-upload-wrapper">
+              <span class="file-name" *ngIf="propertyTaxReceipt">{{ propertyTaxReceipt.name }}</span>
+              <span class="file-name" *ngIf="!propertyTaxReceipt && existingDocs['propertyTaxReceipt']">From Profile <a href="javascript:void(0)" (click)="viewDocument(existingDocs['propertyTaxReceipt'].fileUrl)">(View)</a></span>
+              <span class="file-name" *ngIf="!propertyTaxReceipt && !existingDocs['propertyTaxReceipt']">No file chosen</span>
+              <input type="file" (change)="onFileSelected($event, 'propertyTaxReceipt')" #propertyTaxReceiptInput hidden>
+              <button type="button" class="btn-upload" (click)="propertyTaxReceiptInput.click()">{{ propertyTaxReceipt || existingDocs['propertyTaxReceipt'] ? 'Change' : 'Upload' }}</button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- 11. BANK DETAILS -->
+      <div class="form-section">
+        <h2>Bank Details</h2>
+        <div class="form-group">
+          <label>Bank Account Number <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="accountNumber" name="accountNumber" required>
+        </div>
+        <div class="form-group">
+          <label>Type of Account <span class="required">*</span></label>
+          <select [(ngModel)]="accountType" name="accountType" required>
+            <option *ngFor="let opt of accountTypeOptions" [value]="opt">{{ opt }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Bank IFSC Code <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="ifscCode" name="ifscCode" required>
+        </div>
+      </div>
+
+      <!-- 12. BANK DOCUMENTS -->
+      <div class="form-section">
+        <h2>Bank Documents</h2>
+        <div class="form-group">
+          <label>Upload Bank Statement / Cancelled Cheque / First Page of Bank Passbook <span class="required">*</span></label>
+          <span class="help-text">Max 2 MB.</span>
+          <div class="file-upload-wrapper">
+            <span class="file-name" *ngIf="bankDocument">{{ bankDocument.name }}</span>
+            <span class="file-name" *ngIf="!bankDocument && existingDocs['bankDocument']">From Profile <a href="javascript:void(0)" (click)="viewDocument(existingDocs['bankDocument'].fileUrl)">(View)</a></span>
+            <span class="file-name" *ngIf="!bankDocument && !existingDocs['bankDocument']">No file chosen</span>
+            <input type="file" (change)="onFileSelected($event, 'bankDocument')" #bankDocumentInput hidden>
+            <button type="button" class="btn-upload" (click)="bankDocumentInput.click()">{{ bankDocument || existingDocs['bankDocument'] ? 'Change' : 'Upload' }}</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 13. DECLARATION -->
+      <div class="form-section">
+        <h2>Declaration</h2>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="isDeclared" name="isDeclared" required>
+            <span class="checkbox-text">I hereby declare that all information provided is true and correct to the best of my knowledge. <span class="required">*</span></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage()">
+        {{ errorMessage() }}
+      </div>
+
+      <div class="submit-btn-container">
+        <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Submitting...' : 'Submit Application' }}
         </button>
       </div>
-
     </form>
-  </div>
+  }
+
+  @if (isSuccess()) {
+    <div class="success-message">
+      <span class="material-icons success-icon">check_circle</span>
+      <h2>Form Submitted Successfully!</h2>
+      <p>Redirecting back to order details...</p>
+    </div>
+  }
 </div>
 
-<!-- Full page overlays -->
-@if (isSubmitting() || isSuccess()) {
-  <div class="overlay-container">
-    @if (isSubmitting()) {
-      <app-we-loader></app-we-loader>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Submitting Application...</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Please wait while we process your documents</p>
-    }
-    @if (isSuccess()) {
-      <div class="success-icon">
-        <span class="material-symbols-outlined" style="font-size: 64px; color: #10b981;">check_circle</span>
+@if (documentViewerUrl) {
+  <div class="document-viewer-modal">
+    <div class="document-viewer-content">
+      <div class="document-viewer-header">
+        <h3>Document Preview</h3>
+        <button class="close-viewer-btn" (click)="closeDocumentViewer()">
+          <span class="material-icons">close</span>
+        </button>
       </div>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Application Submitted Successfully!</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Redirecting to tracking page...</p>
-    }
-  </div>
-}
-
-
-@if (safeDocumentViewerUrl) {
-  <div class="doc-viewer-modal-backdrop" (mousedown)="closeDocumentViewer()" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div class="doc-viewer-modal" (click)="$event.stopPropagation()" style="background:#fff;border-radius:8px;width:90%;max-width:800px;height:80vh;display:flex;flex-direction:column;overflow:hidden;">
-      <div class="doc-viewer-header" style="display:flex;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #ddd;">
-        <h3 style="margin:0;font-size:18px;">Document Viewer</h3>
-        <button type="button" class="close-viewer-btn" (click)="closeDocumentViewer()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
-      </div>
-      <div class="doc-viewer-body" style="flex:1;padding:0;">
-        <object [data]="safeDocumentViewerUrl" type="application/pdf" width="100%" height="100%">
-          <embed [src]="safeDocumentViewerUrl" width="100%" height="100%" />
-          <p style="text-align:center; margin-top:20px;">Your browser does not support inline document viewing. <a [href]="documentViewerUrl" target="_blank" style="color: blue; text-decoration: underline;">Click here to view it directly</a>.</p>
-        </object>
+      <div class="document-viewer-body">
+        <iframe [src]="safeDocumentViewerUrl" frameborder="0"></iframe>
       </div>
     </div>
   </div>

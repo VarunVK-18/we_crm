@@ -1,5 +1,9 @@
+import 'package:crm_app/core/theme/app_theme.dart';
+import 'package:crm_app/providers/auth_provider.dart';
+import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,28 +28,23 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // Fields
-  final _authorizedPersonController = TextEditingController();
-  final _designationController = TextEditingController();
-  final _mobileController = TextEditingController();
+  // Company Details
+  final _companyNameController = TextEditingController();
+  final _cinNumberController = TextEditingController();
+  final _companyAddressController = TextEditingController();
+
+  // Applicant Details
+  final _applicantNameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _businessPhoneController = TextEditingController();
 
-  String? _turnoverType;
-  final List<String> _turnoverOptions = [
-    'Less Than 50 Cr',
-    'More Than 50 Cr'
-  ];
-
-  String? _addressProofPath;
+  // Document
   String? _incorpCertPath;
-  String? _panCardPath;
-  String? _gstCertPath;
-  String? _auditedFinancialsPath;
-  String? _moaAoaPath;
-  String? _boardResolutionPath;
+
+  // Verification
+  bool _isDeclared = false;
 
   @override
-    @override
   void initState() {
     super.initState();
     _loadDraft();
@@ -53,93 +52,84 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
 
   @override
   void dispose() {
-    _authorizedPersonController.dispose();
-    _designationController.dispose();
-    _mobileController.dispose();
+    _companyNameController.dispose();
+    _cinNumberController.dispose();
+    _companyAddressController.dispose();
+    _applicantNameController.dispose();
     _emailController.dispose();
+    _businessPhoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePickerUtil.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: allowedExtensions,
-    );
-    if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 2 * 1024 * 1024) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Upload a file less than 2 MB.'),
-          backgroundColor: Colors.red,
-        ));
-        return;
-      }
+  Future<void> _loadDraft() async {
+    final draftData = await ref.read(draftServiceProvider).loadDraft(widget.order.id, 'LeiFormScreen');
+    if (draftData != null && mounted) {
       setState(() {
-        onPicked(result.files.single.path!);
+        _companyNameController.text = draftData['companyName'] ?? '';
+        _cinNumberController.text = draftData['cinNumber'] ?? '';
+        _companyAddressController.text = draftData['companyAddress'] ?? '';
+        _applicantNameController.text = draftData['applicantName'] ?? '';
+        _emailController.text = draftData['email'] ?? '';
+        _businessPhoneController.text = draftData['businessPhone'] ?? '';
       });
     }
   }
 
-  
-  Future<void> _loadDraft() async {
-    final draftService = ref.read(draftServiceProvider);
-    final draft = await draftService.loadDraft(widget.order.id, 'LeiFormScreen');
-    if (draft != null) {
-      if (mounted) {
-        setState(() {
-        if (draft.containsKey('authorizedPerson')) _authorizedPersonController.text = draft['authorizedPerson'];
-        if (draft.containsKey('designation')) _designationController.text = draft['designation'];
-        if (draft.containsKey('mobileNumber')) _mobileController.text = draft['mobileNumber'];
-        if (draft.containsKey('emailId')) _emailController.text = draft['emailId'];
-        if (draft.containsKey('turnoverType')) _turnoverType = draft['turnoverType'];
-
-                if (draft.containsKey('addressProofPath')) _addressProofPath = draft['addressProofPath'];
-        if (draft.containsKey('incorpCertPath')) _incorpCertPath = draft['incorpCertPath'];
-        if (draft.containsKey('panCardPath')) _panCardPath = draft['panCardPath'];
-        if (draft.containsKey('gstCertPath')) _gstCertPath = draft['gstCertPath'];
-        if (draft.containsKey('auditedFinancialsPath')) _auditedFinancialsPath = draft['auditedFinancialsPath'];
-        if (draft.containsKey('moaAoaPath')) _moaAoaPath = draft['moaAoaPath'];
-        if (draft.containsKey('boardResolutionPath')) _boardResolutionPath = draft['boardResolutionPath'];
-});
-      }
-    }
-  }
-
   Future<void> _saveDraft() async {
-    final draftService = ref.read(draftServiceProvider);
-    final data = <String, dynamic>{
-      'authorizedPerson': _authorizedPersonController.text,
-      'designation': _designationController.text,
-      'mobileNumber': _mobileController.text,
-      'emailId': _emailController.text,
-      'turnoverType': _turnoverType,
-
-          'addressProofPath': _addressProofPath,
-      'incorpCertPath': _incorpCertPath,
-      'panCardPath': _panCardPath,
-      'gstCertPath': _gstCertPath,
-      'auditedFinancialsPath': _auditedFinancialsPath,
-      'moaAoaPath': _moaAoaPath,
-      'boardResolutionPath': _boardResolutionPath,
-};
-    await draftService.saveDraft(widget.order.id, 'LeiFormScreen', data);
+    final draftData = {
+      'companyName': _companyNameController.text,
+      'cinNumber': _cinNumberController.text,
+      'companyAddress': _companyAddressController.text,
+      'applicantName': _applicantNameController.text,
+      'email': _emailController.text,
+      'businessPhone': _businessPhoneController.text,
+    };
+    await ref.read(draftServiceProvider).saveDraft(widget.order.id, 'LeiFormScreen', draftData);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Draft saved successfully!'),
-        backgroundColor: AppTheme.deepTeal,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Draft saved successfully!')),
+      );
     }
   }
 
-  Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate() || _turnoverType == null) {
-      _showError('Please fill all required fields.');
+  Future<void> _pickDocument() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        if (file.size > 2 * 1024 * 1024) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('File must be 2 MB or smaller.')),
+            );
+          }
+          return;
+        }
+
+        setState(() {
+          _incorpCertPath = file.path;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking document: $e');
+    }
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    if (_incorpCertPath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please upload the required Incorporation Certificate (Max 2 MB).')));
       return;
     }
 
-    if (_addressProofPath == null || _incorpCertPath == null || _panCardPath == null ||
-        _gstCertPath == null || _auditedFinancialsPath == null) {
-      _showError('Please upload all required documents.');
+    if (!_isDeclared) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please accept the declaration.')));
       return;
     }
 
@@ -148,342 +138,173 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
     try {
       final uid = ref.read(authStateProvider).value?.uid;
       if (uid == null) throw Exception('Not authenticated');
-
-      final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-lei-form');
-      var request = http.MultipartRequest('POST', uri);
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${kBaseUrl}/api/orders/${widget.order.id}/submit-lei-form'),
+      );
       request.headers['x-user-id'] = uid;
 
-      request.fields['authorizedPerson'] = _authorizedPersonController.text;
-      request.fields['designation'] = _designationController.text;
-      request.fields['mobileNumber'] = _mobileController.text;
-      request.fields['emailId'] = _emailController.text;
-      request.fields['turnoverType'] = _turnoverType!;
+      final formData = {
+        'companyName': _companyNameController.text.trim(),
+        'cinNumber': _cinNumberController.text.trim(),
+        'companyAddress': _companyAddressController.text.trim(),
+        'applicantName': _applicantNameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'businessPhone': _businessPhoneController.text.trim(),
+      };
 
-      request.files.add(await http.MultipartFile.fromPath('addressProof', _addressProofPath!));
-      request.files.add(await http.MultipartFile.fromPath('incorpCert', _incorpCertPath!));
-      request.files.add(await http.MultipartFile.fromPath('panCard', _panCardPath!));
-      request.files.add(await http.MultipartFile.fromPath('gstCert', _gstCertPath!));
-      request.files.add(await http.MultipartFile.fromPath('auditedFinancials', _auditedFinancialsPath!));
-      
-      if (_moaAoaPath != null) {
-        request.files.add(await http.MultipartFile.fromPath('moaAoa', _moaAoaPath!));
-      }
-      if (_boardResolutionPath != null) {
-        request.files.add(await http.MultipartFile.fromPath('boardResolution', _boardResolutionPath!));
+      request.fields['data'] = jsonEncode(formData);
+
+      if (_incorpCertPath != null) {
+        request.files.add(await http.MultipartFile.fromPath('incorpCert', _incorpCertPath!));
       }
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (!mounted) return;
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Success'),
-            content: const Text('LEI Form submitted successfully!'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-        if (!mounted) return;
-        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'LeiFormScreen');
-        Navigator.pop(context, true);
+        await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'LeiFormScreen');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('LEI Application submitted successfully!')));
+          Navigator.pop(context, true);
+        }
       } else {
-        throw Exception('Failed to submit form: ${response.body}');
+        throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to submit form');
       }
     } catch (e) {
-      showGlobalError(e);
-      if (!mounted) return;
-      _showError('Error: $e');
+      if (mounted) {
+        showGlobalError(e.toString());
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: Colors.red,
-    ));
-  }
-
-  Future<bool> _onWillPop() async {
-    final shouldPop = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Save as Draft?'),
-          content: const Text('Do you want to save your progress before exiting?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(
-                'Discard',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Cancel',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _saveDraft();
-                if (context.mounted) Navigator.of(context).pop(true);
-              },
-              child: Text(
-                'Save as Draft',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.corporateBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ),
-          ],
-        );
-      },
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Text(title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
     );
-    return shouldPop ?? false;
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-      backgroundColor: Colors.white,
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: const [],
+        title: Text('LEI Code Application', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        actions: [
+          TextButton.icon(
+            onPressed: _saveDraft,
+            icon: const Icon(Icons.save_outlined, color: Colors.white),
+            label: Text('Save Draft', style: GoogleFonts.inter(color: Colors.white)),
+          ),
+        ],
       ),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator()) 
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 children: [
-                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue)),
+                  _buildSectionHeader('1. Company Details'),
+                  TextFormField(
+                    controller: _companyNameController,
+                    decoration: const InputDecoration(labelText: 'Company Name *', border: OutlineInputBorder()),
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
                   const SizedBox(height: 16),
-                  
-                  _buildSectionContainer(
-                    title: 'Applicant Details',
-                    children: [
-                      _buildField('Name of the Authorized Person', '', _authorizedPersonController, isRequired: true),
-                      _buildField('Designation', 'e.g. Director, Partner', _designationController, isRequired: true),
-                      _buildField('Mobile Number', '', _mobileController, isRequired: true, keyboardType: TextInputType.phone),
-                      _buildField('Email ID', '', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                      
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            RichText(
-                              text: const TextSpan(
-                                text: 'Turnover Details',
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
-                                children: [
-                                  TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-                                ]
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              initialValue: _turnoverType,
-                              decoration: InputDecoration(
-                                hintText: 'Select Turnover Details',
-              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              ),
-                              items: _turnoverOptions.map<DropdownMenuItem<String>>((String type) => DropdownMenuItem<String>(value: type, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
-                              onChanged: (val) {
-                                setState(() {
-                                  _turnoverType = val;
-                                });
-                              },
-                              validator: (value) => value == null ? 'Please select turnover details' : null,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  TextFormField(
+                    controller: _cinNumberController,
+                    decoration: const InputDecoration(labelText: 'CIN Number *', border: OutlineInputBorder()),
+                    textCapitalization: TextCapitalization.characters,
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _companyAddressController,
+                    decoration: const InputDecoration(labelText: 'Company Address *', border: OutlineInputBorder()),
+                    maxLines: 3,
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
                   ),
 
-                  _buildSectionContainer(
-                    title: 'Document Uploads',
-                    children: [
-                      _buildFileRow('Address Proof', 'Company Address Proof. Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path, allowedExtensions: const ['pdf'])),
-                      _buildFileRow('Incorporation Certificate', 'Max 2 MB.', _incorpCertPath, () => _pickFile((path) => _incorpCertPath = path)),
-                      _buildFileRow('Company PAN Card', 'Max 2 MB.', _panCardPath, () => _pickFile((path) => _panCardPath = path)),
-                      _buildFileRow('GST Certificate', 'Max 2 MB.', _gstCertPath, () => _pickFile((path) => _gstCertPath = path)),
-                      _buildFileRow('Audited Financials', 'Latest Audited Financials. Max 2 MB.', _auditedFinancialsPath, () => _pickFile((path) => _auditedFinancialsPath = path)),
-                      _buildFileRow('MOA and AOA', 'Max 2 MB.', _moaAoaPath, () => _pickFile((path) => _moaAoaPath = path), isRequired: false),
-                      _buildFileRow('Board Resolution', 'Max 2 MB.', _boardResolutionPath, () => _pickFile((path) => _boardResolutionPath = path), isRequired: false),
-                    ],
+                  _buildSectionHeader('2. Applicant Details'),
+                  TextFormField(
+                    controller: _applicantNameController,
+                    decoration: const InputDecoration(labelText: "Applicant's Full Name *", border: OutlineInputBorder()),
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
                   ),
-                  
                   const SizedBox(height: 16),
-              ElevatedButton(
-                    onPressed: _submitDetails,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.corporateBlue,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(labelText: 'Business Email *', border: OutlineInputBorder()),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (val) => !val!.contains('@') ? 'Enter valid email' : null,
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _businessPhoneController,
+                    decoration: const InputDecoration(labelText: 'Business Phone Number *', border: OutlineInputBorder()),
+                    keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                    validator: (val) => val!.trim().length != 10 ? 'Enter valid 10 digit number' : null,
+                  ),
+
+                  _buildSectionHeader('3. Company Documents'),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Incorporation Certificate * (Max 2 MB)', style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 13)),
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: _pickDocument,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+                            child: Row(
+                              children: [
+                                Icon(_incorpCertPath != null ? Icons.check_circle : Icons.upload_file, color: _incorpCertPath != null ? Colors.green : Colors.grey),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    _incorpCertPath != null ? _incorpCertPath!.split('/').last : 'Tap to upload document',
+                                    style: GoogleFonts.inter(color: _incorpCertPath != null ? Colors.black87 : Colors.grey, fontSize: 13),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  _buildSectionHeader('4. Declaration'),
+                  CheckboxListTile(
+                    title: const Text('I Agree'),
+                    subtitle: const Text('I hereby declare that all information provided is true and correct to the best of my knowledge.'),
+                    value: _isDeclared,
+                    onChanged: (val) => setState(() => _isDeclared = val ?? false),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                      child: const Text('Submit Application', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
-    ));
-  }
-
-  Widget _buildSectionContainer({required String title, required List<Widget> children}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 32),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.shade100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
-          const SizedBox(height: 24),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: [
-                if (isRequired)
-                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
-              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            validator: (v) {
-  if (isRequired && (v == null || v.trim().isEmpty)) {
-    return 'This is a required question';
-  }
-  if (v != null && v.trim().isNotEmpty) {
-    final text = v.trim();
-    final labelLower = label.toLowerCase();
-    if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact') || labelLower.contains('number')) {
-      if (labelLower.contains('company') || labelLower.contains('whatsapp') || labelLower.contains('director') || labelLower.contains('business') || labelLower == 'phone number' || labelLower == 'mobile number' || labelLower == 'contact number' || labelLower == 'company number') {
-         if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
-      }
-    }
-    if (labelLower.contains('mail') || labelLower.contains('email')) {
-      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) return 'Enter a valid email address';
-    }
-    if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
-      if (!RegExp(r'^[2-9]{1}[0-9]{11}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
-    }
-    if (labelLower.contains('pan ') || labelLower == 'pan' || labelLower.contains('pan number')) {
-      if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
-    }
-    if (labelLower.contains('tan ') || labelLower == 'tan' || labelLower.contains('tan number')) {
-      if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
-    }
-  }
-  return null;
-},
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick, {bool isRequired = true}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: [
-                if (isRequired)
-                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
-                  style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: onPick,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  minimumSize: const Size(80, 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
-

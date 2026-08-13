@@ -174,6 +174,11 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     );
   }
 
+  
+  getFileUrl(url: string): string {
+    return this.api.getFileUrl(url);
+  }
+
   constructor(public api: Api, private ocrService: OcrService, private confirmDialog: ConfirmDialogService, private sanitizer: DomSanitizer) { }
 
   /** Returns the clientId string for the current checklist, used by ServiceDetailsComponent */

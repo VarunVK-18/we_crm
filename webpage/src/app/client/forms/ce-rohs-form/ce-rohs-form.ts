@@ -45,6 +45,9 @@ export class CeRohsForm implements OnInit {
   manufacturerName = '';
   companyAddress = '';
   contactPerson = '';
+  whatsapp = '';
+  email = '';
+  courierAddress = '';
   productSpecs = '';
   certificationType = '';
 
@@ -129,7 +132,7 @@ export class CeRohsForm implements OnInit {
   }
 
   submitForm() {
-    if (!this.productName || !this.modelNumber || !this.manufacturerName || !this.companyAddress || !this.contactPerson || !this.productSpecs || !this.certificationType) {
+    if (!this.productName || !this.modelNumber || !this.manufacturerName || !this.companyAddress || !this.contactPerson || !this.productSpecs || !this.certificationType || !this.whatsapp || !this.email || !this.courierAddress) {
       this.errorMessage.set('Please fill out all required fields.');
       return;
     }
@@ -151,6 +154,9 @@ export class CeRohsForm implements OnInit {
     formData.append('manufacturerName', this.manufacturerName);
     formData.append('companyAddress', this.companyAddress);
     formData.append('contactPerson', this.contactPerson);
+    formData.append('whatsapp', this.whatsapp);
+    formData.append('email', this.email);
+    formData.append('courierAddress', this.courierAddress);
     formData.append('productSpecs', this.productSpecs);
     formData.append('certificationType', this.certificationType);
 

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ClientTopbar } from './client-topbar';
+import { ClientTopbarComponent as ClientTopbar } from './client-topbar';
 
 describe('ClientTopbar', () => {
   let component: ClientTopbar;

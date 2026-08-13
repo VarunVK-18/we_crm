@@ -1,307 +1,228 @@
-<div class="form-layout">
-  <div class="form-header">
-    <div class="header-container">
-      <button class="back-btn" (click)="goBack()">
-        <span class="material-symbols-outlined">arrow_back</span>
-        Back to Service
-      </button>
-      <div class="title-row">
-        <h1 class="pf-title">MSME Certification Form</h1>
-        <p class="pf-subtitle">Provide details for your MSME registration</p>
-      </div>
-    </div>
+
+<div class="pf-container">
+  <div class="pf-header">
+    <button class="pf-back-btn" (click)="goBack()"><span class="material-symbols-outlined">arrow_back</span></button>
+    <h2>MSME / Udyam Registration</h2>
   </div>
 
-  <div class="form-container">
-    @if (errorMessage()) {
-      <div class="error-banner">
-        <span class="material-symbols-outlined">error</span>
-        <span>{{ errorMessage() }}</span>
+  <app-we-loader *ngIf="isSubmitting()"></app-we-loader>
+
+  <form class="pf-form" (ngSubmit)="submitForm()" *ngIf="!isSuccess() && !isSubmitting()" #msmeForm="ngForm">
+    
+    <!-- 1. Applicant / Entrepreneur Details -->
+    <div class="pf-section">
+      <h3>1. Applicant / Entrepreneur Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Aadhar Number *</label>
+          <input type="text" name="aadhaarNumber" [(ngModel)]="aadhaarNumber" required pattern="[0-9]{12}">
+        </div>
+        <div class="pf-field full-width">
+          <label>Name of Entrepreneur *</label>
+          <input type="text" name="entrepreneurName" [(ngModel)]="entrepreneurName" required>
+        </div>
+        <div class="pf-field">
+          <label>Mobile Number *</label>
+          <input type="text" name="mobileNumber" [(ngModel)]="mobileNumber" required pattern="[0-9]{10}">
+        </div>
+        <div class="pf-field">
+          <label>Email *</label>
+          <input type="email" name="email" [(ngModel)]="email" required>
+        </div>
       </div>
-    }
+    </div>
 
-    <form (ngSubmit)="submitForm()" ngNativeValidate #msmeForm="ngForm" class="incorp-form">
-      
-      <!-- Enterprise Details -->
-      <section class="form-section">
-        <h3 class="section-title">Enterprise / Business Details</h3>
-        <div class="form-grid">
-          
-          <div class="form-group full-width">
-            <label>Name of the Enterprise / Business *</label>
-            <input type="text" [(ngModel)]="enterpriseName" (ngModelChange)="onEntityNameChange($event)" name="enterpriseName" required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Type of organization *</label>
-              <select [(ngModel)]="orgType" name="orgType">
-                <option value="Proprietorship Registration">Proprietorship</option>
-                <option value="Partnership">Partnership</option>
-                <option value="LLP">LLP</option>
-                <option value="Private Limited">Private Limited</option>
-                <option value="OPC Incorporation">OPC</option>
-                <option value="Trust">Trust</option>
-                <option value="Society">Society</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Major activity *</label>
-              <select [(ngModel)]="majorActivity" name="majorActivity">
-                <option value="Service">Service</option>
-                <option value="Manufacturing">Manufacturing</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label>Official Address of the enterprise *</label>
-            <textarea [(ngModel)]="address" name="address" required rows="3" placeholder="Full address"></textarea>
-          </div>
-
-          <div class="form-group full-width">
-            <label>Name of Unit(s) / Plant (s) *</label>
-            <span class="file-hint">Note: If no separate unit/plant, enter your office address</span>
-            <input type="text" [(ngModel)]="unitName" name="unitName" required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Official Mobile Number *</label>
-              <input type="tel" [(ngModel)]="mobile" name="mobile" required pattern="^[0-9]{10}$" #mobileField="ngModel" >
-                  <div *ngIf="mobileField.invalid && mobileField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
-            </div>
-            <div class="form-group">
-              <label>Official Mail ID *</label>
-              <input type="email" [(ngModel)]="email" name="email" required email #emailField="ngModel">
-                  <div *ngIf="emailField.invalid && emailField.touched" class="error-msg">Please enter a valid email address</div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>No of Male Employees *</label>
-              <input type="number" [(ngModel)]="maleEmployees" name="maleEmployees" required>
-            </div>
-            <div class="form-group">
-              <label>No of Female Employees *</label>
-              <input type="number" [(ngModel)]="femaleEmployees" name="femaleEmployees" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Date of Incorporation / Registration *</label>
-              <input type="date" [(ngModel)]="incDate" name="incDate" required>
-            </div>
-            <div class="form-group">
-              <label>Date of Commencement of Business *</label>
-              <input type="date" [(ngModel)]="commenceDate" name="commenceDate" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Previous MSME / Udyog Aadhaar</label>
-              <span class="file-hint">if any</span>
-              <input type="text" [(ngModel)]="prevMsme" name="prevMsme">
-            </div>
-            <div class="form-group">
-              <label>GST number *</label>
-              <span class="file-hint">if available</span>
-              <input type="text" [(ngModel)]="gst" name="gst" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Total Investment in Plant / Machinery *</label>
-              <span class="file-hint">Example: Rs.10,000</span>
-              <input type="number" [(ngModel)]="investment" name="investment" required>
-            </div>
-            <div class="form-group">
-              <label>Total Annual Turnover *</label>
-              <span class="file-hint">Example: Rs.1,00,000</span>
-              <input type="number" [(ngModel)]="turnover" name="turnover" required>
-            </div>
-          </div>
-
-          <div class="form-group file-upload-group full-width">
-            <label>Upload Your Company's PAN Card *</label>
-            <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
-            @if (existingDocs['companyPan']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['companyPan'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['companyPan'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('companyPan')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'companyPan')" accept=".pdf" required>
-          }
+    <!-- 2. Organization Details -->
+    <div class="pf-section">
+      <h3>2. Organization Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Type of Organization *</label>
+          <div class="radio-group-wrap">
+            <label><input type="radio" name="orgType" value="Proprietorship" [(ngModel)]="orgType"> Proprietorship</label>
+            <label><input type="radio" name="orgType" value="Partnership" [(ngModel)]="orgType"> Partnership</label>
+            <label><input type="radio" name="orgType" value="LLP" [(ngModel)]="orgType"> LLP</label>
+            <label><input type="radio" name="orgType" value="Private Limited" [(ngModel)]="orgType"> Private Limited</label>
+            <label><input type="radio" name="orgType" value="OPC" [(ngModel)]="orgType"> OPC</label>
+            <label><input type="radio" name="orgType" value="Trust" [(ngModel)]="orgType"> Trust</label>
+            <label><input type="radio" name="orgType" value="Society" [(ngModel)]="orgType"> Society</label>
           </div>
         </div>
-      </section>
-
-      <!-- Business Owner Details -->
-      <section class="form-section">
-        <h3 class="section-title">Business owner details</h3>
-        <div class="form-grid">
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label>Full name *</label>
-              <input type="text" [(ngModel)]="ownerName" name="ownerName" required>
-            </div>
-            <div class="form-group">
-              <label>Gender *</label>
-              <select [(ngModel)]="gender" name="gender">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Personal WhatsApp number *</label>
-              <input type="tel" [(ngModel)]="whatsapp" name="whatsapp" required pattern="^[0-9]{10}$" #whatsappField="ngModel" >
-                  <div *ngIf="whatsappField.invalid && whatsappField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
-            </div>
-            <div class="form-group">
-              <label>Personal Mail ID *</label>
-              <input type="email" [(ngModel)]="personalEmail" name="personalEmail" required email #personalEmailField="ngModel">
-                  <div *ngIf="personalEmailField.invalid && personalEmailField.touched" class="error-msg">Please enter a valid email address</div>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Are you physically Handicapped? *</label>
-              <select [(ngModel)]="physicallyHandicapped" name="physicallyHandicapped">
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Social Category *</label>
-              <select [(ngModel)]="socialCategory" name="socialCategory">
-                <option value="General">General</option>
-                <option value="SC">SC</option>
-                <option value="ST">ST</option>
-                <option value="OBC">OBC</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-group file-upload-group">
-            <label>Upload Your Aadhar Card *</label>
-            <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
-            @if (existingDocs['ownerAadhaar']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['ownerAadhaar'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['ownerAadhaar'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('ownerAadhaar')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'ownerAadhaar')" accept=".pdf" required>
-          }
-          </div>
-
-          <div class="form-group file-upload-group">
-            <label>Upload Your Bank Passbook *</label>
-            <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
-            @if (existingDocs['ownerPassbook']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['ownerPassbook'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['ownerPassbook'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('ownerPassbook')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'ownerPassbook')" accept=".jpg,.jpeg,.png,.pdf" required>
-          }
-          </div>
-          
+        <div class="pf-field full-width">
+          <label>Name of Enterprise *</label>
+          <input type="text" name="enterpriseName" [(ngModel)]="enterpriseName" (ngModelChange)="onEntityNameChange($event)" required>
         </div>
-      </section>
-
-      <div class="form-actions">
-        
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
-          @if (isSubmitting()) {
-            <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
-          } @else {
-            Submit Application
-          }
-        </button>
+        <div class="pf-field full-width">
+          <label>Date of Incorporation *</label>
+          <input type="date" name="incorporationDate" [(ngModel)]="incorporationDate" required>
+        </div>
       </div>
+    </div>
 
-    </form>
+    <!-- 3. PAN & GST Details -->
+    <div class="pf-section">
+      <h3>3. PAN & GST Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field">
+          <label>PAN *</label>
+          <input type="text" name="pan" [(ngModel)]="pan" required style="text-transform: uppercase;">
+        </div>
+        <div class="pf-field">
+          <label>Name of PAN Holder *</label>
+          <input type="text" name="panName" [(ngModel)]="panName" required>
+        </div>
+        <div class="pf-field full-width">
+          <label>DOB OR DOI (Date of Incorporation) as per PAN *</label>
+          <input type="date" name="panDob" [(ngModel)]="panDob" required>
+        </div>
+        <div class="pf-field full-width">
+          <label>Do you have GSTIN *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="hasGstin" value="Yes" [(ngModel)]="hasGstin"> Yes</label>
+            <label><input type="radio" name="hasGstin" value="No" [(ngModel)]="hasGstin"> No</label>
+            <label><input type="radio" name="hasGstin" value="Exempted" [(ngModel)]="hasGstin"> Exempted</label>
+          </div>
+        </div>
+        <div class="pf-field full-width" *ngIf="hasGstin === 'Yes'">
+          <label>GST Number *</label>
+          <input type="text" name="gstinNumber" [(ngModel)]="gstinNumber" [required]="hasGstin === 'Yes'" style="text-transform: uppercase;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Business Details -->
+    <div class="pf-section">
+      <h3>4. Business Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field">
+          <label>Total Investment Made in Business *</label>
+          <input type="number" name="investment" [(ngModel)]="investment" required>
+        </div>
+        <div class="pf-field">
+          <label>Turnover in Last FY 25-26 *</label>
+          <input type="number" name="turnover" [(ngModel)]="turnover" required>
+        </div>
+        <div class="pf-field full-width">
+          <label>Office Name *</label>
+          <input type="text" name="officeName" [(ngModel)]="officeName" required>
+        </div>
+        <div class="pf-field full-width">
+          <label>Major Activity of Unit *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="majorActivity" value="Manufacturing" [(ngModel)]="majorActivity"> Manufacturing</label>
+            <label><input type="radio" name="majorActivity" value="Services" [(ngModel)]="majorActivity"> Services</label>
+            <label><input type="radio" name="majorActivity" value="Trading" [(ngModel)]="majorActivity"> Trading</label>
+          </div>
+        </div>
+        <div class="pf-field full-width">
+          <label>Office Address *</label>
+          <textarea name="officeAddress" [(ngModel)]="officeAddress" required rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Social & Category Details -->
+    <div class="pf-section">
+      <h3>5. Social & Category Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Social Category *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="socialCategory" value="General" [(ngModel)]="socialCategory"> General</label>
+            <label><input type="radio" name="socialCategory" value="SC" [(ngModel)]="socialCategory"> SC</label>
+            <label><input type="radio" name="socialCategory" value="ST" [(ngModel)]="socialCategory"> ST</label>
+            <label><input type="radio" name="socialCategory" value="OBC" [(ngModel)]="socialCategory"> OBC</label>
+          </div>
+        </div>
+        <div class="pf-field full-width">
+          <label>Gender *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="gender" value="Male" [(ngModel)]="gender"> Male</label>
+            <label><input type="radio" name="gender" value="Female" [(ngModel)]="gender"> Female</label>
+            <label><input type="radio" name="gender" value="Others" [(ngModel)]="gender"> Others</label>
+          </div>
+        </div>
+        <div class="pf-field full-width">
+          <label>Specially Abled (DIVYANG) *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="isDivyang" value="Yes" [(ngModel)]="isDivyang"> Yes</label>
+            <label><input type="radio" name="isDivyang" value="No" [(ngModel)]="isDivyang"> No</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Bank Details -->
+    <div class="pf-section">
+      <h3>6. Bank Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Bank Name *</label>
+          <input type="text" name="bankName" [(ngModel)]="bankName" required>
+        </div>
+        <div class="pf-field">
+          <label>IFS Code *</label>
+          <input type="text" name="ifsCode" [(ngModel)]="ifsCode" required style="text-transform: uppercase;">
+        </div>
+        <div class="pf-field">
+          <label>Bank Account Number *</label>
+          <input type="text" name="bankAccount" [(ngModel)]="bankAccount" required pattern="[0-9]+">
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Employee Details -->
+    <div class="pf-section">
+      <h3>7. Employee Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field">
+          <label>No. of Persons Employed (Male) *</label>
+          <input type="number" name="maleEmployees" [(ngModel)]="maleEmployees" required min="0">
+        </div>
+        <div class="pf-field">
+          <label>No. of Persons Employed (Female) *</label>
+          <input type="number" name="femaleEmployees" [(ngModel)]="femaleEmployees" required min="0">
+        </div>
+        <div class="pf-field full-width">
+          <label>Total Employees *</label>
+          <input type="number" name="totalEmployees" [value]="totalEmployees()" disabled>
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. TReDS Registration -->
+    <div class="pf-section">
+      <h3>8. TReDS Registration</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Are you interested in getting registered on TReDS Portals? *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="tredsInterested" value="Yes" [(ngModel)]="tredsInterested"> Yes</label>
+            <label><input type="radio" name="tredsInterested" value="No" [(ngModel)]="tredsInterested"> No</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-error-message" *ngIf="errorMessage()">
+      <span class="material-symbols-outlined">error</span>
+      {{ errorMessage() }}
+    </div>
+
+    <div class="pf-actions">
+      <button type="button" class="pf-btn pf-btn-secondary" (click)="saveDraft()" [disabled]="isSubmitting()">
+        <span class="material-symbols-outlined">save</span> Save Draft
+      </button>
+      <button type="submit" class="pf-btn pf-btn-primary" [disabled]="!msmeForm.valid || isSubmitting()">
+        <span class="material-symbols-outlined" *ngIf="!isSubmitting()">send</span>
+        {{ isSubmitting() ? 'Submitting...' : 'Submit Application' }}
+      </button>
+    </div>
+  </form>
+
+  <div class="pf-success" *ngIf="isSuccess()">
+    <span class="material-symbols-outlined success-icon">check_circle</span>
+    <h3>Application Submitted Successfully!</h3>
+    <button class="pf-btn pf-btn-primary" (click)="location.back()">Return to Dashboard</button>
   </div>
 </div>
-
-<!-- Full page overlays -->
-@if (isSubmitting() || isSuccess()) {
-  <div class="overlay-container">
-    @if (isSubmitting()) {
-      <app-we-loader></app-we-loader>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Submitting Application...</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Please wait while we process your documents</p>
-    }
-    @if (isSuccess()) {
-      <div class="success-icon">
-        <span class="material-symbols-outlined" style="font-size: 64px; color: #10b981;">check_circle</span>
-      </div>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Application Submitted Successfully!</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Redirecting to tracking page...</p>
-    }
-  </div>
-}
-
-
-@if (safeDocumentViewerUrl) {
-  <div class="doc-viewer-modal-backdrop" (mousedown)="closeDocumentViewer()" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div class="doc-viewer-modal" (click)="$event.stopPropagation()" style="background:#fff;border-radius:8px;width:90%;max-width:800px;height:80vh;display:flex;flex-direction:column;overflow:hidden;">
-      <div class="doc-viewer-header" style="display:flex;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #ddd;">
-        <h3 style="margin:0;font-size:18px;">Document Viewer</h3>
-        <button type="button" class="close-viewer-btn" (click)="closeDocumentViewer()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
-      </div>
-      <div class="doc-viewer-body" style="flex:1;padding:0;">
-        <object [data]="safeDocumentViewerUrl" type="application/pdf" width="100%" height="100%">
-          <embed [src]="safeDocumentViewerUrl" width="100%" height="100%" />
-          <p style="text-align:center; margin-top:20px;">Your browser does not support inline document viewing. <a [href]="documentViewerUrl" target="_blank" style="color: blue; text-decoration: underline;">Click here to view it directly</a>.</p>
-        </object>
-      </div>
-    </div>
-  </div>
-}

@@ -22,8 +22,9 @@
 
     <form (ngSubmit)="submitForm()" ngNativeValidate #dscForm="ngForm" class="incorp-form">
       
+      <!-- 1. Organization Details -->
       <section class="form-section">
-        <h3 class="section-title">Application Information</h3>
+        <h3 class="section-title">1. Organization Details</h3>
         <div class="form-grid">
           
           <div class="form-group full-width">
@@ -40,26 +41,6 @@
             </div>
           </div>
 
-          <div class="form-group full-width">
-            <label>Applicant Name (As per PAN) *</label>
-            <input type="text" [(ngModel)]="applicantName" (ngModelChange)="onEntityNameChange($event)" name="applicantName" required>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Applicant Mail ID / Office Mail ID *</label>
-              <span class="file-hint">For OTPs</span>
-              <input type="email" [(ngModel)]="applicantMail" name="applicantMail" required email #applicantMailField="ngModel">
-                  <div *ngIf="applicantMailField.invalid && applicantMailField.touched" class="error-msg">Please enter a valid email address</div>
-            </div>
-            <div class="form-group">
-              <label>Applicant Phone Number *</label>
-              <span class="file-hint">For OTPs</span>
-              <input type="tel" [(ngModel)]="applicantPhone" name="applicantPhone" required pattern="^[0-9]{10}$" #applicantPhoneField="ngModel" >
-                  <div *ngIf="applicantPhoneField.invalid && applicantPhoneField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
-            </div>
-          </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Organization Name *</label>
@@ -67,26 +48,75 @@
             </div>
             <div class="form-group">
               <label>Organization Type *</label>
-              <input type="text" [(ngModel)]="organizationType" name="organizationType" required>
+              <select [(ngModel)]="organizationType" name="organizationType" required class="form-control">
+                <option value="" disabled selected>Select Organization Type</option>
+                <option value="Proprietorship">Proprietorship</option>
+                <option value="Partnership">Partnership</option>
+                <option value="LLP">LLP</option>
+                <option value="Private Limited Company">Private Limited Company</option>
+                <option value="Public Limited Company">Public Limited Company</option>
+                <option value="Section 8 Company">Section 8 Company</option>
+                <option value="AOP / BOI">AOP / BOI</option>
+                <option value="NGO">NGO</option>
+                <option value="Trust">Trust</option>
+                <option value="Society">Society</option>
+                <option value="Bank">Bank</option>
+                <option value="Government Organization">Government Organization</option>
+                <option value="Department">Department</option>
+                <option value="HUF">HUF</option>
+                <option value="Pvt Ltd">Pvt Ltd</option>
+                <option value="Foreign Company">Foreign Company</option>
+              </select>
             </div>
           </div>
-
+          
           <div class="form-group full-width">
             <label>Office Address *</label>
             <textarea [(ngModel)]="officeAddress" name="officeAddress" required rows="3"></textarea>
           </div>
-
-          <div class="form-group full-width">
-            <label>Address for couriering the DSC *</label>
-            <span class="file-hint">Full Address with PIN code</span>
-            <textarea [(ngModel)]="courierAddress" name="courierAddress" required rows="3"></textarea>
-          </div>
-
         </div>
       </section>
 
+      <!-- 2. Applicant Details -->
       <section class="form-section">
-        <h3 class="section-title">Mandatory Documents</h3>
+        <h3 class="section-title">2. Applicant Details</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Applicant Name (As per PAN) *</label>
+            <input type="text" [(ngModel)]="applicantName" (ngModelChange)="onEntityNameChange($event)" name="applicantName" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Applicant PAN Number *</label>
+              <input type="text" [(ngModel)]="applicantPanNumber" name="applicantPanNumber" required>
+            </div>
+            <div class="form-group">
+              <label>Applicant DOB *</label>
+              <input type="date" [(ngModel)]="applicantDob" name="applicantDob" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Applicant Mail ID / Office Mail ID *</label>
+              <span class="file-hint">For OTPs</span>
+              <input type="email" [(ngModel)]="applicantMail" name="applicantMail" required email #applicantMailField="ngModel">
+              <div *ngIf="applicantMailField.invalid && applicantMailField.touched" class="error-msg">Please enter a valid email address</div>
+            </div>
+            <div class="form-group">
+              <label>Applicant Phone Number *</label>
+              <span class="file-hint">For OTPs</span>
+              <input type="tel" [(ngModel)]="applicantPhone" name="applicantPhone" required pattern="^[0-9]{10}$" #applicantPhoneField="ngModel" >
+              <div *ngIf="applicantPhoneField.invalid && applicantPhoneField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Applicant Documents -->
+      <section class="form-section">
+        <h3 class="section-title">3. Applicant Documents</h3>
         <div class="form-grid">
           <div class="form-group file-upload-group full-width">
             <label>Applicant PAN Card *</label>
@@ -99,18 +129,19 @@
                 </svg>
                 {{ existingDocs['applicantPan'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['applicantPan'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('applicantPan')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('applicantPan')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'applicantPan')" accept=".pdf" required>
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!applicantPanFile">
+              <input type="file" (change)="onFileSelected($event, 'applicantPan')" accept=".pdf,image/*" required>
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ applicantPanFile ? applicantPanFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
+
           <div class="form-group file-upload-group full-width">
             <label>Applicant Aadhaar Card *</label>
             <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
@@ -122,18 +153,19 @@
                 </svg>
                 {{ existingDocs['applicantAadhaar'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['applicantAadhaar'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('applicantAadhaar')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('applicantAadhaar')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'applicantAadhaar')" accept=".pdf" required>
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!applicantAadhaarFile">
+              <input type="file" (change)="onFileSelected($event, 'applicantAadhaar')" accept=".pdf,image/*" required>
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ applicantAadhaarFile ? applicantAadhaarFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
+
           <div class="form-group file-upload-group full-width">
             <label>Applicant Photo *</label>
             <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
@@ -145,24 +177,27 @@
                 </svg>
                 {{ existingDocs['applicantPhoto'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['applicantPhoto'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('applicantPhoto')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('applicantPhoto')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'applicantPhoto')" accept=".jpg,.jpeg,.png,.pdf" required>
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!applicantPhotoFile">
+              <input type="file" (change)="onFileSelected($event, 'applicantPhoto')" accept=".pdf,image/*" required>
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ applicantPhotoFile ? applicantPhotoFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
         </div>
       </section>
 
+      <!-- 4. Organization Documents -->
       <section class="form-section">
-        <h3 class="section-title">Optional Documents</h3>
+        <h3 class="section-title">4. Organization Documents (If Applicable)</h3>
+        <p class="section-subtitle">Upload the following if applying for an Organization DSC</p>
         <div class="form-grid">
+          
           <div class="form-group file-upload-group full-width">
             <label>Certificate of Incorporation</label>
             <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
@@ -174,18 +209,19 @@
                 </svg>
                 {{ existingDocs['certificateOfIncorporation'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['certificateOfIncorporation'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('certificateOfIncorporation')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('certificateOfIncorporation')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'certificateOfIncorporation')" accept=".jpg,.jpeg,.png,.pdf">
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!coiFile">
+              <input type="file" (change)="onFileSelected($event, 'coi')" accept=".pdf,image/*">
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ coiFile ? coiFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
+
           <div class="form-group file-upload-group full-width">
             <label>Organization PAN</label>
             <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
@@ -197,18 +233,19 @@
                 </svg>
                 {{ existingDocs['organizationPan'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['organizationPan'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('organizationPan')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('organizationPan')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'organizationPan')" accept=".pdf">
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!organizationPanFile">
+              <input type="file" (change)="onFileSelected($event, 'organizationPan')" accept=".pdf,image/*">
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ organizationPanFile ? organizationPanFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
+
           <div class="form-group file-upload-group full-width">
             <label>GST Certificate</label>
             <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
@@ -220,20 +257,21 @@
                 </svg>
                 {{ existingDocs['gstCertificate'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['gstCertificate'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('gstCertificate')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('gstCertificate')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'gstCertificate')" accept=".jpg,.jpeg,.png,.pdf">
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!gstFile">
+              <input type="file" (change)="onFileSelected($event, 'gst')" accept=".pdf,image/*">
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ gstFile ? gstFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
+
           <div class="form-group file-upload-group full-width">
-            <label>MSME (UDYAM) Certificate</label>
+            <label>MSME Certificate</label>
             <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
             @if (existingDocs['msmeCertificate']) {
             <div class="existing-doc-box">
@@ -243,20 +281,21 @@
                 </svg>
                 {{ existingDocs['msmeCertificate'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['msmeCertificate'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('msmeCertificate')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('msmeCertificate')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'msmeCertificate')" accept=".jpg,.jpeg,.png,.pdf">
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!msmeFile">
+              <input type="file" (change)="onFileSelected($event, 'msme')" accept=".pdf,image/*">
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ msmeFile ? msmeFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
+
           <div class="form-group file-upload-group full-width">
-            <label>Other Director PAN</label>
+            <label>Any Other Director PAN</label>
             <span class="file-hint">Upload 1 supported file: PDF or image. Max 2 MB.</span>
             @if (existingDocs['otherDirectorPan']) {
             <div class="existing-doc-box">
@@ -266,44 +305,51 @@
                 </svg>
                 {{ existingDocs['otherDirectorPan'].name }} (From Profile)
               </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['otherDirectorPan'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('otherDirectorPan')">Change</button>
+              <button type="button" class="text-btn text-danger" (click)="removeExistingDoc('otherDirectorPan')">Remove</button>
             </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'otherDirectorPan')" accept=".pdf">
-          }
+            } @else {
+            <div class="upload-wrapper" [class.has-file]="!!otherDirectorPanFile">
+              <input type="file" (change)="onFileSelected($event, 'otherDirectorPan')" accept=".pdf,image/*">
+              <div class="upload-content">
+                <span class="material-symbols-outlined icon">cloud_upload</span>
+                <span class="text">{{ otherDirectorPanFile ? otherDirectorPanFile.name : 'Choose file or drop here' }}</span>
+              </div>
+            </div>
+            }
           </div>
         </div>
       </section>
 
+      <!-- 5. Courier & Verification -->
       <section class="form-section">
-        <h3 class="section-title">Verification</h3>
+        <h3 class="section-title">5. Courier & Verification</h3>
         <div class="form-grid">
           <div class="form-group full-width">
+            <label>Address for couriering the DSC *</label>
+            <span class="file-hint">Full Address with PIN code</span>
+            <textarea [(ngModel)]="courierAddress" name="courierAddress" required rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group full-width checkbox-group">
             <label class="checkbox-label">
               <input type="checkbox" [(ngModel)]="isVerified" name="isVerified" required>
-              <span>I here verify that above mentioned facts are true and correct to best of my knowledge and belief.</span>
+              <span class="checkbox-text">I confirm that all information provided is accurate and I have necessary permissions to submit this application.</span>
             </label>
           </div>
         </div>
       </section>
 
       <div class="form-actions">
-        
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
+        <button type="button" class="btn btn-outline" (click)="saveDraft()" [disabled]="isSubmitting()">Save as Draft</button>
+        <button type="submit" class="btn btn-primary" [disabled]="!dscForm.form.valid || isSubmitting() || !isVerified">
           @if (isSubmitting()) {
-            <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
+            <span class="spinner"></span> Submitting...
           } @else {
             Submit Application
           }
         </button>
       </div>
-
     </form>
   </div>
 </div>

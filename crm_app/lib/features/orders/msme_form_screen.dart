@@ -1,10 +1,12 @@
+import 'package:crm_app/core/theme/app_theme.dart';
+import 'package:crm_app/providers/auth_provider.dart';
+import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
-import 'package:crm_app/core/utils/file_picker_util.dart';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
@@ -24,183 +26,142 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // Enterprise details
-  final _enterpriseNameController = TextEditingController();
-  String _orgType = 'Proprietorship Registration';
-  String _majorActivity = 'Service';
-  final _addressController = TextEditingController();
-  final _unitNameController = TextEditingController();
+  // 1. Applicant
+  final _aadhaarController = TextEditingController();
+  final _entrepreneurNameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
-  final _maleEmployeesController = TextEditingController();
-  final _femaleEmployeesController = TextEditingController();
-  final _incDateController = TextEditingController();
-  final _commenceDateController = TextEditingController();
-  final _prevMsmeController = TextEditingController();
-  final _gstController = TextEditingController();
+
+  // 2. Organization
+  String _orgType = 'Proprietorship';
+  final _enterpriseNameController = TextEditingController();
+  final _incorpDateController = TextEditingController();
+
+  // 3. PAN & GST
+  final _panController = TextEditingController();
+  final _panNameController = TextEditingController();
+  final _panDobController = TextEditingController();
+  String _hasGstin = 'No';
+  final _gstinController = TextEditingController();
+
+  // 4. Business
   final _investmentController = TextEditingController();
   final _turnoverController = TextEditingController();
-  String? _companyPanPath;
+  final _officeNameController = TextEditingController();
+  String _majorActivity = 'Manufacturing';
+  final _officeAddressController = TextEditingController();
 
-  // Business owner details
-  final _ownerNameController = TextEditingController();
-  String _gender = 'Male';
-  final _whatsappController = TextEditingController();
-  final _personalEmailController = TextEditingController();
-  String _physicallyHandicapped = 'No';
+  // 5. Category
   String _socialCategory = 'General';
-  String? _ownerAadhaarPath;
-  String? _ownerPassbookPath;
+  String _gender = 'Male';
+  String _isDivyang = 'No';
 
-  bool _isVerified = false;
+  // 6. Bank
+  final _bankNameController = TextEditingController();
+  final _ifsCodeController = TextEditingController();
+  final _bankAccountController = TextEditingController();
+
+  // 7. Employees
+  final _maleEmpController = TextEditingController(text: '0');
+  final _femaleEmpController = TextEditingController(text: '0');
+
+  // 8. TReDS
+  String _tredsInterested = 'No';
+
+  int get _totalEmployees {
+    int male = int.tryParse(_maleEmpController.text) ?? 0;
+    int female = int.tryParse(_femaleEmpController.text) ?? 0;
+    return male + female;
+  }
 
   @override
-    @override
   void initState() {
     super.initState();
+    _maleEmpController.addListener(() => setState(() {}));
+    _femaleEmpController.addListener(() => setState(() {}));
     _loadDraft();
   }
 
   @override
   void dispose() {
-    _enterpriseNameController.dispose();
-    _addressController.dispose();
-    _unitNameController.dispose();
-    _mobileController.dispose();
-    _emailController.dispose();
-    _maleEmployeesController.dispose();
-    _femaleEmployeesController.dispose();
-    _incDateController.dispose();
-    _commenceDateController.dispose();
-    _prevMsmeController.dispose();
-    _gstController.dispose();
-    _investmentController.dispose();
-    _turnoverController.dispose();
-    _ownerNameController.dispose();
-    _whatsappController.dispose();
-    _personalEmailController.dispose();
+    _aadhaarController.dispose(); _entrepreneurNameController.dispose(); _mobileController.dispose(); _emailController.dispose();
+    _enterpriseNameController.dispose(); _incorpDateController.dispose(); _panController.dispose(); _panNameController.dispose();
+    _panDobController.dispose(); _gstinController.dispose(); _investmentController.dispose(); _turnoverController.dispose();
+    _officeNameController.dispose(); _officeAddressController.dispose(); _bankNameController.dispose(); _ifsCodeController.dispose();
+    _bankAccountController.dispose(); _maleEmpController.dispose(); _femaleEmpController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePickerUtil.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: allowedExtensions,
-    );
-    if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 2 * 1024 * 1024) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Upload a file less than 2 MB or equal to 2 MB.'),
-          backgroundColor: Colors.red,
-        ));
-        return;
-      }
+  Future<void> _loadDraft() async {
+    final draftData = await ref.read(draftServiceProvider).loadDraft(widget.order.id, 'MsmeFormScreen');
+    if (draftData != null && mounted) {
       setState(() {
-        onPicked(result.files.single.path!);
+        _aadhaarController.text = draftData['aadhaarNumber'] ?? '';
+        _entrepreneurNameController.text = draftData['entrepreneurName'] ?? '';
+        _mobileController.text = draftData['mobileNumber'] ?? '';
+        _emailController.text = draftData['email'] ?? '';
+        _orgType = draftData['orgType'] ?? 'Proprietorship';
+        _enterpriseNameController.text = draftData['enterpriseName'] ?? '';
+        _incorpDateController.text = draftData['incorporationDate'] ?? '';
+        _panController.text = draftData['pan'] ?? '';
+        _panNameController.text = draftData['panName'] ?? '';
+        _panDobController.text = draftData['panDob'] ?? '';
+        _hasGstin = draftData['hasGstin'] ?? 'No';
+        _gstinController.text = draftData['gstinNumber'] ?? '';
+        _investmentController.text = draftData['investment'] ?? '';
+        _turnoverController.text = draftData['turnover'] ?? '';
+        _officeNameController.text = draftData['officeName'] ?? '';
+        _majorActivity = draftData['majorActivity'] ?? 'Manufacturing';
+        _officeAddressController.text = draftData['officeAddress'] ?? '';
+        _socialCategory = draftData['socialCategory'] ?? 'General';
+        _gender = draftData['gender'] ?? 'Male';
+        _isDivyang = draftData['isDivyang'] ?? 'No';
+        _bankNameController.text = draftData['bankName'] ?? '';
+        _ifsCodeController.text = draftData['ifsCode'] ?? '';
+        _bankAccountController.text = draftData['bankAccount'] ?? '';
+        _maleEmpController.text = draftData['maleEmployees']?.toString() ?? '0';
+        _femaleEmpController.text = draftData['femaleEmployees']?.toString() ?? '0';
+        _tredsInterested = draftData['tredsInterested'] ?? 'No';
       });
     }
   }
 
-  
-  Future<void> _loadDraft() async {
-    final draftService = ref.read(draftServiceProvider);
-    final draft = await draftService.loadDraft(widget.order.id, 'MsmeFormScreen');
-    if (draft != null) {
-      if (mounted) {
-        setState(() {
-        if (draft.containsKey('enterpriseName')) _enterpriseNameController.text = draft['enterpriseName'];
-        if (draft.containsKey('address')) _addressController.text = draft['address'];
-        if (draft.containsKey('unitName')) _unitNameController.text = draft['unitName'];
-        if (draft.containsKey('mobile')) _mobileController.text = draft['mobile'];
-        if (draft.containsKey('email')) _emailController.text = draft['email'];
-        if (draft.containsKey('maleEmployees')) _maleEmployeesController.text = draft['maleEmployees'];
-        if (draft.containsKey('femaleEmployees')) _femaleEmployeesController.text = draft['femaleEmployees'];
-        if (draft.containsKey('incDate')) _incDateController.text = draft['incDate'];
-        if (draft.containsKey('commenceDate')) _commenceDateController.text = draft['commenceDate'];
-        if (draft.containsKey('prevMsme')) _prevMsmeController.text = draft['prevMsme'];
-        if (draft.containsKey('gst')) _gstController.text = draft['gst'];
-        if (draft.containsKey('investment')) _investmentController.text = draft['investment'];
-        if (draft.containsKey('turnover')) _turnoverController.text = draft['turnover'];
-        if (draft.containsKey('ownerName')) _ownerNameController.text = draft['ownerName'];
-        if (draft.containsKey('whatsapp')) _whatsappController.text = draft['whatsapp'];
-        if (draft.containsKey('personalEmail')) _personalEmailController.text = draft['personalEmail'];
-        if (draft.containsKey('orgType')) _orgType = draft['orgType'];
-        if (draft.containsKey('majorActivity')) _majorActivity = draft['majorActivity'];
-        if (draft.containsKey('gender')) _gender = draft['gender'];
-        if (draft.containsKey('physicallyHandicapped')) _physicallyHandicapped = draft['physicallyHandicapped'];
-        if (draft.containsKey('socialCategory')) _socialCategory = draft['socialCategory'];
-
-                if (draft.containsKey('companyPanPath')) _companyPanPath = draft['companyPanPath'];
-        if (draft.containsKey('ownerAadhaarPath')) _ownerAadhaarPath = draft['ownerAadhaarPath'];
-        if (draft.containsKey('ownerPassbookPath')) _ownerPassbookPath = draft['ownerPassbookPath'];
-});
-      }
-    }
-  }
-
   Future<void> _saveDraft() async {
-    final draftService = ref.read(draftServiceProvider);
-    final data = <String, dynamic>{
-      'enterpriseName': _enterpriseNameController.text,
-      'address': _addressController.text,
-      'unitName': _unitNameController.text,
-      'mobile': _mobileController.text,
-      'email': _emailController.text,
-      'maleEmployees': _maleEmployeesController.text,
-      'femaleEmployees': _femaleEmployeesController.text,
-      'incDate': _incDateController.text,
-      'commenceDate': _commenceDateController.text,
-      'prevMsme': _prevMsmeController.text,
-      'gst': _gstController.text,
-      'investment': _investmentController.text,
-      'turnover': _turnoverController.text,
-      'ownerName': _ownerNameController.text,
-      'whatsapp': _whatsappController.text,
-      'personalEmail': _personalEmailController.text,
-      'orgType': _orgType,
-      'majorActivity': _majorActivity,
-      'gender': _gender,
-      'physicallyHandicapped': _physicallyHandicapped,
-      'socialCategory': _socialCategory,
-
-          'companyPanPath': _companyPanPath,
-      'ownerAadhaarPath': _ownerAadhaarPath,
-      'ownerPassbookPath': _ownerPassbookPath,
-};
-    await draftService.saveDraft(widget.order.id, 'MsmeFormScreen', data);
+    final draftData = {
+      'aadhaarNumber': _aadhaarController.text, 'entrepreneurName': _entrepreneurNameController.text, 'mobileNumber': _mobileController.text, 'email': _emailController.text,
+      'orgType': _orgType, 'enterpriseName': _enterpriseNameController.text, 'incorporationDate': _incorpDateController.text,
+      'pan': _panController.text, 'panName': _panNameController.text, 'panDob': _panDobController.text, 'hasGstin': _hasGstin, 'gstinNumber': _gstinController.text,
+      'investment': _investmentController.text, 'turnover': _turnoverController.text, 'officeName': _officeNameController.text, 'majorActivity': _majorActivity, 'officeAddress': _officeAddressController.text,
+      'socialCategory': _socialCategory, 'gender': _gender, 'isDivyang': _isDivyang,
+      'bankName': _bankNameController.text, 'ifsCode': _ifsCodeController.text, 'bankAccount': _bankAccountController.text,
+      'maleEmployees': int.tryParse(_maleEmpController.text) ?? 0, 'femaleEmployees': int.tryParse(_femaleEmpController.text) ?? 0,
+      'tredsInterested': _tredsInterested
+    };
+    await ref.read(draftServiceProvider).saveDraft(widget.order.id, 'MsmeFormScreen', draftData);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Draft saved successfully!'),
-        backgroundColor: AppTheme.deepTeal,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Draft saved successfully!')));
     }
   }
 
-  Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please fill all required fields.'),
-        backgroundColor: Colors.red,
-      ));
-      return;
+  Future<void> _selectDate(TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365)),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
     }
+  }
 
-    if (_companyPanPath == null) {
-      _showError("Please upload your Company's PAN Card.");
-      return;
-    }
-    if (_ownerAadhaarPath == null) {
-      _showError("Please upload your Aadhaar Card.");
-      return;
-    }
-    if (_ownerPassbookPath == null) {
-      _showError("Please upload your Bank Passbook.");
-      return;
-    }
-
-    if (!_isVerified) {
-      _showError("Please check the verification checkbox.");
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    if (_hasGstin == 'Yes' && _gstinController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please provide your GSTIN number.')));
       return;
     }
 
@@ -209,458 +170,172 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     try {
       final uid = ref.read(authStateProvider).value?.uid;
       if (uid == null) throw Exception('Not authenticated');
-
-      final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-msme-form');
-      var request = http.MultipartRequest('POST', uri);
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${kBaseUrl}/api/orders/${widget.order.id}/submit-msme-form'),
+      );
       request.headers['x-user-id'] = uid;
 
-      // Enterprise Details
-      request.fields['enterpriseName'] = _enterpriseNameController.text;
-      request.fields['orgType'] = _orgType;
-      request.fields['majorActivity'] = _majorActivity;
-      request.fields['address'] = _addressController.text;
-      request.fields['unitName'] = _unitNameController.text;
-      request.fields['mobile'] = _mobileController.text;
-      request.fields['email'] = _emailController.text;
-      request.fields['maleEmployees'] = _maleEmployeesController.text;
-      request.fields['femaleEmployees'] = _femaleEmployeesController.text;
-      request.fields['incDate'] = _incDateController.text;
-      request.fields['commenceDate'] = _commenceDateController.text;
-      request.fields['prevMsme'] = _prevMsmeController.text;
-      request.fields['gst'] = _gstController.text;
-      request.fields['investment'] = _investmentController.text;
-      request.fields['turnover'] = _turnoverController.text;
+      final formData = {
+        'aadhaarNumber': _aadhaarController.text, 'entrepreneurName': _entrepreneurNameController.text, 'mobileNumber': _mobileController.text, 'email': _emailController.text,
+        'orgType': _orgType, 'enterpriseName': _enterpriseNameController.text, 'incorporationDate': _incorpDateController.text,
+        'pan': _panController.text, 'panName': _panNameController.text, 'panDob': _panDobController.text, 'hasGstin': _hasGstin, 'gstinNumber': _hasGstin == 'Yes' ? _gstinController.text : '',
+        'investment': _investmentController.text, 'turnover': _turnoverController.text, 'officeName': _officeNameController.text, 'majorActivity': _majorActivity, 'officeAddress': _officeAddressController.text,
+        'socialCategory': _socialCategory, 'gender': _gender, 'isDivyang': _isDivyang,
+        'bankName': _bankNameController.text, 'ifsCode': _ifsCodeController.text, 'bankAccount': _bankAccountController.text,
+        'maleEmployees': int.tryParse(_maleEmpController.text) ?? 0, 'femaleEmployees': int.tryParse(_femaleEmpController.text) ?? 0, 'totalEmployees': _totalEmployees,
+        'tredsInterested': _tredsInterested
+      };
 
-      // Business Owner Details
-      request.fields['ownerName'] = _ownerNameController.text;
-      request.fields['gender'] = _gender;
-      request.fields['whatsapp'] = _whatsappController.text;
-      request.fields['personalEmail'] = _personalEmailController.text;
-      request.fields['physicallyHandicapped'] = _physicallyHandicapped;
-      request.fields['socialCategory'] = _socialCategory;
-
-      // Add files
-      request.files.add(await http.MultipartFile.fromPath('companyPan', _companyPanPath!));
-      request.files.add(await http.MultipartFile.fromPath('ownerAadhaar', _ownerAadhaarPath!));
-      request.files.add(await http.MultipartFile.fromPath('ownerPassbook', _ownerPassbookPath!));
+      request.fields['data'] = jsonEncode(formData);
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (!mounted) return;
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Success'),
-            content: const Text('Form submitted successfully!'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-        if (!mounted) return;
-        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'MsmeFormScreen');
-        Navigator.pop(context, true); // Success
+        await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'MsmeFormScreen');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('MSME Application submitted successfully!')));
+          Navigator.pop(context, true);
+        }
       } else {
-        throw Exception('Failed to submit form: ${response.body}');
+        throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to submit form');
       }
     } catch (e) {
-      showGlobalError(e);
-      if (!mounted) return;
-      _showError('Error: $e');
+      if (mounted) showGlobalError(e.toString());
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: Colors.red,
-    ));
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Text(title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+    );
   }
 
   @override
-  
-  Future<bool> _onWillPop() async {
-    final shouldPop = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Save as Draft?'),
-          content: const Text('Do you want to save your progress before exiting?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(
-                'Discard',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Cancel',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _saveDraft();
-                if (context.mounted) Navigator.of(context).pop(true);
-              },
-              child: Text(
-                'Save as Draft',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.corporateBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-    return shouldPop ?? false;
-  }
-
-@override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-      backgroundColor: Colors.white,
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: const [],
+        title: Text('MSME / Udyam Registration', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        actions: [
+          TextButton.icon(
+            onPressed: _saveDraft,
+            icon: const Icon(Icons.save_outlined, color: Colors.white),
+            label: Text('Save Draft', style: GoogleFonts.inter(color: Colors.white)),
+          ),
+        ],
       ),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator()) 
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 children: [
-                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue)),
+                  _buildSectionHeader('1. Applicant / Entrepreneur Details'),
+                  TextFormField(controller: _aadhaarController, decoration: const InputDecoration(labelText: 'Aadhar Number *', border: OutlineInputBorder()), keyboardType: TextInputType.number, maxLength: 12, validator: (val) => val!.length != 12 ? 'Enter 12 digits' : null),
                   const SizedBox(height: 16),
-                  
-                  // Enterprise Details
-                  _buildSectionContainer(
-                    title: 'Enterprise / Business Details',
-                    children: [
-                      _buildField('Name of the Enterprise / Business', '', _enterpriseNameController, isRequired: true),
-                      
-                      _buildRadioGroup('Type of organization', '', [
-                        'Proprietorship Registration',
-                        'Partnership',
-                        'LLP',
-                        'Private Limited',
-                        'OPC Incorporation',
-                        'Trust',
-                        'Society'
-                      ], _orgType, (v) => setState(() => _orgType = v)),
-                      
-                      _buildRadioGroup('Major activity', '', [
-                        'Service',
-                        'Manufacturing'
-                      ], _majorActivity, (v) => setState(() => _majorActivity = v)),
-                      
-                      _buildField('Official Address of the enterprise', 'Full address', _addressController, isRequired: true, maxLines: 3),
-                      _buildField('Name of Unit(s) / Plant (s)', 'Note: If no separate unit/plant, enter your office address', _unitNameController, isRequired: true),
-                      _buildField('Official Mobile Number', '', _mobileController, isRequired: true, keyboardType: TextInputType.phone),
-                      _buildField('Official Mail ID', '', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                      _buildField('No of Male Employees in your Business', '', _maleEmployeesController, isRequired: true, keyboardType: TextInputType.number),
-                      _buildField('No of Female Employees in your Business', '', _femaleEmployeesController, isRequired: true, keyboardType: TextInputType.number),
-                      
-                      _buildField('Date of Incorporation/ Registration of Enterprise', 'DD/MM/YYYY', _incDateController, isRequired: true, isDate: true),
-                      _buildField('Date of Commencement of Business', 'DD/MM/YYYY', _commenceDateController, isRequired: true, isDate: true),
-                      
-                      _buildField('Previous MSME / Udyog Aadhaar', 'if any', _prevMsmeController, isRequired: false),
-                      _buildField('GST number', 'if available', _gstController, isRequired: true),
-                      
-                      _buildField('Total Investment in Plant / Machinery', 'Example: Rs.10,000', _investmentController, isRequired: true),
-                      _buildField('Total Annual Turnover', 'Example: Rs.1,00,000', _turnoverController, isRequired: true),
-                      
-                      _buildFileRow('Upload Your Company\'s PAN Card', 'Upload 1 supported file: PDF or image. Max 2 MB.', _companyPanPath, () => _pickFile((path) => _companyPanPath = path)),
-                    ],
+                  TextFormField(controller: _entrepreneurNameController, decoration: const InputDecoration(labelText: 'Name of Entrepreneur *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _mobileController, decoration: const InputDecoration(labelText: 'Mobile Number *', border: OutlineInputBorder()), keyboardType: TextInputType.phone, maxLength: 10, validator: (val) => val!.length != 10 ? 'Enter 10 digits' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email *', border: OutlineInputBorder()), keyboardType: TextInputType.emailAddress, validator: (val) => !val!.contains('@') ? 'Valid email required' : null),
+
+                  _buildSectionHeader('2. Organization Details'),
+                  Text('Type of Organization *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Proprietorship', 'Partnership', 'LLP', 'Private Limited', 'OPC', 'Trust', 'Society'].map((type) => 
+                    RadioListTile(title: Text(type), value: type, groupValue: _orgType, onChanged: (v) => setState(() => _orgType = v.toString()))),
+                  TextFormField(controller: _enterpriseNameController, decoration: const InputDecoration(labelText: 'Name of Enterprise *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _incorpDateController,
+                    decoration: const InputDecoration(labelText: 'Date of Incorporation *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
+                    readOnly: true,
+                    onTap: () => _selectDate(_incorpDateController),
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
                   ),
 
-                  // Business Owner Details
-                  _buildSectionContainer(
-                    title: 'Business owner details',
-                    children: [
-                      _buildField('Full name', '', _ownerNameController, isRequired: true),
-                      
-                      _buildRadioGroup('Gender', '', ['Male', 'Female', 'Other'], _gender, (v) => setState(() => _gender = v)),
-                      
-                      _buildField('Personal WhatsApp number', '', _whatsappController, isRequired: true, keyboardType: TextInputType.phone),
-                      _buildField('Personal Mail ID', '', _personalEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                      
-                      _buildRadioGroup('Are you physically Handicapped?', '', ['Yes', 'No'], _physicallyHandicapped, (v) => setState(() => _physicallyHandicapped = v)),
-                      
-                      _buildRadioGroup('Social Category of the entrepreneur', '(General / SC / ST / OBC)', ['General', 'SC', 'ST', 'OBC'], _socialCategory, (v) => setState(() => _socialCategory = v)),
-                      
-                      _buildFileRow('Upload Your Aadhar Card', 'Upload 1 supported file: PDF or image. Max 2 MB.', _ownerAadhaarPath, () => _pickFile((path) => _ownerAadhaarPath = path)),
-                      _buildFileRow('Upload Your Bank Passbook', 'Upload 1 supported file: PDF or image. Max 2 MB.', _ownerPassbookPath, () => _pickFile((path) => _ownerPassbookPath = path)),
-                    ],
+                  _buildSectionHeader('3. PAN & GST Details'),
+                  TextFormField(controller: _panController, decoration: const InputDecoration(labelText: 'PAN *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _panNameController, decoration: const InputDecoration(labelText: 'Name of PAN Holder *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _panDobController,
+                    decoration: const InputDecoration(labelText: 'DOB OR DOI as per PAN *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
+                    readOnly: true,
+                    onTap: () => _selectDate(_panDobController),
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Do you have GSTIN *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Yes', 'No', 'Exempted'].map((type) => 
+                    RadioListTile(title: Text(type), value: type, groupValue: _hasGstin, onChanged: (v) => setState(() => _hasGstin = v.toString()))),
+                  if (_hasGstin == 'Yes')
+                    TextFormField(controller: _gstinController, decoration: const InputDecoration(labelText: 'GST Number *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+
+                  _buildSectionHeader('4. Business Details'),
+                  TextFormField(controller: _investmentController, decoration: const InputDecoration(labelText: 'Total Investment Made in Business *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _turnoverController, decoration: const InputDecoration(labelText: 'Turnover in Last FY 25-26 *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _officeNameController, decoration: const InputDecoration(labelText: 'Office Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  Text('Major Activity of Unit *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Manufacturing', 'Services', 'Trading'].map((type) => 
+                    RadioListTile(title: Text(type), value: type, groupValue: _majorActivity, onChanged: (v) => setState(() => _majorActivity = v.toString()))),
+                  TextFormField(controller: _officeAddressController, decoration: const InputDecoration(labelText: 'Office Address *', border: OutlineInputBorder()), maxLines: 3, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+
+                  _buildSectionHeader('5. Social & Category Details'),
+                  Text('Social Category *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['General', 'SC', 'ST', 'OBC'].map((type) => 
+                    RadioListTile(title: Text(type), value: type, groupValue: _socialCategory, onChanged: (v) => setState(() => _socialCategory = v.toString()))),
+                  Text('Gender *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Male', 'Female', 'Others'].map((type) => 
+                    RadioListTile(title: Text(type), value: type, groupValue: _gender, onChanged: (v) => setState(() => _gender = v.toString()))),
+                  Text('Specially Abled (DIVYANG) *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Yes', 'No'].map((type) => 
+                    RadioListTile(title: Text(type), value: type, groupValue: _isDivyang, onChanged: (v) => setState(() => _isDivyang = v.toString()))),
+
+                  _buildSectionHeader('6. Bank Details'),
+                  TextFormField(controller: _bankNameController, decoration: const InputDecoration(labelText: 'Bank Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _ifsCodeController, decoration: const InputDecoration(labelText: 'IFS Code *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _bankAccountController, decoration: const InputDecoration(labelText: 'Bank Account Number *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+
+                  _buildSectionHeader('7. Employee Details'),
+                  TextFormField(controller: _maleEmpController, decoration: const InputDecoration(labelText: 'No. of Persons Employed (Male) *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(controller: _femaleEmpController, decoration: const InputDecoration(labelText: 'No. of Persons Employed (Female) *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: 'Total Employees', border: OutlineInputBorder()),
+                    controller: TextEditingController(text: _totalEmployees.toString()),
+                    enabled: false,
                   ),
 
-                  // Verification Checkbox
-                  _buildSectionContainer(
-                    title: 'Verification',
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Checkbox(
-                            value: _isVerified,
-                            activeColor: AppTheme.corporateBlue,
-                            onChanged: (val) {
-                              setState(() {
-                                _isVerified = val ?? false;
-                              });
-                            },
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 12.0),
-                              child: RichText(
-                                text: const TextSpan(
-                                  text: 'I here verify that above mentioned facts are true and correct to best of my knowledge and belief',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
-                                  children: [
-                                    TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
-                                  ]
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-              ElevatedButton(
-                    onPressed: _submitDetails,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.corporateBlue,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  _buildSectionHeader('8. TReDS Registration'),
+                  Text('Are you interested in getting registered on TReDS Portals? *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Yes', 'No'].map((type) => 
+                    RadioListTile(title: Text(type), value: type, groupValue: _tredsInterested, onChanged: (v) => setState(() => _tredsInterested = v.toString()))),
+
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                      child: const Text('Submit Application', style: TextStyle(fontSize: 16)),
                     ),
-                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
-    ));
-  }
-
-  Widget _buildSectionContainer({required String title, required List<Widget> children}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 32),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.shade100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
-          const SizedBox(height: 24),
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 12),
-          ...options.map((opt) {
-            return InkWell(
-              onTap: () => onChanged(opt),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Radio<String>(
-                      value: opt,
-                      groupValue: currentValue,
-                      onChanged: (v) {
-                        if (v != null) onChanged(v);
-                      },
-                      activeColor: AppTheme.corporateBlue,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: Text(opt, style: const TextStyle(fontSize: 14, height: 1.3)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: [
-                if (isRequired)
-                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            readOnly: isDate,
-            onTap: isDate ? () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100),
-              );
-              if (date != null) {
-                controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
-              }
-            } : null,
-            maxLines: maxLines,
-            decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : "Enter ${label.replaceAll('*', '').trim()}",
-              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
-            ),
-            validator: (v) {
-  if (isRequired && (v == null || v.trim().isEmpty)) {
-    return 'This is a required question';
-  }
-  if (v != null && v.trim().isNotEmpty) {
-    final text = v.trim();
-    final labelLower = label.toLowerCase();
-    if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact') || labelLower.contains('number')) {
-      if (labelLower.contains('company') || labelLower.contains('whatsapp') || labelLower.contains('director') || labelLower.contains('business') || labelLower == 'phone number' || labelLower == 'mobile number' || labelLower == 'contact number' || labelLower == 'company number') {
-         if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
-      }
-    }
-    if (labelLower.contains('mail') || labelLower.contains('email')) {
-      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) return 'Enter a valid email address';
-    }
-    if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
-      if (!RegExp(r'^[2-9]{1}[0-9]{11}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
-    }
-    if (labelLower.contains('pan ') || labelLower == 'pan' || labelLower.contains('pan number')) {
-      if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
-    }
-    if (labelLower.contains('tan ') || labelLower == 'tan' || labelLower.contains('tan number')) {
-      if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
-    }
-  }
-  return null;
-},
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
-                  style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: onPick,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  minimumSize: const Size(80, 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

@@ -1,6 +1,10 @@
+import 'package:crm_app/core/theme/app_theme.dart';
+import 'package:crm_app/providers/auth_provider.dart';
+import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,12 +30,34 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
 
   String _applyingFor = 'Individual DSC for Company Incorporation / Registration';
   final _applicantNameController = TextEditingController();
+  final _applicantPanNumberController = TextEditingController();
+  final _applicantDobController = TextEditingController();
   final _applicantMailController = TextEditingController();
   final _applicantPhoneController = TextEditingController();
   final _organizationNameController = TextEditingController();
   final _organizationTypeController = TextEditingController();
+  String? _organizationType;
   final _officeAddressController = TextEditingController();
   final _courierAddressController = TextEditingController();
+  
+  final List<String> _organizationTypes = [
+    'Proprietorship',
+    'Partnership',
+    'LLP',
+    'Private Limited Company',
+    'Public Limited Company',
+    'Section 8 Company',
+    'AOP / BOI',
+    'NGO',
+    'Trust',
+    'Society',
+    'Bank',
+    'Government Organization',
+    'Department',
+    'HUF',
+    'Pvt Ltd',
+    'Foreign Company'
+  ];
 
   String? _applicantPanPath;
   String? _applicantAadhaarPath;
@@ -54,6 +80,8 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
   @override
   void dispose() {
     _applicantNameController.dispose();
+    _applicantPanNumberController.dispose();
+    _applicantDobController.dispose();
     _applicantMailController.dispose();
     _applicantPhoneController.dispose();
     _organizationNameController.dispose();
@@ -91,10 +119,12 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
       if (mounted) {
         setState(() {
         if (draft.containsKey('applicantName')) _applicantNameController.text = draft['applicantName'];
+        if (draft.containsKey('applicantPanNumber')) _applicantPanNumberController.text = draft['applicantPanNumber'];
+        if (draft.containsKey('applicantDob')) _applicantDobController.text = draft['applicantDob'];
         if (draft.containsKey('applicantMail')) _applicantMailController.text = draft['applicantMail'];
         if (draft.containsKey('applicantPhone')) _applicantPhoneController.text = draft['applicantPhone'];
         if (draft.containsKey('organizationName')) _organizationNameController.text = draft['organizationName'];
-        if (draft.containsKey('organizationType')) _organizationTypeController.text = draft['organizationType'];
+        if (draft.containsKey('organizationType')) _organizationType = draft['organizationType'];
         if (draft.containsKey('officeAddress')) _officeAddressController.text = draft['officeAddress'];
         if (draft.containsKey('courierAddress')) _courierAddressController.text = draft['courierAddress'];
         if (draft.containsKey('applyingFor')) _applyingFor = draft['applyingFor'];
@@ -116,10 +146,12 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
     final draftService = ref.read(draftServiceProvider);
     final data = <String, dynamic>{
       'applicantName': _applicantNameController.text,
+      'applicantPanNumber': _applicantPanNumberController.text,
+      'applicantDob': _applicantDobController.text,
       'applicantMail': _applicantMailController.text,
       'applicantPhone': _applicantPhoneController.text,
       'organizationName': _organizationNameController.text,
-      'organizationType': _organizationTypeController.text,
+      'organizationType': _organizationType,
       'officeAddress': _officeAddressController.text,
       'courierAddress': _courierAddressController.text,
       'applyingFor': _applyingFor,
@@ -181,10 +213,12 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
 
       request.fields['applyingFor'] = _applyingFor;
       request.fields['applicantName'] = _applicantNameController.text;
+      request.fields['applicantPanNumber'] = _applicantPanNumberController.text;
+      request.fields['applicantDob'] = _applicantDobController.text;
       request.fields['applicantMail'] = _applicantMailController.text;
       request.fields['applicantPhone'] = _applicantPhoneController.text;
       request.fields['organizationName'] = _organizationNameController.text;
-      request.fields['organizationType'] = _organizationTypeController.text;
+      request.fields['organizationType'] = _organizationType ?? '';
       request.fields['officeAddress'] = _officeAddressController.text;
       request.fields['courierAddress'] = _courierAddressController.text;
 

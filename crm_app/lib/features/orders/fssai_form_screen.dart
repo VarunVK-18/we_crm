@@ -1,3 +1,6 @@
+import 'package:crm_app/core/theme/app_theme.dart';
+import 'package:crm_app/providers/auth_provider.dart';
+import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
@@ -27,59 +30,46 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
 
   // Personal Info
   final _fullNameController = TextEditingController();
+  final _aadhaarNumberController = TextEditingController();
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
+  final _employeesController = TextEditingController();
 
   // Business Details
   final _businessNameController = TextEditingController();
-  String _businessType = 'Proprietorship Registration';
+  final _companyPanNumberController = TextEditingController();
+  final _startDateController = TextEditingController();
+  String _annualTurnover = 'Below ₹12 Lakhs';
+  String _businessType = 'Proprietorship';
   final _otherBusinessTypeController = TextEditingController();
 
   // Nature of Food Business (Multi-Select)
   final List<String> _natureOptions = [
-    'Manufacturer',
-    'Trader',
-    'Retailer',
-    'Distributor',
-    'Wholesaler',
-    'Restaurant / Food Service',
-    'Caterer',
-    'Importer',
-    'Exporter',
-    'Storage / Warehouse',
-    'Transporter',
-    'E-commerce Food Seller',
-    'Other'
+    'Manufacturer', 'Trader', 'Retailer', 'Distributor', 'Wholesaler',
+    'Restaurant / Food Service', 'Caterer', 'Importer', 'Exporter',
+    'Storage / Warehouse', 'Transporter', 'E-commerce Food Seller', 'Other'
   ];
   final Set<String> _selectedNature = {};
   final _otherNatureController = TextEditingController();
 
-  final _startDateController = TextEditingController();
-  String _annualTurnover = 'Below ₹12 Lakhs';
-  final _employeesController = TextEditingController();
-
   // Address
   String _premisesType = 'Own';
   final _premisesAddressController = TextEditingController();
-  final _premisesVillageController = TextEditingController();
-  final _premisesDistrictController = TextEditingController();
 
   String _isCorrespondenceSame = 'Yes';
   final _corrAddressController = TextEditingController();
-  final _corrVillageController = TextEditingController();
-  final _corrDistrictController = TextEditingController();
 
   // Documents
   String? _aadhaarPath;
   String? _panPath;
   String? _photoPath;
   String? _addressProofPath;
+  String? _unitEntrancePhotoPath;
 
   // Verification
   bool _isDeclared = false;
 
   @override
-    @override
   void initState() {
     super.initState();
     _loadDraft();
@@ -88,153 +78,129 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
   @override
   void dispose() {
     _fullNameController.dispose();
+    _aadhaarNumberController.dispose();
     _mobileController.dispose();
     _emailController.dispose();
+    _employeesController.dispose();
     _businessNameController.dispose();
+    _companyPanNumberController.dispose();
     _otherBusinessTypeController.dispose();
     _otherNatureController.dispose();
     _startDateController.dispose();
-    _employeesController.dispose();
     _premisesAddressController.dispose();
-    _premisesVillageController.dispose();
-    _premisesDistrictController.dispose();
     _corrAddressController.dispose();
-    _corrVillageController.dispose();
-    _corrDistrictController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePickerUtil.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
-    );
-    if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 2 * 1024 * 1024) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Upload a file less than 2 MB or equal to 2 MB.'),
-          backgroundColor: Colors.red,
-        ));
-        return;
-      }
+  Future<void> _loadDraft() async {
+    final draftData = await ref.read(draftServiceProvider).loadDraft(widget.order.id, 'FssaiFormScreen');
+    if (draftData != null && mounted) {
       setState(() {
-        onPicked(result.files.single.path!);
+        _fullNameController.text = draftData['fullName'] ?? '';
+        _aadhaarNumberController.text = draftData['aadhaarNumber'] ?? '';
+        _mobileController.text = draftData['mobile'] ?? '';
+        _emailController.text = draftData['email'] ?? '';
+        _employeesController.text = draftData['employees'] ?? '';
+        _businessNameController.text = draftData['businessName'] ?? '';
+        _companyPanNumberController.text = draftData['companyPanNumber'] ?? '';
+        _businessType = draftData['businessType'] ?? 'Proprietorship';
+        _otherBusinessTypeController.text = draftData['otherBusinessType'] ?? '';
+        _startDateController.text = draftData['startDate'] ?? '';
+        _annualTurnover = draftData['annualTurnover'] ?? 'Below ₹12 Lakhs';
+        
+        if (draftData['selectedNature'] != null) {
+          _selectedNature.clear();
+          _selectedNature.addAll(List<String>.from(jsonDecode(draftData['selectedNature'])));
+        }
+        _otherNatureController.text = draftData['otherNature'] ?? '';
+
+        _premisesType = draftData['premisesType'] ?? 'Own';
+        _premisesAddressController.text = draftData['premisesAddress'] ?? '';
+        _isCorrespondenceSame = draftData['isCorrespondenceSame'] ?? 'Yes';
+        _corrAddressController.text = draftData['corrAddress'] ?? '';
       });
     }
   }
 
-  
-  Future<void> _loadDraft() async {
-    final draftService = ref.read(draftServiceProvider);
-    final draft = await draftService.loadDraft(widget.order.id, 'FssaiFormScreen');
-    if (draft != null) {
-      if (mounted) {
-        setState(() {
-        if (draft.containsKey('fullName')) _fullNameController.text = draft['fullName'];
-        if (draft.containsKey('mobile')) _mobileController.text = draft['mobile'];
-        if (draft.containsKey('email')) _emailController.text = draft['email'];
-        if (draft.containsKey('businessName')) _businessNameController.text = draft['businessName'];
-        if (draft.containsKey('startDate')) _startDateController.text = draft['startDate'];
-        if (draft.containsKey('employees')) _employeesController.text = draft['employees'];
-        if (draft.containsKey('premisesAddress')) _premisesAddressController.text = draft['premisesAddress'];
-        if (draft.containsKey('premisesVillage')) _premisesVillageController.text = draft['premisesVillage'];
-        if (draft.containsKey('premisesDistrict')) _premisesDistrictController.text = draft['premisesDistrict'];
-        if (draft.containsKey('corrAddress')) _corrAddressController.text = draft['corrAddress'];
-        if (draft.containsKey('corrVillage')) _corrVillageController.text = draft['corrVillage'];
-        if (draft.containsKey('corrDistrict')) _corrDistrictController.text = draft['corrDistrict'];
-        if (draft.containsKey('businessType')) _businessType = draft['businessType'];
-        if (draft.containsKey('annualTurnover')) _annualTurnover = draft['annualTurnover'];
-        if (draft.containsKey('premisesType')) _premisesType = draft['premisesType'];
-        if (draft.containsKey('isCorrespondenceSame')) _isCorrespondenceSame = draft['isCorrespondenceSame'];
-
-                if (draft.containsKey('aadhaarPath')) _aadhaarPath = draft['aadhaarPath'];
-        if (draft.containsKey('panPath')) _panPath = draft['panPath'];
-        if (draft.containsKey('photoPath')) _photoPath = draft['photoPath'];
-        if (draft.containsKey('addressProofPath')) _addressProofPath = draft['addressProofPath'];
-});
-      }
-    }
-  }
-
   Future<void> _saveDraft() async {
-    final draftService = ref.read(draftServiceProvider);
-    final data = <String, dynamic>{
+    final draftData = {
       'fullName': _fullNameController.text,
+      'aadhaarNumber': _aadhaarNumberController.text,
       'mobile': _mobileController.text,
       'email': _emailController.text,
-      'businessName': _businessNameController.text,
-      'startDate': _startDateController.text,
       'employees': _employeesController.text,
-      'premisesAddress': _premisesAddressController.text,
-      'premisesVillage': _premisesVillageController.text,
-      'premisesDistrict': _premisesDistrictController.text,
-      'corrAddress': _corrAddressController.text,
-      'corrVillage': _corrVillageController.text,
-      'corrDistrict': _corrDistrictController.text,
-      'businessType': _businessType == 'Other' ? 'Other: ${_otherBusinessTypeController.text}' : _businessType,
-      'natureOfBusiness': jsonEncode(_selectedNature.map((n) => n == 'Other' ? 'Other: ${_otherNatureController.text}' : n).toList()),
+      'businessName': _businessNameController.text,
+      'companyPanNumber': _companyPanNumberController.text,
+      'businessType': _businessType,
+      'otherBusinessType': _otherBusinessTypeController.text,
+      'startDate': _startDateController.text,
       'annualTurnover': _annualTurnover,
+      'selectedNature': jsonEncode(_selectedNature.toList()),
+      'otherNature': _otherNatureController.text,
       'premisesType': _premisesType,
+      'premisesAddress': _premisesAddressController.text,
       'isCorrespondenceSame': _isCorrespondenceSame,
-
-          'aadhaarPath': _aadhaarPath,
-      'panPath': _panPath,
-      'photoPath': _photoPath,
-      'addressProofPath': _addressProofPath,
-};
-    await draftService.saveDraft(widget.order.id, 'FssaiFormScreen', data);
+      'corrAddress': _corrAddressController.text,
+    };
+    await ref.read(draftServiceProvider).saveDraft(widget.order.id, 'FssaiFormScreen', draftData);
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Draft saved successfully!'),
-        backgroundColor: AppTheme.deepTeal,
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Draft saved successfully!')),
+      );
     }
   }
 
-  Future<void> _submitDetails() async {
-    if (!_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Please fill all required fields.'),
-        backgroundColor: Colors.red,
-      ));
-      return;
-    }
+  Future<void> _pickDocument(String type) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+        allowMultiple: false,
+      );
 
-    if (_businessType == 'Other' && _otherBusinessTypeController.text.trim().isEmpty) {
-      _showError("Please specify the Other Type of Business.");
-      return;
-    }
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        if (file.size > 2 * 1024 * 1024) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('File must be 2 MB or smaller (Max 2 MB).')),
+            );
+          }
+          return;
+        }
 
+        setState(() {
+          if (type == 'aadhaar') _aadhaarPath = file.path;
+          else if (type == 'pan') _panPath = file.path;
+          else if (type == 'photo') _photoPath = file.path;
+          else if (type == 'addressProof') _addressProofPath = file.path;
+          else if (type == 'unitEntrancePhoto') _unitEntrancePhotoPath = file.path;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking document: $e');
+    }
+  }
+
+  Future<void> _submitForm() async {
+    if (!_formKey.currentState!.validate()) return;
+    
     if (_selectedNature.isEmpty) {
-      _showError("Please select at least one Nature of Food Business.");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select at least one Nature of Food Business.')));
       return;
     }
-
     if (_selectedNature.contains('Other') && _otherNatureController.text.trim().isEmpty) {
-      _showError("Please specify the Other Nature of Food Business.");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please specify Other Nature of Food Business.')));
       return;
     }
 
-    if (_aadhaarPath == null) {
-      _showError("Please upload Aadhaar Card.");
-      return;
-    }
-    if (_panPath == null) {
-      _showError("Please upload PAN Card.");
-      return;
-    }
-    if (_photoPath == null) {
-      _showError("Please upload Passport Size Photo.");
-      return;
-    }
-    if (_addressProofPath == null) {
-      _showError("Please upload Business Address Proof.");
+    if (_aadhaarPath == null || _panPath == null || _photoPath == null || _addressProofPath == null || _unitEntrancePhotoPath == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please upload all required documents (Max 2 MB each).')));
       return;
     }
 
     if (!_isDeclared) {
-      _showError("Please check the declaration checkbox.");
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please accept the declaration.')));
       return;
     }
 
@@ -243,529 +209,308 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
     try {
       final uid = ref.read(authStateProvider).value?.uid;
       if (uid == null) throw Exception('Not authenticated');
-
-      final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-fssai-form');
-      var request = http.MultipartRequest('POST', uri);
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('${kBaseUrl}/api/orders/${widget.order.id}/submit-fssai-form'),
+      );
       request.headers['x-user-id'] = uid;
 
-      // Personal Info
-      request.fields['fullName'] = _fullNameController.text;
-      request.fields['mobile'] = _mobileController.text;
-      request.fields['email'] = _emailController.text;
+      final finalNature = _selectedNature.map((e) => e == 'Other' ? 'Other: ${_otherNatureController.text.trim()}' : e).toList();
 
-      // Business Details
-      request.fields['businessName'] = _businessNameController.text;
-      request.fields['businessType'] = _businessType == 'Other' ? 'Other: ${_otherBusinessTypeController.text}' : _businessType;
-      
-      List<String> finalNature = _selectedNature.map((n) => n == 'Other' ? 'Other: ${_otherNatureController.text}' : n).toList();
-      request.fields['natureOfBusiness'] = jsonEncode(finalNature);
-      
-      request.fields['startDate'] = _startDateController.text;
-      request.fields['annualTurnover'] = _annualTurnover;
-      request.fields['employees'] = _employeesController.text;
+      final formData = {
+        'fullName': _fullNameController.text.trim(),
+        'aadhaarNumber': _aadhaarNumberController.text.trim(),
+        'mobile': _mobileController.text.trim(),
+        'email': _emailController.text.trim(),
+        'employees': _employeesController.text.trim(),
+        'businessName': _businessNameController.text.trim(),
+        'companyPanNumber': _companyPanNumberController.text.trim(),
+        'businessType': _businessType == 'Other' ? 'Other: ${_otherBusinessTypeController.text.trim()}' : _businessType,
+        'startDate': _startDateController.text.trim(),
+        'annualTurnover': _annualTurnover,
+        'natureOfFoodBusiness': jsonEncode(finalNature),
+        'premisesType': _premisesType,
+        'premisesAddress': _premisesAddressController.text.trim(),
+        'isCorrespondenceSame': _isCorrespondenceSame,
+      };
 
-      // Address
-      request.fields['premisesType'] = _premisesType;
-      request.fields['premisesAddress'] = _premisesAddressController.text;
-      request.fields['premisesVillage'] = _premisesVillageController.text;
-      request.fields['premisesDistrict'] = _premisesDistrictController.text;
-      
-      request.fields['isCorrespondenceSame'] = _isCorrespondenceSame;
       if (_isCorrespondenceSame == 'No') {
-        request.fields['corrAddress'] = _corrAddressController.text;
-        request.fields['corrVillage'] = _corrVillageController.text;
-        request.fields['corrDistrict'] = _corrDistrictController.text;
+        formData['corrAddress'] = _corrAddressController.text.trim();
       }
 
-      // Add files
-      request.files.add(await http.MultipartFile.fromPath('aadhaarCard', _aadhaarPath!));
-      request.files.add(await http.MultipartFile.fromPath('panCard', _panPath!));
-      request.files.add(await http.MultipartFile.fromPath('passportPhoto', _photoPath!));
-      request.files.add(await http.MultipartFile.fromPath('businessAddressProof', _addressProofPath!));
+      request.fields['data'] = jsonEncode(formData);
+
+      if (_aadhaarPath != null) request.files.add(await http.MultipartFile.fromPath('aadhaarCard', _aadhaarPath!));
+      if (_panPath != null) request.files.add(await http.MultipartFile.fromPath('panCard', _panPath!));
+      if (_photoPath != null) request.files.add(await http.MultipartFile.fromPath('passportPhoto', _photoPath!));
+      if (_addressProofPath != null) request.files.add(await http.MultipartFile.fromPath('businessAddressProof', _addressProofPath!));
+      if (_unitEntrancePhotoPath != null) request.files.add(await http.MultipartFile.fromPath('unitEntrancePhoto', _unitEntrancePhotoPath!));
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (!mounted) return;
-        await showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Success'),
-            content: const Text('Form submitted successfully!'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-        if (!mounted) return;
-        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'FssaiFormScreen');
-        Navigator.pop(context, true); // Success
+        await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'FssaiFormScreen');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('FSSAI Application submitted successfully!')));
+          Navigator.pop(context, true);
+        }
       } else {
-        throw Exception('Failed to submit form: ${response.body}');
+        throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to submit form');
       }
     } catch (e) {
-      showGlobalError(e);
-      if (!mounted) return;
-      _showError('Error: $e');
+      if (mounted) {
+        showGlobalError(e.toString());
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: Colors.red,
-    ));
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Text(title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+    );
   }
 
   @override
-  
-  Future<bool> _onWillPop() async {
-    final shouldPop = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Save as Draft?'),
-          content: const Text('Do you want to save your progress before exiting?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(
-                'Discard',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(
-                'Cancel',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                await _saveDraft();
-                if (context.mounted) Navigator.of(context).pop(true);
-              },
-              child: Text(
-                'Save as Draft',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.corporateBlue,
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-    return shouldPop ?? false;
-  }
-
-@override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-      backgroundColor: Colors.white,
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black),
-        actions: const [],
+        title: Text('FSSAI Application', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        actions: [
+          TextButton.icon(
+            onPressed: _saveDraft,
+            icon: const Icon(Icons.save_outlined, color: Colors.white),
+            label: Text('Save Draft', style: GoogleFonts.inter(color: Colors.white)),
+          ),
+        ],
       ),
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator()) 
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : Form(
               key: _formKey,
               child: ListView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 children: [
-                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue)),
-                  const SizedBox(height: 16),
-                  
-                  // Personal Info
-                  _buildSectionContainer(
-                    title: 'Personal Information',
-                    children: [
-                      _buildField('Enter your full name', '', _fullNameController, isRequired: true),
-                      _buildField('Mobile Number', '(WhatsApp number)', _mobileController, isRequired: true, keyboardType: TextInputType.phone),
-                      _buildField('Email ID', '', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                    ],
-                  ),
-
-                  // Business Details
-                  _buildSectionContainer(
-                    title: 'Business Details',
-                    children: [
-                      _buildField('Name of Business', '', _businessNameController, isRequired: true),
-                      
-                      _buildRadioGroup('Type of Business', '', ['Proprietorship Registration', 'Partnership', 'LLP', 'Private Limited Company', 'One Person Company', 'Other'], _businessType, (v) => setState(() => _businessType = v)),
-                      if (_businessType == 'Other')
-                        _buildField('Specify Other Business Type', '', _otherBusinessTypeController, isRequired: true),
-                      
-                      _buildCheckboxGroup('Nature of Food Business', '(Select all applicable)', _natureOptions),
-                      if (_selectedNature.contains('Other'))
-                        _buildField('Specify Other Nature', '', _otherNatureController, isRequired: true),
-                      
-                      _buildField('When did your business start?', 'DD/MM/YYYY', _startDateController, isRequired: true),
-                      
-                      _buildRadioGroup('Expected Annual Turnover', '', ['Below ₹12 Lakhs', '₹12 Lakhs – ₹20 Crores', 'Above ₹20 Crores'], _annualTurnover, (v) => setState(() => _annualTurnover = v)),
-                      
-                      _buildField('No. of Employees', '', _employeesController, isRequired: true, keyboardType: TextInputType.number),
-                      
-                      _buildRadioGroup('Premises Type', '', ['Own', 'Rent'], _premisesType, (v) => setState(() => _premisesType = v)),
-                      
-                      _buildField('Address of Premises', '(Door / Plot no., block / building name, street name, area name / village name, district, state, county - pin code)', _premisesAddressController, isRequired: true, maxLines: 3),
-                      _buildField('Village', '', _premisesVillageController, isRequired: true),
-                      _buildField('District', '', _premisesDistrictController, isRequired: true),
-
-                      _buildRadioGroup('Is your correspondence Address same as "Address of Premises"', '', ['Yes', 'No'], _isCorrespondenceSame, (v) => setState(() => _isCorrespondenceSame = v)),
-                    ],
-                  ),
-
-                  if (_isCorrespondenceSame == 'No')
-                    _buildSectionContainer(
-                      title: 'Correspondence Address',
-                      children: [
-                        Text('If your Correspondence Address differs from Business Address, kindly below the below details else go back and Select the Option "Yes"', style: TextStyle(fontSize: 12, color: Colors.grey[600], fontStyle: FontStyle.italic)),
-                        const SizedBox(height: 16),
-                        _buildField('Correspondence Address', '', _corrAddressController, isRequired: true, maxLines: 3),
-                        _buildField('Village', '', _corrVillageController, isRequired: true),
-                        _buildField('District', '', _corrDistrictController, isRequired: true),
-                      ],
-                    ),
-
-                  // Documents
-                  _buildSectionContainer(
-                    title: 'Document Upload',
-                    children: [
-                      _buildFileRow('Upload Aadhaar Card', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _aadhaarPath, () => _pickFile((path) => _aadhaarPath = path, allowedExtensions: const ['pdf'])),
-                      _buildFileRow('Upload PAN Card', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _panPath, () => _pickFile((path) => _panPath = path, allowedExtensions: const ['pdf'])),
-                      _buildFileRow('Upload Passport Size Photo', 'Upload 1 supported file: PDF, document, or image. Max 2 MB.', _photoPath, () => _pickFile((path) => _photoPath = path)),
-                      _buildFileRow('Upload Business Address Proof', '(Rental Agreement / Electricity Bill / NOC / Utility Bill). Max 2 MB.', _addressProofPath, () => _pickFile((path) => _addressProofPath = path, allowedExtensions: const ['pdf'])),
-                    ],
-                  ),
-
-                  // Declaration
-                  _buildSectionContainer(
-                    title: 'Declaration',
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Checkbox(
-                            value: _isDeclared,
-                            activeColor: AppTheme.corporateBlue,
-                            onChanged: (val) {
-                              setState(() {
-                                _isDeclared = val ?? false;
-                              });
-                            },
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 12.0),
-                              child: RichText(
-                                text: const TextSpan(
-                                  text: 'I hereby declare that all information provided is true and correct to the best of my knowledge.',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
-                                  children: [
-                                    TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
-                                  ]
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
+                  _buildSectionHeader('1. Food Business Details'),
+                  Text('Nature of Food Business (Select all applicable) *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 8),
+                  ..._natureOptions.map((option) => CheckboxListTile(
+                    title: Text(option, style: GoogleFonts.inter(fontSize: 14)),
+                    value: _selectedNature.contains(option),
+                    onChanged: (val) {
+                      setState(() {
+                        if (val == true) _selectedNature.add(option);
+                        else _selectedNature.remove(option);
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                    dense: true,
+                  )),
+                  if (_selectedNature.contains('Other'))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, left: 32.0),
+                      child: TextFormField(
+                        controller: _otherNatureController,
+                        decoration: const InputDecoration(labelText: 'Other Nature of Food Business *', border: OutlineInputBorder()),
+                        validator: (val) => val!.trim().isEmpty ? 'Required' : null,
                       ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
-              ElevatedButton(
-                    onPressed: _submitDetails,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.corporateBlue,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+
+                  _buildSectionHeader('2. Business Details'),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Expected Annual Turnover *', border: OutlineInputBorder()),
+                    value: _annualTurnover,
+                    items: ['Below ₹12 Lakhs', '₹12 Lakhs to ₹20 Crores', 'Above ₹20 Crores']
+                        .map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                    onChanged: (val) => setState(() => _annualTurnover = val!),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 16),
+                  Text('Type of Business *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Proprietorship', 'Partnership', 'LLP', 'Private Limited Company', 'One Person Company', 'Other']
+                      .map((e) => RadioListTile<String>(
+                            title: Text(e, style: GoogleFonts.inter(fontSize: 14)),
+                            value: e,
+                            groupValue: _businessType,
+                            onChanged: (val) => setState(() => _businessType = val!),
+                            contentPadding: EdgeInsets.zero,
+                            dense: true,
+                          )),
+                  if (_businessType == 'Other')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, left: 32.0),
+                      child: TextFormField(
+                        controller: _otherBusinessTypeController,
+                        decoration: const InputDecoration(labelText: 'Other Type of Business *', border: OutlineInputBorder()),
+                        validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _businessNameController,
+                    decoration: const InputDecoration(labelText: 'Name of Business *', border: OutlineInputBorder()),
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _companyPanNumberController,
+                    decoration: const InputDecoration(labelText: 'Company PAN Number *', border: OutlineInputBorder()),
+                    textCapitalization: TextCapitalization.characters,
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _startDateController,
+                    decoration: const InputDecoration(labelText: 'When did your business start? *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
+                    readOnly: true,
+                    onTap: () async {
+                      final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime.now());
+                      if (date != null) setState(() => _startDateController.text = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}");
+                    },
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+
+                  _buildSectionHeader('3. Applicant Details'),
+                  TextFormField(
+                    controller: _fullNameController,
+                    decoration: const InputDecoration(labelText: 'Enter your full name *', border: OutlineInputBorder()),
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _aadhaarNumberController,
+                    decoration: const InputDecoration(labelText: 'Aadhaar Number *', border: OutlineInputBorder()),
+                    keyboardType: TextInputType.number,
+                    maxLength: 12,
+                    validator: (val) => val!.trim().length != 12 ? 'Enter valid 12 digit Aadhaar' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _mobileController,
+                    decoration: const InputDecoration(labelText: 'Mobile Number (WhatsApp) *', border: OutlineInputBorder()),
+                    keyboardType: TextInputType.phone,
+                    maxLength: 10,
+                    validator: (val) => val!.trim().length != 10 ? 'Enter valid 10 digit number' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(labelText: 'Email ID *', border: OutlineInputBorder()),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (val) => !val!.contains('@') ? 'Enter valid email' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _employeesController,
+                    decoration: const InputDecoration(labelText: 'No. of Employees *', border: OutlineInputBorder()),
+                    keyboardType: TextInputType.number,
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+
+                  _buildSectionHeader('4. Premises Details'),
+                  TextFormField(
+                    controller: _premisesAddressController,
+                    decoration: const InputDecoration(labelText: 'Address of Premises *', helperText: 'Door/Plot no, block, street, area, district, state, country - pincode', border: OutlineInputBorder()),
+                    maxLines: 3,
+                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Text('Premises Type *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Own', 'Rent'].map((e) => RadioListTile<String>(
+                        title: Text(e, style: GoogleFonts.inter(fontSize: 14)),
+                        value: e,
+                        groupValue: _premisesType,
+                        onChanged: (val) => setState(() => _premisesType = val!),
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                      )),
+
+                  _buildSectionHeader('5. Address Details'),
+                  Text('Is your correspondence Address same as "Address of Premises"? *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+                  ...['Yes', 'No'].map((e) => RadioListTile<String>(
+                        title: Text(e, style: GoogleFonts.inter(fontSize: 14)),
+                        value: e,
+                        groupValue: _isCorrespondenceSame,
+                        onChanged: (val) => setState(() => _isCorrespondenceSame = val!),
+                        contentPadding: EdgeInsets.zero,
+                        dense: true,
+                      )),
+                  if (_isCorrespondenceSame == 'No')
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: TextFormField(
+                        controller: _corrAddressController,
+                        decoration: const InputDecoration(labelText: 'Correspondence Address *', border: OutlineInputBorder()),
+                        maxLines: 3,
+                        validator: (val) => val!.trim().isEmpty ? 'Required' : null,
+                      ),
+                    ),
+
+                  _buildSectionHeader('6. Applicant Documents'),
+                  _buildFilePicker('Upload Passport Size Photo * (Max 2 MB)', _photoPath, () => _pickDocument('photo')),
+                  _buildFilePicker('Upload Aadhaar Card * (Max 2 MB)', _aadhaarPath, () => _pickDocument('aadhaar')),
+
+                  _buildSectionHeader('7. Business Documents'),
+                  _buildFilePicker('Photographs of the Unit (Entrance) * (Max 2 MB)', _unitEntrancePhotoPath, () => _pickDocument('unitEntrancePhoto')),
+                  _buildFilePicker('Upload PAN Card * (Max 2 MB)', _panPath, () => _pickDocument('pan')),
+                  _buildFilePicker('Upload Business Address Proof * (Max 2 MB)\n(Rental Agreement / Electricity Bill / NOC / Utility Bill)', _addressProofPath, () => _pickDocument('addressProof')),
+
+                  _buildSectionHeader('8. Declaration'),
+                  CheckboxListTile(
+                    title: const Text('I Agree'),
+                    subtitle: const Text('I hereby declare that all information provided is true and correct to the best of my knowledge.'),
+                    value: _isDeclared,
+                    onChanged: (val) => setState(() => _isDeclared = val ?? false),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                      child: const Text('Submit Application', style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
-    ));
-  }
-
-  Widget _buildSectionContainer({required String title, required List<Widget> children}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 32),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.shade100),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
-          const SizedBox(height: 24),
-          ...children,
-        ],
-      ),
     );
   }
 
-  Widget _buildCheckboxGroup(String label, String hint, List<String> options) {
+  Widget _buildFilePicker(String label, String? filePath, VoidCallback onTap) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 12),
-          ...options.map((opt) {
-            return InkWell(
-              onTap: () {
-                setState(() {
-                  if (_selectedNature.contains(opt)) {
-                    _selectedNature.remove(opt);
-                  } else {
-                    _selectedNature.add(opt);
-                  }
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Checkbox(
-                      value: _selectedNature.contains(opt),
-                      onChanged: (v) {
-                        setState(() {
-                          if (v == true) {
-                            _selectedNature.add(opt);
-                          } else {
-                            _selectedNature.remove(opt);
-                          }
-                        });
-                      },
-                      activeColor: AppTheme.corporateBlue,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: Text(opt, style: const TextStyle(fontSize: 14, height: 1.3)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 12),
-          ...options.map((opt) {
-            return InkWell(
-              onTap: () => onChanged(opt),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Radio<String>(
-                      value: opt,
-                      groupValue: currentValue,
-                      onChanged: (v) {
-                        if (v != null) onChanged(v);
-                      },
-                      activeColor: AppTheme.corporateBlue,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12.0),
-                        child: Text(opt, style: const TextStyle(fontSize: 14, height: 1.3)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: [
-                if (isRequired)
-                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+          Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 13)),
           const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            readOnly: isDate,
-            onTap: isDate ? () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100),
-              );
-              if (date != null) {
-                controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
-              }
-            } : null,
-            maxLines: maxLines,
-            decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : "Enter ${label.replaceAll('*', '').trim()}",
-              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
-            ),
-            validator: (v) {
-  if (isRequired && (v == null || v.trim().isEmpty)) {
-    return 'This is a required question';
-  }
-  if (v != null && v.trim().isNotEmpty) {
-    final text = v.trim();
-    final labelLower = label.toLowerCase();
-    if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact') || labelLower.contains('number')) {
-      if (labelLower.contains('company') || labelLower.contains('whatsapp') || labelLower.contains('director') || labelLower.contains('business') || labelLower == 'phone number' || labelLower == 'mobile number' || labelLower == 'contact number' || labelLower == 'company number') {
-         if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
-      }
-    }
-    if (labelLower.contains('mail') || labelLower.contains('email')) {
-      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) return 'Enter a valid email address';
-    }
-    if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
-      if (!RegExp(r'^[2-9]{1}[0-9]{11}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
-    }
-    if (labelLower.contains('pan ') || labelLower == 'pan' || labelLower.contains('pan number')) {
-      if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
-    }
-    if (labelLower.contains('tan ') || labelLower == 'tan' || labelLower.contains('tan number')) {
-      if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
-    }
-  }
-  return null;
-},
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ]
-            ),
-          ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
-                  style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
-                  overflow: TextOverflow.ellipsis,
-                ),
+          InkWell(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
+              child: Row(
+                children: [
+                  Icon(filePath != null ? Icons.check_circle : Icons.upload_file, color: filePath != null ? Colors.green : Colors.grey),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      filePath != null ? filePath.split('/').last : 'Tap to upload document',
+                      style: GoogleFonts.inter(color: filePath != null ? Colors.black87 : Colors.grey, fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: onPick,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  minimumSize: const Size(80, 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
-              ),
-            ],
+            ),
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import { AutoFillUtils } from '../../../utils/autofill-utils';
 import { DocumentMatcher } from '../../../utils/document-matcher';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
@@ -12,11 +13,12 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-dpiit-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './dpiit-form.html',
   styleUrl: '../forms-shared.css',
 })
 export class DpiitForm implements OnInit {
+  currentUser: any = null;
   existingDocs: any = {};
   removeExistingDoc(fieldName: string) { delete this.existingDocs[fieldName]; }
 
@@ -32,43 +34,59 @@ export class DpiitForm implements OnInit {
   }
 
   orderId = signal<string>('');
-  isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
   isSuccess = signal<boolean>(false);
   errorMessage = signal<string>('');
 
-  // Form Fields
+  // 1. DSC & Company Details
   orgDsc = 'Yes';
-  website = '';
-  brief = '';
-  directorDetails = '';
-  industry = '';
-  sector = '';
-  address = '';
-  authDetails = '';
-  employees = '';
-  ipr = '';
-  startupNature = 'Innovative';
-  receivedFunds = 'No';
-  receivedAwards = 'No';
-  problem = '';
-  solution = '';
-  uniqueness = '';
-  revenue = '';
+  fullName = '';
+  companyEmail = '';
+  companyMobile = '';
+  cinNumber = '';
+  companyPan = '';
+  companyPanName = '';
+  companyAddress = ''; // Used for both section 1 & 3
+
+  // 2. Authorized Signatory Details
+  signatoryPan = '';
+  signatoryFirstName = '';
+  signatoryLastName = '';
+  signatoryDob = '';
+
+  // 3. Company / Business Details
+  companyBrief = '';
+  companyWebsite = '';
+
+  // 4. Authorized Representative Details
+  repName = '';
+  repMobile = '';
+  repEmail = '';
+
+  // 5. Director / Founder Details
+  directorName = '';
+  directorGender = 'Male';
+  directorMobile = '';
+  directorAddress = '';
+  directorEmail = '';
+  directorDob = '';
+  employeeCount = '';
+
+  // 6. Startup Information
+  iprApplied = '';
+  fundsReceived = '';
+  awardsReceived = '';
 
   isVerified = false;
 
-  // File Uploads
+  // Files
+  companyLogoFile?: File;
   incorpCertFile?: File;
-  panFile?: File;
-  logoFile?: File;
-  pitchDeckFile?: File;
 
   constructor(private route: ActivatedRoute,
     private router: Router,
     public location: Location,
-    private api: Api
-  ,
+    private api: Api,
     private draftService: DraftService,
     private confirmDialog: ConfirmDialogService) {}
 
@@ -76,102 +94,46 @@ export class DpiitForm implements OnInit {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
-          // Auto-fill from user profile
+    
+    // Auto-fill from user profile
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
+        this.currentUser = user;
         
-        if (user.owner_name) {
-          if ('fullName' in this) (this as any).fullName = user.owner_name;
-          else if ('applicantName' in this) (this as any).applicantName = user.owner_name;
-          else if ('proprietorName' in this) (this as any).proprietorName = user.owner_name;
-          else if ('directorName' in this) (this as any).directorName = user.owner_name;
-        }
+        if (user.owner_name) this.fullName = user.owner_name;
+        if (user.email) this.companyEmail = user.email;
+        if (user.phone) this.companyMobile = user.phone;
+        if (user.company_name) this.fullName = user.company_name; // fallback to full name
+        if (user.pan) this.companyPan = user.pan;
 
-        if (user.email) {
-          if ('emailId' in this) (this as any).emailId = user.email;
-          else if ('email' in this) (this as any).email = user.email;
-        }
-
-        if (user.phone) {
-          if ('mobileNumber' in this) (this as any).mobileNumber = user.phone;
-          else if ('mobile' in this) (this as any).mobile = user.phone;
-          else if ('contactNumber' in this) (this as any).contactNumber = user.phone;
-        }
-
-        if (user.company_name) {
-          if ('businessName' in this) (this as any).businessName = user.company_name;
-          else if ('companyName' in this) (this as any).companyName = user.company_name;
-          else if ('entityName' in this) (this as any).entityName = user.company_name;
-        }
-
-        if (user.business_type) {
-          if ('businessType' in this) (this as any).businessType = user.business_type;
-          else if ('entityType' in this) (this as any).entityType = user.business_type;
-        }
-
-        if (user.pan) {
-          if ('panNumber' in this) (this as any).panNumber = user.pan;
-          else if ('pan' in this) (this as any).pan = user.pan;
-        }
         if (user.onboarding_documents) {
           const docs = user.onboarding_documents;
           const keywordMap: any = {
-            'panCard': ['pan'],
-            'panFile': ['pan'],
-            'addressProof': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'addressProofFile': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'businessAddressProof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
             'incorpCert': ['incorporation', 'incorp'],
-            'photoFile': ['photo', 'passport size'],
-            'passportPhoto': ['photo', 'passport size'],
-            'aadhaarFile': ['aadhaar'],
-            'identityProof': ['identity', 'id proof'],
-            'cancelledCheque': ['cheque', 'bank'],
-            'authSignatoryProof': ['authorization', 'signatory'],
-            'signatureFile': ['signature'],
-            'trademarkLogo': ['logo', 'brand'],
-            'msmeCert': ['msme', 'udyam'],
-            'gstCert': ['gst']
+            'companyLogo': ['logo', 'brand']
           };
           
           for (const field of Object.keys(keywordMap)) {
             const keywords = keywordMap[field];
-            const eName = (this as any).companyName || (this as any).enterpriseName || (this as any).entityName || (this as any).businessName || '';
+            const eName = this.fullName;
             const matchedDoc = DocumentMatcher.findExistingDoc(eName, docs, keywords);
             if (matchedDoc) {
               this.existingDocs[field] = matchedDoc;
             }
           }
         }
-
       } catch(e) {}
     }
 
     const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
-      if (draft) {
-        if (draft.orgDsc !== undefined) this.orgDsc = draft.orgDsc;
-        if (draft.website !== undefined) this.website = draft.website;
-        if (draft.brief !== undefined) this.brief = draft.brief;
-        if (draft.directorDetails !== undefined) this.directorDetails = draft.directorDetails;
-        if (draft.industry !== undefined) this.industry = draft.industry;
-        if (draft.sector !== undefined) this.sector = draft.sector;
-        if (draft.address !== undefined) this.address = draft.address;
-        if (draft.authDetails !== undefined) this.authDetails = draft.authDetails;
-        if (draft.employees !== undefined) this.employees = draft.employees;
-        if (draft.ipr !== undefined) this.ipr = draft.ipr;
-        if (draft.startupNature !== undefined) this.startupNature = draft.startupNature;
-        if (draft.receivedFunds !== undefined) this.receivedFunds = draft.receivedFunds;
-        if (draft.receivedAwards !== undefined) this.receivedAwards = draft.receivedAwards;
-        if (draft.problem !== undefined) this.problem = draft.problem;
-        if (draft.solution !== undefined) this.solution = draft.solution;
-        if (draft.uniqueness !== undefined) this.uniqueness = draft.uniqueness;
-        if (draft.revenue !== undefined) this.revenue = draft.revenue;
-      }
+    if (draft) {
+      Object.assign(this, draft);
+    }
   }
 
-  onFileSelected(event: any, fieldName: string) {
+  onFileChange(event: any, fieldName: string) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -187,10 +149,21 @@ export class DpiitForm implements OnInit {
       return;
     }
 
-    if (fieldName === 'incorpCert') this.incorpCertFile = file;
-    else if (fieldName === 'pan') this.panFile = file;
-    else if (fieldName === 'logo') this.logoFile = file;
-    else if (fieldName === 'pitchDeck') this.pitchDeckFile = file;
+    if (fieldName === 'companyLogoFile') {
+      if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
+         this.confirmDialog.confirm({ title: 'Invalid File', message: 'Company Logo must be JPEG format.', confirmText: 'Okay', hideCancel: true });
+         event.target.value = '';
+         return;
+      }
+      this.companyLogoFile = file;
+    } else if (fieldName === 'incorpCertFile') {
+      if (file.type !== 'application/pdf') {
+         this.confirmDialog.confirm({ title: 'Invalid File', message: 'Incorporation Certificate must be PDF format.', confirmText: 'Okay', hideCancel: true });
+         event.target.value = '';
+         return;
+      }
+      this.incorpCertFile = file;
+    }
   }
 
   async goBack() {
@@ -200,107 +173,75 @@ export class DpiitForm implements OnInit {
       confirmText: 'Save Draft',
       cancelText: 'Leave without saving'
     });
-    if (shouldDraft === null) {
-      return;
-    }
-    if (shouldDraft) {
-      this.saveDraft();
-    }
+    if (shouldDraft === null) return;
+    if (shouldDraft) this.saveDraft();
     this.location.back();
   }
 
-  
   saveDraft() {
     const draftData = {
-      orgDsc: this.orgDsc,
-      website: this.website,
-      brief: this.brief,
-      directorDetails: this.directorDetails,
-      industry: this.industry,
-      sector: this.sector,
-      address: this.address,
-      authDetails: this.authDetails,
-      employees: this.employees,
-      ipr: this.ipr,
-      startupNature: this.startupNature,
-      receivedFunds: this.receivedFunds,
-      receivedAwards: this.receivedAwards,
-      problem: this.problem,
-      solution: this.solution,
-      uniqueness: this.uniqueness,
-      revenue: this.revenue,
+      orgDsc: this.orgDsc, fullName: this.fullName, companyEmail: this.companyEmail, companyMobile: this.companyMobile,
+      cinNumber: this.cinNumber, companyPan: this.companyPan, companyPanName: this.companyPanName, companyAddress: this.companyAddress,
+      signatoryPan: this.signatoryPan, signatoryFirstName: this.signatoryFirstName, signatoryLastName: this.signatoryLastName, signatoryDob: this.signatoryDob,
+      companyBrief: this.companyBrief, companyWebsite: this.companyWebsite,
+      repName: this.repName, repMobile: this.repMobile, repEmail: this.repEmail,
+      directorName: this.directorName, directorGender: this.directorGender, directorMobile: this.directorMobile, directorAddress: this.directorAddress, directorEmail: this.directorEmail, directorDob: this.directorDob, employeeCount: this.employeeCount,
+      iprApplied: this.iprApplied, fundsReceived: this.fundsReceived, awardsReceived: this.awardsReceived
     };
     this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
     alert('Draft saved successfully!');
   }
 
   submitForm() {
-    if (!this.brief || !this.directorDetails || !this.industry || !this.sector || !this.address ||
-        !this.authDetails || !this.employees || !this.ipr || !this.problem || !this.solution || !this.uniqueness || !this.revenue) {
-      this.errorMessage.set('Please fill out all required fields.');
-      return;
-    }
+    if (!this.fullName || !this.companyEmail || !this.companyMobile || !this.cinNumber || !this.companyPan || !this.companyPanName || !this.companyAddress) { this.errorMessage.set('Please fill all required DSC & Company Details fields.'); return; }
+    if (!this.signatoryPan || !this.signatoryFirstName || !this.signatoryLastName || !this.signatoryDob) { this.errorMessage.set('Please fill all required Authorized Signatory Details.'); return; }
+    if (!this.companyBrief || !this.companyWebsite) { this.errorMessage.set('Please fill all required Company / Business Details.'); return; }
+    if (!this.repName || !this.repMobile || !this.repEmail) { this.errorMessage.set('Please fill all required Authorized Representative Details.'); return; }
+    if (!this.directorName || !this.directorMobile || !this.directorAddress || !this.directorEmail || !this.directorDob || !this.employeeCount) { this.errorMessage.set('Please fill all required Director / Founder Details.'); return; }
+    if (!this.iprApplied || !this.fundsReceived || !this.awardsReceived) { this.errorMessage.set('Please fill all Startup Information.'); return; }
 
-    if (this.brief && this.brief.length > 500) {
-      this.errorMessage.set('Brief about Company cannot exceed 500 characters.');
-      return;
-    }
+    if (!this.companyLogoFile && !this.existingDocs['companyLogo']) { this.errorMessage.set('Company Logo is required.'); return; }
+    if (!this.incorpCertFile && !this.existingDocs['incorpCert']) { this.errorMessage.set('Incorporation Certificate is required.'); return; }
 
-    if (!this.isVerified) {
-      this.errorMessage.set('Please check the verification box at the end.');
-      return;
-    }
-
-    if ((!this.incorpCertFile && !this.existingDocs['incorpCert']) || (!this.panFile && !this.existingDocs['pan']) || (!this.logoFile && !this.existingDocs['logo'])) {
-      this.errorMessage.set('Please upload all mandatory documents (Incorp Cert, PAN, Logo).');
-      return;
-    }
+    if (!this.isVerified) { this.errorMessage.set('Please check the verification checkbox.'); return; }
 
     this.isSubmitting.set(true);
     this.errorMessage.set('');
 
     const formData = new FormData();
-    formData.append('orgDsc', this.orgDsc);
-    formData.append('website', this.website);
-    formData.append('brief', this.brief);
-    formData.append('directorDetails', this.directorDetails);
-    formData.append('industry', this.industry);
-    formData.append('sector', this.sector);
-    formData.append('address', this.address);
-    formData.append('authDetails', this.authDetails);
-    formData.append('employees', this.employees);
-    formData.append('ipr', this.ipr);
-    formData.append('startupNature', this.startupNature);
-    formData.append('receivedFunds', this.receivedFunds);
-    formData.append('receivedAwards', this.receivedAwards);
-    formData.append('problem', this.problem);
-    formData.append('solution', this.solution);
-    formData.append('uniqueness', this.uniqueness);
-    formData.append('revenue', this.revenue);
+    const data = {
+      orgDsc: this.orgDsc, fullName: this.fullName, companyEmail: this.companyEmail, companyMobile: this.companyMobile,
+      cinNumber: this.cinNumber, companyPan: this.companyPan, companyPanName: this.companyPanName, companyAddress: this.companyAddress,
+      signatoryPan: this.signatoryPan, signatoryFirstName: this.signatoryFirstName, signatoryLastName: this.signatoryLastName, signatoryDob: this.signatoryDob,
+      companyBrief: this.companyBrief, companyWebsite: this.companyWebsite,
+      repName: this.repName, repMobile: this.repMobile, repEmail: this.repEmail,
+      directorName: this.directorName, directorGender: this.directorGender, directorMobile: this.directorMobile, directorAddress: this.directorAddress, directorEmail: this.directorEmail, directorDob: this.directorDob, employeeCount: this.employeeCount,
+      iprApplied: this.iprApplied, fundsReceived: this.fundsReceived, awardsReceived: this.awardsReceived
+    };
 
-    if (this.incorpCertFile) formData.append('incorpCert', this.incorpCertFile); else if (this.existingDocs['incorpCert']) formData.append('incorpCert_existing', this.existingDocs['incorpCert'].fileUrl);
-    if (this.panFile) formData.append('pan', this.panFile); else if (this.existingDocs['pan']) formData.append('pan_existing', this.existingDocs['pan'].fileUrl);
-    if (this.logoFile) formData.append('logo', this.logoFile); else if (this.existingDocs['logo']) formData.append('logo_existing', this.existingDocs['logo'].fileUrl);
-    
-    if (this.pitchDeckFile) {
-      if (this.pitchDeckFile) formData.append('pitchDeck', this.pitchDeckFile); else if (this.existingDocs['pitchDeck']) formData.append('pitchDeck_existing', this.existingDocs['pitchDeck'].fileUrl);
-    }
+    formData.append('data', JSON.stringify(data));
 
-    this.api.post<any>(`orders/${this.orderId()}/submit-dpiit-form`, formData).subscribe({
-      next: (res) => {
+    if (this.companyLogoFile) formData.append('companyLogo', this.companyLogoFile);
+    else if (this.existingDocs['companyLogo']) formData.append('companyLogo_existing', this.existingDocs['companyLogo'].fileUrl);
+
+    if (this.incorpCertFile) formData.append('incorpCert', this.incorpCertFile);
+    else if (this.existingDocs['incorpCert']) formData.append('incorpCert_existing', this.existingDocs['incorpCert'].fileUrl);
+
+    this.api.post(`orders/${this.orderId()}/submit-dpiit-form`, formData).subscribe({
+      next: (res: any) => {
         this.isSubmitting.set(false);
-        if (res && res.order) {
-          this.isSuccess.set(true);
-          this.draftService.clearDraft(this.orderId(), this.constructor.name);
-          setTimeout(() => {
-            this.router.navigate(['/client/service', this.orderId()]);
-          }, 2000);
-        }
+        this.isSuccess.set(true);
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
+        setTimeout(() => this.router.navigate(['/client/service', this.orderId()]), 2000);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmitting.set(false);
         this.errorMessage.set(err.error?.message || 'Failed to submit form.');
       }
     });
+  }
+
+  onEntityNameChange(newName: string) {
+    if (this.currentUser) AutoFillUtils.autoFillTextData(this, newName, this.currentUser);
   }
 }

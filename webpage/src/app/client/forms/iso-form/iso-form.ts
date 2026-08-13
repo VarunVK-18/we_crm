@@ -225,7 +225,7 @@ export class IsoForm implements OnInit {
       return;
     }
 
-    if (!this.msmeCertFile) {
+    if (!this.msmeCertFile && !this.existingDocs['msmeCertificate']) {
       this.errorMessage.set('Please upload MSME Certificate.');
       return;
     }
@@ -246,9 +246,18 @@ export class IsoForm implements OnInit {
     formData.append('whatsapp', this.whatsapp);
     formData.append('courierAddress', this.courierAddress);
 
-    formData.append('preferredIso', this.selectedIso === 'Other' ? `Other: ${this.otherIso}` : this.selectedIso);
+    formData.append('preferredIsoCertification', this.selectedIso);
+    if (this.selectedIso === 'Other') {
+      formData.append('otherIsoCertification', this.otherIso);
+    }
+    
+    formData.append('verificationStatus', 'true');
 
-    formData.append('msmeCertificate', this.msmeCertFile as File);
+    if (this.msmeCertFile) {
+      formData.append('msmeCertificate', this.msmeCertFile as File);
+    } else if (this.existingDocs['msmeCertificate']) {
+      formData.append('msmeCertificate_existing', this.existingDocs['msmeCertificate'].fileUrl);
+    }
 
     this.api.post(`orders/${this.orderId()}/submit-iso-form`, formData).subscribe({
       next: (res: any) => {

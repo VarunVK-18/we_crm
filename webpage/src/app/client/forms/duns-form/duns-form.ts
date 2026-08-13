@@ -20,6 +20,7 @@ export class DunsForm implements OnInit {
   orderId = signal<string>('');
   
   // Fields
+  applicantName = '';
   legalBusinessName = '';
   tradeName = '';
   businessType = '';
@@ -43,15 +44,22 @@ export class DunsForm implements OnInit {
   natureOfBusiness = '';
   mainProducts = '';
   annualRevenue = '';
+  annualTurnover = '';
   
   founderName = '';
   designation = '';
   contactNumber = '';
+  hasDirectorDetails = false;
+  directorFirstName = '';
+  directorLastName = '';
+  directorPersonalEmail = '';
+  directorMobile = '';
   
   declaration = false;
   
   // Files
   incorpCertFile: File | null = null;
+  gstDocumentFile: File | null = null;
   panCardFile: File | null = null;
   addressProofFile: File | null = null;
   
@@ -77,7 +85,8 @@ export class DunsForm implements OnInit {
     const file = event.target.files[0];
     if (file) {
       if (field === 'incorpCert') this.incorpCertFile = file;
-      if (field === 'panCard') this.panCardFile = file;
+      if (field === 'gstDocument') this.gstDocumentFile = file;
+      if (field === 'panCard') this.panCardFile = event.target.files[0];
       if (field === 'addressProof') this.addressProofFile = file;
     }
   }
@@ -93,22 +102,30 @@ export class DunsForm implements OnInit {
     }
     
     // Basic validation
-    if (!this.legalBusinessName || !this.businessType || !this.yearOfEstablishment || !this.numberOfEmployees ||
+    if (!this.applicantName || !this.legalBusinessName || !this.businessType || !this.yearOfEstablishment || !this.numberOfEmployees ||
         !this.registeredAddress || !this.city || !this.state || !this.pinCode || !this.country ||
         !this.officialEmail || !this.businessPhone || !this.panNumber || !this.natureOfBusiness ||
-        !this.mainProducts || !this.annualRevenue || !this.founderName || !this.designation || !this.contactNumber) {
+        !this.mainProducts || !this.annualRevenue || !this.annualTurnover) {
       alert('Please fill all required fields.');
       return;
     }
+
+    if (this.hasDirectorDetails) {
+      if (!this.directorFirstName || !this.directorLastName || !this.directorPersonalEmail || !this.directorMobile || !this.designation) {
+        alert('Please fill all required director fields.');
+        return;
+      }
+    }
     
-    if (!this.incorpCertFile || !this.panCardFile || !this.addressProofFile) {
-      alert('Please upload all mandatory documents (Incorporation Certificate, PAN Card, Address Proof).');
+    if (!this.incorpCertFile || !this.panCardFile || !this.addressProofFile || !this.gstDocumentFile) {
+      alert('Please upload all mandatory documents (Incorporation Certificate, GST Document, PAN Card, Address Proof).');
       return;
     }
 
     this.isSubmitting = true;
     const formData = new FormData();
     
+    formData.append('applicantName', this.applicantName);
     formData.append('legalBusinessName', this.legalBusinessName);
     formData.append('tradeName', this.tradeName);
     formData.append('businessType', this.businessType === 'Other' ? this.businessTypeOther : this.businessType);
@@ -127,14 +144,23 @@ export class DunsForm implements OnInit {
     formData.append('cinLlpinNumber', this.cinLlpinNumber);
     formData.append('natureOfBusiness', this.natureOfBusiness);
     formData.append('mainProducts', this.mainProducts);
-    formData.append('annualRevenue', this.annualRevenue);
-    formData.append('founderName', this.founderName);
-    formData.append('designation', this.designation);
-    formData.append('contactNumber', this.contactNumber);
+    formData.append('annualRevenue', this.annualRevenue || '');
+    formData.append('annualTurnover', this.annualTurnover || '');
+
+    formData.append('designation', this.designation || '');
+        formData.append('hasDirectorDetails', String(this.hasDirectorDetails));
+    if (this.hasDirectorDetails) {
+      formData.append('directorFirstName', this.directorFirstName || '');
+      formData.append('directorLastName', this.directorLastName || '');
+      formData.append('directorPersonalEmail', this.directorPersonalEmail || '');
+      formData.append('directorMobile', this.directorMobile || '');
+      formData.append('designation', this.designation || '');
+    }
     
-    formData.append('incorpCert', this.incorpCertFile);
-    formData.append('panCard', this.panCardFile);
-    formData.append('addressProof', this.addressProofFile);
+    if (this.incorpCertFile) formData.append('incorpCert', this.incorpCertFile as Blob);
+    if (this.gstDocumentFile) formData.append('gstDocument', this.gstDocumentFile as Blob);
+    if (this.panCardFile) formData.append('panCard', this.panCardFile as Blob);
+    if (this.addressProofFile) formData.append('addressProof', this.addressProofFile as Blob);
 
     this.api.post<any>(`orders/${this.orderId()}/submit-duns-form`, formData).subscribe({
       next: (res: any) => {

@@ -4,7 +4,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PanFormatDirective } from '../../../utils/form-format.directives';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 import { Component, signal, OnInit, inject } from '@angular/core';
-import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
+
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-iec-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent, PanFormatDirective],
+  imports: [CommonModule, FormsModule, PanFormatDirective],
   templateUrl: './iec-form.html',
   styleUrl: '../forms-shared.css',
 })
@@ -26,10 +26,12 @@ export class IecForm implements OnInit {
   documentViewerUrl: string | null = null;
   safeDocumentViewerUrl: SafeResourceUrl | null = null;
   sanitizer = inject(DomSanitizer);
+  
   viewDocument(url: string) {
     this.documentViewerUrl = this.api.getFileUrl(url);
     this.safeDocumentViewerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.documentViewerUrl);
   }
+  
   closeDocumentViewer() {
     this.documentViewerUrl = null;
   }
@@ -37,241 +39,210 @@ export class IecForm implements OnInit {
   orderId = signal<string>('');
   isLoading = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
-  isSuccess = signal<boolean>(false);
-  errorMessage = signal<string>('');
 
-  // Step 1: Business Details
-  businessName = '';
-  entityType = '';
-  panNumber = '';
-  mobileNumber = '';
-  emailId = '';
-  businessAddress = '';
+  // 1. Applicant Details
+  applicantFirstName = '';
+  applicantLastName = '';
+  applicantEmail = '';
+  applicantMobile = '';
+  applicantAddress = '';
 
-  // Step 2: Bank Details
-  bankName = '';
-  accountNumber = '';
+  // 2. Applicant Documents
+  applicantPanFile?: File;
+  applicantAddressProofFile?: File;
+
+  // 3. Company Details
+  companyName = '';
+  companyPanNumber = '';
+  nameOnCompanyPan = '';
+  dateOfIncorporation = '';
+  gstin = '';
+  companyMobileNumber = '';
+  companyMailId = '';
+
+  // 4. Director Details
+  hasDirectorDetails = false;
+  directorDin = '';
+  directorPanName = '';
+  directorPanNumber = '';
+  directorPanDob = '';
+  directorFatherName = '';
+  directorAddress = '';
+  directorPhoneNumber = '';
+
+  // 5. Director Documents
+  directorPanFile?: File;
+  directorAddressProofFile?: File;
+
+  // 6. Bank Details
+  bankAccountNumber = '';
+  bankAccountHolderName = '';
   ifscCode = '';
+  bankName = '';
 
-  // Step 3: Document Uploads
-  panCardFile?: File;
-  addressProofFile?: File;
-  cancelledChequeFile?: File;
-  incorpCertFile?: File;
+  // 7. Bank Documents
+  bankAccountFirstPageFile?: File;
+  
+  declaration = false;
 
-  constructor(private route: ActivatedRoute,
+  constructor(
+    private route: ActivatedRoute,
     private router: Router,
     public location: Location,
-    private api: Api
-  ,
+    private api: Api,
     private draftService: DraftService,
-    private confirmDialog: ConfirmDialogService) {}
+    private confirmDialog: ConfirmDialogService
+  ) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
-          // Auto-fill from user profile
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
         this.currentUser = user;
-        
         if (user.owner_name) {
-          if ('fullName' in this) (this as any).fullName = user.owner_name;
-          else if ('applicantName' in this) (this as any).applicantName = user.owner_name;
-          else if ('proprietorName' in this) (this as any).proprietorName = user.owner_name;
-          else if ('directorName' in this) (this as any).directorName = user.owner_name;
+          const names = user.owner_name.split(' ');
+          this.applicantFirstName = names[0] || '';
+          this.applicantLastName = names.slice(1).join(' ') || '';
         }
-
         if (user.email) {
-          if ('emailId' in this) (this as any).emailId = user.email;
-          else if ('email' in this) (this as any).email = user.email;
+          this.applicantEmail = user.email;
+          this.companyMailId = user.email;
         }
-
         if (user.phone) {
-          if ('mobileNumber' in this) (this as any).mobileNumber = user.phone;
-          else if ('mobile' in this) (this as any).mobile = user.phone;
-          else if ('contactNumber' in this) (this as any).contactNumber = user.phone;
+          this.applicantMobile = user.phone;
+          this.companyMobileNumber = user.phone;
         }
-
-        if (user.company_name) {
-          if ('businessName' in this) (this as any).businessName = user.company_name;
-          else if ('companyName' in this) (this as any).companyName = user.company_name;
-          else if ('entityName' in this) (this as any).entityName = user.company_name;
-        }
-
-        if (user.business_type) {
-          if ('businessType' in this) (this as any).businessType = user.business_type;
-          else if ('entityType' in this) (this as any).entityType = user.business_type;
-        }
-
-        if (user.pan) {
-          if ('panNumber' in this) (this as any).panNumber = user.pan;
-          else if ('pan' in this) (this as any).pan = user.pan;
-        }
-        if (user.onboarding_documents) {
-          const docs = user.onboarding_documents;
-          const keywordMap: any = {
-            'panCard': ['pan'],
-            'panFile': ['pan'],
-            'addressProof': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'addressProofFile': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'businessAddressProof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
-            'incorpCert': ['incorporation', 'incorp'],
-            'photoFile': ['photo', 'passport size'],
-            'passportPhoto': ['photo', 'passport size'],
-            'aadhaarFile': ['aadhaar'],
-            'identityProof': ['identity', 'id proof'],
-            'cancelledCheque': ['cheque', 'bank'],
-            'authSignatoryProof': ['authorization', 'signatory'],
-            'signatureFile': ['signature'],
-            'trademarkLogo': ['logo', 'brand'],
-            'msmeCert': ['msme', 'udyam'],
-            'gstCert': ['gst']
-          };
-          
-          for (const field of Object.keys(keywordMap)) {
-            const keywords = keywordMap[field];
-            const eName = (this as any).companyName || (this as any).enterpriseName || (this as any).entityName || (this as any).businessName || '';
-            const matchedDoc = DocumentMatcher.findExistingDoc(eName, docs, keywords);
-            if (matchedDoc) {
-              this.existingDocs[field] = matchedDoc;
-            }
-          }
-        }
-
-      } catch(e) {}
+        if (user.company_name) this.companyName = user.company_name;
+        if (user.address) this.applicantAddress = user.address;
+      } catch (e) {}
     }
+  }
 
-    const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
-      if (draft) {
-        if (draft.businessName !== undefined) this.businessName = draft.businessName;
-        if (draft.entityType !== undefined) this.entityType = draft.entityType;
-        if (draft.panNumber !== undefined) this.panNumber = draft.panNumber;
-        if (draft.mobileNumber !== undefined) this.mobileNumber = draft.mobileNumber;
-        if (draft.emailId !== undefined) this.emailId = draft.emailId;
-        if (draft.businessAddress !== undefined) this.businessAddress = draft.businessAddress;
-        if (draft.bankName !== undefined) this.bankName = draft.bankName;
-        if (draft.accountNumber !== undefined) this.accountNumber = draft.accountNumber;
-        if (draft.ifscCode !== undefined) this.ifscCode = draft.ifscCode;
+  onFileChange(event: any, field: string) {
+    if (event.target.files.length > 0) {
+      const file = event.target.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size must be less than 2MB');
+        event.target.value = ''; // Reset input
+        return;
       }
+      if (field === 'applicantPan') this.applicantPanFile = file;
+      if (field === 'applicantAddressProof') this.applicantAddressProofFile = file;
+      if (field === 'directorPan') this.directorPanFile = file;
+      if (field === 'directorAddressProof') this.directorAddressProofFile = file;
+      if (field === 'bankAccountFirstPage') this.bankAccountFirstPageFile = file;
+    }
   }
 
-  onFileSelected(event: any, fieldName: string) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (file.size > 2 * 1024 * 1024) {
-      this.confirmDialog.confirm({
-        title: 'File Too Large',
-        message: 'Please upload a file that is 2 MB or smaller.',
-        confirmText: 'Okay',
-        hideCancel: true,
-        isDestructive: true
-      });
-      event.target.value = '';
-      return;
-    }
-
-    if (fieldName === 'panCard') this.panCardFile = file;
-    else if (fieldName === 'addressProof') this.addressProofFile = file;
-    else if (fieldName === 'cancelledCheque') this.cancelledChequeFile = file;
-    else if (fieldName === 'incorpCert') this.incorpCertFile = file;
-  }
-
-  async goBack() {
-    const shouldDraft = await this.confirmDialog.confirm({
-      title: 'Save Draft?',
-      message: 'Do you want to save this form as a draft before leaving?',
-      confirmText: 'Save Draft',
-      cancelText: 'Leave without saving'
-    });
-    if (shouldDraft === null) {
-      return;
-    }
-    if (shouldDraft) {
-      this.saveDraft();
-    }
+  goBack() {
     this.location.back();
   }
 
-  
-  saveDraft() {
-    const draftData = {
-      businessName: this.businessName,
-      entityType: this.entityType,
-      panNumber: this.panNumber,
-      mobileNumber: this.mobileNumber,
-      emailId: this.emailId,
-      businessAddress: this.businessAddress,
-      bankName: this.bankName,
-      accountNumber: this.accountNumber,
-      ifscCode: this.ifscCode,
-    };
-    this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
-    alert('Draft saved successfully!');
-  }
-
   submitForm() {
-    if (!this.businessName || !this.entityType || !this.panNumber || !this.mobileNumber || !this.emailId || !this.businessAddress ||
-        !this.bankName || !this.accountNumber || !this.ifscCode) {
-      this.errorMessage.set('Please fill out all required fields.');
+    if (!this.declaration) {
+      alert('Please check the declaration box.');
+      return;
+    }
+    
+    // 1 Validation
+    if (!this.applicantFirstName || !this.applicantLastName || !this.applicantEmail || !this.applicantMobile || !this.applicantAddress) {
+      alert('Please fill all required Applicant fields.');
       return;
     }
 
-    if ((!this.panCardFile && !this.existingDocs['panCard']) || (!this.addressProofFile && !this.existingDocs['addressProof']) || (!this.cancelledChequeFile && !this.existingDocs['cancelledCheque'])) {
-      this.errorMessage.set('Please upload all required documents (PAN, Address Proof, Cancelled Cheque).');
+    // 3 Validation
+    if (!this.companyName || !this.companyPanNumber || !this.nameOnCompanyPan || !this.dateOfIncorporation || !this.gstin || !this.companyMobileNumber || !this.companyMailId) {
+      alert('Please fill all required Company fields.');
+      return;
+    }
+
+    // 4 Validation
+    if (this.hasDirectorDetails) {
+      if (!this.directorDin || !this.directorPanName || !this.directorPanNumber || !this.directorPanDob || !this.directorFatherName || !this.directorAddress || !this.directorPhoneNumber) {
+        alert('Please fill all required Director fields.');
+        return;
+      }
+    }
+
+    // 6 Validation
+    if (!this.bankAccountNumber || !this.bankAccountHolderName || !this.ifscCode || !this.bankName) {
+      alert('Please fill all required Bank Details fields.');
+      return;
+    }
+    
+    // Documents Validation
+    if (!this.applicantPanFile || !this.applicantAddressProofFile) {
+      alert('Please upload all mandatory Applicant documents.');
+      return;
+    }
+    
+    if (this.hasDirectorDetails && (!this.directorPanFile || !this.directorAddressProofFile)) {
+      alert('Please upload all mandatory Director documents.');
+      return;
+    }
+
+    if (!this.bankAccountFirstPageFile) {
+      alert('Please upload all mandatory Bank documents.');
       return;
     }
 
     this.isSubmitting.set(true);
-    this.errorMessage.set('');
-
     const formData = new FormData();
-    // Step 1
-    formData.append('businessName', this.businessName);
-    formData.append('entityType', this.entityType);
-    formData.append('panNumber', this.panNumber);
-    formData.append('mobileNumber', this.mobileNumber);
-    formData.append('emailId', this.emailId);
-    formData.append('businessAddress', this.businessAddress);
     
-    // Step 2
-    formData.append('bankName', this.bankName);
-    formData.append('accountNumber', this.accountNumber);
-    formData.append('ifscCode', this.ifscCode);
+    // 1. Applicant Details
+    formData.append('applicantFirstName', this.applicantFirstName);
+    formData.append('applicantLastName', this.applicantLastName);
+    formData.append('applicantEmail', this.applicantEmail);
+    formData.append('applicantMobile', this.applicantMobile);
+    formData.append('applicantAddress', this.applicantAddress);
+    if (this.applicantPanFile) formData.append('applicantPanDoc', this.applicantPanFile as Blob);
+    if (this.applicantAddressProofFile) formData.append('applicantAddressProofDoc', this.applicantAddressProofFile as Blob);
+    
+    // 3. Company Details
+    formData.append('companyName', this.companyName);
+    formData.append('companyPanNumber', this.companyPanNumber);
+    formData.append('nameOnCompanyPan', this.nameOnCompanyPan);
+    formData.append('dateOfIncorporation', this.dateOfIncorporation);
+    formData.append('gstin', this.gstin);
+    formData.append('companyMobileNumber', this.companyMobileNumber);
+    formData.append('companyMailId', this.companyMailId);
 
-    // Files
-    if (this.panCardFile) formData.append('panCard', this.panCardFile); else if (this.existingDocs['panCard']) formData.append('panCard_existing', this.existingDocs['panCard'].fileUrl);
-    if (this.addressProofFile) formData.append('addressProof', this.addressProofFile); else if (this.existingDocs['addressProof']) formData.append('addressProof_existing', this.existingDocs['addressProof'].fileUrl);
-    if (this.cancelledChequeFile) formData.append('cancelledCheque', this.cancelledChequeFile); else if (this.existingDocs['cancelledCheque']) formData.append('cancelledCheque_existing', this.existingDocs['cancelledCheque'].fileUrl);
-    if (this.incorpCertFile) {
-      if (this.incorpCertFile) formData.append('incorpCert', this.incorpCertFile); else if (this.existingDocs['incorpCert']) formData.append('incorpCert_existing', this.existingDocs['incorpCert'].fileUrl);
+    // 4. Director Details
+    formData.append('hasDirectorDetails', String(this.hasDirectorDetails));
+    if (this.hasDirectorDetails) {
+      formData.append('directorDin', this.directorDin);
+      formData.append('directorPanName', this.directorPanName);
+      formData.append('directorPanNumber', this.directorPanNumber);
+      formData.append('directorPanDob', this.directorPanDob);
+      formData.append('directorFatherName', this.directorFatherName);
+      formData.append('directorAddress', this.directorAddress);
+      formData.append('directorPhoneNumber', this.directorPhoneNumber);
+      if (this.directorPanFile) formData.append('directorPanDoc', this.directorPanFile as Blob);
+      if (this.directorAddressProofFile) formData.append('directorAddressProofDoc', this.directorAddressProofFile as Blob);
     }
+    
+    // 6. Bank Details
+    formData.append('bankAccountNumber', this.bankAccountNumber);
+    formData.append('bankAccountHolderName', this.bankAccountHolderName);
+    formData.append('ifscCode', this.ifscCode);
+    formData.append('bankName', this.bankName);
+    if (this.bankAccountFirstPageFile) formData.append('bankAccountFirstPage', this.bankAccountFirstPageFile as Blob);
 
     this.api.post<any>(`orders/${this.orderId()}/submit-iec-form`, formData).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         this.isSubmitting.set(false);
-        if (res && res.order) {
-          this.isSuccess.set(true);
-          this.draftService.clearDraft(this.orderId(), this.constructor.name);
-          setTimeout(() => {
-            this.router.navigate(['/client/service', this.orderId()]);
-          }, 2000);
-        }
+        alert('IEC form submitted successfully!');
+        this.router.navigate(['/client-dashboard']);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.isSubmitting.set(false);
-        this.errorMessage.set(err.error?.message || 'Failed to submit form.');
+        console.error('Submission error:', err);
+        alert('Error submitting form: ' + (err.error?.message || err.message));
       }
     });
-  }
-
-  onEntityNameChange(newName: string) {
-    if (this.currentUser) {
-      AutoFillUtils.autoFillTextData(this, newName, this.currentUser);
-    }
   }
 }

@@ -105,7 +105,8 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
         if (draft.containsKey('email')) _emailController.text = draft['email'];
         if (draft.containsKey('whatsapp')) _whatsappController.text = draft['whatsapp'];
         if (draft.containsKey('courierAddress')) _courierAddressController.text = draft['courierAddress'];
-        if (draft.containsKey('preferredIso')) _selectedIso == 'Other' ? 'Other: ${_otherIsoController.text}' : _selectedIso = draft['preferredIso'];
+        if (draft.containsKey('preferredIsoCertification')) _selectedIso = draft['preferredIsoCertification'];
+        if (draft.containsKey('otherIsoCertification') && draft['otherIsoCertification'] != null) _otherIsoController.text = draft['otherIsoCertification'];
 
                 if (draft.containsKey('msmeCertPath')) _msmeCertPath = draft['msmeCertPath'];
 });
@@ -122,7 +123,8 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
       'email': _emailController.text,
       'whatsapp': _whatsappController.text,
       'courierAddress': _courierAddressController.text,
-      'preferredIso': _selectedIso == 'Other' ? 'Other: ${_otherIsoController.text}' : _selectedIso,
+      'preferredIsoCertification': _selectedIso,
+      'otherIsoCertification': _selectedIso == 'Other' ? _otherIsoController.text : null,
 
           'msmeCertPath': _msmeCertPath,
 };
@@ -178,7 +180,11 @@ class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
       request.fields['courierAddress'] = _courierAddressController.text;
 
       // ISO
-      request.fields['preferredIso'] = _selectedIso == 'Other' ? 'Other: ${_otherIsoController.text}' : _selectedIso;
+      request.fields['preferredIsoCertification'] = _selectedIso;
+      if (_selectedIso == 'Other') {
+        request.fields['otherIsoCertification'] = _otherIsoController.text;
+      }
+      request.fields['verificationStatus'] = 'true';
 
       // Add files
       request.files.add(await http.MultipartFile.fromPath('msmeCertificate', _msmeCertPath!));

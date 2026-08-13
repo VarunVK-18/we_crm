@@ -31,6 +31,9 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
   final _manufacturerNameController = TextEditingController();
   final _companyAddressController = TextEditingController();
   final _contactPersonController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _whatsappController = TextEditingController();
+  final _courierAddressController = TextEditingController();
   final _productSpecsController = TextEditingController();
   
   String? _certificationType;
@@ -57,6 +60,9 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
     _manufacturerNameController.dispose();
     _companyAddressController.dispose();
     _contactPersonController.dispose();
+    _emailController.dispose();
+    _whatsappController.dispose();
+    _courierAddressController.dispose();
     _productSpecsController.dispose();
     super.dispose();
   }
@@ -92,6 +98,9 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
           if (draft.containsKey('manufacturerName')) _manufacturerNameController.text = draft['manufacturerName'];
           if (draft.containsKey('companyAddress')) _companyAddressController.text = draft['companyAddress'];
           if (draft.containsKey('contactPerson')) _contactPersonController.text = draft['contactPerson'];
+          if (draft.containsKey('email')) _emailController.text = draft['email'];
+          if (draft.containsKey('whatsapp')) _whatsappController.text = draft['whatsapp'];
+          if (draft.containsKey('courierAddress')) _courierAddressController.text = draft['courierAddress'];
           if (draft.containsKey('productSpecs')) _productSpecsController.text = draft['productSpecs'];
           if (draft.containsKey('certificationType')) _certificationType = draft['certificationType'];
 
@@ -114,6 +123,9 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
       'manufacturerName': _manufacturerNameController.text,
       'companyAddress': _companyAddressController.text,
       'contactPerson': _contactPersonController.text,
+      'email': _emailController.text,
+      'whatsapp': _whatsappController.text,
+      'courierAddress': _courierAddressController.text,
       'productSpecs': _productSpecsController.text,
       'certificationType': _certificationType,
       'productDatasheetPath': _productDatasheetPath,
@@ -159,6 +171,9 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
       request.fields['manufacturerName'] = _manufacturerNameController.text;
       request.fields['companyAddress'] = _companyAddressController.text;
       request.fields['contactPerson'] = _contactPersonController.text;
+      request.fields['email'] = _emailController.text;
+      request.fields['whatsapp'] = _whatsappController.text;
+      request.fields['courierAddress'] = _courierAddressController.text;
       request.fields['productSpecs'] = _productSpecsController.text;
       request.fields['certificationType'] = _certificationType!;
 
@@ -429,7 +444,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
                 TextFormField(
                   controller: _manufacturerNameController,
                   decoration: InputDecoration(
-                    labelText: 'Manufacturer Name *',
+                    labelText: 'Company Legal Name *',
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   validator: (v) => v!.isEmpty ? 'Enter manufacturer name' : null,

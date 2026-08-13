@@ -1,317 +1,221 @@
-<div class="form-container">
-  <div class="form-header">
-    <button class="back-btn" (click)="goBack()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7" />
-      </svg>
-    </button>
-    <h2>DPIIT Service Form</h2>
+
+<div class="pf-container">
+  <div class="pf-header">
+    <button class="pf-back-btn" (click)="goBack()"><span class="material-symbols-outlined">arrow_back</span></button>
+    <h2>DPIIT Startup Recognition</h2>
   </div>
 
-  @if (errorMessage()) {
-    <div class="error-banner">
+  <app-we-loader *ngIf="isSubmitting()"></app-we-loader>
+
+  <form class="pf-form" (ngSubmit)="submitForm()" *ngIf="!isSuccess() && !isSubmitting()" #dpiitForm="ngForm">
+    
+    <!-- 1. DSC & Company Details -->
+    <div class="pf-section">
+      <h3>1. DSC & Company Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Do you have Organization DSC? *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="orgDsc" value="Yes" [(ngModel)]="orgDsc"> Yes</label>
+            <label><input type="radio" name="orgDsc" value="No, I want one" [(ngModel)]="orgDsc"> No, I want one</label>
+          </div>
+        </div>
+        <div class="pf-field">
+          <label>Full Name *</label>
+          <input type="text" name="fullName" [(ngModel)]="fullName" required>
+        </div>
+        <div class="pf-field">
+          <label>Company Email *</label>
+          <input type="email" name="companyEmail" [(ngModel)]="companyEmail" required>
+        </div>
+        <div class="pf-field">
+          <label>Company Mobile Number *</label>
+          <input type="text" name="companyMobile" [(ngModel)]="companyMobile" required pattern="[0-9]{10}">
+        </div>
+        <div class="pf-field">
+          <label>CIN Number *</label>
+          <input type="text" name="cinNumber" [(ngModel)]="cinNumber" required style="text-transform: uppercase;">
+        </div>
+        <div class="pf-field">
+          <label>Company PAN Number *</label>
+          <input type="text" name="companyPan" [(ngModel)]="companyPan" required style="text-transform: uppercase;">
+        </div>
+        <div class="pf-field">
+          <label>Company PAN Card Name *</label>
+          <input type="text" name="companyPanName" [(ngModel)]="companyPanName" required>
+        </div>
+        <div class="pf-field full-width">
+          <label>Business Address *</label>
+          <textarea name="companyAddress" [(ngModel)]="companyAddress" required rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Authorized Signatory Details -->
+    <div class="pf-section">
+      <h3>2. Authorized Signatory Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field">
+          <label>PAN of Authorized Signatory *</label>
+          <input type="text" name="signatoryPan" [(ngModel)]="signatoryPan" required style="text-transform: uppercase;">
+        </div>
+        <div class="pf-field">
+          <label>PAN First Name *</label>
+          <input type="text" name="signatoryFirstName" [(ngModel)]="signatoryFirstName" required>
+        </div>
+        <div class="pf-field">
+          <label>PAN Last Name *</label>
+          <input type="text" name="signatoryLastName" [(ngModel)]="signatoryLastName" required>
+        </div>
+        <div class="pf-field">
+          <label>PAN DOB *</label>
+          <input type="date" name="signatoryDob" [(ngModel)]="signatoryDob" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Company / Business Details -->
+    <div class="pf-section">
+      <h3>3. Company / Business Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Company Logo * <span class="size-hint">Upload 1 supported file (JPEG). Max 2 MB.</span></label>
+          <input type="file" accept=".jpg,.jpeg" (change)="onFileChange($event, 'companyLogoFile')" [required]="!existingDocs['companyLogo']">
+        </div>
+        <div class="pf-field full-width">
+          <label>Brief about Company *</label>
+          <textarea name="companyBrief" [(ngModel)]="companyBrief" required rows="3"></textarea>
+        </div>
+        <div class="pf-field full-width">
+          <label>Company Website *</label>
+          <input type="url" name="companyWebsite" [(ngModel)]="companyWebsite" required placeholder="https://example.com">
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Authorized Representative Details -->
+    <div class="pf-section">
+      <h3>4. Authorized Representative Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field">
+          <label>Authorized Representative Name *</label>
+          <input type="text" name="repName" [(ngModel)]="repName" required>
+        </div>
+        <div class="pf-field">
+          <label>Authorized Representative Mobile *</label>
+          <input type="text" name="repMobile" [(ngModel)]="repMobile" required pattern="[0-9]{10}">
+        </div>
+        <div class="pf-field">
+          <label>Authorized Representative Email *</label>
+          <input type="email" name="repEmail" [(ngModel)]="repEmail" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Director / Founder Details -->
+    <div class="pf-section">
+      <h3>5. Director / Founder Details</h3>
+      <div class="pf-grid">
+        <div class="pf-field">
+          <label>Director Name *</label>
+          <input type="text" name="directorName" [(ngModel)]="directorName" required>
+        </div>
+        <div class="pf-field">
+          <label>Director Gender *</label>
+          <div class="radio-group">
+            <label><input type="radio" name="directorGender" value="Male" [(ngModel)]="directorGender"> Male</label>
+            <label><input type="radio" name="directorGender" value="Female" [(ngModel)]="directorGender"> Female</label>
+            <label><input type="radio" name="directorGender" value="Other" [(ngModel)]="directorGender"> Other</label>
+          </div>
+        </div>
+        <div class="pf-field">
+          <label>Director Mobile Number *</label>
+          <input type="text" name="directorMobile" [(ngModel)]="directorMobile" required pattern="[0-9]{10}">
+        </div>
+        <div class="pf-field">
+          <label>Email Address *</label>
+          <input type="email" name="directorEmail" [(ngModel)]="directorEmail" required>
+        </div>
+        <div class="pf-field">
+          <label>DOB of Founder / Director *</label>
+          <input type="date" name="directorDob" [(ngModel)]="directorDob" required>
+        </div>
+        <div class="pf-field">
+          <label>Current Number of Employees *</label>
+          <input type="number" name="employeeCount" [(ngModel)]="employeeCount" required>
+        </div>
+        <div class="pf-field full-width">
+          <label>Director Address *</label>
+          <textarea name="directorAddress" [(ngModel)]="directorAddress" required rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Startup Information -->
+    <div class="pf-section">
+      <h3>6. Startup Information</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Applied for IPR? (Mention if any) *</label>
+          <textarea name="iprApplied" [(ngModel)]="iprApplied" required rows="2"></textarea>
+        </div>
+        <div class="pf-field full-width">
+          <label>Received any Funds? *</label>
+          <textarea name="fundsReceived" [(ngModel)]="fundsReceived" required rows="2"></textarea>
+        </div>
+        <div class="pf-field full-width">
+          <label>Received any Awards? *</label>
+          <textarea name="awardsReceived" [(ngModel)]="awardsReceived" required rows="2"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Company Documents -->
+    <div class="pf-section">
+      <h3>7. Company Documents</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <label>Incorporation Certificate (PDF) * <span class="size-hint">Upload 1 supported file. Max 2 MB.</span></label>
+          <input type="file" accept=".pdf" (change)="onFileChange($event, 'incorpCertFile')" [required]="!existingDocs['incorpCert']">
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. Verification -->
+    <div class="pf-section">
+      <h3>8. Verification</h3>
+      <div class="pf-grid">
+        <div class="pf-field full-width">
+          <div class="pf-declaration">
+            <label class="pf-checkbox">
+              <input type="checkbox" name="isVerified" [(ngModel)]="isVerified" required>
+              I Agree
+            </label>
+            <p>I hereby verify that the above mentioned facts are true and correct to the best of my knowledge.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-error-message" *ngIf="errorMessage()">
+      <span class="material-symbols-outlined">error</span>
       {{ errorMessage() }}
     </div>
-  }
 
-  <p class="form-instructions">Please provide the required details for DPIIT Startup India Registration.</p>
-
-  <form (ngSubmit)="submitForm()">
-
-    <div class="form-group">
-      <label>Do you have Organization DSC? <span class="required">*</span></label>
-      <select [(ngModel)]="orgDsc" name="orgDsc" class="form-control" required>
-        <option value="Yes">Yes</option>
-        <option value="No, I want one">No, I want one</option>
-      </select>
+    <div class="pf-actions">
+      <button type="button" class="pf-btn pf-btn-secondary" (click)="saveDraft()" [disabled]="isSubmitting()">
+        <span class="material-symbols-outlined">save</span> Save Draft
+      </button>
+      <button type="submit" class="pf-btn pf-btn-primary" [disabled]="!dpiitForm.valid || isSubmitting() || !isVerified">
+        <span class="material-symbols-outlined" *ngIf="!isSubmitting()">send</span>
+        {{ isSubmitting() ? 'Submitting...' : 'Submit Application' }}
+      </button>
     </div>
-
-    <div class="form-group">
-      <label>Website link <span class="optional">(Optional)</span></label>
-      <input type="text" [(ngModel)]="website" name="website" class="form-control" placeholder="https://example.com" />
-    </div>
-
-    <div class="form-group">
-      <label>Brief about Company <span class="required">*</span></label>
-      <textarea [(ngModel)]="brief" name="brief" class="form-control" rows="3" maxlength="500" required placeholder="Description of your company (Max 500 characters)"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>Director details (Name, email ID, Mobile) <span class="required">*</span></label>
-      <textarea [(ngModel)]="directorDetails" name="directorDetails" class="form-control" rows="2" required placeholder="E.g. John Doe, john@example.com, +91 9876543210"></textarea>
-    </div>
-
-    <div class="form-group">
-      <label>Industry <span class="required">*</span></label>
-      <input type="text" [(ngModel)]="industry" name="industry" class="form-control" required placeholder="E.g. Technology" />
-    </div>
-
-    <div class="form-group">
-      <label>Sector <span class="required">*</span></label>
-      <input type="text" [(ngModel)]="sector" name="sector" class="form-control" required placeholder="E.g. Software" />
-    </div>
-
-    <div class="form-group">
-      <label>Official Address of the Company <span class="required">*</span></label>
-      <textarea [(ngModel)]="address" name="address" class="form-control" rows="3" required placeholder="Complete registered address"></textarea>
-    </div>
-
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Do you have Organization DSC? <span class="required">*</span></label>
-        <select [(ngModel)]="orgDsc" name="orgDsc" class="form-control" required>
-          <option value="Yes">Yes</option>
-          <option value="No, I want one">No, I want one</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Website link <span class="optional">(Optional)</span></label>
-        <input type="text" [(ngModel)]="website" name="website" class="form-control" placeholder="https://example.com" />
-      </div>
-
-      <div class="form-group">
-        <label>Brief about Company <span class="required">*</span></label>
-        <textarea [(ngModel)]="brief" name="brief" class="form-control" rows="3" maxlength="500" required placeholder="Description of your company (Max 500 characters)"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Director details (Name, email ID, Mobile) <span class="required">*</span></label>
-        <textarea [(ngModel)]="directorDetails" name="directorDetails" class="form-control" rows="2" required placeholder="E.g. John Doe, john@example.com, +91 9876543210"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Industry <span class="required">*</span></label>
-        <input type="text" [(ngModel)]="industry" name="industry" class="form-control" required placeholder="E.g. Technology" />
-      </div>
-
-      <div class="form-group">
-        <label>Sector <span class="required">*</span></label>
-        <input type="text" [(ngModel)]="sector" name="sector" class="form-control" required placeholder="E.g. Software" />
-      </div>
-
-      <div class="form-group">
-        <label>Official Address of the Company <span class="required">*</span></label>
-        <textarea [(ngModel)]="address" name="address" class="form-control" rows="3" required placeholder="Complete registered address"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Authorization details (Name, PAN, mobile, email, designation) <span class="required">*</span></label>
-        <textarea [(ngModel)]="authDetails" name="authDetails" class="form-control" rows="3" required placeholder="Authorized representative details"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Current number of employees <span class="required">*</span></label>
-        <input type="number" [(ngModel)]="employees" name="employees" class="form-control" required placeholder="E.g. 10" />
-      </div>
-
-      <div class="form-group">
-        <label>Applied for IPR? (Mention if any) <span class="required">*</span></label>
-        <input type="text" [(ngModel)]="ipr" name="ipr" class="form-control" required placeholder="Trademarks, Patents, etc. or 'None'" />
-      </div>
-
-      <div class="form-group">
-        <label>Nature of startup <span class="required">*</span></label>
-        <select [(ngModel)]="startupNature" name="startupNature" class="form-control" required>
-          <option value="Innovative">Innovative</option>
-          <option value="Scalable">Scalable</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Received any Funds? <span class="required">*</span></label>
-        <select [(ngModel)]="receivedFunds" name="receivedFunds" class="form-control" required>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Received any Awards? <span class="required">*</span></label>
-        <select [(ngModel)]="receivedAwards" name="receivedAwards" class="form-control" required>
-          <option value="Yes">Yes</option>
-          <option value="No">No</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>What is the problem startup solving? <span class="required">*</span></label>
-        <textarea [(ngModel)]="problem" name="problem" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>How does your startup propose to solve the problem? <span class="required">*</span></label>
-        <textarea [(ngModel)]="solution" name="solution" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>What uniqueness of solution? <span class="required">*</span></label>
-        <textarea [(ngModel)]="uniqueness" name="uniqueness" class="form-control" rows="4" maxlength="400" required placeholder="Max 400 characters"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Have your Startup generated revenue? (Mention last year revenue) <span class="required">*</span></label>
-        <textarea [(ngModel)]="revenue" name="revenue" class="form-control" rows="3" maxlength="400" required placeholder="E.g. No revenue generated yet, or 5 Lakhs"></textarea>
-      </div>
-    </div>
-
-    <div class="document-section">
-      <h3 class="section-title">Document Uploads</h3>
-      <p class="section-subtitle" style="color: #c2410c; font-weight: 600; font-size: 13px; margin-bottom: 20px;">
-        Please verify the documents before uploading, later we can't change the application. (Max 2MB per file)
-      </p>
-
-      <div class="file-upload-wrapper">
-        <div class="file-info">
-          <h4>Incorporation Certificate (PDF) <span class="required">*</span></h4>
-          <p>Required for application.</p>
-        </div>
-        @if (existingDocs['incorpCert']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['incorpCert'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['incorpCert'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('incorpCert')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'incorpCert')" accept=".pdf" />
-          }
-      </div>
-
-      <div class="file-upload-wrapper">
-        <div class="file-info">
-          <h4>Company PAN <span class="required">*</span></h4>
-          <p>PDF or Image format.</p>
-        </div>
-        @if (existingDocs['pan']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['pan'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['pan'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('pan')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'pan')" accept=".pdf" />
-          }
-      </div>
-
-      <div class="file-upload-wrapper">
-        <div class="file-info">
-          <h4>Company Logo (JPEG) <span class="required">*</span></h4>
-          <p>JPG/JPEG format.</p>
-        </div>
-        @if (existingDocs['logo']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['logo'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['logo'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('logo')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'logo')" accept=".jpg,.jpeg" />
-          }
-      </div>
-
-      <div class="file-upload-wrapper">
-        <div class="file-info">
-          <h4>Pitch Deck (PDF)</h4>
-          <p>Optional but recommended.</p>
-        </div>
-        @if (existingDocs['pitchDeck']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['pitchDeck'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['pitchDeck'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('pitchDeck')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'pitchDeck')" accept=".pdf" />
-          }
-      </div>
-    </div>
-
-    <div class="verification-group" style="margin: 24px 0; display: flex; align-items: flex-start; gap: 12px;">
-      <input type="checkbox" id="verifyCheck" [(ngModel)]="isVerified" name="isVerified" style="margin-top: 4px; width: 18px; height: 18px;">
-      <label for="verifyCheck" style="font-size: 13px; color: #475569; line-height: 1.5; font-weight: normal;">
-        I here verify that above mentioned facts are true and correct to best of my knowledge and belief, and understood that later the modifications and changes might affect the process and leads to fresh application.
-      </label>
-    </div>
-
-    
-        <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
-      {{ isSubmitting() ? 'Submitting...' : 'Submit Form' }}
-    </button>
   </form>
+
+  <div class="pf-success" *ngIf="isSuccess()">
+    <span class="material-symbols-outlined success-icon">check_circle</span>
+    <h3>Application Submitted Successfully!</h3>
+    <button class="pf-btn pf-btn-primary" (click)="location.back()">Return to Dashboard</button>
+  </div>
 </div>
-
-<!-- Full page overlays -->
-@if (isSubmitting() || isSuccess()) {
-  <div class="overlay-container">
-    @if (isSubmitting()) {
-      <app-we-loader></app-we-loader>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Submitting Application...</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Please wait while we process your documents</p>
-    }
-    @if (isSuccess()) {
-      <div class="success-icon">
-        <span class="material-symbols-outlined" style="font-size: 64px; color: #10b981;">check_circle</span>
-      </div>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Application Submitted Successfully!</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Redirecting to tracking page...</p>
-    }
-  </div>
-}
-
-
-@if (safeDocumentViewerUrl) {
-  <div class="doc-viewer-modal-backdrop" (mousedown)="closeDocumentViewer()" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div class="doc-viewer-modal" (click)="$event.stopPropagation()" style="background:#fff;border-radius:8px;width:90%;max-width:800px;height:80vh;display:flex;flex-direction:column;overflow:hidden;">
-      <div class="doc-viewer-header" style="display:flex;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #ddd;">
-        <h3 style="margin:0;font-size:18px;">Document Viewer</h3>
-        <button type="button" class="close-viewer-btn" (click)="closeDocumentViewer()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
-      </div>
-      <div class="doc-viewer-body" style="flex:1;padding:0;">
-        <object [data]="safeDocumentViewerUrl" type="application/pdf" width="100%" height="100%">
-          <embed [src]="safeDocumentViewerUrl" width="100%" height="100%" />
-          <p style="text-align:center; margin-top:20px;">Your browser does not support inline document viewing. <a [href]="documentViewerUrl" target="_blank" style="color: blue; text-decoration: underline;">Click here to view it directly</a>.</p>
-        </object>
-      </div>
-    </div>
-  </div>
-}

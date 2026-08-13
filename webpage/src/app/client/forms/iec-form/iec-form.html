@@ -1,234 +1,221 @@
-<div class="form-layout">
+<div class="form-wrapper">
   <div class="form-header">
-    <div class="header-container">
-      <button class="back-btn" (click)="goBack()">
-        <span class="material-symbols-outlined">arrow_back</span>
-        Back to Service
+    <button class="back-btn" (click)="goBack()">
+      <i class="fas fa-arrow-left"></i> Back
+    </button>
+    <h2>IEC (Import Export Code) Registration</h2>
+    <p>Please provide the required details below.</p>
+  </div>
+
+  <form (ngSubmit)="submitForm()" #form="ngForm" class="form-container">
+    
+    <!-- 1. Applicant Details -->
+    <div class="form-section">
+      <h3>1. Applicant Details</h3>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>First Name *</label>
+          <input type="text" [(ngModel)]="applicantFirstName" name="applicantFirstName" required placeholder="First Name">
+        </div>
+        <div class="form-group half">
+          <label>Last Name *</label>
+          <input type="text" [(ngModel)]="applicantLastName" name="applicantLastName" required placeholder="Last Name">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="applicantEmail" name="applicantEmail" required placeholder="Enter email">
+        </div>
+        <div class="form-group half">
+          <label>Mobile No *</label>
+          <input type="tel" [(ngModel)]="applicantMobile" name="applicantMobile" required placeholder="Enter mobile">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>Address *</label>
+          <textarea [(ngModel)]="applicantAddress" name="applicantAddress" required placeholder="Enter applicant address"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Applicant Documents -->
+    <div class="form-section">
+      <h3>2. Applicant Documents</h3>
+      <p class="file-size-info" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 12px;">Upload 1 supported file. Max 2 MB.</p>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Applicant PAN Card *</label>
+          <input type="file" (change)="onFileChange($event, 'applicantPan')" accept="image/*,.pdf" required>
+        </div>
+        <div class="form-group half">
+          <label>Applicant Address Proof *</label>
+          <input type="file" (change)="onFileChange($event, 'applicantAddressProof')" accept="image/*,.pdf" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Company Details -->
+    <div class="form-section">
+      <h3>3. Company Details</h3>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Company Name *</label>
+          <input type="text" [(ngModel)]="companyName" name="companyName" required placeholder="Enter company name">
+        </div>
+        <div class="form-group half">
+          <label>Company PAN Number *</label>
+          <input type="text" [(ngModel)]="companyPanNumber" name="companyPanNumber" appPanFormat required placeholder="ABCDE1234F">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Name on Company PAN *</label>
+          <input type="text" [(ngModel)]="nameOnCompanyPan" name="nameOnCompanyPan" required placeholder="Name on PAN">
+        </div>
+        <div class="form-group half">
+          <label>Date of Incorporation *</label>
+          <input type="date" [(ngModel)]="dateOfIncorporation" name="dateOfIncorporation" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group full">
+          <label>GSTIN *</label>
+          <input type="text" [(ngModel)]="gstin" name="gstin" required placeholder="Enter GSTIN">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Company Mobile Number *</label>
+          <input type="tel" [(ngModel)]="companyMobileNumber" name="companyMobileNumber" required placeholder="Company Mobile">
+        </div>
+        <div class="form-group half">
+          <label>Company Mail ID *</label>
+          <input type="email" [(ngModel)]="companyMailId" name="companyMailId" required placeholder="Company Email">
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Director Details Toggle -->
+    <div class="form-section">
+      <h3>4. Director Details</h3>
+      <div class="form-row">
+        <div class="form-group full checkbox-group toggle-group">
+          <label class="toggle-switch">
+            <input type="checkbox" [(ngModel)]="hasDirectorDetails" name="hasDirectorDetails">
+            <span class="slider round"></span>
+          </label>
+          <span class="toggle-label">Include Director / Partner Details?</span>
+        </div>
+      </div>
+
+      <ng-container *ngIf="hasDirectorDetails">
+        <div class="form-row">
+          <div class="form-group half">
+            <label>DIN *</label>
+            <input type="text" [(ngModel)]="directorDin" name="directorDin" required placeholder="Director DIN">
+          </div>
+          <div class="form-group half">
+            <label>Director 1 PAN Name *</label>
+            <input type="text" [(ngModel)]="directorPanName" name="directorPanName" required placeholder="Name on PAN">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Director 1 PAN Number *</label>
+            <input type="text" [(ngModel)]="directorPanNumber" name="directorPanNumber" appPanFormat required placeholder="ABCDE1234F">
+          </div>
+          <div class="form-group half">
+            <label>Director 1 PAN DOB *</label>
+            <input type="date" [(ngModel)]="directorPanDob" name="directorPanDob" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group half">
+            <label>Father Name *</label>
+            <input type="text" [(ngModel)]="directorFatherName" name="directorFatherName" required placeholder="Father Name">
+          </div>
+          <div class="form-group half">
+            <label>Phone Number *</label>
+            <input type="tel" [(ngModel)]="directorPhoneNumber" name="directorPhoneNumber" required placeholder="Phone">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full">
+            <label>Address *</label>
+            <textarea [(ngModel)]="directorAddress" name="directorAddress" required placeholder="Director Address"></textarea>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- 5. Director Documents -->
+    <div class="form-section" *ngIf="hasDirectorDetails">
+      <h3>5. Director Documents</h3>
+      <p class="file-size-info" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 12px;">Upload 1 supported file. Max 2 MB.</p>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Director/Partner PAN Card *</label>
+          <input type="file" (change)="onFileChange($event, 'directorPan')" accept="image/*,.pdf" required>
+        </div>
+        <div class="form-group half">
+          <label>Director/Partner Address Proof *</label>
+          <input type="file" (change)="onFileChange($event, 'directorAddressProof')" accept="image/*,.pdf" required>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Bank Details -->
+    <div class="form-section">
+      <h3>6. Bank Details</h3>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Bank Account Number *</label>
+          <input type="password" [(ngModel)]="bankAccountNumber" name="bankAccountNumber" required placeholder="Enter Account Number">
+        </div>
+        <div class="form-group half">
+          <label>Bank Account Holder Name *</label>
+          <input type="text" [(ngModel)]="bankAccountHolderName" name="bankAccountHolderName" required placeholder="Holder Name">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>IFSC Code *</label>
+          <input type="text" [(ngModel)]="ifscCode" name="ifscCode" required placeholder="IFSC Code">
+        </div>
+        <div class="form-group half">
+          <label>Bank Name *</label>
+          <input type="text" [(ngModel)]="bankName" name="bankName" required placeholder="Bank Name">
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. Bank Documents -->
+    <div class="form-section">
+      <h3>7. Bank Documents</h3>
+      <p class="file-size-info" style="color: #64748b; font-size: 13px; margin-top: -8px; margin-bottom: 12px;">Upload 1 supported file. Max 2 MB.</p>
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Bank Account First Page *</label>
+          <input type="file" (change)="onFileChange($event, 'bankAccountFirstPage')" accept="image/*,.pdf" required>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section checkbox-section">
+      <div class="checkbox-wrapper">
+        <input type="checkbox" id="declaration" [(ngModel)]="declaration" name="declaration" required>
+        <label for="declaration">I hereby declare that all the information provided is true and correct.</label>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="submit-btn" [disabled]="isSubmitting()">
+        <span *ngIf="!isSubmitting()">Submit IEC Details</span>
+        <span *ngIf="isSubmitting()"><i class="fas fa-spinner fa-spin"></i> Submitting...</span>
       </button>
-      <div class="title-row">
-        <h1>IEC Registration Form</h1>
-      </div>
-      <p class="subtitle">Please provide the details below to apply for your Import Export Code (IEC).</p>
     </div>
-  </div>
 
-  <div class="form-container">
-    @if (errorMessage()) {
-      <div class="error-banner">
-        <span class="material-symbols-outlined">error</span>
-        <span>{{ errorMessage() }}</span>
-      </div>
-    }
-
-    <form (ngSubmit)="submitForm()" ngNativeValidate #iecForm="ngForm" class="incorp-form">
-      
-      <!-- Step 1: Business Details -->
-      <section class="form-section">
-        <h2>Step 1: Business Details</h2>
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label>Business Name *</label>
-            <input type="text" [(ngModel)]="businessName" (ngModelChange)="onEntityNameChange($event)" name="businessName" required placeholder="Business Name">
-          </div>
-          <div class="form-group">
-            <label>Entity Type *</label>
-            <select [(ngModel)]="entityType" name="entityType" required>
-              <option value="" disabled>Select Entity Type</option>
-              <option value="Proprietorship Registration">Proprietorship</option>
-              <option value="Partnership">Partnership</option>
-              <option value="LLP">Limited Liability Partnership (LLP)</option>
-              <option value="Private Limited">Private Limited Company</option>
-              <option value="OPC Incorporation">One Person Company (OPC)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>PAN Number *</label>
-            <input appPanFormat type="text" [(ngModel)]="panNumber" name="panNumber" required style="text-transform: uppercase;" placeholder="e.g. ABCDE1234F" pattern="^[A-Za-z]{5}[0-9]{4}[A-Za-z]{1}$" #panNumberField="ngModel" style="text-transform: uppercase;" >
-                  <div *ngIf="panNumberField.invalid && panNumberField.touched" class="error-msg">Invalid PAN format (e.g. ABCDE1234F)</div>
-          </div>
-          <div class="form-group">
-            <label>Mobile Number *</label>
-            <input type="tel" [(ngModel)]="mobileNumber" name="mobileNumber" required placeholder="+91" pattern="^[0-9]{10}$" #mobileNumberField="ngModel" >
-                  <div *ngIf="mobileNumberField.invalid && mobileNumberField.touched" class="error-msg">Phone number must be exactly 10 digits</div>
-          </div>
-          <div class="form-group">
-            <label>Email ID *</label>
-            <input type="email" [(ngModel)]="emailId" name="emailId" required placeholder="email@example.com" email #emailIdField="ngModel">
-                  <div *ngIf="emailIdField.invalid && emailIdField.touched" class="error-msg">Please enter a valid email address</div>
-          </div>
-          <div class="form-group full-width">
-            <label>Business Address *</label>
-            <textarea [(ngModel)]="businessAddress" name="businessAddress" required rows="3" placeholder="Complete business address..."></textarea>
-          </div>
-        </div>
-      </section>
-
-      <!-- Step 2: Bank Details -->
-      <section class="form-section">
-        <h2>Step 2: Bank Details</h2>
-        <div class="form-grid">
-          <div class="form-group full-width">
-            <label>Bank Name *</label>
-            <input type="text" [(ngModel)]="bankName" name="bankName" required placeholder="e.g. State Bank of India">
-          </div>
-          <div class="form-group">
-            <label>Account Number *</label>
-            <input type="text" [(ngModel)]="accountNumber" name="accountNumber" required placeholder="Account Number">
-          </div>
-          <div class="form-group">
-            <label>IFSC Code *</label>
-            <input type="text" [(ngModel)]="ifscCode" name="ifscCode" required style="text-transform: uppercase;" placeholder="e.g. SBIN0001234">
-          </div>
-        </div>
-      </section>
-
-      <!-- Step 3: Document Uploads -->
-      <section class="form-section">
-        <h2>Step 3: Document Uploads</h2>
-        <p class="section-help">Please upload all required documents (Max 2MB per file).</p>
-        <div class="form-grid">
-          <div class="form-group file-group">
-            <label>PAN Card *</label>
-            @if (existingDocs['panCard']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['panCard'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['panCard'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('panCard')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'panCard')" accept=".pdf">
-          }
-            <small>Entity / Proprietor</small>
-          </div>
-          <div class="form-group file-group">
-            <label>Address Proof *</label>
-            @if (existingDocs['addressProof']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['addressProof'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['addressProof'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('addressProof')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'addressProof')" accept=".pdf">
-          }
-            <small>Aadhaar/Utility Bill</small>
-          </div>
-          <div class="form-group file-group">
-            <label>Cancelled Cheque *</label>
-            @if (existingDocs['cancelledCheque']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['cancelledCheque'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['cancelledCheque'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('cancelledCheque')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'cancelledCheque')" accept=".pdf,.jpg,.jpeg,.png">
-          }
-            <small>Must match bank details</small>
-          </div>
-          <div class="form-group file-group">
-            <label>Incorporation Certificate</label>
-            @if (existingDocs['incorpCert']) {
-            <div class="existing-doc-box">
-              <div class="existing-doc-info">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ existingDocs['incorpCert'].name }} (From Profile)
-              </div>
-              <button type="button" class="existing-doc-btn existing-doc-btn-view" (click)="viewDocument(existingDocs['incorpCert'].fileUrl)" title="View Document">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="width:16px;height:16px;">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </button>
-              <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('incorpCert')">Change</button>
-            </div>
-          } @else {
-            <input type="file" (change)="onFileSelected($event, 'incorpCert')" accept=".pdf,.jpg,.jpeg,.png">
-          }
-            <small>If applicable</small>
-          </div>
-        </div>
-      </section>
-
-      <div class="form-actions">
-        
-        <button type="submit" class="btn-primary submit-btn" [disabled]="isSubmitting()">
-          @if (isSubmitting()) {
-            <div class="we-loader small" style="margin-right: 8px;"></div> Submitting...
-          } @else {
-            Submit Application
-          }
-        </button>
-      </div>
-
-    </form>
-  </div>
+  </form>
 </div>
-
-<!-- Full page overlays -->
-@if (isSubmitting() || isSuccess()) {
-  <div class="overlay-container">
-    @if (isSubmitting()) {
-      <app-we-loader></app-we-loader>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Submitting Application...</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Please wait while we process your documents</p>
-    }
-    @if (isSuccess()) {
-      <div class="success-icon">
-        <span class="material-symbols-outlined" style="font-size: 64px; color: #10b981;">check_circle</span>
-      </div>
-      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Application Submitted Successfully!</h3>
-      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Redirecting to tracking page...</p>
-    }
-  </div>
-}
-
-
-@if (safeDocumentViewerUrl) {
-  <div class="doc-viewer-modal-backdrop" (mousedown)="closeDocumentViewer()" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;">
-    <div class="doc-viewer-modal" (click)="$event.stopPropagation()" style="background:#fff;border-radius:8px;width:90%;max-width:800px;height:80vh;display:flex;flex-direction:column;overflow:hidden;">
-      <div class="doc-viewer-header" style="display:flex;justify-content:space-between;padding:15px 20px;border-bottom:1px solid #ddd;">
-        <h3 style="margin:0;font-size:18px;">Document Viewer</h3>
-        <button type="button" class="close-viewer-btn" (click)="closeDocumentViewer()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
-      </div>
-      <div class="doc-viewer-body" style="flex:1;padding:0;">
-        <object [data]="safeDocumentViewerUrl" type="application/pdf" width="100%" height="100%">
-          <embed [src]="safeDocumentViewerUrl" width="100%" height="100%" />
-          <p style="text-align:center; margin-top:20px;">Your browser does not support inline document viewing. <a [href]="documentViewerUrl" target="_blank" style="color: blue; text-decoration: underline;">Click here to view it directly</a>.</p>
-        </object>
-      </div>
-    </div>
-  </div>
-}

@@ -13,7 +13,7 @@ import { DraftService } from '../../../services/draft.service';
 @Component({
   selector: 'app-lei-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent, WeLoaderComponent],
+  imports: [CommonModule, FormsModule, WeLoaderComponent],
   templateUrl: './lei-form.html',
   styleUrl: '../forms-shared.css',
 })
@@ -39,30 +39,24 @@ export class LeiForm implements OnInit {
   errorMessage = signal<string>('');
 
   // Company Details
-  companyLegalName = '';
+  companyName = '';
+  cinNumber = '';
   companyAddress = '';
+  
+  // Applicant Details
   applicantName = '';
   email = '';
-  whatsapp = '';
-  courierAddress = '';
+  businessPhone = '';
 
   isVerified = false;
 
   // Files
-  msmeCertFile?: File;
-  addressProofFile?: File;
   incorpCertFile?: File;
-  panCardFile?: File;
-  gstCertFile?: File;
-  auditedFinancialsFile?: File;
-  moaAoaFile?: File;
-  boardResolutionFile?: File;
 
   constructor(private route: ActivatedRoute,
     private router: Router,
     public location: Location,
-    private api: Api
-  ,
+    private api: Api,
     private draftService: DraftService,
     private confirmDialog: ConfirmDialogService) {}
 
@@ -70,7 +64,7 @@ export class LeiForm implements OnInit {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
-          // Auto-fill from user profile
+    // Auto-fill from user profile
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -78,84 +72,51 @@ export class LeiForm implements OnInit {
         this.currentUser = user;
         
         if (user.owner_name) {
-          if ('fullName' in this) (this as any).fullName = user.owner_name;
-          else if ('applicantName' in this) (this as any).applicantName = user.owner_name;
-          else if ('proprietorName' in this) (this as any).proprietorName = user.owner_name;
-          else if ('directorName' in this) (this as any).directorName = user.owner_name;
+          this.applicantName = user.owner_name;
         }
 
         if (user.email) {
-          if ('emailId' in this) (this as any).emailId = user.email;
-          else if ('email' in this) (this as any).email = user.email;
+          this.email = user.email;
         }
 
         if (user.phone) {
-          if ('mobileNumber' in this) (this as any).mobileNumber = user.phone;
-          else if ('mobile' in this) (this as any).mobile = user.phone;
-          else if ('contactNumber' in this) (this as any).contactNumber = user.phone;
+          this.businessPhone = user.phone;
         }
 
         if (user.company_name) {
-          if ('businessName' in this) (this as any).businessName = user.company_name;
-          else if ('companyName' in this) (this as any).companyName = user.company_name;
-          else if ('entityName' in this) (this as any).entityName = user.company_name;
+          this.companyName = user.company_name;
         }
 
-        if (user.business_type) {
-          if ('businessType' in this) (this as any).businessType = user.business_type;
-          else if ('entityType' in this) (this as any).entityType = user.business_type;
-        }
-
-        if (user.pan) {
-          if ('panNumber' in this) (this as any).panNumber = user.pan;
-          else if ('pan' in this) (this as any).pan = user.pan;
-        }
         if (user.onboarding_documents) {
           const docs = user.onboarding_documents;
           const keywordMap: any = {
-            'panCard': ['pan'],
-            'panFile': ['pan'],
-            'addressProof': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'addressProofFile': ['address proof', 'aadhaar', 'passport', 'voter'],
-            'businessAddressProof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
-            'incorpCert': ['incorporation', 'incorp'],
-            'photoFile': ['photo', 'passport size'],
-            'passportPhoto': ['photo', 'passport size'],
-            'aadhaarFile': ['aadhaar'],
-            'identityProof': ['identity', 'id proof'],
-            'cancelledCheque': ['cheque', 'bank'],
-            'authSignatoryProof': ['authorization', 'signatory'],
-            'signatureFile': ['signature'],
-            'trademarkLogo': ['logo', 'brand'],
-            'msmeCert': ['msme', 'udyam'],
-            'gstCert': ['gst']
+            'incorpCert': ['incorporation', 'incorp']
           };
           
           for (const field of Object.keys(keywordMap)) {
             const keywords = keywordMap[field];
-            const eName = (this as any).companyName || (this as any).enterpriseName || (this as any).entityName || (this as any).businessName || '';
+            const eName = this.companyName;
             const matchedDoc = DocumentMatcher.findExistingDoc(eName, docs, keywords);
             if (matchedDoc) {
               this.existingDocs[field] = matchedDoc;
             }
           }
         }
-
       } catch(e) {}
     }
 
     const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
-      if (draft) {
-        if (draft.companyLegalName !== undefined) this.companyLegalName = draft.companyLegalName;
-        if (draft.companyAddress !== undefined) this.companyAddress = draft.companyAddress;
-        if (draft.applicantName !== undefined) this.applicantName = draft.applicantName;
-        if (draft.email !== undefined) this.email = draft.email;
-        if (draft.whatsapp !== undefined) this.whatsapp = draft.whatsapp;
-        if (draft.courierAddress !== undefined) this.courierAddress = draft.courierAddress;
-      }
+    if (draft) {
+      if (draft.companyName !== undefined) this.companyName = draft.companyName;
+      if (draft.cinNumber !== undefined) this.cinNumber = draft.cinNumber;
+      if (draft.companyAddress !== undefined) this.companyAddress = draft.companyAddress;
+      if (draft.applicantName !== undefined) this.applicantName = draft.applicantName;
+      if (draft.email !== undefined) this.email = draft.email;
+      if (draft.businessPhone !== undefined) this.businessPhone = draft.businessPhone;
+    }
   }
 
-  onFileSelected(event: any, fieldName: string) {
+  onFileChange(event: any, fieldName: string) {
     const file = event.target.files[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) {
@@ -169,15 +130,8 @@ export class LeiForm implements OnInit {
       event.target.value = '';
       return;
     }
-    switch (fieldName) {
-      case 'msmeCertificate': this.msmeCertFile = file; break;
-      case 'addressProof': this.addressProofFile = file; break;
-      case 'incorpCert': this.incorpCertFile = file; break;
-      case 'panCard': this.panCardFile = file; break;
-      case 'gstCert': this.gstCertFile = file; break;
-      case 'auditedFinancials': this.auditedFinancialsFile = file; break;
-      case 'moaAoa': this.moaAoaFile = file; break;
-      case 'boardResolution': this.boardResolutionFile = file; break;
+    if (fieldName === 'incorpCertFile') {
+      this.incorpCertFile = file;
     }
   }
 
@@ -197,23 +151,27 @@ export class LeiForm implements OnInit {
     this.location.back();
   }
 
-  
   saveDraft() {
     const draftData = {
-      companyLegalName: this.companyLegalName,
+      companyName: this.companyName,
+      cinNumber: this.cinNumber,
       companyAddress: this.companyAddress,
       applicantName: this.applicantName,
       email: this.email,
-      whatsapp: this.whatsapp,
-      courierAddress: this.courierAddress,
+      businessPhone: this.businessPhone,
     };
     this.draftService.saveDraft(this.orderId(), this.constructor.name, draftData);
     alert('Draft saved successfully!');
   }
 
   submitForm() {
-    if (!this.companyLegalName || !this.companyAddress || !this.applicantName || !this.email || !this.whatsapp || !this.courierAddress) {
-      this.errorMessage.set('Please fill all required text fields.');
+    if (!this.companyName || !this.cinNumber || !this.companyAddress || !this.applicantName || !this.email || !this.businessPhone) {
+      this.errorMessage.set('Please fill all required fields.');
+      return;
+    }
+
+    if (!this.incorpCertFile && !this.existingDocs['incorpCert']) {
+      this.errorMessage.set('Please upload the required Incorporation Certificate.');
       return;
     }
 
@@ -226,31 +184,27 @@ export class LeiForm implements OnInit {
     this.errorMessage.set('');
 
     const formData = new FormData();
-    formData.append('companyLegalName', this.companyLegalName);
+    formData.append('companyName', this.companyName);
+    formData.append('cinNumber', this.cinNumber);
     formData.append('companyAddress', this.companyAddress);
     formData.append('applicantName', this.applicantName);
     formData.append('email', this.email);
-    formData.append('whatsapp', this.whatsapp);
-    formData.append('courierAddress', this.courierAddress);
+    formData.append('businessPhone', this.businessPhone);
 
-    // Attach files
-    if (this.msmeCertFile) if (this.msmeCertFile) formData.append('msmeCertificate', this.msmeCertFile); else if (this.existingDocs['msmeCertificate']) formData.append('msmeCertificate_existing', this.existingDocs['msmeCertificate'].fileUrl);
-    if (this.addressProofFile) if (this.addressProofFile) formData.append('addressProof', this.addressProofFile); else if (this.existingDocs['addressProof']) formData.append('addressProof_existing', this.existingDocs['addressProof'].fileUrl);
-    if (this.incorpCertFile) if (this.incorpCertFile) formData.append('incorpCert', this.incorpCertFile); else if (this.existingDocs['incorpCert']) formData.append('incorpCert_existing', this.existingDocs['incorpCert'].fileUrl);
-    if (this.panCardFile) if (this.panCardFile) formData.append('panCard', this.panCardFile); else if (this.existingDocs['panCard']) formData.append('panCard_existing', this.existingDocs['panCard'].fileUrl);
-    if (this.gstCertFile) if (this.gstCertFile) formData.append('gstCert', this.gstCertFile); else if (this.existingDocs['gstCert']) formData.append('gstCert_existing', this.existingDocs['gstCert'].fileUrl);
-    if (this.auditedFinancialsFile) if (this.auditedFinancialsFile) formData.append('auditedFinancials', this.auditedFinancialsFile); else if (this.existingDocs['auditedFinancials']) formData.append('auditedFinancials_existing', this.existingDocs['auditedFinancials'].fileUrl);
-    if (this.moaAoaFile) if (this.moaAoaFile) formData.append('moaAoa', this.moaAoaFile); else if (this.existingDocs['moaAoa']) formData.append('moaAoa_existing', this.existingDocs['moaAoa'].fileUrl);
-    if (this.boardResolutionFile) if (this.boardResolutionFile) formData.append('boardResolution', this.boardResolutionFile); else if (this.existingDocs['boardResolution']) formData.append('boardResolution_existing', this.existingDocs['boardResolution'].fileUrl);
+    if (this.incorpCertFile) {
+      formData.append('incorpCert', this.incorpCertFile);
+    } else if (this.existingDocs['incorpCert']) {
+      formData.append('incorpCert_existing', this.existingDocs['incorpCert'].fileUrl);
+    }
 
     this.api.post(`orders/${this.orderId()}/submit-lei-form`, formData).subscribe({
       next: (res: any) => {
         this.isSubmitting.set(false);
         this.isSuccess.set(true);
-          this.draftService.clearDraft(this.orderId(), this.constructor.name);
-          setTimeout(() => {
-            this.router.navigate(['/client/service', this.orderId()]);
-          }, 2000);
+        this.draftService.clearDraft(this.orderId(), this.constructor.name);
+        setTimeout(() => {
+          this.router.navigate(['/client/service', this.orderId()]);
+        }, 2000);
       },
       error: (err: any) => {
         this.isSubmitting.set(false);
