@@ -51,23 +51,17 @@ flutter_launcher_icons:
 flutter:
   uses-material-design: true
   assets:
-    - assets/banner images/
+    - assets/banner images/banner01.jpg
+    - assets/banner images/banner02.jpg
+    - assets/banner images/banner03.jpg
+    - assets/banner images/certification.jpg
     - assets/WE CRM logo .png
-    - assets/WE CRM logo01.png
-    - assets/Chatbackground.png
-    - assets/google.png
+    - assets/Chatbackground.jpg
     - assets/sdlogo.png
-    - assets/sign.png
+    - assets/sign.jpg
     - assets/Startup Doctor logo (1).png
+    - assets/launcher_icon_padded.png
     - assets/fonts/
-    - assets/images/
-    - assets/Client/dbs.png
-    - assets/Client/hcl_tech.png
-    - assets/Client/idfc_bank.png
-    - assets/Client/logo6.png
-    - assets/Client/pvr.png
-    - assets/Client/softrate.png
-    - assets/Client/whatsapp_image.jpeg
     - assets/json/
     - assets/icons/
   fonts:

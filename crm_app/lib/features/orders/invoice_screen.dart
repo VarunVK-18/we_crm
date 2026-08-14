@@ -554,7 +554,7 @@ class InvoiceScreen extends ConsumerWidget {
                                 Text('For ${companyName.toUpperCase()}', style: const TextStyle(fontSize: 4, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
                                 const SizedBox(height: 10),
                                 Image.asset(
-                                  'assets/sign.png',
+                                  'assets/sign.jpg',
                                   width: 60,
                                   height: 60,
                                   fit: BoxFit.contain,
@@ -650,7 +650,7 @@ class InvoiceScreen extends ConsumerWidget {
 
     pw.MemoryImage? signImage;
     try {
-      final signData = await rootBundle.load('assets/sign.png');
+      final signData = await rootBundle.load('assets/sign.jpg');
       signImage = pw.MemoryImage(
         signData.buffer.asUint8List(signData.offsetInBytes, signData.lengthInBytes),
       );

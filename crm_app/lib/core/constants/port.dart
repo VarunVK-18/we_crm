@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 
-const bool useLocalBackend = true;
+const bool useLocalBackend = false;
 const bool isEmulator = false;
 String localHostIP = '10.27.129.219';
 
@@ -13,7 +13,7 @@ String getBaseUrl() {
     if (Platform.isAndroid) {
       if (isEmulator) {
         // 10.0.2.2 is the special IP for Android emulator to connect to host's localhost
-        return 'http://10.0.2.2:5001'; 
+        return 'http://10.0.2.2:5001';
       }
       // For physical Android devices on the same Wi-Fi
       return 'http://$localHostIP:5001';

@@ -604,7 +604,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
           ),
           clipBehavior: Clip.antiAlias,
           child: Image.asset(
-            'assets/banner images/banner01.png',
+            'assets/banner images/banner01.jpg',
             fit: BoxFit.cover,
           ),
         ),
@@ -617,7 +617,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
         ),
         clipBehavior: Clip.antiAlias,
         child: Image.asset(
-          'assets/banner images/banner02.png',
+          'assets/banner images/banner02.jpg',
           fit: BoxFit.cover,
         ),
       ),
@@ -629,7 +629,7 @@ class _DashboardCarouselState extends ConsumerState<_DashboardCarousel> {
         ),
         clipBehavior: Clip.antiAlias,
         child: Image.asset(
-          'assets/banner images/banner03.png',
+          'assets/banner images/banner03.jpg',
           fit: BoxFit.cover,
         ),
       ),

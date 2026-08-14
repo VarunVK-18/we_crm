@@ -358,7 +358,7 @@ class _OrderChatScreenState extends ConsumerState<OrderChatScreen> {
             child: Opacity(
               opacity: 0.10,
               child: Image.asset(
-                'assets/Chatbackground.png',
+                'assets/Chatbackground.jpg',
                 repeat: ImageRepeat.repeat,
               ),
             ),

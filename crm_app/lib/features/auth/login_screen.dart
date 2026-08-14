@@ -409,20 +409,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               const SizedBox(height: 4),
-                              Container(
-                                constraints: const BoxConstraints(maxHeight: 180),
-                                padding: EdgeInsets.symmetric(vertical: constraints.maxHeight * 0.01),
-                                child: Image.asset(
-                                  'assets/Client/whatsapp_image.jpeg',
-                                  fit: BoxFit.contain,
-                                  color: const Color(0xFFFDFBF7),
-                                  colorBlendMode: BlendMode.darken,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-
-                              _AutoScrollingLogos(logos: _clientLogos),
-
+              Container(
+                padding: EdgeInsets.symmetric(vertical: constraints.maxHeight * 0.015),
+                child: Image.asset(
+                  'assets/banner images/certification.jpg',
+                  fit: BoxFit.contain,
+                  color: const Color(0xFFFDFBF7),
+                  colorBlendMode: BlendMode.multiply,
+                ),
+              ),
                               SizedBox(height: constraints.maxHeight * 0.02),
 
                               // Footer Sign Up Link
@@ -479,24 +474,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  final List<String> _clientLogos = [
-    'assets/Client/idfc_bank.png',
-    'assets/Client/softrate.png',
-    'assets/Client/dbs.png',
-    'assets/Client/logo6.png',
-    'assets/Client/pvr.png',
-    'assets/Client/hcl_tech.png',
-  ];
-
-  Widget _buildClientImage(int index) {
-    return SizedBox(
-      height: 28,
-      child: Image.asset(
-        _clientLogos[index - 1],
-        fit: BoxFit.contain,
-      ),
-    );
-  }
 
   @override
   void dispose() {
@@ -506,145 +483,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-class _AutoScrollingLogos extends StatefulWidget {
-  final List<String> logos;
-  const _AutoScrollingLogos({required this.logos});
-
-  @override
-  _AutoScrollingLogosState createState() => _AutoScrollingLogosState();
-}
-
-class _AutoScrollingLogosState extends State<_AutoScrollingLogos> {
-  late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _startAutoScroll();
-    });
-  }
-
-  void _startAutoScroll() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    while (mounted) {
-      if (_scrollController.hasClients) {
-        await _scrollController.animateTo(
-          _scrollController.offset +
-              90.0, // Increased for slightly faster scroll
-          duration: const Duration(milliseconds: 2000),
-          curve: Curves.linear,
-        );
-      } else {
-        await Future.delayed(const Duration(milliseconds: 500));
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ShaderMask(
-      shaderCallback: (Rect bounds) {
-        return const LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Colors.transparent,
-            Colors.white,
-            Colors.white,
-            Colors.transparent,
-          ],
-          stops: [0.0, 0.1, 0.9, 1.0],
-        ).createShader(bounds);
-      },
-      blendMode: BlendMode.dstIn,
-      child: SizedBox(
-        height: 40,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final listWidth = constraints.maxWidth;
-            return ListView.builder(
-              controller: _scrollController,
-              scrollDirection: Axis.horizontal,
-              physics: const NeverScrollableScrollPhysics(), // pure auto-scroll
-              itemBuilder: (context, index) {
-                final logo = widget.logos[index % widget.logos.length];
-                return AnimatedBuilder(
-                  animation: _scrollController,
-                  builder: (context, child) {
-                    double offset = 0;
-                    if (_scrollController.hasClients) {
-                      offset = _scrollController.offset;
-                    }
-
-                    // padding horizontal 12 + width 80 = 104 total width per item
-                    final visibleCenter = offset + (listWidth / 2);
-
-                    // Find the index of the item whose center is closest to visibleCenter
-                    final closestIndex =
-                        ((visibleCenter - 52.0) / 104.0).round();
-
-                    final isCenter = index == closestIndex;
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: SizedBox(
-                        height: 40,
-                        width: 80,
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 600),
-                          child: isCenter
-                              ? Image.asset(logo,
-                                  fit: BoxFit.contain,
-                                  key: ValueKey('color_$index'))
-                              : ColorFiltered(
-                                  key: ValueKey('grey_$index'),
-                                  colorFilter:
-                                      const ColorFilter.matrix(<double>[
-                                    0.2126,
-                                    0.7152,
-                                    0.0722,
-                                    0,
-                                    0,
-                                    0.2126,
-                                    0.7152,
-                                    0.0722,
-                                    0,
-                                    0,
-                                    0.2126,
-                                    0.7152,
-                                    0.0722,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    1,
-                                    0,
-                                  ]),
-                                  child: Opacity(
-                                    opacity: 0.5,
-                                    child:
-                                        Image.asset(logo, fit: BoxFit.contain),
-                                  ),
-                                ),
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
