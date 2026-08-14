@@ -10,6 +10,7 @@ import '../compliance/compliance_radar_screen.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/navigation_provider.dart';
 import '../../core/widgets/we_loader.dart';
+import '../../core/utils/biometric_util.dart';
 
 class MainNavigationScreen extends ConsumerStatefulWidget {
   const MainNavigationScreen({super.key});
@@ -27,6 +28,76 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     super.initState();
     final initialIndex = ref.read(navigationIndexProvider);
     _pageController = PageController(initialPage: initialIndex);
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkSecuritySetup();
+    });
+  }
+
+  Future<void> _checkSecuritySetup() async {
+    final util = ref.read(biometricProvider);
+    final isBiometricEnabled = await util.isBiometricEnabled();
+    final isPinEnabled = await util.isPinEnabled();
+
+    if (!isBiometricEnabled && !isPinEnabled && mounted) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(width: 48, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 24),
+              const HugeIcon(icon: HugeIcons.strokeRoundedFingerAccess, size: 48, color: Colors.black87),
+              const SizedBox(height: 16),
+              const Text('Secure Your App', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.black87)),
+              const SizedBox(height: 12),
+              const Text(
+                'Would you like to set up Biometric (Fingerprint/FaceID) or a PIN for faster and more secure logins?',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.w400),
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    ref.read(autoTriggerSecurityProvider.notifier).state = true;
+                    ref.read(navigationIndexProvider.notifier).state = 3; // Index 3 is ProfileScreen
+                  },
+                  child: const Text('Set Up Now', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    splashFactory: NoSplash.splashFactory,
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text('Maybe Later', style: TextStyle(color: Colors.grey[600], fontSize: 14, fontWeight: FontWeight.w300)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   @override

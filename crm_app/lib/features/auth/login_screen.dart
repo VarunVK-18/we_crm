@@ -412,7 +412,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Container(
                 padding: EdgeInsets.symmetric(vertical: constraints.maxHeight * 0.015),
                 child: Image.asset(
-                  'assets/banner images/certification.jpg',
+                  'assets/banner images/certification01.jpg',
                   fit: BoxFit.contain,
                   color: const Color(0xFFFDFBF7),
                   colorBlendMode: BlendMode.multiply,

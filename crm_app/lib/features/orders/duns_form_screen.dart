@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_dropdown.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:file_picker/file_picker.dart';
@@ -581,7 +583,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                             ),
                           ),
                           const SizedBox(height: 8.0),
-                          DropdownButtonFormField<String>(
+                          AppDropdownFormField<String>(
                             value: _revenueCtrl.text.isEmpty ? null : _revenueCtrl.text,
                             items: [
                               '< 50 Lakhs',

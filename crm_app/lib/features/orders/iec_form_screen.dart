@@ -1,6 +1,8 @@
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_dropdown.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -228,72 +230,91 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
     }
   }
 
-  Widget _buildSectionHeader(String title) {
+  
+  Widget _buildField(String label, TextEditingController controller, {
+    bool isRequired = false,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool isDate = false,
+    bool readOnly = false,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    int? maxLength,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Text(
-        title,
-        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: AppTheme.corporateBlue),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label.replaceAll(' *', '').replaceAll('*', '').trim(),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: [if (label.contains('*') || isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
+            ),
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            readOnly: readOnly || isDate,
+            obscureText: obscureText,
+            textCapitalization: textCapitalization,
+            onChanged: (_) => _saveDraft(),
+            onTap: isDate ? () async {
+               final date = await showDatePicker(
+                 context: context,
+                 initialDate: DateTime.now().subtract(const Duration(days: 365)),
+                 firstDate: DateTime(1900),
+                 lastDate: DateTime.now(),
+               );
+               if (date != null) {
+                 setState(() {
+                   controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+                 });
+                 _saveDraft();
+               }
+            } : null,
+            style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
+            decoration: InputDecoration(
+              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+              filled: true,
+              fillColor: AppTheme.surfaceLight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 18, color: Colors.grey) : null,
+              counterText: '',
+            ),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: validator ?? (v) {
+              if ((label.contains('*') || isRequired) && (v == null || v.trim().isEmpty)) return 'This is a required field';
+              return null;
+            },
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildFilePickerField(String label, String? path, Function() onPick, {bool isRequired = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(label, style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500)),
-            if (isRequired) Text(' *', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.red)),
-          ],
-        ),
-        const SizedBox(height: 8),
-        InkWell(
-          onTap: onPick,
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade300),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey.shade50,
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.upload_file, color: path != null ? Colors.green : Colors.grey),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    path != null ? path.split('/').last : 'Tap to upload file (Max 2 MB)',
-                    style: GoogleFonts.inter(
-                      color: path != null ? Colors.green.shade700 : Colors.grey.shade600,
-                      fontWeight: path != null ? FontWeight.w500 : FontWeight.normal,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
 
-  Future<void> _selectDate(BuildContext context, TextEditingController controller) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 6),
+          Container(height: 1, color: Colors.grey.shade200),
+        ],
+      ),
     );
-    if (picked != null) {
-      setState(() {
-        controller.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
   }
 
   @override
@@ -313,104 +334,18 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildSectionHeader('1. Applicant Details'),
-              TextFormField(
-                controller: _applicantFirstNameController,
-                decoration: const InputDecoration(labelText: 'First Name *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _applicantLastNameController,
-                decoration: const InputDecoration(labelText: 'Last Name *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _applicantEmailController,
-                decoration: const InputDecoration(labelText: 'Email *', border: OutlineInputBorder()),
-                keyboardType: TextInputType.emailAddress,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _applicantMobileController,
-                decoration: const InputDecoration(labelText: 'Mobile No *', border: OutlineInputBorder()),
-                keyboardType: TextInputType.phone,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _applicantAddressController,
-                decoration: const InputDecoration(labelText: 'Address *', border: OutlineInputBorder()),
-                maxLines: 3,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-
-              _buildSectionHeader('2. Applicant Documents'),
-              _buildFilePickerField(
-                'Applicant PAN Card',
-                _applicantPanPath,
-                () => _pickFile((path) => _applicantPanPath = path),
-                isRequired: true,
-              ),
-              _buildFilePickerField(
-                'Applicant Address Proof',
-                _applicantAddressProofPath,
-                () => _pickFile((path) => _applicantAddressProofPath = path),
-                isRequired: true,
-              ),
-
-              _buildSectionHeader('3. Company Details'),
-              TextFormField(
-                controller: _companyNameController,
-                decoration: const InputDecoration(labelText: 'Company Name *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _companyPanNumberController,
-                decoration: const InputDecoration(labelText: 'Company PAN Number *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _nameOnCompanyPanController,
-                decoration: const InputDecoration(labelText: 'Name on Company PAN *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              InkWell(
-                onTap: () => _selectDate(context, _dateOfIncorporationController),
-                child: IgnorePointer(
-                  child: TextFormField(
-                    controller: _dateOfIncorporationController,
-                    decoration: const InputDecoration(labelText: 'Date of Incorporation *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
-                    validator: (v) => v!.isEmpty ? 'Required' : null,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _gstinController,
-                decoration: const InputDecoration(labelText: 'GSTIN *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _companyMobileNumberController,
-                decoration: const InputDecoration(labelText: 'Company Mobile Number *', border: OutlineInputBorder()),
-                keyboardType: TextInputType.phone,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _companyMailIdController,
-                decoration: const InputDecoration(labelText: 'Company Mail ID *', border: OutlineInputBorder()),
-                keyboardType: TextInputType.emailAddress,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-
-              _buildSectionHeader('4. Director Details'),
+              _buildField('First Name *', _applicantFirstNameController),
+              _buildField('Last Name *', _applicantLastNameController),
+              _buildField('Email *', _applicantEmailController, keyboardType: TextInputType.emailAddress),
+              _buildField('Mobile No *', _applicantMobileController, keyboardType: TextInputType.phone),
+              _buildField('Address *', _applicantAddressController, maxLines: 3),
+              _buildField('Company Name *', _companyNameController),
+              _buildField('Company PAN Number *', _companyPanNumberController),
+              _buildField('Name on Company PAN *', _nameOnCompanyPanController),
+              _buildField('Date of Incorporation *', _dateOfIncorporationController, isDate: true),
+              _buildField('GSTIN *', _gstinController),
+              _buildField('Company Mobile Number *', _companyMobileNumberController, keyboardType: TextInputType.phone),
+              _buildField('Company Mail ID *', _companyMailIdController, keyboardType: TextInputType.emailAddress),
               SwitchListTile(
                 title: Text('Include Director / Partner Details?', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                 value: _hasDirectorDetails,
@@ -420,106 +355,18 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
               ),
               if (_hasDirectorDetails) ...[
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _directorDinController,
-                  decoration: const InputDecoration(labelText: 'DIN *', border: OutlineInputBorder()),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _directorPanNameController,
-                  decoration: const InputDecoration(labelText: 'Director 1 PAN Name *', border: OutlineInputBorder()),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _directorPanNumberController,
-                  decoration: const InputDecoration(labelText: 'Director 1 PAN Number *', border: OutlineInputBorder()),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                InkWell(
-                  onTap: () => _selectDate(context, _directorPanDobController),
-                  child: IgnorePointer(
-                    child: TextFormField(
-                      controller: _directorPanDobController,
-                      decoration: const InputDecoration(labelText: 'Director 1 PAN DOB *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
-                      validator: (v) => v!.isEmpty ? 'Required' : null,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _directorFatherNameController,
-                  decoration: const InputDecoration(labelText: 'Father Name *', border: OutlineInputBorder()),
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _directorAddressController,
-                  decoration: const InputDecoration(labelText: 'Address *', border: OutlineInputBorder()),
-                  maxLines: 3,
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _directorPhoneNumberController,
-                  decoration: const InputDecoration(labelText: 'Phone Number *', border: OutlineInputBorder()),
-                  keyboardType: TextInputType.phone,
-                  validator: (v) => v!.isEmpty ? 'Required' : null,
-                ),
-
-                _buildSectionHeader('5. Director Documents'),
-                _buildFilePickerField(
-                  'Director/Partner PAN Card',
-                  _directorPanPath,
-                  () => _pickFile((path) => _directorPanPath = path),
-                  isRequired: true,
-                ),
-                _buildFilePickerField(
-                  'Director/Partner Address Proof',
-                  _directorAddressProofPath,
-                  () => _pickFile((path) => _directorAddressProofPath = path),
-                  isRequired: true,
-                ),
+                _buildField('DIN *', _directorDinController),
+                _buildField('Director 1 PAN Name *', _directorPanNameController),
+                _buildField('Director 1 PAN Number *', _directorPanNumberController),
+                _buildField('Director 1 PAN DOB *', _directorPanDobController, isDate: true),
+                _buildField('Father Name *', _directorFatherNameController),
+                _buildField('Address *', _directorAddressController, maxLines: 3),
+                _buildField('Phone Number *', _directorPhoneNumberController, keyboardType: TextInputType.phone),
               ],
-
-              _buildSectionHeader('6. Bank Details'),
-              TextFormField(
-                controller: _bankAccountNumberController,
-                decoration: const InputDecoration(labelText: 'Bank Account Number *', border: OutlineInputBorder()),
-                keyboardType: TextInputType.number,
-                obscureText: true,
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _bankAccountHolderNameController,
-                decoration: const InputDecoration(labelText: 'Bank Account Holder Name *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _ifscCodeController,
-                decoration: const InputDecoration(labelText: 'IFSC Code *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _bankNameController,
-                decoration: const InputDecoration(labelText: 'Bank Name *', border: OutlineInputBorder()),
-                validator: (v) => v!.isEmpty ? 'Required' : null,
-              ),
-
-              _buildSectionHeader('7. Bank Documents'),
-              _buildFilePickerField(
-                'Bank Account First Page',
-                _bankAccountFirstPagePath,
-                () => _pickFile((path) => _bankAccountFirstPagePath = path),
-                isRequired: true,
-              ),
-
-              const SizedBox(height: 24),
+              _buildField('Bank Account Number *', _bankAccountNumberController, keyboardType: TextInputType.number, obscureText: true),
+              _buildField('Bank Account Holder Name *', _bankAccountHolderNameController),
+              _buildField('IFSC Code *', _ifscCodeController),
+              _buildField('Bank Name *', _bankNameController),
               CheckboxListTile(
                 title: Text('I hereby declare that all the information provided is true and correct.', style: GoogleFonts.inter(fontSize: 13)),
                 value: _declaration,
@@ -538,7 +385,7 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
                 ),
                 child: _isLoading
                     ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text('Submit Details', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    : Text('Submit Details', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
               ),
               const SizedBox(height: 32),
             ],

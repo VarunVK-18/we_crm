@@ -183,10 +183,10 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                   const Text(
                     'My Services',
                     style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
                       color: AppTheme.deepTeal,
-                      letterSpacing: -0.5,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   const Spacer(),
@@ -344,7 +344,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         return [
                           ...entities.map((e) => Text(
                                 e,
-                                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               )),
@@ -360,7 +360,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                                 Expanded(
                                   child: Text(
                                     e,
-                                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
                                     maxLines: 3,
                                     overflow: TextOverflow.visible,
                                   ),
@@ -491,7 +491,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                             ),
                           ),
                           menuItemStyleData: const MenuItemStyleData(),
-                          style: const TextStyle(fontSize: 13, color: AppTheme.deepTeal, fontWeight: FontWeight.w700),
+                          style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal, fontWeight: FontWeight.w500),
                           items: const [
                             DropdownItem(value: 'All', child: Text('All Active')),
                             DropdownItem(value: 'Action Required', child: Text('Action Required')),
@@ -747,8 +747,8 @@ class _ServiceCard extends StatelessWidget {
                       Text(
                         order.serviceType,
                         style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                           color: AppTheme.deepTeal,
                         ),
                       ),

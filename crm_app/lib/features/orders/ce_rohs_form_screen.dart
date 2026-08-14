@@ -350,6 +350,93 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
     );
   }
 
+  
+  Widget _buildField(String label, TextEditingController controller, {
+    bool isRequired = false,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool isDate = false,
+    bool readOnly = false,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    int? maxLength,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label.replaceAll(' *', '').replaceAll('*', '').trim(),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: [if (label.contains('*') || isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
+            ),
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            readOnly: readOnly || isDate,
+            obscureText: obscureText,
+            textCapitalization: textCapitalization,
+            onChanged: (_) => _saveDraft(),
+            onTap: isDate ? () async {
+               final date = await showDatePicker(
+                 context: context,
+                 initialDate: DateTime.now().subtract(const Duration(days: 365)),
+                 firstDate: DateTime(1900),
+                 lastDate: DateTime.now(),
+               );
+               if (date != null) {
+                 setState(() {
+                   controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+                 });
+                 _saveDraft();
+               }
+            } : null,
+            style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
+            decoration: InputDecoration(
+              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+              filled: true,
+              fillColor: AppTheme.surfaceLight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 18, color: Colors.grey) : null,
+              counterText: '',
+            ),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: validator ?? (v) {
+              if ((label.contains('*') || isRequired) && (v == null || v.trim().isEmpty)) return 'This is a required field';
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 6),
+          Container(height: 1, color: Colors.grey.shade200),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
@@ -400,7 +487,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
                 const SizedBox(height: 24),
                 Text(
                   'Product Details',
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 16),
                 
@@ -421,71 +508,20 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
                 ),
                 const SizedBox(height: 16),
                 
-                TextFormField(
-                  controller: _productNameController,
-                  decoration: InputDecoration(
-                    labelText: 'Product Name *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Enter product name' : null,
-                ),
-                const SizedBox(height: 16),
+                _buildField('Product Name *', _productNameController),
                 
-                TextFormField(
-                  controller: _modelNumberController,
-                  decoration: InputDecoration(
-                    labelText: 'Model Number *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Enter model number' : null,
-                ),
-                const SizedBox(height: 16),
+                _buildField('Model Number *', _modelNumberController),
                 
-                TextFormField(
-                  controller: _manufacturerNameController,
-                  decoration: InputDecoration(
-                    labelText: 'Company Legal Name *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Enter manufacturer name' : null,
-                ),
-                const SizedBox(height: 16),
+                _buildField('Company Legal Name *', _manufacturerNameController),
                 
-                TextFormField(
-                  controller: _companyAddressController,
-                  decoration: InputDecoration(
-                    labelText: 'Company Address *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  maxLines: 3,
-                  validator: (v) => v!.isEmpty ? 'Enter company address' : null,
-                ),
-                const SizedBox(height: 16),
+                _buildField('Company Address *', _companyAddressController, maxLines: 3),
                 
-                TextFormField(
-                  controller: _contactPersonController,
-                  decoration: InputDecoration(
-                    labelText: 'Contact Person Details *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  validator: (v) => v!.isEmpty ? 'Enter contact person details' : null,
-                ),
-                const SizedBox(height: 16),
+                _buildField('Contact Person Details *', _contactPersonController),
                 
-                TextFormField(
-                  controller: _productSpecsController,
-                  decoration: InputDecoration(
-                    labelText: 'Product Specifications (Voltage, Power, etc.) *',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  maxLines: 3,
-                  validator: (v) => v!.isEmpty ? 'Enter product specifications' : null,
-                ),
-
-                const SizedBox(height: 32),
+                _buildField('Product Specifications (Voltage, Power, etc.) *', _productSpecsController, maxLines: 3),
                 Text(
                   'Required Documents',
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 16),
                 _buildFileUploadRow(
@@ -516,7 +552,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
                 const SizedBox(height: 24),
                 Text(
                   'Optional Documents',
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                  style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 16),
                 _buildFileUploadRow(

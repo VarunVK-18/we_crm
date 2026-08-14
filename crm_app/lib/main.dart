@@ -16,7 +16,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Use locally bundled fonts — disables runtime download from fonts.gstatic.com
-  GoogleFonts.config.allowRuntimeFetching = false;
+  GoogleFonts.config.allowRuntimeFetching = true;
 
   // Initialize Firebase (will use google-services.json for config on Android)
   await Firebase.initializeApp();

@@ -1,6 +1,8 @@
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_dropdown.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -440,7 +442,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)), backgroundColor: Colors.white, elevation: 0, iconTheme: const IconThemeData(color: Colors.black)),
+        appBar: AppBar(title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 15)), backgroundColor: Colors.white, elevation: 0, iconTheme: const IconThemeData(color: Colors.black)),
         body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -448,7 +450,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue)),
+                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w500, color: AppTheme.corporateBlue)),
                   const SizedBox(height: 16),
                   
                   // 1. Business Info
@@ -544,7 +546,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Checkbox(value: _isDeclared, activeColor: AppTheme.corporateBlue, onChanged: (val) => setState(() => _isDeclared = val ?? false)),
-                        Expanded(child: Padding(padding: const EdgeInsets.only(top: 12.0), child: RichText(text: const TextSpan(text: 'I hereby declare that all information provided is true and correct to the best of my knowledge.', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal), children: [TextSpan(text: ' *\n', style: TextStyle(color: Colors.red))])))),
+                        Expanded(child: Padding(padding: const EdgeInsets.only(top: 12.0), child: RichText(text: const TextSpan(text: 'I hereby declare that all information provided is true and correct to the best of my knowledge.', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: AppTheme.deepTeal), children: [TextSpan(text: ' *\n', style: TextStyle(color: Colors.red))])))),
                       ],
                     ),
                   ]),
@@ -553,7 +555,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                   ElevatedButton(
                     onPressed: _submitDetails,
                     style: ElevatedButton.styleFrom(backgroundColor: AppTheme.corporateBlue, minimumSize: const Size(double.infinity, 50), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
                   const SizedBox(height: 40),
                 ],
@@ -569,11 +571,11 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal), children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
+          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal), children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
+          AppDropdownFormField<String>(
             value: currentValue,
-            items: options.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 14)))).toList(),
+            items: options.map((e) => DropdownMenuItem(value: e, child: Text(e, style: const TextStyle(fontSize: 13)))).toList(),
             onChanged: onChanged,
             decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
           )
@@ -590,7 +592,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
           const SizedBox(height: 24),
           ...children,
         ],
@@ -604,7 +606,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal), children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
+          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal), children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
           if (hint.isNotEmpty) ...[const SizedBox(height: 4), Text(hint, style: TextStyle(fontSize: 11, color: Colors.grey[500]))],
           const SizedBox(height: 12),
           ...options.map((opt) => InkWell(
@@ -615,7 +617,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                 children: [
                   Radio<String>(value: opt, groupValue: currentValue, onChanged: (v) { if (v != null) onChanged(v); }, activeColor: AppTheme.corporateBlue, materialTapTargetSize: MaterialTapTargetSize.shrinkWrap),
                   const SizedBox(width: 8),
-                  Expanded(child: Padding(padding: const EdgeInsets.only(top: 12.0), child: Text(opt, style: const TextStyle(fontSize: 14)))),
+                  Expanded(child: Padding(padding: const EdgeInsets.only(top: 12.0), child: Text(opt, style: const TextStyle(fontSize: 13)))),
                 ],
               ),
             ),
@@ -631,7 +633,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal), children: [if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
+          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal), children: [if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
           if (hint.isNotEmpty) ...[const SizedBox(height: 4), Text(hint, style: TextStyle(fontSize: 11, color: Colors.grey[500]))],
           const SizedBox(height: 8),
           TextFormField(
@@ -640,18 +642,18 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
             readOnly: isDate,
             onTap: isDate ? () async {
               final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime(2100));
-              if (date != null) controller.text = "\${date.day.toString().padLeft(2, '0')}/\${date.month.toString().padLeft(2, '0')}/\${date.year}";
+              if (date != null) controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
             } : null,
             maxLines: maxLines,
-            decoration: InputDecoration(hintText: hint.isNotEmpty ? hint : "Enter \${label.replaceAll('*', '').trim()}", hintStyle: const TextStyle(fontSize: 13, color: Colors.grey), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null),
+            decoration: InputDecoration(hintText: hint.isNotEmpty ? hint : "Enter ${label.replaceAll('*', '').trim()}", hintStyle: const TextStyle(fontSize: 13, color: Colors.grey), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)), contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null),
             autovalidateMode: AutovalidateMode.onUserInteraction,
             validator: (v) {
               if (isRequired && (v == null || v.trim().isEmpty)) return 'This is a required question';
               if (v != null && v.trim().isNotEmpty) {
                 final labelLower = label.toLowerCase();
-                if ((labelLower.contains('phone') || labelLower.contains('mobile')) && !RegExp(r'^[0-9]{10}\$').hasMatch(v.trim())) return 'Enter a valid 10-digit phone number';
-                if (labelLower.contains('mail') && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$').hasMatch(v.trim())) return 'Enter a valid email address';
-                if (labelLower.contains('pan') && !RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}\$').hasMatch(v.trim())) return 'Enter a valid PAN';
+                if ((labelLower.contains('phone') || labelLower.contains('mobile')) && !RegExp(r'^[0-9]{10}$').hasMatch(v.trim())) return 'Enter a valid 10-digit phone number';
+                if (labelLower.contains('mail') && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v.trim())) return 'Enter a valid email address';
+                if (labelLower.contains('pan') && !RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(v.trim())) return 'Enter a valid PAN';
               }
               return null;
             },
@@ -667,7 +669,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal), children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
+          RichText(text: TextSpan(text: label, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal), children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))])),
           if (hint.isNotEmpty) ...[const SizedBox(height: 4), Text(hint, style: TextStyle(fontSize: 11, color: Colors.grey[500]))],
           const SizedBox(height: 8),
           Row(

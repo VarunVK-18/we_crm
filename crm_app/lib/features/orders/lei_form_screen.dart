@@ -5,6 +5,8 @@ import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_dropdown.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -180,10 +182,90 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
     }
   }
 
+  
+  Widget _buildField(String label, TextEditingController controller, {
+    bool isRequired = false,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool isDate = false,
+    bool readOnly = false,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    int? maxLength,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label.replaceAll(' *', '').replaceAll('*', '').trim(),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: [if (label.contains('*') || isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
+            ),
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            readOnly: readOnly || isDate,
+            obscureText: obscureText,
+            textCapitalization: textCapitalization,
+            onChanged: (_) => _saveDraft(),
+            onTap: isDate ? () async {
+               final date = await showDatePicker(
+                 context: context,
+                 initialDate: DateTime.now().subtract(const Duration(days: 365)),
+                 firstDate: DateTime(1900),
+                 lastDate: DateTime.now(),
+               );
+               if (date != null) {
+                 setState(() {
+                   controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+                 });
+                 _saveDraft();
+               }
+            } : null,
+            style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
+            decoration: InputDecoration(
+              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+              filled: true,
+              fillColor: AppTheme.surfaceLight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 18, color: Colors.grey) : null,
+              counterText: '',
+            ),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: validator ?? (v) {
+              if ((label.contains('*') || isRequired) && (v == null || v.trim().isEmpty)) return 'This is a required field';
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 6),
+          Container(height: 1, color: Colors.grey.shade200),
+        ],
+      ),
     );
   }
 
@@ -208,49 +290,12 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                 padding: const EdgeInsets.all(16),
                 children: [
                   _buildSectionHeader('1. Company Details'),
-                  TextFormField(
-                    controller: _companyNameController,
-                    decoration: const InputDecoration(labelText: 'Company Name *', border: OutlineInputBorder()),
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _cinNumberController,
-                    decoration: const InputDecoration(labelText: 'CIN Number *', border: OutlineInputBorder()),
-                    textCapitalization: TextCapitalization.characters,
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _companyAddressController,
-                    decoration: const InputDecoration(labelText: 'Company Address *', border: OutlineInputBorder()),
-                    maxLines: 3,
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-
-                  _buildSectionHeader('2. Applicant Details'),
-                  TextFormField(
-                    controller: _applicantNameController,
-                    decoration: const InputDecoration(labelText: "Applicant's Full Name *", border: OutlineInputBorder()),
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(labelText: 'Business Email *', border: OutlineInputBorder()),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (val) => !val!.contains('@') ? 'Enter valid email' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _businessPhoneController,
-                    decoration: const InputDecoration(labelText: 'Business Phone Number *', border: OutlineInputBorder()),
-                    keyboardType: TextInputType.phone,
-                    maxLength: 10,
-                    validator: (val) => val!.trim().length != 10 ? 'Enter valid 10 digit number' : null,
-                  ),
-
-                  _buildSectionHeader('3. Company Documents'),
+                  _buildField('Company Name *', _companyNameController),
+                  _buildField('CIN Number *', _cinNumberController, textCapitalization: TextCapitalization.characters),
+                  _buildField('Company Address *', _companyAddressController, maxLines: 3),
+                  _buildField('Applicant Name *', _applicantNameController),
+                  _buildField('Email ID *', _emailController, keyboardType: TextInputType.emailAddress),
+                  _buildField('Business Phone Number *', _businessPhoneController, keyboardType: TextInputType.phone, maxLength: 10),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Column(

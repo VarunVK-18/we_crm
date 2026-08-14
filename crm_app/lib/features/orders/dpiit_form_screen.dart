@@ -5,6 +5,8 @@ import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_dropdown.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -249,41 +251,88 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
     }
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-    );
-  }
-
-  Widget _buildDocUploader(String label, String? path, String type) {
+  
+  Widget _buildField(String label, TextEditingController controller, {
+    bool isRequired = false,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool isDate = false,
+    bool readOnly = false,
+    bool obscureText = false,
+    String? Function(String?)? validator,
+    int? maxLength,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 13)),
-          const SizedBox(height: 8),
-          InkWell(
-            onTap: () => _pickDocument(type),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
-              child: Row(
-                children: [
-                  Icon(path != null ? Icons.check_circle : Icons.upload_file, color: path != null ? Colors.green : Colors.grey),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      path != null ? path.split('/').last : 'Tap to upload document',
-                      style: GoogleFonts.inter(color: path != null ? Colors.black87 : Colors.grey, fontSize: 13),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+          RichText(
+            text: TextSpan(
+              text: label.replaceAll(' *', '').replaceAll('*', '').trim(),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: [if (label.contains('*') || isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
             ),
           ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            readOnly: readOnly || isDate,
+            obscureText: obscureText,
+            textCapitalization: textCapitalization,
+            onChanged: (_) => _saveDraft(),
+            onTap: isDate ? () async {
+               final date = await showDatePicker(
+                 context: context,
+                 initialDate: DateTime.now().subtract(const Duration(days: 365)),
+                 firstDate: DateTime(1900),
+                 lastDate: DateTime.now(),
+               );
+               if (date != null) {
+                 setState(() {
+                   controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+                 });
+                 _saveDraft();
+               }
+            } : null,
+            style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
+            decoration: InputDecoration(
+              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+              filled: true,
+              fillColor: AppTheme.surfaceLight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 18, color: Colors.grey) : null,
+              counterText: '',
+            ),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: validator ?? (v) {
+              if ((label.contains('*') || isRequired) && (v == null || v.trim().isEmpty)) return 'This is a required field';
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 6),
+          Container(height: 1, color: Colors.grey.shade200),
         ],
       ),
     );
@@ -313,82 +362,35 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
                   Text('Do you have Organization DSC? *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                   RadioListTile(title: const Text('Yes'), value: 'Yes', groupValue: _orgDsc, onChanged: (v) => setState(() => _orgDsc = v.toString())),
                   RadioListTile(title: const Text('No, I want one'), value: 'No, I want one', groupValue: _orgDsc, onChanged: (v) => setState(() => _orgDsc = v.toString())),
-                  TextFormField(controller: _fullNameController, decoration: const InputDecoration(labelText: 'Full Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _companyEmailController, decoration: const InputDecoration(labelText: 'Company Email *', border: OutlineInputBorder()), keyboardType: TextInputType.emailAddress, validator: (val) => !val!.contains('@') ? 'Valid email required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _companyMobileController, decoration: const InputDecoration(labelText: 'Company Mobile Number *', border: OutlineInputBorder()), keyboardType: TextInputType.phone, maxLength: 10, validator: (val) => val!.length != 10 ? 'Enter 10 digits' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _cinNumberController, decoration: const InputDecoration(labelText: 'CIN Number *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _companyPanController, decoration: const InputDecoration(labelText: 'Company PAN Number *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _companyPanNameController, decoration: const InputDecoration(labelText: 'Company PAN Card Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _companyAddressController, decoration: const InputDecoration(labelText: 'Business Address *', border: OutlineInputBorder()), maxLines: 3, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-
-                  _buildSectionHeader('2. Authorized Signatory Details'),
-                  TextFormField(controller: _signatoryPanController, decoration: const InputDecoration(labelText: 'PAN of Authorized Signatory *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _signatoryFirstNameController, decoration: const InputDecoration(labelText: 'PAN First Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _signatoryLastNameController, decoration: const InputDecoration(labelText: 'PAN Last Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _signatoryDobController,
-                    decoration: const InputDecoration(labelText: 'PAN DOB *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
-                    readOnly: true,
-                    onTap: () => _selectDate(_signatoryDobController),
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-
-                  _buildSectionHeader('3. Company / Business Details'),
-                  _buildDocUploader('Company Logo (JPEG) * (Max 2 MB)', _companyLogoPath, 'logo'),
-                  TextFormField(controller: _companyBriefController, decoration: const InputDecoration(labelText: 'Brief about Company *', border: OutlineInputBorder()), maxLines: 3, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _companyWebsiteController, decoration: const InputDecoration(labelText: 'Company Website *', border: OutlineInputBorder()), keyboardType: TextInputType.url, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-
-                  _buildSectionHeader('4. Authorized Representative Details'),
-                  TextFormField(controller: _repNameController, decoration: const InputDecoration(labelText: 'Authorized Representative Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _repMobileController, decoration: const InputDecoration(labelText: 'Authorized Representative Mobile *', border: OutlineInputBorder()), keyboardType: TextInputType.phone, maxLength: 10, validator: (val) => val!.length != 10 ? '10 digits required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _repEmailController, decoration: const InputDecoration(labelText: 'Authorized Representative Email *', border: OutlineInputBorder()), keyboardType: TextInputType.emailAddress, validator: (val) => !val!.contains('@') ? 'Valid email required' : null),
-
-                  _buildSectionHeader('5. Director / Founder Details'),
-                  TextFormField(controller: _directorNameController, decoration: const InputDecoration(labelText: 'Director Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
+                  _buildField('Full Name *', _fullNameController),
+                  _buildField('Company Email *', _companyEmailController, keyboardType: TextInputType.emailAddress),
+                  _buildField('Company Mobile Number *', _companyMobileController, keyboardType: TextInputType.phone, maxLength: 10),
+                  _buildField('CIN Number *', _cinNumberController, textCapitalization: TextCapitalization.characters),
+                  _buildField('Company PAN Number *', _companyPanController, textCapitalization: TextCapitalization.characters),
+                  _buildField('Company PAN Card Name *', _companyPanNameController),
+                  _buildField('Business Address *', _companyAddressController, maxLines: 3),
+                  _buildField('PAN of Authorized Signatory *', _signatoryPanController, textCapitalization: TextCapitalization.characters),
+                  _buildField('PAN First Name *', _signatoryFirstNameController),
+                  _buildField('PAN Last Name *', _signatoryLastNameController),
+                  _buildField('PAN DOB *', _signatoryDobController, isDate: true),
+                  _buildField('Brief about Company *', _companyBriefController, maxLines: 3),
+                  _buildField('Company Website *', _companyWebsiteController, keyboardType: TextInputType.url),
+                  _buildField('Authorized Representative Name *', _repNameController),
+                  _buildField('Authorized Representative Mobile *', _repMobileController, keyboardType: TextInputType.phone, maxLength: 10),
+                  _buildField('Authorized Representative Email *', _repEmailController, keyboardType: TextInputType.emailAddress),
+                  _buildField('Director Name *', _directorNameController),
                   Text('Director Gender *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
                   RadioListTile(title: const Text('Male'), value: 'Male', groupValue: _directorGender, onChanged: (v) => setState(() => _directorGender = v.toString())),
                   RadioListTile(title: const Text('Female'), value: 'Female', groupValue: _directorGender, onChanged: (v) => setState(() => _directorGender = v.toString())),
                   RadioListTile(title: const Text('Other'), value: 'Other', groupValue: _directorGender, onChanged: (v) => setState(() => _directorGender = v.toString())),
-                  TextFormField(controller: _directorMobileController, decoration: const InputDecoration(labelText: 'Director Mobile Number *', border: OutlineInputBorder()), keyboardType: TextInputType.phone, maxLength: 10, validator: (val) => val!.length != 10 ? '10 digits required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _directorEmailController, decoration: const InputDecoration(labelText: 'Email Address *', border: OutlineInputBorder()), keyboardType: TextInputType.emailAddress, validator: (val) => !val!.contains('@') ? 'Valid email required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _directorAddressController, decoration: const InputDecoration(labelText: 'Director Address *', border: OutlineInputBorder()), maxLines: 3, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _directorDobController,
-                    decoration: const InputDecoration(labelText: 'DOB of Founder / Director *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
-                    readOnly: true,
-                    onTap: () => _selectDate(_directorDobController),
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _employeeCountController, decoration: const InputDecoration(labelText: 'Current Number of Employees *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-
-                  _buildSectionHeader('6. Startup Information'),
-                  TextFormField(controller: _iprAppliedController, decoration: const InputDecoration(labelText: 'Applied for IPR? (Mention if any) *', border: OutlineInputBorder()), maxLines: 2, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _fundsReceivedController, decoration: const InputDecoration(labelText: 'Received any Funds? *', border: OutlineInputBorder()), maxLines: 2, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _awardsReceivedController, decoration: const InputDecoration(labelText: 'Received any Awards? *', border: OutlineInputBorder()), maxLines: 2, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-
-                  _buildSectionHeader('7. Company Documents'),
-                  _buildDocUploader('Incorporation Certificate (PDF) * (Max 2 MB)', _incorpCertPath, 'pdf'),
-
-                  _buildSectionHeader('8. Verification'),
+                  _buildField('Director Mobile Number *', _directorMobileController, keyboardType: TextInputType.phone, maxLength: 10),
+                  _buildField('Email Address *', _directorEmailController, keyboardType: TextInputType.emailAddress),
+                  _buildField('Director Address *', _directorAddressController, maxLines: 3),
+                  _buildField('DOB of Founder / Director *', _directorDobController, isDate: true),
+                  _buildField('Current Number of Employees *', _employeeCountController, keyboardType: TextInputType.number),
+                  _buildField('Applied for IPR? (Mention if any) *', _iprAppliedController, maxLines: 2),
+                  _buildField('Received any Funds? *', _fundsReceivedController, maxLines: 2),
+                  _buildField('Received any Awards? *', _awardsReceivedController, maxLines: 2),
                   CheckboxListTile(
                     title: const Text('I Agree'),
                     subtitle: const Text('I hereby verify that the above mentioned facts are true and correct to the best of my knowledge.'),

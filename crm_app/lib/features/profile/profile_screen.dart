@@ -636,6 +636,19 @@ class _BiometricTileState extends ConsumerState<_BiometricTile> {
     setState(() {
       _isLoading = false;
     });
+
+    // Automatically trigger setup if the flag is set
+    if (ref.read(autoTriggerSecurityProvider)) {
+      // Reset the flag immediately to prevent loops
+      Future.microtask(() {
+        ref.read(autoTriggerSecurityProvider.notifier).state = false;
+        if (_isAvailable && !_isEnabled) {
+          _toggleBiometrics(true);
+        } else if (!_isAvailable && !_isPinEnabled) {
+          _togglePin(true);
+        }
+      });
+    }
   }
 
   Future<void> _toggleBiometrics(bool value) async {

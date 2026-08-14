@@ -5,6 +5,8 @@ import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_dropdown.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -321,7 +323,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
                     ),
 
                   _buildSectionHeader('2. Business Details'),
-                  DropdownButtonFormField<String>(
+                  AppDropdownFormField<String>(
                     decoration: const InputDecoration(labelText: 'Expected Annual Turnover *', border: OutlineInputBorder()),
                     value: _annualTurnover,
                     items: ['Below ₹12 Lakhs', '₹12 Lakhs to ₹20 Crores', 'Above ₹20 Crores']

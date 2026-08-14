@@ -1,4 +1,4 @@
-import 'package:crm_app/core/theme/app_theme.dart';
+﻿import 'package:crm_app/core/theme/app_theme.dart';
 import 'package:crm_app/providers/auth_provider.dart';
 import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
@@ -7,12 +7,9 @@ import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
-
-import '../../core/constants/port.dart';
-import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
-import '../../providers/auth_provider.dart';
 
 class MsmeFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -26,46 +23,31 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // 1. Applicant
   final _aadhaarController = TextEditingController();
   final _entrepreneurNameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _emailController = TextEditingController();
-
-  // 2. Organization
   String _orgType = 'Proprietorship';
   final _enterpriseNameController = TextEditingController();
   final _incorpDateController = TextEditingController();
-
-  // 3. PAN & GST
   final _panController = TextEditingController();
   final _panNameController = TextEditingController();
   final _panDobController = TextEditingController();
   String _hasGstin = 'No';
   final _gstinController = TextEditingController();
-
-  // 4. Business
   final _investmentController = TextEditingController();
   final _turnoverController = TextEditingController();
   final _officeNameController = TextEditingController();
   String _majorActivity = 'Manufacturing';
   final _officeAddressController = TextEditingController();
-
-  // 5. Category
   String _socialCategory = 'General';
   String _gender = 'Male';
   String _isDivyang = 'No';
-
-  // 6. Bank
   final _bankNameController = TextEditingController();
   final _ifsCodeController = TextEditingController();
   final _bankAccountController = TextEditingController();
-
-  // 7. Employees
   final _maleEmpController = TextEditingController(text: '0');
   final _femaleEmpController = TextEditingController(text: '0');
-
-  // 8. TReDS
   String _tredsInterested = 'No';
 
   int get _totalEmployees {
@@ -127,24 +109,23 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
   }
 
   Future<void> _saveDraft() async {
-    final draftData = {
-      'aadhaarNumber': _aadhaarController.text, 'entrepreneurName': _entrepreneurNameController.text, 'mobileNumber': _mobileController.text, 'email': _emailController.text,
+    await ref.read(draftServiceProvider).saveDraft(widget.order.id, 'MsmeFormScreen', {
+      'aadhaarNumber': _aadhaarController.text, 'entrepreneurName': _entrepreneurNameController.text,
+      'mobileNumber': _mobileController.text, 'email': _emailController.text,
       'orgType': _orgType, 'enterpriseName': _enterpriseNameController.text, 'incorporationDate': _incorpDateController.text,
-      'pan': _panController.text, 'panName': _panNameController.text, 'panDob': _panDobController.text, 'hasGstin': _hasGstin, 'gstinNumber': _gstinController.text,
-      'investment': _investmentController.text, 'turnover': _turnoverController.text, 'officeName': _officeNameController.text, 'majorActivity': _majorActivity, 'officeAddress': _officeAddressController.text,
+      'pan': _panController.text, 'panName': _panNameController.text, 'panDob': _panDobController.text,
+      'hasGstin': _hasGstin, 'gstinNumber': _gstinController.text,
+      'investment': _investmentController.text, 'turnover': _turnoverController.text,
+      'officeName': _officeNameController.text, 'majorActivity': _majorActivity, 'officeAddress': _officeAddressController.text,
       'socialCategory': _socialCategory, 'gender': _gender, 'isDivyang': _isDivyang,
       'bankName': _bankNameController.text, 'ifsCode': _ifsCodeController.text, 'bankAccount': _bankAccountController.text,
-      'maleEmployees': int.tryParse(_maleEmpController.text) ?? 0, 'femaleEmployees': int.tryParse(_femaleEmpController.text) ?? 0,
-      'tredsInterested': _tredsInterested
-    };
-    await ref.read(draftServiceProvider).saveDraft(widget.order.id, 'MsmeFormScreen', draftData);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Draft saved successfully!')));
-    }
+      'maleEmployees': _maleEmpController.text, 'femaleEmployees': _femaleEmpController.text,
+      'tredsInterested': _tredsInterested,
+    });
   }
 
   Future<void> _selectDate(TextEditingController controller) async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now().subtract(const Duration(days: 365)),
       firstDate: DateTime(1900),
@@ -152,46 +133,40 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     );
     if (picked != null) {
       setState(() {
-        controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        controller.text = "${picked.day.toString().padLeft(2, '0')}/${picked.month.toString().padLeft(2, '0')}/${picked.year}";
       });
+      _saveDraft();
     }
   }
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
     if (_hasGstin == 'Yes' && _gstinController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please provide your GSTIN number.')));
       return;
     }
-
     setState(() => _isLoading = true);
-
     try {
       final uid = ref.read(authStateProvider).value?.uid;
       if (uid == null) throw Exception('Not authenticated');
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('${kBaseUrl}/api/orders/${widget.order.id}/submit-msme-form'),
-      );
+      var request = http.MultipartRequest('POST', Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-msme-form'));
       request.headers['x-user-id'] = uid;
-
-      final formData = {
-        'aadhaarNumber': _aadhaarController.text, 'entrepreneurName': _entrepreneurNameController.text, 'mobileNumber': _mobileController.text, 'email': _emailController.text,
+      request.fields['data'] = jsonEncode({
+        'aadhaarNumber': _aadhaarController.text, 'entrepreneurName': _entrepreneurNameController.text,
+        'mobileNumber': _mobileController.text, 'email': _emailController.text,
         'orgType': _orgType, 'enterpriseName': _enterpriseNameController.text, 'incorporationDate': _incorpDateController.text,
-        'pan': _panController.text, 'panName': _panNameController.text, 'panDob': _panDobController.text, 'hasGstin': _hasGstin, 'gstinNumber': _hasGstin == 'Yes' ? _gstinController.text : '',
-        'investment': _investmentController.text, 'turnover': _turnoverController.text, 'officeName': _officeNameController.text, 'majorActivity': _majorActivity, 'officeAddress': _officeAddressController.text,
+        'pan': _panController.text, 'panName': _panNameController.text, 'panDob': _panDobController.text,
+        'hasGstin': _hasGstin, 'gstinNumber': _hasGstin == 'Yes' ? _gstinController.text : '',
+        'investment': _investmentController.text, 'turnover': _turnoverController.text,
+        'officeName': _officeNameController.text, 'majorActivity': _majorActivity, 'officeAddress': _officeAddressController.text,
         'socialCategory': _socialCategory, 'gender': _gender, 'isDivyang': _isDivyang,
         'bankName': _bankNameController.text, 'ifsCode': _ifsCodeController.text, 'bankAccount': _bankAccountController.text,
-        'maleEmployees': int.tryParse(_maleEmpController.text) ?? 0, 'femaleEmployees': int.tryParse(_femaleEmpController.text) ?? 0, 'totalEmployees': _totalEmployees,
-        'tredsInterested': _tredsInterested
-      };
-
-      request.fields['data'] = jsonEncode(formData);
-
+        'maleEmployees': int.tryParse(_maleEmpController.text) ?? 0,
+        'femaleEmployees': int.tryParse(_femaleEmpController.text) ?? 0,
+        'totalEmployees': _totalEmployees, 'tredsInterested': _tredsInterested,
+      });
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-
       if (response.statusCode == 200 || response.statusCode == 201) {
         await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'MsmeFormScreen');
         if (mounted) {
@@ -208,132 +183,256 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     }
   }
 
+  Widget _buildField(String label, TextEditingController controller, {
+    bool isRequired = false,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    bool isDate = false,
+    String? Function(String?)? validator,
+    int? maxLength,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: [if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
+            ),
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            maxLines: maxLines,
+            maxLength: maxLength,
+            readOnly: isDate,
+            textCapitalization: textCapitalization,
+            onChanged: (_) => _saveDraft(),
+            onTap: isDate ? () => _selectDate(controller) : null,
+            style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
+            decoration: InputDecoration(
+              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+              filled: true,
+              fillColor: AppTheme.surfaceLight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 18, color: Colors.grey) : null,
+              counterText: '',
+            ),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
+            validator: validator ?? (v) {
+              if (isRequired && (v == null || v.trim().isEmpty)) return 'This is a required field';
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownField(String label, String current, List<String> options, ValueChanged<String?> onChanged, {bool isRequired = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: [if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
+            ),
+          ),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: current,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+              filled: true,
+              fillColor: AppTheme.surfaceLight,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal, fontWeight: FontWeight.w400),
+            icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 20),
+            items: options.map((o) => DropdownMenuItem<String>(
+              value: o,
+              child: Text(o, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: AppTheme.deepTeal)),
+            )).toList(),
+            onChanged: (val) {
+              onChanged(val);
+              _saveDraft();
+            },
+            validator: isRequired ? (v) => v == null || v.isEmpty ? 'This is a required field' : null : null,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Text(title, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+      padding: const EdgeInsets.only(top: 8, bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 6),
+          Container(height: 1, color: Colors.grey.shade200),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
-        title: Text('MSME / Udyam Registration', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: Text('MSME / Udyam Registration', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.deepTeal, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           TextButton.icon(
             onPressed: _saveDraft,
-            icon: const Icon(Icons.save_outlined, color: Colors.white),
-            label: Text('Save Draft', style: GoogleFonts.inter(color: Colors.white)),
+            icon: const Icon(Icons.save_outlined, color: AppTheme.corporateBlue, size: 18),
+            label: Text('Save', style: GoogleFonts.inter(color: AppTheme.corporateBlue, fontSize: 13, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.corporateBlue))
           : Form(
               key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildSectionHeader('1. Applicant / Entrepreneur Details'),
-                  TextFormField(controller: _aadhaarController, decoration: const InputDecoration(labelText: 'Aadhar Number *', border: OutlineInputBorder()), keyboardType: TextInputType.number, maxLength: 12, validator: (val) => val!.length != 12 ? 'Enter 12 digits' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _entrepreneurNameController, decoration: const InputDecoration(labelText: 'Name of Entrepreneur *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _mobileController, decoration: const InputDecoration(labelText: 'Mobile Number *', border: OutlineInputBorder()), keyboardType: TextInputType.phone, maxLength: 10, validator: (val) => val!.length != 10 ? 'Enter 10 digits' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email *', border: OutlineInputBorder()), keyboardType: TextInputType.emailAddress, validator: (val) => !val!.contains('@') ? 'Valid email required' : null),
-
-                  _buildSectionHeader('2. Organization Details'),
-                  Text('Type of Organization *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                  ...['Proprietorship', 'Partnership', 'LLP', 'Private Limited', 'OPC', 'Trust', 'Society'].map((type) => 
-                    RadioListTile(title: Text(type), value: type, groupValue: _orgType, onChanged: (v) => setState(() => _orgType = v.toString()))),
-                  TextFormField(controller: _enterpriseNameController, decoration: const InputDecoration(labelText: 'Name of Enterprise *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _incorpDateController,
-                    decoration: const InputDecoration(labelText: 'Date of Incorporation *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
-                    readOnly: true,
-                    onTap: () => _selectDate(_incorpDateController),
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-
-                  _buildSectionHeader('3. PAN & GST Details'),
-                  TextFormField(controller: _panController, decoration: const InputDecoration(labelText: 'PAN *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _panNameController, decoration: const InputDecoration(labelText: 'Name of PAN Holder *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _panDobController,
-                    decoration: const InputDecoration(labelText: 'DOB OR DOI as per PAN *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
-                    readOnly: true,
-                    onTap: () => _selectDate(_panDobController),
-                    validator: (val) => val!.trim().isEmpty ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Do you have GSTIN *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                  ...['Yes', 'No', 'Exempted'].map((type) => 
-                    RadioListTile(title: Text(type), value: type, groupValue: _hasGstin, onChanged: (v) => setState(() => _hasGstin = v.toString()))),
-                  if (_hasGstin == 'Yes')
-                    TextFormField(controller: _gstinController, decoration: const InputDecoration(labelText: 'GST Number *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-
-                  _buildSectionHeader('4. Business Details'),
-                  TextFormField(controller: _investmentController, decoration: const InputDecoration(labelText: 'Total Investment Made in Business *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _turnoverController, decoration: const InputDecoration(labelText: 'Turnover in Last FY 25-26 *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _officeNameController, decoration: const InputDecoration(labelText: 'Office Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  Text('Major Activity of Unit *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                  ...['Manufacturing', 'Services', 'Trading'].map((type) => 
-                    RadioListTile(title: Text(type), value: type, groupValue: _majorActivity, onChanged: (v) => setState(() => _majorActivity = v.toString()))),
-                  TextFormField(controller: _officeAddressController, decoration: const InputDecoration(labelText: 'Office Address *', border: OutlineInputBorder()), maxLines: 3, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-
-                  _buildSectionHeader('5. Social & Category Details'),
-                  Text('Social Category *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                  ...['General', 'SC', 'ST', 'OBC'].map((type) => 
-                    RadioListTile(title: Text(type), value: type, groupValue: _socialCategory, onChanged: (v) => setState(() => _socialCategory = v.toString()))),
-                  Text('Gender *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                  ...['Male', 'Female', 'Others'].map((type) => 
-                    RadioListTile(title: Text(type), value: type, groupValue: _gender, onChanged: (v) => setState(() => _gender = v.toString()))),
-                  Text('Specially Abled (DIVYANG) *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                  ...['Yes', 'No'].map((type) => 
-                    RadioListTile(title: Text(type), value: type, groupValue: _isDivyang, onChanged: (v) => setState(() => _isDivyang = v.toString()))),
-
-                  _buildSectionHeader('6. Bank Details'),
-                  TextFormField(controller: _bankNameController, decoration: const InputDecoration(labelText: 'Bank Name *', border: OutlineInputBorder()), validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _ifsCodeController, decoration: const InputDecoration(labelText: 'IFS Code *', border: OutlineInputBorder()), textCapitalization: TextCapitalization.characters, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _bankAccountController, decoration: const InputDecoration(labelText: 'Bank Account Number *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-
-                  _buildSectionHeader('7. Employee Details'),
-                  TextFormField(controller: _maleEmpController, decoration: const InputDecoration(labelText: 'No. of Persons Employed (Male) *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(controller: _femaleEmpController, decoration: const InputDecoration(labelText: 'No. of Persons Employed (Female) *', border: OutlineInputBorder()), keyboardType: TextInputType.number, validator: (val) => val!.trim().isEmpty ? 'Required' : null),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: const InputDecoration(labelText: 'Total Employees', border: OutlineInputBorder()),
-                    controller: TextEditingController(text: _totalEmployees.toString()),
-                    enabled: false,
-                  ),
-
-                  _buildSectionHeader('8. TReDS Registration'),
-                  Text('Are you interested in getting registered on TReDS Portals? *', style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
-                  ...['Yes', 'No'].map((type) => 
-                    RadioListTile(title: Text(type), value: type, groupValue: _tredsInterested, onChanged: (v) => setState(() => _tredsInterested = v.toString()))),
-
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _submitForm,
-                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                      child: const Text('Submit Application', style: TextStyle(fontSize: 16)),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(color: AppTheme.corporateBlue.withOpacity(0.05), borderRadius: BorderRadius.circular(12)),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline, color: AppTheme.corporateBlue, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(child: Text('Udyam registration is free and done through the government portal.', style: GoogleFonts.inter(fontSize: 12, color: AppTheme.corporateBlue))),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                ],
+                    const SizedBox(height: 20),
+
+                    _buildSectionHeader('1. Applicant / Entrepreneur Details'),
+                    _buildField('Aadhaar Number', _aadhaarController, isRequired: true, keyboardType: TextInputType.number, maxLength: 12,
+                      validator: (val) => val == null || val.length != 12 ? 'Enter valid 12-digit Aadhaar' : null),
+                    _buildField('Name of Entrepreneur', _entrepreneurNameController, isRequired: true),
+                    _buildField('Mobile Number', _mobileController, isRequired: true, keyboardType: TextInputType.phone, maxLength: 10,
+                      validator: (val) => val == null || val.length != 10 ? 'Enter valid 10-digit number' : null),
+                    _buildField('Email', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress,
+                      validator: (val) => val == null || !val.contains('@') ? 'Enter a valid email' : null),
+
+                    _buildSectionHeader('2. Organization Details'),
+                    _buildDropdownField('Type of Organization', _orgType,
+                      ['Proprietorship', 'Partnership', 'LLP', 'Private Limited', 'OPC', 'Trust', 'Society'],
+                      (v) => setState(() => _orgType = v!), isRequired: true),
+                    _buildField('Name of Enterprise', _enterpriseNameController, isRequired: true),
+                    _buildField('Date of Incorporation', _incorpDateController, isRequired: true, isDate: true),
+
+                    _buildSectionHeader('3. PAN & GST Details'),
+                    _buildField('PAN', _panController, isRequired: true, textCapitalization: TextCapitalization.characters,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) return 'PAN is required';
+                        if (!RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$', caseSensitive: false).hasMatch(val.trim())) return 'Enter a valid PAN';
+                        return null;
+                      }),
+                    _buildField('Name of PAN Holder', _panNameController, isRequired: true),
+                    _buildField('Date of Birth / Incorporation as per PAN', _panDobController, isRequired: true, isDate: true),
+                    _buildDropdownField('Do you have GSTIN?', _hasGstin, ['Yes', 'No', 'Exempted'],
+                      (v) => setState(() => _hasGstin = v!), isRequired: true),
+                    if (_hasGstin == 'Yes')
+                      _buildField('GST Number', _gstinController, isRequired: true, textCapitalization: TextCapitalization.characters),
+
+                    _buildSectionHeader('4. Business Details'),
+                    _buildField('Total Investment Made in Business (₹)', _investmentController, isRequired: true, keyboardType: TextInputType.number),
+                    _buildField('Turnover in Last FY 25-26 (₹)', _turnoverController, isRequired: true, keyboardType: TextInputType.number),
+                    _buildField('Office Name', _officeNameController, isRequired: true),
+                    _buildDropdownField('Major Activity of Unit', _majorActivity, ['Manufacturing', 'Services', 'Trading'],
+                      (v) => setState(() => _majorActivity = v!), isRequired: true),
+                    _buildField('Office Address', _officeAddressController, isRequired: true, maxLines: 3),
+
+                    _buildSectionHeader('5. Social & Category Details'),
+                    _buildDropdownField('Social Category', _socialCategory, ['General', 'SC', 'ST', 'OBC'],
+                      (v) => setState(() => _socialCategory = v!), isRequired: true),
+                    _buildDropdownField('Gender', _gender, ['Male', 'Female', 'Others'],
+                      (v) => setState(() => _gender = v!), isRequired: true),
+                    _buildDropdownField('Specially Abled (DIVYANG)?', _isDivyang, ['Yes', 'No'],
+                      (v) => setState(() => _isDivyang = v!), isRequired: true),
+
+                    _buildSectionHeader('6. Bank Details'),
+                    _buildField('Bank Name', _bankNameController, isRequired: true),
+                    _buildField('IFS Code', _ifsCodeController, isRequired: true, textCapitalization: TextCapitalization.characters),
+                    _buildField('Bank Account Number', _bankAccountController, isRequired: true, keyboardType: TextInputType.number),
+
+                    _buildSectionHeader('7. Employee Details'),
+                    _buildField('No. of Male Employees', _maleEmpController, isRequired: true, keyboardType: TextInputType.number),
+                    _buildField('No. of Female Employees', _femaleEmpController, isRequired: true, keyboardType: TextInputType.number),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Total Employees', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal)),
+                          const SizedBox(height: 6),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade300),
+                            ),
+                            child: Text('$_totalEmployees', style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade700)),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    _buildSectionHeader('8. TReDS Registration'),
+                    _buildDropdownField('Interested in TReDS Portal Registration?', _tredsInterested, ['Yes', 'No'],
+                      (v) => setState(() => _tredsInterested = v!), isRequired: true),
+
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _submitForm,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          elevation: 0,
+                        ),
+                        child: Text('Submit Application', style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w500)),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
     );

@@ -245,7 +245,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                               height: 1,
                             ),
                           ),
@@ -282,7 +282,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -340,7 +340,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 22,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w600,
                                   letterSpacing: -0.5,
                                 ),
                               ),
@@ -424,7 +424,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                       'Pending Payment Required',
                                       style: TextStyle(
                                         fontSize: 16,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w600,
                                         color: Color(0xFF92400E),
                                       ),
                                     ),
@@ -507,7 +507,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                   'Notes',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w600,
                                     color: Color(0xFFB45309),
                                   ),
                                 ),
@@ -540,7 +540,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                           'Director Details',
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w600,
                             color: AppTheme.deepTeal,
                             letterSpacing: -0.3,
                           ),
@@ -590,7 +590,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                                 textAlign: TextAlign.center,
                                                 style: const TextStyle(
                                                   fontSize: 20,
-                                                  fontWeight: FontWeight.w900,
+                                                  fontWeight: FontWeight.w600,
                                                   color: AppTheme.deepTeal,
                                                 ),
                                               ),
@@ -612,7 +612,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                                       flex: 3,
                                                       child: Text(
                                                         name,
-                                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
+                                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.deepTeal),
                                                       ),
                                                     ),
                                                   ],
@@ -652,7 +652,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                                         flex: 3,
                                                         child: Text(
                                                           valStr,
-                                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppTheme.deepTeal),
+                                                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.deepTeal),
                                                         ),
                                                       ),
                                                     ],
@@ -723,7 +723,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                                 name,
                                                 style: const TextStyle(
                                                   fontSize: 15,
-                                                  fontWeight: FontWeight.w800,
+                                                  fontWeight: FontWeight.w600,
                                                   color: Colors.black87,
                                                 ),
                                               ),
@@ -795,7 +795,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text('Outstanding Balance Notice', style: TextStyle(fontWeight: FontWeight.w700, color: Color(0xFFB45309))),
+                                        const Text('Outstanding Balance Notice', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFB45309))),
                                         const SizedBox(height: 4),
                                         Text('You have a remaining balance of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please note that the final deliverables will be locked upon service completion until the balance is settled.', style: const TextStyle(fontSize: 13, color: Color(0xFF92400E))),
                                       ],
@@ -830,7 +830,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                         'Service Information',
                                         style: TextStyle(
                                           fontSize: 14,
-                                          fontWeight: FontWeight.w900,
+                                          fontWeight: FontWeight.w600,
                                           color: AppTheme.deepTeal,
                                         ),
                                       ),
@@ -846,7 +846,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                           '${step.customInputLabel}:  ',
                                           style: const TextStyle(
                                             fontSize: 13,
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w600,
                                             color: Colors.black54,
                                           ),
                                         ),
@@ -859,7 +859,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                                       step.customInputValue,
                                                       style: const TextStyle(
                                                         fontSize: 13,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight: FontWeight.w600,
                                                         color: Color(0xFF0369a1),
                                                       ),
                                                     ),
@@ -892,7 +892,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                 'Service Progress',
                                 style: TextStyle(
                                   fontSize: 18,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w600,
                                   color: AppTheme.deepTeal,
                                   letterSpacing: -0.3,
                                 ),
@@ -958,7 +958,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                         _stageLabels[order.stage] ?? order.stage.name,
                                         style: const TextStyle(
                                           fontSize: 15,
-                                          fontWeight: FontWeight.w800,
+                                          fontWeight: FontWeight.w600,
                                           color: AppTheme.deepTeal,
                                         ),
                                       ),
@@ -1040,7 +1040,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                   'Final Payment Required',
                                   style: TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w900,
+                                    fontWeight: FontWeight.w600,
                                     color: AppTheme.deepTeal,
                                   ),
                                 ),
@@ -1430,7 +1430,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
                     style: TextStyle(
                         fontSize: 18,
                         color: AppTheme.deepTeal, 
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         letterSpacing: -0.3)),
               ],
             ),
@@ -1479,7 +1479,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
                     minimumSize: const Size(double.infinity, 44),
                     side: const BorderSide(color: AppTheme.corporateBlue, width: 1.5),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                    textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
                   ),
                 ),
               ],
@@ -1490,7 +1490,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
                 onPressed: () => Navigator.pop(context, false),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.grey.shade700,
-                  textStyle: const TextStyle(fontWeight: FontWeight.w700),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w600),
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 ),
                 child: const Text('Cancel'),
@@ -1501,7 +1501,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
                   backgroundColor: AppTheme.deepTeal,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  textStyle: const TextStyle(fontWeight: FontWeight.w800),
+                  textStyle: const TextStyle(fontWeight: FontWeight.w600),
                 ),
                 child: const Text('Upload Document'),
               ),
@@ -1597,7 +1597,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
           'Requested Documents',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
             color: AppTheme.deepTeal,
             letterSpacing: -0.3,
           ),
@@ -1645,7 +1645,7 @@ class _RequestedDocumentsSectionSectionState extends ConsumerState<_RequestedDoc
                       Text(
                         doc.name,
                         style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 14),
+                            fontWeight: FontWeight.w600, fontSize: 14),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -1799,7 +1799,7 @@ class _InfoTile extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppTheme.deepTeal,
             ),
           ),
@@ -1915,7 +1915,7 @@ class _StepTimeline extends StatelessWidget {
                                   step.title,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: isCompleted
                                         ? Colors.green.shade700
                                         : AppTheme.deepTeal,
@@ -1944,13 +1944,13 @@ class _StepTimeline extends StatelessWidget {
                                 const SizedBox(width: 4),
                                 Text(
                                   '${step.customInputLabel}: ',
-                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+                                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87),
                                 ),
                                 if (step.customInputValue.isNotEmpty)
                                   Container(
                                     child: Text(
                                       step.customInputValue,
-                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 0, 0, 0)),
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color.fromARGB(255, 0, 0, 0)),
                                     ),
                                   )
                                 else
@@ -1973,7 +1973,7 @@ class _StepTimeline extends StatelessWidget {
                                   style: TextStyle(
                                       fontSize: 11,
                                       color: Colors.green.shade600,
-                                      fontWeight: FontWeight.w700),
+                                      fontWeight: FontWeight.w600),
                                 ),
                                 const SizedBox(width: 6),
                                 if (step.completedAt != null || order.createdAt != null)
@@ -1982,7 +1982,7 @@ class _StepTimeline extends StatelessWidget {
                                     style: TextStyle(
                                         fontSize: 11,
                                         color: Colors.green.shade600,
-                                        fontWeight: FontWeight.w700),
+                                        fontWeight: FontWeight.w600),
                                   ),
                               ],
                             ),
@@ -1998,7 +1998,7 @@ class _StepTimeline extends StatelessWidget {
                                   style: TextStyle(
                                       fontSize: 11,
                                       color: order.status == ServiceStatus.active ? AppTheme.corporateBlue : Colors.grey,
-                                      fontWeight: FontWeight.w800),
+                                      fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),
@@ -2070,7 +2070,7 @@ class _StatusChip extends StatelessWidget {
         style: TextStyle(
           color: color,
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
           letterSpacing: 0.3,
         ),
       ),
@@ -2106,7 +2106,7 @@ class _FinalDeliverySection extends StatelessWidget {
           'Final Deliverables',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
             color: AppTheme.deepTeal,
             letterSpacing: -0.3,
           ),
@@ -2158,7 +2158,7 @@ class _FinalDeliverySection extends StatelessWidget {
                             Text(
                               doc.name,
                               style: const TextStyle(
-                                  fontWeight: FontWeight.w700, fontSize: 14),
+                                  fontWeight: FontWeight.w600, fontSize: 14),
                             ),
                             if (doc.expiryDate != null) ...[
                               const SizedBox(height: 4),
@@ -2215,7 +2215,7 @@ class _DirectorDetailsSection extends StatelessWidget {
           'Director Details',
           style: TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w600,
             color: AppTheme.deepTeal,
             letterSpacing: -0.3,
           ),
@@ -2277,7 +2277,7 @@ class _DirectorDetailsSection extends StatelessWidget {
                               children: [
                                 Text(
                                   dir['name'] ?? 'Unknown',
-                                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppTheme.deepTeal),
+                                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppTheme.deepTeal),
                                 ),
                                 if (index == 0 && (dir['isAuthSignatory'] == 'Yes' || dir['isAuthorized'] == 'Yes')) ...[
                                   const SizedBox(width: 8),
@@ -2293,7 +2293,7 @@ class _DirectorDetailsSection extends StatelessWidget {
                                       children: [
                                         Icon(LucideIcons.checkCircle2, size: 10, color: Colors.blue[700]),
                                         const SizedBox(width: 4),
-                                        Text('Authorized Signatory', style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.blue[700])),
+                                        Text('Authorized Signatory', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: Colors.blue[700])),
                                       ],
                                     ),
                                   ),
@@ -2347,7 +2347,7 @@ class _DirectorDetailsSection extends StatelessWidget {
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w600,
                 color: AppTheme.deepTeal,
               ),
             ),
@@ -2361,7 +2361,7 @@ class _DirectorDetailsSection extends StatelessWidget {
             const Text(
               'Documents',
               style: TextStyle(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 fontSize: 16,
                 color: AppTheme.deepTeal,
               ),

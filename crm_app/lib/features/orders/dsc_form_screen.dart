@@ -4,6 +4,7 @@ import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
+import '../../core/widgets/app_dropdown.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -334,7 +335,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
       child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
+        title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 15)),
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -347,7 +348,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
               child: ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
-                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue)),
+                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w500, color: AppTheme.corporateBlue)),
                   const SizedBox(height: 16),
                   
                   _buildSectionContainer(
@@ -410,7 +411,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                               child: RichText(
                                 text: const TextSpan(
                                   text: 'I here verify that above mentioned facts are true and correct to best of my knowledge and belief',
-                                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
+                                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: AppTheme.deepTeal),
                                   children: [
                                     TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
                                   ]
@@ -431,7 +432,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                       minimumSize: const Size(double.infinity, 50),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
                   ),
                   const SizedBox(height: 40),
                 ],
@@ -452,7 +453,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.deepTeal)),
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
           const SizedBox(height: 24),
           ...children,
         ],
@@ -469,7 +470,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
           RichText(
             text: TextSpan(
               text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
               children: const [
                 TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
               ]
@@ -501,7 +502,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 12.0),
-                        child: Text(opt, style: const TextStyle(fontSize: 14, height: 1.3)),
+                        child: Text(opt, style: const TextStyle(fontSize: 13, height: 1.3)),
                       ),
                     ),
                   ],
@@ -523,7 +524,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
           RichText(
             text: TextSpan(
               text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
               children: [
                 if (isRequired)
                   const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
@@ -601,7 +602,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
           RichText(
             text: TextSpan(
               text: label,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
               children: [
                 if (isRequired)
                   const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
