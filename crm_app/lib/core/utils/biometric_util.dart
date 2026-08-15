@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const String _kBiometricEnabledKey = 'biometric_enabled';
 const String _kAppPinKey = 'app_pin';
+const String _kAppPatternKey = 'app_pattern';
+const String _kActiveSecurityMethodKey = 'active_security_method';
 
 final biometricProvider = Provider<BiometricUtil>((ref) {
   return BiometricUtil();
@@ -20,6 +22,14 @@ class BiometricUtil {
       return canAuthenticate;
     } on PlatformException {
       return false;
+    }
+  }
+
+  Future<List<BiometricType>> getAvailableBiometrics() async {
+    try {
+      return await _auth.getAvailableBiometrics();
+    } on PlatformException {
+      return <BiometricType>[];
     }
   }
 
@@ -63,5 +73,35 @@ class BiometricUtil {
   Future<void> removeAppPin() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kAppPinKey);
+  }
+
+  Future<bool> isPatternEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kAppPatternKey) != null;
+  }
+  
+  Future<String?> getAppPattern() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kAppPatternKey);
+  }
+  
+  Future<void> setAppPattern(String pattern) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kAppPatternKey, pattern);
+  }
+  
+  Future<void> removeAppPattern() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kAppPatternKey);
+  }
+
+  Future<String> getActiveSecurityMethod() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_kActiveSecurityMethodKey) ?? 'none';
+  }
+
+  Future<void> setActiveSecurityMethod(String method) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kActiveSecurityMethodKey, method);
   }
 }

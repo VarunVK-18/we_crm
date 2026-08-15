@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use, unused_local_variable, unused_import, unused_element_parameter
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:async';

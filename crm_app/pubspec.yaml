@@ -35,6 +35,7 @@ dependencies:
   syncfusion_flutter_core: any
   path: any
   local_auth: ^3.0.2
+  pattern_lock: ^2.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use, unused_local_variable, unused_import, unused_element_parameter
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
