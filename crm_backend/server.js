@@ -120,6 +120,8 @@ const ocrRoutes = require('./routes/ocrRoutes');
 app.use('/api/ocr', ocrRoutes);
 const serviceDetailsRoutes = require('./routes/serviceDetailsRoutes');
 app.use('/api/service-details', serviceDetailsRoutes);
+const entityProfileRoutes = require('./routes/entityProfileRoutes');
+app.use('/api/entity-profile', entityProfileRoutes);
 
 // Initialize Cron Jobs
 require('./utils/cronJobs');

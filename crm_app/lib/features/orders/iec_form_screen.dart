@@ -1,14 +1,10 @@
-import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
-import '../../core/widgets/app_dropdown.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
-import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
-import 'package:intl/intl.dart';
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
@@ -76,6 +72,41 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
   void initState() {
     super.initState();
     _loadDraft();
+    _loadEntityPrefill();
+  }
+
+  Future<void> _loadEntityPrefill() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    if (!mounted) return;
+    setState(() {
+      if (_applicantFirstNameController.text.isEmpty && profile.directorName.isNotEmpty) {
+        final parts = profile.directorName.split(' ');
+        _applicantFirstNameController.text = parts.first;
+        if (parts.length > 1) _applicantLastNameController.text = parts.sublist(1).join(' ');
+      }
+      if (_applicantEmailController.text.isEmpty && profile.email.isNotEmpty)
+        _applicantEmailController.text = profile.email;
+      if (_applicantMobileController.text.isEmpty && profile.phone.isNotEmpty)
+        _applicantMobileController.text = profile.phone;
+      if (_companyNameController.text.isEmpty && profile.entityName.isNotEmpty)
+        _companyNameController.text = profile.entityName;
+      if (_companyPanNumberController.text.isEmpty && profile.pan.isNotEmpty)
+        _companyPanNumberController.text = profile.pan;
+      if (_gstinController.text.isEmpty && profile.gstin.isNotEmpty)
+        _gstinController.text = profile.gstin;
+      if (_companyMailIdController.text.isEmpty && profile.email.isNotEmpty)
+        _companyMailIdController.text = profile.email;
+      if (_companyMobileNumberController.text.isEmpty && profile.phone.isNotEmpty)
+        _companyMobileNumberController.text = profile.phone;
+      if (_bankAccountNumberController.text.isEmpty && profile.bankAccount.isNotEmpty)
+        _bankAccountNumberController.text = profile.bankAccount;
+      if (_ifscCodeController.text.isEmpty && profile.bankIfsc.isNotEmpty)
+        _ifscCodeController.text = profile.bankIfsc;
+      if (_bankNameController.text.isEmpty && profile.bankName.isNotEmpty)
+        _bankNameController.text = profile.bankName;
+    });
   }
 
   @override
@@ -128,6 +159,34 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
 
   Future<void> _loadDraft() async {}
   void _saveDraft() {}
+
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save as Draft?'),
+        content: const Text('Do you want to save your progress before exiting?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          TextButton(
+            onPressed: () async {
+              _saveDraft();
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text('Save as Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) {
@@ -210,6 +269,19 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
 
       var response = await request.send();
       if (response.statusCode == 200 || response.statusCode == 201) {
+        if (uid != null) {
+          ref.read(entityCacheServiceProvider).saveTextFields(uid, {
+            'entityName': _companyNameController.text,
+            'pan': _companyPanNumberController.text,
+            'email': _applicantEmailController.text,
+            'phone': _applicantMobileController.text,
+            'gstin': _gstinController.text,
+            'directorName': '${_applicantFirstNameController.text} ${_applicantLastNameController.text}'.trim(),
+            'bankAccount': _bankAccountNumberController.text,
+            'bankIfsc': _ifscCodeController.text,
+            'bankName': _bankNameController.text,
+          });
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('IEC Form submitted successfully!'), backgroundColor: Colors.green),
@@ -319,7 +391,9 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       appBar: AppBar(
         title: Text('IEC Registration', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
@@ -391,6 +465,7 @@ class _IecFormScreenState extends ConsumerState<IecFormScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

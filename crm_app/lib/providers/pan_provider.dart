@@ -1,5 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/services/ocr_service.dart';
+
+class ExtractedPanData {
+  final String panNumber;
+  final String name;
+  final String fatherName;
+  final String dob;
+
+  ExtractedPanData({
+    required this.panNumber,
+    required this.name,
+    required this.fatherName,
+    required this.dob,
+  });
+
+  bool get isEmpty =>
+      panNumber.isEmpty && name.isEmpty && fatherName.isEmpty && dob.isEmpty;
+
+  @override
+  String toString() {
+    return 'PAN: $panNumber\nName: $name\nFather: $fatherName\nDOB: $dob';
+  }
+}
 
 class PanNotifier extends StateNotifier<List<ExtractedPanData>> {
   PanNotifier() : super([]);

@@ -2,21 +2,16 @@ import 'package:crm_app/core/theme/app_theme.dart';
 import 'package:crm_app/providers/auth_provider.dart';
 import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
-import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../../core/widgets/app_dropdown.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
+import '../../core/widgets/entity_document_slot.dart';
 import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
-
-import '../../core/constants/port.dart';
-import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
-import '../../providers/auth_provider.dart';
 
 class LeiFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -42,6 +37,8 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
 
   // Document
   String? _incorpCertPath;
+  String _prefillIncorpCertDocId = '';
+  String _prefillIncorpCertDocName = '';
 
   // Verification
   bool _isDeclared = false;
@@ -50,6 +47,32 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
   void initState() {
     super.initState();
     _loadDraft();
+    _loadEntityPrefill();
+  }
+
+  Future<void> _loadEntityPrefill() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    if (!mounted) return;
+    setState(() {
+      if (_companyNameController.text.isEmpty && profile.entityName.isNotEmpty)
+        _companyNameController.text = profile.entityName;
+      if (_cinNumberController.text.isEmpty && profile.cin.isNotEmpty)
+        _cinNumberController.text = profile.cin;
+      if (_companyAddressController.text.isEmpty && profile.address.isNotEmpty)
+        _companyAddressController.text = profile.address;
+      if (_applicantNameController.text.isEmpty && profile.directorName.isNotEmpty)
+        _applicantNameController.text = profile.directorName;
+      if (_emailController.text.isEmpty && profile.email.isNotEmpty)
+        _emailController.text = profile.email;
+      if (_businessPhoneController.text.isEmpty && profile.phone.isNotEmpty)
+        _businessPhoneController.text = profile.phone;
+      if (!profile.incorpCertDoc.isEmpty && _incorpCertPath == null) {
+        _prefillIncorpCertDocId = profile.incorpCertDoc.docId;
+        _prefillIncorpCertDocName = profile.incorpCertDoc.docName;
+      }
+    });
   }
 
   @override
@@ -122,10 +145,39 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save as Draft?'),
+        content: const Text('Do you want to save your progress before exiting?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _saveDraft();
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text('Save as Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     
-    if (_incorpCertPath == null) {
+    final bool hasIncorpCert = _incorpCertPath != null || _prefillIncorpCertDocId.isNotEmpty;
+    if (!hasIncorpCert) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please upload the required Incorporation Certificate (Max 2 MB).')));
       return;
     }
@@ -153,6 +205,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
         'applicantName': _applicantNameController.text.trim(),
         'email': _emailController.text.trim(),
         'businessPhone': _businessPhoneController.text.trim(),
+        if (_prefillIncorpCertDocId.isNotEmpty && _incorpCertPath == null) 'prefillIncorpCertDocId': _prefillIncorpCertDocId,
       };
 
       request.fields['data'] = jsonEncode(formData);
@@ -166,6 +219,21 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'LeiFormScreen');
+        ref.read(entityCacheServiceProvider).saveTextFields(uid, {
+          'entityName': _companyNameController.text,
+          'cin': _cinNumberController.text,
+          'address': _companyAddressController.text,
+          'email': _emailController.text,
+          'phone': _businessPhoneController.text,
+          'directorName': _applicantNameController.text,
+        });
+        if (_incorpCertPath != null) {
+          ref.read(entityCacheServiceProvider).uploadDocument(
+            uid: uid, docKey: 'incorpCert',
+            filePath: _incorpCertPath!,
+            fileName: _incorpCertPath!.split('/').last.split('\\').last,
+          );
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('LEI Application submitted successfully!')));
           Navigator.pop(context, true);
@@ -174,9 +242,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
         throw Exception(jsonDecode(response.body)['message'] ?? 'Failed to submit form');
       }
     } catch (e) {
-      if (mounted) {
-        showGlobalError(e.toString());
-      }
+      if (mounted) { showGlobalError(e.toString()); }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -271,7 +337,9 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       appBar: AppBar(
         title: Text('LEI Code Application', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         actions: [
@@ -296,35 +364,13 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                   _buildField('Applicant Name *', _applicantNameController),
                   _buildField('Email ID *', _emailController, keyboardType: TextInputType.emailAddress),
                   _buildField('Business Phone Number *', _businessPhoneController, keyboardType: TextInputType.phone, maxLength: 10),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Incorporation Certificate * (Max 2 MB)', style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 13)),
-                        const SizedBox(height: 8),
-                        InkWell(
-                          onTap: _pickDocument,
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(8)),
-                            child: Row(
-                              children: [
-                                Icon(_incorpCertPath != null ? Icons.check_circle : Icons.upload_file, color: _incorpCertPath != null ? Colors.green : Colors.grey),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    _incorpCertPath != null ? _incorpCertPath!.split('/').last : 'Tap to upload document',
-                                    style: GoogleFonts.inter(color: _incorpCertPath != null ? Colors.black87 : Colors.grey, fontSize: 13),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  EntityDocumentSlot(
+                    label: 'Incorporation Certificate *',
+                    hint: 'Upload PDF/JPG/PNG. Max 2 MB.',
+                    prefillDocId: _prefillIncorpCertDocId.isNotEmpty ? _prefillIncorpCertDocId : null,
+                    prefillDocName: _prefillIncorpCertDocName.isNotEmpty ? _prefillIncorpCertDocName : null,
+                    localFilePath: _incorpCertPath,
+                    onReplace: _pickDocument,
                   ),
 
                   _buildSectionHeader('4. Declaration'),
@@ -350,6 +396,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
                 ],
               ),
             ),
+      ),
     );
   }
 }

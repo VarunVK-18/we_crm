@@ -1,10 +1,11 @@
-﻿import 'package:crm_app/core/theme/app_theme.dart';
+import 'package:crm_app/core/theme/app_theme.dart';
 import 'package:crm_app/providers/auth_provider.dart';
 import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -62,6 +63,36 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     _maleEmpController.addListener(() => setState(() {}));
     _femaleEmpController.addListener(() => setState(() {}));
     _loadDraft();
+    _loadEntityPrefill();
+  }
+
+  Future<void> _loadEntityPrefill() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    if (!mounted) return;
+    setState(() {
+      if (_entrepreneurNameController.text.isEmpty && profile.directorName.isNotEmpty)
+        _entrepreneurNameController.text = profile.directorName;
+      if (_mobileController.text.isEmpty && profile.phone.isNotEmpty)
+        _mobileController.text = profile.phone;
+      if (_emailController.text.isEmpty && profile.email.isNotEmpty)
+        _emailController.text = profile.email;
+      if (_enterpriseNameController.text.isEmpty && profile.entityName.isNotEmpty)
+        _enterpriseNameController.text = profile.entityName;
+      if (_panController.text.isEmpty && profile.pan.isNotEmpty)
+        _panController.text = profile.pan;
+      if (_gstinController.text.isEmpty && profile.gstin.isNotEmpty)
+        _gstinController.text = profile.gstin;
+      if (_officeAddressController.text.isEmpty && profile.address.isNotEmpty)
+        _officeAddressController.text = profile.address;
+      if (_bankNameController.text.isEmpty && profile.bankName.isNotEmpty)
+        _bankNameController.text = profile.bankName;
+      if (_ifsCodeController.text.isEmpty && profile.bankIfsc.isNotEmpty)
+        _ifsCodeController.text = profile.bankIfsc;
+      if (_bankAccountController.text.isEmpty && profile.bankAccount.isNotEmpty)
+        _bankAccountController.text = profile.bankAccount;
+    });
   }
 
   @override
@@ -139,6 +170,34 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save as Draft?'),
+        content: const Text('Do you want to save your progress before exiting?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _saveDraft();
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text('Save as Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     if (_hasGstin == 'Yes' && _gstinController.text.trim().isEmpty) {
@@ -169,6 +228,18 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
       final response = await http.Response.fromStream(streamedResponse);
       if (response.statusCode == 200 || response.statusCode == 201) {
         await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'MsmeFormScreen');
+        ref.read(entityCacheServiceProvider).saveTextFields(uid, {
+          'entityName': _enterpriseNameController.text,
+          'pan': _panController.text,
+          'email': _emailController.text,
+          'phone': _mobileController.text,
+          'address': _officeAddressController.text,
+          'gstin': _gstinController.text,
+          'directorName': _entrepreneurNameController.text,
+          'bankName': _bankNameController.text,
+          'bankIfsc': _ifsCodeController.text,
+          'bankAccount': _bankAccountController.text,
+        });
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('MSME Application submitted successfully!')));
           Navigator.pop(context, true);
@@ -295,7 +366,9 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -435,6 +508,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
                 ),
               ),
             ),
+      ),
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -366,6 +367,56 @@ class _IncorpFormScreenState extends ConsumerState<IncorpFormScreen> {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final uid = ref.read(authStateProvider).value?.uid;
+        if (uid != null) {
+          final firstDir = _directors.isNotEmpty ? _directors.first : null;
+          ref.read(entityCacheServiceProvider).saveTextFields(uid, {
+            'entityName': _companyNameController.text,
+            'email': _companyEmailController.text,
+            'phone': _companyPhoneController.text,
+            if (firstDir != null) ...{
+              'directorName': firstDir.fullNameController.text,
+              'directorEmail': firstDir.emailController.text,
+              'directorPhone': firstDir.phoneController.text,
+              'directorPan': firstDir.panController.text,
+              'directorDin': firstDir.dinController.text,
+            }
+          });
+          if (_officeProofPath != null) {
+            ref.read(entityCacheServiceProvider).uploadDocument(
+              uid: uid,
+              docKey: 'addressProof',
+              filePath: _officeProofPath!,
+              fileName: _officeProofPath!.split('/').last.split('\\').last,
+            );
+          }
+          if (firstDir != null) {
+            if (firstDir.panPath != null) {
+              ref.read(entityCacheServiceProvider).uploadDocument(
+                uid: uid,
+                docKey: 'directorPan',
+                filePath: firstDir.panPath!,
+                fileName: firstDir.panPath!.split('/').last.split('\\').last,
+              );
+            }
+            if (firstDir.photoPath != null) {
+              ref.read(entityCacheServiceProvider).uploadDocument(
+                uid: uid,
+                docKey: 'directorPhoto',
+                filePath: firstDir.photoPath!,
+                fileName: firstDir.photoPath!.split('/').last.split('\\').last,
+              );
+            }
+            if (firstDir.aadhaarPath != null) {
+              ref.read(entityCacheServiceProvider).uploadDocument(
+                uid: uid,
+                docKey: 'aadhaar',
+                filePath: firstDir.aadhaarPath!,
+                fileName: firstDir.aadhaarPath!.split('/').last.split('\\').last,
+              );
+            }
+          }
+        }
         if (!mounted) return;
         await showDialog(
           context: context,

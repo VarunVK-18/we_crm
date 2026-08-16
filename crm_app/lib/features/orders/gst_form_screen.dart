@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/app_dropdown.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -385,6 +386,47 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final uid = ref.read(authStateProvider).value?.uid;
+        if (uid != null) {
+          ref.read(entityCacheServiceProvider).saveTextFields(uid, {
+            'entityName': _tradeNameController.text.isNotEmpty ? _tradeNameController.text : _legalNameController.text,
+            'pan': _panOfBusinessController.text,
+            'email': _businessEmailController.text,
+            'phone': _businessPhoneController.text,
+            'address': _businessAddressController.text,
+            'directorName': _dir1FullNameController.text,
+            'directorEmail': _dir1MailController.text,
+            'directorPhone': _dir1PhoneController.text,
+            'directorPan': _dir1PanController.text,
+            'directorDin': _dir1DinController.text,
+            'bankAccount': _accountNumberController.text,
+            'bankIfsc': _ifscCodeController.text,
+          });
+          if (_incorpCertPath != null) {
+            ref.read(entityCacheServiceProvider).uploadDocument(
+              uid: uid,
+              docKey: 'incorpCert',
+              filePath: _incorpCertPath!,
+              fileName: _incorpCertPath!.split('/').last.split('\\').last,
+            );
+          }
+          if (_companyPanFilePath != null) {
+            ref.read(entityCacheServiceProvider).uploadDocument(
+              uid: uid,
+              docKey: 'panCard',
+              filePath: _companyPanFilePath!,
+              fileName: _companyPanFilePath!.split('/').last.split('\\').last,
+            );
+          }
+          if (_bankDocumentPath != null) {
+            ref.read(entityCacheServiceProvider).uploadDocument(
+              uid: uid,
+              docKey: 'bank',
+              filePath: _bankDocumentPath!,
+              fileName: _bankDocumentPath!.split('/').last.split('\\').last,
+            );
+          }
+        }
         if (!mounted) return;
         await showDialog(
           context: context,

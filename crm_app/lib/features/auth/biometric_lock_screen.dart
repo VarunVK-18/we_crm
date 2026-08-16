@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hugeicons/hugeicons.dart';
 import '../../core/utils/biometric_util.dart';
 import '../common/main_navigation.dart';
 import '../../providers/auth_provider.dart';
@@ -58,14 +57,23 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
     setState(() {
       _isChecking = true;
     });
-    final util = ref.read(biometricProvider);
-    final success = await util.authenticate(reason: 'Authenticate to unlock the app');
     
-    if (mounted) {
-      setState(() {
-        _isLocked = !success;
-        _isChecking = false;
-      });
+    final util = ref.read(biometricProvider);
+    try {
+      final success = await util.authenticate(reason: 'Authenticate to unlock the app');
+      
+      if (mounted) {
+        setState(() {
+          _isLocked = !success;
+          _isChecking = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isChecking = false;
+        });
+      }
     }
   }
   
@@ -117,7 +125,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 )
@@ -154,16 +162,19 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Spacer(),
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppTheme.corporateBlue.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _isPinEnabled ? Icons.lock_outline : Icons.fingerprint,
-                    size: 64,
-                    color: AppTheme.corporateBlue,
+                GestureDetector(
+                  onTap: _promptBiometric,
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppTheme.corporateBlue.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      _isPinEnabled ? Icons.lock_outline : Icons.fingerprint,
+                      size: 64,
+                      color: AppTheme.corporateBlue,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -181,9 +192,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
                   style: const TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 32),
-                if (_isChecking)
-                  const CircularProgressIndicator()
-                else if (_isPinEnabled) ...[
+                if (_isPinEnabled) ...[
                   // PIN Dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -234,9 +243,11 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
                   ),
                 ] else
                   ElevatedButton.icon(
-                    onPressed: _promptBiometric,
-                    icon: const Icon(Icons.lock_open, color: Colors.white,),
-                    label: const Text('Unlock App', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    onPressed: _isChecking ? null : _promptBiometric,
+                    icon: _isChecking 
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.lock_open, color: Colors.white,),
+                    label: Text(_isChecking ? 'Authenticating...' : 'Tap to unlock', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

@@ -2,21 +2,16 @@ import 'package:crm_app/core/theme/app_theme.dart';
 import 'package:crm_app/providers/auth_provider.dart';
 import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
-import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../../core/widgets/app_dropdown.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
+import '../../core/widgets/entity_document_slot.dart';
 import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
-
-import '../../core/constants/port.dart';
-import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
-import '../../providers/auth_provider.dart';
 
 class DpiitFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -72,6 +67,9 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
 
   // 7. Company Documents
   String? _incorpCertPath;
+  // Entity prefill doc state
+  String _prefillIncorpCertDocId = '';
+  String _prefillIncorpCertDocName = '';
 
   // 8. Verification
   bool _isDeclared = false;
@@ -80,6 +78,38 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
   void initState() {
     super.initState();
     _loadDraft();
+    _loadEntityPrefill();
+  }
+
+  Future<void> _loadEntityPrefill() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    if (!mounted) return;
+    setState(() {
+      if (_fullNameController.text.isEmpty && profile.directorName.isNotEmpty)
+        _fullNameController.text = profile.directorName;
+      if (_companyEmailController.text.isEmpty && profile.email.isNotEmpty)
+        _companyEmailController.text = profile.email;
+      if (_companyMobileController.text.isEmpty && profile.phone.isNotEmpty)
+        _companyMobileController.text = profile.phone;
+      if (_cinNumberController.text.isEmpty && profile.cin.isNotEmpty)
+        _cinNumberController.text = profile.cin;
+      if (_companyPanController.text.isEmpty && profile.pan.isNotEmpty)
+        _companyPanController.text = profile.pan;
+      if (_companyAddressController.text.isEmpty && profile.address.isNotEmpty)
+        _companyAddressController.text = profile.address;
+      if (_directorNameController.text.isEmpty && profile.directorName.isNotEmpty)
+        _directorNameController.text = profile.directorName;
+      if (_directorEmailController.text.isEmpty && profile.directorEmail.isNotEmpty)
+        _directorEmailController.text = profile.directorEmail;
+      if (_directorMobileController.text.isEmpty && profile.directorPhone.isNotEmpty)
+        _directorMobileController.text = profile.directorPhone;
+      if (!profile.incorpCertDoc.isEmpty && _incorpCertPath == null) {
+        _prefillIncorpCertDocId = profile.incorpCertDoc.docId;
+        _prefillIncorpCertDocName = profile.incorpCertDoc.docName;
+      }
+    });
   }
 
   @override
@@ -190,10 +220,39 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save as Draft?'),
+        content: const Text('Do you want to save your progress before exiting?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _saveDraft();
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text('Save as Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     
-    if (_companyLogoPath == null || _incorpCertPath == null) {
+    final bool hasIncorpCert = _incorpCertPath != null || _prefillIncorpCertDocId.isNotEmpty;
+    if (_companyLogoPath == null || !hasIncorpCert) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please upload both the Company Logo and Incorporation Certificate.')));
       return;
     }
@@ -225,6 +284,7 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
         'directorMobile': _directorMobileController.text, 'directorAddress': _directorAddressController.text, 'directorEmail': _directorEmailController.text,
         'directorDob': _directorDobController.text, 'employeeCount': _employeeCountController.text, 'iprApplied': _iprAppliedController.text,
         'fundsReceived': _fundsReceivedController.text, 'awardsReceived': _awardsReceivedController.text,
+        if (_prefillIncorpCertDocId.isNotEmpty && _incorpCertPath == null) 'prefillIncorpCertDocId': _prefillIncorpCertDocId,
       };
 
       request.fields['data'] = jsonEncode(formData);
@@ -237,6 +297,25 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'DpiitFormScreen');
+        // Save entity profile
+        ref.read(entityCacheServiceProvider).saveTextFields(uid, {
+          'entityName': _companyPanNameController.text,
+          'pan': _companyPanController.text,
+          'email': _companyEmailController.text,
+          'phone': _companyMobileController.text,
+          'address': _companyAddressController.text,
+          'cin': _cinNumberController.text,
+          'directorName': _directorNameController.text,
+          'directorEmail': _directorEmailController.text,
+          'directorPhone': _directorMobileController.text,
+        });
+        if (_incorpCertPath != null) {
+          ref.read(entityCacheServiceProvider).uploadDocument(
+            uid: uid, docKey: 'incorpCert',
+            filePath: _incorpCertPath!,
+            fileName: _incorpCertPath!.split('/').last.split('\\').last,
+          );
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('DPIIT Application submitted successfully!')));
           Navigator.pop(context, true);
@@ -340,7 +419,9 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       appBar: AppBar(
         title: Text('DPIIT Startup Recognition', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         actions: [
@@ -409,10 +490,19 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
                       child: const Text('Submit Application', style: TextStyle(fontSize: 16)),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                   const SizedBox(height: 32),
+                   EntityDocumentSlot(
+                     label: 'Incorporation Certificate *',
+                     hint: 'Upload PDF. Max 2 MB.',
+                     prefillDocId: _prefillIncorpCertDocId.isNotEmpty ? _prefillIncorpCertDocId : null,
+                     prefillDocName: _prefillIncorpCertDocName.isNotEmpty ? _prefillIncorpCertDocName : null,
+                     localFilePath: _incorpCertPath,
+                     onReplace: () => _pickDocument('incorpCert'),
+                   ),
                 ],
               ),
             ),
+      ),
     );
   }
 }

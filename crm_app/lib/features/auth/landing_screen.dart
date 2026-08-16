@@ -50,17 +50,7 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Top Logo
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 20.0),
-                            child: Image.asset(
-                              'assets/Startup Doctor logo (1).png',
-                              height: 48,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        ),
+                        // Top Logo (Removed)
                         
                         const Spacer(flex: 1),
                         
@@ -109,11 +99,11 @@ class _LandingScreenState extends State<LandingScreen> with SingleTickerProvider
                                           ),
                                         ],
                                       ),
-                                      child: const Center(
-                                        child: Icon(
-                                          LucideIcons.briefcase,
-                                          size: 64,
-                                          color: AppTheme.deepTeal,
+                                      clipBehavior: Clip.antiAlias,
+                                      child: Center(
+                                        child: Image.asset(
+                                          'assets/Startup Doctor logo (1).png',
+                                          fit: BoxFit.cover,
                                         ),
                                       ),
                                     ),

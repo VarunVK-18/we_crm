@@ -2,21 +2,16 @@ import 'package:crm_app/core/theme/app_theme.dart';
 import 'package:crm_app/providers/auth_provider.dart';
 import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
-import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../core/widgets/app_dropdown.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
-
-import '../../core/constants/port.dart';
-import '../../core/theme/app_theme.dart';
 import '../../models/order_model.dart';
-import '../../providers/auth_provider.dart';
 
 class FssaiFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -68,6 +63,14 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
   String? _addressProofPath;
   String? _unitEntrancePhotoPath;
 
+  // Entity prefill doc state
+  String _prefillAadhaarDocId = '';
+  String _prefillAadhaarDocName = '';
+  String _prefillPanDocId = '';
+  String _prefillPanDocName = '';
+  String _prefillAddressProofDocId = '';
+  String _prefillAddressProofDocName = '';
+
   // Verification
   bool _isDeclared = false;
 
@@ -75,6 +78,41 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
   void initState() {
     super.initState();
     _loadDraft();
+    _loadEntityPrefill();
+  }
+
+  Future<void> _loadEntityPrefill() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    if (!mounted) return;
+    setState(() {
+      if (_fullNameController.text.isEmpty && profile.directorName.isNotEmpty)
+        _fullNameController.text = profile.directorName;
+      if (_mobileController.text.isEmpty && profile.phone.isNotEmpty)
+        _mobileController.text = profile.phone;
+      if (_emailController.text.isEmpty && profile.email.isNotEmpty)
+        _emailController.text = profile.email;
+      if (_businessNameController.text.isEmpty && profile.entityName.isNotEmpty)
+        _businessNameController.text = profile.entityName;
+      if (_companyPanNumberController.text.isEmpty && profile.pan.isNotEmpty)
+        _companyPanNumberController.text = profile.pan;
+      if (_premisesAddressController.text.isEmpty && profile.address.isNotEmpty)
+        _premisesAddressController.text = profile.address;
+      // Docs
+      if (!profile.aadhaarDoc.isEmpty && _aadhaarPath == null) {
+        _prefillAadhaarDocId = profile.aadhaarDoc.docId;
+        _prefillAadhaarDocName = profile.aadhaarDoc.docName;
+      }
+      if (!profile.panCardDoc.isEmpty && _panPath == null) {
+        _prefillPanDocId = profile.panCardDoc.docId;
+        _prefillPanDocName = profile.panCardDoc.docName;
+      }
+      if (!profile.addressProofDoc.isEmpty && _addressProofPath == null) {
+        _prefillAddressProofDocId = profile.addressProofDoc.docId;
+        _prefillAddressProofDocName = profile.addressProofDoc.docName;
+      }
+    });
   }
 
   @override
@@ -184,6 +222,34 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
     }
   }
 
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save as Draft?'),
+        content: const Text('Do you want to save your progress before exiting?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          TextButton(
+            onPressed: () async {
+              await _saveDraft();
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text('Save as Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     
@@ -196,7 +262,10 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
       return;
     }
 
-    if (_aadhaarPath == null || _panPath == null || _photoPath == null || _addressProofPath == null || _unitEntrancePhotoPath == null) {
+    final bool hasAadhaar = _aadhaarPath != null || _prefillAadhaarDocId.isNotEmpty;
+    final bool hasPan = _panPath != null || _prefillPanDocId.isNotEmpty;
+    final bool hasAddressProof = _addressProofPath != null || _prefillAddressProofDocId.isNotEmpty;
+    if (!hasAadhaar || !hasPan || _photoPath == null || !hasAddressProof || _unitEntrancePhotoPath == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please upload all required documents (Max 2 MB each).')));
       return;
     }
@@ -253,6 +322,35 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         await ref.read(draftServiceProvider).clearDraft(widget.order.id, 'FssaiFormScreen');
+        ref.read(entityCacheServiceProvider).saveTextFields(uid, {
+          'entityName': _businessNameController.text,
+          'pan': _companyPanNumberController.text,
+          'email': _emailController.text,
+          'phone': _mobileController.text,
+          'address': _premisesAddressController.text,
+          'directorName': _fullNameController.text,
+        });
+        if (_aadhaarPath != null) {
+          ref.read(entityCacheServiceProvider).uploadDocument(
+            uid: uid, docKey: 'aadhaar',
+            filePath: _aadhaarPath!,
+            fileName: _aadhaarPath!.split('/').last.split('\\').last,
+          );
+        }
+        if (_panPath != null) {
+          ref.read(entityCacheServiceProvider).uploadDocument(
+            uid: uid, docKey: 'panCard',
+            filePath: _panPath!,
+            fileName: _panPath!.split('/').last.split('\\').last,
+          );
+        }
+        if (_addressProofPath != null) {
+          ref.read(entityCacheServiceProvider).uploadDocument(
+            uid: uid, docKey: 'addressProof',
+            filePath: _addressProofPath!,
+            fileName: _addressProofPath!.split('/').last.split('\\').last,
+          );
+        }
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('FSSAI Application submitted successfully!')));
           Navigator.pop(context, true);
@@ -278,7 +376,9 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       appBar: AppBar(
         title: Text('FSSAI Application', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
         actions: [
@@ -483,6 +583,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
                 ],
               ),
             ),
+      ),
     );
   }
 

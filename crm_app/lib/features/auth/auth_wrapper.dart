@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../common/main_navigation.dart';
 import 'biometric_lock_screen.dart';
-import 'client_onboarding_screen.dart';
+import 'landing_screen.dart';
 class AuthWrapper extends ConsumerWidget {
   const AuthWrapper({super.key});
 
@@ -17,7 +17,7 @@ class AuthWrapper extends ConsumerWidget {
         if (user != null) {
           return const BiometricLockScreen();
         }
-        return const ClientOnboardingScreen();
+        return const LandingScreen();
       },
       loading: () {
         debugPrint('AuthWrapper Loading...');

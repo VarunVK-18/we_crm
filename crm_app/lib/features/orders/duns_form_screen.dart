@@ -13,6 +13,7 @@ import '../../core/constants/port.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/draft_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 
@@ -70,6 +71,34 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
   void initState() {
     super.initState();
     _loadDraft();
+    _loadEntityPrefill();
+  }
+
+  Future<void> _loadEntityPrefill() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    if (!mounted) return;
+    setState(() {
+      if (_applicantNameCtrl.text.isEmpty && profile.directorName.isNotEmpty)
+        _applicantNameCtrl.text = profile.directorName;
+      if (_legalBusinessNameCtrl.text.isEmpty && profile.entityName.isNotEmpty)
+        _legalBusinessNameCtrl.text = profile.entityName;
+      if (_regAddressCtrl.text.isEmpty && profile.address.isNotEmpty)
+        _regAddressCtrl.text = profile.address;
+      if (_emailCtrl.text.isEmpty && profile.email.isNotEmpty)
+        _emailCtrl.text = profile.email;
+      if (_phoneCtrl.text.isEmpty && profile.phone.isNotEmpty)
+        _phoneCtrl.text = profile.phone;
+      if (_panCtrl.text.isEmpty && profile.pan.isNotEmpty)
+        _panCtrl.text = profile.pan;
+      if (_gstCtrl.text.isEmpty && profile.gstin.isNotEmpty)
+        _gstCtrl.text = profile.gstin;
+      if (_cinCtrl.text.isEmpty && profile.cin.isNotEmpty)
+        _cinCtrl.text = profile.cin;
+      if (_founderNameCtrl.text.isEmpty && profile.directorName.isNotEmpty)
+        _founderNameCtrl.text = profile.directorName;
+    });
   }
 
   @override
@@ -143,6 +172,34 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
         _declaration = draft['declaration'] ?? false;
       });
     }
+  }
+
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save as Draft?'),
+        content: const Text('Do you want to save your progress before exiting?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+          ),
+          TextButton(
+            onPressed: () async {
+              _saveDraft();
+              if (context.mounted) Navigator.of(context).pop(true);
+            },
+            child: Text('Save as Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
   }
 
   void _saveDraft() {
@@ -280,6 +337,19 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
 
       var response = await request.send();
       if (response.statusCode == 200 || response.statusCode == 201) {
+        final uid2 = ref.read(authStateProvider).value?.uid;
+        if (uid2 != null) {
+          ref.read(entityCacheServiceProvider).saveTextFields(uid2, {
+            'entityName': _legalBusinessNameCtrl.text,
+            'pan': _panCtrl.text,
+            'email': _emailCtrl.text,
+            'phone': _phoneCtrl.text,
+            'address': _regAddressCtrl.text,
+            'cin': _cinCtrl.text,
+            'gstin': _gstCtrl.text,
+            'directorName': _founderNameCtrl.text,
+          });
+        }
         if (mounted) {
           ref.read(draftServiceProvider).clearDraft(widget.order.id, 'DunsFormScreen');
           ScaffoldMessenger.of(context).showSnackBar(
@@ -467,7 +537,9 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
       backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -707,14 +779,15 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
                         child: Text(
                           _isLoading ? 'Submitting...' : 'Submit Details',
                           style: GoogleFonts.outfit( fontSize: 16.0, fontWeight: FontWeight.w600, color: Colors.white),
-                        ),
-                      ),
                     ),
-                    const SizedBox(height: 40.0),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 40.0),
+              ],
             ),
+          ),
+        ),
+      ),
     );
   }
 }
