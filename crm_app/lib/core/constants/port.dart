@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 
 const bool useLocalBackend = false;
 const bool isEmulator = false;
-String localHostIP = '10.118.145.219';
+String localHostIP = '192.168.29.105';
 
 String getBaseUrl() {
   if (useLocalBackend) {

@@ -44,6 +44,17 @@ router.put('/:id', checkUser, orderController.updateOrder);
 router.delete('/:id', checkUser, orderController.deleteOrder);
 router.post('/:id/financial-logs', checkUser, orderController.addFinancialLog);
 
+// @route   POST /api/orders/:id/submit-dynamic-form
+// @desc    Submit dynamically generated form details and docs
+// @access  Private (Client)
+router.post(
+  '/:id/submit-dynamic-form',
+  checkUser,
+  upload.any(),
+  saveFilesToDatabase,
+  orderController.submitDynamicForm
+);
+
 // Define fields for DPIIT form uploads
 const dpiitUploadFields = [
   { name: 'incorpCert', maxCount: 1 },
@@ -102,6 +113,23 @@ router.post(
   upload.fields(trademarkUploadFields),
   saveFilesToDatabase,
   orderController.submitTrademarkForm
+);
+
+const copyrightUploadFields = [
+  { name: 'copyOfWork', maxCount: 1 },
+  { name: 'nocFromAuthor', maxCount: 1 },
+  { name: 'nocFromPublisher', maxCount: 1 },
+  { name: 'incorporationCertificate', maxCount: 1 },
+  { name: 'boardResolution', maxCount: 1 },
+  { name: 'idProof', maxCount: 1 }
+];
+
+router.post(
+  '/:id/submit-copyright-form',
+  checkUser,
+  upload.fields(copyrightUploadFields),
+  saveFilesToDatabase,
+  orderController.submitCopyrightForm
 );
 
 // Define fields for LLP form uploads (2 partners + company docs)

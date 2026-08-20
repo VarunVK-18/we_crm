@@ -19,6 +19,7 @@ import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import '../orders/order_chat_screen.dart';
 import 'mca_profile_form_screen.dart';
+import '../../providers/orders_provider.dart';
 
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
@@ -418,22 +419,40 @@ class ComplianceRadarScreen extends ConsumerWidget {
         .toList();
     final pendingCountStr = pendingReminders.length.toString().padLeft(2, '0');
 
-    // Calculate Health Score dynamically based on active tasks
-    double minScore = 0.9;
-    if (pendingReminders.isEmpty) {
-      minScore = 1.0;
-    } else {
-      for (final r in pendingReminders) {
-        if (r.status == TaskStatus.overdue) {
-          minScore = minScore > 0.25 ? 0.25 : minScore;
-        } else if (r.status == TaskStatus.critical)
-          minScore = minScore > 0.5 ? 0.5 : minScore;
-        else if (r.status == TaskStatus.dueSoon)
-          minScore = minScore > 0.75 ? 0.75 : minScore;
+    // Calculate Health Score dynamically based on services and compliances
+    final outsourcedServicesList = user?.outsourcedServices ?? [];
+    final allOrders = ref.watch(serviceOrdersProvider).value ?? [];
+    final entityOrders = allOrders.where((o) => o.entityName == currentEntity).toList();
+    final entityCompliances = reminders.where((r) => r.entityName == currentEntity).toList();
+    
+    double serviceScore = 0.0;
+    if (entityOrders.isNotEmpty) {
+      serviceScore = 50.0; // All services (outsourced or platform) award full points
+    }
+    
+    double complianceScore = 0.0;
+    if (entityCompliances.isNotEmpty) {
+      double pointsPerCompliance = 50.0 / entityCompliances.length;
+      for (final comp in entityCompliances) {
+        if (outsourcedServicesList.contains(comp.title)) {
+          complianceScore -= pointsPerCompliance;
+        } else {
+          complianceScore += pointsPerCompliance;
+        }
       }
     }
-
-    final score = minScore;
+    
+    if (complianceScore < 0) complianceScore = 0;
+    if (complianceScore > 50) complianceScore = 50;
+    
+    double scoreValue = 0.0;
+    if (entityOrders.isEmpty && entityCompliances.isEmpty) {
+      scoreValue = 0.0;
+    } else {
+      scoreValue = serviceScore + complianceScore;
+    }
+    
+    final score = scoreValue / 100.0;
     final healthStatus = score >= 0.9
         ? 'EXCELLENT'
         : score >= 0.75
@@ -740,7 +759,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text('Complete Company Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
+                                          Text('Complete Your Compliance Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
                                           SizedBox(height: 4.r),
                                           Text('Provide MCA credentials and incorporation documents.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
                                         ],

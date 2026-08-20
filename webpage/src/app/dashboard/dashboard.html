@@ -249,6 +249,9 @@
       @if (currentTab() === 'compliance-details' && selectedComplianceEntity()) {
       <app-compliance-details [entity]="selectedComplianceEntity()!" (goBack)="handleTabChanged('staff-compliance')" (onViewClient)="viewClient($event)"></app-compliance-details>
       }
+      @if (currentTab() === 'dynamic-forms') {
+      <app-dynamic-forms></app-dynamic-forms>
+      }
       @if (currentTab() === 'service-track') {
       <app-service-track (onViewChecklist)="viewChecklist($event)"></app-service-track>
       }

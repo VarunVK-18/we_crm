@@ -1,0 +1,262 @@
+<div class="df-container">
+  <div class="df-header">
+    <h1>Advanced SDUI Manager</h1>
+    <p class="subtitle">Build dynamic service blueprints with repeating arrays, conditions, and cross-validations.</p>
+  </div>
+
+  <div class="df-content">
+    <!-- Sidebar: Services List -->
+    <div class="df-sidebar">
+      <div class="df-sidebar-header">
+        <h2>Services</h2>
+      </div>
+      <ul class="df-service-list">
+        <li *ngFor="let service of availableServices">
+          <button 
+            (click)="selectForm(service)"
+            [class.active]="selectedForm?.serviceName === service"
+            class="df-service-btn">
+            <span class="indicator"></span>
+            {{ service }}
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content: Form Builder -->
+    <div class="df-main" *ngIf="selectedForm">
+      <div class="df-main-header">
+        <div class="df-main-title">
+          <h2>Edit Form: {{ selectedForm.serviceName }}</h2>
+          <span class="badge">Schema Editor</span>
+        </div>
+        <div class="df-actions">
+          <button (click)="selectedForm = null" class="btn-cancel">Cancel</button>
+          <button (click)="saveForm()" [disabled]="loading" class="btn-save" [class.success]="saveSuccess">
+            <span *ngIf="loading" class="spinner"></span>
+            <span *ngIf="saveSuccess">✓ Saved Successfully!</span>
+            <span *ngIf="!loading && !saveSuccess">Save Form Schema</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="df-meta-section">
+        <div class="form-group">
+          <label>Form Title</label>
+          <input type="text" [(ngModel)]="selectedForm.title" placeholder="e.g., Complete your profile">
+        </div>
+        <div class="form-group">
+          <label>Form Subtitle</label>
+          <input type="text" [(ngModel)]="selectedForm.subtitle" placeholder="Optional description">
+        </div>
+      </div>
+
+      <!-- Recursive Field Editor Template -->
+      <ng-template #fieldListTemplate let-fields="fields" let-level="level">
+        <div class="df-fields-list">
+          <div *ngFor="let field of fields; let i = index" class="df-field-card" [class.nested]="level > 0">
+            <button (click)="removeField(fields, i)" class="btn-remove-field" title="Remove Field">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+            
+            <div class="df-field-grid">
+              
+              <div class="form-group span-5">
+                <label>Display Label</label>
+                <input type="text" [(ngModel)]="field.label" (ngModelChange)="onLabelChange(field)" placeholder="e.g., Enter PAN">
+              </div>
+              
+              <div class="form-group span-4">
+                <label>Input Type</label>
+                <select [(ngModel)]="field.type">
+                  <option value="text">Short Text</option>
+                  <option value="number">Number</option>
+                  <option value="email">Email</option>
+                  <option value="phone">Phone (10 Digits)</option>
+                  <option value="date">Date Picker</option>
+                  <option value="dropdown">Dropdown Select</option>
+                  <option value="file">File Upload</option>
+                  <option value="group">Section / Group</option>
+                  <option value="array">Repeating Array</option>
+                </select>
+              </div>
+              
+              <div class="form-group span-2 checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" [(ngModel)]="field.required">
+                  <span class="checkmark"></span>
+                  Required
+                </label>
+              </div>
+
+              <!-- Visual Visibility Config -->
+              <div class="form-group span-7">
+                <label>Show this field ONLY if...</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <select [(ngModel)]="field.visField" style="flex: 1;">
+                    <option value="">-- Always Show --</option>
+                    <option *ngFor="let af of getAvailableFields()" [value]="af">{{ af }}</option>
+                  </select>
+                  <span *ngIf="field.visField" style="color: #666; font-size: 13px; font-weight: 500;">equals</span>
+                  <input *ngIf="field.visField" type="text" [(ngModel)]="field.visEquals" placeholder="Value (e.g. Yes)" style="flex: 1;">
+                </div>
+              </div>
+              
+              <!-- Description -->
+              <div class="form-group span-5">
+                <label>Help Description</label>
+                <input type="text" [(ngModel)]="field.description" placeholder='Optional helper text below field'>
+              </div>
+
+
+            </div>
+
+            <!-- Dropdown Options Section -->
+            <div *ngIf="field.type === 'dropdown'" class="df-dropdown-section">
+              <label>Dropdown Options</label>
+              <div class="df-options-list">
+                <span *ngFor="let opt of field.options; let optIdx = index" class="df-chip">
+                  {{ opt }}
+                  <button (click)="removeDropdownOption(field, optIdx)" class="btn-chip-remove">&times;</button>
+                </span>
+              </div>
+              <div class="df-add-option">
+                <input #newOpt type="text" placeholder="Add an option..." (keyup.enter)="addDropdownOption(field, newOpt.value); newOpt.value=''">
+                <button (click)="addDropdownOption(field, newOpt.value); newOpt.value=''" class="btn-add-opt">Add</button>
+              </div>
+            </div>
+
+            <!-- Nested Subfields Section -->
+            <div *ngIf="field.type === 'group' || field.type === 'array'" class="df-subfields-section">
+              <div class="df-fields-header">
+                <h3>Sub-Fields for {{ field.label || 'Group' }}</h3>
+              </div>
+              <ng-container *ngTemplateOutlet="fieldListTemplate; context: { fields: field.subFields, level: level + 1 }"></ng-container>
+              <div *ngIf="!field.subFields || field.subFields.length === 0" class="df-empty-state sm">
+                <p>No sub-fields added.</p>
+              </div>
+              <div style="margin-top: 16px; display: flex; gap: 12px; align-items: center;">
+                <button (click)="addField(field.subFields)" class="btn-add-field sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Add Sub-Field
+                </button>
+                <button (click)="saveForm()" [disabled]="loading" class="btn-save" [class.success]="saveSuccess" style="padding: 6px 12px; font-size: 12px;">
+                  <span *ngIf="loading" class="spinner"></span>
+                  <span *ngIf="saveSuccess">✓ Saved!</span>
+                  <span *ngIf="!loading && !saveSuccess">Save Form Schema</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- Main Fields Area -->
+      <div class="df-fields-header mt-8">
+        <h3>Form Fields</h3>
+      </div>
+
+      <div *ngIf="selectedForm.fields.length === 0" class="df-empty-state">
+        <p>No fields added yet.</p>
+        <span>Click "Add Field" below to start building your dynamic form.</span>
+      </div>
+
+      <!-- Render the root fields -->
+      <ng-container *ngTemplateOutlet="fieldListTemplate; context: { fields: selectedForm.fields, level: 0 }"></ng-container>
+
+      <div style="margin-top: 24px; margin-bottom: 24px; display: flex; gap: 12px; align-items: center;">
+        <button (click)="addField(selectedForm.fields)" class="btn-add-field">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Field
+        </button>
+        <button (click)="saveForm()" [disabled]="loading" class="btn-save" [class.success]="saveSuccess">
+          <span *ngIf="loading" class="spinner"></span>
+          <span *ngIf="saveSuccess">✓ Saved Successfully!</span>
+          <span *ngIf="!loading && !saveSuccess">Save Form Schema</span>
+        </button>
+      </div>
+
+      <!-- Cross Validations Section -->
+      <div class="df-fields-header mt-8">
+        <h3>Cross-Field Validations</h3>
+      </div>
+
+      <div *ngIf="selectedForm.crossValidations.length === 0" class="df-empty-state sm">
+        <p>No cross-validation rules added.</p>
+      </div>
+
+      <div class="df-fields-list">
+        <div *ngFor="let cv of selectedForm.crossValidations; let cvi = index" class="df-field-card">
+          <button (click)="removeCrossValidation(cvi)" class="btn-remove-field" title="Remove Rule">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
+          <div class="df-field-grid">
+            <div class="form-group span-3">
+              <label>Validation Type</label>
+              <select [(ngModel)]="cv.type">
+                <option value="sumEquals">sumEquals</option>
+                <option value="matchFields">matchFields</option>
+                <option value="notMatchFields">notMatchFields</option>
+              </select>
+            </div>
+            <div class="form-group span-4">
+              <label>Fields (comma-separated names)</label>
+              <input type="text" [(ngModel)]="cv.fieldsStr" placeholder="e.g., shareholding, other_share">
+            </div>
+            <div class="form-group span-2">
+              <label>Value</label>
+              <input type="text" [(ngModel)]="cv.value" placeholder="e.g., 100">
+            </div>
+            <div class="form-group span-3">
+              <label>Error Message</label>
+              <input type="text" [(ngModel)]="cv.message" placeholder="Total must be 100">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; margin-bottom: 24px;">
+        <button (click)="addCrossValidation()" class="btn-add-field">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Add Rule
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!selectedForm" class="df-main df-global-empty">
+      <div class="empty-icon xl">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+      </div>
+      <h3>No Service Selected</h3>
+      <p>Select a service from the left sidebar to manage its dynamic form.</p>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div *ngIf="toastMsg" class="df-toast" [class.error]="toastType === 'error'">
+    <svg *ngIf="toastType === 'success'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    <svg *ngIf="toastType === 'error'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+    {{ toastMsg }}
+  </div>
+
+  <!-- Simple Uncolored Confirmation Popup Modal -->
+  <div *ngIf="deleteModalOpen" class="df-modal-backdrop" (click)="closeDeleteModal()">
+    <div class="df-modal-card" (click)="$event.stopPropagation()">
+      <div class="df-modal-header">
+        <h3>Delete Attribute</h3>
+        <button class="df-modal-close" (click)="closeDeleteModal()" title="Close">&times;</button>
+      </div>
+      <div class="df-modal-body">
+        <p>Are you sure you want to delete <strong>"{{ deleteItemName }}"</strong>?</p>
+        <span class="df-modal-subtext">This will remove it from the form schema.</span>
+      </div>
+      <div class="df-modal-footer">
+        <button type="button" class="btn-modal-cancel" (click)="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn-modal-confirm" (click)="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>

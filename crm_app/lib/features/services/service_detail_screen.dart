@@ -350,8 +350,8 @@ class ServiceDetailScreen extends ConsumerWidget {
                 child: const Text(
                   'Add Service',
                   style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w900,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w300,
                   ),
                 ),
               ),

@@ -1092,7 +1092,7 @@ const getMyServicesSummary = async (req, res) => {
         status: c.status,
         stage: c.stage,
         createdAt: c.createdAt,
-        assigned_to: c.assigned_to ? { owner_name: c.assigned_to.owner_name, _id: c.assigned_to._id } : null,
+        assigned_to: c.assigned_to ? { owner_name: c.assigned_to.owner_name, _id: c.assigned_to._id, phone: c.assigned_to.phone } : null,
         action_required: derivedActionRequired,
         details: {
           entityName: c.details?.entityName,

@@ -449,7 +449,7 @@ class _ProfileTileState extends State<ProfileTile> {
               widget.title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: widget.color ?? AppTheme.deepTeal,
-                fontWeight: FontWeight.w500, // Card title weight reduced
+                fontWeight: FontWeight.w400, // Card title weight reduced
                 fontSize: 15.sp,
               ),
             ),

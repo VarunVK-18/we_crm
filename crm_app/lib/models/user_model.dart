@@ -94,6 +94,8 @@ class UserModel {
   final bool mcaProfileCompleted;
   final List<Map<String, dynamic>> onboardingDocuments;
   final List<Map<String, dynamic>> directors;
+  final List<String> outsourcedServices;
+  final Map<String, dynamic> dynamicProfileData;
 
   UserModel({
     required this.id,
@@ -111,6 +113,8 @@ class UserModel {
     this.mcaProfileCompleted = false,
     this.onboardingDocuments = const [],
     this.directors = const [],
+    this.outsourcedServices = const [],
+    this.dynamicProfileData = const {},
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, [String? id]) {
@@ -200,6 +204,10 @@ class UserModel {
       directors: data['directors'] != null 
           ? List<Map<String, dynamic>>.from(data['directors']) 
           : [],
+      outsourcedServices: data['outsourced_services'] != null && data['outsourced_services'] is List
+          ? (data['outsourced_services'] as List).map((s) => s['serviceName']?.toString() ?? '').where((s) => s.isNotEmpty).toList()
+          : [],
+      dynamicProfileData: data['dynamicProfileData'] != null ? Map<String, dynamic>.from(data['dynamicProfileData']) : {},
     );
   }
 

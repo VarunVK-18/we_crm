@@ -22,6 +22,7 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
 
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   late final PageController _pageController;
+  static bool _hasShownSecurityPopup = false;
 
   @override
   void initState() {
@@ -39,7 +40,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     final isBiometricEnabled = await util.isBiometricEnabled();
     final isPinEnabled = await util.isPinEnabled();
 
-    if (!isBiometricEnabled && !isPinEnabled && mounted) {
+    if (!isBiometricEnabled && !isPinEnabled && mounted && !_hasShownSecurityPopup) {
+      _hasShownSecurityPopup = true;
       showModalBottomSheet(
         context: context,
         isScrollControlled: true,

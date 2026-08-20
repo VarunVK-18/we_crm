@@ -28,7 +28,7 @@ exports.getUserOrders = async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: 'User ID is required.' });
     }
-    const orders = await ServiceOrder.find({ cleintUid: userId }).sort({ createdAt: -1 });
+    const orders = await ServiceOrder.find({ clientUid: userId }).sort({ createdAt: -1 });
     res.status(200).json({ orders });
   } catch (error) {
     console.error('Error fetching user orders:', error);
@@ -1913,5 +1913,121 @@ exports.submitGstForm = async (req, res) => {
   } catch (error) {
     console.error('Error submitting GST form:', error);
     res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+
+// Submit Dynamic Form
+exports.submitDynamicForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body;
+    
+    // Parse JSON strings in formData (useful for nested arrays/groups sent from client)
+    Object.keys(formData).forEach(key => {
+      try {
+        if (typeof formData[key] === 'string' && (formData[key].startsWith('[') || formData[key].startsWith('{'))) {
+          formData[key] = JSON.parse(formData[key]);
+        }
+      } catch (e) {
+        // Not a JSON string, leave as is
+      }
+    });
+
+    const files = req.files || [];
+    const uploadedDocs = [];
+    
+    files.forEach(file => {
+      uploadedDocs.push({ name: file.fieldname, fileUrl: file.path });
+    });
+    
+    const Checklist = require('../models/Checklist');
+    const User = require('../models/User'); // Import User for profile sync
+    const order = await Checklist.findById(id);
+    if (!order) return res.status(404).json({ message: 'Order not found.' });
+    
+    const updatedDetails = { ...order.details, ...formData, dynamicForm: formData, dynamicDocs: uploadedDocs };
+    order.details = updatedDetails;
+    order.action_required = false;
+    order.form_submitted = true;
+    order.status = 'Work in progress';
+    order.markModified('details');
+    // markClientFormFilled(order);
+    await order.save();
+
+    // Client Profile Sync: Entity-Isolated Autofill capability
+    if (order.client_id) {
+      const user = await User.findById(order.client_id);
+      if (user) {
+        const currentProfile = user.dynamicProfileData || {};
+
+        // Use the entity name from the order to namespace profile data
+        const entityName = order.entity_name || order.company_name || 'default';
+        const entityProfile = currentProfile[entityName] || {};
+
+        // Use the parsed dynamicData if available, otherwise fallback to root formData
+        const newProfileData = formData.dynamicData || formData;
+
+        // Merge simple key-value pairs under the entity namespace
+        for (const [key, value] of Object.entries(newProfileData)) {
+          if (value !== undefined && value !== null && value !== '') {
+            entityProfile[key] = value;
+          }
+        }
+
+        currentProfile[entityName] = entityProfile;
+        user.dynamicProfileData = currentProfile;
+        user.markModified('dynamicProfileData');
+        await user.save();
+        console.log(`[SYNC] Synced dynamic profile data for user ${user._id} under entity "${entityName}"`);
+      }
+    }
+    
+    res.status(200).json({ success: true, message: 'Dynamic form submitted successfully.', order });
+  } catch (error) {
+    console.error('Error submitting Dynamic form:', error);
+    res.status(500).json({ message: 'Server error while submitting dynamic form.', error: error.message });
+  }
+};
+
+
+exports.submitCopyrightForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const formData = req.body; 
+
+    // Process uploaded files if any
+    const files = req.files || {};
+    const uploadedDocs = [];
+
+    if (files.copyOfWork) uploadedDocs.push({ name: 'Copy of Work', fileUrl: files.copyOfWork[0].path });
+    if (files.nocFromAuthor) uploadedDocs.push({ name: 'NOC from Author', fileUrl: files.nocFromAuthor[0].path });
+    if (files.nocFromPublisher) uploadedDocs.push({ name: 'NOC from Publisher', fileUrl: files.nocFromPublisher[0].path });
+    if (files.incorporationCertificate) uploadedDocs.push({ name: 'Incorporation Certificate', fileUrl: files.incorporationCertificate[0].path });
+    if (files.boardResolution) uploadedDocs.push({ name: 'Board Resolution', fileUrl: files.boardResolution[0].path });
+    if (files.idProof) uploadedDocs.push({ name: 'ID Proof', fileUrl: files.idProof[0].path });
+
+    const Checklist = require('../models/Checklist');
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order (Checklist) not found.' });
+    }
+
+    // Merge form data into order details
+    const updatedDetails = {
+      ...order.details,
+      copyrightForm: formData,
+      copyrightDocs: uploadedDocs,
+    };
+
+    order.details = updatedDetails;
+    order.form_submitted = true;
+    order.status = 'Work in progress';
+    await order.save();
+
+    res.json({ success: true, message: 'Copyright form submitted successfully.', order });
+  } catch (error) {
+    console.error('Error submitting copyright form:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };

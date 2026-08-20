@@ -85,6 +85,7 @@ export class Sidebar implements OnInit, OnDestroy {
           { id: 'dsc-tokens', label: 'DSC Tokens', color: '#10B981' },
           { id: 'banners', label: 'Banner Management', color: '#F59E0B' },
           { id: 'logs', label: 'Audit Logs', color: '#EC4899' },
+          { id: 'dynamic-forms', label: 'Dynamic Forms', color: '#EC4899' },
           { id: 'settings', label: 'System Settings', color: '#6366F1' }
         ]
       });

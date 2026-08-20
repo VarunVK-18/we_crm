@@ -23,30 +23,33 @@ import '../../core/widgets/we_loader.dart';
 import 'document_viewer_screen.dart';
 import 'order_chat_screen.dart';
 import '../profile/chat_support_screen.dart';
-import 'incorp_form_screen.dart';
-import 'dpiit_form_screen.dart';
-import 'duns_form_screen.dart';
-import 'trademark_form_screen.dart';
-import 'itr_form_screen.dart';
-import 'ce_rohs_form_screen.dart';
-import 'llp_form_screen.dart';
-import 'msme_form_screen.dart';
-import 'gst_form_screen.dart';
-import 'iso_form_screen.dart';
-import 'fssai_form_screen.dart';
-import 'dsc_form_screen.dart';
-import 'opc_form_screen.dart';
-import 'gst_compliance_form_screen.dart';
-import 'mca_compliance_form_screen.dart';
-import 'lei_form_screen.dart';
-import 'bis_form_screen.dart';
-import 'gst_cancellation_form_screen.dart';
-import 'gst_filing_form_screen.dart';
-import 'iec_form_screen.dart';
-import 'patent_form_screen.dart';
-import 'pf_form_screen.dart';
-import 'proprietorship_form_screen.dart';
-import 'tds_form_screen.dart';
+import '../services/dynamic_form_screen.dart';
+import 'forms/incorp_form_screen.dart';
+import 'forms/dpiit_form_screen.dart';
+import 'forms/duns_form_screen.dart';
+import 'forms/trademark_form_screen.dart';
+import 'forms/copyright_form_screen.dart';
+import 'forms/itr_form_screen.dart';
+import 'forms/ce_rohs_form_screen.dart';
+import 'forms/llp_form_screen.dart';
+import 'forms/msme_form_screen.dart';
+import 'forms/gst_form_screen.dart';
+import 'forms/iso_form_screen.dart';
+import 'forms/fssai_form_screen.dart';
+import 'forms/dsc_form_screen.dart';
+import 'forms/opc_form_screen.dart';
+import 'forms/gst_compliance_form_screen.dart';
+import 'forms/mca_compliance_form_screen.dart';
+import 'forms/lei_form_screen.dart';
+import 'forms/bis_form_screen.dart';
+import 'forms/gst_cancellation_form_screen.dart';
+import 'forms/gst_filing_form_screen.dart';
+import 'forms/iec_form_screen.dart';
+import 'forms/patent_form_screen.dart';
+import 'forms/pf_form_screen.dart';
+import 'forms/proprietorship_form_screen.dart';
+import 'forms/tds_form_screen.dart';
+import '../services/dynamic_form_screen.dart';
 
 
 class ServiceOrderDetailScreen extends ConsumerStatefulWidget {
@@ -2431,63 +2434,5 @@ bool _shouldShowFillForm(ServiceStep step, ServiceOrder order) {
 }
 
 void _routeToForm(BuildContext context, ServiceOrder order) {
-  const WidgetRef? ref = null; // Note: In a real app, retrieve ref via context or ConsumerState
-
-  if (order.serviceType.toLowerCase().contains('duns')) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => DunsFormScreen(order: order)));
-    } else if (order.serviceType.toLowerCase().contains('dpiit')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => DpiitFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('opc') || order.serviceType.toLowerCase().contains('one person company')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => OpcFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('private limited')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => IncorpFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('trademark') || order.serviceType.toLowerCase().contains('trade mark')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('llp')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => LlpFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('msme')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => MsmeFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('gst') && order.serviceType.toLowerCase().contains('compliance')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => GstComplianceFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('gst cancellation')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => GstCancellationFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('gst filing')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => GstFilingFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('mca')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => McaComplianceFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('gst')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => GstFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('iso')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => IsoFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('lei') || order.serviceType.toLowerCase().contains('lie')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => LeiFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('bis')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => BisFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('fssai')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => FssaiFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('dsc') || order.serviceType.toLowerCase().contains('digital signature')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => DscFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('proprietorship')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ProprietorshipFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('tds') || order.serviceType.toLowerCase().contains('pan')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => TdsFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('itr')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ItrFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('ce') || order.serviceType.toLowerCase().contains('rohs')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => CeRohsFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('pf')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => PfFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('patent')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => PatentFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase().contains('copyright')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => TrademarkFormScreen(order: order)));
-  } else if (order.serviceType.toLowerCase() == 'import export code' || order.serviceType.toLowerCase() == 'iec registration' || order.serviceType.toLowerCase().contains('iec')) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => IecFormScreen(order: order)));
-
-  } else {
-    // Fallback if we haven't mapped the form yet
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Form for ${order.serviceType} is not implemented yet.')),
-    );
-  }
+  Navigator.push(context, MaterialPageRoute(builder: (_) => DynamicFormScreen(order: order)));
 }

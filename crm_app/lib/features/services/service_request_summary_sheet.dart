@@ -797,14 +797,43 @@ class _ServiceRequestSummarySheetState
       }
     }
 
+    bool isServiceTypeMatch(String s1, String s2) {
+      final a = s1.trim().toLowerCase();
+      final b = s2.trim().toLowerCase();
+      if (a == b) return true;
+      if ((a.contains('dsc') || a.contains('digital signature')) &&
+          (b.contains('dsc') || b.contains('digital signature'))) {
+        return true;
+      }
+      if ((a.contains('duns') || a.contains('d-u-n-s')) &&
+          (b.contains('duns') || b.contains('d-u-n-s'))) {
+        return true;
+      }
+      if (a.contains('trademark') && b.contains('trademark')) return true;
+      if (a.contains('copyright') && b.contains('copyright')) return true;
+      if (a.contains('msme') && b.contains('msme')) return true;
+      if (a.contains('fssai') && b.contains('fssai')) return true;
+      if (a.contains('iso') && b.contains('iso')) return true;
+      if (a.contains('dpiit') && b.contains('dpiit')) return true;
+      if (a.contains('iec') && b.contains('iec')) return true;
+      if (a.contains('lei') && b.contains('lei')) return true;
+      if (a.contains('bis') && b.contains('bis')) return true;
+      return false;
+    }
+
+    bool isEntityMatch(String? e1, String? e2) {
+      if (e1 == null || e2 == null) return false;
+      return e1.trim().toLowerCase() == e2.trim().toLowerCase();
+    }
+
     Map<String, String>? getCompatibilityWarning() {
       if (_selectedEntity == null || _selectedEntity == 'Add New Entity...') return null;
       
       final reqService = widget.packageName;
 
       final activeOrder = ordersState.value?.where((o) =>
-              o.serviceType == reqService &&
-              o.entityName == _selectedEntity &&
+              isServiceTypeMatch(o.serviceType, reqService) &&
+              isEntityMatch(o.entityName, _selectedEntity) &&
               o.status != 'completed' && o.status != 'complete').firstOrNull;
 
       if (activeOrder != null) {
@@ -829,51 +858,64 @@ class _ServiceRequestSummarySheetState
       }
 
       final completedOrders = ordersState.value?.where((o) =>
-              o.serviceType == reqService &&
-              o.entityName == _selectedEntity &&
+              isServiceTypeMatch(o.serviceType, reqService) &&
+              isEntityMatch(o.entityName, _selectedEntity) &&
               (o.status == 'completed' || o.status == 'complete')) ?? [];
 
       if (completedOrders.isNotEmpty) {
         final reqServiceLower = reqService.toLowerCase();
-        bool isRenewalService = reqServiceLower.contains('patent') ||
-                                reqServiceLower.contains('trademark') ||
-                                reqServiceLower.contains('bis') ||
-                                reqServiceLower.contains('fssai');
+        
+        bool isRecurringService = reqServiceLower.contains('compliance') ||
+                                  reqServiceLower.contains('return') ||
+                                  reqServiceLower.contains('itr');
 
-        if (isRenewalService) {
-           bool canRenew = false;
-           for (final order in completedOrders) {
-             for (final doc in order.finalDocuments) {
-                if (doc.expiryDate != null) {
-                   final daysLeft = doc.expiryDate!.difference(DateTime.now()).inDays;
-                   if (daysLeft <= 10) {
-                      canRenew = true;
-                      break;
-                   }
-                }
+        if (isRecurringService) {
+          // Recurring services like GST Returns, ITR, MCA Compliance, TDS can be applied multiple times
+          // Do nothing, let it proceed
+        } else {
+          bool isRenewalService = reqServiceLower.contains('patent') ||
+                                  reqServiceLower.contains('trademark') ||
+                                  reqServiceLower.contains('bis') ||
+                                  reqServiceLower.contains('fssai') ||
+                                  reqServiceLower.contains('dsc') ||
+                                  reqServiceLower.contains('digital signature') ||
+                                  reqServiceLower.contains('copyright');
+
+          if (isRenewalService) {
+             bool canRenew = false;
+             for (final order in completedOrders) {
+               for (final doc in order.finalDocuments) {
+                  if (doc.expiryDate != null) {
+                     final daysLeft = doc.expiryDate!.difference(DateTime.now()).inDays;
+                     if (daysLeft <= 10) {
+                        canRenew = true;
+                        break;
+                     }
+                  }
+               }
+               if (canRenew) break;
              }
-             if (canRenew) break;
-           }
 
-           if (canRenew) {
-             return {
-               'type': 'warning',
-               'header': 'Renewal Available',
-               'message': 'This service is expiring soon. You can submit a renewal request.'
-             };
-           } else {
+             if (canRenew) {
+               return {
+                 'type': 'warning',
+                 'header': 'Renewal Available',
+                 'message': 'This service is expiring soon. You can submit a renewal request.'
+               };
+             } else {
+               return {
+                 'type': 'error',
+                 'header': 'Service Already Completed',
+                 'message': 'The requested service is already completed for this entity. Renewal options will be available within 10 days of expiry.'
+               };
+             }
+          } else {
              return {
                'type': 'error',
                'header': 'Service Already Completed',
-               'message': 'The requested service is already completed for this entity. Renewal options will be available within 10 days of expiry.'
+               'message': 'The requested service is already completed for this entity.'
              };
-           }
-        } else {
-           return {
-             'type': 'error',
-             'header': 'Service Already Completed',
-             'message': 'The requested service is already completed for this entity.'
-           };
+          }
         }
       }
 
@@ -1236,8 +1278,8 @@ class _ServiceRequestSummarySheetState
                         'Cancel',
                         style: TextStyle(
                           color: Colors.grey[800],
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -1264,8 +1306,8 @@ class _ServiceRequestSummarySheetState
                         'Back',
                         style: TextStyle(
                           color: Colors.grey[800],
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -1305,8 +1347,8 @@ class _ServiceRequestSummarySheetState
                             : 'Next',
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -1384,8 +1426,8 @@ class _ServiceRequestSummarySheetState
                                   : 'Submit',
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                     ),

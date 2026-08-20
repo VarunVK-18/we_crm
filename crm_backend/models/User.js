@@ -195,6 +195,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  dynamicProfileData: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
   onboarding_documents: {
     type: [{
       name: String,

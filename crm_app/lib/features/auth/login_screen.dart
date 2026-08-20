@@ -137,338 +137,310 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
       ),
       child: PopScope(
-        canPop: false,
-        onPopInvoked: (didPop) {
-          if (didPop) return;
-          Navigator.of(context).pushReplacement(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  const ClientOnboardingScreen(),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero,
-            ),
-          );
-        },
+        canPop: true,
         child: Scaffold(
-        backgroundColor: const Color(0xFFFDFBF7),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          toolbarHeight: 80,
-          leading: Padding(
-            padding: const EdgeInsets.only(top: 24.0, left: 8.0),
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const ClientOnboardingScreen(),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
+          backgroundColor: const Color(0xFF1E1B4B), // Support banner color
+          body: SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.only(top: 40, bottom: 40),
+                  child: Center(
+                    child: Text(
+                      'Startup Doctor',
+                      style: GoogleFonts.poppins(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
-              );
-            },
-          ),
-          ),
-        ),
-        body: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return CustomScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Form(
-                            key: _formKey,
-                            child: AutofillGroup(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  SizedBox(height: constraints.maxHeight * 0.02),
-                                  Center(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(30),
-                                      child: Image.asset(
-                                        'assets/Startup Doctor logo (1).png',
-                                        height: constraints.maxHeight < 700 ? 115 : 145,
-                                        width: constraints.maxHeight < 700 ? 115 : 145,
-                                        fit: BoxFit.cover,
-                                        color: const Color(0xFFFDFBF7),
-                                        colorBlendMode: BlendMode.multiply,
-                                      ),
-                                    ),
-                                  ),
-
-                                  SizedBox(height: constraints.maxHeight * 0.02),
-
-                                  // Email Field
-                                  Text(
-                                  'Email',
-                                    style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.grey[700]),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                    controller: _emailController,
-                                    keyboardType: TextInputType.emailAddress,
-                                    autofillHints: const [AutofillHints.email],
-                                    textInputAction: TextInputAction.next,
-                                    style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                        color: Colors.black87),
-                                    decoration: InputDecoration(
-                                      hintText: 'mycompany@company.com',
-                                      hintStyle: GoogleFonts.inter(
-                                          color: Colors.grey[400],
+                
+                // White Container
+                Expanded(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(32),
+                        topRight: Radius.circular(32),
+                      ),
+                    ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: IntrinsicHeight(
+                              child: Form(
+                                key: _formKey,
+                                child: AutofillGroup(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                    children: [
+                                      const SizedBox(height: 50),
+                                      
+                                      Text(
+                                        'Welcome Back',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 18,
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 15),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 18),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          borderSide: BorderSide(
-                                              color: Colors.grey[300]!)),
-                                      enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          borderSide: BorderSide(
-                                              color: Colors.grey[300]!)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          borderSide: BorderSide(
-                                              color: Colors.grey[300]!)),
-                                    ),
-                                    validator: (val) {
-                                      if (val == null || val.isEmpty) {
-                                        return 'Email is required';
-                                      }
-                                      if (!RegExp(
-                                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                          .hasMatch(val)) {
-                                        return 'Enter a valid email address';
-                                      }
-                                      return null;
-                                    },
-                                  ),
-
-                                  SizedBox(height: constraints.maxHeight * 0.015),
-
-                                  // Password Field
-                                  Text(
-                                    'Password',
-                                    style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.grey[700]),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextFormField(
-                                    controller: _passwordController,
-                                    obscureText: !_isPasswordVisible,
-                                    autofillHints: const [
-                                      AutofillHints.password
-                                    ],
-                                    textInputAction: TextInputAction.done,
-                                    onEditingComplete: () =>
-                                        TextInput.finishAutofillContext(),
-                                    style: GoogleFonts.inter(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                        color: Colors.black87),
-                                    decoration: InputDecoration(
-                                      hintText: '••••••••',
-                                      hintStyle: GoogleFonts.inter(
-                                          color: Colors.grey[400],
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                          letterSpacing: 2),
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 18),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          borderSide: BorderSide(
-                                              color: Colors.grey[300]!)),
-                                      enabledBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          borderSide: BorderSide(
-                                              color: Colors.grey[300]!)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30),
-                                          borderSide: BorderSide(
-                                              color: Colors.grey[300]!)),
-                                      suffixIcon: IconButton(
-                                        icon: Icon(
-                                            _isPasswordVisible
-                                                ? LucideIcons.eye
-                                                : LucideIcons.eyeOff,
-                                            color: Colors.black87,
-                                            size: 20),
-                                        onPressed: () => setState(() =>
-                                            _isPasswordVisible =
-                                                !_isPasswordVisible),
+                                          color: Colors.black87,
+                                        ),
                                       ),
-                                    ),
-                                    validator: (val) {
-                                      if (val == null || val.isEmpty) {
-                                        return 'Password is required';
-                                      }
-                                      if (val.length < 6) {
-                                        return 'Password must be at least 6 characters';
-                                      }
-                                      return null;
-                                    },
-                                  ),
+                                      
+                                      const SizedBox(height: 32),
 
-                                  SizedBox(height: constraints.maxHeight * 0.01),
-
-                                  Align(
-                                    alignment: Alignment.centerRight,
-                                    child: TextButton(
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                                      ),
-                                      onPressed: () {
-                                        _showAuthDialog(
-                                          title: 'Notice',
-                                          message:
-                                              'Contact Support To Reset Your Password.',
-                                          isError: false,
-                                        );
-                                      },
-                                      child: Text(
-                                        'Forgot password?',
+                                      // Email Field
+                                      TextFormField(
+                                        controller: _emailController,
+                                        keyboardType: TextInputType.emailAddress,
+                                        autofillHints: const [AutofillHints.email],
+                                        textInputAction: TextInputAction.next,
                                         style: GoogleFonts.inter(
-                                            color: Colors.grey[600],
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w600,
-                                            letterSpacing: 0.3),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                            color: Colors.black87),
+                                        decoration: InputDecoration(
+                                          hintText: 'Email',
+                                          hintStyle: GoogleFonts.inter(
+                                              color: Colors.grey.shade500,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 14),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 14),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey.shade300)),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey.shade300)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey.shade400)),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                        ),
+                                        validator: (val) {
+                                          if (val == null || val.isEmpty) {
+                                            return 'Email is required';
+                                          }
+                                          if (!RegExp(
+                                                  r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$")
+                                              .hasMatch(val)) {
+                                            return 'Enter a valid email address';
+                                          }
+                                          return null;
+                                        },
                                       ),
-                                    ),
-                                  ),
 
-                                  SizedBox(height: constraints.maxHeight * 0.01),
+                                      const SizedBox(height: 20),
 
-                                  ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.black,
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 18),
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(30)),
-                                      elevation: 0,
-                                    ),
-                                    onPressed:
-                                        _isLoading ? null : _handleSignIn,
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2))
-                                        : Text('Login',
+                                      // Password Field
+                                      TextFormField(
+                                        controller: _passwordController,
+                                        obscureText: !_isPasswordVisible,
+                                        autofillHints: const [
+                                          AutofillHints.password
+                                        ],
+                                        textInputAction: TextInputAction.done,
+                                        onEditingComplete: () =>
+                                            TextInput.finishAutofillContext(),
+                                        style: GoogleFonts.inter(
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 14,
+                                            color: Colors.black87),
+                                        decoration: InputDecoration(
+                                          hintText: 'Password',
+                                          hintStyle: GoogleFonts.inter(
+                                              color: Colors.grey.shade500,
+                                              fontWeight: FontWeight.w400,
+                                              fontSize: 14),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 16, vertical: 14),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey.shade300)),
+                                          enabledBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey.shade300)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              borderSide: BorderSide(
+                                                  color: Colors.grey.shade400)),
+                                          filled: true,
+                                          fillColor: Colors.white,
+                                          suffixIcon: IconButton(
+                                            icon: Icon(
+                                                _isPasswordVisible
+                                                    ? LucideIcons.eye
+                                                    : LucideIcons.eyeOff,
+                                                color: Colors.black54,
+                                                size: 20),
+                                            onPressed: () => setState(() =>
+                                                _isPasswordVisible =
+                                                    !_isPasswordVisible),
+                                          ),
+                                        ),
+                                        validator: (val) {
+                                          if (val == null || val.isEmpty) {
+                                            return 'Password is required';
+                                          }
+                                          if (val.length < 6) {
+                                            return 'Password must be at least 6 characters';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+
+                                      const SizedBox(height: 4),
+
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: TextButton(
+                                          style: TextButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
+                                          ),
+                                          onPressed: () {
+                                            _showAuthDialog(
+                                              title: 'Notice',
+                                              message:
+                                                  'Contact Support To Reset Your Password.',
+                                              isError: false,
+                                            );
+                                          },
+                                          child: Text(
+                                            'Forgot password?',
                                             style: GoogleFonts.inter(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w800,
-                                                letterSpacing: 0.5)),
-                                  ),
+                                                color: Colors.grey.shade600,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
 
-                                ],
+                                      const SizedBox(height: 24),
+
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.black,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 14),
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(30)),
+                                          elevation: 0,
+                                        ),
+                                        onPressed:
+                                            _isLoading ? null : _handleSignIn,
+                                        child: _isLoading
+                                            ? const SizedBox(
+                                                height: 24,
+                                                width: 24,
+                                                child: CircularProgressIndicator(
+                                                    color: Colors.white,
+                                                    strokeWidth: 2))
+                                            : Text('Login',
+                                                style: GoogleFonts.inter(
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 0.5)),
+                                      ),
+
+                                      const Spacer(),
+
+                                      // Certificate Image - Made perfect
+                                      Center(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(16),
+                                          child: Image.asset(
+                                            'assets/banner images/certification01.jpg',
+                                            height: 180,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        ),
+                                      ),
+                                      
+                                      const SizedBox(height: 16),
+
+                                      // Footer Sign Up Link
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 32),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'New to Wealth Empires? ',
+                                              style: GoogleFonts.inter(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: 14),
+                                            ),
+                                            GestureDetector(
+                                              onTap: () {
+                                                Navigator.of(context).pushReplacement(
+                                                  PageRouteBuilder(
+                                                    pageBuilder: (context, animation, secondaryAnimation) =>
+                                                        const ClientOnboardingScreen(),
+                                                    transitionDuration: Duration.zero,
+                                                    reverseTransitionDuration: Duration.zero,
+                                                  ),
+                                                );
+                                              },
+                                              child: Text(
+                                                'Join Now',
+                                                style: GoogleFonts.inter(
+                                                  color: AppTheme.corporateBlue,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              const SizedBox(height: 4),
-              Container(
-                padding: EdgeInsets.symmetric(vertical: constraints.maxHeight * 0.015),
-                child: Image.asset(
-                  'assets/banner images/certification01.jpg',
-                  fit: BoxFit.contain,
-                  color: const Color(0xFFFDFBF7),
-                  colorBlendMode: BlendMode.multiply,
+                        );
+                      }
+                    ),
+                  ),
                 ),
-              ),
-                              SizedBox(height: constraints.maxHeight * 0.02),
-
-                              // Footer Sign Up Link
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 24),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.center,
-                                  children: [
-                                    Text(
-                                      'New to Wealth Empires? ',
-                                      style: GoogleFonts.inter(
-                                          color: Colors.grey[600],
-                                          fontSize: 14),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.of(context).pushReplacement(
-                                          PageRouteBuilder(
-                                            pageBuilder: (context, animation, secondaryAnimation) =>
-                                                const ClientOnboardingScreen(),
-                                            transitionDuration: Duration.zero,
-                                            reverseTransitionDuration: Duration.zero,
-                                          ),
-                                        );
-                                      },
-                                      child: Text(
-                                        'Join Now',
-                                        style: GoogleFonts.inter(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                          decoration:
-                                              TextDecoration.underline,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+              ],
             ),
           ),
-        ),
         ),
       ),
     );
@@ -482,4 +454,3 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 }
-

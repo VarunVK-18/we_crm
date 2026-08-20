@@ -174,4 +174,22 @@ export class Api {
     const url = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
     return this.http.get(url, { headers: this.getHeaders(), responseType: 'blob' });
   }
+
+  // --- Dynamic Forms API ---
+
+  getAllForms(): Observable<any[]> {
+    return this.get<any[]>('/forms');
+  }
+
+  getFormByServiceName(serviceName: string): Observable<any> {
+    return this.get<any>(`/forms/service/${encodeURIComponent(serviceName)}`);
+  }
+
+  upsertForm(formData: any): Observable<any> {
+    return this.post<any>('/forms', formData);
+  }
+
+  deleteForm(id: string): Observable<any> {
+    return this.delete<any>(`/forms/${id}`);
+  }
 }

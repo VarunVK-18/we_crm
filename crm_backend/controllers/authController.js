@@ -1118,10 +1118,24 @@ const subscribeService = async (req, res) => {
 
     await user.save();
 
+    let serviceFilter = { service_name: serviceName };
+    const sLower = serviceName.toLowerCase();
+    if (sLower.includes('dsc') || sLower.includes('digital signature')) {
+      serviceFilter = { service_name: { $regex: /digital signature|dsc/i } };
+    } else if (sLower.includes('duns') || sLower.includes('d-u-n-s')) {
+      serviceFilter = { service_name: { $regex: /duns|d-u-n-s/i } };
+    } else {
+      serviceFilter = { service_name: new RegExp(`^${serviceName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+    }
+
+    const escapedEntity = requestedEntityName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const existingChecklist = await Checklist.findOne({
       client_id: user._id,
-      service_name: serviceName,
-      'details.entityName': requestedEntityName,
+      ...serviceFilter,
+      $or: [
+        { 'details.entityName': { $regex: new RegExp(`^${escapedEntity}$`, 'i') } },
+        { entity_name: { $regex: new RegExp(`^${escapedEntity}$`, 'i') } }
+      ],
       status: { $ne: 'completed' }
     });
 

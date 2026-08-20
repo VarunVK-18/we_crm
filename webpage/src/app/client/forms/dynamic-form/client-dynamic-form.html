@@ -1,0 +1,204 @@
+<div class="form-layout">
+  <!-- Top Bar Header -->
+  <header class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="onBack()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back
+      </button>
+      <div class="title-row">
+        <h1 class="pf-title">{{ schema?.title || serviceName() || 'Application Form' }}</h1>
+        <p class="pf-subtitle">{{ schema?.subtitle || 'Please provide the required details below.' }}</p>
+      </div>
+    </div>
+  </header>
+
+  <div class="form-container">
+    <!-- Loader -->
+    @if (loading()) {
+      <div class="loading-state">
+        <app-we-loader size="large" message="Loading form blueprint..."></app-we-loader>
+      </div>
+    }
+
+    <!-- Error Alert -->
+    @if (errorMessage()) {
+      <div class="alert-banner error-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Success Alert -->
+    @if (success()) {
+      <div class="alert-banner success-banner">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+        <span>Form submitted successfully! Redirecting to ongoing services...</span>
+      </div>
+    }
+
+    <!-- Dynamic Form Content -->
+    @if (!loading() && schema) {
+      <form (ngSubmit)="submitForm()" class="incorp-form">
+
+        <!-- Template for rendering fields -->
+        <ng-template #renderFieldTemplate let-field="field" let-parentPath="parentPath">
+          @if (isFieldVisible(field, parentPath)) {
+            @let currentPath = parentPath ? (parentPath + '.' + field.name) : field.name;
+
+            <!-- 1. GROUP / SECTION -->
+            @if (field.type === 'group') {
+              <section class="form-section">
+                <h3 class="section-title">{{ field.label }}</h3>
+                @if (field.description) {
+                  <p class="section-desc">{{ field.description }}</p>
+                }
+                <div class="form-grid">
+                  @for (sub of field.subFields; track sub.name) {
+                    <ng-container *ngTemplateOutlet="renderFieldTemplate; context: { field: sub, parentPath: currentPath }"></ng-container>
+                  }
+                </div>
+              </section>
+            }
+
+            <!-- 2. REPEATING ARRAY -->
+            @else if (field.type === 'array') {
+              <section class="form-section array-section">
+                <h3 class="section-title">{{ field.label }}</h3>
+                @for (idx of getArrayItems(field._itemCount); track idx) {
+                  <div class="array-item-card">
+                    <h4 class="array-item-title">Item #{{ idx + 1 }}</h4>
+                    <div class="form-grid">
+                      @for (sub of field.subFields; track sub.name) {
+                        <ng-container *ngTemplateOutlet="renderFieldTemplate; context: { field: sub, parentPath: currentPath + '[' + idx + ']' }"></ng-container>
+                      }
+                    </div>
+                  </div>
+                }
+              </section>
+            }
+
+            <!-- 3. DROPDOWN -->
+            @else if (field.type === 'dropdown') {
+              <div class="form-group full-width">
+                <label>
+                  {{ field.label }}
+                  @if (field.required) { <span class="required-star">*</span> }
+                </label>
+                <select [(ngModel)]="formData[currentPath]" [name]="currentPath" [required]="field.required" (change)="saveDraft()">
+                  <option value="" disabled>Select Option</option>
+                  @for (opt of field.options; track opt) {
+                    <option [value]="opt">{{ opt }}</option>
+                  }
+                </select>
+                @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
+              </div>
+            }
+
+            <!-- 4. FILE UPLOAD -->
+            @else if (field.type === 'file') {
+              <div class="form-group full-width file-upload-group">
+                <label>
+                  {{ field.label }}
+                  @if (field.required) { <span class="required-star">*</span> }
+                </label>
+                <div class="file-drop-area" [class.has-file]="files[currentPath] || existingDocs[currentPath]">
+                  @if (files[currentPath] || existingDocs[currentPath]) {
+                    <div class="file-preview">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                      <div class="file-info">
+                        <span class="file-name">{{ getFileName(currentPath) }}</span>
+                        <span class="file-status">Ready for submission</span>
+                      </div>
+                      <button type="button" class="btn-remove-doc" (click)="removeFile(currentPath)" title="Remove File">&times;</button>
+                    </div>
+                  } @else {
+                    <label class="file-input-label">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                      <span>Click to upload {{ field.label }}</span>
+                      <small>Max 5 MB. Supported formats: {{ field.allowedExtensions?.join(', ') || 'PDF, JPG, PNG' }}</small>
+                      <input type="file" (change)="onFileSelected($event, currentPath, field.allowedExtensions)" [required]="field.required && !existingDocs[currentPath]">
+                    </label>
+                  }
+                </div>
+                @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
+              </div>
+            }
+
+            <!-- 5. CHECKBOX -->
+            @else if (field.type === 'checkbox') {
+              <div class="form-group full-width checkbox-group">
+                <label class="custom-checkbox-label">
+                  <input type="checkbox" [(ngModel)]="formData[currentPath]" [name]="currentPath" (change)="saveDraft()">
+                  <span class="checkbox-box"></span>
+                  <span class="checkbox-text">
+                    {{ field.label }}
+                    @if (field.required) { <span class="required-star">*</span> }
+                  </span>
+                </label>
+                @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
+              </div>
+            }
+
+            <!-- 6. STANDARD TEXT / NUMBER / EMAIL / PHONE / DATE -->
+            @else {
+              <div class="form-group full-width">
+                <label>
+                  {{ field.label }}
+                  @if (field.required) { <span class="required-star">*</span> }
+                </label>
+                @if (field.type === 'date') {
+                  <input type="date" [(ngModel)]="formData[currentPath]" [name]="currentPath" [required]="field.required" (change)="saveDraft()">
+                } @else if (field.type === 'email') {
+                  <input type="email" [(ngModel)]="formData[currentPath]" [name]="currentPath" [required]="field.required" (change)="saveDraft()" placeholder="name@example.com">
+                } @else if (field.type === 'phone') {
+                  <input type="tel" [(ngModel)]="formData[currentPath]" [name]="currentPath" [required]="field.required" (change)="saveDraft()" placeholder="10-digit number">
+                } @else if (field.type === 'number') {
+                  <input type="number" [(ngModel)]="formData[currentPath]" [name]="currentPath" [required]="field.required" (change)="saveDraft()" placeholder="Enter number">
+                } @else {
+                  <input type="text" [(ngModel)]="formData[currentPath]" [name]="currentPath" [required]="field.required" (change)="saveDraft()" [placeholder]="'Enter ' + field.label">
+                }
+                @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
+              </div>
+            }
+          }
+        </ng-template>
+
+        <!-- Render top-level fields -->
+        @for (field of schema.fields; track field.name) {
+          <ng-container *ngTemplateOutlet="renderFieldTemplate; context: { field: field, parentPath: '' }"></ng-container>
+        }
+
+        <!-- Submit Button Row -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="onBack()">Cancel</button>
+          <button type="submit" class="btn-primary" [disabled]="submitting()">
+            @if (submitting()) {
+              <span class="spinner-sm"></span> Submitting...
+            } @else {
+              Submit Application
+            }
+          </button>
+        </div>
+
+      </form>
+    }
+  </div>
+
+  <!-- Save / Discard / Cancel Back Confirmation Modal -->
+  @if (showBackModal()) {
+    <div class="modal-overlay" (click)="closeBackModal()">
+      <div class="back-confirm-modal" (click)="$event.stopPropagation()">
+        <h3 class="modal-title">Save Changes?</h3>
+        <p class="modal-msg">Do you want to save your progress as a draft before leaving?</p>
+        <div class="modal-actions-split">
+          <button type="button" class="btn-modal-cancel" (click)="closeBackModal()">Cancel</button>
+          <div class="modal-right-actions">
+            <button type="button" class="btn-modal-discard" (click)="discardAndLeave()">Discard</button>
+            <button type="button" class="btn-modal-save" (click)="saveAndLeave()">Save Draft</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -25,6 +25,7 @@ import { LlpForm } from './client/forms/llp-form/llp-form';
 import { MsmeForm } from './client/forms/msme-form/msme-form';
 import { FssaiForm } from './client/forms/fssai-form/fssai-form';
 import { TrademarkForm } from './client/forms/trademark-form/trademark-form';
+import { CopyrightForm } from './client/forms/copyright-form/copyright-form';
 import { GstForm } from './client/forms/gst-form/gst-form';
 import { IsoForm } from './client/forms/iso-form/iso-form';
 import { DscForm } from './client/forms/dsc-form/dsc-form';
@@ -63,6 +64,8 @@ import { PrivacyPolicy } from './privacy-policy/privacy-policy';
 
 import { NotFoundComponent } from "./not-found/not-found";
 
+import { ClientDynamicFormComponent } from './client/forms/dynamic-form/client-dynamic-form';
+
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: Login },
@@ -88,6 +91,7 @@ export const routes: Routes = [
       { path: 'opportunities', loadComponent: () => import('./dashboard/opportunities/opportunities').then(m => m.Opportunities) },
       { path: 'banners', loadComponent: () => import('./dashboard/banner-management/banner-management').then(m => m.BannerManagement) },
       { path: 'dsc-tokens', component: DscTokens },
+      { path: 'dynamic-forms', loadComponent: () => import('./dashboard/dynamic-forms/dynamic-forms.component').then(m => m.DynamicFormsComponent) },
       { path: '', redirectTo: 'overview', pathMatch: 'full' }
     ]
   },
@@ -98,11 +102,14 @@ export const routes: Routes = [
       { path: 'dashboard', component: ClientDashboard },
       { path: 'services', component: ClientServicesComponent },
       { path: 'profile', component: ClientProfile },
+      { path: 'forms/dynamic/:id', component: ClientDynamicFormComponent },
+      { path: 'forms/dynamic/:serviceName/:id', component: ClientDynamicFormComponent },
       { path: 'forms/incorp/:id', component: IncorpForm },
       { path: 'forms/llp/:id', component: LlpForm },
       { path: 'forms/msme/:id', component: MsmeForm },
       { path: 'forms/fssai/:id', component: FssaiForm },
       { path: 'forms/trademark/:id', component: TrademarkForm },
+      { path: 'forms/copyright/:id', component: CopyrightForm },
       { path: 'forms/gst/:id', component: GstForm },
       { path: 'forms/iso/:id', component: IsoForm },
       { path: 'forms/dsc/:id', component: DscForm },

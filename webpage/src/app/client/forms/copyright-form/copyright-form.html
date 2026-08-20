@@ -1,0 +1,192 @@
+<div class="form-layout">
+  <div class="form-header">
+    <div class="header-container">
+      <button class="back-btn" (click)="location.back()">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Service
+      </button>
+      <div class="title-row">
+        <h1 class="pf-title">Copyright Registration Form</h1>
+        <p class="pf-subtitle">Provide details for your Copyright registration</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-container">
+    @if (errorMessage()) {
+      <div class="error-banner">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <form (ngSubmit)="submitForm()" ngNativeValidate #copyrightForm="ngForm" class="incorp-form">
+      
+      <!-- 1. Applicant Details -->
+      <section class="form-section">
+        <h3 class="section-title">1. Applicant Details</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Applicant Name *</label>
+            <input type="text" [(ngModel)]="applicantName" name="applicantName" required (change)="saveDraft()">
+          </div>
+          <div class="form-group full-width">
+            <label>Applicant Email *</label>
+            <input type="email" [(ngModel)]="applicantEmail" name="applicantEmail" required (change)="saveDraft()">
+          </div>
+          <div class="form-group full-width">
+            <label>Applicant Phone Number *</label>
+            <input type="text" [(ngModel)]="applicantPhone" name="applicantPhone" required (change)="saveDraft()" placeholder="10 digits">
+          </div>
+          <div class="form-group full-width">
+            <label>Applicant Address *</label>
+            <input type="text" [(ngModel)]="applicantAddress" name="applicantAddress" required (change)="saveDraft()">
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Details of the Work -->
+      <section class="form-section">
+        <h3 class="section-title">2. Details of the Work</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Title of the Work *</label>
+            <input type="text" [(ngModel)]="workTitle" name="workTitle" required (change)="saveDraft()">
+          </div>
+          <div class="form-group full-width">
+            <label>Type of Work *</label>
+            <select [(ngModel)]="workType" name="workType" required (change)="saveDraft()">
+              <option *ngFor="let opt of workTypeOptions" [value]="opt">{{opt}}</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>Language of the Work *</label>
+            <input type="text" [(ngModel)]="language" name="language" required (change)="saveDraft()">
+          </div>
+          <div class="form-group full-width">
+            <label>Brief Description of the Work *</label>
+            <textarea [(ngModel)]="workDescription" name="workDescription" required rows="3" (change)="saveDraft()"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Author Details -->
+      <section class="form-section">
+        <h3 class="section-title">3. Author Details</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label>Is the Applicant the Author of the work? *</label>
+            <select [(ngModel)]="isApplicantAuthor" name="isApplicantAuthor" required (change)="saveDraft()">
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <ng-container *ngIf="isApplicantAuthor === 'No'">
+            <div class="form-group full-width">
+              <label>Author Name *</label>
+              <input type="text" [(ngModel)]="authorName" name="authorName" required (change)="saveDraft()">
+            </div>
+            <div class="form-group full-width">
+              <label>Author Address *</label>
+              <textarea [(ngModel)]="authorAddress" name="authorAddress" required rows="2" (change)="saveDraft()"></textarea>
+            </div>
+          </ng-container>
+        </div>
+      </section>
+
+      <!-- 4. Document Uploads -->
+      <section class="form-section">
+        <h3 class="section-title">4. Document Uploads</h3>
+        <div class="form-grid">
+          
+          <div class="form-group file-upload-group full-width">
+            <label>Copy of the Work *</label>
+            <span class="file-hint">Upload 1 supported file. Max 2 MB.</span>
+            @if (existingDocs['copyOfWork']) {
+              <div class="existing-doc-box">
+                <div class="existing-doc-info">
+                  <span class="material-symbols-outlined" style="font-size: 20px; color: #3b82f6;">description</span>
+                  {{ existingDocs['copyOfWork'].name }} (From Profile)
+                </div>
+                <button type="button" class="existing-doc-btn" (click)="removeExistingDoc('copyOfWork')">Change</button>
+              </div>
+            } @else {
+              <input type="file" (change)="onFileChange($event, 'copyOfWorkFile')" accept=".pdf,.jpg,.jpeg,.png,.mp3,.mp4,.zip" required>
+            }
+          </div>
+
+          <div class="form-group file-upload-group full-width">
+            <label>NOC from Author (Optional)</label>
+            <span class="file-hint">Upload if applicant is not the author.</span>
+            <input type="file" (change)="onFileChange($event, 'nocFromAuthorFile')" accept=".pdf,.jpg,.jpeg,.png">
+          </div>
+          
+          <div class="form-group file-upload-group full-width">
+            <label>NOC from Publisher (Optional)</label>
+            <span class="file-hint">Upload if applicable.</span>
+            <input type="file" (change)="onFileChange($event, 'nocFromPublisherFile')" accept=".pdf,.jpg,.jpeg,.png">
+          </div>
+          
+          <div class="form-group file-upload-group full-width">
+            <label>Incorporation Certificate (If Company) (Optional)</label>
+            <input type="file" (change)="onFileChange($event, 'incorporationCertificateFile')" accept=".pdf,.jpg,.jpeg,.png">
+          </div>
+
+          <div class="form-group file-upload-group full-width">
+            <label>Board Resolution (If Company) (Optional)</label>
+            <input type="file" (change)="onFileChange($event, 'boardResolutionFile')" accept=".pdf,.jpg,.jpeg,.png">
+          </div>
+
+          <div class="form-group file-upload-group full-width">
+            <label>ID Proof (Optional)</label>
+            <input type="file" (change)="onFileChange($event, 'idProofFile')" accept=".pdf,.jpg,.jpeg,.png">
+          </div>
+
+        </div>
+      </section>
+      
+      <!-- 5. Declaration -->
+      <section class="form-section">
+        <h3 class="section-title">5. Declaration</h3>
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="declaration" name="declaration" (change)="saveDraft()" required>
+              <span>I hereby declare that the work is original and all information provided is true and correct. *</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary submit-btn" [disabled]="loading()">
+          @if (loading()) {
+            <span class="spinner" style="width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; display: inline-block; margin-right: 8px;"></span>
+            Submitting...
+          } @else {
+            Submit Application
+          }
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- Full page overlays -->
+@if (loading() || success()) {
+  <div class="overlay-container">
+    @if (loading()) {
+      <app-we-loader></app-we-loader>
+      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Submitting Application...</h3>
+      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Please wait while we process your documents</p>
+    }
+    @if (success()) {
+      <div class="success-icon">
+        <span class="material-symbols-outlined" style="font-size: 64px; color: #10b981;">check_circle</span>
+      </div>
+      <h3 style="color: white; margin-top: 24px; font-family: var(--font-heading);">Application Submitted Successfully!</h3>
+      <p style="color: rgba(255,255,255,0.8); margin-top: 8px;">Redirecting to tracking page...</p>
+    }
+  </div>
+}

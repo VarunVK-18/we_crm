@@ -34,6 +34,7 @@ import { TeamServiceTrackComponent } from './team-service-track/team-service-tra
 import { Opportunities } from './opportunities/opportunities';
 import { DscTokens } from './dsc-tokens/dsc-tokens';
 import { ClientBank } from './client-bank/client-bank';
+import { DynamicFormsComponent } from './dynamic-forms/dynamic-forms.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -66,7 +67,8 @@ import { ClientBank } from './client-bank/client-bank';
     TeamServiceTrackComponent,
     Opportunities,
     DscTokens,
-    ClientBank
+    ClientBank,
+    DynamicFormsComponent
   ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
@@ -471,6 +473,7 @@ export class Dashboard implements OnInit, OnDestroy {
       case 'staff-chat': return 'Chat';
       case 'dsc-tokens': return 'DSC Tokens';
       case 'client-bank': return 'Client Bank Details';
+      case 'dynamic-forms': return 'Dynamic Forms Builder';
       default: return 'Dashboard';
     }
   }

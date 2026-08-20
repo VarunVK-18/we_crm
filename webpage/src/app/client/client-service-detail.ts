@@ -200,58 +200,9 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   routeToForm(serviceName: string) {
     if (!serviceName) return;
-    const s = serviceName.toLowerCase();
-    if (s.includes('dpiit')) {
-      this.goToDpiitForm();
-    }
-    if (s.includes('duns')) {
-      this.goToDunsForm();
-    } else if (s.includes('opc') || s.includes('one person company')) {
-      this.goToOpcForm();
-    } else if (s.includes('private limited')) {
-      this.goToIncorpForm();
-    } else if (s.includes('trademark') || s.includes('trade mark') || s.includes('copyright')) {
-      this.goToTrademarkForm();
-    } else if (s.includes('llp')) {
-      this.goToLlpForm();
-    } else if (s.includes('msme')) {
-      this.goToMsmeForm();
-    } else if (s.includes('gst') && s.includes('compliance')) {
-      this.goToGstComplianceForm();
-    } else if (s.includes('gst cancellation')) {
-      this.goToGstCancellationForm();
-    } else if (s.includes('gst filing')) {
-      this.goToGstFilingForm();
-    } else if (s.includes('mca')) {
-      this.goToMcaForm();
-    } else if (s.includes('gst')) {
-      this.goToGstForm();
-    } else if (s.includes('iso')) {
-      this.goToIsoForm();
-    } else if (s.includes('lei') || s.includes('lie')) {
-      this.goToLeiForm();
-    } else if (s.includes('bis')) {
-      this.goToBisForm();
-    } else if (s.includes('fssai')) {
-      this.goToFssaiForm();
-    } else if (s.includes('dsc') || s.includes('digital signature')) {
-      this.goToDscForm();
-    } else if (s.includes('proprietorship')) {
-      this.goToProprietorshipForm();
-    } else if (s.includes('tds') || s.includes('pan')) {
-      this.goToTdsForm();
-    } else if (s.includes('itr')) {
-      this.goToItrForm();
-    } else if (s.includes('ce') || s.includes('rohs')) {
-      this.goToCeRohsForm();
-    } else if (s.includes('pf')) {
-      this.goToPfForm();
-    } else if (s.includes('patent')) {
-      this.goToPatentForm();
-    } else if (s.includes('iec')) {
-      this.goToIecForm();
-    } else {
-      console.warn('No form routing defined for service:', serviceName);
+    const orderId = this.order()?._id || this.order()?.id;
+    if (orderId) {
+      this.router.navigate(['/client/forms/dynamic', encodeURIComponent(serviceName), orderId]);
     }
   }
 
@@ -273,6 +224,10 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
 
   goToTrademarkForm() {
     this.router.navigate(['/client/forms/trademark', this.order()?._id || this.order()?.id]);
+  }
+
+  goToCopyrightForm() {
+    this.router.navigate(['/client/forms/copyright', this.order()?._id || this.order()?.id]);
   }
 
   goToGstForm() {

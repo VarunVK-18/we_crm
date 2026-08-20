@@ -548,12 +548,20 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
                   children: [
                     Icon(LucideIcons.phone, size: 14.ip, color: Colors.grey),
                     SizedBox(width: 8.r),
-                    Text(
-                      widget.phone,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey,
-                            fontSize: 11.sp,
-                          ),
+                    Builder(
+                      builder: (context) {
+                        String displayPhone = widget.phone;
+                        if (displayPhone.startsWith('+91') && !displayPhone.substring(3).startsWith(' ')) {
+                          displayPhone = '${displayPhone.substring(0, 3)} ${displayPhone.substring(3)}';
+                        }
+                        return Text(
+                          displayPhone,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.grey,
+                                fontSize: 11.sp,
+                              ),
+                        );
+                      }
                     ),
                   ],
                 ),

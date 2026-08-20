@@ -1,0 +1,590 @@
+import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/file_picker_util.dart';
+import 'package:flutter/material.dart';
+import '../../../core/widgets/app_dropdown.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+import '../../../providers/draft_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:crm_app/core/utils/http_client.dart' as http;
+
+import '../../../core/constants/port.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../models/order_model.dart';
+import '../../../providers/auth_provider.dart';
+
+class IsoFormScreen extends ConsumerStatefulWidget {
+  final ServiceOrder order;
+  const IsoFormScreen({super.key, required this.order});
+
+  @override
+  ConsumerState<IsoFormScreen> createState() => _IsoFormScreenState();
+}
+
+class _IsoFormScreenState extends ConsumerState<IsoFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  // Details
+  final _companyNameController = TextEditingController();
+  final _companyAddressController = TextEditingController();
+  final _applicantNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _whatsappController = TextEditingController();
+  final _courierAddressController = TextEditingController();
+
+  // ISO Selection
+  String _selectedIso = 'ISO 9001 - Quality Management System';
+  final _otherIsoController = TextEditingController();
+
+  // Document
+  String? _msmeCertPath;
+
+  // Verification
+  bool _isVerified = false;
+
+  final List<String> _isoOptions = [
+    'ISO 9001 - Quality Management System',
+    'ISO 27001 - Information Security Management System',
+    'ISO 14001 - Environment Management System',
+    'ISO 45001 - Occupational Health & Safety',
+    'ISO 20000 - Information Technology Service Management System',
+    'ISO 22000 - Food Safety Management System',
+    'ISO 13485 - Medical Device QMS',
+    'Other'
+  ];
+
+  @override
+    @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) { _autoFillFromProfile(); });
+    _loadDraft();
+  }
+
+  @override
+  void dispose() {
+    _companyNameController.dispose();
+    _companyAddressController.dispose();
+    _applicantNameController.dispose();
+    _emailController.dispose();
+    _whatsappController.dispose();
+    _courierAddressController.dispose();
+    _otherIsoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
+    FilePickerResult? result = await FilePickerUtil.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: allowedExtensions,
+    );
+    if (result != null && result.files.single.path != null) {
+      if (result.files.single.size > 2 * 1024 * 1024) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Upload a file less than 2 MB or equal to 2 MB.'),
+          backgroundColor: Colors.red,
+        ));
+        return;
+      }
+      setState(() {
+        onPicked(result.files.single.path!);
+      });
+    }
+  }
+
+  
+  Future<void> _loadDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final draft = await draftService.loadDraft(widget.order.id, 'IsoFormScreen');
+    if (draft != null) {
+      if (mounted) {
+        setState(() {
+        if (draft.containsKey('companyLegalName')) _companyNameController.text = draft['companyLegalName'];
+        if (draft.containsKey('companyAddress')) _companyAddressController.text = draft['companyAddress'];
+        if (draft.containsKey('applicantName')) _applicantNameController.text = draft['applicantName'];
+        if (draft.containsKey('email')) _emailController.text = draft['email'];
+        if (draft.containsKey('whatsapp')) _whatsappController.text = draft['whatsapp'];
+        if (draft.containsKey('courierAddress')) _courierAddressController.text = draft['courierAddress'];
+        if (draft.containsKey('preferredIsoCertification')) _selectedIso = draft['preferredIsoCertification'];
+        if (draft.containsKey('otherIsoCertification') && draft['otherIsoCertification'] != null) _otherIsoController.text = draft['otherIsoCertification'];
+
+                if (draft.containsKey('msmeCertPath')) _msmeCertPath = draft['msmeCertPath'];
+});
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    final draftService = ref.read(draftServiceProvider);
+    final data = <String, dynamic>{
+      'companyLegalName': _companyNameController.text,
+      'companyAddress': _companyAddressController.text,
+      'applicantName': _applicantNameController.text,
+      'email': _emailController.text,
+      'whatsapp': _whatsappController.text,
+      'courierAddress': _courierAddressController.text,
+      'preferredIsoCertification': _selectedIso,
+      'otherIsoCertification': _selectedIso == 'Other' ? _otherIsoController.text : null,
+
+          'msmeCertPath': _msmeCertPath,
+};
+    await draftService.saveDraft(widget.order.id, 'IsoFormScreen', data);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved successfully!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
+    }
+  }
+
+  Future<void> _submitDetails() async {
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Please fill all required fields.'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+
+    if (_selectedIso == 'Other' && _otherIsoController.text.trim().isEmpty) {
+      _showError("Please specify the Other ISO Certification.");
+      return;
+    }
+
+    if (_msmeCertPath == null) {
+      _showError("Please upload MSME Certificate.");
+      return;
+    }
+
+    if (!_isVerified) {
+      _showError("Please check the verification checkbox.");
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final uid = ref.read(authStateProvider).value?.uid;
+      if (uid == null) throw Exception('Not authenticated');
+
+      final uri = Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/submit-iso-form');
+      var request = http.MultipartRequest('POST', uri);
+      request.headers['x-user-id'] = uid;
+
+      // Details
+      request.fields['companyLegalName'] = _companyNameController.text;
+      request.fields['companyAddress'] = _companyAddressController.text;
+      request.fields['applicantName'] = _applicantNameController.text;
+      request.fields['email'] = _emailController.text;
+      request.fields['whatsapp'] = _whatsappController.text;
+      request.fields['courierAddress'] = _courierAddressController.text;
+
+      // ISO
+      request.fields['preferredIsoCertification'] = _selectedIso;
+      if (_selectedIso == 'Other') {
+        request.fields['otherIsoCertification'] = _otherIsoController.text;
+      }
+      request.fields['verificationStatus'] = 'true';
+
+      // Add files
+      request.files.add(await http.MultipartFile.fromPath('msmeCertificate', _msmeCertPath!));
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Success'),
+            content: const Text('Form submitted successfully!'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+        if (!mounted) return;
+        ref.read(draftServiceProvider).clearDraft(widget.order.id, 'IsoFormScreen');
+        Navigator.pop(context, true); // Success
+      } else {
+        throw Exception('Failed to submit form: ${response.body}');
+      }
+    } catch (e) {
+      showGlobalError(e);
+      if (!mounted) return;
+      _showError('Error: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+      backgroundColor: Colors.red,
+    ));
+  }
+
+  @override
+  
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Save as Draft?'),
+                    content: const Text('Do you want to save your progress before exiting?'),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                TextButton(
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(80, 36)),
+                  onPressed: () async {
+                    await _saveDraft();
+                    if (context.mounted) Navigator.of(context).pop(true);
+                  },
+                  child: Text('Save Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+    return shouldPop ?? false;
+  }
+
+
+  void _autoFillFromProfile() {
+    final user = ref.read(userProfileProvider).value;
+    if (user == null) return;
+    setState(() {
+      if (_applicantNameController.text.isEmpty && user.name.isNotEmpty) _applicantNameController.text = user.name;
+      if (_emailController.text.isEmpty && user.email.isNotEmpty) _emailController.text = user.email;
+    });
+  }
+@override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Complete Details', style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600, fontSize: 15)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        actions: const [],
+      ),
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator()) 
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(20),
+                children: [
+                  Text('Complete Details', style: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w500, color: AppTheme.corporateBlue)),
+                  const SizedBox(height: 16),
+                  
+                  // Company & Applicant Details
+                  _buildSectionContainer(
+                    title: 'Company & Applicant Details',
+                    children: [
+                      _buildField('Company Legal Name', '', _companyNameController, isRequired: true),
+                      _buildField('Company Address', '', _companyAddressController, isRequired: true, maxLines: 3),
+                      _buildField('Applicant name', '', _applicantNameController, isRequired: true),
+                      _buildField('Email ID', '', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
+                      _buildField('Whatsapp number', '', _whatsappController, isRequired: true, keyboardType: TextInputType.phone),
+                      _buildField('Address for couriering the ISO Certificate', 'Full Address with PIN code', _courierAddressController, isRequired: true, maxLines: 3),
+                    ],
+                  ),
+
+                  // ISO Certification
+                  _buildSectionContainer(
+                    title: 'Certification Details',
+                    children: [
+                      _buildRadioGroup('Preferred ISO Certification', '', _isoOptions, _selectedIso, (v) => setState(() => _selectedIso = v)),
+                      
+                      if (_selectedIso == 'Other')
+                         _buildField('Specify Other ISO', '', _otherIsoController, isRequired: true),
+                    ],
+                  ),
+
+                  // Documents
+                  _buildSectionContainer(
+                    title: 'Documents',
+                    children: [
+                      _buildFileRow('Upload MSME Certificate', 'Upload 1 supported file. Max 2 MB.', _msmeCertPath, () => _pickFile((path) => _msmeCertPath = path)),
+                    ],
+                  ),
+
+                  // Verification
+                  _buildSectionContainer(
+                    title: 'Verification',
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Checkbox(
+                            value: _isVerified,
+                            activeColor: AppTheme.corporateBlue,
+                            onChanged: (val) {
+                              setState(() {
+                                _isVerified = val ?? false;
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 12.0),
+                              child: RichText(
+                                text: const TextSpan(
+                                  text: 'I here verify that above mentioned facts are true and correct to best of my knowledge and belief',
+                                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: AppTheme.deepTeal),
+                                  children: [
+                                    TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
+                                  ]
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 16),
+              ElevatedButton(
+                    onPressed: _submitDetails,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.corporateBlue,
+                      minimumSize: const Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Submit Application', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            ),
+    ));
+  }
+
+  Widget _buildSectionContainer({required String title, required List<Widget> children}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
+          const SizedBox(height: 24),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
+          ],
+          const SizedBox(height: 12),
+          ...options.map((opt) {
+            return InkWell(
+              onTap: () => onChanged(opt),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Radio<String>(
+                      value: opt,
+                      groupValue: currentValue,
+                      onChanged: (v) {
+                        if (v != null) onChanged(v);
+                      },
+                      activeColor: AppTheme.corporateBlue,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12.0),
+                        child: Text(opt, style: const TextStyle(fontSize: 13, height: 1.3)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: [
+                if (isRequired)
+                  const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
+          ],
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            readOnly: isDate,
+            onTap: isDate ? () async {
+              final date = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(1900),
+                lastDate: DateTime(2100),
+              );
+              if (date != null) {
+                controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+              }
+            } : null,
+            maxLines: maxLines,
+            decoration: InputDecoration(
+              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              suffixIcon: isDate ? const Icon(Icons.calendar_today, size: 20, color: Colors.grey) : null,
+            ),
+            validator: (v) {
+  if (isRequired && (v == null || v.trim().isEmpty)) {
+    return 'This is a required question';
+  }
+  if (v != null && v.trim().isNotEmpty) {
+    final text = v.trim();
+    final labelLower = label.toLowerCase();
+    if (labelLower.contains('phone') || labelLower.contains('mobile') || labelLower.contains('contact') || labelLower.contains('number')) {
+      if (labelLower.contains('company') || labelLower.contains('whatsapp') || labelLower.contains('director') || labelLower.contains('business') || labelLower == 'phone number' || labelLower == 'mobile number' || labelLower == 'contact number' || labelLower == 'company number') {
+         if (!RegExp(r'^[0-9]{10}$').hasMatch(text)) return 'Enter a valid 10-digit phone number';
+      }
+    }
+    if (labelLower.contains('mail') || labelLower.contains('email')) {
+      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(text)) return 'Enter a valid email address';
+    }
+    if (labelLower.contains('aadhaar') || labelLower.contains('adhar')) {
+      if (!RegExp(r'^[2-9]{1}[0-9]{11}$').hasMatch(text)) return 'Enter a valid 12-digit Aadhaar number';
+    }
+    if (labelLower.contains('pan ') || labelLower == 'pan' || labelLower.contains('pan number')) {
+      if (!RegExp(r'^[a-zA-Z]{5}[0-9]{4}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
+    }
+    if (labelLower.contains('tan ') || labelLower == 'tan' || labelLower.contains('tan number')) {
+      if (!RegExp(r'^[a-zA-Z]{4}[0-9]{5}[a-zA-Z]{1}$').hasMatch(text)) return 'Enter a valid TAN (e.g. ABCD12345E)';
+    }
+  }
+  return null;
+},
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              text: label,
+              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12, color: AppTheme.deepTeal),
+              children: const [
+                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              ]
+            ),
+          ),
+          if (hint.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
+          ],
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                onPressed: onPick,
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  minimumSize: const Size(80, 32),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+                child: Text(path == null ? 'Upload' : 'Change', style: TextStyle(color: path == null ? Colors.black87 : AppTheme.corporateBlue)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

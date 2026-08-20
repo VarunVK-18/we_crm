@@ -171,6 +171,10 @@ const ChecklistSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
     default: {}
   },
+  form_submitted: {
+    type: Boolean,
+    default: false
+  },
   action_required: {
     type: Boolean,
     default: false

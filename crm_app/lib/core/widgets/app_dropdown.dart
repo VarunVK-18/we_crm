@@ -65,6 +65,7 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
     }).toList();
 
     return DropdownButtonFormField2<T>(
+      isExpanded: true,
       valueListenable: _notifier,
       items: mappedItems,
       onChanged: (val) {

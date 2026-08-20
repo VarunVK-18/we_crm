@@ -88,6 +88,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
 const bannerRoutes = require('./routes/bannerRoutes');
 const dscTokenRoutes = require('./routes/dscTokenRoutes');
+const formRoutes = require('./routes/formRoutes');
 
 app.use('/api', authRoutes);
 app.use('/api', ticketRoutes);
@@ -98,6 +99,7 @@ app.use('/api/compliance', complianceRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', settingsRoutes);
 app.use('/api', checklistRoutes);
+app.use('/api/forms', formRoutes);
 app.use('/api', documentRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/templates', templateRoutes);

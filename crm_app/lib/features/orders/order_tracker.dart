@@ -254,13 +254,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: Colors.grey.shade200, width: 2.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,7 +338,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           ...entities.map((e) => Text(
                                 e,
                                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
-                                maxLines: 2,
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               )),
                         ];
@@ -467,7 +460,8 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     const SizedBox(width: 12),
                     Container(
                       height: 42,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      width: 115, // Reduce width of dropdown
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(25),
@@ -476,6 +470,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton2<String>(
+                          isExpanded: true,
                           valueListenable: _activeFilter,
                           buttonStyleData: const ButtonStyleData(
                             height: 38,
@@ -493,7 +488,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           menuItemStyleData: const MenuItemStyleData(),
                           style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal, fontWeight: FontWeight.w500),
                           items: const [
-                            DropdownItem(value: 'All', child: Text('All Active')),
+                            DropdownItem(value: 'All', child: Text('All')),
                             DropdownItem(value: 'Action Required', child: Text('Action Required')),
                             DropdownItem(value: 'In Progress', child: Text('In Progress')),
                           ],
@@ -916,13 +911,27 @@ class _ServiceCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   GestureDetector(
                     onTap: () async {
-                      if (order.expertPhone.isNotEmpty) {
-                        final Uri launchUri = Uri(
-                          scheme: 'tel',
-                          path: order.expertPhone,
-                        );
-                        if (await canLaunchUrl(launchUri)) {
-                          await launchUrl(launchUri);
+                      if (order.expertPhone == null || order.expertPhone!.isEmpty) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Phone number not available')),
+                          );
+                        }
+                        return;
+                      }
+                      
+                      String cleanPhone = order.expertPhone!.replaceAll(' ', '');
+                      if (!cleanPhone.startsWith('+')) {
+                        cleanPhone = '+91$cleanPhone'; // Default to +91 if no country code
+                      }
+                      final Uri launchUri = Uri.parse('tel:$cleanPhone');
+                      try {
+                        await launchUrl(launchUri, mode: LaunchMode.externalApplication);
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Could not launch phone dialer')),
+                          );
                         }
                       }
                     },
