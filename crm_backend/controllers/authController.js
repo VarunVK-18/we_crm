@@ -2505,6 +2505,81 @@ const myEntities = async (req, res) => {
   }
 };
 
+// @desc    Change / Reset Password (User self-service)
+// @route   POST /api/auth/change-password
+// @access  Public / Authenticated
+const changePassword = async (req, res) => {
+  try {
+    const { userId, email, oldPassword, newPassword, confirmPassword } = req.body;
+    const targetId = userId || (req.user ? req.user._id : null);
+
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      return res.status(400).json({ message: 'Old password, new password, and confirm password are required.' });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({ message: 'New password and confirm password do not match.' });
+    }
+
+    // Validation 1: Min 8, Max 16 characters
+    if (newPassword.length < 8 || newPassword.length > 16) {
+      return res.status(400).json({ message: 'Password must be between 8 and 16 characters in length.' });
+    }
+
+    // Validation 2: At least one uppercase letter (A-Z)
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ message: 'Password must contain at least one capital (uppercase) letter.' });
+    }
+
+    // Validation 3: At least one numeric digit (0-9)
+    if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: 'Password must contain at least one numeric digit (0-9).' });
+    }
+
+    // Validation 4: No emojis or non-ASCII characters allowed (Standard printable characters \x21-\x7E)
+    if (!/^[\x21-\x7E]+$/.test(newPassword)) {
+      return res.status(400).json({ message: 'Password cannot contain spaces, emojis, or unsupported unicode characters.' });
+    }
+
+    let user;
+    if (targetId) {
+      user = await User.findById(targetId);
+    } else if (email) {
+      user = await User.findOne({ email: email.trim() });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    // Verify old password
+    if (user.password && user.password.trim() !== '') {
+      const isMatch = await user.comparePassword(oldPassword);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Incorrect old password. Please try again.' });
+      }
+    }
+
+    // Update password (triggers pre-save bcrypt hook in User.js)
+    user.password = newPassword;
+    user.is_first_login = false;
+    user.must_change_password = false;
+    await user.save();
+
+    console.log(`[PASSWORD] Password changed successfully for user: ${user.email} (${user._id})`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully.'
+    });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Server error while changing password.', error: error.message });
+  }
+};
+
 module.exports.getClientOnboardRequests = getClientOnboardRequests;
 module.exports.approveEntity = approveEntity;
 module.exports.myEntities = myEntities;
+module.exports.changePassword = changePassword;
+

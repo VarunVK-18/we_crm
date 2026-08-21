@@ -405,4 +405,40 @@ class AuthRepository {
       rethrow;
     }
   }
+
+  // Change / Reset Password
+  Future<void> changePassword({
+    required String oldPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    final uid = _currentUser?.uid;
+    final email = _currentUser?.email;
+
+    final response = await http
+        .post(
+          Uri.parse('$kBaseUrl/api/auth/change-password'),
+          headers: {
+            'Content-Type': 'application/json',
+            if (uid != null) 'x-user-id': uid,
+          },
+          body: jsonEncode({
+            'userId': uid,
+            'email': email,
+            'oldPassword': oldPassword,
+            'newPassword': newPassword,
+            'confirmPassword': confirmPassword,
+          }),
+        )
+        .timeout(const Duration(seconds: 12));
+
+    if (response.statusCode != 200) {
+      String msg = 'Failed to change password.';
+      try {
+        final data = jsonDecode(response.body);
+        msg = data['message'] ?? msg;
+      } catch (_) {}
+      throw Exception(msg);
+    }
+  }
 }

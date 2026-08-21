@@ -41,7 +41,8 @@ const {
   getClientOnboardRequests,
   addEntity,
   approveEntity,
-  myEntities
+  myEntities,
+  changePassword
 } = require('../controllers/authController');
 
 const { checkUser, permit, preventAuditorWrite } = require('../middleware/rbac');
@@ -60,6 +61,8 @@ router.post('/register', (req, res, next) => {
   next();
 }, preventAuditorWrite, upload.any(), registerUser);
 router.post('/login', loginUser);
+router.post('/auth/change-password', changePassword);
+router.post('/users/change-password', changePassword);
 router.post('/auth/register-direct', checkUser, preventAuditorWrite, permit('admin'), registerDirect);
 router.post('/auth/register-company', registerCompany);
 router.post('/auth/client-onboard', clientOnboard);

@@ -21,6 +21,7 @@ import '../../core/utils/responsive.dart';
 import '../../providers/navigation_provider.dart';
 import '../../providers/compliance_provider.dart';
 import '../../core/utils/biometric_util.dart';
+import 'widgets/change_password_dialog.dart';
 
 // ─── Profile Screen ───────────────────────────────────────────────────────────
 
@@ -209,6 +210,12 @@ class ProfileScreen extends ConsumerWidget {
                         ),
                       ),
                       const _BiometricTile(),
+                      ProfileTile(
+                        icon: HugeIcons.strokeRoundedLockPassword,
+                        title: 'Change Password',
+                        subtitle: 'Update your account login password',
+                        onTap: () => ChangePasswordDialog.show(context),
+                      ),
                     ],
                   ),
 

@@ -410,4 +410,86 @@ export class ClientTopbarComponent implements OnInit {
     if (!name || name.trim().length === 0) return 'C';
     return name.trim().substring(0, 1).toUpperCase();
   }
+
+  // --- Change Password Modal Logic ---
+  showChangePasswordModal = signal<boolean>(false);
+  oldPassword = '';
+  newPassword = '';
+  confirmPassword = '';
+  isChangingPassword = signal<boolean>(false);
+  changePasswordError = signal<string>('');
+  changePasswordSuccess = signal<boolean>(false);
+
+  openChangePasswordModal() {
+    this.oldPassword = '';
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.changePasswordError.set('');
+    this.changePasswordSuccess.set(false);
+    this.showChangePasswordModal.set(true);
+    this.showProfileDropdown.set(false);
+  }
+
+  closeChangePasswordModal() {
+    this.showChangePasswordModal.set(false);
+  }
+
+  hasMinMaxLen(val: string): boolean {
+    return !!val && val.length >= 8 && val.length <= 16;
+  }
+
+  hasUppercase(val: string): boolean {
+    return /[A-Z]/.test(val);
+  }
+
+  hasNumber(val: string): boolean {
+    return /[0-9]/.test(val);
+  }
+
+  hasNoEmoji(val: string): boolean {
+    return !!val && /^[\x21-\x7E]+$/.test(val);
+  }
+
+  isPasswordValid(val: string): boolean {
+    return this.hasMinMaxLen(val) && this.hasUppercase(val) && this.hasNumber(val) && this.hasNoEmoji(val);
+  }
+
+  submitChangePassword() {
+    if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
+      this.changePasswordError.set('All password fields are required.');
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.changePasswordError.set('New password and confirm password do not match.');
+      return;
+    }
+    if (!this.isPasswordValid(this.newPassword)) {
+      this.changePasswordError.set('New password does not meet all criteria.');
+      return;
+    }
+
+    this.isChangingPassword.set(true);
+    this.changePasswordError.set('');
+
+    const currentUser = this.user();
+    this.api.changePassword({
+      userId: currentUser?._id,
+      email: currentUser?.email,
+      oldPassword: this.oldPassword,
+      newPassword: this.newPassword,
+      confirmPassword: this.confirmPassword
+    }).subscribe({
+      next: () => {
+        this.isChangingPassword.set(false);
+        this.changePasswordSuccess.set(true);
+        setTimeout(() => {
+          this.closeChangePasswordModal();
+        }, 1500);
+      },
+      error: (err) => {
+        this.isChangingPassword.set(false);
+        this.changePasswordError.set(err?.error?.message || 'Failed to update password. Please check your old password.');
+      }
+    });
+  }
 }

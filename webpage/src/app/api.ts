@@ -192,4 +192,9 @@ export class Api {
   deleteForm(id: string): Observable<any> {
     return this.delete<any>(`/forms/${id}`);
   }
+
+  // --- Change Password API ---
+  changePassword(payload: { oldPassword: string; newPassword: string; confirmPassword: string; userId?: string; email?: string }): Observable<any> {
+    return this.post<any>('/auth/change-password', payload);
+  }
 }

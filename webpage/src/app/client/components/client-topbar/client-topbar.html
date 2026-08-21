@@ -135,6 +135,12 @@
                 <div class="divider" style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
               }
 
+              <button class="dropdown-item" (click)="openChangePasswordModal(); $event.stopPropagation()" style="color: #0f172a; font-weight: 500; gap: 8px;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">lock_reset</span>
+                <span>Change Password</span>
+              </button>
+              <div class="divider" style="height: 1px; background: #e2e8f0; margin: 4px 0;"></div>
+
               <button class="dropdown-item text-danger" (click)="logout()">
                 <hugeicons-icon [icon]="Logout01Icon" [size]="18" color="currentColor" [strokeWidth]="2"></hugeicons-icon>
                 <span>Sign Out</span>
@@ -147,6 +153,72 @@
   </div>
 </div>
 
+<!-- Change Password Modal -->
+@if (showChangePasswordModal()) {
+  <div class="dialog-backdrop fade-in" (mousedown)="closeChangePasswordModal()" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div class="dialog-card" (click)="$event.stopPropagation()" style="background: white; border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0;">Change Password</h2>
+        <button type="button" (click)="closeChangePasswordModal()" style="background: transparent; border: none; font-size: 20px; color: #64748b; cursor: pointer;">&times;</button>
+      </div>
+      <p style="font-size: 13px; color: #64748b; margin: 0 0 20px; line-height: 1.4;">Enter your old password and choose a new secure password.</p>
+
+      @if (changePasswordSuccess()) {
+        <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: #065f46; font-size: 13px; font-weight: 600;">
+          <span class="material-symbols-outlined" style="font-size: 18px;">check_circle</span>
+          <span>Password updated successfully!</span>
+        </div>
+      }
+
+      @if (changePasswordError()) {
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 12px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: #dc2626; font-size: 12px; font-weight: 500;">
+          <span class="material-symbols-outlined" style="font-size: 16px;">error</span>
+          <span>{{ changePasswordError() }}</span>
+        </div>
+      }
+
+      <form (ngSubmit)="submitChangePassword()">
+        <div class="form-field-group" style="margin-bottom: 14px;">
+          <label class="input-label" style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Old Password *</label>
+          <input [(ngModel)]="oldPassword" name="oldPassword" type="password" placeholder="Enter current password" class="styled-text-input" style="padding-left: 14px; width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; height: 42px;" required />
+        </div>
+
+        <div class="form-field-group" style="margin-bottom: 10px;">
+          <label class="input-label" style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">New Password *</label>
+          <input [(ngModel)]="newPassword" name="newPassword" type="password" placeholder="Enter new password" class="styled-text-input" style="padding-left: 14px; width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; height: 42px;" required />
+        </div>
+
+        <!-- Live Rule Indicators -->
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;">
+          <span [style.background]="hasMinMaxLen(newPassword) ? '#ecfdf5' : '#f1f5f9'" [style.color]="hasMinMaxLen(newPassword) ? '#059669' : '#64748b'" [style.borderColor]="hasMinMaxLen(newPassword) ? '#a7f3d0' : '#e2e8f0'" style="font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid; font-weight: 500;">
+            {{ hasMinMaxLen(newPassword) ? '✓' : '•' }} 8-16 chars
+          </span>
+          <span [style.background]="hasUppercase(newPassword) ? '#ecfdf5' : '#f1f5f9'" [style.color]="hasUppercase(newPassword) ? '#059669' : '#64748b'" [style.borderColor]="hasUppercase(newPassword) ? '#a7f3d0' : '#e2e8f0'" style="font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid; font-weight: 500;">
+            {{ hasUppercase(newPassword) ? '✓' : '•' }} 1 Uppercase (A-Z)
+          </span>
+          <span [style.background]="hasNumber(newPassword) ? '#ecfdf5' : '#f1f5f9'" [style.color]="hasNumber(newPassword) ? '#059669' : '#64748b'" [style.borderColor]="hasNumber(newPassword) ? '#a7f3d0' : '#e2e8f0'" style="font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid; font-weight: 500;">
+            {{ hasNumber(newPassword) ? '✓' : '•' }} 1 Number (0-9)
+          </span>
+          <span [style.background]="hasNoEmoji(newPassword) ? '#ecfdf5' : '#f1f5f9'" [style.color]="hasNoEmoji(newPassword) ? '#059669' : '#64748b'" [style.borderColor]="hasNoEmoji(newPassword) ? '#a7f3d0' : '#e2e8f0'" style="font-size: 11px; padding: 3px 8px; border-radius: 6px; border: 1px solid; font-weight: 500;">
+            {{ hasNoEmoji(newPassword) ? '✓' : '•' }} No emojis
+          </span>
+        </div>
+
+        <div class="form-field-group" style="margin-bottom: 20px;">
+          <label class="input-label" style="display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px;">Confirm New Password *</label>
+          <input [(ngModel)]="confirmPassword" name="confirmPassword" type="password" placeholder="Re-enter new password" class="styled-text-input" style="padding-left: 14px; width: 100%; border: 1px solid #cbd5e1; border-radius: 10px; height: 42px;" required />
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <button type="button" (click)="closeChangePasswordModal()" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 10px; background: white; color: #475569; font-size: 13px; font-weight: 600; cursor: pointer;">Cancel</button>
+          <button type="submit" [disabled]="isChangingPassword()" style="flex: 1.5; padding: 10px; border: none; border-radius: 10px; background: #1e3bb3; color: white; font-size: 13px; font-weight: 600; cursor: pointer;">
+            @if (isChangingPassword()) { <span>Saving...</span> } @else { <span>Save</span> }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
 
 <!-- Add Entity Modal -->
 @if (isAddEntityModalOpen()) {
