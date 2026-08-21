@@ -64,12 +64,12 @@ class _LandingScreenState extends State<LandingScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Startup Doctor',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.corporateBlue,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/images/logo_without background.jpg',
+                    height: 50,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ],

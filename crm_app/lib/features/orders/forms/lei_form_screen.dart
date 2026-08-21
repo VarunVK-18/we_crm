@@ -1,4 +1,5 @@
 import 'package:crm_app/core/theme/app_theme.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/providers/auth_provider.dart';
 import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
@@ -12,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../../../models/order_model.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class LeiFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -269,6 +271,16 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
     int? maxLength,
     TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: null,
+        validator: validator,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -292,12 +304,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
             textCapitalization: textCapitalization,
             onChanged: (_) => _saveDraft(),
             onTap: isDate ? () async {
-               final date = await showDatePicker(
-                 context: context,
-                 initialDate: DateTime.now().subtract(const Duration(days: 365)),
-                 firstDate: DateTime(1900),
-                 lastDate: DateTime.now(),
-               );
+               final date = await showCustomDatePicker(context);
                if (date != null) {
                  setState(() {
                    controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
@@ -307,7 +314,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
             } : null,
             style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
             decoration: InputDecoration(
-              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintText: HintHelper.getExampleHint(label),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),

@@ -177,7 +177,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
           children: [
             // ── Header ─────────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               child: Row(
                 children: [
                   const Text(
@@ -249,7 +249,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -295,7 +295,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     DropdownButtonFormField2<String>(
                       isExpanded: true,
                       valueListenable: _selectedEntityNotifier,
@@ -379,8 +379,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
               ),
             ),
 
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 12),
             // ── Tab Chips ───────────────────────────────────────────────────
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
@@ -425,7 +424,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
             if (_selectedTab == _ServiceTab.active)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                 child: Row(
                   children: [
                     Expanded(
@@ -435,7 +434,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           onChanged: (val) => setState(() => _searchQuery = val),
                           style: const TextStyle(fontSize: 13, color: AppTheme.deepTeal),
                           decoration: InputDecoration(
-                            hintText: 'Search services...',
+                            hintText: 'Search',
                             hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
                             prefixIcon: const Icon(LucideIcons.search, size: 16, color: Colors.grey),
                             filled: true,
@@ -460,7 +459,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     const SizedBox(width: 12),
                     Container(
                       height: 42,
-                      width: 115, // Reduce width of dropdown
+                      width: 140, // Reduced width but enough for 'Action Required'
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -488,9 +487,9 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           menuItemStyleData: const MenuItemStyleData(),
                           style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal, fontWeight: FontWeight.w500),
                           items: const [
-                            DropdownItem(value: 'All', child: Text('All')),
-                            DropdownItem(value: 'Action Required', child: Text('Action Required')),
-                            DropdownItem(value: 'In Progress', child: Text('In Progress')),
+                            DropdownItem(value: 'All', child: Text('All', overflow: TextOverflow.ellipsis)),
+                            DropdownItem(value: 'Action Required', child: Text('Action Required', overflow: TextOverflow.ellipsis)),
+                            DropdownItem(value: 'In Progress', child: Text('In Progress', overflow: TextOverflow.ellipsis)),
                           ],
                           onChanged: (val) {
                             if (val != null) {
@@ -505,8 +504,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                 ),
               ),
 
-            const SizedBox(height: 16),
-
+            const SizedBox(height: 12),
             // ── Service List or Empty State ─────────────────────────────────
             Expanded(
               child: _selectedTab == _ServiceTab.suggested
@@ -572,12 +570,12 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
             ),
           ),
           child: Container(
-            margin: const EdgeInsets.only(bottom: 14),
-            padding: const EdgeInsets.all(20),
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.shade200, width: 2.0),
+              border: Border.all(color: Colors.grey.shade100, width: 1.0),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
@@ -592,18 +590,18 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: (service['color'] as Color).withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: service['icon'] is IconData
                       ? Icon(
                           service['icon'] as IconData,
                           color: service['color'] as Color,
-                          size: 28,
+                          size: 24,
                         )
                       : HugeIcon(
                           icon: service['icon'],
                           color: service['color'] as Color,
-                          size: 28,
+                          size: 24,
                         ),
                 ),
                 const SizedBox(width: 16),
@@ -613,26 +611,26 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                     children: [
                       Text(
                         service['title'],
-                        style: const TextStyle(
-                          fontSize: 16,
+                        style: GoogleFonts.inter(
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: AppTheme.deepTeal,
+                          color: const Color(0xFF1E293B), // Dark slate
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         service['subtitle'],
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey.shade600,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Colors.grey.shade500,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   LucideIcons.chevronRight,
-                  color: Colors.grey,
+                  color: Colors.grey.shade300,
                   size: 20,
                 ),
               ],
@@ -747,31 +745,10 @@ class _ServiceCard extends StatelessWidget {
                           color: AppTheme.deepTeal,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            LucideIcons.building2,
-                            size: 12,
-                            color: Colors.grey.shade500,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              order.entityName,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey.shade500,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                            ),
-                          ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
+                const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [

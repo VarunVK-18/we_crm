@@ -1,4 +1,5 @@
 import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../../providers/draft_provider.dart';
@@ -11,6 +12,7 @@ import '../../../core/constants/port.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/order_model.dart';
 import '../../../providers/auth_provider.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class BisFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -289,7 +291,11 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
                       _buildField('Company Address', '', _companyAddressController, isRequired: true, maxLines: 3),
                       _buildField('Applicant name', '', _applicantNameController, isRequired: true),
                       _buildField('Email ID', '', _emailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                      _buildField('Whatsapp number', '', _whatsappController, isRequired: true, keyboardType: TextInputType.phone),
+                      PhoneInputField(
+                        controller: _whatsappController,
+                        label: 'Whatsapp number',
+                        isRequired: true,
+                      ),
                       _buildField('Address for couriering the ISO Certificate', 'Full Address with PIN code', _courierAddressController, isRequired: true, maxLines: 3),
                     ],
                   ),
@@ -323,7 +329,7 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
                               padding: const EdgeInsets.only(top: 12.0),
                               child: RichText(
                                 text: const TextSpan(
-                                  text: 'I here verify that above mentioned facts are true and correct to best of my knowledge and belief',
+                                  text: 'I Agree To The Terms Of Services & Privacy Policy',
                                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppTheme.deepTeal),
                                   children: [
                                     TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
@@ -389,10 +395,7 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 12),
           ...options.map((opt) {
             return InkWell(
@@ -429,6 +432,16 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
   }
 
   Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: hint,
+        validator: null,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -444,29 +457,21 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             readOnly: isDate,
             onTap: isDate ? () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100),
-              );
+              final date = await showCustomDatePicker(context);
               if (date != null) {
                 controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
               }
             } : null,
             maxLines: maxLines,
             decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintText: HintHelper.getExampleHint(label, hint: hint),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
@@ -521,17 +526,14 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  path == null ? 'No file selected' : path.split('/').last, 
                   style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
                   overflow: TextOverflow.ellipsis,
                 ),

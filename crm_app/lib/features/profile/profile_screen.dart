@@ -513,11 +513,11 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (widget.companyName.isNotEmpty) ...[
-                  SizedBox(height: 4.r),
+                  SizedBox(height: 6.r),
                   Row(
                     children: [
                       Icon(LucideIcons.user, size: 14.sp, color: Colors.grey.shade600),
-                      SizedBox(width: 4.r),
+                      SizedBox(width: 8.r),
                       Expanded(
                         child: Text(
                           widget.name,
@@ -533,7 +533,7 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
                     ],
                   ),
                 ],
-                SizedBox(height: 12.r),
+                SizedBox(height: 6.r),
                 Row(
                   children: [
                     Icon(LucideIcons.mail, size: 14.ip, color: Colors.grey),
@@ -550,7 +550,7 @@ class _UserInfoCardState extends ConsumerState<_UserInfoCard> {
                     ),
                   ],
                 ),
-                SizedBox(height: 8.r),
+                SizedBox(height: 6.r),
                 Row(
                   children: [
                     Icon(LucideIcons.phone, size: 14.ip, color: Colors.grey),

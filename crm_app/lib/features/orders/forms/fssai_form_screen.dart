@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../../../models/order_model.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class FssaiFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -489,7 +490,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
                     decoration: const InputDecoration(labelText: 'When did your business start? *', border: OutlineInputBorder(), suffixIcon: Icon(Icons.calendar_today)),
                     readOnly: true,
                     onTap: () async {
-                      final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime.now());
+                      final date = await showCustomDatePicker(context);
                       if (date != null) setState(() => _startDateController.text = "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}");
                     },
                     validator: (val) => val!.trim().isEmpty ? 'Required' : null,

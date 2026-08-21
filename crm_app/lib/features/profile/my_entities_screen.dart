@@ -13,6 +13,11 @@ import '../../providers/orders_provider.dart';
 import '../services/registration_services_screen.dart';
 import '../../core/constants/port.dart';
 import '../../core/utils/error_handler.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+
+/// Holds names of entities submitted by the user but not yet approved.
+/// Cleared when the full entity list is refreshed from the server.
+final pendingEntitiesProvider = StateProvider<List<String>>((ref) => []);
 
 class MyEntitiesScreen extends ConsumerWidget {
   const MyEntitiesScreen({super.key});
@@ -117,12 +122,7 @@ class MyEntitiesScreen extends ConsumerWidget {
             )
           : entityCards.isEmpty
               ? const _EntitiesEmptyState()
-              : ListView(
-                  padding: const EdgeInsets.all(24),
-                  children: [
-                    ...entityCards.map((c) => _EntityCard(data: c)),
-                  ],
-                ),
+              : _EntityList(entityCards: entityCards),
       floatingActionButton: entityCards.isNotEmpty
           ? FloatingActionButton(
               onPressed: () {
@@ -155,10 +155,70 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _typeController = TextEditingController();
+  final ValueNotifier<String?> _typeNotifier = ValueNotifier<String?>(null);
   final _directorController = TextEditingController();
   final _stateController = TextEditingController();
+  final ValueNotifier<String?> _stateNotifier = ValueNotifier<String?>(null);
+  final TextEditingController _stateSearchController = TextEditingController();
   
   bool _isLoading = false;
+
+  final List<String> _companyTypes = [
+    'Private Limited',
+    'LLP',
+    'One Person Company',
+    'Proprietorship',
+    'Others',
+  ];
+
+  final List<String> _indianStates = [
+    'Andaman and Nicobar Islands',
+    'Andhra Pradesh',
+    'Arunachal Pradesh',
+    'Assam',
+    'Bihar',
+    'Chandigarh',
+    'Chhattisgarh',
+    'Dadra and Nagar Haveli and Daman and Diu',
+    'Delhi',
+    'Goa',
+    'Gujarat',
+    'Haryana',
+    'Himachal Pradesh',
+    'Jammu and Kashmir',
+    'Jharkhand',
+    'Karnataka',
+    'Kerala',
+    'Ladakh',
+    'Lakshadweep',
+    'Madhya Pradesh',
+    'Maharashtra',
+    'Manipur',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Odisha',
+    'Puducherry',
+    'Punjab',
+    'Rajasthan',
+    'Sikkim',
+    'Tamil Nadu',
+    'Telangana',
+    'Tripura',
+    'Uttar Pradesh',
+    'Uttarakhand',
+    'West Bengal',
+  ];
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _typeController.dispose();
+    _directorController.dispose();
+    _stateController.dispose();
+    _stateSearchController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submitRequest() async {
     if (!_formKey.currentState!.validate()) return;
@@ -176,11 +236,16 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
       
       if (!mounted) return;
       
+      final submittedName = _nameController.text.trim();
+      
+      // Add to local pending list so the UI shows 'Waiting for Approval'
+      ref.read(pendingEntitiesProvider.notifier).update((list) => [...list, submittedName]);
+      
       Navigator.pop(context);
       
       globalScaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
-          content: Text('Your request to add "${_nameController.text.trim()}" has been sent.'),
+          content: Text('Your request to add "$submittedName" has been sent.'),
           backgroundColor: AppTheme.deepTeal,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -217,10 +282,11 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
       ),
       child: Form(
         key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -229,7 +295,7 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                   style: GoogleFonts.outfit(
                     color: AppTheme.deepTeal,
                     fontWeight: FontWeight.w600,
-                    fontSize: 20,
+                    fontSize: 18,
                   ),
                 ),
                 IconButton(
@@ -243,17 +309,18 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
               'Submit a request to add a secondary company to your profile.',
               style: GoogleFonts.poppins(
                 color: Colors.black54,
-                fontSize: 14,
+                fontSize: 12,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
             TextFormField(
               controller: _nameController,
               autofocus: true,
-              style: GoogleFonts.poppins(color: Colors.black87),
+              style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
               decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 labelText: 'Entity Name',
-                labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Colors.black12),
@@ -273,14 +340,63 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _typeController,
-              style: GoogleFonts.poppins(color: Colors.black87),
+            const SizedBox(height: 12),
+            DropdownButtonFormField2<String>(
+              isExpanded: true,
+              valueListenable: _typeNotifier,
               decoration: InputDecoration(
                 labelText: 'Type of Company',
-                hintText: 'e.g. Private Limited',
-                labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.deepTeal),
+                ),
+              ),
+              hint: Text('Select Company Type', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
+              buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
+items: _companyTypes.map((item) => DropdownItem<String>(
+                value: item,
+                child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
+              )).toList(),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Please select company type';
+                return null;
+              },
+              onChanged: (value) {
+                if (value != null) {
+                  _typeController.text = value;
+                  _typeNotifier.value = value;
+                }
+              },
+              iconStyleData: const IconStyleData(
+                icon: Icon(LucideIcons.chevronDown, color: Colors.black54),
+              ),
+              dropdownStyleData: DropdownStyleData(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _directorController,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                labelText: 'Number of Directors',
+                hintText: 'e.g. 2',
+                hintStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal),
+                labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: const BorderSide(color: Colors.black12),
@@ -295,66 +411,97 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
+            const SizedBox(height: 12),
+            DropdownButtonFormField2<String>(
+              isExpanded: true,
+              valueListenable: _stateNotifier,
+              decoration: InputDecoration(
+                labelText: 'State of Registration',
+                labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.black12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.deepTeal),
+                ),
+              ),
+              hint: Text('Select State / UT', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
+              buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
+items: _indianStates.map((item) => DropdownItem<String>(
+                value: item,
+                child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
+              )).toList(),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Please select state of registration';
+                return null;
+              },
+              onChanged: (value) {
+                if (value != null) {
+                  _stateController.text = value;
+                  _stateNotifier.value = value;
+                }
+              },
+              iconStyleData: const IconStyleData(
+                icon: Icon(LucideIcons.chevronDown, color: Colors.black54),
+              ),
+              dropdownStyleData: DropdownStyleData(
+                maxHeight: 300,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              dropdownSearchData: DropdownSearchData(
+                searchController: _stateSearchController,
+                searchBarWidgetHeight: 50,
+                searchBarWidget: Container(
+                  height: 50,
+                  padding: const EdgeInsets.only(
+                    top: 8,
+                    bottom: 4,
+                    right: 8,
+                    left: 8,
+                  ),
                   child: TextFormField(
-                    controller: _directorController,
-                    keyboardType: TextInputType.number,
-                    style: GoogleFonts.poppins(color: Colors.black87),
+                    expands: true,
+                    maxLines: null,
+                    controller: _stateSearchController,
                     decoration: InputDecoration(
-                      labelText: 'Number of Directors',
-                      hintText: 'e.g. 2',
-                      labelStyle: GoogleFonts.poppins(color: Colors.black54),
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      hintText: 'Search for a state...',
+                      hintStyle: GoogleFonts.poppins(fontSize: 12),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.deepTeal),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _stateController,
-                    style: GoogleFonts.poppins(color: Colors.black87),
-                    decoration: InputDecoration(
-                      labelText: 'State of Registration',
-                      hintText: 'e.g. Maharashtra',
-                      labelStyle: GoogleFonts.poppins(color: Colors.black54),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Colors.black12),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.deepTeal),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                searchMatchFn: (item, searchValue) {
+                  return item.value.toString().toLowerCase().contains(searchValue.toLowerCase());
+                },
+              ),
+              onMenuStateChange: (isOpen) {
+                if (!isOpen) {
+                  _stateSearchController.clear();
+                }
+              },
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _isLoading ? null : _submitRequest,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.deepTeal,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -376,18 +523,62 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
 }
 
 // ── Data holder ──────────────────────────────────────────────────────────────
-
 class _EntityCardData {
   final ClientEntity entity;
   final int serviceCount;
+  final bool isPending;
 
-  const _EntityCardData({required this.entity, required this.serviceCount});
+  const _EntityCardData({
+    required this.entity,
+    required this.serviceCount,
+    this.isPending = false,
+  });
+}
+
+// ── Entity list with pending support ─────────────────────────────────────────
+class _EntityList extends ConsumerWidget {
+  final List<_EntityCardData> entityCards;
+  const _EntityList({required this.entityCards});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pendingNames = ref.watch(pendingEntitiesProvider);
+
+    // Filter out pending names that are now approved (exist in entityCards)
+    final approvedNames = entityCards.map((c) => c.entity.entityName.trim().toLowerCase()).toSet();
+    final stillPending = pendingNames.where((n) => !approvedNames.contains(n.toLowerCase())).toList();
+
+    // Build pending placeholder cards
+    final pendingCards = stillPending.map((name) => _EntityCardData(
+      entity: ClientEntity(
+        entityName: name,
+        entityType: 'Pending',
+        cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '',
+        fssai: '', coi: '', dsc: '',
+        trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
+        patentApplicationNumber: '', patentStatus: '', patentNumber: '',
+        copyrightRegistrationNumber: '', copyrightCertificate: '',
+      ),
+      serviceCount: 0,
+      isPending: true,
+    )).toList();
+
+    final allCards = [...entityCards, ...pendingCards];
+
+    return ListView(
+      padding: const EdgeInsets.all(24),
+      children: [
+        ...allCards.map((c) => _EntityCard(data: c)),
+      ],
+    );
+  }
 }
 
 final List<IconData> _entityIcons = [
@@ -414,7 +605,7 @@ IconData _iconForEntity(String name) {
 class _EntityCard extends ConsumerWidget {
   final _EntityCardData data;
 
-  const _EntityCard({required this.data});
+  const _EntityCard({required this.data}); // ignore: unused_element
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -429,6 +620,19 @@ class _EntityCard extends ConsumerWidget {
 
     return InkWell(
       onTap: () {
+        if (data.isPending) {
+          globalScaffoldMessengerKey.currentState?.showSnackBar(
+            SnackBar(
+              content: const Text('This entity is waiting for manager approval.'),
+              backgroundColor: Colors.black87,
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+          return;
+        }
+
         // Grab navigator before updating state
         final nav = Navigator.of(context);
         
@@ -511,35 +715,51 @@ class _EntityCard extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppTheme.deepTeal.withOpacity(0.3)),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          entityType,
-                          style: const TextStyle(
-                            fontSize: 10,
+                  if (data.isPending)
+                    Row(
+                      children: [
+                        const Icon(LucideIcons.clock, size: 12, color: Colors.orange),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Waiting for Approval',
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Colors.orange.shade700,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.deepTeal,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        '${data.serviceCount} Active Services',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade500,
-                          fontWeight: FontWeight.w500,
+                      ],
+                    )
+                  else
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: AppTheme.deepTeal.withOpacity(0.3)),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            entityType,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.deepTeal,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 12),
+                        Text(
+                          '${data.serviceCount} Active Services',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

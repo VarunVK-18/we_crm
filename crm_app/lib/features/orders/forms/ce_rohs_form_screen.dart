@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import '../../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,7 @@ import '../../../models/order_model.dart';
 import '../../../providers/auth_provider.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class CeRohsFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -359,6 +361,16 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
     int? maxLength,
     TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: null,
+        validator: validator,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -382,12 +394,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
             textCapitalization: textCapitalization,
             onChanged: (_) => _saveDraft(),
             onTap: isDate ? () async {
-               final date = await showDatePicker(
-                 context: context,
-                 initialDate: DateTime.now().subtract(const Duration(days: 365)),
-                 firstDate: DateTime(1900),
-                 lastDate: DateTime.now(),
-               );
+               final date = await showCustomDatePicker(context);
                if (date != null) {
                  setState(() {
                    controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
@@ -397,7 +404,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
             } : null,
             style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
             decoration: InputDecoration(
-              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintText: HintHelper.getExampleHint(label),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
@@ -505,7 +512,8 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
-                  items: _certificationTypes.map((type) => DropdownItem(value: type, child: Text(type))).toList(),
+                  buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
+items: _certificationTypes.map((type) => DropdownItem(value: type, child: Text(type))).toList(),
                   onChanged: (v) => setState(() => _certificationType = v),
                   validator: (v) => v == null ? 'Select certification type' : null,
                   dropdownStyleData: DropdownStyleData(
@@ -557,7 +565,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
                 
                 const SizedBox(height: 24),
                 Text(
-                  'Optional Documents',
+                  'Documents',
                   style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 16),

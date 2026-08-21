@@ -1,4 +1,5 @@
 import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import '../../../core/constants/port.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/order_model.dart';
 import '../../../providers/auth_provider.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class DirectorFormData {
   final TextEditingController fullNameController = TextEditingController();
@@ -459,10 +461,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Wrap(
             spacing: 16,
@@ -489,6 +488,16 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
   }
 
   Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false, String? Function(String?)? validator}) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: hint,
+        validator: validator,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -504,28 +513,20 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             readOnly: isDate,
             onTap: isDate ? () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100),
-              );
+              final date = await showCustomDatePicker(context);
               if (date != null) {
                 controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
               }
             } : null,
             decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll("*", "").trim()}',
+              hintText: HintHelper.getExampleHint(label, hint: hint),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
@@ -587,17 +588,14 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  path == null ? 'No file selected' : path.split('/').last, 
                   style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
                   overflow: TextOverflow.ellipsis,
                 ),

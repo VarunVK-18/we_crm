@@ -800,7 +800,7 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                       children: [
                                         const Text('Outstanding Balance Notice', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFB45309))),
                                         const SizedBox(height: 4),
-                                        Text('You have a remaining balance of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}. Please note that the final deliverables will be locked upon service completion until the balance is settled.', style: const TextStyle(fontSize: 13, color: Color(0xFF92400E))),
+                                        Text('You have remaining balance of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)} and pay to unlock', style: const TextStyle(fontSize: 13, color: Color(0xFF92400E))),
                                       ],
                                     ),
                                   ),

@@ -166,7 +166,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
     String? Function(String?)? validator,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 8),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
@@ -174,7 +174,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: GoogleFonts.inter(fontSize: 14, color: Colors.grey.shade500),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Colors.grey.shade300),
@@ -217,12 +217,12 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
             Padding(
               padding: const EdgeInsets.only(top: 40, bottom: 40),
               child: Center(
-                child: Text(
-                  'Startup Doctor',
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/images/logo_without background.jpg',
+                    height: 50,
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
@@ -240,13 +240,18 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                     topRight: Radius.circular(32),
                   ),
                 ),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                        child: IntrinsicHeight(
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
                         const SizedBox(height: 24),
                         Text(
                           'Start With A Service',
@@ -299,11 +304,11 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                         ),
                         
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.only(bottom: 8),
                           child: DropdownButtonFormField2<String>(
                                   isExpanded: true,
                                   decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.only(left: 0, right: 16, top: 12, bottom: 12),
+                                    contentPadding: const EdgeInsets.only(left: 0, right: 16, top: 10, bottom: 10),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                                     enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
                                     focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade400)),
@@ -360,7 +365,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                                 ),
                         ),
                         
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 8),
                         
                         // Terms & Conditions
                         Row(
@@ -393,7 +398,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                           ]
                         ),
                         
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 12),
                         
                         // Submit button
                         SizedBox(
@@ -424,7 +429,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                           ),
                         ),
                         
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 12),
                         
                         // Login link
                         Center(
@@ -441,16 +446,171 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                           ),
                         ),
                         
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 32),
+                        
+                        // Sponsors Marquee
+                        Center(
+                          child: Text(
+                            'Trusted By',
+                            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade500, letterSpacing: 1.2),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const SponsorMarquee(),
+                        
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
+            );
+          },
+        ),
+      ),
+    ),
           ],
         ),
       ),
     ));
   }
 }
+
+class SponsorMarquee extends StatefulWidget {
+  const SponsorMarquee({super.key});
+
+  @override
+  State<SponsorMarquee> createState() => _SponsorMarqueeState();
+}
+
+class _SponsorMarqueeState extends State<SponsorMarquee> {
+  late ScrollController _scrollController;
+
+  final List<String> sponsorLogos = [
+    'assets/Sponcers/HCL Tech CUS.png',
+    'assets/Sponcers/IDFC FIRST Bank Logo.png',
+    'assets/Sponcers/PVR Near Me DLF Promenade Mall copy.png',
+    'assets/Sponcers/Softrate Logo.png',
+    'assets/Sponcers/dbs.png',
+    'assets/Sponcers/logo 6.png',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animateScroll();
+    });
+  }
+
+  void _animateScroll() {
+    if (!mounted || !_scrollController.hasClients) return;
+    
+    final currentScroll = _scrollController.position.pixels;
+    
+    // Animate forward by a fixed chunk since maxScrollExtent is infinity
+    const double chunk = 3000.0;
+    final targetScroll = currentScroll + chunk;
+    
+    // Control speed here: 60 pixels per second
+    final duration = Duration(milliseconds: (chunk * 1000 / 60).round());
+
+    _scrollController.animateTo(
+      targetScroll,
+      duration: duration,
+      curve: Curves.linear,
+    ).then((_) {
+      if (mounted) {
+        _animateScroll();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  List<double> _getGrayscaleMatrix(double amount) {
+    final double inv = 1.0 - amount;
+    return [
+      inv + amount * 0.2126, amount * 0.7152,       amount * 0.0722,       0, 0,
+      amount * 0.2126,       inv + amount * 0.7152, amount * 0.0722,       0, 0,
+      amount * 0.2126,       amount * 0.7152,       inv + amount * 0.0722, 0, 0,
+      0,                     0,                     0,                     1, 0,
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 32,
+      child: ShaderMask(
+        shaderCallback: (Rect bounds) {
+          return const LinearGradient(
+            colors: [Colors.transparent, Colors.white, Colors.white, Colors.transparent],
+            stops: [0.0, 0.1, 0.9, 1.0],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ).createShader(bounds);
+        },
+        blendMode: BlendMode.dstIn,
+        child: ListView.builder(
+          controller: _scrollController,
+          scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
+          itemBuilder: (context, index) {
+            final logoPath = sponsorLogos[index % sponsorLogos.length];
+            return AnimatedBuilder(
+              animation: _scrollController,
+              builder: (context, child) {
+                double grayscale = 1.0;
+                
+                try {
+                  final renderObject = context.findRenderObject();
+                  if (renderObject is RenderBox) {
+                    final position = renderObject.localToGlobal(Offset.zero).dx;
+                    final itemWidth = renderObject.size.width;
+                    final itemCenter = position + (itemWidth / 2);
+                    
+                    final screenWidth = MediaQuery.of(context).size.width;
+                    final screenCenter = screenWidth / 2;
+                    
+                    // Calculate distance from center
+                    final distance = (itemCenter - screenCenter).abs();
+                    
+                    // If within 80 pixels of center, full color (grayscale 0.0)
+                    // If further than 160 pixels, full grayscale (grayscale 1.0)
+                    // Interpolate in between
+                    grayscale = ((distance - 80) / 80).clamp(0.0, 1.0);
+                  }
+                } catch (e) {
+                  // Fallback during initial build when render box might not be attached
+                }
+
+                return ColorFiltered(
+                  colorFilter: ColorFilter.matrix(_getGrayscaleMatrix(grayscale)),
+                  child: child,
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Image.asset(
+                  logoPath, 
+                  height: 24,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox(width: 50, child: Icon(Icons.image_not_supported, color: Colors.grey)),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+
+

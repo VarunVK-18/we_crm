@@ -10,10 +10,18 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
 
-class ChatSupportScreen extends ConsumerWidget {
+class ChatSupportScreen extends ConsumerStatefulWidget {
   const ChatSupportScreen({super.key});
 
-  void _showCompletedServices(BuildContext context, WidgetRef ref) {
+  @override
+  ConsumerState<ChatSupportScreen> createState() => _ChatSupportScreenState();
+}
+
+class _ChatSupportScreenState extends ConsumerState<ChatSupportScreen> {
+  int _selectedFaqTab = 0;
+  
+
+  void _showCompletedServices(BuildContext context) {
     final completedOrders = ref.read(completeOrdersProvider);
 
     showModalBottomSheet(
@@ -122,7 +130,7 @@ class ChatSupportScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final user = ref.watch(userProfileProvider).value;
     String supportPhone = '918072286963';
     
@@ -200,7 +208,7 @@ class ChatSupportScreen extends ConsumerWidget {
               color: AppTheme.corporateBlue,
               onTap: () {
                 if (user != null) {
-                  _showCompletedServices(context, ref);
+                  _showCompletedServices(context);
                 }
               },
             ),
@@ -225,22 +233,34 @@ class ChatSupportScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildFAQCard(
-              context,
-              'How long does DSC registration take?',
-              'DSC registration typically takes 1-2 business days after all necessary documents are verified and processed.',
+            // FAQ Tabs
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
+                  _buildFaqTab(0, 'General'),
+                  const SizedBox(width: 8),
+                  _buildFaqTab(1, 'Services'),
+                  const SizedBox(width: 8),
+                  _buildFaqTab(2, 'Billing'),
+                ],
+              ),
             ),
-            _buildFAQCard(
-              context,
-              'Can I change my company name after search?',
-              'If the name hasn\'t been formally registered yet, you can do a new name search. If already registered, a formal name change process with MCA must be initiated.',
-            ),
-            _buildFAQCard(
-              context,
-              'What documents are needed for GST filing?',
-              'You will generally need your PAN card, Aadhaar card, business registration proof, bank statements, and relevant sales/purchase invoices.',
-            ),
-          ],
+            const SizedBox(height: 16),
+            // FAQ Content
+            if (_selectedFaqTab == 0) ...[
+              _buildFAQCard(context, 'How long does DSC registration take?', 'DSC registration typically takes 1-2 business days after all necessary documents are verified and processed.'),
+              _buildFAQCard(context, 'Can I change my company name after search?', 'If the name hasn\'t been formally registered yet, you can do a new name search. If already registered, a formal name change process with MCA must be initiated.'),
+              _buildFAQCard(context, 'How to contact support?', 'You can contact support via live chat, call, or email from this Help Center screen.'),
+            ] else if (_selectedFaqTab == 1) ...[
+              _buildFAQCard(context, 'What documents are needed for GST filing?', 'You will generally need your PAN card, Aadhaar card, business registration proof, bank statements, and relevant sales/purchase invoices.'),
+              _buildFAQCard(context, 'Do you provide ISO certification?', 'Yes, we provide end-to-end ISO certification services which you can request from the Registration Hub.'),
+              _buildFAQCard(context, 'How to track my service status?', 'Go to the Orders section from the bottom navigation bar to see real-time updates on your service.'),
+            ] else if (_selectedFaqTab == 2) ...[
+              _buildFAQCard(context, 'Where can I find my invoices?', 'Invoices can be downloaded from the Subscriptions & Completed Services section under your profile.'),
+              _buildFAQCard(context, 'How to upgrade my plan?', 'You can view and upgrade your current subscription plan directly from the Subscriptions menu.'),
+              _buildFAQCard(context, 'Are there any hidden fees?', 'No, our pricing is completely transparent. Any government fees are explicitly mentioned during the checkout process.'),
+            ],          ],
         ),
       ),
     );
@@ -371,4 +391,32 @@ class ChatSupportScreen extends ConsumerWidget {
       ),
     );
   }
+
+  Widget _buildFaqTab(int index, String title) {
+    bool isSelected = _selectedFaqTab == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedFaqTab = index;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppTheme.corporateBlue : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey.shade700,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
 }

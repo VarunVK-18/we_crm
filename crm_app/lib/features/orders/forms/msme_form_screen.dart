@@ -1,4 +1,5 @@
 import 'package:crm_app/core/theme/app_theme.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/providers/auth_provider.dart';
 import 'package:crm_app/core/constants/port.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
@@ -11,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../../../models/order_model.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class MsmeFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -272,6 +274,16 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     int? maxLength,
     TextCapitalization textCapitalization = TextCapitalization.none,
   }) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: null,
+        validator: validator,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -296,7 +308,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
             onTap: isDate ? () => _selectDate(controller) : null,
             style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal),
             decoration: InputDecoration(
-              hintText: 'Enter ${label.replaceAll('*', '').trim()}',
+              hintText: HintHelper.getExampleHint(label),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
@@ -333,6 +345,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
           ),
           const SizedBox(height: 6),
           DropdownButtonFormField<String>(
+            isExpanded: true,
             value: current,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -344,9 +357,10 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
             ),
             style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal, fontWeight: FontWeight.w400),
             icon: const Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 20),
+            selectedItemBuilder: (context) => options.map((o) => Align(alignment: Alignment.centerLeft, child: Text(o, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: AppTheme.deepTeal)))).toList(),
             items: options.map((o) => DropdownMenuItem<String>(
               value: o,
-              child: Text(o, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: AppTheme.deepTeal)),
+              child: Align(alignment: Alignment.centerLeft, child: Text(o, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: AppTheme.deepTeal))),
             )).toList(),
             onChanged: (val) {
               onChanged(val);

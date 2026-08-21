@@ -1,4 +1,5 @@
 import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../../providers/draft_provider.dart';
@@ -285,17 +286,14 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  path == null ? 'No file selected' : path.split('/').last, 
                   style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -333,10 +331,7 @@ class _GstComplianceFormScreenState extends ConsumerState<GstComplianceFormScree
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Column(
             children: options.map((option) {

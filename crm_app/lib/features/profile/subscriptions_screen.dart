@@ -172,7 +172,7 @@ class SubscriptionsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 48),
             Text(
-              selectedEntity == 'All Entities' ? 'Completed Services' : 'Completed Services of $selectedEntity',
+              selectedEntity == 'All Entities' ? 'Completed Services' : 'Completed Services  $selectedEntity',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -538,7 +538,7 @@ class SubscriptionsScreen extends ConsumerWidget {
                 Row(
                   children: [
                     Text(
-                      isPaymentPending ? 'Pending Payment' : 'Download',
+                      isPaymentPending ? 'Pending Payment' : 'View Invoice',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,

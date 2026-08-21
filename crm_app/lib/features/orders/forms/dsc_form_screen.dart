@@ -1,21 +1,18 @@
-import 'package:crm_app/core/theme/app_theme.dart';
-import 'package:crm_app/providers/auth_provider.dart';
+import 'dart:convert';
 import 'package:crm_app/core/constants/port.dart';
+import 'package:crm_app/core/theme/app_theme.dart';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
+import 'package:crm_app/core/utils/http_client.dart' as http;
+import 'package:crm_app/providers/auth_provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import '../../../core/widgets/app_dropdown.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
-import '../../../providers/draft_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:crm_app/core/utils/http_client.dart' as http;
-
-import '../../../core/constants/port.dart';
-import '../../../core/theme/app_theme.dart';
 import '../../../models/order_model.dart';
-import '../../../providers/auth_provider.dart';
+import '../../../providers/draft_provider.dart';
 
 class DscFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -367,8 +364,12 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                       ], _applyingFor, (v) => setState(() => _applyingFor = v)),
                       
                       _buildField('Applicant Name (As per PAN)', '', _applicantNameController, isRequired: true),
-                      _buildField('Applicant Mail ID / Office Mail ID', 'For OTPs', _applicantMailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                      _buildField('Applicant Phone Number', 'For OTPs', _applicantPhoneController, isRequired: true, keyboardType: TextInputType.phone),
+                      _buildField('Applicant Mail ID / Office Mail ID', '', _applicantMailController, isRequired: true, keyboardType: TextInputType.emailAddress),
+                      PhoneInputField(
+                        controller: _applicantPhoneController,
+                        label: 'Applicant Phone Number',
+                        isRequired: true,
+                      ),
                       _buildField('Organization Name', '', _organizationNameController, isRequired: true),
                       _buildField('Organization Type', '', _organizationTypeController, isRequired: true),
                       _buildField('Office Address', '', _officeAddressController, isRequired: true, maxLines: 3),
@@ -377,7 +378,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                   ),
 
                   _buildSectionContainer(
-                    title: 'Mandatory Documents',
+                    title: 'Documents',
                     children: [
                       _buildFileRow('Applicant PAN Card', 'Upload 1 supported file: PDF or image. Max 2 MB.', _applicantPanPath, () => _pickFile((path) => _applicantPanPath = path)),
                       _buildFileRow('Applicant Aadhaar Card', 'Upload 1 supported file: PDF or image. Max 2 MB.', _applicantAadhaarPath, () => _pickFile((path) => _applicantAadhaarPath = path)),
@@ -386,7 +387,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                   ),
 
                   _buildSectionContainer(
-                    title: 'Optional Documents',
+                    title: 'Documents',
                     children: [
                       _buildFileRow('Certificate of Incorporation', 'Upload 1 supported file: PDF or image. Max 2 MB.', _coiPath, () => _pickFile((path) => _coiPath = path), isRequired: false),
                       _buildFileRow('Organization PAN', 'Upload 1 supported file: PDF or image. Max 2 MB.', _organizationPanPath, () => _pickFile((path) => _organizationPanPath = path), isRequired: false),
@@ -417,7 +418,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                               padding: const EdgeInsets.only(top: 12.0),
                               child: RichText(
                                 text: const TextSpan(
-                                  text: 'I here verify that above mentioned facts are true and correct to best of my knowledge and belief',
+                                  text: 'I Agree To The Terms Of Services & Privacy Policy',
                                   style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13, color: AppTheme.deepTeal),
                                   children: [
                                     TextSpan(text: ' *\n', style: TextStyle(color: Colors.red)),
@@ -483,10 +484,7 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 12),
           ...options.map((opt) {
             return InkWell(
@@ -523,6 +521,16 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
   }
 
   Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: hint,
+        validator: null,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -538,29 +546,21 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             readOnly: isDate,
             onTap: isDate ? () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100),
-              );
+              final date = await showCustomDatePicker(context);
               if (date != null) {
                 controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
               }
             } : null,
             maxLines: maxLines,
             decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll("*", "").trim()}',
+              hintText: HintHelper.getExampleHint(label, hint: hint),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
@@ -616,17 +616,14 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  path == null ? 'No file selected' : path.split('/').last, 
                   style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
                   overflow: TextOverflow.ellipsis,
                 ),

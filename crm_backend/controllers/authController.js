@@ -1531,42 +1531,103 @@ const editClientProfile = async (req, res) => {
   }
 };
 
-// Update MCA Profile for Compliance Clients
+// Update MCA Profile for Company
 const updateMcaProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
-    const { mcaUsername, mcaPassword, annualTurnover } = req.body;
-    if (mcaUsername) user.mca_username = mcaUsername;
-    if (mcaPassword) user.mca_password = mcaPassword;
-    if (annualTurnover) user.annual_turnover = annualTurnover;
+    const {
+      // Business Information
+      mcaUsername, mcaPassword, annualTurnover,
+      companyName, companyPan, cin, incorporationDate, businessType, natureOfBusiness,
+      // Contact & Address
+      registeredAddress, city, state, postalCode, companyEmail, companyPhone,
+      // Director / Signatory
+      directorName, directorDin, directorPan, directorAadhaar, directorEmail, directorMobile,
+      // Registration details (optional)
+      gstin, udyamNumber, trademarkNo, isoCertNo, dpiitRefNo,
+    } = req.body;
 
-    // Handle files if any
-    const fileFields = ['coi', 'pan', 'moa', 'aoa', 'bankStatement', 'salesInvoice', 'purchaseBills'];
-    console.log("Files received in updateMcaProfile:", req.files);
-    
+    // Business info
+    if (mcaUsername !== undefined) user.mca_username = mcaUsername;
+    if (mcaPassword !== undefined) user.mca_password = mcaPassword;
+    if (annualTurnover !== undefined) user.annual_turnover = annualTurnover;
+    if (companyName !== undefined) user.company_name = companyName;
+    if (companyPan !== undefined) user.pan = companyPan;
+    if (cin !== undefined) user.cin = cin;
+    if (incorporationDate !== undefined) user.incorporation_date = incorporationDate ? new Date(incorporationDate) : null;
+    if (businessType !== undefined) user.business_type = businessType;
+    if (natureOfBusiness !== undefined) user.main_division_description = natureOfBusiness;
+
+    // Contact & Address
+    if (registeredAddress !== undefined) user.address = registeredAddress;
+    if (city !== undefined) user.city = city;
+    if (state !== undefined) user.state = state;
+    if (postalCode !== undefined) user.postal_code = postalCode;
+    if (companyEmail !== undefined) user.company_email = companyEmail;
+    if (companyPhone !== undefined) user.phone = companyPhone;
+
+    // Registration details
+    if (gstin !== undefined) user.gstin = gstin;
+
+    // Store extra registration data in dynamicProfileData
+    if (!user.dynamicProfileData) user.dynamicProfileData = {};
+    if (directorName !== undefined) user.dynamicProfileData.directorName = directorName;
+    if (directorDin !== undefined) user.dynamicProfileData.directorDin = directorDin;
+    if (directorPan !== undefined) user.dynamicProfileData.directorPan = directorPan;
+    if (directorAadhaar !== undefined) user.dynamicProfileData.directorAadhaar = directorAadhaar;
+    if (directorEmail !== undefined) user.dynamicProfileData.directorEmail = directorEmail;
+    if (directorMobile !== undefined) user.dynamicProfileData.directorMobile = directorMobile;
+    if (udyamNumber !== undefined) user.dynamicProfileData.udyamNumber = udyamNumber;
+    if (trademarkNo !== undefined) user.dynamicProfileData.trademarkNo = trademarkNo;
+    if (isoCertNo !== undefined) user.dynamicProfileData.isoCertNo = isoCertNo;
+    if (dpiitRefNo !== undefined) user.dynamicProfileData.dpiitRefNo = dpiitRefNo;
+    user.markModified('dynamicProfileData');
+
+    // Handle file uploads
+    const fileFieldMap = {
+      coi: 'coi_file',
+      pan: 'pan_file',
+      moa: 'moa_file',
+      aoa: 'aoa_file',
+      bankStatement: 'bank_statement_file',
+      salesInvoice: 'sales_invoice_file',
+      purchaseBills: 'purchase_bills_file',
+      gstCert: null,
+      aadhaar: null,
+      directorPanDoc: null,
+      udyamCert: null,
+      trademarkCert: null,
+      isoCert: null,
+    };
+
     if (req.files && Array.isArray(req.files)) {
       for (const file of req.files) {
-        if (fileFields.includes(file.fieldname)) {
-          const doc = await Document.create({
-            filename: file.originalname,
-            contentType: file.mimetype,
-            data: file.buffer,
-            uploadedBy: req.user._id
-          });
-          user[`${file.fieldname.replace(/([A-Z])/g, "_$1").toLowerCase()}_file`] = doc._id.toString();
+        const doc = await Document.create({
+          filename: file.originalname,
+          contentType: file.mimetype,
+          data: file.buffer,
+          uploadedBy: req.user._id
+        });
+        const docId = doc._id.toString();
+        const userField = fileFieldMap[file.fieldname];
+        if (userField) {
+          user[userField] = docId;
+        } else if (file.fieldname in fileFieldMap) {
+          user.dynamicProfileData[`${file.fieldname}File`] = docId;
+          user.markModified('dynamicProfileData');
         }
       }
     }
-    
+
     user.mca_profile_completed = true;
     await user.save();
 
-    res.status(200).json({ success: true, message: 'MCA Profile updated successfully.' });
+    res.status(200).json({ success: true, message: 'Company Profile updated successfully.' });
   } catch (error) {
-    console.error('Error updating MCA profile:', error);
-    res.status(500).json({ success: false, message: 'Server error while updating MCA profile.' });
+    console.error('Error updating Company profile:', error);
+    res.status(500).json({ success: false, message: 'Server error while updating company profile.' });
   }
 };
 

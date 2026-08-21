@@ -259,7 +259,7 @@ class CircleServiceButton extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: AppTheme.deepTeal,
-                  fontSize: 10.sp,
+                  fontSize: 11.sp, // Slightly increased size
                   height: 1.2,
                 ),
               ),
@@ -449,7 +449,7 @@ class _ProfileTileState extends State<ProfileTile> {
               widget.title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: widget.color ?? AppTheme.deepTeal,
-                fontWeight: FontWeight.w400, // Card title weight reduced
+                fontWeight: FontWeight.w500, // Slightly bold
                 fontSize: 15.sp,
               ),
             ),
@@ -457,8 +457,8 @@ class _ProfileTileState extends State<ProfileTile> {
               widget.subtitle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Colors.grey[500],
-                fontWeight: FontWeight.w400, // Subtitle weight 400
-                fontSize: 11.sp,
+                fontWeight: FontWeight.w300, // Much less bold
+                fontSize: 12.sp,
               ),
             ),
             trailing: widget.trailing ?? Icon(

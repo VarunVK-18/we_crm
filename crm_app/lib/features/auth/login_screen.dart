@@ -12,6 +12,7 @@ import '../../providers/auth_provider.dart';
 import 'auth_wrapper.dart';
 import '../../providers/navigation_provider.dart';
 import 'client_onboarding_screen.dart';
+import '../../core/widgets/we_loader.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -154,7 +155,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       TextInput.finishAutofillContext();
       if (mounted) {
         Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const AuthWrapper()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const AuthWrapper(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 400),
+          ),
           (route) => false,
         );
       }
@@ -226,12 +233,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 40, bottom: 40),
                   child: Center(
-                    child: Text(
-                      'Startup Doctor',
-                      style: GoogleFonts.poppins(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.asset(
+                        'assets/images/logo_without background.jpg',
+                        height: 50,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
@@ -439,12 +446,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                         onPressed:
                                             _isLoading ? null : _handleSignIn,
                                         child: _isLoading
-                                            ? const SizedBox(
-                                                height: 24,
-                                                width: 24,
-                                                child: CircularProgressIndicator(
+                                            ? const Center(
+                                                child: WeLoader(
+                                                    size: 16,
                                                     color: Colors.white,
-                                                    strokeWidth: 2))
+                                                ),
+                                              )
                                             : Text('Login',
                                                 style: GoogleFonts.inter(
                                                     fontSize: 16,

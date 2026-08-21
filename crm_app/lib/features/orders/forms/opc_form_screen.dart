@@ -1,4 +1,5 @@
 import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -12,6 +13,7 @@ import '../../../core/constants/port.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/order_model.dart';
 import '../../../providers/auth_provider.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class DirectorFormData {
   final TextEditingController fullNameController = TextEditingController();
@@ -440,7 +442,11 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
                         ],
                         
                         _buildField('Company Mail', 'Should not be same as director.', _companyEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                        _buildField('Company Phone Number', 'Should not be same as director.', _companyPhoneController, isRequired: true, keyboardType: TextInputType.phone),
+                        PhoneInputField(
+                        controller: _companyPhoneController,
+                        label: 'Company Phone Number',
+                        isRequired: true,
+                      ),
                         _buildField('Paid up Share Capital', 'Minimum requirement is ₹10,000 for private limited companies.', _paidUpCapitalController, isRequired: true, keyboardType: TextInputType.number),
                         _buildField('Value Per Share', 'Typically ₹10 or ₹100 per share.', _valuePerShareController, isRequired: true, keyboardType: TextInputType.number),
                         _buildField('No. of Shares', 'Total number of shares issued.', _numberOfSharesController, isRequired: true, keyboardType: TextInputType.number),
@@ -567,10 +573,7 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Wrap(
             spacing: 16,
@@ -597,6 +600,16 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
   }
 
   Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, bool isDate = false, String? Function(String?)? customValidator}) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: hint,
+        validator: customValidator,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -612,10 +625,7 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
@@ -628,18 +638,13 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               }
             },
             onTap: isDate ? () async {
-              final date = await showDatePicker(
-                context: context,
-                initialDate: DateTime.now(),
-                firstDate: DateTime(1900),
-                lastDate: DateTime(2100),
-              );
+              final date = await showCustomDatePicker(context);
               if (date != null) {
                 controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
               }
             } : null,
             decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintText: HintHelper.getExampleHint(label, hint: hint),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
@@ -695,17 +700,14 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split('/').last, 
+                  path == null ? 'No file selected' : path.split('/').last, 
                   style: TextStyle(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
                   overflow: TextOverflow.ellipsis,
                 ),

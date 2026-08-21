@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 class AppDropdownFormField<T> extends StatefulWidget {
@@ -50,13 +51,26 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveStyle = widget.style ?? const TextStyle(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.black87);
+    final effectiveStyle = widget.style ??
+        GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        );
 
     final mappedItems = widget.items?.map((item) {
       final child = item.child;
-      // Wrap the text child with reduced font style if it's a Text widget
+      // Ensure text is left-aligned
       final styledChild = child is Text
-          ? Text(child.data ?? '', style: effectiveStyle, overflow: TextOverflow.ellipsis)
+          ? Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                child.data ?? '',
+                style: effectiveStyle,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.left,
+              ),
+            )
           : child;
       return DropdownItem<T>(
         value: item.value as T,
@@ -75,15 +89,38 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
         }
       },
       validator: widget.validator,
-      decoration: widget.decoration,
+      decoration: (widget.decoration ?? const InputDecoration()).copyWith(
+        // Ensure content aligns left
+        contentPadding: widget.decoration?.contentPadding ??
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
       hint: widget.hint,
       style: effectiveStyle,
+      // Force selected item to render left-aligned
+      selectedItemBuilder: (context) {
+        return (widget.items ?? []).map((item) {
+          final child = item.child;
+          return Align(
+            alignment: Alignment.centerLeft,
+            child: child is Text
+                ? Text(
+                    child.data ?? '',
+                    style: effectiveStyle,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.left,
+                  )
+                : child,
+          );
+        }).toList();
+      },
       dropdownStyleData: DropdownStyleData(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: Colors.white,
+          border: Border.all(color: Colors.grey.shade200),
         ),
       ),
+      buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
       iconStyleData: const IconStyleData(
         icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey, size: 20),
       ),

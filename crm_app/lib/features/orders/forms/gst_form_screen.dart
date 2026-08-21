@@ -1,4 +1,5 @@
 import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../../core/widgets/app_dropdown.dart';
@@ -14,6 +15,7 @@ import '../../../core/constants/port.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../models/order_model.dart';
 import '../../../providers/auth_provider.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 
 class GstFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -525,7 +527,11 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                     _buildField('Legal Name of Business', '', _legalNameController, isRequired: true),
                     _buildField('PAN of Business', '', _panOfBusinessController, isRequired: true),
                     _buildField('Business Email ID', '', _businessEmailController, isRequired: true, keyboardType: TextInputType.emailAddress),
-                    _buildField('Business Phone', '', _businessPhoneController, isRequired: true, keyboardType: TextInputType.phone),
+                    PhoneInputField(
+                        controller: _businessPhoneController,
+                        label: 'Business Phone',
+                        isRequired: true,
+                      ),
                     _buildField('Trade Name (if Any)', '', _tradeNameController),
                     _buildField('Date of Incorporation', 'DD/MM/YYYY', _incorpDateController, isRequired: true, isDate: true),
                     _buildFileRow('Incorporation Certificate', 'PDF. Max 2 MB.', _incorpCertPath, () => _pickFile((path) => _incorpCertPath = path)),
@@ -536,7 +542,11 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                     _buildField('Full Name (As per PAN)', '', _dir1FullNameController, isRequired: true),
                     _buildField('Father Name (As per PAN)', '', _dir1FatherNameController, isRequired: true),
                     _buildField('DOB', 'DD/MM/YYYY', _dir1DobController, isRequired: true, isDate: true),
-                    _buildField('Phone Number', '', _dir1PhoneController, isRequired: true, keyboardType: TextInputType.phone),
+                    PhoneInputField(
+                        controller: _dir1PhoneController,
+                        label: 'Phone Number',
+                        isRequired: true,
+                      ),
                     _buildField('Mail ID', '', _dir1MailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                     _buildRadioGroup('Gender', '', ['Male', 'Female', 'Others'], _dir1Gender, (v) => setState(() => _dir1Gender = v)),
                     _buildField('DIN', '', _dir1DinController, isRequired: true),
@@ -559,7 +569,11 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
                       _buildField('Full Name (As per PAN)', '', _dir2FullNameController, isRequired: true),
                       _buildField('Father Name (As per PAN)', '', _dir2FatherNameController, isRequired: true),
                       _buildField('DOB', 'DD/MM/YYYY', _dir2DobController, isRequired: true, isDate: true),
-                      _buildField('Phone Number', '', _dir2PhoneController, isRequired: true, keyboardType: TextInputType.phone),
+                      PhoneInputField(
+                        controller: _dir2PhoneController,
+                        label: 'Phone Number',
+                        isRequired: true,
+                      ),
                       _buildField('Mail ID', '', _dir2MailController, isRequired: true, keyboardType: TextInputType.emailAddress),
                       _buildRadioGroup('Gender', '', ['Male', 'Female', 'Others'], _dir2Gender, (v) => setState(() => _dir2Gender = v)),
                       _buildField('DIN', '', _dir2DinController, isRequired: true),
@@ -695,6 +709,16 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
   }
 
   Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1, bool isDate = false}) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: hint,
+        validator: null,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -708,7 +732,7 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
             keyboardType: keyboardType,
             readOnly: isDate,
             onTap: isDate ? () async {
-              final date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1900), lastDate: DateTime(2100));
+              final date = await showCustomDatePicker(context);
               if (date != null) controller.text = "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
             } : null,
             maxLines: maxLines,

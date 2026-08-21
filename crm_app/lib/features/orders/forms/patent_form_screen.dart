@@ -1,4 +1,6 @@
 import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../../providers/draft_provider.dart';
@@ -346,6 +348,7 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
                             ),
                             const SizedBox(height: 8),
                             DropdownButtonFormField<String>(
+            isExpanded: true,
                               initialValue: _entityType,
                               decoration: InputDecoration(
               hintText: 'Select Entity Type',
@@ -354,7 +357,8 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
                                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               ),
-                              items: _entityTypes.map<DropdownMenuItem<String>>((String type) => DropdownMenuItem<String>(value: type, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
+                              selectedItemBuilder: (context) => _entityTypes.map((o) => Align(alignment: Alignment.centerLeft, child: Text(o, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400)))).toList(),
+                                items: _entityTypes.map<DropdownMenuItem<String>>((String type) => DropdownMenuItem<String>(value: type, child: Align(alignment: Alignment.centerLeft, child: Text(type, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400))))).toList(),
                               onChanged: (val) {
                                 setState(() {
                                   _entityType = val;
@@ -365,7 +369,11 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
                           ],
                         ),
                       ),
-                      _buildField('Mobile Number', '+91', _mobileNumberController, isRequired: true, keyboardType: TextInputType.phone),
+                      PhoneInputField(
+                        controller: _mobileNumberController,
+                        label: 'Mobile Number',
+                        isRequired: true,
+                      ),
                       _buildField('Email ID', 'email@example.com', _emailIdController, isRequired: true, keyboardType: TextInputType.emailAddress),
                       _buildField('Address', 'Full applicant address', _addressController, isRequired: true, maxLines: 2),
                     ],
@@ -442,6 +450,16 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
   }
 
   Widget _buildField(String label, String hint, TextEditingController controller, {bool isRequired = false, TextInputType keyboardType = TextInputType.text, int maxLines = 1}) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: hint,
+        validator: null,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -457,17 +475,14 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             maxLines: maxLines,
             decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintText: HintHelper.getExampleHint(label, hint: hint),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.black, width: 1.5)),
@@ -522,10 +537,7 @@ class _PatentFormScreenState extends ConsumerState<PatentFormScreen> {
               ]
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

@@ -426,18 +426,28 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final entityCompliances = reminders.where((r) => r.entityName == currentEntity).toList();
     
     double serviceScore = 0.0;
-    if (entityOrders.isNotEmpty) {
-      serviceScore = 50.0; // All services (outsourced or platform) award full points
-    }
+    bool hasIncorporation = entityOrders.any((o) => o.serviceType.contains('Incorporation') || o.serviceType.contains('Proprietorship')) || outsourcedServicesList.any((s) => s.contains('Incorporation') || s.contains('Proprietorship'));
+    bool hasMSME = entityOrders.any((o) => o.serviceType.contains('MSME')) || outsourcedServicesList.any((s) => s.contains('MSME'));
+    bool hasTrademark = entityOrders.any((o) => o.serviceType.contains('Trademark')) || outsourcedServicesList.any((s) => s.contains('Trademark'));
+    bool hasGST = entityOrders.any((o) => o.serviceType.contains('GST')) || outsourcedServicesList.any((s) => s.contains('GST'));
+    bool hasDPIIT = entityOrders.any((o) => o.serviceType.contains('DPIIT') || o.serviceType.contains('Startup India')) || outsourcedServicesList.any((s) => s.contains('DPIIT') || s.contains('Startup India'));
+    bool hasISO = entityOrders.any((o) => o.serviceType.contains('ISO')) || outsourcedServicesList.any((s) => s.contains('ISO'));
+
+    if (hasIncorporation) serviceScore += 10.0;
+    if (hasMSME) serviceScore += 8.0;
+    if (hasTrademark) serviceScore += 8.0;
+    if (hasGST) serviceScore += 8.0;
+    if (hasDPIIT) serviceScore += 8.0;
+    if (hasISO) serviceScore += 8.0;
+
+    if (serviceScore > 50.0) serviceScore = 50.0;
     
-    double complianceScore = 0.0;
+    double complianceScore = 50.0;
     if (entityCompliances.isNotEmpty) {
-      double pointsPerCompliance = 50.0 / entityCompliances.length;
+      double penaltyPerCompliance = 50.0 / entityCompliances.length;
       for (final comp in entityCompliances) {
         if (outsourcedServicesList.contains(comp.title)) {
-          complianceScore -= pointsPerCompliance;
-        } else {
-          complianceScore += pointsPerCompliance;
+          complianceScore -= penaltyPerCompliance;
         }
       }
     }
@@ -446,7 +456,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
     if (complianceScore > 50) complianceScore = 50;
     
     double scoreValue = 0.0;
-    if (entityOrders.isEmpty && entityCompliances.isEmpty) {
+    if (serviceScore == 0.0 && entityCompliances.isEmpty) {
       scoreValue = 0.0;
     } else {
       scoreValue = serviceScore + complianceScore;
@@ -759,9 +769,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text('Complete Your Compliance Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
+                                          Text('Complete Your Company Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
                                           SizedBox(height: 4.r),
-                                          Text('Provide MCA credentials and incorporation documents.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
+                                          Text('Fill your company details used across all services.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
                                         ],
                                       ),
                                     ),
@@ -1588,7 +1598,6 @@ class _TimelineItemRow extends StatefulWidget {
 }
 
 class _TimelineItemRowState extends State<_TimelineItemRow> {
-  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1615,37 +1624,27 @@ class _TimelineItemRowState extends State<_TimelineItemRow> {
             ),
             SizedBox(width: 20.r),
             Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  setState(() {
-                    _isExpanded = !_isExpanded;
-                  });
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.item['title']!,
-                      maxLines: _isExpanded ? null : 1,
-                      overflow: _isExpanded ? null : TextOverflow.ellipsis,
-                      style: GoogleFonts.outfit(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.deepTeal,
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.item['title']!,
+                    style: GoogleFonts.outfit(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.deepTeal,
                     ),
-                    SizedBox(height: 4.r),
-                    Text(
-                      widget.item['status']!,
-                      style: GoogleFonts.outfit(
-                        fontSize: 12.sp,
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w500,
-                      ),
+                  ),
+                  SizedBox(height: 4.r),
+                  Text(
+                    widget.item['status']!,
+                    style: GoogleFonts.outfit(
+                      fontSize: 12.sp,
+                      color: Colors.grey[500],
+                      fontWeight: FontWeight.w500,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -1874,7 +1873,7 @@ class _ReminderItem extends ConsumerWidget {
           border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE))),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
               child: Column(
@@ -1943,6 +1942,8 @@ class _ReminderItem extends ConsumerWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 20),
           ],
         ),
       ),

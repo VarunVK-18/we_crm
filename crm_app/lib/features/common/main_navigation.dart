@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:confetti/confetti.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../models/order_model.dart';
+import '../orders/service_order_detail_screen.dart';
+import '../../providers/orders_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'responsive_layout.dart';
@@ -23,15 +28,18 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   late final PageController _pageController;
   static bool _hasShownSecurityPopup = false;
+  late ConfettiController _confettiController;
 
   @override
   void initState() {
     super.initState();
     final initialIndex = ref.read(navigationIndexProvider);
     _pageController = PageController(initialPage: initialIndex);
+    _confettiController = ConfettiController(duration: const Duration(seconds: 3));
     
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkSecuritySetup();
+      _checkCompletedServices();
     });
   }
 
@@ -105,6 +113,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -131,6 +140,102 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         screen: ProfileScreen(),
       ),
     ];
+  }
+
+
+  Future<void> _checkCompletedServices() async {
+    final completedOrders = ref.read(completeOrdersProvider);
+    if (completedOrders.isEmpty) return;
+    
+    // Sort by created at to get latest, or just take first
+    final latestOrder = completedOrders.first;
+    
+    final prefs = await SharedPreferences.getInstance();
+    final lastCelebratedId = prefs.getString('last_celebrated_order_id');
+    
+    if (lastCelebratedId != latestOrder.id) {
+      // Haven't celebrated this one yet!
+      await prefs.setString('last_celebrated_order_id', latestOrder.id);
+      if (mounted) {
+        _showCelebrationPopup(latestOrder);
+      }
+    }
+  }
+
+  void _showCelebrationPopup(ServiceOrder order) {
+    _confettiController.play();
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const HugeIcon(icon: HugeIcons.strokeRoundedTick01, color: Colors.green, size: 48),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Service Completed!',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.deepTeal),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Your order for ${order.serviceType} has been successfully completed.',
+                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => ServiceOrderDetailScreen(order: order)));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.corporateBlue,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('View Documents', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Close', style: TextStyle(color: Colors.grey)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.topCenter,
+              child: ConfettiWidget(
+                confettiController: _confettiController,
+                blastDirectionality: BlastDirectionality.explosive,
+                shouldLoop: false,
+                colors: const [Colors.green, Colors.blue, Colors.pink, Colors.orange, Colors.purple],
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override

@@ -1,4 +1,6 @@
 import 'package:crm_app/core/utils/error_handler.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
 import 'package:flutter/material.dart';
 import '../../../../providers/draft_provider.dart';
@@ -438,7 +440,7 @@ class _CopyrightFormScreenState extends ConsumerState<CopyrightFormScreen> {
                                 child: Padding(
                                   padding: EdgeInsets.only(top: 12.0),
                                   child: Text(
-                                    'I hereby declare that the work is original and all information provided is true and correct.',
+                                    'I Agree To The Terms Of Services & Privacy Policy',
                                     style: TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
                                   ),
                                 ),
@@ -521,7 +523,8 @@ class _CopyrightFormScreenState extends ConsumerState<CopyrightFormScreen> {
             dropdownStyleData: DropdownStyleData(
               decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
             ),
-            items: options.map((o) => DropdownItem<String>(value: o, child: Text(o, style: const TextStyle(fontSize: 14)))).toList(),
+            selectedItemBuilder: (context) => options.map((o) => Align(alignment: Alignment.centerLeft, child: Text(o, style: const TextStyle(fontSize: 14), overflow: TextOverflow.ellipsis))).toList(),
+            items: options.map((o) => DropdownItem<String>(value: o, child: Align(alignment: Alignment.centerLeft, child: Text(o, style: const TextStyle(fontSize: 14))))).toList(),
           ),
         ],
       ),
@@ -533,6 +536,16 @@ class _CopyrightFormScreenState extends ConsumerState<CopyrightFormScreen> {
       TextInputType keyboardType = TextInputType.text,
       int maxLines = 1,
       String? Function(String?)? validator}) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: hint,
+        validator: validator,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -547,17 +560,14 @@ class _CopyrightFormScreenState extends ConsumerState<CopyrightFormScreen> {
               ],
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             keyboardType: keyboardType,
             maxLines: maxLines,
             decoration: InputDecoration(
-              hintText: hint.isNotEmpty ? hint : 'Enter ${label.replaceAll('*', '').trim()}',
+              hintText: HintHelper.getExampleHint(label, hint: hint),
               hintStyle: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.normal),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               focusedBorder: OutlineInputBorder(
@@ -587,10 +597,7 @@ class _CopyrightFormScreenState extends ConsumerState<CopyrightFormScreen> {
               ],
             ),
           ),
-          if (hint.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(hint, style: TextStyle(fontSize: 11, fontWeight: FontWeight.normal, color: Colors.grey[500])),
-          ],
+
           const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

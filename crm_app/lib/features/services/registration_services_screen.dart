@@ -479,6 +479,7 @@ class _RegistrationServicesScreenState
                     'Popular Services',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -511,6 +512,7 @@ class _RegistrationServicesScreenState
                     '$_selectedCategory Results',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),

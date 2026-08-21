@@ -171,6 +171,29 @@ class AppTheme {
           textStyle: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700),
         ),
       ),
+      
+      datePickerTheme: DatePickerThemeData(
+        headerHeadlineStyle: GoogleFonts.outfit(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+        ),
+        headerHelpStyle: GoogleFonts.outfit(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
+        dayStyle: GoogleFonts.outfit(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        weekdayStyle: GoogleFonts.outfit(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        yearStyle: GoogleFonts.outfit(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
       cardTheme: CardThemeData(
         elevation: 0,
         color: surfaceLight,

@@ -267,7 +267,7 @@ class CustomerDashboard extends ConsumerWidget {
               SizedBox(height: 18.r),
               const _HorizontalServiceList(
                 items: [
-                  {'label': 'NIC Finder', 'icon': LucideIcons.binary},
+                  {'label': 'NIC\nFinder', 'icon': LucideIcons.binary},
                   {'label': 'Trade Mark Class', 'icon': HugeIcons.strokeRoundedLicense},
                   {'label': 'GST Calculator', 'icon': LucideIcons.calculator},
                   {'label': 'Compliance Calendar', 'icon': LucideIcons.calendar},
@@ -1596,7 +1596,7 @@ class _HorizontalServiceList extends ConsumerWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => ToolDetailScreen(
-                      toolName: label, icon: null,
+                      toolName: label.replaceAll('\n', ' '), icon: null,
                     ),
                   ),
                 );
@@ -1613,7 +1613,7 @@ class _HorizontalServiceList extends ConsumerWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        ToolDetailScreen(toolName: label, icon: icon),
+                        ToolDetailScreen(toolName: label.replaceAll('\n', ' '), icon: icon),
                   ),
                 );
               } else {

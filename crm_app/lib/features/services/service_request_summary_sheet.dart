@@ -72,6 +72,7 @@ class _ServiceRequestSummarySheetState
 
   String? _selectedEntity;
   late TextEditingController _customEntityController;
+  bool _isAddingNewEntity = false;
 
   late TextEditingController _fssaiEmployeesController;
   late TextEditingController _fssaiPremisesAddressController;
@@ -98,6 +99,12 @@ class _ServiceRequestSummarySheetState
   late TextEditingController _dunsYearController;
 
   String _officePreference = 'Own Address';
+
+  bool get _isIncorporationService {
+    return widget.packageName.contains('Incorporation') || 
+           widget.packageName.contains('Proprietorship Registration') || 
+           widget.packageName == 'OPC Incorporation';
+  }
   final String _msmeType = 'Micro';
   final String _tradeNature = 'Goods';
   final String _markType = 'Word mark';
@@ -161,6 +168,7 @@ class _ServiceRequestSummarySheetState
 
   void _updateExistingDocs() {
     _existingDocs.clear();
+
     final userProfile = ref.read(userProfileProvider).value;
     if (userProfile == null) return;
     
@@ -627,7 +635,7 @@ class _ServiceRequestSummarySheetState
       // Always populate entity_name properly from custom entity if Add New Entity is selected
       // except if it is MSME Certification where entity_name is already populated from companyNameController
       if (widget.packageName != 'MSME Registration') {
-        String finalEntity = _selectedEntity == 'Add New Entity...' 
+        String finalEntity = _isAddingNewEntity 
             ? _customEntityController.text 
             : (_selectedEntity ?? '');
         
@@ -741,7 +749,7 @@ class _ServiceRequestSummarySheetState
   Widget build(BuildContext context) {
     final ordersState = ref.watch(serviceOrdersProvider);
     final userProfile = ref.watch(userProfileProvider).value;
-    
+
     final List<String> availableEntities = ordersState.value
         ?.map((o) => o.entityName)
         .where((name) => name.isNotEmpty && name.toLowerCase() != 'client')
@@ -751,8 +759,6 @@ class _ServiceRequestSummarySheetState
     if (userProfile?.companyName != null && userProfile!.companyName.isNotEmpty && !availableEntities.contains(userProfile.companyName)) {
       availableEntities.insert(0, userProfile.companyName);
     }
-    
-    availableEntities.add('Add New Entity...');
 
     // Only auto-select first entity if no entity is pre-selected yet
     if (_selectedEntity == null && availableEntities.isNotEmpty) {
@@ -827,7 +833,7 @@ class _ServiceRequestSummarySheetState
     }
 
     Map<String, String>? getCompatibilityWarning() {
-      if (_selectedEntity == null || _selectedEntity == 'Add New Entity...') return null;
+      if (_selectedEntity == null || _isAddingNewEntity) return null;
       
       final reqService = widget.packageName;
 
@@ -920,10 +926,8 @@ class _ServiceRequestSummarySheetState
       }
 
       final entityType = entityTypesMap[_selectedEntity] ?? 'Unknown';
-      
-      bool isIncorporationService = reqService.contains('Incorporation') || reqService.contains('Proprietorship Registration') || reqService == 'OPC Incorporation';
 
-      if (isIncorporationService && _selectedEntity != 'Add New Entity...') {
+      if (_isIncorporationService && _selectedEntity != null && _selectedEntity != 'Add New Entity...') {
           bool isTrulyIncorporated = false;
           
           // Check if the entity has a CIN (Corporate Identification Number), which proves it's already incorporated.
@@ -1041,20 +1045,48 @@ class _ServiceRequestSummarySheetState
                   children: [
                     if (_currentPage == 0) ...[
                       _buildServiceHeader(),
-                      // User Profile Fields (Name, Email, Phone) are hidden in UI but still submitted from controllers
                       // Always show the entity dropdown for all services
                       if (true) ...[
                         const SizedBox(height: 24),
-                        Text(
-                          'Select Entity for this Service',
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.deepTeal,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Select Entity for this Service',
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.deepTeal,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isAddingNewEntity = true;
+                                  _selectedEntity = null;
+                                  _companyNameController.clear();
+                                });
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                '+ Add Entity',
+                                style: GoogleFonts.outfit(
+                                  color: AppTheme.corporateBlue,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 14,
+                                  letterSpacing: 0,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 8),
-                        DropdownButtonFormField2<String>(
+                        if (!_isAddingNewEntity)
+                          DropdownButtonFormField2<String>(
                           valueListenable: ValueNotifier(availableEntities.contains(_selectedEntity) ? _selectedEntity : availableEntities.first),
                           isExpanded: true,
                           decoration: InputDecoration(
@@ -1066,7 +1098,8 @@ class _ServiceRequestSummarySheetState
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                           ),
-                          iconStyleData: const IconStyleData(
+                          buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
+iconStyleData: const IconStyleData(
                             icon: Icon(LucideIcons.chevronDown, color: AppTheme.corporateBlue),
                           ),
                           dropdownStyleData: DropdownStyleData(
@@ -1210,13 +1243,49 @@ class _ServiceRequestSummarySheetState
                             ),
                           ),
                         ],
-                        if (_selectedEntity == 'Add New Entity...' && 
-                            !(widget.packageName.contains('Incorporation') || 
-                              widget.packageName.contains('Proprietorship Registration') || 
-                              widget.packageName.contains('OPC Incorporation'))) ...[
+                        if (_isAddingNewEntity) ...[
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'New Entity Details',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.deepTeal,
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _isAddingNewEntity = false;
+                                    if (availableEntities.isNotEmpty) {
+                                      _selectedEntity = availableEntities.first;
+                                    }
+                                    _customEntityController.clear();
+                                  });
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14,
+                                    letterSpacing: 0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                           const SizedBox(height: 12),
                           _EditableField(
-                            label: 'New Entity Name',
+                            label: 'Entity Name',
                             controller: _customEntityController,
                             icon: LucideIcons.building,
                             hint: 'Enter entity name',

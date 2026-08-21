@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:flutter/material.dart';
 import '../../../core/widgets/app_dropdown.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -391,6 +393,16 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
     String? hintText,
     String? Function(String?)? validator,
   }) {
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: controller,
+        label: label,
+        isRequired: isRequired,
+        hintText: null,
+        validator: validator,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(

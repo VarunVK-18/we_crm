@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:crm_app/core/utils/form_ui_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
@@ -400,6 +402,25 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
     if (field.type == 'email') keyboardType = TextInputType.emailAddress;
     if (field.type == 'phone') keyboardType = TextInputType.phone;
 
+    if (keyboardType == TextInputType.phone) {
+      return PhoneInputField(
+        controller: _controllers[pathKey]!,
+        label: field.label,
+        isRequired: field.required,
+        description: field.description,
+        hintText: HintHelper.getExampleHint(field.label, hint: field.description),
+        onChanged: (v) {
+          setState(() {});
+        },
+        validator: (v) {
+          if (field.required && (v == null || v.trim().isEmpty)) return 'Required';
+          if (v != null && v.isNotEmpty && !ValidationUtils.isValidPhone(v)) return 'Invalid phone';
+          return null;
+        },
+      );
+    }
+
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -435,7 +456,7 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
               }
             } : null,
             decoration: InputDecoration(
-              hintText: 'Enter ${field.label}',
+              hintText: HintHelper.getExampleHint(field.label, hint: field.description),
               hintStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.grey.shade400),
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
@@ -490,7 +511,7 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
             children: [
               Expanded(
                 child: Text(
-                  path == null ? 'Upload 1 supported file. Max 2 MB.' : path.split(Platform.pathSeparator).last,
+                  path == null ? 'No file selected' : path.split(Platform.pathSeparator).last,
                   style: GoogleFonts.inter(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -619,7 +640,13 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
                   Expanded(
                     child: RichText(
                       text: TextSpan(
-                        text: field.label, 
+                        text: (field.label.toLowerCase().startsWith('i ') || 
+                               field.label.toLowerCase().contains('declare') || 
+                               field.label.toLowerCase().contains('verify') || 
+                               field.label.toLowerCase().contains('agree') ||
+                               field.label.toLowerCase().contains('true'))
+                            ? 'I Agree To The Terms Of Services & Privacy Policy'
+                            : field.label, 
                         style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.black87),
                         children: [
                           if (field.required) const TextSpan(text: ' *', style: TextStyle(color: Colors.red))
