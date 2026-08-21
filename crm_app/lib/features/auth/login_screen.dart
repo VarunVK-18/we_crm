@@ -66,6 +66,80 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  void _showForgotPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          'Forgot Password',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        content: Text(
+          'Please call management to reset your password.\n\nManagement: +91 9884521264',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: Colors.black54,
+            height: 1.4,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(
+                color: Colors.grey.shade600,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final Uri telUri = Uri.parse('tel:9884521264');
+              try {
+                if (await canLaunchUrl(telUri)) {
+                  await launchUrl(telUri, mode: LaunchMode.externalApplication);
+                } else {
+                  await launchUrl(telUri);
+                }
+              } catch (e) {
+                debugPrint('Error launching dialer: $e');
+              }
+            },
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              'Call',
+              style: GoogleFonts.inter(
+                color: AppTheme.corporateBlue,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _handleSignIn() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -201,8 +275,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           color: Colors.black87,
                                         ),
                                       ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Your business, your work, all in one place',
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.grey.shade600,
+                                        ),
+                                      ),
                                       
-                                      const SizedBox(height: 32),
+                                      const SizedBox(height: 28),
 
                                       // Email Field
                                       TextFormField(
@@ -327,14 +411,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           style: TextButton.styleFrom(
                                             padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 8),
                                           ),
-                                          onPressed: () {
-                                            _showAuthDialog(
-                                              title: 'Notice',
-                                              message:
-                                                  'Contact Support To Reset Your Password.',
-                                              isError: false,
-                                            );
-                                          },
+                                          onPressed: _showForgotPasswordDialog,
                                           child: Text(
                                             'Forgot password?',
                                             style: GoogleFonts.inter(

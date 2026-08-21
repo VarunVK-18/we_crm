@@ -111,14 +111,14 @@ class _LandingScreenState extends State<LandingScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
             
             // Next Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: _onNext,
                   style: ElevatedButton.styleFrom(
@@ -132,28 +132,28 @@ class _LandingScreenState extends State<LandingScreen> {
                   child: Text(
                     _currentPage == 2 ? 'Get Started' : 'Next',
                     style: GoogleFonts.poppins(
-                      fontSize: 16,
+                      fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             
             // Skip Button
             TextButton(
               onPressed: _finishOnboarding,
               child: Text(
                 'Skip',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: Colors.blueGrey,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 12),
           ],
         ),
       ),
@@ -266,7 +266,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 Positioned(
                   bottom: 30,
                   right: 5,
-                  child: _buildGlassBadge(LucideIcons.building2, 'LLP/Pvt Ltd'),
+                  child: _buildGlassBadge(LucideIcons.building2, 'Pvt Ltd / LLP'),
                 ),
               ],
             ),
@@ -606,7 +606,7 @@ class _LandingScreenState extends State<LandingScreen> {
             style: GoogleFonts.poppins(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: AppTheme.corporateBlue,
+              color: Colors.black87,
               height: 1.3,
             ),
           ),
