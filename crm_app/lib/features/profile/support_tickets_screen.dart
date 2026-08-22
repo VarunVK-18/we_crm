@@ -323,13 +323,16 @@ class _SupportTicketsScreenState extends ConsumerState<SupportTicketsScreen> {
                               : serviceName;
                           return DropdownItem<String>(
                             value: sMap['_id'],
-                            child: Text(
-                              label,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w400,
+                            child: Transform.translate(
+                              offset: const Offset(-12, 0),
+                              child: Text(
+                                label,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           );
                         }).toList(),

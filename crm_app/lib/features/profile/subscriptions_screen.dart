@@ -11,6 +11,8 @@ import '../../providers/subscription_provider.dart';
 import '../../providers/compliance_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../orders/invoice_screen.dart';
+import '../compliance/mca_profile_form_screen.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -75,16 +77,74 @@ class SubscriptionsScreen extends ConsumerWidget {
                 if (filteredSubscriptions.isEmpty) {
                   return Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(32),
+                    padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppTheme.deepTeal,
-                      borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        'No Plans Found',
-                        style: TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600),
+                      gradient: const LinearGradient(
+                        colors: [AppTheme.deepTeal, Color(0xFF1E293B)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.deepTeal.withOpacity(0.12),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'NO ACTIVE PLAN',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Protect your business by keeping your company compliant with MCA.',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const McaProfileFormScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppTheme.deepTeal,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Apply for MCA Compliance',
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -226,17 +286,9 @@ class SubscriptionsScreen extends ConsumerWidget {
 
                     String invoiceId = c.id.length > 6 ? c.id.substring(c.id.length - 6).toUpperCase() : c.id;
                     if (c.customServiceId.isNotEmpty) {
-                      final numberPart = c.customServiceId.replaceAll(RegExp(r'[^0-9]'), '');
-                      final year = (c.createdAt ?? c.updatedAt ?? DateTime.now()).toLocal().year.toString();
-                      invoiceId = 'WE$year$numberPart';
-                    } else if (c.createdAt != null || c.updatedAt != null) {
-                      final dt = (c.createdAt ?? c.updatedAt!).toLocal();
-                      final yy = dt.year.toString().substring(2);
-                      final mm = dt.month.toString().padLeft(2, '0');
-                      final dd = dt.day.toString().padLeft(2, '0');
-                      final hh = dt.hour.toString().padLeft(2, '0');
-                      final min = dt.minute.toString().padLeft(2, '0');
-                      invoiceId = 'WE$yy$mm$dd$hh$min';
+                      invoiceId = c.customServiceId;
+                    } else {
+                      invoiceId = 'Pending';
                     }
 
                     final closed = c.dealClosedAmount ?? 0.0;
@@ -531,29 +583,26 @@ class SubscriptionsScreen extends ConsumerWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      isPaymentPending ? 'Pending Payment' : 'View Invoice',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: isPaymentPending ? Colors.red.withOpacity(0.8) : AppTheme.deepTeal.withOpacity(0.6),
-                      ),
+                if (isPaymentPending)
+                  Text(
+                    'Pending Payment',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.red.withOpacity(0.8),
                     ),
-                    const SizedBox(width: 4),
-                    if (!isPaymentPending)
-                      Icon(
-                        LucideIcons.download,
-                        size: 12,
-                        color: AppTheme.deepTeal.withOpacity(0.6),
-                      ),
-                  ],
-                ),
+                  )
+                else
+                  Icon(
+                    LucideIcons.eye,
+                    size: 20,
+                    color: AppTheme.deepTeal.withOpacity(0.6),
+                  ),
               ],
             ),
           ],

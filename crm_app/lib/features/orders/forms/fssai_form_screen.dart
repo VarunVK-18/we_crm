@@ -160,7 +160,12 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
         _premisesAddressController.text = draftData['premisesAddress'] ?? '';
         _isCorrespondenceSame = draftData['isCorrespondenceSame'] ?? 'Yes';
         _corrAddressController.text = draftData['corrAddress'] ?? '';
-      });
+      
+        if (draftData.containsKey('aadhaarPath')) _aadhaarPath = draftData['aadhaarPath'];
+        if (draftData.containsKey('panPath')) _panPath = draftData['panPath'];
+        if (draftData.containsKey('photoPath')) _photoPath = draftData['photoPath'];
+        if (draftData.containsKey('addressProofPath')) _addressProofPath = draftData['addressProofPath'];
+        if (draftData.containsKey('unitEntrancePhotoPath')) _unitEntrancePhotoPath = draftData['unitEntrancePhotoPath'];});
     }
   }
 

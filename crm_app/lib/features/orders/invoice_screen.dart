@@ -44,11 +44,10 @@ class InvoiceScreen extends ConsumerWidget {
   String get _invoiceNumber {
     final customId = order.customServiceId;
     if (customId.isNotEmpty) {
-      final numberPart = customId.replaceAll(RegExp(r'[^0-9]'), '');
-      final year = order.createdAt.toLocal().year.toString();
-      return '#WE$year$numberPart';
+      return '#$customId';
     }
-    return '#WE${DateFormat('yyMMddHHmm').format(order.createdAt.toLocal())}';
+    // fallback for old orders without a custom_service_id
+    return '#SD${DateFormat('yy').format(order.createdAt.toLocal())}${DateFormat('MMddHHmm').format(order.createdAt.toLocal())}';
   }
 
   double get _servicePrice =>
@@ -554,7 +553,7 @@ class InvoiceScreen extends ConsumerWidget {
                                 Text('For ${companyName.toUpperCase()}', style: const TextStyle(fontSize: 4, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
                                 const SizedBox(height: 10),
                                 Image.asset(
-                                  'assets/sign.jpg',
+                                  'assets/sign.png',
                                   width: 60,
                                   height: 60,
                                   fit: BoxFit.contain,
@@ -650,7 +649,7 @@ class InvoiceScreen extends ConsumerWidget {
 
     pw.MemoryImage? signImage;
     try {
-      final signData = await rootBundle.load('assets/sign.jpg');
+      final signData = await rootBundle.load('assets/sign.png');
       signImage = pw.MemoryImage(
         signData.buffer.asUint8List(signData.offsetInBytes, signData.lengthInBytes),
       );

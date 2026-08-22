@@ -57,9 +57,9 @@ class ComplianceTask {
 
   String get message {
     return switch (status) {
-      TaskStatus.upcoming => 'Due in $daysLeft days',
-      TaskStatus.dueSoon => 'Due in $daysLeft days',
-      TaskStatus.critical => 'Due in $daysLeft days',
+      TaskStatus.upcoming => '$daysLeft Days',
+      TaskStatus.dueSoon => '$daysLeft Days',
+      TaskStatus.critical => '$daysLeft Days',
       TaskStatus.overdue => 'Overdue - Penalty Applicable',
       TaskStatus.completed => 'Completed',
     };

@@ -1532,12 +1532,14 @@ const editClientProfile = async (req, res) => {
 };
 
 // Update MCA Profile for Company
+const EntityProfile = require('../models/EntityProfile');
 const updateMcaProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
 
     const {
+      entityName, // MUST pass entityName now to identify which entity we are updating
       // Business Information
       mcaUsername, mcaPassword, annualTurnover,
       companyName, companyPan, cin, incorporationDate, businessType, natureOfBusiness,
@@ -1549,57 +1551,82 @@ const updateMcaProfile = async (req, res) => {
       gstin, udyamNumber, trademarkNo, isoCertNo, dpiitRefNo,
     } = req.body;
 
+    const targetEntityName = entityName || companyName;
+    if (!targetEntityName) {
+      return res.status(400).json({ success: false, message: 'entityName is required' });
+    }
+
+    // Upsert EntityProfile
+    let profile = await EntityProfile.findOne({ uid: req.user._id.toString(), entityName: targetEntityName });
+    if (!profile) {
+      profile = new EntityProfile({ uid: req.user._id.toString(), entityName: targetEntityName });
+    }
+
     // Business info
-    if (mcaUsername !== undefined) user.mca_username = mcaUsername;
-    if (mcaPassword !== undefined) user.mca_password = mcaPassword;
-    if (annualTurnover !== undefined) user.annual_turnover = annualTurnover;
-    if (companyName !== undefined) user.company_name = companyName;
-    if (companyPan !== undefined) user.pan = companyPan;
-    if (cin !== undefined) user.cin = cin;
-    if (incorporationDate !== undefined) user.incorporation_date = incorporationDate ? new Date(incorporationDate) : null;
-    if (businessType !== undefined) user.business_type = businessType;
-    if (natureOfBusiness !== undefined) user.main_division_description = natureOfBusiness;
+    if (companyPan !== undefined) profile.pan = companyPan;
+    if (cin !== undefined) profile.cin = cin;
+    if (companyEmail !== undefined) profile.email = companyEmail;
+    if (companyPhone !== undefined) profile.phone = companyPhone;
+    if (registeredAddress !== undefined) profile.address = registeredAddress;
+    if (gstin !== undefined) profile.gstin = gstin;
+    if (directorName !== undefined) profile.directorName = directorName;
+    if (directorEmail !== undefined) profile.directorEmail = directorEmail;
+    if (directorMobile !== undefined) profile.directorPhone = directorMobile;
+    if (directorPan !== undefined) profile.directorPan = directorPan;
+    if (directorDin !== undefined) profile.directorDin = directorDin;
+    
+    // Also store some data back on user.client_entities to ensure it's synced if needed
+    if (user.client_entities && user.client_entities.length > 0) {
+      const entityIndex = user.client_entities.findIndex(e => e.entityName.toLowerCase() === targetEntityName.toLowerCase());
+      if (entityIndex !== -1) {
+        if (incorporationDate) {
+          let parsedDate = null;
+          if (/^\d{2}\/\d{2}\/\d{4}$/.test(incorporationDate)) {
+            const [dd, mm, yyyy] = incorporationDate.split('/');
+            parsedDate = new Date(`${yyyy}-${mm}-${dd}`);
+          } else {
+            parsedDate = new Date(incorporationDate);
+          }
+          user.client_entities[entityIndex].incorporation_date = isNaN(parsedDate.getTime()) ? null : parsedDate;
+        }
+        if (businessType) {
+          user.client_entities[entityIndex].entityType = businessType;
+        }
+        user.markModified('client_entities');
+      }
+    }
 
-    // Contact & Address
-    if (registeredAddress !== undefined) user.address = registeredAddress;
-    if (city !== undefined) user.city = city;
-    if (state !== undefined) user.state = state;
-    if (postalCode !== undefined) user.postal_code = postalCode;
-    if (companyEmail !== undefined) user.company_email = companyEmail;
-    if (companyPhone !== undefined) user.phone = companyPhone;
-
-    // Registration details
-    if (gstin !== undefined) user.gstin = gstin;
-
-    // Store extra registration data in dynamicProfileData
-    if (!user.dynamicProfileData) user.dynamicProfileData = {};
-    if (directorName !== undefined) user.dynamicProfileData.directorName = directorName;
-    if (directorDin !== undefined) user.dynamicProfileData.directorDin = directorDin;
-    if (directorPan !== undefined) user.dynamicProfileData.directorPan = directorPan;
-    if (directorAadhaar !== undefined) user.dynamicProfileData.directorAadhaar = directorAadhaar;
-    if (directorEmail !== undefined) user.dynamicProfileData.directorEmail = directorEmail;
-    if (directorMobile !== undefined) user.dynamicProfileData.directorMobile = directorMobile;
-    if (udyamNumber !== undefined) user.dynamicProfileData.udyamNumber = udyamNumber;
-    if (trademarkNo !== undefined) user.dynamicProfileData.trademarkNo = trademarkNo;
-    if (isoCertNo !== undefined) user.dynamicProfileData.isoCertNo = isoCertNo;
-    if (dpiitRefNo !== undefined) user.dynamicProfileData.dpiitRefNo = dpiitRefNo;
-    user.markModified('dynamicProfileData');
-
-    // Handle file uploads
+    // Store remaining specific data inside dynamicProfileData if they don't have fields in EntityProfile
+    if (!profile.dynamicProfileData) profile.dynamicProfileData = {};
+    if (mcaUsername !== undefined) profile.dynamicProfileData.mcaUsername = mcaUsername;
+    if (mcaPassword !== undefined) profile.dynamicProfileData.mcaPassword = mcaPassword;
+    if (annualTurnover !== undefined) profile.dynamicProfileData.annualTurnover = annualTurnover;
+    if (businessType !== undefined) profile.dynamicProfileData.businessType = businessType;
+    if (natureOfBusiness !== undefined) profile.dynamicProfileData.natureOfBusiness = natureOfBusiness;
+    if (city !== undefined) profile.dynamicProfileData.city = city;
+    if (state !== undefined) profile.dynamicProfileData.state = state;
+    if (postalCode !== undefined) profile.dynamicProfileData.postalCode = postalCode;
+    if (directorAadhaar !== undefined) profile.dynamicProfileData.directorAadhaar = directorAadhaar;
+    if (udyamNumber !== undefined) profile.dynamicProfileData.udyamNumber = udyamNumber;
+    if (trademarkNo !== undefined) profile.dynamicProfileData.trademarkNo = trademarkNo;
+    if (isoCertNo !== undefined) profile.dynamicProfileData.isoCertNo = isoCertNo;
+    if (dpiitRefNo !== undefined) profile.dynamicProfileData.dpiitRefNo = dpiitRefNo;
+    
+    // Handle file uploads directly to EntityProfile
     const fileFieldMap = {
-      coi: 'coi_file',
-      pan: 'pan_file',
-      moa: 'moa_file',
-      aoa: 'aoa_file',
-      bankStatement: 'bank_statement_file',
-      salesInvoice: 'sales_invoice_file',
-      purchaseBills: 'purchase_bills_file',
-      gstCert: null,
-      aadhaar: null,
-      directorPanDoc: null,
-      udyamCert: null,
-      trademarkCert: null,
-      isoCert: null,
+      coi: 'incorpCertDocId',
+      pan: 'panCardDocId',
+      moa: 'moaDocId',
+      aoa: 'aoaDocId',
+      bankStatement: 'bankDocId',
+      salesInvoice: 'salesInvoiceDocId',
+      purchaseBills: 'purchaseBillsDocId',
+      gstCert: 'gstDocId',
+      aadhaar: 'aadhaarDocId',
+      directorPanDoc: 'directorPanDocId',
+      udyamCert: 'udyamCertDocId',
+      trademarkCert: 'trademarkCertDocId',
+      isoCert: 'isoCertDocId',
     };
 
     if (req.files && Array.isArray(req.files)) {
@@ -1611,20 +1638,25 @@ const updateMcaProfile = async (req, res) => {
           uploadedBy: req.user._id
         });
         const docId = doc._id.toString();
-        const userField = fileFieldMap[file.fieldname];
-        if (userField) {
-          user[userField] = docId;
-        } else if (file.fieldname in fileFieldMap) {
-          user.dynamicProfileData[`${file.fieldname}File`] = docId;
-          user.markModified('dynamicProfileData');
+        const profileField = fileFieldMap[file.fieldname];
+        if (profileField) {
+          if (profile.schema.paths[profileField]) {
+            profile[profileField] = docId;
+            profile[`${profileField.replace('Id', 'Name')}`] = file.originalname;
+          } else {
+            profile.dynamicProfileData[`${file.fieldname}File`] = docId;
+          }
         }
       }
     }
+    
+    profile.markModified('dynamicProfileData');
+    await profile.save();
 
     user.mca_profile_completed = true;
     await user.save();
 
-    res.status(200).json({ success: true, message: 'Company Profile updated successfully.' });
+    res.status(200).json({ success: true, message: 'Company Profile updated successfully.', profile });
   } catch (error) {
     console.error('Error updating Company profile:', error);
     res.status(500).json({ success: false, message: 'Server error while updating company profile.' });

@@ -8,8 +8,12 @@ exports.getEntityProfile = async (req, res) => {
   try {
     const uid = req.headers['x-user-id'];
     if (!uid) return res.status(401).json({ message: 'Unauthorized' });
+    
+    const entityName = req.query.entityName;
+    const query = { uid };
+    if (entityName) query.entityName = entityName;
 
-    const profile = await EntityProfile.findOne({ uid });
+    const profile = await EntityProfile.findOne(query);
     return res.json({ profile: profile || {} });
   } catch (err) {
     console.error('getEntityProfile error:', err);
@@ -40,6 +44,9 @@ exports.updateEntityProfile = async (req, res) => {
       'gstDocId', 'gstDocName',
     ];
 
+    const entityName = req.body.entityName || req.query.entityName;
+    if (!entityName) return res.status(400).json({ message: 'entityName is required' });
+
     // Only pick allowed fields; skip empty strings so we don't erase existing data
     const updates = {};
     for (const field of allowedFields) {
@@ -49,7 +56,7 @@ exports.updateEntityProfile = async (req, res) => {
     }
 
     const profile = await EntityProfile.findOneAndUpdate(
-      { uid },
+      { uid, entityName },
       { $set: updates },
       { upsert: true, new: true }
     );
@@ -69,6 +76,8 @@ exports.uploadEntityDocument = async (req, res) => {
     if (!uid) return res.status(401).json({ message: 'Unauthorized' });
 
     const { docKey } = req.params; // e.g. 'panCard', 'aadhaar', 'incorpCert', etc.
+    const entityName = req.body.entityName || req.query.entityName;
+    if (!entityName) return res.status(400).json({ message: 'entityName is required for document upload' });
 
     const validDocKeys = [
       'panCard', 'aadhaar', 'incorpCert', 'addressProof',
@@ -95,7 +104,7 @@ exports.uploadEntityDocument = async (req, res) => {
     const docNameField = `${docKey}DocName`;
 
     // Optionally delete the old document from DB
-    const existing = await EntityProfile.findOne({ uid });
+    const existing = await EntityProfile.findOne({ uid, entityName });
     if (existing && existing[docIdField]) {
       try {
         await Document.findByIdAndDelete(existing[docIdField]);
@@ -103,7 +112,7 @@ exports.uploadEntityDocument = async (req, res) => {
     }
 
     const profile = await EntityProfile.findOneAndUpdate(
-      { uid },
+      { uid, entityName },
       { $set: { [docIdField]: newDoc._id.toString(), [docNameField]: req.file.originalname } },
       { upsert: true, new: true }
     );

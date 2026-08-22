@@ -49,8 +49,8 @@ async function seedGstReturnForm() {
           ]
         },
         {
-          name: 'requiredDocs',
-          label: '3. Required Documents',
+          name: 'documents',
+          label: '3. Documents',
           type: 'group',
           required: false,
           subFields: [
@@ -61,23 +61,8 @@ async function seedGstReturnForm() {
           ]
         },
         {
-          name: 'optionalDocs',
-          label: '4. Additional GST Documents',
-          type: 'group',
-          required: false,
-          subFields: [
-            { name: 'previousGstReturn', label: 'Previous GST Return', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'salesRegister', label: 'Sales Register', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'purchaseRegister', label: 'Purchase Register', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'itcStatement', label: 'ITC Statement', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'eInvoiceSummary', label: 'E-Invoice Summary', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'eWayBillSummary', label: 'E-Way Bill Summary', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'otherDocs', label: 'Other Supporting Documents', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' }
-          ]
-        },
-        {
           name: 'declarationSection',
-          label: '5. Declaration',
+          label: '4. Declaration',
           type: 'group',
           required: false,
           subFields: [

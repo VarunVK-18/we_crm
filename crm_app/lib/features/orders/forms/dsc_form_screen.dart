@@ -374,21 +374,9 @@ class _DscFormScreenState extends ConsumerState<DscFormScreen> {
                       _buildField('Organization Type', '', _organizationTypeController, isRequired: true),
                       _buildField('Office Address', '', _officeAddressController, isRequired: true, maxLines: 3),
                       _buildField('Address for couriering the DSC', 'Full Address with PIN code', _courierAddressController, isRequired: true, maxLines: 3),
-                    ],
-                  ),
-
-                  _buildSectionContainer(
-                    title: 'Documents',
-                    children: [
                       _buildFileRow('Applicant PAN Card', 'Upload 1 supported file: PDF or image. Max 2 MB.', _applicantPanPath, () => _pickFile((path) => _applicantPanPath = path)),
                       _buildFileRow('Applicant Aadhaar Card', 'Upload 1 supported file: PDF or image. Max 2 MB.', _applicantAadhaarPath, () => _pickFile((path) => _applicantAadhaarPath = path)),
                       _buildFileRow('Applicant Photo', 'Upload 1 supported file: PDF or image. Max 2 MB.', _applicantPhotoPath, () => _pickFile((path) => _applicantPhotoPath = path)),
-                    ],
-                  ),
-
-                  _buildSectionContainer(
-                    title: 'Documents',
-                    children: [
                       _buildFileRow('Certificate of Incorporation', 'Upload 1 supported file: PDF or image. Max 2 MB.', _coiPath, () => _pickFile((path) => _coiPath = path), isRequired: false),
                       _buildFileRow('Organization PAN', 'Upload 1 supported file: PDF or image. Max 2 MB.', _organizationPanPath, () => _pickFile((path) => _organizationPanPath = path), isRequired: false),
                       _buildFileRow('GST Certificate', 'Upload 1 supported file: PDF or image. Max 2 MB.', _gstPath, () => _pickFile((path) => _gstPath = path), isRequired: false),

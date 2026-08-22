@@ -115,17 +115,16 @@ export class ClientInvoice implements OnInit {
     const d = o?.createdAt ? new Date(o.createdAt) : new Date();
 
     if (o?.custom_service_id) {
-      const numberPart = String(o.custom_service_id).replace(/\D/g, '');
-      const year = d.getFullYear().toString();
-      return `#WE${year}${numberPart}`;
+      return `#${o.custom_service_id}`;
     }
-    if (!o || !o.createdAt) return '#WE-0000000000';
+    // fallback for old orders without a custom_service_id
+    if (!o || !o.createdAt) return '#SD-0000000';
     const yy = String(d.getFullYear()).slice(-2);
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     const hh = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
-    return `#WE${yy}${mm}${dd}${hh}${min}`;
+    return `#SD${yy}${mm}${dd}${hh}${min}`;
   }
 
   get servicePrice(): number {

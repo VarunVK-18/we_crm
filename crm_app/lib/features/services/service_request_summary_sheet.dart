@@ -1115,12 +1115,15 @@ iconStyleData: const IconStyleData(
                           items: availableEntities.map((entity) {
                             return DropdownItem<String>(
                               value: entity,
-                              child: Text(
-                                entity,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.deepTeal,
+                              child: Transform.translate(
+                                offset: const Offset(-12, 0),
+                                child: Text(
+                                  entity,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.deepTeal,
+                                  ),
                                 ),
                               ),
                             );
@@ -2744,7 +2747,7 @@ class _EditableField extends StatelessWidget {
                 hintText: hint,
                 hintStyle: TextStyle(
                   color: Colors.grey[400],
-                  fontSize: 14,
+                  fontSize: 12,
                   letterSpacing: 0,
                 ),
                 prefixIcon: icon == null

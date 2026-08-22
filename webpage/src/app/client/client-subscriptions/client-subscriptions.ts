@@ -190,14 +190,15 @@ export class ClientSubscriptions implements OnInit, OnDestroy {
   }
 
   getInvoiceNumber(service: any): string {
-    if (!service || !service.updatedAt) return 'WE-0000000000';
+    if (service?.custom_service_id) return service.custom_service_id;
+    if (!service || !service.updatedAt) return 'SD-0000000';
     const d = new Date(service.updatedAt);
     const yy = String(d.getFullYear()).slice(-2);
     const mm = String(d.getMonth() + 1).padStart(2, '0');
     const dd = String(d.getDate()).padStart(2, '0');
     const hh = String(d.getHours()).padStart(2, '0');
     const min = String(d.getMinutes()).padStart(2, '0');
-    return `WE${yy}${mm}${dd}${hh}${min}`;
+    return `SD${yy}${mm}${dd}${hh}${min}`;
   }
 
   formatTitleCase(text: string): string {

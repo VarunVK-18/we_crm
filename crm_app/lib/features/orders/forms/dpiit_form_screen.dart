@@ -160,7 +160,9 @@ class _DpiitFormScreenState extends ConsumerState<DpiitFormScreen> {
         _iprAppliedController.text = draftData['iprApplied'] ?? '';
         _fundsReceivedController.text = draftData['fundsReceived'] ?? '';
         _awardsReceivedController.text = draftData['awardsReceived'] ?? '';
-      });
+      
+        if (draftData.containsKey('companyLogoPath')) _companyLogoPath = draftData['companyLogoPath'];
+        if (draftData.containsKey('incorpCertPath')) _incorpCertPath = draftData['incorpCertPath'];});
     }
   }
 

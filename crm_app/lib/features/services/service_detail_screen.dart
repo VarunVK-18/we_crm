@@ -214,31 +214,37 @@ class ServiceDetailScreen extends ConsumerWidget {
                           spacing: 8,
                           runSpacing: 10,
                           children: kServiceRequiredDocuments[serviceName]!
-                              .map((doc) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: const Color(0xFFE2E8F0)),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(LucideIcons.fileText,
-                                            size: 14,
-                                            color: AppTheme.corporateBlue),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          doc,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppTheme.deepTeal,
+                              .map((doc) => ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                        maxWidth: MediaQuery.of(context).size.width - 48),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF1F5F9),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                            color: const Color(0xFFE2E8F0)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(LucideIcons.fileText,
+                                              size: 14,
+                                              color: AppTheme.corporateBlue),
+                                          const SizedBox(width: 8),
+                                          Flexible(
+                                            child: Text(
+                                              doc,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppTheme.deepTeal,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ))
                               .toList(),
@@ -270,31 +276,37 @@ class ServiceDetailScreen extends ConsumerWidget {
                           spacing: 8,
                           runSpacing: 10,
                           children: kServiceFinalDocuments[serviceName]!
-                              .map((doc) => Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF0FDF4), // Light green tint
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                          color: const Color(0xFFBBF7D0)), // Green border
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(LucideIcons.checkCircle,
-                                            size: 14,
-                                            color: Color(0xFF16A34A)), // Green check icon
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          doc,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
-                                            color: AppTheme.deepTeal,
+                              .map((doc) => ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                        maxWidth: MediaQuery.of(context).size.width - 48),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 14, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFF0FDF4), // Light green tint
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                            color: const Color(0xFFBBF7D0)), // Green border
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(LucideIcons.checkCircle,
+                                              size: 14,
+                                              color: Color(0xFF16A34A)), // Green check icon
+                                          const SizedBox(width: 8),
+                                          Flexible(
+                                            child: Text(
+                                              doc,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppTheme.deepTeal,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ],
+                                        ],
+                                      ),
                                     ),
                                   ))
                               .toList(),

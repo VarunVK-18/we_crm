@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:crm_app/core/utils/file_picker_util.dart';
@@ -6,11 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/compliance_provider.dart';
 
 class McaProfileFormScreen extends ConsumerStatefulWidget {
   const McaProfileFormScreen({super.key});
@@ -87,6 +90,76 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
     'Government Organization',
   ];
 
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchProfile();
+    });
+  }
+
+  Future<void> _fetchProfile() async {
+    final uid = ref.read(authStateProvider).value?.uid;
+    if (uid == null) return;
+    
+    final entityName = ref.read(selectedEntityProvider);
+    if (entityName.isEmpty) return;
+
+    setState(() => _isLoading = true);
+    try {
+      final uri = Uri.parse('$kBaseUrl/api/entity-profile?entityName=${Uri.encodeComponent(entityName)}');
+      final response = await http.get(uri, headers: {'x-user-id': uid});
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final profile = data['profile'] ?? {};
+        
+        setState(() {
+          _companyNameController.text = profile['entityName'] ?? '';
+          _companyPanController.text = profile['pan'] ?? '';
+          _cinController.text = profile['cin'] ?? '';
+          _companyEmailController.text = profile['email'] ?? '';
+          _companyPhoneController.text = profile['phone'] ?? '';
+          _registeredAddressController.text = profile['address'] ?? '';
+          _gstinController.text = profile['gstin'] ?? '';
+          
+          _directorNameController.text = profile['directorName'] ?? '';
+          _directorEmailController.text = profile['directorEmail'] ?? '';
+          _directorMobileController.text = profile['directorPhone'] ?? '';
+          _directorPanController.text = profile['directorPan'] ?? '';
+          _directorDinController.text = profile['directorDin'] ?? '';
+          
+          if (profile['dynamicProfileData'] != null) {
+             final dyn = profile['dynamicProfileData'];
+             _mcaUsernameController.text = dyn['mcaUsername'] ?? '';
+             _mcaPasswordController.text = dyn['mcaPassword'] ?? '';
+             _natureOfBusinessController.text = dyn['natureOfBusiness'] ?? '';
+             _cityController.text = dyn['city'] ?? '';
+             _stateController.text = dyn['state'] ?? '';
+             _postalCodeController.text = dyn['postalCode'] ?? '';
+             _directorAadhaarController.text = dyn['directorAadhaar'] ?? '';
+             _udyamNumberController.text = dyn['udyamNumber'] ?? '';
+             _trademarkNoController.text = dyn['trademarkNo'] ?? '';
+             _isoCertNoController.text = dyn['isoCertNo'] ?? '';
+             _dpiitRefNoController.text = dyn['dpiitRefNo'] ?? '';
+             if (dyn['businessType'] != null && _businessTypes.contains(dyn['businessType'])) {
+                _businessType = dyn['businessType'];
+             }
+             if (dyn['annualTurnover'] != null) {
+                _annualTurnover = dyn['annualTurnover'];
+             }
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching profile: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   void dispose() {
     _companyNameController.dispose();
@@ -153,6 +226,11 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
       final uri = Uri.parse('$kBaseUrl/api/users/me/mca-profile');
       var request = http.MultipartRequest('POST', uri);
       request.headers['x-user-id'] = uid;
+
+      final entityName = ref.read(selectedEntityProvider);
+      if (entityName.isNotEmpty) {
+        request.fields['entityName'] = entityName;
+      }
 
       // Business Info
       request.fields['companyName'] = _companyNameController.text.trim();
@@ -235,15 +313,99 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
         SnackBar(content: Text(msg), backgroundColor: Colors.red));
   }
 
+  Future<void> _saveDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = <String, dynamic>{
+      'companyName': _companyNameController.text,
+      'companyPan': _companyPanController.text,
+      'cin': _cinController.text,
+      'incorporationDate': _incorporationDateController.text,
+      'businessType': _businessType,
+      'natureOfBusiness': _natureOfBusinessController.text,
+      'annualTurnover': _annualTurnover,
+      'registeredAddress': _registeredAddressController.text,
+      'city': _cityController.text,
+      'state': _stateController.text,
+      'postalCode': _postalCodeController.text,
+      'companyEmail': _companyEmailController.text,
+      'companyPhone': _companyPhoneController.text,
+      'directorName': _directorNameController.text,
+      'directorDin': _directorDinController.text,
+      'directorPan': _directorPanController.text,
+      'directorAadhaar': _directorAadhaarController.text,
+      'directorEmail': _directorEmailController.text,
+      'directorMobile': _directorMobileController.text,
+      'gstin': _gstinController.text,
+      'udyamNumber': _udyamNumberController.text,
+      'trademarkNo': _trademarkNoController.text,
+      'isoCertNo': _isoCertNoController.text,
+      'dpiitRefNo': _dpiitRefNoController.text,
+      'mcaUsername': _mcaUsernameController.text,
+      'mcaPassword': _mcaPasswordController.text,
+    };
+    await prefs.setString('draft_mca_profile', jsonEncode(data));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Draft saved!'),
+        backgroundColor: AppTheme.deepTeal,
+      ));
+    }
+  }
+
+  Future<bool> _onWillPop() async {
+    final shouldPop = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Save as Draft?'),
+        content: const Text('Do you want to save your progress before exiting?'),
+        actions: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(80, 36)),
+                onPressed: () async {
+                  await _saveDraft();
+                  if (context.mounted) Navigator.of(context).pop(true);
+                },
+                child: Text('Save Draft',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    return shouldPop ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _onWillPop();
+        if (shouldPop && context.mounted) Navigator.of(context).pop();
+      },
+      child: Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
       appBar: AppBar(
         title: const Text('Company Profile',
             style: TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 16)),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppTheme.backgroundLight,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
@@ -392,10 +554,11 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
                     child: const Text('Save Company Profile',
                         style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
                   ),
-                  const SizedBox(height: 40),
+                   const SizedBox(height: 40),
                 ],
               ),
             ),
+      ),
     );
   }
 

@@ -9,17 +9,19 @@ const Document = require('../models/Document');
 const saveFilesToDatabase = async (req, res, next) => {
   try {
     if (!req.files) return next();
-    for (const fieldname of Object.keys(req.files)) {
-      for (const file of req.files[fieldname]) {
-        const newDoc = new Document({
-          filename: file.originalname,
-          contentType: file.mimetype,
-          data: file.buffer,
-          uploadedBy: req.user ? req.user.id : null
-        });
-        await newDoc.save();
-        file.path = '/api/documents/' + newDoc._id;
-      }
+    // upload.any() returns an Array; upload.fields() returns an Object
+    const filesArray = Array.isArray(req.files)
+      ? req.files
+      : Object.values(req.files).flat();
+    for (const file of filesArray) {
+      const newDoc = new Document({
+        filename: file.originalname,
+        contentType: file.mimetype,
+        data: file.buffer,
+        uploadedBy: req.user ? req.user.id : null
+      });
+      await newDoc.save();
+      file.path = '/api/documents/' + newDoc._id;
     }
     next();
   } catch (error) {

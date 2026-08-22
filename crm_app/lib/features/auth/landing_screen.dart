@@ -67,7 +67,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.asset(
-                    'assets/images/logo_without background.jpg',
+                    'assets/logo.png',
                     height: 50,
                     fit: BoxFit.contain,
                   ),

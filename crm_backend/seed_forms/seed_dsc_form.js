@@ -35,22 +35,14 @@ async function seedDscForm() {
           ]
         },
         {
-          name: 'mandatoryDocuments',
-          label: '2. Mandatory Documents',
+          name: 'documents',
+          label: '2. Documents',
           type: 'group',
           required: false,
           subFields: [
             { name: 'applicantPan', label: 'Applicant PAN Card', type: 'file', required: true, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' },
             { name: 'applicantAadhaar', label: 'Applicant Aadhaar Card', type: 'file', required: true, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' },
-            { name: 'applicantPhoto', label: 'Applicant Photo', type: 'file', required: true, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' }
-          ]
-        },
-        {
-          name: 'optionalDocuments',
-          label: '3. Optional Documents',
-          type: 'group',
-          required: false,
-          subFields: [
+            { name: 'applicantPhoto', label: 'Applicant Photo', type: 'file', required: true, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' },
             { name: 'certificateOfIncorporation', label: 'Certificate of Incorporation', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
             { name: 'organizationPan', label: 'Organization PAN', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
             { name: 'gstCertificate', label: 'GST Certificate', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
@@ -60,7 +52,7 @@ async function seedDscForm() {
         },
         {
           name: 'verificationSection',
-          label: '4. Verification',
+          label: '3. Verification',
           type: 'group',
           required: false,
           subFields: [

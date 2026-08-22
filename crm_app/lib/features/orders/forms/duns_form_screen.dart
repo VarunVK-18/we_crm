@@ -501,7 +501,7 @@ class _DunsFormScreenState extends ConsumerState<DunsFormScreen> {
     );
   }
 
-  Widget _buildFileRow(String title, File? file, String type) {
+  Widget _buildFileRow(String title, File? file, String type, {bool isRequired = true}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Column(

@@ -513,7 +513,7 @@ class _CeRohsFormScreenState extends ConsumerState<CeRohsFormScreen> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
-items: _certificationTypes.map((type) => DropdownItem(value: type, child: Text(type))).toList(),
+items: _certificationTypes.map((type) => DropdownItem(value: type, child: Transform.translate(offset: const Offset(-12, 0), child: Text(type)))).toList(),
                   onChanged: (v) => setState(() => _certificationType = v),
                   validator: (v) => v == null ? 'Select certification type' : null,
                   dropdownStyleData: DropdownStyleData(
@@ -534,7 +534,7 @@ items: _certificationTypes.map((type) => DropdownItem(value: type, child: Text(t
                 
                 _buildField('Product Specifications (Voltage, Power, etc.) *', _productSpecsController, maxLines: 3),
                 Text(
-                  'Required Documents',
+                  'Documents',
                   style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87),
                 ),
                 const SizedBox(height: 16),

@@ -511,7 +511,7 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
     );
   }
 
-  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
+  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick, {bool isRequired = true}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -521,8 +521,8 @@ class _BisFormScreenState extends ConsumerState<BisFormScreen> {
             text: TextSpan(
               text: label,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              children: [
+                if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
               ]
             ),
           ),

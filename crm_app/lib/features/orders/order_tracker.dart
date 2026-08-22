@@ -171,79 +171,99 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
+      appBar: AppBar(
+        title: Text(
+          'My Services',
+          style: GoogleFonts.inter(
+            color: const Color(0xFF1E293B),
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        backgroundColor: const Color(0xFFF4F6F9),
+        elevation: 0,
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+        actions: [
+          Container(
+            width: 140,
+            height: 36,
+            margin: const EdgeInsets.only(right: 8),
+            child: TextField(
+              onChanged: (val) => setState(() => _searchQuery = val),
+              style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal),
+              decoration: InputDecoration(
+                hintText: 'Search',
+                hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                prefixIcon: const Icon(LucideIcons.search, size: 14, color: Colors.grey),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+              ),
+            ),
+          ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                onPressed: () {
+                  ref.read(notificationProvider.notifier).markAllAsRead();
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: Colors.transparent,
+                    builder: (context) => const NotificationSheet(),
+                  );
+                },
+                icon: const Icon(
+                  LucideIcons.bell,
+                  size: 20,
+                  color: AppTheme.deepTeal,
+                ),
+              ),
+              if (totalNotificationsCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Colors.orange,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$totalNotificationsCount',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ─────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                children: [
-                  const Text(
-                    'My Services',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.deepTeal,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  const Spacer(),
-                  Stack(
-                    children: [
-                      IconButton(
-                        onPressed: () {
-                          // Clear notifications locally first for instant feedback
-                          ref.read(notificationProvider.notifier).markAllAsRead();
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (context) => const NotificationSheet(),
-                          );
-                        },
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(color: Colors.grey.shade200, width: 2.0),
-                          ),
-                          shadowColor: Colors.black.withValues(alpha: 0.06),
-                          elevation: 2,
-                        ),
-                        icon: const Icon(
-                          LucideIcons.bell,
-                          size: 18,
-                          color: AppTheme.deepTeal,
-                        ),
-                      ),
-                      if (totalNotificationsCount > 0)
-                        Positioned(
-                          right: 4,
-                          top: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.orange,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '$totalNotificationsCount',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                height: 1,
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
+
 
             // ── Entity Selector Card ────────────────────────────────────────
             Padding(
@@ -269,12 +289,6 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           ),
                         ),
                         const Spacer(),
-                        const Icon(
-                          LucideIcons.eye,
-                          size: 14,
-                          color: AppTheme.corporateBlue,
-                        ),
-                        const SizedBox(width: 4),
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -284,13 +298,24 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                               ),
                             );
                           },
-                          child: const Text(
-                            'View Entity',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: AppTheme.corporateBlue,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                LucideIcons.eye,
+                                size: 14,
+                                color: AppTheme.corporateBlue,
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'View Entity',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppTheme.corporateBlue,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -335,11 +360,14 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       ),
                       selectedItemBuilder: (BuildContext context) {
                         return [
-                          ...entities.map((e) => Text(
-                                e,
-                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                          ...entities.map((e) => Transform.translate(
+                                offset: const Offset(-12, 0),
+                                child: Text(
+                                  e,
+                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               )),
                         ];
                       },
@@ -347,27 +375,30 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                         ...entities.map(
                           (e) => DropdownItem<String>(
                             value: e,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    e,
-                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
-                                    maxLines: 3,
-                                    overflow: TextOverflow.visible,
+                            child: Transform.translate(
+                              offset: const Offset(-12, 0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      e,
+                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+                                      maxLines: 3,
+                                      overflow: TextOverflow.visible,
+                                    ),
                                   ),
-                                ),
-                                if (selectedEntity == e)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 8.0),
-                                    child: Icon(LucideIcons.check, size: 16, color: AppTheme.deepTeal),
-                                  ),
-                              ],
+                                  if (selectedEntity == e)
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 8.0),
+                                      child: Icon(LucideIcons.check, size: 16, color: AppTheme.deepTeal),
+                                    ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ],
+                    ],
                       onChanged: (val) {
                         if (val != null) {
                           ref.read(selectedEntityProvider.notifier).state = val;
@@ -386,123 +417,89 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               physics: const BouncingScrollPhysics(),
               child: Row(
-                children: _ServiceTab.values.map((tab) {
-                  final isSelected = _selectedTab == tab;
-                  final count = counts[tab] ?? 0;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 10),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedTab = tab),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 10,
-                        ),
+                children: [
+                  if (_selectedTab == _ServiceTab.active)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: Container(
+                        height: 38,
+                        width: 130, // Reduced width to match tabs
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.deepTeal : Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.shade200, width: 2.0),
-
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10), // Matches Tab chips
+                          border: Border.all(color: Colors.grey.shade200, width: 2.0),
                         ),
-                        child: Text(
-                          '${_tabLabels[tab]}  ${count == 0 ? '0' : count.toString().padLeft(2, '0')}',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.grey.shade600,
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton2<String>(
+                            isExpanded: true,
+                            valueListenable: _activeFilter,
+                            buttonStyleData: const ButtonStyleData(
+                              height: 38,
+                              padding: EdgeInsets.zero,
+                            ),
+                            iconStyleData: const IconStyleData(
+                              icon: Icon(LucideIcons.chevronDown, size: 16, color: Colors.grey),
+                            ),
+                            dropdownStyleData: DropdownStyleData(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white,
+                              ),
+                            ),
+                            menuItemStyleData: const MenuItemStyleData(),
+                            style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal, fontWeight: FontWeight.bold),
+                            items: const [
+                              DropdownItem(value: 'All', child: Text('All', overflow: TextOverflow.ellipsis)),
+                              DropdownItem(value: 'Action Required', child: Text('Action Required', overflow: TextOverflow.ellipsis)),
+                              DropdownItem(value: 'In Progress', child: Text('In Progress', overflow: TextOverflow.ellipsis)),
+                            ],
+                            onChanged: (val) {
+                              if (val != null) {
+                                _activeFilter.value = val;
+                                setState(() {});
+                              }
+                            },
                           ),
                         ),
                       ),
                     ),
-                  );
-                }).toList(),
+                  ..._ServiceTab.values.map((tab) {
+                    final isSelected = _selectedTab == tab;
+                    final count = counts[tab] ?? 0;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 10),
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedTab = tab),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected ? AppTheme.deepTeal : Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: isSelected ? Colors.transparent : Colors.grey.shade200, width: 2.0),
+
+                          ),
+                          child: Text(
+                            '${_tabLabels[tab]}  ${count == 0 ? '0' : count.toString().padLeft(2, '0')}',
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey.shade600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ],
               ),
             ),
-
-            if (_selectedTab == _ServiceTab.active)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SizedBox(
-                        height: 42,
-                        child: TextField(
-                          onChanged: (val) => setState(() => _searchQuery = val),
-                          style: const TextStyle(fontSize: 13, color: AppTheme.deepTeal),
-                          decoration: InputDecoration(
-                            hintText: 'Search',
-                            hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
-                            prefixIcon: const Icon(LucideIcons.search, size: 16, color: Colors.grey),
-                            filled: true,
-                            fillColor: Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide(color: Colors.grey.shade200, width: 2.0),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide(color: Colors.grey.shade200, width: 2.0),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(25),
-                              borderSide: BorderSide(color: Colors.grey.shade200, width: 2.0),
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Container(
-                      height: 42,
-                      width: 140, // Reduced width but enough for 'Action Required'
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(25),
-                        border: Border.all(color: Colors.grey.shade200, width: 2.0),
-
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton2<String>(
-                          isExpanded: true,
-                          valueListenable: _activeFilter,
-                          buttonStyleData: const ButtonStyleData(
-                            height: 38,
-                            padding: EdgeInsets.zero,
-                          ),
-                          iconStyleData: const IconStyleData(
-                            icon: Icon(LucideIcons.chevronDown, size: 16, color: Colors.grey),
-                          ),
-                          dropdownStyleData: DropdownStyleData(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.white,
-                            ),
-                          ),
-                          menuItemStyleData: const MenuItemStyleData(),
-                          style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal, fontWeight: FontWeight.w500),
-                          items: const [
-                            DropdownItem(value: 'All', child: Text('All', overflow: TextOverflow.ellipsis)),
-                            DropdownItem(value: 'Action Required', child: Text('Action Required', overflow: TextOverflow.ellipsis)),
-                            DropdownItem(value: 'In Progress', child: Text('In Progress', overflow: TextOverflow.ellipsis)),
-                          ],
-                          onChanged: (val) {
-                            if (val != null) {
-                              _activeFilter.value = val;
-                              setState(() {});
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
 
             const SizedBox(height: 12),
             // ── Service List or Empty State ─────────────────────────────────

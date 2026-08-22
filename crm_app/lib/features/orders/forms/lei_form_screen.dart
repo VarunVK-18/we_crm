@@ -99,7 +99,8 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
         _applicantNameController.text = draftData['applicantName'] ?? '';
         _emailController.text = draftData['email'] ?? '';
         _businessPhoneController.text = draftData['businessPhone'] ?? '';
-      });
+      
+        if (draftData.containsKey('incorpCertPath')) _incorpCertPath = draftData['incorpCertPath'];});
     }
   }
 

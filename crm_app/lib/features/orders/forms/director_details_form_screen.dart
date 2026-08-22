@@ -157,7 +157,29 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
     if (draft != null) {
       if (mounted) {
         setState(() {
-
+          if (draft.containsKey('directors') && draft['directors'] is List) {
+            final list = draft['directors'] as List;
+            for (int i = 0; i < list.length && i < _directors.length; i++) {
+              final d = list[i] as Map<String, dynamic>;
+              if (d.containsKey('fullName')) _directors[i].fullNameController.text = d['fullName'];
+              if (d.containsKey('fatherName')) _directors[i].fatherNameController.text = d['fatherName'];
+              if (d.containsKey('dob')) _directors[i].dobController.text = d['dob'];
+              if (d.containsKey('placeOfBirth')) _directors[i].placeOfBirthController.text = d['placeOfBirth'];
+              if (d.containsKey('education')) _directors[i].educationController.text = d['education'];
+              if (d.containsKey('occupation')) _directors[i].occupationController.text = d['occupation'];
+              if (d.containsKey('pan')) _directors[i].panController.text = d['pan'];
+              if (d.containsKey('aadhaar')) _directors[i].aadhaarController.text = d['aadhaar'];
+              if (d.containsKey('phone')) _directors[i].phoneController.text = d['phone'];
+              if (d.containsKey('email')) _directors[i].emailController.text = d['email'];
+              if (d.containsKey('address')) _directors[i].addressController.text = d['address'];
+              
+              if (d.containsKey('photoPath')) _directors[i].photoPath = d['photoPath'];
+              if (d.containsKey('signaturePath')) _directors[i].signaturePath = d['signaturePath'];
+              if (d.containsKey('addressProofPath')) _directors[i].addressProofPath = d['addressProofPath'];
+              if (d.containsKey('aadhaarPath')) _directors[i].aadhaarPath = d['aadhaarPath'];
+              if (d.containsKey('panPath')) _directors[i].panPath = d['panPath'];
+            }
+          }
         });
       }
     }
@@ -165,8 +187,28 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
 
   Future<void> _saveDraft() async {
     final draftService = ref.read(draftServiceProvider);
-    final data = <String, dynamic>{
+    
+    final directorsList = _directors.map((d) => {
+      'fullName': d.fullNameController.text,
+      'fatherName': d.fatherNameController.text,
+      'dob': d.dobController.text,
+      'placeOfBirth': d.placeOfBirthController.text,
+      'education': d.educationController.text,
+      'occupation': d.occupationController.text,
+      'pan': d.panController.text,
+      'aadhaar': d.aadhaarController.text,
+      'phone': d.phoneController.text,
+      'email': d.emailController.text,
+      'address': d.addressController.text,
+      'photoPath': d.photoPath,
+      'signaturePath': d.signaturePath,
+      'addressProofPath': d.addressProofPath,
+      'aadhaarPath': d.aadhaarPath,
+      'panPath': d.panPath,
+    }).toList();
 
+    final data = <String, dynamic>{
+      'directors': directorsList,
     };
     await draftService.saveDraft(widget.order.id, 'DirectorDetailsFormScreen', data);
     if (mounted) {
@@ -446,7 +488,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
     ));
   }
 
-  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged) {
+  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue, Function(String) onChanged, {bool isRequired = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -456,8 +498,8 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
             text: TextSpan(
               text: label,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              children: [
+                if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
               ]
             ),
           ),
@@ -573,7 +615,7 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
     );
   }
 
-  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
+  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick, {bool isRequired = true}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -583,8 +625,8 @@ class _DirectorDetailsFormScreenState extends ConsumerState<DirectorDetailsFormS
             text: TextSpan(
               text: label,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [
-                TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
+              children: [
+                if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
               ]
             ),
           ),

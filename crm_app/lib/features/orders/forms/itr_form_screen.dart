@@ -332,7 +332,7 @@ class _ItrFormScreenState extends ConsumerState<ItrFormScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Required Documents',
+                  'Documents',
                   style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
                 ),
                 const SizedBox(height: 16),
@@ -360,12 +360,6 @@ class _ItrFormScreenState extends ConsumerState<ItrFormScreen> {
                   onPick: () => _pickFile((p) => _companyPanPath = p),
                   isRequired: true,
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  'Documents',
-                  style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                ),
-                const SizedBox(height: 16),
                 _buildFileUploadRow(
                   title: 'Additional Documents',
                   path: _additionalDocsPath,

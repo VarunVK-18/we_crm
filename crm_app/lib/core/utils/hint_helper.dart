@@ -37,12 +37,12 @@ class HintHelper {
     if (l.contains('phone') || l.contains('mobile') || l.contains('whatsapp') || l.contains('contact number')) {
       return '9876543210';
     }
-    if (l.contains('pan')) return 'ABCDE1234F';
+    if (l.contains(' pan') || l.startsWith('pan') || l == 'pan') return 'ABCDE1234F';
     if (l.contains('aadhaar') || l.contains('aadhar')) return '1234 5678 9012';
     if (l.contains('gstin') || l.contains('gst number') || l.contains('gst no')) {
       return '22AAAAA0000A1Z5';
     }
-    if (l.contains('din')) return '01234567';
+    if (l.contains(' din') || l.startsWith('din') || l == 'din') return '01234567';
     if (l.contains('date of birth') || l == 'dob') return '15/08/1990';
     if (l.contains('date') || l.contains('doi') || l.contains('dob')) return 'DD/MM/YYYY';
     if (l.contains('address') || l.contains('registered office') || l.contains('location')) {
@@ -50,7 +50,7 @@ class HintHelper {
     }
     if (l.contains('city')) return 'Bengaluru';
     if (l.contains('state')) return 'Karnataka';
-    if (l.contains('pin') || l.contains('zip') || l.contains('postal')) return '560001';
+    if (l.contains(' pin') || l.startsWith('pin') || l.contains('zip') || l.contains('postal') || l == 'pin') return '560001';
     if (l.contains('ifsc') || l.contains('ifs code')) return 'HDFC0001234';
     if (l.contains('account number') || l.contains('account no')) return '12345678901234';
     if (l.contains('turnover')) return '5000000';
@@ -63,9 +63,9 @@ class HintHelper {
     }
     if (l.contains('description')) return 'Brief description here';
     if (l.contains('udyam') || l.contains('msme')) return 'UDYAM-MH-00-0000000';
-    if (l.contains('cin')) return 'U12345MH2023PTC123456';
+    if (l.contains(' cin') || l.startsWith('cin') || l == 'cin') return 'U12345MH2023PTC123456';
     if (l.contains('llpin')) return 'AAA-1234';
-    if (l.contains('tan')) return 'ABCD12345E';
+    if (l.contains(' tan') || l.startsWith('tan') || l == 'tan') return 'ABCD12345E';
 
     // 3. Company / Entity name fields
     if (l.contains('company name') ||

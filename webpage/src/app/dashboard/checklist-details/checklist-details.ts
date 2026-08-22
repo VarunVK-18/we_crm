@@ -87,12 +87,12 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   allTmClasses = signal<any[]>([]);
   tmClassSearchQuery = signal<string>('');
   selectedTmClasses = signal<any[]>([]);
-  
+
   filteredTmClasses = computed(() => {
     const q = this.tmClassSearchQuery().toLowerCase().trim();
     if (!q) return this.allTmClasses();
-    return this.allTmClasses().filter(c => 
-      c.classCode.toString().includes(q) || 
+    return this.allTmClasses().filter(c =>
+      c.classCode.toString().includes(q) ||
       c.description.toLowerCase().includes(q)
     );
   });
@@ -174,7 +174,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     );
   }
 
-  
+
   getFileUrl(url: string): string {
     return this.api.getFileUrl(url);
   }
@@ -502,7 +502,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
 
   async openTMPanel() {
     this.isTMPanelOpen.set(true);
-    
+
     // Load TM Classes from JSON if not loaded
     if (this.allTmClasses().length === 0) {
       const response = await fetch('/assets/json/Trade Marks Classification.json');
@@ -512,7 +512,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       if (data?.services) classes.push(...data.services.map((c: any) => ({ ...c, type: 'Services' })));
       this.allTmClasses.set(classes.map(c => ({ classCode: c.class, description: c.description, type: c.type })));
     }
-    
+
     // Pre-fill from existing data
     const tmData = this.checklist()?.details?.tmAcknowledgementData || {};
     if (tmData.applicationFiledAs) this.tmApplicationFiledAs.set(tmData.applicationFiledAs);
@@ -566,7 +566,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       selectedClasses: this.selectedTmClasses()
     };
     const newDetails = { ...cl.details, tmAcknowledgementData: tmData };
-    
+
     return new Promise<void>((resolve, reject) => {
       this.api.patch<any>(`checklists/${cl._id}`, { details: newDetails }).subscribe({
         next: () => {
@@ -585,7 +585,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
   async generateTMAcknowledgement() {
     try {
       await this.saveTMData();
-      
+
       const details = this.checklist()?.details || {};
       const client = this.checklist()?.client_id || {};
       const tmForm = details.trademarkForm || {};
@@ -617,7 +617,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       let sigSize = [150, 50];
 
       const trademarkDocs: any[] = details.trademarkDocs || [];
-      
+
       const logoDoc = trademarkDocs.find((d: any) => d.name === 'Trademark Logo');
       if (logoDoc?.fileUrl) {
         try {
@@ -627,7 +627,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
           logoSize = await getScaledSize(logoData, 200, 200); // Max 200x200 for logo
         } catch (e) { console.warn('Could not fetch logo:', e); }
       }
-      
+
       const signatureDoc = trademarkDocs.find((d: any) => d.name === 'Signature with name' || d.name?.toLowerCase().includes('signature'));
       if (signatureDoc?.fileUrl) {
         try {
@@ -661,7 +661,7 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       const arrayBuffer = await response.arrayBuffer();
       const zip = new PizZip(arrayBuffer);
       const doc = new Docxtemplater(zip, opts);
-      
+
       // Format TM classes
       const classStr = this.selectedTmClasses().map(c => `Class ${c.classCode}\n${c.description}`).join('\n\n');
 
@@ -704,8 +704,8 @@ export class ChecklistDetails implements OnInit, OnDestroy {
       doc.render(data);
 
       const out = doc.getZip().generate({
-          type: 'blob',
-          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        type: 'blob',
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       });
 
       saveAs(out, `TM_Acknowledgement_${data.companyName || 'Export'}.docx`);
@@ -1394,13 +1394,13 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     }
 
     if (cl && cl.details) {
-      const docArrays = ['dunsDocs', 'dpiitDocs', 'incorpDocs', 'trademarkDocs', 'llpDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs'];
+      const docArrays = ['dunsDocs', 'dpiitDocs', 'incorpDocs', 'trademarkDocs', 'llpDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs', 'dynamicDocs'];
       for (const key of docArrays) {
         if (cl.details[key] && Array.isArray(cl.details[key])) {
           const formDocs = cl.details[key]
             .filter((d: any) => !d.name.startsWith('Person ')) // Exclude person docs for grouped section
             .map((d: any) => ({
-              name: d.name || 'Document',
+              name: this.formatLabel((d.name || 'Document').replace(/^documents\./, '')),
               fileUrl: d.fileUrl,
               uploadedAt: cl.updatedAt || new Date()
             }));
@@ -1452,22 +1452,72 @@ export class ChecklistDetails implements OnInit, OnDestroy {
     return '';
   }
 
+
+  isObject(val: any): boolean {
+    return typeof val === 'object' && val !== null;
+  }
+
   getGeneralDetails(): { key: string, value: any, rawKey: string }[] {
     const cl = this.checklist();
     if (!cl || !cl.details) return [];
     const entries = [];
     const ignoredKeys = [
-      'directors', 'dunsForm', 'dunsDocs', 'dpiitForm', 'dpiitDocs', 'entityName',
-      'incorpDocs', 'llpDocs', 'trademarkDocs', 'msmeDocs', 'gstDocs', 'isoDocs', 'fssaiDocs', 'dscDocs'
+      'status', 'nextstep', 'stage', 'clientformsubmitted', 'action_required', 'form_submitted',
+      'directors', 'dunsform', 'dunsdocs', 'dpiitform', 'dpiitdocs', 'entityname',
+      'incorpdocs', 'llpdocs', 'trademarkdocs', 'msmedocs', 'gstdocs', 'isodocs', 'fssaidocs', 'dscdocs', 'dynamicdocs', 'dynamicform'
     ];
     for (const key of Object.keys(cl.details)) {
-      if (ignoredKeys.includes(key)) continue;
+      if (ignoredKeys.includes(key.toLowerCase())) continue;
       // Skip objects to avoid [object Object] rendering
       if (typeof cl.details[key] === 'object' && cl.details[key] !== null) continue;
       entries.push({ key: this.formatLabel(key), value: cl.details[key], rawKey: key });
     }
+    
+    // Add dynamic form details
+    const dynamicFormEntries = this.getDynamicFormDetails();
+    for (const entry of dynamicFormEntries) {
+      entries.push({ key: entry.key, value: entry.value, rawKey: entry.key });
+    }
+    
     return entries;
   }
+
+
+  getDynamicFormDetails(): { key: string, value: any }[] {
+    const cl = this.checklist();
+    if (!cl || !cl.details || !cl.details.dynamicForm) return [];
+
+    const entries: { key: string, value: any }[] = [];
+
+    const flatten = (obj: any) => {
+      for (const key of Object.keys(obj)) {
+        const val = obj[key];
+        
+        if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+          flatten(val);
+        } else {
+          // The key might already be a long string like 'Dynamic Data - Application Info - Applicant Name'
+          // We only want the last part
+          let finalKey = key;
+          const parts = key.split(' - ');
+          if (parts.length > 0) {
+            finalKey = parts[parts.length - 1];
+          }
+          finalKey = this.formatLabel(finalKey);
+          
+          if (Array.isArray(val)) {
+            entries.push({ key: finalKey, value: val.join(', ') });
+          } else {
+            entries.push({ key: finalKey, value: val });
+          }
+        }
+      }
+    };
+
+    flatten(cl.details.dynamicForm);
+    return entries;
+  }
+
 
   getDirectorDocumentsGrouped(): { title: string, docs: any[] }[] {
     const cl = this.checklist();

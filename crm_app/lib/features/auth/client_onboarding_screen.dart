@@ -1,5 +1,8 @@
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -65,35 +68,43 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
     required String message,
     bool isError = true,
   }) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        backgroundColor: Colors.white,
-        title: Row(
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
               isError ? LucideIcons.alertTriangle : LucideIcons.checkCircle2,
-              color: isError ? Colors.redAccent : AppTheme.deepTeal,
+              color: Colors.white,
+              size: 24,
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    message,
+                    style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        content: Text(message, style: TextStyle(color: Colors.grey[700])),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK',
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black)),
-          ),
-        ],
+        backgroundColor: isError ? Colors.redAccent.shade700 : AppTheme.deepTeal,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 4),
+        elevation: 6,
       ),
     );
   }
@@ -220,7 +231,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.asset(
-                    'assets/images/logo_without background.jpg',
+                    'assets/logo.png',
                     height: 50,
                     fit: BoxFit.contain,
                   ),
@@ -315,10 +326,10 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                                     filled: true,
                                     fillColor: Colors.white,
                                   ),
-                                  hint: Text('Select Service', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w400)),
+                                  hint: Transform.translate(offset: const Offset(-12, 0), child: Text('Select Service', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w400))),
                                   items: _servicesList.map((item) => DropdownItem<String>(
                                     value: item,
-                                    child: Text(item, style: GoogleFonts.inter(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w400)),
+                                    child: Transform.translate(offset: const Offset(-12, 0), child: Text(item, style: GoogleFonts.inter(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w400))),
                                   )).toList(),
                                   valueListenable: _serviceNotifier,
                                   onChanged: (value) {
@@ -388,9 +399,21 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                                 TextSpan(
                                   children: [
                                     TextSpan(text: 'I agree to the ', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade700)),
-                                    TextSpan(text: 'Terms of Services', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black)),
+                                    TextSpan(
+                                      text: 'Terms of Services', 
+                                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.corporateBlue),
+                                      recognizer: TapGestureRecognizer()..onTap = () {
+                                        launchUrl(Uri.parse('https://aistartupdoctor.com/crm/#/terms'), mode: LaunchMode.externalApplication);
+                                      },
+                                    ),
                                     TextSpan(text: ' & ', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade700)),
-                                    TextSpan(text: 'Privacy Policy', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black)),
+                                    TextSpan(
+                                      text: 'Privacy Policy', 
+                                      style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.corporateBlue),
+                                      recognizer: TapGestureRecognizer()..onTap = () {
+                                        launchUrl(Uri.parse('https://aistartupdoctor.com/crm/#/privacypolicy'), mode: LaunchMode.externalApplication);
+                                      },
+                                    ),
                                   ]
                                 )
                               )

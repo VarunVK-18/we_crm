@@ -29,11 +29,13 @@ const getNextClientId = async (companyId) => {
 };
 
 /**
- * Gets the next Service ID string (e.g. SRV-1001)
+ * Gets the next Service ID string (e.g. SD26001)
+ * Format: SD + 2-digit year + 3-digit zero-padded sequence
  */
 const getNextServiceId = async (companyId) => {
   const seq = await getNextSequence(companyId, 'service');
-  return `SR${10000 + seq}`;
+  const yy = String(new Date().getFullYear()).slice(-2);
+  return `SD${yy}${String(seq).padStart(3, '0')}`;
 };
 
 module.exports = {

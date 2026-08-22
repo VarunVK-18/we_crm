@@ -160,53 +160,30 @@ class _NetworkOverlayWrapperState extends ConsumerState<NetworkOverlayWrapper> {
   }
 
   void _showBackOnlineSnackbar() {
-    // Need a messenger context, we can use a global overlay or snackbar, but here we can just show a temporary banner in stack by setting state, or if we have ScaffoldMessenger key, we use it. 
-    // Wait, the builder doesn't have a ScaffoldMessenger context easily unless we pass a global key.
-    // So let's just use a top-level overlay state, or just let the banner disappear and show a temporary floating overlay.
-    // For simplicity, we can use the root navigator's overlay.
-    final overlay = Overlay.of(context);
-    final entry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).padding.top + 10,
-        left: 16,
-        right: 16,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.green,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                )
-              ]
+    globalScaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(LucideIcons.wifi, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              'Back to connection',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            child: Row(
-              children: [
-                const Icon(LucideIcons.wifi, color: Colors.white, size: 20),
-                const SizedBox(width: 12),
-                Text(
-                  'Back to connection',
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 3),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
       ),
     );
-
-    overlay.insert(entry);
-    Timer(const Duration(seconds: 3), () {
-      entry.remove();
-    });
   }
 }

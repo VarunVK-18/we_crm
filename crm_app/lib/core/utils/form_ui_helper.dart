@@ -229,7 +229,7 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
                     color: Colors.black87,
                   ),
                   decoration: InputDecoration(
-                    hintText: widget.hintText ?? 'e.g. 9876543210',
+                    hintText: widget.hintText ?? '9876543210',
                     hintStyle: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w400,

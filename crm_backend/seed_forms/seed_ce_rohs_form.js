@@ -58,23 +58,15 @@ async function seedCeRohsForm() {
           ]
         },
         {
-          name: 'requiredDocs',
-          label: '5. Required Documents',
+          name: 'documents',
+          label: '5. Documents',
           type: 'group',
           required: false,
           subFields: [
             { name: 'productDatasheet', label: 'Product Datasheet', type: 'file', required: true, allowedExtensions: ['pdf'], description: 'PDF only. Max 2 MB.' },
             { name: 'userManual', label: 'User Manual', type: 'file', required: true, allowedExtensions: ['pdf'], description: 'PDF only. Max 2 MB.' },
             { name: 'bom', label: 'Bill of Materials (BOM)', type: 'file', required: true, allowedExtensions: ['pdf'], description: 'PDF only. Max 2 MB.' },
-            { name: 'productImages', label: 'Product Images', type: 'file', required: true, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'JPG/PNG/PDF. Max 2 MB.' }
-          ]
-        },
-        {
-          name: 'optionalDocs',
-          label: '6. Optional Documents',
-          type: 'group',
-          required: false,
-          subFields: [
+            { name: 'productImages', label: 'Product Images', type: 'file', required: true, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'JPG/PNG/PDF. Max 2 MB.' },
             { name: 'circuitDiagram', label: 'Circuit Diagram / PCB Details', type: 'file', required: false, allowedExtensions: ['pdf'], description: 'Optional. PDF only. Max 2 MB.' },
             { name: 'testReports', label: 'Existing Test Reports/Certificates', type: 'file', required: false, allowedExtensions: ['pdf'], description: 'Optional. PDF only. Max 2 MB.' }
           ]

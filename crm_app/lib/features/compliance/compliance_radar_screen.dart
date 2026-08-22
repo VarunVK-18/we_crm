@@ -260,6 +260,13 @@ class ComplianceRadarScreen extends ConsumerWidget {
                               },
                               itemBuilder: (context) => [
                                 PopupMenuItem(
+                                    value: 'all',
+                                    child: Text('All',
+                                        style: GoogleFonts.outfit(
+                                            fontSize: 14,
+                                            color: AppTheme.deepTeal,
+                                            fontWeight: FontWeight.w500))),
+                                PopupMenuItem(
                                     value: 'pending',
                                     child: Text('Pending',
                                         style: GoogleFonts.outfit(
@@ -269,13 +276,6 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 PopupMenuItem(
                                     value: 'completed',
                                     child: Text('Completed',
-                                        style: GoogleFonts.outfit(
-                                            fontSize: 14,
-                                            color: AppTheme.deepTeal,
-                                            fontWeight: FontWeight.w500))),
-                                PopupMenuItem(
-                                    value: 'all',
-                                    child: Text('All',
                                         style: GoogleFonts.outfit(
                                             fontSize: 14,
                                             color: AppTheme.deepTeal,
@@ -446,8 +446,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
     if (entityCompliances.isNotEmpty) {
       double penaltyPerCompliance = 50.0 / entityCompliances.length;
       for (final comp in entityCompliances) {
-        if (outsourcedServicesList.contains(comp.title)) {
+        if (comp.status == TaskStatus.critical || comp.status == TaskStatus.overdue) {
           complianceScore -= penaltyPerCompliance;
+        } else if (comp.status == TaskStatus.dueSoon) {
+          complianceScore -= (penaltyPerCompliance / 2); // Half penalty for pending
         }
       }
     }
@@ -457,7 +459,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
     
     double scoreValue = 0.0;
     if (serviceScore == 0.0 && entityCompliances.isEmpty) {
-      scoreValue = 0.0;
+      scoreValue = 100.0;
     } else {
       scoreValue = serviceScore + complianceScore;
     }
@@ -771,7 +773,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                         children: [
                                           Text('Complete Your Company Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
                                           SizedBox(height: 4.r),
-                                          Text('Fill your company details used across all services.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
+                                          Text('Add your company details to complete your profile and keep your business information up to date.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
                                         ],
                                       ),
                                     ),
@@ -1035,7 +1037,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 ? urgentReminder.message
                                 : 'Up to date',
                             date: urgentReminder != null
-                                ? 'Due soon'
+                                ? 'Due in'
                                 : 'No upcoming deadlines',
                             color: urgentReminder != null &&
                                     (urgentReminder.status ==
@@ -1419,43 +1421,54 @@ class _BentoDeadlineCard extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 4.r),
-                      Text(
-                        date,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.outfit(
-                          fontSize: 12.sp,
-                          color: Colors.grey[500],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      SizedBox(height: 12.r),
-                      Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12.r, vertical: 8.r),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(16.r),
-                          boxShadow: [
-                            BoxShadow(
-                              color: color.withOpacity(0.25),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          if (date.isNotEmpty) ...[
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(top: 2.r),
+                                child: Text(
+                                  date,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 13.sp,
+                                    color: Colors.grey[500],
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.0,
+                                  ),
+                                ),
+                              ),
                             ),
+                            SizedBox(width: 8.r),
                           ],
-                        ),
-                        child: Text(
-                          timeLeft,
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.5,
-                            height: 1.2,
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 14.r, vertical: 6.r),
+                            decoration: BoxDecoration(
+                              color: color,
+                              borderRadius: BorderRadius.circular(16.r),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withOpacity(0.25),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              timeLeft,
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 11.sp,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),

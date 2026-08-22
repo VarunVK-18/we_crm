@@ -218,7 +218,17 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
         if (draft.containsKey('ifscCode')) _ifscCodeController.text = draft['ifscCode'];
 
         // File paths (optional logic for caching locally if needed, but omitted for simplicity as paths expire)
-      });
+      
+        if (draft.containsKey('incorpCertPath')) _incorpCertPath = draft['incorpCertPath'];
+        if (draft.containsKey('dir1PhotoPath')) _dir1PhotoPath = draft['dir1PhotoPath'];
+        if (draft.containsKey('dir1AuthSignatoryDocPath')) _dir1AuthSignatoryDocPath = draft['dir1AuthSignatoryDocPath'];
+        if (draft.containsKey('dir2PhotoPath')) _dir2PhotoPath = draft['dir2PhotoPath'];
+        if (draft.containsKey('dir2AuthSignatoryDocPath')) _dir2AuthSignatoryDocPath = draft['dir2AuthSignatoryDocPath'];
+        if (draft.containsKey('ebBillPath')) _ebBillPath = draft['ebBillPath'];
+        if (draft.containsKey('rentalAgreementPath')) _rentalAgreementPath = draft['rentalAgreementPath'];
+        if (draft.containsKey('propertyTaxReceiptPath')) _propertyTaxReceiptPath = draft['propertyTaxReceiptPath'];
+        if (draft.containsKey('companyPanFilePath')) _companyPanFilePath = draft['companyPanFilePath'];
+        if (draft.containsKey('bankDocumentPath')) _bankDocumentPath = draft['bankDocumentPath'];});
     }
   }
 
@@ -266,7 +276,17 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
       'accountNumber': _accountNumberController.text,
       'accountType': _accountType,
       'ifscCode': _ifscCodeController.text,
-    };
+    
+      'incorpCertPath': _incorpCertPath,
+      'dir1PhotoPath': _dir1PhotoPath,
+      'dir1AuthSignatoryDocPath': _dir1AuthSignatoryDocPath,
+      'dir2PhotoPath': _dir2PhotoPath,
+      'dir2AuthSignatoryDocPath': _dir2AuthSignatoryDocPath,
+      'ebBillPath': _ebBillPath,
+      'rentalAgreementPath': _rentalAgreementPath,
+      'propertyTaxReceiptPath': _propertyTaxReceiptPath,
+      'companyPanFilePath': _companyPanFilePath,
+      'bankDocumentPath': _bankDocumentPath,};
     await draftService.saveDraft(widget.order.id, 'GstFormScreen', data);
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

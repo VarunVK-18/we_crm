@@ -107,10 +107,47 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
     }
   }
 
+
+  Widget _buildPasswordRules() {
+    final val = _newPasswordController.text;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Password must contain:', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF64748B))),
+        const SizedBox(height: 6),
+        _buildRuleItem('8-16 characters', _hasMinMaxLen(val)),
+        _buildRuleItem('1 uppercase letter', _hasUppercase(val)),
+        _buildRuleItem('1 number', _hasNumber(val)),
+        _buildRuleItem('No emojis or special unsupported characters', _hasNoEmoji(val) || val.isEmpty),
+      ],
+    );
+  }
+
+  Widget _buildRuleItem(String text, bool isValid) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(
+            isValid ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 14,
+            color: isValid ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              color: isValid ? const Color(0xFF10B981) : const Color(0xFF64748B),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final newPass = _newPasswordController.text;
-
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -149,12 +186,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Your new password must be 8-16 characters with at least 1 uppercase and 1 number.',
-                  style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade600, height: 1.4),
-                ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
                 // Error Message if any
                 if (_errorMessage != null) ...[
@@ -225,19 +257,6 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 12),
-
-                // Live Validation Criteria Pills
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    _buildRulePill('8-16 characters', _hasMinMaxLen(newPass)),
-                    _buildRulePill('1 Uppercase (A-Z)', _hasUppercase(newPass)),
-                    _buildRulePill('1 Number (0-9)', _hasNumber(newPass)),
-                    _buildRulePill('No emojis / spaces', _hasNoEmoji(newPass)),
-                  ],
-                ),
                 const SizedBox(height: 16),
 
                 // 3. Confirm New Password Field
@@ -279,24 +298,26 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                   ),
                   child: Text(
                     'Cancel',
-                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
+                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey.shade700, letterSpacing: 0),
                   ),
                 ),
                 const SizedBox(width: 8),
                 TextButton(
                   onPressed: _isLoading ? null : _handleSubmit,
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    backgroundColor: AppTheme.deepTeal,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
                   child: _isLoading
                       ? const SizedBox(
                           height: 18,
                           width: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.corporateBlue),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : Text(
                           'Save',
-                          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: AppTheme.corporateBlue),
+                          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white, letterSpacing: 0),
                         ),
                 ),
               ],
@@ -307,38 +328,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
     );
   }
 
-  Widget _buildRulePill(String label, bool isValid) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: isValid ? const Color(0xFFECFDF5) : Colors.grey.shade100,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(
-          color: isValid ? const Color(0xFFA7F3D0) : Colors.grey.shade300,
-          width: 0.8,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isValid ? LucideIcons.check : LucideIcons.circle,
-            size: 10,
-            color: isValid ? const Color(0xFF059669) : Colors.grey.shade500,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: isValid ? FontWeight.w600 : FontWeight.w400,
-              color: isValid ? const Color(0xFF059669) : Colors.grey.shade600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   InputDecoration _inputDecoration({
     required String hint,

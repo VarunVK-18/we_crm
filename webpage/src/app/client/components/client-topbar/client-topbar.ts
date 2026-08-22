@@ -427,7 +427,7 @@ export class ClientTopbarComponent implements OnInit {
     this.changePasswordError.set('');
     this.changePasswordSuccess.set(false);
     this.showChangePasswordModal.set(true);
-    this.showProfileDropdown.set(false);
+    this.isDropdownOpen.set(false);
   }
 
   closeChangePasswordModal() {

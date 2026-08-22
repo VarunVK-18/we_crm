@@ -526,7 +526,7 @@ class _TrademarkFormScreenState extends ConsumerState<TrademarkFormScreen> {
     );
   }
 
-  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick) {
+  Widget _buildFileRow(String label, String hint, String? path, VoidCallback onPick, {bool isRequired = true}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(

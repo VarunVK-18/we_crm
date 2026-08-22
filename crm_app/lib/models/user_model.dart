@@ -96,6 +96,7 @@ class UserModel {
   final List<Map<String, dynamic>> directors;
   final List<String> outsourcedServices;
   final Map<String, dynamic> dynamicProfileData;
+  final List<Map<String, dynamic>> entityRequests;
 
   UserModel({
     required this.id,
@@ -115,6 +116,7 @@ class UserModel {
     this.directors = const [],
     this.outsourcedServices = const [],
     this.dynamicProfileData = const {},
+    this.entityRequests = const [],
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, [String? id]) {
@@ -208,6 +210,9 @@ class UserModel {
           ? (data['outsourced_services'] as List).map((s) => s['serviceName']?.toString() ?? '').where((s) => s.isNotEmpty).toList()
           : [],
       dynamicProfileData: data['dynamicProfileData'] != null ? Map<String, dynamic>.from(data['dynamicProfileData']) : {},
+      entityRequests: data['entity_requests'] != null && data['entity_requests'] is List
+          ? (data['entity_requests'] as List).map((e) => Map<String, dynamic>.from(e as Map)).toList()
+          : [],
     );
   }
 

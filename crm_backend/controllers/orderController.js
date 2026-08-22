@@ -1946,13 +1946,21 @@ exports.submitDynamicForm = async (req, res) => {
     const order = await Checklist.findById(id);
     if (!order) return res.status(404).json({ message: 'Order not found.' });
     
-    const updatedDetails = { ...order.details, ...formData, dynamicForm: formData, dynamicDocs: uploadedDocs };
+    const updatedDetails = { ...order.details, ...formData, dynamicForm: formData, dynamicDocs: uploadedDocs, clientFormSubmitted: true };
     order.details = updatedDetails;
     order.action_required = false;
     order.form_submitted = true;
-    order.status = 'Work in progress';
+    order.status = 'in_progress';
+    order.stage = 'workInProgress';
     order.markModified('details');
-    // markClientFormFilled(order);
+    if (order.items) {
+      const formStep = order.items.find(i => i.title === 'Client Form Filling');
+      if (formStep) {
+        formStep.isChecked = true;
+        formStep.checkedAt = new Date();
+        order.markModified('items');
+      }
+    }
     await order.save();
 
     // Client Profile Sync: Entity-Isolated Autofill capability
@@ -2022,7 +2030,8 @@ exports.submitCopyrightForm = async (req, res) => {
 
     order.details = updatedDetails;
     order.form_submitted = true;
-    order.status = 'Work in progress';
+    order.status = 'in_progress';
+    order.stage = 'workInProgress';
     await order.save();
 
     res.json({ success: true, message: 'Copyright form submitted successfully.', order });

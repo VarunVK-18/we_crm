@@ -841,81 +841,6 @@
       </section>
       }
 
-      <!-- Director Details Section -->
-      @if (getParsedDirectors().length > 0) {
-      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
-        <h3 class="section-title">Director Details</h3>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          @for (director of getParsedDirectors(); track $index) {
-          <details
-            style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"
-            class="collapsible-card" [attr.open]="$index === 0 ? '' : null">
-            <summary
-              style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 16px; font-size: 16px; font-weight: 600; color: var(--accent-primary); list-style: none; user-select: none;">
-              <div style="display: flex; align-items: center; gap: 8px; min-width: 200px;">
-                <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
-                Director {{ $index + 1 }}: {{ director.fullName || 'Unnamed' }}
-              </div>
-
-              <div style="display: flex; align-items: center; gap: 24px; flex: 1; flex-wrap: wrap;">
-                @if (getDirectorContact(director, 'phone')) {
-                <div
-                  style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 500;"
-                  (click)="$event.stopPropagation()">
-                  <span class="material-symbols-outlined" style="font-size: 16px;">call</span>
-                  {{ getDirectorContact(director, 'phone') }}
-                  <button (click)="copyToClipboard(getDirectorContact(director, 'phone'), $event)"
-                    style="background: none; border: none; cursor: pointer; color: #0284c7; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s;"
-                    onmouseover="this.style.backgroundColor='rgba(2,132,199,0.1)'"
-                    onmouseout="this.style.backgroundColor='transparent'" title="Copy Phone">
-                    <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
-                  </button>
-                </div>
-                }
-                @if (getDirectorContact(director, 'email')) {
-                <div
-                  style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 500;"
-                  (click)="$event.stopPropagation()">
-                  <span class="material-symbols-outlined" style="font-size: 16px;">mail</span>
-                  {{ getDirectorContact(director, 'email') }}
-                  <button (click)="copyToClipboard(getDirectorContact(director, 'email'), $event)"
-                    style="background: none; border: none; cursor: pointer; color: #0284c7; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s;"
-                    onmouseover="this.style.backgroundColor='rgba(2,132,199,0.1)'"
-                    onmouseout="this.style.backgroundColor='transparent'" title="Copy Email">
-                    <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
-                  </button>
-                </div>
-                }
-              </div>
-              <span class="material-symbols-outlined"
-                style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
-            </summary>
-            <div
-              style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
-              @for (field of (director | keyvalue); track field.key) {
-              <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
-                <span
-                  style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
-                  {{ formatLabel(field.key) }}
-                </span>
-                <span style="font-size: 14px; font-weight: 500; word-break: break-word;"
-                  [style.color]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#0369a1' : 'var(--text-primary)'"
-                  [style.background]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#f0f9ff' : 'transparent'"
-                  [style.padding]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '4px 10px' : '0'"
-                  [style.border-radius]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '6px' : '0'"
-                  [style.border]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '1px solid #bae6fd' : 'none'">
-                  {{ field.value }}
-                </span>
-              </div>
-              }
-            </div>
-          </details>
-          }
-        </div>
-      </section>
-      }
-
-
       <!-- DUNS Form Details Section -->
       @if (checklist().details?.dunsForm) {
       <div class="service-details-section">
@@ -2269,7 +2194,83 @@
 
     <!-- Right Column: Sidebar -->
     <aside class="sidebar-col">
-      <!-- Client Documents Card -->
+      <!-- Director Details Section -->
+      @if (getParsedDirectors().length > 0) {
+      <section style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
+        <h3 class="section-title">Director Details</h3>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          @for (director of getParsedDirectors(); track $index) {
+          <details
+            style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;"
+            class="collapsible-card" [attr.open]="$index === 0 ? '' : null">
+            <summary
+              style="padding: 20px 24px; cursor: pointer; display: flex; align-items: center; gap: 16px; font-size: 16px; font-weight: 600; color: var(--accent-primary); list-style: none; user-select: none;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 200px;">
+                <span class="material-symbols-outlined" style="font-size: 20px;">person</span>
+                Director {{ $index + 1 }}: {{ director.fullName || 'Unnamed' }}
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 24px; flex: 1; flex-wrap: wrap;">
+                @if (getDirectorContact(director, 'phone')) {
+                <div
+                  style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 500;"
+                  (click)="$event.stopPropagation()">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">call</span>
+                  {{ getDirectorContact(director, 'phone') }}
+                  <button (click)="copyToClipboard(getDirectorContact(director, 'phone'), $event)"
+                    style="background: none; border: none; cursor: pointer; color: #0284c7; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s;"
+                    onmouseover="this.style.backgroundColor='rgba(2,132,199,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'" title="Copy Phone">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
+                  </button>
+                </div>
+                }
+                @if (getDirectorContact(director, 'email')) {
+                <div
+                  style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-primary); font-weight: 500;"
+                  (click)="$event.stopPropagation()">
+                  <span class="material-symbols-outlined" style="font-size: 16px;">mail</span>
+                  {{ getDirectorContact(director, 'email') }}
+                  <button (click)="copyToClipboard(getDirectorContact(director, 'email'), $event)"
+                    style="background: none; border: none; cursor: pointer; color: #0284c7; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 4px; transition: all 0.2s;"
+                    onmouseover="this.style.backgroundColor='rgba(2,132,199,0.1)'"
+                    onmouseout="this.style.backgroundColor='transparent'" title="Copy Email">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">content_copy</span>
+                  </button>
+                </div>
+                }
+              </div>
+              <span class="material-symbols-outlined"
+                style="margin-left: auto; color: var(--text-secondary);">expand_more</span>
+            </summary>
+            <div
+              style="padding: 24px; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;">
+              @for (field of (director | keyvalue); track field.key) {
+              <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                <span
+                  style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase;">
+                  {{ formatLabel(field.key) }}
+                </span>
+                <span style="font-size: 14px; font-weight: 500; word-break: break-word;"
+                  [style.color]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#0369a1' : 'var(--text-primary)'"
+                  [style.background]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '#f0f9ff' : 'transparent'"
+                  [style.padding]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '4px 10px' : '0'"
+                  [style.border-radius]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '6px' : '0'"
+                  [style.border]="(field.key.toString().toLowerCase().includes('phone') || field.key.toString().toLowerCase().includes('email')) ? '1px solid #bae6fd' : 'none'">
+                  {{ field.value }}
+                </span>
+              </div>
+              }
+            </div>
+          </details>
+          }
+        </div>
+      </section>
+      }
+
+
+
+            <!-- Client Documents Card -->
       <div
         style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); display: flex; flex-direction: column;">
         <div

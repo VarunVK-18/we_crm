@@ -345,8 +345,6 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
               isExpanded: true,
               valueListenable: _typeNotifier,
               decoration: InputDecoration(
-                labelText: 'Type of Company',
-                labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -361,11 +359,17 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                   borderSide: const BorderSide(color: AppTheme.deepTeal),
                 ),
               ),
-              hint: Text('Select Company Type', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
+              hint: Transform.translate(
+                offset: const Offset(-12, 0),
+                child: Text('Select Company Type', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
+              ),
               buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
-items: _companyTypes.map((item) => DropdownItem<String>(
+              items: _companyTypes.map((item) => DropdownItem<String>(
                 value: item,
-                child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
+                child: Transform.translate(
+                  offset: const Offset(-12, 0),
+                  child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
+                ),
               )).toList(),
               validator: (value) {
                 if (value == null || value.isEmpty) return 'Please select company type';
@@ -410,14 +414,30 @@ items: _companyTypes.map((item) => DropdownItem<String>(
                   borderSide: const BorderSide(color: AppTheme.deepTeal),
                 ),
               ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter number of directors';
+                }
+                final count = int.tryParse(value);
+                if (count == null) {
+                  return 'Please enter a valid number';
+                }
+                final type = _typeController.text;
+                if (type == 'Private Limited' || type == 'LLP') {
+                  if (count < 2) return 'Minimum 2 directors required for $type';
+                } else if (type == 'One Person Company' || type == 'Proprietorship') {
+                  if (count != 1) return 'Exactly 1 director required for $type';
+                } else {
+                  if (count < 1) return 'At least 1 director required';
+                }
+                return null;
+              },
             ),
             const SizedBox(height: 12),
             DropdownButtonFormField2<String>(
               isExpanded: true,
               valueListenable: _stateNotifier,
               decoration: InputDecoration(
-                labelText: 'State of Registration',
-                labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -432,11 +452,17 @@ items: _companyTypes.map((item) => DropdownItem<String>(
                   borderSide: const BorderSide(color: AppTheme.deepTeal),
                 ),
               ),
-              hint: Text('Select State / UT', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
+              hint: Transform.translate(
+                offset: const Offset(-12, 0),
+                child: Text('Select State / UT', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
+              ),
               buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
-items: _indianStates.map((item) => DropdownItem<String>(
+              items: _indianStates.map((item) => DropdownItem<String>(
                 value: item,
-                child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
+                child: Transform.translate(
+                  offset: const Offset(-12, 0),
+                  child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
+                ),
               )).toList(),
               validator: (value) {
                 if (value == null || value.isEmpty) return 'Please select state of registration';
@@ -549,11 +575,16 @@ class _EntityList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final pendingNames = ref.watch(pendingEntitiesProvider);
+    final userAsync = ref.watch(userProfileProvider);
+    final apiPendingNames = userAsync.value?.entityRequests.map((e) => e['company_name']?.toString() ?? '').toList() ?? [];
+    final localPendingNames = ref.watch(pendingEntitiesProvider);
+    
+    // Combine local and API pending names
+    final allPendingNames = {...apiPendingNames, ...localPendingNames}.toList();
 
     // Filter out pending names that are now approved (exist in entityCards)
     final approvedNames = entityCards.map((c) => c.entity.entityName.trim().toLowerCase()).toSet();
-    final stillPending = pendingNames.where((n) => !approvedNames.contains(n.toLowerCase())).toList();
+    final stillPending = allPendingNames.where((n) => n.trim().isNotEmpty && !approvedNames.contains(n.toLowerCase())).toList();
 
     // Build pending placeholder cards
     final pendingCards = stillPending.map((name) => _EntityCardData(

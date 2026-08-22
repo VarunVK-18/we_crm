@@ -127,6 +127,7 @@ class _RegistrationServicesScreenState
       'category': 'Tax',
       'features': ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate'],
     },
+
     {
       'title': 'GST Returns Filing',
       'description': 'Monthly/Quarterly GST returns and reconciliations.',
@@ -135,14 +136,7 @@ class _RegistrationServicesScreenState
       'category': 'Tax',
       'features': ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support'],
     },
-    {
-      'title': 'GST Cancellation',
-      'description': 'Surrender and cancel your GST registration.',
-      'icon': LucideIcons.fileX,
-      'color': const Color(0xFFEF4444),
-      'category': 'Tax',
-      'features': ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order'],
-    },
+
     {
       'title': 'Income Tax Return (ITR)',
       'description': 'Income Tax Return filing for individuals and businesses.',
@@ -152,15 +146,16 @@ class _RegistrationServicesScreenState
       'features': ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support'],
     },
 
-    // --- Licensing ---
     {
-      'title': 'DUNS Number',
-      'description': 'Data Universal Numbering System for global business identity.',
-      'icon': LucideIcons.globe,
-      'color': const Color(0xFF10B981),
-      'category': 'Licensing',
-      'features': ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing'],
+      'title': 'GST Cancellation',
+      'description': 'Surrender and cancel your GST registration.',
+      'icon': LucideIcons.fileX,
+      'color': const Color(0xFFEF4444),
+      'category': 'Tax',
+      'features': ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order'],
     },
+
+    // --- Licensing ---
     {
       'title': 'DPIIT Recognition',
       'description': 'Startup India Certification for your startup! Please provide your details correctly.',
@@ -169,6 +164,7 @@ class _RegistrationServicesScreenState
       'category': 'Licensing',
       'features': ['Pitch deck preparation', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Government approval', 'IPR Fast Track'],
     },
+
     {
       'title': 'ISO Certification',
       'description': 'Quality management certification (ISO 9001 and others).',
@@ -177,30 +173,7 @@ class _RegistrationServicesScreenState
       'category': 'Licensing',
       'features': ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training'],
     },
-    {
-      'title': 'BIS Certification',
-      'description': 'Bureau of Indian Standards product certification.',
-      'icon': LucideIcons.shieldCheck,
-      'color': const Color(0xFFF59E0B),
-      'category': 'Licensing',
-      'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
-    },
-    {
-      'title': 'RoHS Certification',
-      'description': 'European standard certifications for electronics and products.',
-      'icon': LucideIcons.checkCircle,
-      'color': const Color(0xFF14B8A6),
-      'category': 'Licensing',
-      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
-    },
-    {
-      'title': 'CE Certification',
-      'description': 'European standard certifications for electronics and products.',
-      'icon': LucideIcons.checkCircle,
-      'color': const Color(0xFF14B8A6),
-      'category': 'Licensing',
-      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
-    },
+
     {
       'title': 'FSSAI Registration',
       'description': 'Registration for food business operators, manufacturers, and startups.',
@@ -209,6 +182,7 @@ class _RegistrationServicesScreenState
       'category': 'Licensing',
       'features': ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping'],
     },
+
     {
       'title': 'IE Code',
       'description': 'Import Export Code registration for cross-border trade.',
@@ -217,6 +191,16 @@ class _RegistrationServicesScreenState
       'category': 'Licensing',
       'features': ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate'],
     },
+
+    {
+      'title': 'DUNS Number',
+      'description': 'Data Universal Numbering System for global business identity.',
+      'icon': LucideIcons.globe,
+      'color': const Color(0xFF10B981),
+      'category': 'Licensing',
+      'features': ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing'],
+    },
+
     {
       'title': 'LEI Registration',
       'description': 'Legal Entity Identifier registration for financial transactions.',
@@ -224,6 +208,33 @@ class _RegistrationServicesScreenState
       'color': const Color(0xFF6366F1),
       'category': 'Licensing',
       'features': ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation'],
+    },
+
+    {
+      'title': 'BIS Certification',
+      'description': 'Bureau of Indian Standards product certification.',
+      'icon': LucideIcons.shieldCheck,
+      'color': const Color(0xFFF59E0B),
+      'category': 'Licensing',
+      'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
+    },
+
+    {
+      'title': 'CE Certification',
+      'description': 'European standard certifications for electronics and products.',
+      'icon': LucideIcons.checkCircle,
+      'color': const Color(0xFF14B8A6),
+      'category': 'Licensing',
+      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
+    },
+
+    {
+      'title': 'RoHS Certification',
+      'description': 'European standard certifications for electronics and products.',
+      'icon': LucideIcons.checkCircle,
+      'color': const Color(0xFF14B8A6),
+      'category': 'Licensing',
+      'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
     },
 
     {
@@ -296,7 +307,7 @@ class _RegistrationServicesScreenState
       case 'Licensing':
         return 'Obtain necessary licenses and certifications for your business.';
       default:
-        return 'Launch and scale your business By Registering With Us..';
+        return 'Launch and scale your business By Registering With Us.';
     }
   }
 
@@ -320,6 +331,7 @@ class _RegistrationServicesScreenState
           SliverAppBar(
             expandedHeight: 250.r,
             pinned: true,
+
             elevation: 0,
             systemOverlayStyle: SystemUiOverlayStyle.light,
             backgroundColor: AppTheme.deepTeal,
@@ -443,7 +455,7 @@ class _RegistrationServicesScreenState
                     }
                   },
                   decoration: InputDecoration(
-                    hintText: 'Search for Startup India services...',
+                    hintText: 'Search for services',
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
                     prefixIcon: Icon(LucideIcons.search, size: 20.ip),
                     prefixIconConstraints: BoxConstraints(minWidth: 40.r, minHeight: 40.r),

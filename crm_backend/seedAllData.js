@@ -499,7 +499,7 @@ async function seedDatabase() {
     const sType = SERVICE_TYPES[i % SERVICE_TYPES.length];
     return {
       company_id: client.company_id || primaryCompany._id,
-      custom_service_id: `SR${1001 + i}`,
+      custom_service_id: `SD26${String(1 + i).padStart(3, '0')}`,
       client_id: client._id,
       created_by: managerUsers[i % managerUsers.length]?._id || adminUsers[0]._id,
       service_name: sType,

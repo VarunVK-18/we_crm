@@ -50,8 +50,8 @@ async function seedItrForm() {
           ]
         },
         {
-          name: 'requiredDocuments',
-          label: 'Required Documents',
+          name: 'documents',
+          label: 'Documents',
           type: 'group',
           required: false,
           subFields: [
@@ -62,20 +62,6 @@ async function seedItrForm() {
             { name: 'purchaseBills', label: 'Purchase Bills', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Required for business. Max 2 MB.' },
             { name: 'salesInvoices', label: 'Sales Invoices', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Required for business. Max 2 MB.' },
             { name: 'companyPan', label: 'Company / Business PAN', type: 'file', required: true, visibilityConditionStr: '{"field": "taxpayerType", "in": ["Proprietorship", "Partnership", "LLP", "Private Limited Company", "Public Limited Company"]}', allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' }
-          ]
-        },
-        {
-          name: 'optionalDocuments',
-          label: 'Optional Documents',
-          type: 'group',
-          required: false,
-          subFields: [
-            { name: 'previousTaxComputation', label: 'Previous Tax Computation', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'gstReturns', label: 'GST Returns', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'tdsCertificates', label: 'TDS Certificates', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'investmentProofs', label: 'Investment Proofs', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'loanInterestCertificate', label: 'Loan Interest Certificate', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' },
-            { name: 'otherDocs', label: 'Other Supporting Documents', type: 'file', required: false, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Optional. Max 2 MB.' }
           ]
         },
         {

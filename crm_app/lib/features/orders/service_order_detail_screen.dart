@@ -800,7 +800,18 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                                       children: [
                                         const Text('Outstanding Balance Notice', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFFB45309))),
                                         const SizedBox(height: 4),
-                                        Text('You have remaining balance of ₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)} and pay to unlock', style: const TextStyle(fontSize: 13, color: Color(0xFF92400E))),
+                                        RichText(
+                                          text: TextSpan(
+                                            style: const TextStyle(fontSize: 13, color: Color(0xFF92400E), fontFamily: 'Inter'),
+                                            children: [
+                                              const TextSpan(text: 'You have a remaining balance of '),
+                                              TextSpan(
+                                                text: '₹${(order.dealClosedAmount - order.advanceAmountPaid).toStringAsFixed(0)}',
+                                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -915,7 +926,14 @@ class _ServiceOrderDetailScreenState extends ConsumerState<ServiceOrderDetailScr
                         if (order.steps.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: _StepTimeline(order: order, steps: order.steps),
+                            child: _StepTimeline(
+                              order: order, 
+                              steps: order.steps,
+                              onFormSubmitted: () {
+                                _fetchFullOrder();
+                                ref.invalidate(serviceOrdersProvider);
+                              },
+                            ),
                           )
                         else
                           const _EmptySteps(),
@@ -1817,7 +1835,8 @@ class _InfoTile extends StatelessWidget {
 class _StepTimeline extends StatelessWidget {
   final ServiceOrder order;
   final List<ServiceStep> steps;
-  const _StepTimeline({required this.order, required this.steps});
+  final VoidCallback onFormSubmitted;
+  const _StepTimeline({required this.order, required this.steps, required this.onFormSubmitted});
 
   @override
   Widget build(BuildContext context) {
@@ -1898,15 +1917,18 @@ class _StepTimeline extends StatelessWidget {
                         !isCompleted && 
                         order.stage != OrderStage.reqReceived && 
                         order.status == ServiceStatus.active)
-                        ? () => _routeToForm(context, order)
+                        ? () async {
+                            final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => DynamicFormScreen(order: order)));
+                            if (result == true) {
+                              onFormSubmitted();
+                            }
+                          }
                         : null,
                     borderRadius: BorderRadius.circular(18),
                     child: Container(
                       padding: const EdgeInsets.all(0),
                       decoration: const BoxDecoration(
                         color: Colors.transparent,
-
-
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2431,8 +2453,4 @@ bool _shouldShowFillForm(ServiceStep step, ServiceOrder order) {
   if (step.title != 'Client Form Filling') return true;
   final hasProvideDetails = order.steps.any((s) => s.title == 'Provide Necessary Details & Documents');
   return !hasProvideDetails;
-}
-
-void _routeToForm(BuildContext context, ServiceOrder order) {
-  Navigator.push(context, MaterialPageRoute(builder: (_) => DynamicFormScreen(order: order)));
 }
