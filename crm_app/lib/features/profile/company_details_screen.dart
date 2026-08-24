@@ -148,9 +148,15 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
         _buildDetailCard('Incorporation Date', widget.entity.incorporationDate != null ? DateFormat('dd MMM yyyy').format(widget.entity.incorporationDate!) : '', context),
         _buildDetailCard('PAN (Permanent Account Number)', widget.entity.pan, context),
         _buildDetailCard('TAN (Tax Deduction and Collection Account Number)', widget.entity.tan, context),
+        _buildDetailCard('GSTIN', widget.entity.gstin, context),
+        _buildDetailCard('MSME Registration', widget.entity.msme, context),
+        _buildDetailCard('ISO Certification', widget.entity.iso, context),
+        _buildDetailCard('FSSAI License', widget.entity.fssai, context),
         _buildDetailCard('Certificate of Incorporation (COI)', widget.entity.coi, context, showCopy: false),
         _buildDetailCard('Digital Signature Certificate (DSC)', widget.entity.dsc, context, showCopy: false),
-        if (widget.entity.cin.isEmpty && widget.entity.pan.isEmpty && widget.entity.tan.isEmpty && widget.entity.coi.isEmpty && widget.entity.dsc.isEmpty && widget.entity.incorporationDate == null)
+        if (widget.entity.cin.isEmpty && widget.entity.pan.isEmpty && widget.entity.tan.isEmpty && 
+            widget.entity.coi.isEmpty && widget.entity.dsc.isEmpty && widget.entity.incorporationDate == null &&
+            widget.entity.gstin.isEmpty && widget.entity.msme.isEmpty && widget.entity.iso.isEmpty && widget.entity.fssai.isEmpty)
           Center(
             child: Padding(
               padding: const EdgeInsets.all(40.0),
@@ -169,74 +175,20 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.entity.trademarkApplicationNumber.isNotEmpty || widget.entity.trademarkStatus.isNotEmpty) ...[
-          InkWell(
-            onTap: () => setState(() => _isTrademarkExpanded = !_isTrademarkExpanded),
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Trademark Registration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                  Icon(_isTrademarkExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
-                ],
-              ),
-            ),
-          ),
-          if (_isTrademarkExpanded) ...[
-            const SizedBox(height: 12),
-            _buildDetailCard('Trademark Number', widget.entity.trademarkApplicationNumber, context),
-            _buildDetailCard('Status', widget.entity.trademarkStatus, context, isTrackable: true),
-            _buildDetailCard('Certificate', widget.entity.trademarkCertificate, context, showCopy: false),
-          ],
-          const SizedBox(height: 16),
+          _buildDetailCard('Trademark Number', widget.entity.trademarkApplicationNumber, context),
+          _buildDetailCard('Trademark Status', widget.entity.trademarkStatus, context, isTrackable: true),
+          _buildDetailCard('Trademark Certificate', widget.entity.trademarkCertificate, context, showCopy: false),
         ],
         
         if (widget.entity.patentApplicationNumber.isNotEmpty || widget.entity.patentStatus.isNotEmpty) ...[
-          InkWell(
-            onTap: () => setState(() => _isPatentExpanded = !_isPatentExpanded),
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Patent Registration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                  Icon(_isPatentExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
-                ],
-              ),
-            ),
-          ),
-          if (_isPatentExpanded) ...[
-            const SizedBox(height: 12),
-            _buildDetailCard('Patent Number', widget.entity.patentApplicationNumber, context),
-            _buildDetailCard('Status', widget.entity.patentStatus, context, isTrackable: true),
-            _buildDetailCard('Patent Number', widget.entity.patentNumber, context),
-          ],
-          const SizedBox(height: 16),
+          _buildDetailCard('Patent Application Number', widget.entity.patentApplicationNumber, context),
+          _buildDetailCard('Patent Status', widget.entity.patentStatus, context, isTrackable: true),
+          _buildDetailCard('Patent Number', widget.entity.patentNumber, context),
         ],
         
         if (widget.entity.copyrightRegistrationNumber.isNotEmpty) ...[
-          InkWell(
-            onTap: () => setState(() => _isCopyrightExpanded = !_isCopyrightExpanded),
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Copyright Registration', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: AppTheme.deepTeal)),
-                  Icon(_isCopyrightExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: AppTheme.deepTeal),
-                ],
-              ),
-            ),
-          ),
-          if (_isCopyrightExpanded) ...[
-            const SizedBox(height: 12),
-            _buildDetailCard('Registration Number', widget.entity.copyrightRegistrationNumber, context),
-            _buildDetailCard('Certificate', widget.entity.copyrightCertificate, context, showCopy: false),
-          ],
-          const SizedBox(height: 16),
+          _buildDetailCard('Copyright Registration Number', widget.entity.copyrightRegistrationNumber, context),
+          _buildDetailCard('Copyright Certificate', widget.entity.copyrightCertificate, context, showCopy: false),
         ],
         
         if (widget.entity.trademarkApplicationNumber.isEmpty && 

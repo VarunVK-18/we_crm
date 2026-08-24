@@ -22,6 +22,7 @@ class _RegistrationServicesScreenState
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   late String _selectedCategory;
+  bool _isSearchOpen = false;
 
   final List<Map<String, dynamic>> _allPackages = [
     // --- Incorporation ---
@@ -426,110 +427,112 @@ class _RegistrationServicesScreenState
             ),
           ),
 
-          // 2. Search Integration
+          // 2. Category Chips with Smoothly Expandable Search
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.fromLTRB(24.r, 24.r, 24.r, 16.r),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 16.r,
-                  vertical: 4.r,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.grey.withOpacity(0.2),
-                    width: 1.0.r,
-                  ),
-                  boxShadow: AppTheme.softShadow,
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  textAlignVertical: TextAlignVertical.center,
-                  onTap: () {
-                    if (_selectedCategory != 'All') {
-                      setState(() {
-                        _selectedCategory = 'All';
-                      });
-                    }
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search for services',
-                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14.sp),
-                    prefixIcon: Icon(LucideIcons.search, size: 20.ip),
-                    prefixIconConstraints: BoxConstraints(minWidth: 40.r, minHeight: 40.r),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(LucideIcons.x, size: 16.ip),
-                            onPressed: () => _searchController.clear(),
-                          )
-                        : null,
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    filled: false,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12.r),
-                  ),
+              padding: EdgeInsets.fromLTRB(24.r, 14.r, 24.r, 16.r),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    // Smoothly Expandable Search Bar
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOutCubic,
+                      width: _isSearchOpen ? 180.r : 44.r,
+                      height: 42.r,
+                      margin: EdgeInsets.only(right: 8.r),
+                      padding: EdgeInsets.symmetric(horizontal: _isSearchOpen ? 12.r : 0),
+                      decoration: BoxDecoration(
+                        color: _isSearchOpen ? Colors.grey[100] : Colors.grey[50],
+                        borderRadius: BorderRadius.circular(16.r),
+                      ),
+                      child: _isSearchOpen
+                          ? Row(
+                              children: [
+                                Icon(
+                                  LucideIcons.search,
+                                  size: 16.ip,
+                                  color: AppTheme.deepTeal,
+                                ),
+                                SizedBox(width: 8.r),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _searchController,
+                                    autofocus: true,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 13.sp,
+                                      color: AppTheme.deepTeal,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    textAlignVertical: TextAlignVertical.center,
+                                    decoration: InputDecoration(
+                                      hintText: 'Search',
+                                      hintStyle: GoogleFonts.outfit(
+                                        color: Colors.grey[400],
+                                        fontSize: 13.sp,
+                                      ),
+                                      border: InputBorder.none,
+                                      enabledBorder: InputBorder.none,
+                                      focusedBorder: InputBorder.none,
+                                      disabledBorder: InputBorder.none,
+                                      errorBorder: InputBorder.none,
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _searchController.clear();
+                                      _isSearchOpen = false;
+                                    });
+                                  },
+                                  child: Padding(
+                                    padding: EdgeInsets.only(left: 4.r),
+                                    child: Icon(
+                                      LucideIcons.x,
+                                      size: 15.ip,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : InkWell(
+                              onTap: () {
+                                setState(() {
+                                  _isSearchOpen = true;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(16.r),
+                              child: Center(
+                                child: Icon(
+                                  LucideIcons.search,
+                                  size: 18.ip,
+                                  color: AppTheme.deepTeal,
+                                ),
+                              ),
+                            ),
+                    ),
+                    ...[
+                      'All',
+                      'Incorporation',
+                      'Compliance',
+                      'IP',
+                      'Tax',
+                      'Licensing',
+                    ].map((label) {
+                      return _ServiceChip(
+                        label: label,
+                        isActive: _selectedCategory == label,
+                        onTap: () => setState(() => _selectedCategory = label),
+                      );
+                    }),
+                  ],
                 ),
               ),
-            ),
-          ),
-
-          // 3. Category Chips
-          SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 24.r,
-                    vertical: 8.r,
-                  ),
-                  child: Text(
-                    'Popular Services',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: 24.r),
-                  child: Row(
-                    children:
-                        [
-                          'All',
-                          'Incorporation',
-                          'Compliance',
-                          'IP',
-                          'Tax',
-                          'Licensing',
-                        ].map((label) {
-                          return _ServiceChip(
-                            label: label,
-                            isActive: _selectedCategory == label,
-                            onTap: () =>
-                                setState(() => _selectedCategory = label),
-                          );
-                        }).toList(),
-                  ),
-                ),
-                SizedBox(height: 32.r),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24.r),
-                  child: Text(
-                    '$_selectedCategory Results',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16.r),
-              ],
             ),
           ),
 

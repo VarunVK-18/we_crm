@@ -1,40 +1,38 @@
  const Map<String, List<String>> kServiceRequiredDocuments = {
-  // Company Incorporation
-  'Proprietorship Registration': ['PAN Card', 'Aadhaar Card', 'Business Address Proof', 'Proprietor Photo'],
-  'Partnership Firm Registration': ['Partnership Deed', 'PAN of Firm', 'ID Proof of Partners', 'Address Proof of Partners'],
-  'Private Limited Incorporation': ['EB Bill / Wifi Bill < 2 months PDF'],
-  'ISO Certification': ['Business Address Proof', 'Scope of Operations', 'Organization Chart'],
-  'DPIIT Startup India Certification': ['Incorporation Certificate (PDF)', 'Company PAN', 'Company logo (JPEG)', 'Pitch deck (PDF)'],
-  
-  // Compliance Services
-  'Compliance Audit': ['Company PAN', 'Previous Audit Reports', 'Statutory Registers', 'GST & TDS Filings'],
-  'MCA Compliance Package (Private Ltd)': ['Company PAN', 'AOC-4 & MGT-7', 'DSC & DIN of Directors', 'Bank Statements'],
-  'MCA Compliance Package (LLP)': ['LLP PAN', 'Form 8 & Form 11', 'DSC of Partners', 'Bank Statements'],
-  'GST Returns Filing': ['GST Certificate', 'Invoices List', 'Bank Statements', 'Purchase/Sales Register'],
-  'Comprehensive MCA + GST + TDS': ['Company PAN', 'GST Certificate', 'TDS Records', 'Annual Audit Report'],
-  
-  // Business Licenses
-  'IEC Code Registration': ['PAN Card', 'Aadhaar Card', 'Bank Proof (Cancelled Cheque)', 'Address Proof'],
-  'FSSAI Registration': ['Aadhaar Card', 'PAN Card', 'Passport Size Photo', 'Business Address Proof'],
-  'ISO Certifications': ['GST Certificate', 'Business Address Proof', 'Scope of Operations', 'Organization Chart'],
-  
-  // Taxation Services
-  'TAX filing': ['Form 16/16A', 'Bank Statements', 'Investment Proofs', 'PAN Card'],
-  'TAX Planning': ['Current Financials', 'Existing Policy Details', 'Income Projection', 'PAN Card'],
-  'GST Services': ['PAN Card', 'Address Proof', 'Aadhaar Card', 'Bank Details'],
-  'PAN, TAN & Bank Setup': ['Personal ID Proofs', 'Address Proof', 'Company Incorporation Copy'],
-  
-  // Marketplace / Selection Services
-  '360° Compliance': ['Company Profile', 'Last Year Audit', 'GST Details', 'Legal Structure Copy'],
-  'Trademark Registration': ['UDYAM MSME Certificate', 'Trademark Logo', 'Signature with name'],
-  'Accounting & Tax': ['Trial Balance', 'Previous Audit Report', 'Bank Statements', 'Purchase/Sales Bills'],
-  'GST Onboarding': ['Photo (JPEG | Max file size 100KB)', 'Latest EB Bill', 'House Tax Receipt (If Own)', 'Rental Agreement (If Rented)'],
-  'Strategic Tax Planning': ['Latest Financial Statements', 'Tax History', 'Asset List', 'PAN Card'],
-  'Capital Funding': ['Project Report', 'Previous Financials', 'Pitch Deck', 'ID Proof of Founders'],
-  'Risk Management': ['Legal History', 'Internal Compliance Manual', 'Policy Papers', 'ID Proof'],
-  'MSME Registration': ['Company PAN Card'],
-  'DUNS Registration': ['Business Registration Proof', 'PAN Card', 'Aadhaar of Authorized Signatory'],
-  'LLP Incorporation': ['Registered Office Proof (EB/Wifi Bill < 2mo)', 'Payment Screenshot'],
+  // Incorporation
+  'Private Limited Incorporation': ['Directors Aadhar & PAN Card', 'EB Bill < 2 months'],
+  'LLP Incorporation': ['Partners Aadhar & PAN Card', 'EB Bill < 2 months'],
+  'OPC Incorporation': ['Director & Nominee Aadhar & PAN Card', 'EB Bill < 2 months'],
+  'MSME Registration': ['Aadhar & PAN Card', 'Bank account details', 'EB Bill < 2 months'],
+  'Proprietorship Registration': [],
+
+  // Compliance
+  'MCA Compliance': ['Last Year Bank Statements', 'All Company documents'],
+  'TDS Return Filing': ['TAN & PAN', 'Salary Details', 'Previous TDS Return / RPU File (if available)', 'Valid Digital Signature'],
+  'PF Registration & Compliance': ['Employee Master Details', 'PF Contribution Details', 'Employee KYC Details', 'Bank Account Details'],
+
+  // IP
+  'Trademark Registration': ['Trademark Logo', 'MSME Certificate'],
+  'Copyright Registration': ['Identity Proof of Applicant', 'Details of the Copyright Work'],
+  'Patent Registration': ['Company Registration Documents', 'Details of the Invention', 'Technical Documents'],
+
+  // Tax
+  'Income Tax Return (ITR)': ['Last Year Bank Statements', 'All Company documents'],
+  'GST Registration': ['Aadhaar & PAN Card', 'Recent Photograph of the applicant', 'Proof of Principal Place of Business', 'Cancelled Cheque or Bank Statement'],
+  'GST Returns Filing': [],
+  'GST Cancellation': [],
+
+  // Licensing
+  'DPIIT Recognition': [],
+  'ISO Certification': ['Recent Invoice copy raised', 'Address Proof', 'Authorised Letter'],
+  'FSSAI Registration': ['Company Incorporation documents', 'Proof of Business Address', 'NOC from Premises Owner'],
+  'DUNS Number': ['Address Proof (Utility bill / Bank statement)', 'Company Incorporation & PAN'],
+  'Import Export Code (IEC)': ['Company Incorporation & PAN'],
+  'BIS Certification': [],
+  'CE Certification': [],
+  'RoHS Certification': [],
+  'LEI Registration': [],
+  'Digital Signature Certificate (DSC)': ['Aadhar & PAN Card'],
 };
 
 const Map<String, List<String>> kServiceFinalDocuments = {

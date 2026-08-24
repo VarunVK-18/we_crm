@@ -34,6 +34,10 @@ const UserSchema = new mongoose.Schema({
       return String(val);
     }
   },
+  password_changed: {
+    type: Boolean,
+    default: false
+  },
   phone: {
     type: String,
     default: ''

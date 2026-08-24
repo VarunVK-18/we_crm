@@ -162,16 +162,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ref.read(navigationIndexProvider.notifier).state = 0;
       TextInput.finishAutofillContext();
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const AuthWrapper(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-          (route) => false,
-        );
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
       showGlobalError(e);
@@ -239,13 +230,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 // Header
                 Padding(
-                  padding: const EdgeInsets.only(top: 40, bottom: 40),
+                  padding: const EdgeInsets.only(top: 20, bottom: 20),
                   child: Center(
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.asset(
-                        'assets/logo.png',
-                        height: 50,
+                        'assets/launcher_icon_padded.png',
+                        height: 60,
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -267,7 +258,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         return SingleChildScrollView(
-                          physics: const ClampingScrollPhysics(),
+                          physics: const NeverScrollableScrollPhysics(),
                           child: ConstrainedBox(
                             constraints: BoxConstraints(
                               minHeight: constraints.maxHeight,

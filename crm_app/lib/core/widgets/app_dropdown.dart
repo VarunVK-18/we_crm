@@ -60,15 +60,18 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
 
     final mappedItems = widget.items?.map((item) {
       final child = item.child;
-      // Ensure text is left-aligned
+      // Ensure text is left-aligned and shifted slightly left
       final styledChild = child is Text
-          ? Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                child.data ?? '',
-                style: effectiveStyle,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.left,
+          ? Transform.translate(
+              offset: const Offset(-8, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  child.data ?? '',
+                  style: effectiveStyle,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.left,
+                ),
               ),
             )
           : child;
@@ -94,22 +97,30 @@ class _AppDropdownFormFieldState<T> extends State<AppDropdownFormField<T>> {
         contentPadding: widget.decoration?.contentPadding ??
             const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
-      hint: widget.hint,
+      hint: widget.hint != null
+          ? Transform.translate(
+              offset: const Offset(-8, 0),
+              child: widget.hint,
+            )
+          : null,
       style: effectiveStyle,
-      // Force selected item to render left-aligned
+      // Force selected item to render left-aligned and shifted
       selectedItemBuilder: (context) {
         return (widget.items ?? []).map((item) {
           final child = item.child;
-          return Align(
-            alignment: Alignment.centerLeft,
-            child: child is Text
-                ? Text(
-                    child.data ?? '',
-                    style: effectiveStyle,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.left,
-                  )
-                : child,
+          return Transform.translate(
+            offset: const Offset(-8, 0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: child is Text
+                  ? Text(
+                      child.data ?? '',
+                      style: effectiveStyle,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.left,
+                    )
+                  : child,
+            ),
           );
         }).toList();
       },

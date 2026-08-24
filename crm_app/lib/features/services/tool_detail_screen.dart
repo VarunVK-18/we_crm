@@ -5,9 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/constants/nic_codes.dart';
 import '../../core/constants/tm_classes.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'dart:convert';
 import '../../core/constants/port.dart';
@@ -53,10 +51,23 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
   DateTime? _tdsDate1;
   DateTime? _tdsDate2;
 
-  List<NicCode> _allNicCodes = [];
-  List<NicCode> _filteredNicCodes = [];
-  final Map<NicCode, List<NicCode>> _groupedNicCodes = {};
+  // NIC Finder - hierarchical data
   bool _isLoadingNic = false;
+  List<Map<String, dynamic>> _nicFlat = []; // flat list for search
+  final TextEditingController _nicSearchController = TextEditingController();
+  String _nicSearchQuery = '';
+  List<Map<String, dynamic>> _nicSearchResults = [];
+
+  // NIC Finder - cascading selections
+  List<Map<String, dynamic>> _nicDivisions = [];
+  List<Map<String, dynamic>> _nicGroups = [];
+  List<Map<String, dynamic>> _nicClasses = [];
+  List<Map<String, dynamic>> _nicSubClasses = [];
+
+  Map<String, dynamic>? _selectedDivision;
+  Map<String, dynamic>? _selectedGroup;
+  Map<String, dynamic>? _selectedClass;
+  Map<String, dynamic>? _selectedSubClass;
 
   List<TmClass> _allTmClasses = [];
   List<TmClass> _filteredTmClasses = [];
@@ -126,12 +137,97 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
   Future<void> _loadNicData() async {
     setState(() => _isLoadingNic = true);
-    final codes = await NicCodeService.loadNicCodes();
+    try {
+      final String raw = await DefaultAssetBundle.of(context).loadString('assets/json/NIC_2008_classification.json');
+      final parsed = json.decode(raw) as Map<String, dynamic>;
+      final sections = (parsed['NIC_2008']?['sections'] as List?) ?? [];
+      final List<Map<String, dynamic>> divisions = [];
+      final List<Map<String, dynamic>> flat = [];
+      for (final section in sections) {
+        for (final div in (section['divisions'] as List? ?? [])) {
+          final divMap = {
+            'division': div['division'],
+            'title': div['title'],
+            'groups': div['groups'] ?? [],
+          };
+          divisions.add(divMap);
+          // build flat list for search
+          for (final g in (div['groups'] as List? ?? [])) {
+            flat.add({
+              'code': g['code'],
+              'description': g['description'] ?? '',
+              'level': 'Group',
+              'divCode': div['division'],
+              'divTitle': div['title'],
+            });
+            for (final c in (g['classes'] as List? ?? [])) {
+              flat.add({
+                'code': c['code'],
+                'description': c['description'] ?? '',
+                'level': 'Class',
+                'divCode': div['division'],
+                'divTitle': div['title'],
+                'groupCode': g['code'],
+              });
+              for (final s in (c['sub_classes'] as List? ?? [])) {
+                flat.add({
+                  'code': s['code'],
+                  'description': s['description'] ?? '',
+                  'level': 'Sub-class',
+                  'divCode': div['division'],
+                  'divTitle': div['title'],
+                  'groupCode': g['code'],
+                  'classCode': c['code'],
+                });
+              }
+            }
+          }
+        }
+      }
+      // Sort divisions numerically
+      divisions.sort((a, b) {
+        final aNum = int.tryParse(a['division'] ?? '') ?? 0;
+        final bNum = int.tryParse(b['division'] ?? '') ?? 0;
+        return aNum.compareTo(bNum);
+      });
+      setState(() {
+        _nicDivisions = divisions;
+        _nicFlat = flat;
+        _isLoadingNic = false;
+      });
+    } catch (e) {
+      setState(() => _isLoadingNic = false);
+      debugPrint('NIC load error: $e');
+    }
+  }
+
+  void _onDivisionSelected(Map<String, dynamic>? div) {
     setState(() {
-      _allNicCodes = codes;
-      _filteredNicCodes = codes;
-      _groupNicCodes();
-      _isLoadingNic = false;
+      _selectedDivision = div;
+      _nicGroups = div != null ? List<Map<String, dynamic>>.from(div['groups'] as List) : [];
+      _selectedGroup = null;
+      _nicClasses = [];
+      _selectedClass = null;
+      _nicSubClasses = [];
+      _selectedSubClass = null;
+    });
+  }
+
+  void _onGroupSelected(Map<String, dynamic>? group) {
+    setState(() {
+      _selectedGroup = group;
+      _nicClasses = group != null ? List<Map<String, dynamic>>.from(group['classes'] as List? ?? []) : [];
+      _selectedClass = null;
+      _nicSubClasses = [];
+      _selectedSubClass = null;
+    });
+  }
+
+  void _onClassSelected(Map<String, dynamic>? cls) {
+    setState(() {
+      _selectedClass = cls;
+      _nicSubClasses = cls != null ? List<Map<String, dynamic>>.from(cls['sub_classes'] as List? ?? []) : [];
+      _selectedSubClass = null;
     });
   }
 
@@ -229,61 +325,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
     });
   }
 
-  void _groupNicCodes() {
-    _groupedNicCodes.clear();
-    Set<NicCode> matchedClasses = {};
-    
-    // Use a hash map for O(1) lookups instead of O(N) firstWhere inside a loop!
-    Map<String, NicCode> classMap = {};
-    for (var item in _allNicCodes) {
-      if (item.type == 'Class') {
-        classMap[item.code] = item;
-      }
-    }
 
-    for (var item in _filteredNicCodes) {
-      if (item.type == 'Class') {
-        matchedClasses.add(item);
-      } else if (item.type == 'Sub-class') {
-        String parentCode = item.code.length >= 4 ? item.code.substring(0, 4) : item.code;
-        var parentClass = classMap[parentCode] ?? NicCode(code: parentCode, description: 'Unknown Class', type: 'Class');
-        matchedClasses.add(parentClass);
-      } else {
-        matchedClasses.add(item);
-      }
-    }
-
-    var limitedClasses = matchedClasses.take(50).toList();
-
-    for (var cls in limitedClasses) {
-      if (cls.type == 'Class') {
-        var subs = _allNicCodes.where((n) => n.type == 'Sub-class' && n.code.startsWith(cls.code)).toList();
-        _groupedNicCodes[cls] = subs;
-      } else {
-        _groupedNicCodes[cls] = [];
-      }
-    }
-  }
-
-  void _searchNic(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        setState(() {
-          if (query.isEmpty) {
-            _filteredNicCodes = List.from(_allNicCodes);
-          } else {
-            final lowercaseQuery = query.toLowerCase();
-            _filteredNicCodes = _allNicCodes.where((nic) {
-              return nic.code.toLowerCase().contains(lowercaseQuery) ||
-                  nic.description.toLowerCase().contains(lowercaseQuery);
-            }).toList();
-          }
-          _groupNicCodes();
-        });
-      }
-    });
-  }
 
   void _searchCompliance(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
@@ -673,188 +715,509 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
       );
     }
 
-    return Column(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.grey[300]!),
-          ),
-          child: TextField(
-            controller: _searchController,
-            onChanged: _searchNic,
-            style: GoogleFonts.outfit(
-              fontWeight: FontWeight.w500,
-              color: AppTheme.deepTeal,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Search by industry or code...',
-              hintStyle: GoogleFonts.outfit(color: Colors.grey[400]),
-              prefixIcon: Icon(LucideIcons.search, size: 20, color: Colors.grey[400]),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _groupedNicCodes.length,
-          itemBuilder: (context, index) {
-            final parentClass = _groupedNicCodes.keys.elementAt(index);
-            final subClasses = _groupedNicCodes[parentClass]!;
-            
-            return Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.1)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Theme(
-                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                  child: ExpansionTile(
-                    iconColor: AppTheme.corporateBlue,
-                    collapsedIconColor: Colors.grey[400],
-                    tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    title: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 65,
-                          alignment: Alignment.center,
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(8),
+    void doSearch(String q) {
+      setState(() {
+        _nicSearchQuery = q;
+        if (q.isEmpty) {
+          _nicSearchResults = [];
+        } else {
+          final lq = q.toLowerCase();
+          _nicSearchResults = _nicFlat.where((item) {
+            return (item['code'] as String).toLowerCase().contains(lq) ||
+                   (item['description'] as String).toLowerCase().contains(lq);
+          }).take(60).toList();
+        }
+      });
+    }
+
+    Widget nicTile({
+      required String label,
+      required String hint,
+      required Map<String, dynamic>? value,
+      required String Function(Map<String, dynamic>) getLabel,
+      required String Function(Map<String, dynamic>) getCode,
+      required List<Map<String, dynamic>> items,
+      required void Function(Map<String, dynamic>) onSelected,
+      bool enabled = true,
+    }) {
+      final displayText = value != null ? getLabel(value) : null;
+      final codeText = value != null ? getCode(value) : null;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 13, color: AppTheme.deepTeal)),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: enabled
+                ? () async {
+                    final sheetCtrl = TextEditingController();
+                    List<Map<String, dynamic>> sheetFiltered = List.from(items);
+                    await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (ctx) => StatefulBuilder(
+                        builder: (ctx, setModal) => Container(
+                          height: MediaQuery.of(context).size.height * 0.75,
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                           ),
-                          child: Text(
-                            parentClass.code,
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              fontSize: 13,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'CLASS',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 10,
-                                  color: AppTheme.corporateBlue.withOpacity(0.8),
-                                  letterSpacing: 1.2,
+                              const SizedBox(height: 12),
+                              Container(width: 40, height: 4,
+                                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+                              const SizedBox(height: 14),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text('Select $label', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                parentClass.description,
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
-                                  color: AppTheme.deepTeal,
-                                  height: 1.3,
+                              const SizedBox(height: 12),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                child: Container(
+                                  decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey[200]!)),
+                                  child: TextField(
+                                    controller: sheetCtrl,
+                                    autofocus: true,
+                                    style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.deepTeal),
+                                    decoration: InputDecoration(
+                                      hintText: 'Search...',
+                                      hintStyle: GoogleFonts.outfit(color: Colors.grey[400], fontSize: 14),
+                                      prefixIcon: Icon(LucideIcons.search, size: 18, color: Colors.grey[400]),
+                                      border: InputBorder.none,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                                    ),
+                                    onChanged: (q) {
+                                      setModal(() {
+                                        final lq = q.toLowerCase();
+                                        sheetFiltered = q.isEmpty ? List.from(items)
+                                            : items.where((it) => getCode(it).toLowerCase().contains(lq) || getLabel(it).toLowerCase().contains(lq)).toList();
+                                      });
+                                    },
+                                  ),
                                 ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Divider(height: 1),
+                              Expanded(
+                                child: sheetFiltered.isEmpty
+                                    ? Center(child: Text('No results', style: GoogleFonts.outfit(color: Colors.grey[400])))
+                                    : ListView.separated(
+                                        padding: const EdgeInsets.symmetric(vertical: 8),
+                                        itemCount: sheetFiltered.length,
+                                        separatorBuilder: (_, __) => const Divider(height: 1, indent: 16, endIndent: 16),
+                                        itemBuilder: (_, i) {
+                                          final item = sheetFiltered[i];
+                                          return InkWell(
+                                            onTap: () { Navigator.pop(ctx); onSelected(item); },
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                              child: Row(
+                                                children: [
+                                                  Container(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    decoration: BoxDecoration(color: AppTheme.deepTeal, borderRadius: BorderRadius.circular(6)),
+                                                    child: Text(getCode(item), style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
+                                                  ),
+                                                  const SizedBox(width: 12),
+                                                  Expanded(child: Text(getLabel(item),
+                                                    style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.deepTeal),
+                                                    maxLines: 2, overflow: TextOverflow.ellipsis)),
+                                                  Icon(LucideIcons.chevronRight, size: 16, color: Colors.grey[400]),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                               ),
                             ],
                           ),
                         ),
-                      ],
+                      ),
+                    );
+                    Future.microtask(() => sheetCtrl.dispose());
+                  }
+                : null,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              decoration: BoxDecoration(
+                color: enabled ? Colors.white : Colors.grey[50],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: enabled ? AppTheme.corporateBlue.withOpacity(0.3) : Colors.grey[200]!),
+              ),
+              child: Row(
+                children: [
+                  if (codeText != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(color: AppTheme.deepTeal, borderRadius: BorderRadius.circular(6)),
+                      child: Text(codeText, style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white)),
                     ),
-                    children: subClasses.isEmpty
-                        ? [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 20),
-                              child: Row(
-                                children: [
-                                  Icon(LucideIcons.info, size: 16, color: Colors.grey[400]),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      'No specific sub-classes matched or available.',
-                                      style: GoogleFonts.outfit(color: Colors.grey[500], fontSize: 13),
-                                    ),
+                    const SizedBox(width: 10),
+                  ],
+                  Expanded(child: Text(displayText ?? hint,
+                    style: GoogleFonts.outfit(
+                      fontSize: 13,
+                      fontWeight: displayText != null ? FontWeight.w500 : FontWeight.w400,
+                      color: displayText != null ? AppTheme.deepTeal : Colors.grey[400]),
+                    overflow: TextOverflow.ellipsis, maxLines: 1)),
+                  const SizedBox(width: 8),
+                  Icon(LucideIcons.chevronDown, size: 18, color: enabled ? AppTheme.corporateBlue : Colors.grey[300]),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ── Visible search bar ──
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey[300]!),
+          ),
+          child: TextField(
+            controller: _nicSearchController,
+            style: GoogleFonts.outfit(fontSize: 14, color: AppTheme.deepTeal),
+            decoration: InputDecoration(
+              hintText: 'Search NIC code or description...',
+              hintStyle: GoogleFonts.outfit(color: Colors.grey[400], fontSize: 14),
+              prefixIcon: Icon(LucideIcons.search, size: 18, color: Colors.grey[400]),
+              suffixIcon: _nicSearchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(LucideIcons.x, size: 16, color: Colors.grey[400]),
+                      onPressed: () { _nicSearchController.clear(); doSearch(''); },
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            ),
+            onChanged: doSearch,
+          ),
+        ),
+        const SizedBox(height: 16),
+        if (_nicSearchQuery.isNotEmpty) ...[
+          if (_nicSearchResults.isEmpty)
+            Center(child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text('No results found', style: GoogleFonts.outfit(color: Colors.grey[400], fontSize: 14)),
+            ))
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _nicSearchResults.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (_, i) {
+                final item = _nicSearchResults[i];
+                final code = item['code'] as String;
+                final desc = item['description'] as String;
+                final level = item['level'] as String;
+                final divCode = item['divCode'] as String? ?? '';
+                final divTitle = item['divTitle'] as String? ?? '';
+                return ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  leading: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(color: AppTheme.deepTeal, borderRadius: BorderRadius.circular(6)),
+                    child: Text(code, style: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
+                  ),
+                  title: _ExpandableDescription(
+                    text: desc,
+                    trimLines: 2,
+                    style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.deepTeal),
+                  ),
+                  subtitle: Text('$level · Division $divCode – $divTitle',
+                    style: GoogleFonts.outfit(fontSize: 11, color: Colors.grey[500])),
+                );
+              },
+            ),
+        ] else ...[
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.grey[200]!),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _nicDivisions.length,
+              separatorBuilder: (_, __) => Divider(height: 1, color: Colors.grey[200]),
+              itemBuilder: (context, dIndex) {
+                final div = _nicDivisions[dIndex];
+                final divCode = div['division'] ?? '';
+                final divTitle = div['title'] ?? '';
+                final groups = div['groups'] as List? ?? [];
+                
+                return Theme(
+                  data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  child: ExpansionTile(
+                    tilePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                    leading: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'Div $divCode',
+                        style: GoogleFonts.outfit(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    title: _ExpandableDescription(
+                      text: divTitle,
+                      trimLines: 2,
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: AppTheme.deepTeal,
+                      ),
+                    ),
+                    children: groups.map<Widget>((g) {
+                      final gCode = g['code'] ?? '';
+                      final gDesc = g['description'] ?? '';
+                      final classes = g['classes'] as List? ?? [];
+                      
+                      return ExpansionTile(
+                        tilePadding: const EdgeInsets.only(left: 20, right: 14, top: 2, bottom: 2),
+                        leading: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppTheme.deepTeal.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            gCode,
+                            style: GoogleFonts.outfit(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepTeal,
+                            ),
+                          ),
+                        ),
+                        title: _ExpandableDescription(
+                          text: gDesc,
+                          trimLines: 2,
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 13,
+                            color: AppTheme.deepTeal,
+                          ),
+                        ),
+                        children: classes.map<Widget>((c) {
+                          final cCode = c['code'] ?? '';
+                          final cDesc = c['description'] ?? '';
+                          final subClasses = c['sub_classes'] as List? ?? [];
+                          
+                          if (subClasses.isEmpty) {
+                            return ListTile(
+                              contentPadding: const EdgeInsets.only(left: 36, right: 14),
+                              leading: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.indigo.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  cCode,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.indigo[800],
                                   ),
-                                ],
+                                ),
                               ),
-                            )
-                          ]
-                        : [
-                            const Divider(height: 1, color: Color(0xFFF0F0F0)),
-                            ...subClasses.asMap().entries.map((entry) {
-                              final isLast = entry.key == subClasses.length - 1;
-                              final item = entry.value;
-                              return Column(
-                                children: [
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                                    color: entry.key.isEven ? Colors.grey[50] : Colors.white,
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                          Container(
-                                            width: 65,
-                                            alignment: Alignment.center,
-                                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                            decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(0.08),
-                                            borderRadius: BorderRadius.circular(6),
-                                          ),
-                                          child: Text(
-                                            item.code,
-                                            style: GoogleFonts.outfit(
-                                              fontWeight: FontWeight.w700,
-                                              color: Colors.black,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            item.description,
-                                            style: GoogleFonts.outfit(
-                                              fontWeight: FontWeight.w400,
-                                              fontSize: 13,
-                                              color: Colors.grey[800],
-                                              height: 1.4,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                              title: _ExpandableDescription(
+                                text: cDesc,
+                                trimLines: 2,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppTheme.deepTeal,
+                                ),
+                              ),
+                              onTap: () {
+                                setState(() {
+                                  _selectedDivision = div;
+                                  _selectedGroup = g;
+                                  _selectedClass = c;
+                                  _selectedSubClass = null;
+                                });
+                              },
+                            );
+                          }
+                          
+                          return ExpansionTile(
+                            tilePadding: const EdgeInsets.only(left: 36, right: 14, top: 2, bottom: 2),
+                            leading: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.indigo.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                cCode,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.indigo[800],
+                                ),
+                              ),
+                            ),
+                            title: _ExpandableDescription(
+                              text: cDesc,
+                              trimLines: 2,
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
+                                color: AppTheme.deepTeal,
+                              ),
+                            ),
+                            children: subClasses.map<Widget>((s) {
+                              final sCode = s['code'] ?? '';
+                              final sDesc = s['description'] ?? '';
+                              return ListTile(
+                                contentPadding: const EdgeInsets.only(left: 52, right: 14),
+                                leading: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.teal.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    sCode,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.teal[900],
                                     ),
                                   ),
-                                  if (!isLast)
-                                    const Divider(height: 1, color: Color(0xFFF0F0F0)),
-                                ],
+                                ),
+                                title: _ExpandableDescription(
+                                  text: sDesc,
+                                  trimLines: 2,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.grey[800],
+                                  ),
+                                ),
+                                trailing: const Icon(LucideIcons.checkCircle2, size: 16, color: Colors.grey),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedDivision = div;
+                                    _selectedGroup = g;
+                                    _selectedClass = c;
+                                    _selectedSubClass = s;
+                                  });
+                                },
                               );
-                            }),
-                          ],
+                            }).toList(),
+                          );
+                        }).toList(),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
+            ),
+          ),
+          if (_selectedClass != null || _selectedSubClass != null) ...[
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.corporateBlue.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    const Icon(LucideIcons.tag, size: 16, color: AppTheme.corporateBlue),
+                    const SizedBox(width: 8),
+                    Text('Selected NIC Code', style: GoogleFonts.outfit(fontSize: 13, fontWeight: FontWeight.w700, color: AppTheme.corporateBlue)),
+                  ]),
+                  const SizedBox(height: 12),
+                  if (_selectedSubClass != null) _nicResultRow('Sub-class', _selectedSubClass!['code'], _selectedSubClass!['description']),
+                  if (_selectedClass != null) _nicResultRow('Class', _selectedClass!['code'], _selectedClass!['description']),
+                  if (_selectedGroup != null) _nicResultRow('Group', _selectedGroup!['code'], _selectedGroup!['description']),
+                  if (_selectedDivision != null) _nicResultRow('Division', _selectedDivision!['division'], _selectedDivision!['title']),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+
+  Widget _nicResultRow(String level, String code, String desc) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppTheme.deepTeal,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              code,
+              style: GoogleFonts.outfit(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  level,
+                  style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[500],
+                    letterSpacing: 0.5,
                   ),
                 ),
-              ),
-            );
-          },
-        ),
-      ],
+                _ExpandableDescription(
+                  text: desc,
+                  trimLines: 3,
+                  style: GoogleFonts.outfit(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.deepTeal,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1312,33 +1675,18 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton2<String>(
-          valueListenable: valueListenable,
+        child: DropdownButton<String>(
           isExpanded: true,
-          buttonStyleData: const ButtonStyleData(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            height: 54,
-          ),
-          iconStyleData: const IconStyleData(
-            icon: Icon(LucideIcons.chevronDown, size: 20, color: Colors.grey),
-          ),
-          dropdownStyleData: DropdownStyleData(
-            elevation: 2,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
-            ),
-          ),
-          menuItemStyleData: const MenuItemStyleData(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-          ),
+          value: valueListenable.value,
+          icon: const Icon(LucideIcons.chevronDown, size: 20, color: Colors.grey),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           style: GoogleFonts.outfit(
             color: AppTheme.deepTeal,
             fontWeight: FontWeight.w600,
             fontSize: 15,
           ),
           items: items.map((String item) {
-            return DropdownItem<String>(
+            return DropdownMenuItem<String>(
               value: item,
               child: Text(item),
             );
@@ -1500,8 +1848,15 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
 
 class _ExpandableDescription extends StatefulWidget {
   final String text;
+  final TextStyle? style;
+  final int trimLines;
 
-  const _ExpandableDescription({required this.text});
+  const _ExpandableDescription({
+    super.key,
+    required this.text,
+    this.style,
+    this.trimLines = 2,
+  });
 
   @override
   State<_ExpandableDescription> createState() => _ExpandableDescriptionState();
@@ -1514,42 +1869,44 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
+        final effectiveStyle = widget.style ?? GoogleFonts.outfit(
+          fontWeight: FontWeight.w500,
+          fontSize: 13,
+          color: AppTheme.deepTeal,
+          height: 1.3,
+        );
         final span = TextSpan(
           text: widget.text,
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.w500,
-            fontSize: 13,
-            color: AppTheme.deepTeal,
-            height: 1.3,
-          ),
+          style: effectiveStyle,
         );
         final tp = TextPainter(
           text: span,
           textDirection: TextDirection.ltr,
-          maxLines: 3,
+          maxLines: widget.trimLines,
         );
-        tp.layout(maxWidth: constraints.maxWidth);
+        tp.layout(maxWidth: constraints.maxWidth > 0 ? constraints.maxWidth : 300);
         
         final isOverflowing = tp.didExceedMaxLines;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               widget.text,
               style: span.style,
-              maxLines: _isExpanded ? null : 3,
+              maxLines: _isExpanded ? null : widget.trimLines,
               overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
             ),
             if (isOverflowing) ...[
-              const SizedBox(height: 4),
-              InkWell(
+              const SizedBox(height: 3),
+              GestureDetector(
                 onTap: () => setState(() => _isExpanded = !_isExpanded),
                 child: Text(
-                  _isExpanded ? 'View less' : 'View more',
+                  _isExpanded ? 'Show less' : 'Show more',
                   style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 11,
                     color: AppTheme.corporateBlue,
                   ),
                 ),

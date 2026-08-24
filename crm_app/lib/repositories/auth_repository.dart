@@ -11,8 +11,9 @@ class MockAuthUser {
   final String uid;
   final String? email;
   final String? displayName;
+  bool passwordChanged;
 
-  MockAuthUser({required this.uid, this.email, this.displayName});
+  MockAuthUser({required this.uid, this.email, this.displayName, this.passwordChanged = true});
 }
 
 class AuthRepository {
@@ -120,6 +121,7 @@ class AuthRepository {
           email: userData['email']?.toString() ?? email,
           displayName: userData['owner_name']?.toString() ??
               userData['name']?.toString(),
+          passwordChanged: userData['password_changed'] ?? true,
         );
         _authStateController.add(_currentUser);
         await _saveUser(_currentUser!);
@@ -179,6 +181,7 @@ class AuthRepository {
           email: userData['email']?.toString() ?? email,
           displayName: userData['owner_name']?.toString() ??
               userData['name']?.toString(),
+          passwordChanged: userData['password_changed'] ?? true,
         );
         _authStateController.add(_currentUser);
         await _saveUser(_currentUser!);
@@ -197,6 +200,13 @@ class AuthRepository {
     _currentUser = null;
     _authStateController.add(null);
     await _clearUser();
+  }
+
+  void markPasswordChanged() {
+    if (_currentUser != null) {
+      _currentUser!.passwordChanged = true;
+      _authStateController.add(_currentUser);
+    }
   }
 
   // Get current user details as a Stream (Real API)

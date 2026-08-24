@@ -226,13 +226,13 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.only(top: 40, bottom: 40),
+              padding: const EdgeInsets.only(top: 20, bottom: 20),
               child: Center(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.asset(
-                    'assets/logo.png',
-                    height: 50,
+                    'assets/launcher_icon_padded.png',
+                    height: 60,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -254,7 +254,7 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return SingleChildScrollView(
-                      physics: const ClampingScrollPhysics(),
+                      physics: const NeverScrollableScrollPhysics(),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(minHeight: constraints.maxHeight),
                         child: IntrinsicHeight(

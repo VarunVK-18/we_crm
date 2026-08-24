@@ -12,6 +12,7 @@ import '../../providers/pan_provider.dart';
 import '../../core/constants/service_documents.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/orders_provider.dart';
+import '../../models/order_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'dart:convert';
@@ -19,6 +20,7 @@ import '../../core/constants/port.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import '../profile/my_entities_screen.dart';
 
 class ServiceRequestSummarySheet extends ConsumerStatefulWidget {
   final String packageName;
@@ -866,7 +868,7 @@ class _ServiceRequestSummarySheetState
       final completedOrders = ordersState.value?.where((o) =>
               isServiceTypeMatch(o.serviceType, reqService) &&
               isEntityMatch(o.entityName, _selectedEntity) &&
-              (o.status == 'completed' || o.status == 'complete')) ?? [];
+              (o.status == ServiceStatus.complete || o.status == ServiceStatus.complete)) ?? [];
 
       if (completedOrders.isNotEmpty) {
         final reqServiceLower = reqService.toLowerCase();
@@ -1061,11 +1063,12 @@ class _ServiceRequestSummarySheetState
                             ),
                             TextButton(
                               onPressed: () {
-                                setState(() {
-                                  _isAddingNewEntity = true;
-                                  _selectedEntity = null;
-                                  _companyNameController.clear();
-                                });
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const MyEntitiesScreen(),
+                                  ),
+                                );
                               },
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
@@ -1328,14 +1331,10 @@ iconStyleData: const IconStyleData(
                       const SizedBox(height: 12),
                       _buildNextStepsSection(),
                     ],
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                if (_currentPage == 0)
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        if (_currentPage == 0)
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () => Navigator.pop(context),
@@ -1505,6 +1504,10 @@ iconStyleData: const IconStyleData(
                     ),
                   ),
               ],
+            ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -2738,7 +2741,7 @@ class _EditableField extends StatelessWidget {
                   : null,
               inputFormatters: inputFormatters,
               style: TextStyle(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.normal,
                 color: AppTheme.deepTeal,
                 fontSize: 15,
                 letterSpacing: isPhoneField ? 1.5 : 0.2,
@@ -2749,6 +2752,7 @@ class _EditableField extends StatelessWidget {
                   color: Colors.grey[400],
                   fontSize: 12,
                   letterSpacing: 0,
+                  fontWeight: FontWeight.normal,
                 ),
                 prefixIcon: icon == null
                     ? null

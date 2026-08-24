@@ -10,8 +10,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedOffice,
     'color': const Color(0xFF6366F1),
     'category': 'Incorporation',
-    'averageWorkingDays': '7-10 days',
-    'features': ['Name Reservation (RUN)', 'Digital Signature (DSC)', 'Director Identification (DIN)', 'MOA & AOA Drafting', 'Certificate of Incorporation'],
+    'averageWorkingDays': '7–10 days',
+      'documentsRequired': ['Directors Aadhar & PAN Card', 'EB Bill < 2 months'],
+    'features': ['Drafting AOA & MOA', 'Certificate of Incorporation (COI)', 'Corporate Identification Number (CIN)', 'PAN & TAN', 'Director Identification Numbers (DINs)', 'Digital Signature Certificates (DSCs)', 'Corporate Bank Setup support'],
   },
   {
     'title': 'LLP Incorporation',
@@ -20,8 +21,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedBriefcase01,
     'color': const Color(0xFFF59E0B),
     'category': 'Incorporation',
-    'averageWorkingDays': '7-10 days',
-    'features': ['Digital Signature Certificate (DSC)', 'Form 8 Statement of Account', 'Form 11 Annual Return', 'DIR-3 KYC of Partners', 'Income Tax Return Filing', 'LLP Agreement Maintenance'],
+    'averageWorkingDays': '7–10 days',
+      'documentsRequired': ['Partners Aadhar & PAN Card', 'EB Bill < 2 months'],
+    'features': ['Drafting & Registration of LLP Agreement', 'Certificate of Incorporation (COI)', 'LLP Identification Number (LLPIN)', 'PAN & TAN', 'Designated Partner Identification Numbers (DPINs)', 'Digital Signature Certificates (DSCs)', 'Corporate Bank Setup support'],
   },
   {
     'title': 'OPC Incorporation',
@@ -30,8 +32,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedUser,
     'color': const Color(0xFF10B981),
     'category': 'Incorporation',
-    'averageWorkingDays': '7-10 days',
-    'features': ['Name Reservation', 'DSC & DIN', 'MOA & AOA Drafting', 'Certificate of Incorporation', 'Bank Setup Support'],
+    'averageWorkingDays': '7–10 days',
+      'documentsRequired': ['Director & Nominee Aadhar & PAN Card', 'EB Bill < 2 months'],
+    'features': ['Nominee Appointment Documentation', 'Certificate of Incorporation (COI)', 'Corporate Identification Number (CIN)', 'PAN & TAN', 'Director Identification Numbers (DINs)', 'Digital Signature Certificates (DSCs)', 'Drafting AOA & MOA Corporate Bank Setup support'],
   },
   {
     'title': 'MSME Registration',
@@ -40,8 +43,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.medal,
     'color': const Color(0xFFF59E0B),
     'category': 'Incorporation',
-    'averageWorkingDays': '1-2 days',
-    'features': ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Govt Subsidy Assistance', 'Collateral Free Loan Support', 'IP Reimbursement Advisory'],
+    'averageWorkingDays': '1–2 days',
+      'documentsRequired': ['Aadhar & PAN Card', 'Bank account details', 'EB Bill < 2 months'],
+    'features': ['Udyam Registration Certificate', 'Priority Sector Lending Support', 'Collateral Free Loan Support', 'IP Reimbursement Advisory'],
   },
   {
     'title': 'Proprietorship Registration',
@@ -50,8 +54,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedUser,
     'color': const Color(0xFF3B82F6),
     'category': 'Incorporation',
-    'averageWorkingDays': '5-7 days',
-    'features': ['Document support', 'MSME/Udyam Registration', 'GST Registration', 'Bank Account Assistance'],
+    'averageWorkingDays': '5–7 days',
+    'features': ['Documentation support'],
   },
   {
     'title': 'MCA Compliance',
@@ -61,6 +65,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'color': const Color(0xFF14B8A6),
     'category': 'Compliance',
     'averageWorkingDays': 'On time',
+      'documentsRequired': ['Last Year Bank Statements', 'All Company documents'],
     'features': ['Auditor appointment', '360° Accounting & Bookkeeping', 'Statutory Auditing', 'AOC 4 & MGT 7 filing', 'Director KYC', 'AGM & Notice', 'ITR filing'],
   },
   {
@@ -70,7 +75,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedCalculator,
     'color': const Color(0xFF8B5CF6),
     'category': 'Compliance',
-    'averageWorkingDays': '2-4 days',
+    'averageWorkingDays': '2–4 days',
+      'documentsRequired': ['TAN & PAN', 'Salary Details', 'Previous TDS Return / RPU File (if available)', 'Valid Digital Signature'],
     'features': ['TDS Computation', 'Quarterly Return Filing', 'Form 16/16A Generation', 'Challan Payment', 'Notice Reply'],
   },
   {
@@ -80,7 +86,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedDocumentValidation,
     'color': const Color(0xFF3B82F6),
     'category': 'Compliance',
-    'averageWorkingDays': '5-7 days',
+    'averageWorkingDays': '5–7 days',
+      'documentsRequired': ['Employee Master Details', 'PF Contribution Details', 'Employee KYC Details', 'Bank Account Details'],
     'features': ['PF Registration', 'Monthly ECR Filing', 'Challan Generation', 'Employee Addition/Deletion', 'KYC Updates'],
   },
   {
@@ -90,8 +97,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedTradeMark,
     'color': const Color(0xFFEC4899),
     'category': 'IP',
-    'averageWorkingDays': '5-7 days',
-    'features': ['Trademark Search', 'Application Filing', 'Objection Handling', 'Hearing Support', 'Registration Certificate', 'Reimbursement Advisory'],
+    'averageWorkingDays': '5–7 days',
+    'documentsRequired': ['Trademark Logo', 'MSME Certificate'],
+    'features': ['Trademark Search', 'Application Filing', 'Registration Certificate', 'Reimbursement Advisory'],
   },
   {
     'title': 'Copyright Registration',
@@ -100,8 +108,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.copyright,
     'color': const Color(0xFF6366F1),
     'category': 'IP',
-    'averageWorkingDays': '12-15 days',
-    'features': ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Objection Reply', 'Copyright Certificate'],
+    'averageWorkingDays': '12–15 days',
+    'documentsRequired': ['Identity Proof of Applicant', 'Details of the Copyright Work'],
+    'features': ['Diary Number Generation', 'Application Filing', 'Work Submission', 'Copyright Certificate'],
   },
   {
     'title': 'Patent Registration',
@@ -110,7 +119,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.lightbulb,
     'color': const Color(0xFFF59E0B),
     'category': 'IP',
-    'averageWorkingDays': '12-15 days',
+    'averageWorkingDays': '12–15 days',
+      'documentsRequired': ['Company Registration Documents', 'Details of the Invention', 'Technical Documents'],
     'features': ['Patent Search', 'Provisional Drafting', 'Complete Specification', 'Examination Reply', 'Patent Grant'],
   },
   {
@@ -120,7 +130,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedCalculate,
     'color': const Color(0xFF8B5CF6),
     'category': 'Tax',
-    'averageWorkingDays': '1-3 days',
+    'averageWorkingDays': '1–3 days',
+    'documentsRequired': ['Last Year Bank Statements', 'All Company documents'],
     'features': ['Income Computation', 'Tax Saving Advisory', 'Return Filing (ITR 1-7)', 'Refund Tracking', 'Assessment Support'],
   },
   {
@@ -130,7 +141,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedLicenseDraft,
     'color': const Color(0xFF10B981),
     'category': 'Tax',
-    'averageWorkingDays': '5-7 days',
+    'averageWorkingDays': '5–7 days',
+      'documentsRequired': ['Aadhaar & PAN Card', 'Recent Photograph of the applicant', 'Proof of Principal Place of Business', 'Cancelled Cheque or Bank Statement'],
     'features': ['GST Application Filing', 'Document Verification', 'ARN Generation', 'Clarification Support', 'GSTIN Certificate'],
   },
   {
@@ -140,7 +152,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedCalculate,
     'color': const Color(0xFF3B82F6),
     'category': 'Tax',
-    'averageWorkingDays': '1-3 days',
+    'averageWorkingDays': '1–3 days',
     'features': ['GSTR-1 & 3B Filing', 'GSTR-2A/2B Reconciliation', 'Input Tax Credit (ITC)', 'Annual Return GSTR-9', 'Audit Support'],
   },
   {
@@ -150,7 +162,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.fileX,
     'color': const Color(0xFFEF4444),
     'category': 'Tax',
-    'averageWorkingDays': '5-10 days',
+    'averageWorkingDays': '5–10 days',
     'features': ['Application for Cancellation', 'Final Return GSTR-10', 'Reply to Notices', 'Assessment Clearance', 'Cancellation Order'],
   },
   {
@@ -160,7 +172,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': HugeIcons.strokeRoundedRocket,
     'color': const Color(0xFF10B981),
     'category': 'Licensing',
-    'averageWorkingDays': '5-7 days',
+    'averageWorkingDays': '5–7 days',
     'features': ['Pitch deck preparation', 'Tax Exemption Support', 'Priority Sector Lending Support', 'Government approval', 'IPR Fast Track'],
   },
   {
@@ -170,8 +182,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.award,
     'color': const Color(0xFF14B8A6),
     'category': 'Licensing',
-    'averageWorkingDays': '5-7 days',
-    'features': ['Process Audit', 'Quality Manual', 'Certification Support', 'Annual Surveillance', 'Training'],
+    'averageWorkingDays': '5–7 days',
+    'documentsRequired': ['Recent Invoice copy raised', 'Address Proof', 'Authorised Letter'],
+    'features': ['ISO Certificate via Courier'],
   },
   {
     'title': 'FSSAI Registration',
@@ -180,7 +193,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.utensils,
     'color': const Color(0xFF10B981),
     'category': 'Licensing',
-    'averageWorkingDays': '1-3 days',
+    'averageWorkingDays': '1–3 days',
+      'documentsRequired': ['Company Incorporation documents', 'Proof of Business Address', 'NOC from Premises Owner'],
     'features': ['Basic/State/Central License', 'Food Safety Audit', 'Premise Inspection Support', 'Renewal Reminders', 'Product Category Mapping'],
   },
   {
@@ -190,8 +204,9 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.globe,
     'color': const Color(0xFF10B981),
     'category': 'Licensing',
-    'averageWorkingDays': '1-3 days',
-    'features': ['Global Business Identity Card', 'Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing'],
+    'averageWorkingDays': '1–3 days',
+    'documentsRequired': ['Address Proof (Utility bill / Bank statement)', 'Company Incorporation & PAN'],
+    'features': ['Mandatory Access to Tech Developer Programs', 'Creation of a Business Credit File', 'Global Vendor Onboarding (B2B Perks)', 'D&B Global Directory Listing'],
   },
   {
     'title': 'Import Export Code (IEC)',
@@ -200,7 +215,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.globe,
     'color': const Color(0xFF3B82F6),
     'category': 'Licensing',
-    'averageWorkingDays': '1-3 days',
+    'averageWorkingDays': '1–3 days',
+    'documentsRequired': ['Company Incorporation & PAN'],
     'features': ['Application Filing', 'DGFT Registration', 'Modification Support', 'Customs Clearance Help', 'IEC Certificate'],
   },
   {
@@ -210,7 +226,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.shieldCheck,
     'color': const Color(0xFFF59E0B),
     'category': 'Licensing',
-    'averageWorkingDays': '30-90 days',
+    'averageWorkingDays': '30–90 days',
     'features': ['Product Testing', 'Factory Inspection', 'Application Filing', 'Grant of License', 'Renewal Support'],
   },
   {
@@ -220,7 +236,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.checkCircle,
     'color': const Color(0xFF14B8A6),
     'category': 'Licensing',
-    'averageWorkingDays': '5-7 days',
+    'averageWorkingDays': '5–7 days',
     'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
   },
   {
@@ -230,7 +246,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.checkCircle,
     'color': const Color(0xFF14B8A6),
     'category': 'Licensing',
-    'averageWorkingDays': '5-7 days',
+    'averageWorkingDays': '5–7 days',
     'features': ['Documentation Preparation', 'Testing Coordination', 'Compliance Audit', 'Declaration of Conformity', 'Certification Grant'],
   },
   {
@@ -240,7 +256,7 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.barcode,
     'color': const Color(0xFF6366F1),
     'category': 'Licensing',
-    'averageWorkingDays': '1-3 days',
+    'averageWorkingDays': '1–3 days',
     'features': ['LEI Application', 'Global Directory Listing', 'Renewal Management', 'Data Validation', 'LEI Code Generation'],
   },
   {
@@ -250,7 +266,8 @@ final List<Map<String, dynamic>> kAvailableServices = [
     'icon': LucideIcons.usb,
     'color': const Color(0xFF8B5CF6),
     'category': 'Licensing',
-    'averageWorkingDays': '1-2 days',
+    'averageWorkingDays': '1–2 days',
+    'documentsRequired': ['Aadhar & PAN Card'],
     'features': ['Application Processing', 'Video Verification', 'KYC Verification', 'Token Procurement', '2-Year Validity'],
   }
 ];

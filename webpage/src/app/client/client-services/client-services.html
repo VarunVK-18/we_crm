@@ -103,14 +103,14 @@
             </div>
             <div class="badge-preferred">
               <span class="material-symbols-outlined" style="font-size: 16px;">schedule</span>
-              <span>{{ getProcessingTime(selectedService().features) }}</span>
+              <span>{{ getProcessingTime(selectedService()) }}</span>
             </div>
           </div>
 
           <div class="features-list">
             <h4>INCLUDED FEATURES</h4>
             <ul>
-              @for (feature of getRegularFeatures(selectedService().features); track feature) {
+              @for (feature of getRegularFeatures(selectedService()); track feature) {
                 <li>
                   <span class="material-symbols-outlined" style="font-size: 14px; color: #4c1d95; font-variation-settings: 'FILL' 1;">star</span>
                   <span>{{ feature }}</span>
@@ -118,6 +118,20 @@
               }
             </ul>
           </div>
+
+          @if (getDocumentsRequired(selectedService()).length > 0) {
+            <div class="features-list" style="margin-top: 16px;">
+              <h4>REQUIRED DOCUMENTS</h4>
+              <ul>
+                @for (doc of getDocumentsRequired(selectedService()); track doc) {
+                  <li>
+                    <span class="material-symbols-outlined" style="font-size: 14px; color: #0f766e; font-variation-settings: 'FILL' 1;">description</span>
+                    <span>{{ doc }}</span>
+                  </li>
+                }
+              </ul>
+            </div>
+          }
         </div>
 
         <div class="detail-card-bottom">

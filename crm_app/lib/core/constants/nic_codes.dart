@@ -19,68 +19,73 @@ class NicCode {
   });
 }
 
-class NicCodeService {
-  static Future<List<NicCode>> loadNicCodes() async {
-    try {
-      final String response = await rootBundle.loadString('assets/json/NIC_2008_classification.json');
-      final data = await json.decode(response);
+// Top-level function for compute
+List<NicCode> _parseNicCodes(String jsonString) {
+  final data = json.decode(jsonString);
+  List<NicCode> codes = [];
+  final sections = data['NIC_2008']?['sections'] ?? [];
+  
+  for (var sec in sections) {
+    final sectionCode = sec['section'] ?? '';
+    final sectionTitle = sec['title'] ?? '';
+    
+    for (var div in sec['divisions'] ?? []) {
+      if (div['division'] != null) {
+        codes.add(NicCode(
+          code: div['division'],
+          description: div['title'] ?? '',
+          type: 'Division',
+          section: sectionCode,
+          sectionTitle: sectionTitle,
+        ));
+      }
       
-      List<NicCode> codes = [];
-      final sections = data['NIC_2008']?['sections'] ?? [];
-      
-      for (var sec in sections) {
-        final sectionCode = sec['section'] ?? '';
-        final sectionTitle = sec['title'] ?? '';
+      for (var grp in div['groups'] ?? []) {
+        if (grp['code'] != null) {
+          codes.add(NicCode(
+            code: grp['code'],
+            description: grp['description'] ?? '',
+            type: 'Group',
+            section: sectionCode,
+            sectionTitle: sectionTitle,
+          ));
+        }
         
-        for (var div in sec['divisions'] ?? []) {
-          if (div['division'] != null) {
+        for (var cls in grp['classes'] ?? []) {
+          if (cls['code'] != null) {
             codes.add(NicCode(
-              code: div['division'],
-              description: div['title'] ?? '',
-              type: 'Division',
+              code: cls['code'],
+              description: cls['description'] ?? '',
+              type: 'Class',
               section: sectionCode,
               sectionTitle: sectionTitle,
             ));
           }
           
-          for (var grp in div['groups'] ?? []) {
-            if (grp['code'] != null) {
+          for (var sub in cls['sub_classes'] ?? []) {
+            if (sub['code'] != null) {
               codes.add(NicCode(
-                code: grp['code'],
-                description: grp['description'] ?? '',
-                type: 'Group',
+                code: sub['code'],
+                description: sub['description'] ?? '',
+                type: 'Sub-class',
                 section: sectionCode,
                 sectionTitle: sectionTitle,
               ));
             }
-            
-            for (var cls in grp['classes'] ?? []) {
-              if (cls['code'] != null) {
-                codes.add(NicCode(
-                  code: cls['code'],
-                  description: cls['description'] ?? '',
-                  type: 'Class',
-                  section: sectionCode,
-                  sectionTitle: sectionTitle,
-                ));
-              }
-              
-              for (var sub in cls['sub_classes'] ?? []) {
-                if (sub['code'] != null) {
-                  codes.add(NicCode(
-                    code: sub['code'],
-                    description: sub['description'] ?? '',
-                    type: 'Sub-class',
-                    section: sectionCode,
-                    sectionTitle: sectionTitle,
-                  ));
-                }
-              }
-            }
           }
         }
       }
-      return codes;
+    }
+  }
+  return codes;
+}
+
+class NicCodeService {
+  static Future<List<NicCode>> loadNicCodes() async {
+    try {
+      final String response = await rootBundle.loadString('assets/json/NIC_2008_classification.json');
+      // Offload JSON decoding and object mapping to a background isolate
+      return await compute(_parseNicCodes, response);
     } catch (e) {
       showGlobalError(e);
       debugPrint('Error loading NIC codes: $e');

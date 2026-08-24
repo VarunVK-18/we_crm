@@ -17,6 +17,7 @@ export class DynamicFormsComponent implements OnInit {
   saveSuccess: boolean = false;
 
   availableServices = [
+    'Company Profile',
     'Private Limited Incorporation',
     'LLP Incorporation',
     'OPC Incorporation',

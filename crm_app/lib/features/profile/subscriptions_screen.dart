@@ -11,7 +11,7 @@ import '../../providers/subscription_provider.dart';
 import '../../providers/compliance_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../orders/invoice_screen.dart';
-import '../compliance/mca_profile_form_screen.dart';
+import '../services/service_request_summary_sheet.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -119,10 +119,12 @@ class SubscriptionsScreen extends ConsumerWidget {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => const McaProfileFormScreen(),
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                backgroundColor: Colors.transparent,
+                                builder: (context) => const ServiceRequestSummarySheet(
+                                  packageName: 'MCA Compliance',
                                 ),
                               );
                             },
@@ -230,10 +232,9 @@ class SubscriptionsScreen extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator(color: AppTheme.deepTeal)),
               error: (err, stack) => const Center(child: Text('Failed to load subscriptions')),
             ),
-            const SizedBox(height: 48),
-            Text(
-              selectedEntity == 'All Entities' ? 'Completed Services' : 'Completed Services  $selectedEntity',
-              style: const TextStyle(
+            const Text(
+              'Completed Services',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.deepTeal,
@@ -387,10 +388,10 @@ class SubscriptionsScreen extends ConsumerWidget {
     
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
       decoration: BoxDecoration(
         color: AppTheme.deepTeal,
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(16),
         image: DecorationImage(
           image: const NetworkImage('https://www.transparenttextures.com/patterns/carbon-fibre.png'),
           opacity: 0.1,
@@ -427,17 +428,17 @@ class SubscriptionsScreen extends ConsumerWidget {
               HugeIcon(icon: planIcon, color: Colors.amber.shade400, size: 24),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
           Text(
-            'Wealth Empires\n$planName',
+            'Startup Doctor\n$planName',
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 28,
+              fontSize: 20,
               fontWeight: FontWeight.w600,
-              height: 1.1,
+              height: 1.2,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [

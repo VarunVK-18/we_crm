@@ -13,6 +13,8 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/hint_helper.dart';
+import '../../core/utils/file_picker_util.dart';
 import '../../core/utils/error_handler.dart';
 import '../../core/widgets/app_dropdown.dart';
 import '../../models/order_model.dart';
@@ -182,18 +184,19 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
   }
 
   Future<void> _pickFile(String pathKey, List<String>? allowedExtensions) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: allowedExtensions ?? ['jpg', 'jpeg', 'png', 'pdf'],
-    );
-    if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 2 * 1024 * 1024) {
-        _showError('Upload a file less than 2 MB.');
-        return;
+    try {
+      FilePickerResult? result = await FilePickerUtil.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: allowedExtensions ?? ['jpg', 'jpeg', 'png', 'pdf'],
+      );
+      if (result != null && result.files.single.path != null) {
+        if (!mounted) return;
+        setState(() {
+          _filePaths[pathKey] = result.files.single.path;
+        });
       }
-      setState(() {
-        _filePaths[pathKey] = result.files.single.path;
-      });
+    } catch (e) {
+      if (mounted) _showError('Error picking file: $e');
     }
   }
 
@@ -691,6 +694,19 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               TextButton(
+                onPressed: () => Navigator.pop(ctx, 'save'),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Text(
+                  'Save Draft',
+                  style: GoogleFonts.inter(color: AppTheme.corporateBlue, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+              const SizedBox(width: 4),
+              TextButton(
                 onPressed: () => Navigator.pop(ctx, 'cancel'),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
@@ -713,19 +729,6 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
                 child: Text(
                   'Discard',
                   style: GoogleFonts.inter(color: Colors.red.shade600, fontSize: 13, fontWeight: FontWeight.w500),
-                ),
-              ),
-              const SizedBox(width: 4),
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, 'save'),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-                child: Text(
-                  'Save Draft',
-                  style: GoogleFonts.inter(color: AppTheme.corporateBlue, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
               ),
             ],

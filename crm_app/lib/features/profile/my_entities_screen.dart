@@ -360,14 +360,14 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                 ),
               ),
               hint: Transform.translate(
-                offset: const Offset(-12, 0),
+                offset: const Offset(-8, 0),
                 child: Text('Select Company Type', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
               ),
               buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
               items: _companyTypes.map((item) => DropdownItem<String>(
                 value: item,
                 child: Transform.translate(
-                  offset: const Offset(-12, 0),
+                  offset: const Offset(-8, 0),
                   child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
                 ),
               )).toList(),
@@ -379,6 +379,11 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                 if (value != null) {
                   _typeController.text = value;
                   _typeNotifier.value = value;
+                  if (value == 'Private Limited' || value == 'LLP') {
+                    _directorController.text = '2';
+                  } else if (value == 'One Person Company' || value == 'Proprietorship') {
+                    _directorController.text = '1';
+                  }
                 }
               },
               iconStyleData: const IconStyleData(
@@ -391,46 +396,52 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
               ),
             ),
             const SizedBox(height: 12),
-            TextFormField(
-              controller: _directorController,
-              keyboardType: TextInputType.number,
-              style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
-              decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                labelText: 'Number of Directors',
-                hintText: 'e.g. 2',
-                hintStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal),
-                labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.black12),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Colors.black12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.deepTeal),
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter number of directors';
-                }
-                final count = int.tryParse(value);
-                if (count == null) {
-                  return 'Please enter a valid number';
-                }
-                final type = _typeController.text;
-                if (type == 'Private Limited' || type == 'LLP') {
-                  if (count < 2) return 'Minimum 2 directors required for $type';
-                } else if (type == 'One Person Company' || type == 'Proprietorship') {
-                  if (count != 1) return 'Exactly 1 director required for $type';
-                } else {
-                  if (count < 1) return 'At least 1 director required';
-                }
-                return null;
+            ValueListenableBuilder<String?>(
+              valueListenable: _typeNotifier,
+              builder: (context, type, _) {
+                final isReadOnly = (type == 'One Person Company' || type == 'Proprietorship');
+                return TextFormField(
+                  controller: _directorController,
+                  keyboardType: TextInputType.number,
+                  readOnly: isReadOnly,
+                  style: GoogleFonts.poppins(color: Colors.black87, fontSize: 13),
+                  decoration: InputDecoration(
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                    labelText: 'Number of Directors',
+                    hintText: 'e.g. 2',
+                    hintStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal),
+                    labelStyle: GoogleFonts.poppins(color: Colors.black54, fontSize: 12),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black12),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.black12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.deepTeal),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter number of directors';
+                    }
+                    final count = int.tryParse(value);
+                    if (count == null) {
+                      return 'Please enter a valid number';
+                    }
+                    if (type == 'Private Limited' || type == 'LLP') {
+                      if (count < 2) return 'Minimum 2 directors required for $type';
+                    } else if (type == 'One Person Company' || type == 'Proprietorship') {
+                      if (count != 1) return 'Exactly 1 director required for $type';
+                    } else {
+                      if (count < 1) return 'At least 1 director required';
+                    }
+                    return null;
+                  },
+                );
               },
             ),
             const SizedBox(height: 12),
@@ -453,14 +464,14 @@ class _AddEntityBottomSheetState extends ConsumerState<_AddEntityBottomSheet> {
                 ),
               ),
               hint: Transform.translate(
-                offset: const Offset(-12, 0),
+                offset: const Offset(-8, 0),
                 child: Text('Select State / UT', style: GoogleFonts.poppins(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.normal)),
               ),
               buttonStyleData: const FormFieldButtonStyleData(padding: EdgeInsets.zero),
               items: _indianStates.map((item) => DropdownItem<String>(
                 value: item,
                 child: Transform.translate(
-                  offset: const Offset(-12, 0),
+                  offset: const Offset(-8, 0),
                   child: Text(item, style: GoogleFonts.poppins(fontSize: 13)),
                 ),
               )).toList(),
@@ -762,7 +773,10 @@ class _EntityCard extends ConsumerWidget {
                       ],
                     )
                   else
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 12,
+                      runSpacing: 6,
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -780,7 +794,6 @@ class _EntityCard extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
                         Text(
                           '${data.serviceCount} Active Services',
                           style: TextStyle(

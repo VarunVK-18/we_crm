@@ -7,13 +7,17 @@ import '../../../core/utils/error_handler.dart';
 import '../../../providers/auth_provider.dart';
 
 class ChangePasswordDialog extends ConsumerStatefulWidget {
-  const ChangePasswordDialog({super.key});
+  final bool isForced;
+  const ChangePasswordDialog({super.key, this.isForced = false});
 
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {bool isForced = false}) {
     return showDialog(
       context: context,
-      barrierDismissible: true,
-      builder: (ctx) => const ChangePasswordDialog(),
+      barrierDismissible: !isForced,
+      builder: (ctx) => WillPopScope(
+        onWillPop: () async => !isForced,
+        child: ChangePasswordDialog(isForced: isForced),
+      ),
     );
   }
 
@@ -74,6 +78,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
       );
 
       if (mounted) {
+        ref.read(authRepositoryProvider).markPasswordChanged();
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -108,50 +113,13 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
   }
 
 
-  Widget _buildPasswordRules() {
-    final val = _newPasswordController.text;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Password must contain:', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: const Color(0xFF64748B))),
-        const SizedBox(height: 6),
-        _buildRuleItem('8-16 characters', _hasMinMaxLen(val)),
-        _buildRuleItem('1 uppercase letter', _hasUppercase(val)),
-        _buildRuleItem('1 number', _hasNumber(val)),
-        _buildRuleItem('No emojis or special unsupported characters', _hasNoEmoji(val) || val.isEmpty),
-      ],
-    );
-  }
-
-  Widget _buildRuleItem(String text, bool isValid) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: [
-          Icon(
-            isValid ? Icons.check_circle : Icons.radio_button_unchecked,
-            size: 14,
-            color: isValid ? const Color(0xFF10B981) : const Color(0xFF94A3B8),
-          ),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              color: isValid ? const Color(0xFF10B981) : const Color(0xFF64748B),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -159,7 +127,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
           Flexible(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 24.0, bottom: 8.0),
+                padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 20.0, bottom: 8.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -171,69 +139,104 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Change Password',
+                      widget.isForced ? 'Change Default Password' : 'Change Password',
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                         color: const Color(0xFF0F172A),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(LucideIcons.x, size: 20, color: Colors.black54),
-                      onPressed: () => Navigator.pop(context),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
+                    if (!widget.isForced)
+                      IconButton(
+                        icon: const Icon(LucideIcons.x, size: 20, color: Colors.black54),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                  ],
+                ),
+                if (widget.isForced) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'For security reasons, you must change your password before using the application.',
+                    style: GoogleFonts.inter(fontSize: 12, color: Colors.black54),
+                  ),
+                ],
+                const SizedBox(height: 8),
+                Text(
+                  'Password Requirements:',
+                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('• 8 to 16 characters', style: GoogleFonts.inter(color: Colors.black87, fontSize: 12)),
+                          const SizedBox(height: 4),
+                          Text('• 1 uppercase letter', style: GoogleFonts.inter(color: Colors.black87, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('• 1 numeric digit', style: GoogleFonts.inter(color: Colors.black87, fontSize: 12)),
+                          const SizedBox(height: 4),
+                          Text('• 1 special character', style: GoogleFonts.inter(color: Colors.black87, fontSize: 12)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
 
                 // Error Message if any
                 if (_errorMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFFECACA)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(LucideIcons.alertCircle, size: 16, color: Color(0xFFDC2626)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _errorMessage!,
-                            style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFFDC2626), fontWeight: FontWeight.w500),
-                          ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(LucideIcons.info, size: 16, color: Colors.redAccent),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: GoogleFonts.inter(fontSize: 13, color: Colors.redAccent, fontWeight: FontWeight.w500),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 16),
                 ],
 
                 // 1. Old Password Field
-                Text(
-                  'Old Password *',
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
-                ),
-                const SizedBox(height: 6),
-                TextFormField(
-                  controller: _oldPasswordController,
-                  obscureText: _obscureOld,
-                  style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
-                  decoration: _inputDecoration(
-                    hint: 'Enter current password',
-                    isObscure: _obscureOld,
-                    onToggleObscure: () => setState(() => _obscureOld = !_obscureOld),
+                if (!widget.isForced) ...[
+                  Text(
+                    'Old Password *',
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF1E293B)),
                   ),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Current password is required';
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _oldPasswordController,
+                    obscureText: _obscureOld,
+                    style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
+                    decoration: _inputDecoration(
+                      hint: '••••••••',
+                      isObscure: _obscureOld,
+                      onToggleObscure: () => setState(() => _obscureOld = !_obscureOld),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) return 'Current password is required';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                ],
 
                 // 2. New Password Field
                 Text(
@@ -247,7 +250,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                   style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
                   onChanged: (_) => setState(() {}),
                   decoration: _inputDecoration(
-                    hint: 'Enter new password',
+                    hint: '••••••••',
                     isObscure: _obscureNew,
                     onToggleObscure: () => setState(() => _obscureNew = !_obscureNew),
                   ),
@@ -257,7 +260,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // 3. Confirm New Password Field
                 Text(
@@ -270,7 +273,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                   obscureText: _obscureConfirm,
                   style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
                   decoration: _inputDecoration(
-                    hint: 'Re-enter new password',
+                    hint: '••••••••',
                     isObscure: _obscureConfirm,
                     onToggleObscure: () => setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
@@ -287,7 +290,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0, top: 8.0),
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { getNextClientId } = require('../utils/counterHelper');
 const Company = require('../models/Company');
 const AuditLog = require('../models/AuditLog');
@@ -1225,7 +1226,7 @@ const subscribeService = async (req, res) => {
           companyId: user.company_id,
           entityName: requestedEntityName,
           serviceType: serviceName,
-          status: 'active',
+          status: 'pending',
           stage: 'reqReceived',
           assignedExpert: soManagerName,
           expertPhone: soManagerPhone,
@@ -1549,6 +1550,7 @@ const updateMcaProfile = async (req, res) => {
       directorName, directorDin, directorPan, directorAadhaar, directorEmail, directorMobile,
       // Registration details (optional)
       gstin, udyamNumber, trademarkNo, isoCertNo, dpiitRefNo,
+      ...dynamicFields
     } = req.body;
 
     const targetEntityName = entityName || companyName;
@@ -1565,6 +1567,7 @@ const updateMcaProfile = async (req, res) => {
     // Business info
     if (companyPan !== undefined) profile.pan = companyPan;
     if (cin !== undefined) profile.cin = cin;
+    if (incorporationDate !== undefined) profile.incorporationDate = incorporationDate;
     if (companyEmail !== undefined) profile.email = companyEmail;
     if (companyPhone !== undefined) profile.phone = companyPhone;
     if (registeredAddress !== undefined) profile.address = registeredAddress;
@@ -1612,6 +1615,16 @@ const updateMcaProfile = async (req, res) => {
     if (isoCertNo !== undefined) profile.dynamicProfileData.isoCertNo = isoCertNo;
     if (dpiitRefNo !== undefined) profile.dynamicProfileData.dpiitRefNo = dpiitRefNo;
     
+    // Add dynamic fields
+    if (dynamicFields) {
+      Object.keys(dynamicFields).forEach(key => {
+        // Only assign string/number/boolean fields. Files are handled separately via req.files.
+        if (typeof dynamicFields[key] !== 'object' || Array.isArray(dynamicFields[key])) {
+           profile.dynamicProfileData[key] = dynamicFields[key];
+        }
+      });
+    }
+    
     // Handle file uploads directly to EntityProfile
     const fileFieldMap = {
       coi: 'incorpCertDocId',
@@ -1629,6 +1642,7 @@ const updateMcaProfile = async (req, res) => {
       isoCert: 'isoCertDocId',
     };
 
+    let extractedOCR = {};
     if (req.files && Array.isArray(req.files)) {
       for (const file of req.files) {
         const doc = await Document.create({
@@ -1644,11 +1658,67 @@ const updateMcaProfile = async (req, res) => {
             profile[profileField] = docId;
             profile[`${profileField.replace('Id', 'Name')}`] = file.originalname;
           } else {
+            if (!profile.dynamicProfileData) profile.dynamicProfileData = {};
             profile.dynamicProfileData[`${file.fieldname}File`] = docId;
+          }
+        }
+
+        // OCR logic for specific documents
+        if (['coi', 'pan', 'gstCert'].includes(file.fieldname)) {
+          try {
+            const keys = [process.env.GEMINI_API_KEY1, process.env.GEMINI_API_KEY2, process.env.GEMINI_API_KEY3].filter(Boolean);
+            const base64Data = file.buffer.toString('base64');
+            const imagePart = { inlineData: { data: base64Data, mimeType: file.mimetype } };
+            const prompt = `You are an expert OCR AI. Extract details from this document.
+If it is a COI: extract "companyName", "incorporationDate" (YYYY-MM-DD), "cin".
+If it is a PAN card: extract "pan".
+If it is a TAN letter: extract "tan".
+If it is a GST cert: extract "gstin".
+Return ONLY a valid JSON object with these keys (if not found, set to null). No markdown formatting or extra text.`;
+            for (const key of keys) {
+              try {
+                const genAI = new GoogleGenerativeAI(key);
+                const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+                const result = await model.generateContent([prompt, imagePart]);
+                const text = (await result.response).text().replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(text);
+                Object.assign(extractedOCR, parsed);
+                break;
+              } catch (e) { /* try next */ }
+            }
+          } catch (err) {
+            console.error('OCR Error:', err);
           }
         }
       }
     }
+    
+    // Apply extracted OCR data
+    if (extractedOCR.companyName) profile.entityName = extractedOCR.companyName;
+    if (extractedOCR.cin) profile.cin = extractedOCR.cin;
+    if (extractedOCR.pan) profile.pan = extractedOCR.pan;
+    if (extractedOCR.tan) profile.tan = extractedOCR.tan;
+    if (extractedOCR.gstin) profile.gstin = extractedOCR.gstin;
+    if (extractedOCR.incorporationDate) {
+      if (user.client_entities && user.client_entities.length > 0) {
+        const entityIndex = user.client_entities.findIndex(e => e.entityName.toLowerCase() === targetEntityName.toLowerCase());
+        if (entityIndex !== -1) {
+          user.client_entities[entityIndex].incorporation_date = new Date(extractedOCR.incorporationDate);
+          user.markModified('client_entities');
+        }
+      }
+    }
+
+    // Calculate Compliance Score
+    let score = 0;
+    if (profile.incorpCertDocId || profile.cin || profile.incorporationDate) score += 16;
+    if (profile.dynamicProfileData?.udyamCertFile || profile.dynamicProfileData?.udyamNumber) score += 3;
+    if (profile.dynamicProfileData?.trademarkCertFile || profile.dynamicProfileData?.trademarkNo) score += 10;
+    if (profile.gstDocId || profile.gstin) score += 5;
+    if (profile.dynamicProfileData?.dpiitRefNo) score += 12;
+    if (profile.dynamicProfileData?.isoCertFile || profile.dynamicProfileData?.isoCertNo) score += 4;
+    
+    profile.complianceScore = score > 100 ? 100 : score;
     
     profile.markModified('dynamicProfileData');
     await profile.save();
@@ -1656,7 +1726,13 @@ const updateMcaProfile = async (req, res) => {
     user.mca_profile_completed = true;
     await user.save();
 
-    res.status(200).json({ success: true, message: 'Company Profile updated successfully.', profile });
+    res.status(200).json({ 
+      success: true, 
+      message: 'Company Profile updated successfully.', 
+      profile,
+      extractedData: extractedOCR,
+      complianceScore: profile.complianceScore
+    });
   } catch (error) {
     console.error('Error updating Company profile:', error);
     res.status(500).json({ success: false, message: 'Server error while updating company profile.' });
@@ -2606,8 +2682,23 @@ const changePassword = async (req, res) => {
     const { userId, email, oldPassword, newPassword, confirmPassword } = req.body;
     const targetId = userId || (req.user ? req.user._id : null);
 
-    if (!oldPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({ message: 'Old password, new password, and confirm password are required.' });
+    let user;
+    if (targetId) {
+      user = await User.findById(targetId);
+    } else if (email) {
+      user = await User.findOne({ email: email.trim() });
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (!newPassword || !confirmPassword) {
+      return res.status(400).json({ message: 'New password and confirm password are required.' });
+    }
+
+    if (user.password_changed && !oldPassword) {
+      return res.status(400).json({ message: 'Old password is required.' });
     }
 
     if (newPassword !== confirmPassword) {
@@ -2634,19 +2725,10 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'Password cannot contain spaces, emojis, or unsupported unicode characters.' });
     }
 
-    let user;
-    if (targetId) {
-      user = await User.findById(targetId);
-    } else if (email) {
-      user = await User.findOne({ email: email.trim() });
-    }
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found.' });
-    }
+    // User is already fetched and validated above
 
     // Verify old password
-    if (user.password && user.password.trim() !== '') {
+    if (user.password_changed && user.password && user.password.trim() !== '') {
       const isMatch = await user.comparePassword(oldPassword);
       if (!isMatch) {
         return res.status(400).json({ message: 'Incorrect old password. Please try again.' });
@@ -2655,6 +2737,7 @@ const changePassword = async (req, res) => {
 
     // Update password (triggers pre-save bcrypt hook in User.js)
     user.password = newPassword;
+    user.password_changed = true;
     user.is_first_login = false;
     user.must_change_password = false;
     await user.save();

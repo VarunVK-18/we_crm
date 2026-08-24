@@ -15,6 +15,7 @@ const entityProfileSchema = new mongoose.Schema({
   phone: { type: String, default: '' },             // Business phone
   address: { type: String, default: '' },           // Registered address
   cin: { type: String, default: '' },               // CIN number
+  incorporationDate: { type: String, default: '' }, // Incorporation Date
   gstin: { type: String, default: '' },             // GSTIN
   directorName: { type: String, default: '' },      // Director/Founder name
   directorEmail: { type: String, default: '' },     // Director email
@@ -24,7 +25,10 @@ const entityProfileSchema = new mongoose.Schema({
   bankAccount: { type: String, default: '' },       // Bank account number
   bankIfsc: { type: String, default: '' },          // IFSC code
   bankName: { type: String, default: '' },          // Bank name
-
+  tan: { type: String, default: '' },               // TAN number
+  complianceScore: { type: Number, default: 0 },    // Compliance Score out of 100
+  dynamicProfileData: { type: mongoose.Schema.Types.Mixed, default: {} }, // Additional data
+  
   // Common Document References (stores MongoDB Document _id strings)
   panCardDocId: { type: String, default: '' },          // PAN card document
   panCardDocName: { type: String, default: '' },

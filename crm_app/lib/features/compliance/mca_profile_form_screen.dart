@@ -12,6 +12,9 @@ import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/validation_utils.dart';
+import '../../core/utils/form_ui_helper.dart';
+import '../../models/form_schema_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/compliance_provider.dart';
 
@@ -26,6 +29,12 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _obscurePassword = true;
+  int _complianceScore = 0;
+
+  FormSchema? _schema;
+  final Map<String, dynamic> _dynamicFormData = {};
+  final Map<String, TextEditingController> _dynamicControllers = {};
+  final Map<String, String?> _dynamicFilePaths = {};
 
   // ── Section 1: Business Information ─────────────────────────────────
   final _companyNameController = TextEditingController();
@@ -94,19 +103,53 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchProfile();
-    });
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    setState(() => _isLoading = true);
+    await _fetchSchema();
+    await _fetchProfile();
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _fetchSchema() async {
+    try {
+      final response = await http.get(Uri.parse('$kBaseUrl/api/forms/service/Company%20Profile'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _schema = FormSchema.fromJson(data);
+        _initializeFields(_schema!.fields);
+      }
+    } catch (e) {
+      debugPrint('Error fetching schema: $e');
+    }
+  }
+
+  void _initializeFields(List<FormFieldSchema> fields) {
+    for (var field in fields) {
+      if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
+        _dynamicControllers[field.name] = TextEditingController();
+      } else if (field.type == 'dropdown' || field.type == 'checkbox') {
+        _dynamicFormData[field.name] = null;
+      } else if (field.type == 'file') {
+        _dynamicFilePaths[field.name] = null;
+      }
+    }
   }
 
   Future<void> _fetchProfile() async {
     final uid = ref.read(authStateProvider).value?.uid;
     if (uid == null) return;
     
-    final entityName = ref.read(selectedEntityProvider);
+    final rawEntity = ref.read(selectedEntityProvider);
+    final user = ref.read(userProfileProvider).value;
+    final entityName = (rawEntity == 'All Entities' || rawEntity.isEmpty)
+        ? (user?.companyName ?? '')
+        : rawEntity;
+    
     if (entityName.isEmpty) return;
 
-    setState(() => _isLoading = true);
     try {
       final uri = Uri.parse('$kBaseUrl/api/entity-profile?entityName=${Uri.encodeComponent(entityName)}');
       final response = await http.get(uri, headers: {'x-user-id': uid});
@@ -115,9 +158,12 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
         final profile = data['profile'] ?? {};
         
         setState(() {
-          _companyNameController.text = profile['entityName'] ?? '';
+          _companyNameController.text = profile['entityName']?.toString().isNotEmpty == true 
+              ? profile['entityName'] 
+              : entityName;
           _companyPanController.text = profile['pan'] ?? '';
           _cinController.text = profile['cin'] ?? '';
+          _incorporationDateController.text = profile['incorporationDate'] ?? '';
           _companyEmailController.text = profile['email'] ?? '';
           _companyPhoneController.text = profile['phone'] ?? '';
           _registeredAddressController.text = profile['address'] ?? '';
@@ -129,6 +175,17 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
           _directorPanController.text = profile['directorPan'] ?? '';
           _directorDinController.text = profile['directorDin'] ?? '';
           
+          if (profile['complianceScore'] != null) {
+            _complianceScore = (profile['complianceScore'] as num).toInt();
+          }
+
+          if (profile['incorpCertDocId']?.toString().isNotEmpty == true) _coiPath = 'Uploaded';
+          if (profile['panCardDocId']?.toString().isNotEmpty == true) _panPath = 'Uploaded';
+          if (profile['directorPanDocId']?.toString().isNotEmpty == true) _directorPanPath = 'Uploaded';
+          if (profile['aadhaarDocId']?.toString().isNotEmpty == true) _aadhaarPath = 'Uploaded';
+          if (profile['gstDocId']?.toString().isNotEmpty == true) _gstCertPath = 'Uploaded';
+          if (profile['bankDocId']?.toString().isNotEmpty == true) _bankStatementPath = 'Uploaded';
+
           if (profile['dynamicProfileData'] != null) {
              final dyn = profile['dynamicProfileData'];
              _mcaUsernameController.text = dyn['mcaUsername'] ?? '';
@@ -148,15 +205,27 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
              if (dyn['annualTurnover'] != null) {
                 _annualTurnover = dyn['annualTurnover'];
              }
+             if (dyn['udyamCertFile']?.toString().isNotEmpty == true) _udyamCertPath = 'Uploaded';
+             if (dyn['trademarkCertFile']?.toString().isNotEmpty == true) _trademarkCertPath = 'Uploaded';
+             if (dyn['isoCertFile']?.toString().isNotEmpty == true) _isoCertPath = 'Uploaded';
+             
+             // populate dynamic schema fields
+             for (var key in _dynamicControllers.keys) {
+               _dynamicControllers[key]!.text = dyn[key]?.toString() ?? '';
+             }
+             for (var key in _dynamicFilePaths.keys) {
+               if (dyn['${key}File']?.toString().isNotEmpty == true) {
+                 _dynamicFilePaths[key] = 'Uploaded';
+               }
+             }
+             for (var key in _dynamicFormData.keys) {
+               if (dyn[key] != null) _dynamicFormData[key] = dyn[key];
+             }
           }
         });
       }
     } catch (e) {
       debugPrint('Error fetching profile: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
@@ -186,6 +255,11 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
     _dpiitRefNoController.dispose();
     _mcaUsernameController.dispose();
     _mcaPasswordController.dispose();
+    
+    for (var controller in _dynamicControllers.values) {
+      controller.dispose();
+    }
+    
     super.dispose();
   }
 
@@ -227,7 +301,12 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
       var request = http.MultipartRequest('POST', uri);
       request.headers['x-user-id'] = uid;
 
-      final entityName = ref.read(selectedEntityProvider);
+      final rawEntity = ref.read(selectedEntityProvider);
+      final user = ref.read(userProfileProvider).value;
+      final entityName = (rawEntity == 'All Entities' || rawEntity.isEmpty)
+          ? (user?.companyName ?? '')
+          : rawEntity;
+          
       if (entityName.isNotEmpty) {
         request.fields['entityName'] = entityName;
       }
@@ -268,7 +347,7 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
 
       // Files
       Future<void> addFile(String fieldname, String? path) async {
-        if (path != null) {
+        if (path != null && path != 'Uploaded') {
           request.files.add(await http.MultipartFile.fromPath(fieldname, path));
         }
       }
@@ -285,17 +364,54 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
       await addFile('isoCert', _isoCertPath);
       await addFile('bankStatement', _bankStatementPath);
 
+      // Append Dynamic Fields
+      _dynamicControllers.forEach((key, controller) {
+        if (controller.text.trim().isNotEmpty) {
+          request.fields[key] = controller.text.trim();
+        }
+      });
+      _dynamicFormData.forEach((key, value) {
+        if (value != null) {
+          request.fields[key] = value.toString();
+        }
+      });
+      
+      // Append Dynamic Files
+      for (var entry in _dynamicFilePaths.entries) {
+        await addFile(entry.key, entry.value);
+      }
+
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (!mounted) return;
+        final responseData = jsonDecode(response.body);
+        
+        final extractedData = responseData['extractedData'] as Map<String, dynamic>?;
+        final score = responseData['complianceScore'] as int?;
+        
+        setState(() {
+          if (score != null) {
+            _complianceScore = score;
+          }
+          if (extractedData != null) {
+            if (extractedData['cin'] != null) _cinController.text = extractedData['cin'];
+            if (extractedData['pan'] != null) _companyPanController.text = extractedData['pan'];
+            if (extractedData['gstin'] != null) _gstinController.text = extractedData['gstin'];
+            if (extractedData['companyName'] != null) _companyNameController.text = extractedData['companyName'];
+            if (extractedData['incorporationDate'] != null) {
+              _incorporationDateController.text = extractedData['incorporationDate'];
+            }
+          }
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text('Company Profile saved successfully!'),
           backgroundColor: AppTheme.deepTeal,
         ));
         ref.invalidate(userProfileProvider);
-        Navigator.pop(context, true);
+        // Do not pop the screen so user can see extracted data and score
       } else {
         throw Exception('Failed: ${response.body}');
       }
@@ -363,16 +479,6 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               TextButton(
-                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
-              ),
-              TextButton(
-                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
-              ),
-              TextButton(
                 style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(80, 36)),
                 onPressed: () async {
                   await _saveDraft();
@@ -381,6 +487,16 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
                 child: Text('Save Draft',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                onPressed: () => Navigator.of(context).pop(true),
+                child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
               ),
             ],
           ),
@@ -428,6 +544,8 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
                         fontSize: 12, color: Colors.grey.shade500, height: 1.5),
                   ),
                   const SizedBox(height: 20),
+
+
 
                   // ─── Section 1: Business Information ──────────────────────
                   _buildSectionContainer(
@@ -541,6 +659,8 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
                           () => _pickFile((p) => setState(() => _bankStatementPath = p))),
                     ],
                   ),
+                  
+                  _buildDynamicFields(),
 
                   const SizedBox(height: 8),
                   ElevatedButton(
@@ -563,6 +683,73 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
   }
 
   // ── Builders ───────────────────────────────────────────────────────────────
+
+  Widget _buildDynamicFields() {
+    if (_schema == null || _schema!.fields.isEmpty) return const SizedBox.shrink();
+
+    return _buildSectionContainer(
+      title: 'Additional Details',
+      icon: Icons.more_horiz,
+      subtitle: 'Custom fields requested by the administration',
+      children: _schema!.fields.map((field) {
+        if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
+          TextInputType kbType = TextInputType.text;
+          if (field.type == 'number') kbType = TextInputType.number;
+          if (field.type == 'email') kbType = TextInputType.emailAddress;
+          if (field.type == 'phone') kbType = TextInputType.phone;
+          
+          if (field.type == 'phone') {
+            return PhoneInputField(
+              controller: _dynamicControllers[field.name] ?? TextEditingController(),
+              label: field.label,
+              isRequired: field.required,
+            );
+          }
+          
+          return _buildField(
+            field.label,
+            '',
+            _dynamicControllers[field.name] ?? TextEditingController(),
+            isRequired: field.required,
+            keyboardType: kbType,
+            isDate: field.type == 'date',
+          );
+        } else if (field.type == 'dropdown' && field.options != null) {
+           return Padding(
+             padding: const EdgeInsets.only(bottom: 20),
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: [
+                 Text(field.label, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13, color: AppTheme.deepTeal)),
+                 const SizedBox(height: 8),
+                 DropdownButtonFormField<String>(
+                   value: _dynamicFormData[field.name],
+                   decoration: InputDecoration(
+                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                   ),
+                   items: field.options!.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
+                   onChanged: (val) {
+                     setState(() {
+                       _dynamicFormData[field.name] = val;
+                     });
+                   },
+                 ),
+               ],
+             ),
+           );
+        } else if (field.type == 'file') {
+           return _buildFileRow(
+             field.label,
+             _dynamicFilePaths[field.name],
+             () => _pickFile((p) => setState(() => _dynamicFilePaths[field.name] = p)),
+             isRequired: field.required
+           );
+        }
+        return const SizedBox.shrink();
+      }).toList(),
+    );
+  }
 
   Widget _buildSectionContainer({
     required String title,

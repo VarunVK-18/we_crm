@@ -20,6 +20,7 @@ import 'package:file_picker/file_picker.dart';
 import '../orders/order_chat_screen.dart';
 import 'mca_profile_form_screen.dart';
 import '../../providers/orders_provider.dart';
+import '../../providers/entity_profile_provider.dart';
 
 class ComplianceRadarScreen extends ConsumerWidget {
   const ComplianceRadarScreen({super.key});
@@ -408,6 +409,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final dismissedIds = ref.watch(dismissedRemindersProvider);
     final reminders = allReminders.where((r) => !dismissedIds.contains(r.id)).toList();
     final isLoading = remindersAsync.isLoading && allReminders.isEmpty;
+    final entityProfileAsync = ref.watch(entityProfileProvider);
 
 
     // Removed auto-correct to allow selecting entities with zero reminders
@@ -459,26 +461,31 @@ class ComplianceRadarScreen extends ConsumerWidget {
     
     double scoreValue = 0.0;
     if (serviceScore == 0.0 && entityCompliances.isEmpty) {
-      scoreValue = 100.0;
+      scoreValue = 0.0;
     } else {
       scoreValue = serviceScore + complianceScore;
     }
     
     final score = scoreValue / 100.0;
-    final healthStatus = score >= 0.9
-        ? 'EXCELLENT'
-        : score >= 0.75
-            ? 'GOOD'
-            : score >= 0.5
-                ? 'WARNING'
-                : 'CRITICAL';
-    final healthMessage = score >= 0.9
-        ? 'Your entity compliance health is safe.'
-        : score >= 0.75
-            ? 'Some items are due soon.'
-            : score >= 0.5
-                ? 'Critical action required soon.'
-                : 'Action required: resolve overdue items.';
+    final isPendingSetup = serviceScore == 0.0 && entityCompliances.isEmpty;
+    final healthStatus = isPendingSetup
+        ? 'PENDING SETUP'
+        : score >= 0.9
+            ? 'EXCELLENT'
+            : score >= 0.75
+                ? 'GOOD'
+                : score >= 0.5
+                    ? 'WARNING'
+                    : 'CRITICAL';
+    final healthMessage = isPendingSetup
+        ? 'Complete your profile to unlock compliance tracking.'
+        : score >= 0.9
+            ? 'Your entity compliance health is safe.'
+            : score >= 0.75
+                ? 'Some items are due soon.'
+                : score >= 0.5
+                    ? 'Critical action required soon.'
+                    : 'Action required: resolve overdue items.';
 
     // Find the most urgent deadline dynamically
     final urgentReminder = pendingReminders.isEmpty
@@ -581,66 +588,14 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       ),
                                     ),
                                     SizedBox(height: 4.r),
-                                    Row(
-                                      children: [
-                                        Flexible(
-                                          child: Text(
-                                            currentEntity,
-                                            style: GoogleFonts.outfit(
-                                              color: AppTheme.deepTeal,
-                                              fontSize: 18.sp,
-                                              fontWeight: FontWeight.w600,
-                                              letterSpacing: -0.5,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        SizedBox(width: 12.r),
-                                        GestureDetector(
-                                          onTap: () => Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const MyEntitiesScreen(),
-                                            ),
-                                          ),
-                                          child: Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 10.r,
-                                              vertical: 6.r,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppTheme.deepTeal
-                                                  .withOpacity(0.05),
-                                              borderRadius:
-                                                  BorderRadius.circular(12.r),
-                                              border: Border.all(
-                                                color: AppTheme.deepTeal
-                                                    .withOpacity(0.1),
-                                              ),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  LucideIcons.arrowLeftRight,
-                                                  size: 12.ip,
-                                                  color: AppTheme.deepTeal,
-                                                ),
-                                                SizedBox(width: 6.r),
-                                                Text(
-                                                  'SWITCH',
-                                                  style: GoogleFonts.outfit(
-                                                    fontSize: 10.sp,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: AppTheme.deepTeal,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      currentEntity,
+                                      style: GoogleFonts.outfit(
+                                        color: AppTheme.deepTeal,
+                                        fontSize: 16.sp,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: -0.5,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -693,7 +648,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                               ),
                             ],
                           ),
-                          SizedBox(height: 32.r),
+                          SizedBox(height: 24.r),
                           if (warningCerts.isNotEmpty) ...[
                             Container(
                               padding: EdgeInsets.all(16.r),
@@ -728,7 +683,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                             SizedBox(height: 16.r),
                           ],
                           // --- MCA Profile Completion CTA ---
-                          if (user != null && !user.mcaProfileCompleted) ...[
+                          if (user != null) ...[
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
@@ -755,15 +710,34 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 child: Row(
                                   children: [
                                     Container(
-                                      padding: EdgeInsets.all(10.r),
+                                      width: 44.r,
+                                      height: 44.r,
                                       decoration: BoxDecoration(
-                                        color: AppTheme.corporateBlue.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8.r),
+                                        color: AppTheme.corporateBlue.withValues(alpha: 0.1),
+                                        shape: BoxShape.circle,
                                       ),
-                                      child: HugeIcon(
-                                        icon: HugeIcons.strokeRoundedBank,
-                                        color: AppTheme.corporateBlue,
-                                        size: 24.r,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: 44.r,
+                                            height: 44.r,
+                                            child: CircularProgressIndicator(
+                                              value: (entityProfileAsync.value?.complianceScore ?? 0) / 100,
+                                              strokeWidth: 3.r,
+                                              backgroundColor: AppTheme.corporateBlue.withValues(alpha: 0.2),
+                                              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.corporateBlue),
+                                            ),
+                                          ),
+                                          Text(
+                                            '${(entityProfileAsync.value?.complianceScore ?? 0).toInt()}%',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 12.sp,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppTheme.corporateBlue,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                     SizedBox(width: 16.r),
@@ -771,9 +745,9 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text('Complete Your Company Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
+                                          Text('Complete Company Profile', style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w700, color: AppTheme.deepTeal)),
                                           SizedBox(height: 4.r),
-                                          Text('Add your company details to complete your profile and keep your business information up to date.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
+                                          Text('Complete your company profile to Get your compliance score.', style: GoogleFonts.outfit(fontSize: 12.sp, fontWeight: FontWeight.w500, color: Colors.grey[600])),
                                         ],
                                       ),
                                     ),
@@ -782,7 +756,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 16.r),
+                            SizedBox(height: 24.r),
                           ],
 
                           // --- Signatures Required Section ---
@@ -1390,15 +1364,18 @@ class _BentoDeadlineCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(
-                  width: 64.r,
-                  height: 64.r,
-
+                Container(
+                  width: 56.r,
+                  height: 56.r,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.85),
+                    shape: BoxShape.circle,
+                  ),
                   child: Center(
                     child: HugeIcon(
                       icon: HugeIcons.strokeRoundedCalendar02,
-                      color: color,
-                      size: 32.ip,
+                      color: Colors.white,
+                      size: 26.ip,
                     ),
                   ),
                 ),
@@ -1421,27 +1398,22 @@ class _BentoDeadlineCard extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 4.r),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (date.isNotEmpty) ...[
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.only(top: 2.r),
-                                child: Text(
-                                  date,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.outfit(
-                                    fontSize: 13.sp,
-                                    color: Colors.grey[500],
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.0,
-                                  ),
-                                ),
+                            Text(
+                              date,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                fontSize: 13.sp,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w600,
+                                height: 1.0,
                               ),
                             ),
-                            SizedBox(width: 8.r),
+                            SizedBox(height: 8.r),
                           ],
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 14.r, vertical: 6.r),
@@ -2035,15 +2007,23 @@ class _BentoRenewalsCard extends ConsumerWidget {
                     decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8.r)),
                     child: Column(
                       children: [
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Text('Service', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 13.sp)),
-                          Expanded(child: Text(cert.serviceName, textAlign: TextAlign.right, style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 13.sp))),
-                        ]),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Service', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 13.sp)),
+                            SizedBox(width: 16.r),
+                            Expanded(child: Text(cert.serviceName, textAlign: TextAlign.right, style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 13.sp))),
+                          ]
+                        ),
                         SizedBox(height: 8.r),
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Text('Certificate No', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 13.sp)),
-                          Text(cert.certificateNumber, style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 13.sp)),
-                        ]),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Certificate No', style: GoogleFonts.outfit(color: Colors.grey[600], fontSize: 13.sp)),
+                            SizedBox(width: 16.r),
+                            Expanded(child: Text(cert.certificateNumber, textAlign: TextAlign.right, style: GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 13.sp))),
+                          ]
+                        ),
                       ],
                     ),
                   ),
@@ -2052,7 +2032,7 @@ class _BentoRenewalsCard extends ConsumerWidget {
               actions: [
                 TextButton(
                   onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
-                  child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.grey[600], fontWeight: FontWeight.bold)),
+                  child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.grey[600], fontWeight: FontWeight.bold, letterSpacing: 0)),
                 ),
                 TextButton(
                   onPressed: isSubmitting ? null : () async {
@@ -2073,7 +2053,7 @@ class _BentoRenewalsCard extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to submit renewal')));
                     }
                   },
-                  child: Text(isSubmitting ? 'Submitting...' : 'Submit Request', style: GoogleFonts.outfit(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+                  child: Text(isSubmitting ? 'Submitting...' : 'Submit Request', style: GoogleFonts.outfit(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold, letterSpacing: 0)),
                 ),
               ],
             );

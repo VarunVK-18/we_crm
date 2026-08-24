@@ -360,9 +360,12 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 TextButton(
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(80, 36)),
+                  onPressed: () async {
+                    await _saveDraft();
+                    if (context.mounted) Navigator.of(context).pop(true);
+                  },
+                  child: Text('Save Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
                 ),
                 TextButton(
                   style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
@@ -370,12 +373,9 @@ class _OpcFormScreenState extends ConsumerState<OpcFormScreen> {
                   child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
                 ),
                 TextButton(
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(80, 36)),
-                  onPressed: () async {
-                    await _saveDraft();
-                    if (context.mounted) Navigator.of(context).pop(true);
-                  },
-                  child: Text('Save Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
                 ),
               ],
             ),

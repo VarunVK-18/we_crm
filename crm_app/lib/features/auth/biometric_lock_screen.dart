@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/utils/biometric_util.dart';
 import '../common/main_navigation.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/compliance_provider.dart';
 import '../../core/theme/app_theme.dart';
 
 class BiometricLockScreen extends ConsumerStatefulWidget {
@@ -44,9 +46,43 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
         });
       }
     } else {
+      // Force setup if available
+      final isAvailable = await util.isBiometricAvailable();
+      if (isAvailable) {
+        _promptBiometricForSetup();
+      } else {
+        if (mounted) {
+          setState(() {
+            _isLocked = false;
+            _isChecking = false;
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> _promptBiometricForSetup() async {
+    setState(() {
+      _isChecking = true;
+    });
+    
+    final util = ref.read(biometricProvider);
+    try {
+      final success = await util.authenticate(reason: 'Authenticate to enable biometric login');
+      
+      if (success) {
+        await util.setBiometricEnabled(true);
+      }
+      
       if (mounted) {
         setState(() {
-          _isLocked = false;
+          _isLocked = !success;
+          _isChecking = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
           _isChecking = false;
         });
       }
@@ -163,17 +199,23 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
               children: [
                 const Spacer(),
                 GestureDetector(
-                  onTap: _promptBiometric,
+                  onTap: () async {
+                    if (!_isBiometricEnabled && !_isPinEnabled) {
+                      await _promptBiometricForSetup();
+                    } else {
+                      await _promptBiometric();
+                    }
+                  },
                   child: Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: AppTheme.corporateBlue.withValues(alpha: 0.1),
+                      color: Colors.black.withValues(alpha: 0.05),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       _isPinEnabled ? Icons.lock_outline : Icons.fingerprint,
                       size: 64,
-                      color: AppTheme.corporateBlue,
+                      color: Colors.black,
                     ),
                   ),
                 ),
@@ -181,7 +223,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
                 Text(
                   'App Locked',
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w400,
                     color: AppTheme.deepTeal,
                   ),
                 ),
@@ -247,7 +289,7 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
                     icon: _isChecking 
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                         : const Icon(Icons.lock_open, color: Colors.white,),
-                    label: Text(_isChecking ? 'Authenticating...' : 'Tap to unlock', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    label: Text(_isChecking ? 'Authenticating...' : 'Tap to unlock', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.corporateBlue,
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
@@ -257,9 +299,10 @@ class _BiometricLockScreenState extends ConsumerState<BiometricLockScreen> {
                 const Spacer(),
                 TextButton(
                   onPressed: () {
+                    ref.invalidate(selectedEntityProvider);
                     ref.read(authRepositoryProvider).signOut();
                   },
-                  child: const Text('Log Out', style: TextStyle(color: Colors.redAccent)),
+                  child: Text('Log Out', style: GoogleFonts.poppins(color: Colors.redAccent, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),

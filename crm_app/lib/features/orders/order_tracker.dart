@@ -45,6 +45,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
   final ValueNotifier<String> _activeFilter = ValueNotifier<String>('All');
   final ValueNotifier<String?> _selectedEntityNotifier = ValueNotifier<String?>(null);
   String _searchQuery = '';
+  bool _isSearching = false;
 
   @override
   void dispose() {
@@ -185,34 +186,57 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
         centerTitle: false,
         iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
         actions: [
-          Container(
-            width: 140,
-            height: 36,
-            margin: const EdgeInsets.only(right: 8),
-            child: TextField(
-              onChanged: (val) => setState(() => _searchQuery = val),
-              style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal),
-              decoration: InputDecoration(
-                hintText: 'Search',
-                hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
-                prefixIcon: const Icon(LucideIcons.search, size: 14, color: Colors.grey),
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-              ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            width: _isSearching ? 100 : 0,
+            height: 32,
+            margin: EdgeInsets.only(right: _isSearching ? 4 : 0),
+            child: _isSearching
+                ? TextField(
+                    onChanged: (val) => setState(() => _searchQuery = val),
+                    autofocus: true,
+                    style: const TextStyle(fontSize: 12, color: AppTheme.deepTeal),
+                    decoration: InputDecoration(
+                      hintText: 'Search...',
+                      hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: Colors.grey.shade200, width: 1.0),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+                    ),
+                  )
+                : const SizedBox(),
+          ),
+          IconButton(
+            icon: Icon(
+              _isSearching ? LucideIcons.x : LucideIcons.search,
+              size: 20,
+              color: AppTheme.deepTeal,
             ),
+            padding: const EdgeInsets.all(8),
+            constraints: const BoxConstraints(),
+            onPressed: () {
+              setState(() {
+                if (_isSearching) {
+                  _isSearching = false;
+                  _searchQuery = '';
+                } else {
+                  _isSearching = true;
+                }
+              });
+            },
           ),
           Stack(
             alignment: Alignment.center,

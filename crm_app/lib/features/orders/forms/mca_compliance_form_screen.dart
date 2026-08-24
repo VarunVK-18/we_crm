@@ -41,22 +41,32 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
   String? _purchaseBillsPath;
 
   Future<void> _pickFile(Function(String) onPicked, {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
-    FilePickerResult? result = await FilePickerUtil.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: allowedExtensions,
-    );
-    if (result != null && result.files.single.path != null) {
-      if (result.files.single.size > 2 * 1024 * 1024) {
+    try {
+      FilePickerResult? result = await FilePickerUtil.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: allowedExtensions,
+      );
+      if (result != null && result.files.single.path != null) {
+        if (result.files.single.size > 2 * 1024 * 1024) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Upload a file less than 2 MB.'),
+            backgroundColor: Colors.red,
+          ));
+          return;
+        }
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Upload a file less than 2 MB.'),
+        setState(() {
+          onPicked(result.files.single.path!);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Error picking file: $e'),
           backgroundColor: Colors.red,
         ));
-        return;
       }
-      setState(() {
-        onPicked(result.files.single.path!);
-      });
     }
   }
 
@@ -191,9 +201,12 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 TextButton(
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
-                  onPressed: () => Navigator.of(context).pop(true),
-                  child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(80, 36)),
+                  onPressed: () async {
+                    await _saveDraft();
+                    if (context.mounted) Navigator.of(context).pop(true);
+                  },
+                  child: Text('Save Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
                 ),
                 TextButton(
                   style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
@@ -201,12 +214,9 @@ class _McaComplianceFormScreenState extends ConsumerState<McaComplianceFormScree
                   child: Text('Cancel', style: Theme.of(context).textTheme.bodyMedium),
                 ),
                 TextButton(
-                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(80, 36)),
-                  onPressed: () async {
-                    await _saveDraft();
-                    if (context.mounted) Navigator.of(context).pop(true);
-                  },
-                  child: Text('Save Draft', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.corporateBlue, fontWeight: FontWeight.bold)),
+                  style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: const Size(60, 36)),
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('Discard', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red)),
                 ),
               ],
             ),

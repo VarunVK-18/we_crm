@@ -75,6 +75,13 @@ exports.updateOrder = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
+    // Automatically move to active if assigned to a team or expert
+    if (updateData.team_id || (updateData.assignedExpert && updateData.assignedExpert !== 'To be assigned')) {
+      if (!updateData.status) {
+        updateData.status = 'active';
+      }
+    }
+
     const order = await ServiceOrder.findByIdAndUpdate(id, updateData, { new: true });
     if (!order) {
       return res.status(404).json({ message: 'Order not found.' });
@@ -1946,6 +1953,39 @@ exports.submitDynamicForm = async (req, res) => {
     const order = await Checklist.findById(id);
     if (!order) return res.status(404).json({ message: 'Order not found.' });
     
+    // Special handling for MCA Compliance to set recommended_plan for subscriptions
+    const sName = (order.service_name || '').toLowerCase();
+    if (sName.includes('mca')) {
+      let turnoverCategory = '';
+      if (formData.dynamicData && formData.dynamicData.businessDetails && formData.dynamicData.businessDetails.annualTurnover) {
+        turnoverCategory = formData.dynamicData.businessDetails.annualTurnover;
+      } else if (formData.annualTurnover) {
+        turnoverCategory = formData.annualTurnover;
+      }
+      
+      if (turnoverCategory) {
+        let recommendedPlan = '';
+        let recommendedFee = 0;
+        
+        if (turnoverCategory.includes('20') && !turnoverCategory.includes('50')) {
+          recommendedPlan = 'Startup Plan';
+          recommendedFee = 25000;
+        } else if (turnoverCategory.includes('20') && turnoverCategory.includes('50')) {
+          recommendedPlan = 'Corporate Plan';
+          recommendedFee = 35000;
+        } else if (turnoverCategory.includes('50') && !turnoverCategory.includes('20')) {
+          recommendedPlan = 'Enterprise Plan';
+          recommendedFee = 50000;
+        }
+
+        if (recommendedPlan) {
+          order.turnover_category = turnoverCategory;
+          order.recommended_plan = recommendedPlan;
+          order.recommended_fee = recommendedFee;
+        }
+      }
+    }
+
     const updatedDetails = { ...order.details, ...formData, dynamicForm: formData, dynamicDocs: uploadedDocs, clientFormSubmitted: true };
     order.details = updatedDetails;
     order.action_required = false;

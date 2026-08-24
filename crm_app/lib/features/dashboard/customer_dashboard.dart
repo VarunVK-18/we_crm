@@ -224,7 +224,7 @@ class CustomerDashboard extends ConsumerWidget {
                   },
                   {
                     'label': 'IP',
-                    'icon': HugeIcons.strokeRoundedLicense,
+                    'icon': 'assets/icons/ip_icon.svg',
                     'subItems': ['Trademark Registration', 'Copyright Registration', 'Patent Registration'],
                   },
                   {

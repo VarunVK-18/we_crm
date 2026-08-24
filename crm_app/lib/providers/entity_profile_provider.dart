@@ -30,6 +30,7 @@ class EntityProfile {
   final String bankAccount;
   final String bankIfsc;
   final String bankName;
+  final int complianceScore;
 
   // Document references
   final EntityDocRef panCardDoc;
@@ -57,6 +58,7 @@ class EntityProfile {
     this.bankAccount = '',
     this.bankIfsc = '',
     this.bankName = '',
+    this.complianceScore = 0,
     this.panCardDoc = const EntityDocRef(docId: '', docName: ''),
     this.aadhaarDoc = const EntityDocRef(docId: '', docName: ''),
     this.incorpCertDoc = const EntityDocRef(docId: '', docName: ''),
@@ -84,6 +86,7 @@ class EntityProfile {
       bankAccount: m['bankAccount'] ?? '',
       bankIfsc: m['bankIfsc'] ?? '',
       bankName: m['bankName'] ?? '',
+      complianceScore: (m['complianceScore'] as num?)?.toInt() ?? 0,
       panCardDoc: EntityDocRef(docId: m['panCardDocId'] ?? '', docName: m['panCardDocName'] ?? ''),
       aadhaarDoc: EntityDocRef(docId: m['aadhaarDocId'] ?? '', docName: m['aadhaarDocName'] ?? ''),
       incorpCertDoc: EntityDocRef(docId: m['incorpCertDocId'] ?? '', docName: m['incorpCertDocName'] ?? ''),

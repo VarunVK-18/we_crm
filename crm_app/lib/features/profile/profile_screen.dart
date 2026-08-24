@@ -89,6 +89,7 @@ class ProfileScreen extends ConsumerWidget {
                   );
                   if (confirm == true) {
                     ref.read(navigationIndexProvider.notifier).state = 0;
+                    ref.invalidate(selectedEntityProvider); // Clear the cached selected entity
                     ref.read(authRepositoryProvider).signOut();
                   }
                 },

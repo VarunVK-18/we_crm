@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -78,9 +79,13 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: FadeTransition(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: FadeTransition(
         opacity: _opacity,
         child: SafeArea(
           child: Stack(
@@ -98,6 +103,6 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
       ),
-    );
+    ));
   }
 }

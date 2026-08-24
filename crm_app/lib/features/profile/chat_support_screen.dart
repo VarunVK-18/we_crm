@@ -18,10 +18,7 @@ class ChatSupportScreen extends ConsumerStatefulWidget {
 }
 
 class _ChatSupportScreenState extends ConsumerState<ChatSupportScreen> {
-  int _selectedFaqTab = 0;
-  
-
-  void _showCompletedServices(BuildContext context) {
+void _showCompletedServices(BuildContext context) {
     final completedOrders = ref.read(completeOrdersProvider);
 
     showModalBottomSheet(
@@ -233,34 +230,14 @@ class _ChatSupportScreenState extends ConsumerState<ChatSupportScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            // FAQ Tabs
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: [
-                  _buildFaqTab(0, 'General'),
-                  const SizedBox(width: 8),
-                  _buildFaqTab(1, 'Services'),
-                  const SizedBox(width: 8),
-                  _buildFaqTab(2, 'Billing'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
             // FAQ Content
-            if (_selectedFaqTab == 0) ...[
-              _buildFAQCard(context, 'How long does DSC registration take?', 'DSC registration typically takes 1-2 business days after all necessary documents are verified and processed.'),
-              _buildFAQCard(context, 'Can I change my company name after search?', 'If the name hasn\'t been formally registered yet, you can do a new name search. If already registered, a formal name change process with MCA must be initiated.'),
-              _buildFAQCard(context, 'How to contact support?', 'You can contact support via live chat, call, or email from this Help Center screen.'),
-            ] else if (_selectedFaqTab == 1) ...[
-              _buildFAQCard(context, 'What documents are needed for GST filing?', 'You will generally need your PAN card, Aadhaar card, business registration proof, bank statements, and relevant sales/purchase invoices.'),
-              _buildFAQCard(context, 'Do you provide ISO certification?', 'Yes, we provide end-to-end ISO certification services which you can request from the Registration Hub.'),
-              _buildFAQCard(context, 'How to track my service status?', 'Go to the Orders section from the bottom navigation bar to see real-time updates on your service.'),
-            ] else if (_selectedFaqTab == 2) ...[
-              _buildFAQCard(context, 'Where can I find my invoices?', 'Invoices can be downloaded from the Subscriptions & Completed Services section under your profile.'),
-              _buildFAQCard(context, 'How to upgrade my plan?', 'You can view and upgrade your current subscription plan directly from the Subscriptions menu.'),
-              _buildFAQCard(context, 'Are there any hidden fees?', 'No, our pricing is completely transparent. Any government fees are explicitly mentioned during the checkout process.'),
-            ],          ],
+            _buildFAQCard(context, 'What is Startup Doctor?', 'Startup Doctor is an all-in-one platform to manage your business compliances, legal documents, certifications, and important deadlines in one secure place.'),
+            _buildFAQCard(context, 'What can I manage with Startup Doctor?', 'You can track GST, ITR, IP, licenses, certifications, subscriptions, statutory filings, and securely store all your business documents.'),
+            _buildFAQCard(context, 'Will I receive reminders for compliance deadlines?', 'Yes. Startup Doctor sends timely reminders for upcoming filings, renewals, and compliance due dates to help you stay on track.'),
+            _buildFAQCard(context, 'Is my business data secure?', 'Yes. Your documents and business information are protected using secure encryption and industry-standard security practices.'),
+            _buildFAQCard(context, 'Can I access my documents anytime?', 'Yes. You can securely access your documents and compliance information anytime, anywhere from your Startup Doctor account.'),
+            _buildFAQCard(context, 'How does Startup Doctor protect my business information?', 'Startup Doctor follows AICPA SOC, GDPR, and ISO standards to keep your business data secure.'),
+          ],
         ),
       ),
     );
@@ -367,6 +344,7 @@ class _ChatSupportScreenState extends ConsumerState<ChatSupportScreen> {
                 const EdgeInsets.only(left: 16, right: 16, bottom: 16),
             title: Text(
               question,
+              softWrap: true,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
@@ -378,6 +356,7 @@ class _ChatSupportScreenState extends ConsumerState<ChatSupportScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   answer,
+                  softWrap: true,
                   style: TextStyle(
                     color: Colors.grey.shade600,
                     fontSize: 13,
@@ -392,31 +371,6 @@ class _ChatSupportScreenState extends ConsumerState<ChatSupportScreen> {
     );
   }
 
-  Widget _buildFaqTab(int index, String title) {
-    bool isSelected = _selectedFaqTab == index;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFaqTab = index;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.corporateBlue : Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey.shade700,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    );
-  }
+
 
 }

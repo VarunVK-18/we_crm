@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hugeicons/hugeicons.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/utils/responsive.dart';
@@ -234,7 +235,14 @@ class CircleServiceButton extends StatelessWidget {
                 ),
               ),
               child: Center(
-                child: icon is IconData
+                child: icon is String 
+                    ? SvgPicture.asset(
+                        icon,
+                        colorFilter: ColorFilter.mode(color ?? AppTheme.corporateBlue, BlendMode.srcIn),
+                        width: 22.ip,
+                        height: 22.ip,
+                      )
+                    : icon is IconData
                     ? Icon(
                         icon as IconData,
                         color: color ?? AppTheme.corporateBlue,

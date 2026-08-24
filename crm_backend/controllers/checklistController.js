@@ -1108,7 +1108,33 @@ const getMyServicesSummary = async (req, res) => {
       };
     });
 
-    res.status(200).json({ success: true, services: summaries });
+    // Fetch open bucket requests (not yet converted to checklists)
+    const BucketRequest = require('../models/BucketRequest');
+    const bucketRequests = await BucketRequest.find({
+      client_id: clientId,
+      checklist_id: null,
+      status: { $ne: 'declined' }
+    }).lean();
+
+    const bucketSummaries = bucketRequests.map(b => {
+      return {
+        _id: b._id,
+        service_name: b.service_name,
+        status: 'notInitialized',
+        stage: 'reqReceived',
+        createdAt: b.createdAt,
+        assigned_to: null, // no expert assigned yet
+        action_required: false,
+        details: {
+          entityName: b.client_company_name || 'New Entity'
+        },
+        totalItems: 0,
+        completedItems: 0,
+        hasPendingDocUpload: false
+      };
+    });
+
+    res.status(200).json({ success: true, services: [...summaries, ...bucketSummaries] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

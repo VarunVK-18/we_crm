@@ -44,6 +44,20 @@ export class ClientTopbarComponent implements OnInit {
   addEntityError = signal('');
   addEntityData = { company_name: '', company_type: '', director_count: '', state_of_registration: '' };
 
+  onCompanyTypeChange() {
+    const type = this.addEntityData.company_type;
+    if (type === 'Private Limited' || type === 'LLP') {
+      this.addEntityData.director_count = '2';
+    } else if (type === 'One Person Company' || type === 'Proprietorship') {
+      this.addEntityData.director_count = '1';
+    }
+  }
+
+  isDirectorCountReadonly(): boolean {
+    const type = this.addEntityData.company_type;
+    return type === 'One Person Company' || type === 'Proprietorship';
+  }
+
   constructor(
     private router: Router, 
     private eRef: ElementRef, 

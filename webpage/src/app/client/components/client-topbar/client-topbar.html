@@ -239,13 +239,20 @@
 
         <div class="form-field-group">
           <label class="input-label">Type of Company</label>
-          <input [(ngModel)]="addEntityData.company_type" name="company_type" type="text" placeholder="e.g. Private Limited" class="styled-text-input" style="padding-left: 16px;" />
+          <select [(ngModel)]="addEntityData.company_type" name="company_type" class="styled-text-input" style="padding-left: 16px; padding-right: 16px;" (ngModelChange)="onCompanyTypeChange()">
+            <option value="" disabled selected>Select Company Type</option>
+            <option value="Private Limited">Private Limited</option>
+            <option value="LLP">LLP</option>
+            <option value="One Person Company">One Person Company</option>
+            <option value="Proprietorship">Proprietorship</option>
+            <option value="Others">Others</option>
+          </select>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div class="form-field-group">
             <label class="input-label">Number of Directors</label>
-            <input [(ngModel)]="addEntityData.director_count" name="director_count" type="number" placeholder="e.g. 2" class="styled-text-input" style="padding-left: 16px;" />
+            <input [(ngModel)]="addEntityData.director_count" name="director_count" type="number" placeholder="e.g. 2" class="styled-text-input" style="padding-left: 16px;" [readonly]="isDirectorCountReadonly()" />
           </div>
           <div class="form-field-group">
             <label class="input-label">State of Registration</label>

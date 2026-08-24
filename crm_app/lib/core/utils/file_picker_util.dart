@@ -14,9 +14,20 @@ class FilePickerUtil {
     bool allowMultiple = false,
   }) async {
     try {
+      // Sanitize extensions by removing dots and trimming whitespace
+      List<String>? cleanExtensions = allowedExtensions?.map((e) => e.replaceAll('.', '').trim()).where((e) => e.isNotEmpty).toList();
+      if (cleanExtensions != null && cleanExtensions.isEmpty) {
+        cleanExtensions = null;
+      }
+      
+      // If type is custom but no extensions are provided, fallback to any
+      if (type == FileType.custom && cleanExtensions == null) {
+        type = FileType.any;
+      }
+
       final result = await FilePicker.platform.pickFiles(
         type: type,
-        allowedExtensions: allowedExtensions,
+        allowedExtensions: cleanExtensions,
         allowMultiple: allowMultiple,
       );
 

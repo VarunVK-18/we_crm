@@ -157,44 +157,38 @@ export class ClientHelpSupport implements OnInit {
 
   faqs = [
     {
-      question: 'How long does DSC registration take?',
-      answer: 'DSC registration typically takes 1-2 business days after all necessary documents are verified and processed.',
+      question: 'What is Startup Doctor?',
+      answer: 'Startup Doctor is an all-in-one platform to manage your business compliances, legal documents, certifications, and important deadlines in one secure place.',
+      isOpen: false,
+      category: 'General'
+    },
+    {
+      question: 'What can I manage with Startup Doctor?',
+      answer: 'You can track GST, ITR, IP, licenses, certifications, subscriptions, statutory filings, and securely store all your business documents.',
       isOpen: false,
       category: 'Services'
     },
     {
-      question: 'Can I change my company name after search?',
-      answer: 'If the name hasn\'t been formally registered yet, you can do a new name search. If already registered, a formal name change process with MCA must be initiated.',
+      question: 'Will I receive reminders for compliance deadlines?',
+      answer: 'Yes. Startup Doctor sends timely reminders for upcoming filings, renewals, and compliance due dates to help you stay on track.',
       isOpen: false,
       category: 'Services'
     },
     {
-      question: 'What documents are needed for GST filing?',
-      answer: 'You will generally need your PAN card, Aadhaar card, business registration proof, bank statements, and relevant sales/purchase invoices.',
+      question: 'Is my business data secure?',
+      answer: 'Yes. Your documents and business information are protected using secure encryption and industry-standard security practices.',
       isOpen: false,
-      category: 'Services'
+      category: 'General'
     },
     {
-      question: 'How do I upgrade my service plan?',
-      answer: 'You can upgrade your plan at any time from the Subscriptions page by selecting a new tier, and the prorated difference will be applied.',
+      question: 'Can I access my documents anytime?',
+      answer: 'Yes. You can securely access your documents and compliance information anytime, anywhere from your Startup Doctor account.',
       isOpen: false,
-      category: 'Billing'
+      category: 'General'
     },
     {
-      question: 'What payment methods do you accept?',
-      answer: 'We accept all major credit cards, UPI, net banking, and standard digital wallets for your convenience.',
-      isOpen: false,
-      category: 'Billing'
-    },
-    {
-      question: 'How can I track my application status?',
-      answer: 'You can monitor real-time progress for all your active applications in the "Ongoing Services" section of your dashboard.',
-      isOpen: false,
-      category: 'Services'
-    },
-    {
-      question: 'How do I update my profile details?',
-      answer: 'Go to your Profile page to update your contact information, address, and business details at any time.',
+      question: 'How does Startup Doctor protect my business information?',
+      answer: 'Startup Doctor follows AICPA SOC, GDPR, and ISO standards to keep your business data secure.',
       isOpen: false,
       category: 'General'
     }
