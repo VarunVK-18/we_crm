@@ -317,63 +317,105 @@ class _ClientOnboardingScreenState extends ConsumerState<ClientOnboardingScreen>
                         Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: DropdownButtonFormField2<String>(
-                                  isExpanded: true,
+                            isExpanded: true,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade400)),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            hint: Text('Select Service', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w400)),
+                            items: _servicesList.map((item) => DropdownItem<String>(
+                              value: item,
+                              child: Text(
+                                item,
+                                style: GoogleFonts.inter(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w400),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )).toList(),
+                            selectedItemBuilder: (context) {
+                              return _servicesList.map((item) {
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    item,
+                                    style: GoogleFonts.inter(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w400),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                );
+                              }).toList();
+                            },
+                            valueListenable: _serviceNotifier,
+                            onChanged: (value) {
+                              setState(() {
+                                _serviceController.text = value ?? '';
+                                _serviceNotifier.value = value;
+                              });
+                            },
+                            buttonStyleData: const FormFieldButtonStyleData(
+                              height: 44,
+                              padding: EdgeInsets.only(left: 4, right: 12),
+                            ),
+                            iconStyleData: const IconStyleData(
+                              icon: Icon(Icons.arrow_drop_down, color: Colors.black45),
+                            ),
+                            dropdownStyleData: DropdownStyleData(
+                              maxHeight: 280,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade200),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              offset: Offset.zero,
+                            ),
+                            menuItemStyleData: const MenuItemStyleData(
+                              padding: EdgeInsets.symmetric(horizontal: 16),
+                            ),
+                            dropdownSearchData: DropdownSearchData(
+                              searchController: _serviceSearchController,
+                              searchBarWidgetHeight: 56,
+                              searchBarWidget: Container(
+                                height: 56,
+                                padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
+                                child: TextFormField(
+                                  controller: _serviceSearchController,
+                                  style: GoogleFonts.inter(fontSize: 13),
                                   decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.only(left: 0, right: 16, top: 10, bottom: 10),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
-                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade400)),
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                  ),
-                                  hint: Transform.translate(offset: const Offset(-12, 0), child: Text('Select Service', style: GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 14, fontWeight: FontWeight.w400))),
-                                  items: _servicesList.map((item) => DropdownItem<String>(
-                                    value: item,
-                                    child: Transform.translate(offset: const Offset(-12, 0), child: Text(item, style: GoogleFonts.inter(fontSize: 14, color: Colors.black87, fontWeight: FontWeight.w400))),
-                                  )).toList(),
-                                  valueListenable: _serviceNotifier,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _serviceController.text = value ?? '';
-                                      _serviceNotifier.value = value;
-                                    });
-                                  },
-                                  buttonStyleData: const FormFieldButtonStyleData(
-                                    padding: EdgeInsets.only(right: 14),
-                                  ),
-                                  iconStyleData: const IconStyleData(icon: Icon(Icons.arrow_drop_down, color: Colors.black45)),
-                                  dropdownStyleData: DropdownStyleData(
-                                    maxHeight: 250,
-                                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-                                  ),
-                                  menuItemStyleData: const MenuItemStyleData(padding: EdgeInsets.symmetric(horizontal: 16)),
-                                  dropdownSearchData: DropdownSearchData(
-                                    searchController: _serviceSearchController,
-                                    searchBarWidgetHeight: 50,
-                                    searchBarWidget: Container(
-                                      height: 50,
-                                      padding: const EdgeInsets.only(top: 8, bottom: 4, right: 8, left: 8),
-                                      child: TextFormField(
-                                        expands: true,
-                                        maxLines: null,
-                                        controller: _serviceSearchController,
-                                        decoration: InputDecoration(
-                                          isDense: true,
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                          hintText: 'Search service...',
-                                          hintStyle: const TextStyle(fontSize: 12),
-                                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                                        ),
-                                      ),
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    hintText: 'Search service...',
+                                    hintStyle: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade400),
+                                    prefixIcon: const Icon(Icons.search, size: 16, color: Colors.grey),
+                                    prefixIconConstraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(color: Colors.grey.shade300),
                                     ),
-                                    searchMatchFn: (item, searchValue) {
-                                      return (item.value.toString().toLowerCase().contains(searchValue.toLowerCase()));
-                                    },
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      borderSide: BorderSide(color: AppTheme.corporateBlue),
+                                    ),
                                   ),
-                                  onMenuStateChange: (isOpen) {
-                                    if (!isOpen) _serviceSearchController.clear();
-                                  },
                                 ),
+                              ),
+                              searchMatchFn: (item, searchValue) {
+                                return (item.value.toString().toLowerCase().contains(searchValue.toLowerCase()));
+                              },
+                            ),
+                            onMenuStateChange: (isOpen) {
+                              if (!isOpen) _serviceSearchController.clear();
+                            },
+                          ),
                         ),
                         
                         const SizedBox(height: 8),
