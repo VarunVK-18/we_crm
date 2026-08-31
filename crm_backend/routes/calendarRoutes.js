@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const multer = require('multer');
 const { checkUser, permit } = require('../middleware/rbac');
@@ -8,7 +9,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Routes
-router.post('/upload', checkUser, permit('admin', 'manager'), upload.single('file'), calendarController.uploadCalendar);
+router.post('/upload', checkUser, permit('admin', 'manager'), upload.single('file'), compressUploads, calendarController.uploadCalendar);
 router.get('/latest', checkUser, calendarController.getLatestCalendar);
 router.get('/', checkUser, permit('admin', 'manager'), calendarController.getAllCalendars);
 router.delete('/:year', checkUser, permit('admin', 'manager'), calendarController.deleteCalendar);

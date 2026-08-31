@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
@@ -24,7 +25,7 @@ const upload = multer({
 router.post('/tasks', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), createTask);
 router.get('/tasks', checkUser, getTasks);
 router.patch('/tasks/:id', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), updateTask);
-router.post('/tasks/:id/documents', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadTaskDocument);
+router.post('/tasks/:id/documents', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), compressUploads, uploadTaskDocument);
 router.post('/tasks/:id/comments', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), addTaskComment);
 
 module.exports = router;

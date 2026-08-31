@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const complianceController = require('../controllers/complianceController');
 const { checkUser, permit } = require('../middleware/rbac');
@@ -9,12 +10,12 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.get('/tasks/all', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), complianceController.getAllComplianceTasks);
 router.get('/tasks/user/:userId', checkUser, complianceController.getUserComplianceTasks);
 router.get('/tasks/details/:id', checkUser, complianceController.getComplianceTaskById);
-router.post('/tasks/:id/complete', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), upload.any(), complianceController.completeComplianceTask);
-router.post('/tasks/:id/upload', checkUser, upload.single('document'), complianceController.uploadComplianceDocument);
+router.post('/tasks/:id/complete', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager', 'customer'), upload.any(), compressUploads, complianceController.completeComplianceTask);
+router.post('/tasks/:id/upload', checkUser, upload.single('document'), compressUploads, complianceController.uploadComplianceDocument);
 router.post('/tasks/:id/generate-document', checkUser, complianceController.generateDocumentFromTemplateForTask);
 
 // Share Capital Bank Statement upload (Case 1 client action)
-router.post('/clients/:clientId/upload-share-capital', checkUser, upload.single('file'), complianceController.uploadShareCapitalBankStatement);
+router.post('/clients/:clientId/upload-share-capital', checkUser, upload.single('file'), compressUploads, complianceController.uploadShareCapitalBankStatement);
 
 
 // GET /api/compliance/user/:userId

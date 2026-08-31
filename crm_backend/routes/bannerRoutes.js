@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const {
   getBanners,
@@ -20,10 +21,10 @@ const upload = multer({
 
 router.route('/')
   .get(checkUser, getBanners)
-  .post(checkUser, preventAuditorWrite, permit('admin'), upload.any(), createBanner);
+  .post(checkUser, preventAuditorWrite, permit('admin'), upload.any(), compressUploads, createBanner);
 
 router.route('/:id')
-  .put(checkUser, preventAuditorWrite, permit('admin'), upload.any(), updateBanner)
+  .put(checkUser, preventAuditorWrite, permit('admin'), upload.any(), compressUploads, updateBanner)
   .delete(checkUser, preventAuditorWrite, permit('admin'), deleteBanner);
 
 router.post('/:id/click', checkUser, incrementClick);

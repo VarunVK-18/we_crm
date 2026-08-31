@@ -1,4 +1,5 @@
 ﻿const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const multer = require('multer');
 const { checkUser, permit } = require('../middleware/rbac');
@@ -24,7 +25,7 @@ router.delete('/:clientId/:serviceType', checkUser, deleteServiceDetails);
 router.post(
   '/:clientId/:serviceType/ocr-upload',
   checkUser,
-  upload.single('receipt'),
+  upload.single('receipt'), compressUploads,
   ocrUploadTracking
 );
 

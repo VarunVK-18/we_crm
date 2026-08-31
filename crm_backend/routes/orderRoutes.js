@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const orderController = require('../controllers/orderController');
 const { checkUser } = require('../middleware/rbac');
@@ -9,7 +10,7 @@ const Document = require('../models/Document');
 const saveFilesToDatabase = async (req, res, next) => {
   try {
     if (!req.files) return next();
-    // upload.any() returns an Array; upload.fields() returns an Object
+    // upload.any(), compressUploads returns an Array; upload.fields(), compressUploads returns an Object
     const filesArray = Array.isArray(req.files)
       ? req.files
       : Object.values(req.files).flat();
@@ -52,7 +53,7 @@ router.post('/:id/financial-logs', checkUser, orderController.addFinancialLog);
 router.post(
   '/:id/submit-dynamic-form',
   checkUser,
-  upload.any(),
+  upload.any(), compressUploads,
   saveFilesToDatabase,
   orderController.submitDynamicForm
 );
@@ -83,7 +84,7 @@ for (let i = 1; i <= 10; i++) {
 router.post(
   '/:id/submit-dpiit-form',
   checkUser,
-  upload.fields(dpiitUploadFields),
+  upload.fields(dpiitUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitDpiitForm
 );
@@ -94,7 +95,7 @@ router.post(
 router.post(
   '/:id/submit-incorp-form',
   checkUser,
-  upload.fields(incorpUploadFields),
+  upload.fields(incorpUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitIncorpForm
 );
@@ -112,7 +113,7 @@ const trademarkUploadFields = [
 router.post(
   '/:id/submit-trademark-form',
   checkUser,
-  upload.fields(trademarkUploadFields),
+  upload.fields(trademarkUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitTrademarkForm
 );
@@ -129,7 +130,7 @@ const copyrightUploadFields = [
 router.post(
   '/:id/submit-copyright-form',
   checkUser,
-  upload.fields(copyrightUploadFields),
+  upload.fields(copyrightUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitCopyrightForm
 );
@@ -153,7 +154,7 @@ for (let i = 1; i <= 2; i++) {
 router.post(
   '/:id/submit-llp-form',
   checkUser,
-  upload.fields(llpUploadFields),
+  upload.fields(llpUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitLlpForm
 );
@@ -171,7 +172,7 @@ const msmeUploadFields = [
 router.post(
   '/:id/submit-msme-form',
   checkUser,
-  upload.fields(msmeUploadFields),
+  upload.fields(msmeUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitMsmeForm
 );
@@ -187,7 +188,7 @@ const isoUploadFields = [
 router.post(
   '/:id/submit-iso-form',
   checkUser,
-  upload.fields(isoUploadFields),
+  upload.fields(isoUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitIsoForm
 );
@@ -207,7 +208,7 @@ const leiUploadFields = [
 router.post(
   '/:id/submit-lei-form',
   checkUser,
-  upload.fields(leiUploadFields),
+  upload.fields(leiUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitleiForm
 );
@@ -216,7 +217,7 @@ router.post(
 router.post(
   '/:id/submit-lie-form',
   checkUser,
-  upload.fields(leiUploadFields),
+  upload.fields(leiUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitleiForm
 );
@@ -227,7 +228,7 @@ router.post(
   checkUser,
   upload.fields([
     { name: 'bankStatement', maxCount: 1 }
-  ]),
+  ]), compressUploads,
   saveFilesToDatabase,
   orderController.submitGstComplianceForm
 );
@@ -244,7 +245,7 @@ router.post(
     { name: 'bankStatement', maxCount: 1 },
     { name: 'salesInvoice', maxCount: 1 },
     { name: 'purchaseBills', maxCount: 1 }
-  ]),
+  ]), compressUploads,
   saveFilesToDatabase,
   orderController.submitMcaForm
 );
@@ -253,7 +254,7 @@ router.post(
 router.post(
   '/:id/submit-bis-form',
   checkUser,
-  upload.fields(isoUploadFields),
+  upload.fields(isoUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitBisForm
 );
@@ -272,7 +273,7 @@ const fssaiUploadFields = [
 router.post(
   '/:id/submit-fssai-form',
   checkUser,
-  upload.fields(fssaiUploadFields),
+  upload.fields(fssaiUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitFssaiForm
 );
@@ -297,7 +298,7 @@ const dscUploadFields = [
 router.post(
   '/:id/submit-dsc-form',
   checkUser,
-  upload.fields(dscUploadFields),
+  upload.fields(dscUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitDscForm
 );
@@ -313,7 +314,7 @@ const gstComplianceUploadFields = [
 router.post(
   '/:id/submit-gst-compliance-form',
   checkUser,
-  upload.fields(gstComplianceUploadFields),
+  upload.fields(gstComplianceUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitGstComplianceForm
 );
@@ -331,7 +332,7 @@ const proprietorshipUploadFields = [
 router.post(
   '/:id/submit-proprietorship-form',
   checkUser,
-  upload.fields(proprietorshipUploadFields),
+  upload.fields(proprietorshipUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitProprietorshipForm
 );
@@ -348,7 +349,7 @@ const tdsUploadFields = [
 router.post(
   '/:id/submit-tds-form',
   checkUser,
-  upload.fields(tdsUploadFields),
+  upload.fields(tdsUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitTdsForm
 );
@@ -366,7 +367,7 @@ const itrUploadFields = [
 router.post(
   '/:id/submit-itr-form',
   checkUser,
-  upload.fields(itrUploadFields),
+  upload.fields(itrUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitItrForm
 );
@@ -385,7 +386,7 @@ const ceRohsUploadFields = [
 router.post(
   '/:id/submit-ce-rohs-form',
   checkUser,
-  upload.fields(ceRohsUploadFields),
+  upload.fields(ceRohsUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitCeRohsForm
 );
@@ -403,7 +404,7 @@ const pfUploadFields = [
 router.post(
   '/:id/submit-pf-form',
   checkUser,
-  upload.fields(pfUploadFields),
+  upload.fields(pfUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitPfForm
 );
@@ -421,7 +422,7 @@ const patentUploadFields = [
 router.post(
   '/:id/submit-patent-form',
   checkUser,
-  upload.fields(patentUploadFields),
+  upload.fields(patentUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitPatentForm
 );
@@ -437,7 +438,7 @@ const gstCancellationUploadFields = [
 router.post(
   '/:id/submit-gst-cancellation-form',
   checkUser,
-  upload.fields(gstCancellationUploadFields),
+  upload.fields(gstCancellationUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitGstCancellationForm
 );
@@ -453,7 +454,7 @@ const gstFilingUploadFields = [
 router.post(
   '/:id/submit-gst-filing-form',
   checkUser,
-  upload.fields(gstFilingUploadFields),
+  upload.fields(gstFilingUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitGstFilingForm
 );
@@ -470,7 +471,7 @@ const iecUploadFields = [
 router.post(
   '/:id/submit-iec-form',
   checkUser,
-  upload.fields(iecUploadFields),
+  upload.fields(iecUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitIecForm
 );
@@ -489,7 +490,7 @@ const dunsUploadFields = [
 router.post(
   '/:id/submit-duns-form',
   checkUser,
-  upload.fields(dunsUploadFields),
+  upload.fields(dunsUploadFields), compressUploads,
   saveFilesToDatabase,
   orderController.submitDunsForm
 );
@@ -509,7 +510,7 @@ router.post(
     { name: 'rentalAgreement', maxCount: 1 },
     { name: 'propertyTaxReceipt', maxCount: 1 },
     { name: 'bankDocument', maxCount: 1 }
-  ]),
+  ]), compressUploads,
   (req, res, next) => {
     // Check sizes for photos specifically (1MB)
     if (req.files) {

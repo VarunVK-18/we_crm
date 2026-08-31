@@ -13,7 +13,25 @@ exports.getAllForms = async (req, res) => {
 // Get a specific form schema by service name (Admin / Client)
 exports.getFormByServiceName = async (req, res) => {
   try {
-    const form = await FormSchema.findOne({ serviceName: req.params.serviceName });
+    const requestedName = req.params.serviceName;
+    
+    // Try exact case-sensitive match first
+    let form = await FormSchema.findOne({ serviceName: requestedName });
+    
+    // Try exact case-insensitive match
+    if (!form) {
+      form = await FormSchema.findOne({ 
+        serviceName: { $regex: new RegExp('^' + requestedName + '$', 'i') } 
+      });
+    }
+
+    // Try partial match if still not found
+    if (!form) {
+      form = await FormSchema.findOne({ 
+        serviceName: { $regex: new RegExp(requestedName, 'i') } 
+      });
+    }
+
     if (!form) return res.status(404).json({ error: 'Form schema not found' });
     res.status(200).json(form);
   } catch (error) {

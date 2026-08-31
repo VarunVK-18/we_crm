@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { getNextClientId } = require('../utils/counterHelper');
 const Company = require('../models/Company');
@@ -157,7 +158,7 @@ const registerUser = async (req, res) => {
       // Upgrade existing Prospect user to a fully registered client
       existingUser.company_id = finalCompanyId || existingUser.company_id;
       if (custom_client_id) existingUser.custom_client_id = custom_client_id;
-      if (password) existingUser.password = password;
+      if (password) existingUser.credentialHash = await bcrypt.hash(password, 12);
       if (owner_name) existingUser.owner_name = owner_name;
       if (phone) existingUser.phone = phone;
       if (company_name) existingUser.company_name = company_name;
@@ -202,7 +203,7 @@ const registerUser = async (req, res) => {
         company_id: finalCompanyId,
         custom_client_id,
         email: email.trim(),
-        password: password || '',
+        credentialHash: password ? await bcrypt.hash(password, 12) : null,
         owner_name,
         phone: phone || '',
         role: role || 'customer',
@@ -246,7 +247,7 @@ const registerUser = async (req, res) => {
     if (user) {
       // Remove password from response
       const userResponse = user.toObject();
-      delete userResponse.password;
+      delete userResponse.credentialHash;
 
       // Log the registration action
       const performer = req.user ? req.user._id : user._id;
@@ -325,13 +326,13 @@ const loginUser = async (req, res) => {
     }
 
     // If password is not initialized yet (empty string, null/undefined, or not a string)
-    if (!user.password || typeof user.password !== 'string' || user.password.trim() === '') {
-      user.password = password; // Trigger hashing pre-save hook
+    if (!user.credentialHash || typeof user.credentialHash !== 'string' || user.credentialHash.trim() === '') {
+      user.credentialHash = await bcrypt.hash(password, 12);
       if (req.body.isMobileApp) user.isMobile = true;
       await user.save();
 
       const userResponse = user.toObject();
-      delete userResponse.password;
+      delete userResponse.credentialHash;
 
       return res.json({
         message: 'Password set successfully. Login successful!',
@@ -340,7 +341,7 @@ const loginUser = async (req, res) => {
     }
 
     // Check password
-    const isMatch = await user.comparePassword(password);
+    const isMatch = user.credentialHash ? await bcrypt.compare(password, user.credentialHash) : false;
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
@@ -353,7 +354,7 @@ const loginUser = async (req, res) => {
 
     // Remove password from response object
     const userResponse = user.toObject();
-    delete userResponse.password;
+    delete userResponse.credentialHash;
 
     res.json({
       message: 'Login successful',
@@ -369,7 +370,7 @@ const loginUser = async (req, res) => {
 // @access  Public
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password').populate('company_id').populate('assigned_to').lean();
+    const user = await User.findById(req.params.id).select('-credentialHash').populate('company_id').populate('assigned_to').lean();
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -384,16 +385,16 @@ const getUserProfile = async (req, res) => {
     let globalAdminPromise = null;
 
     if (user.created_by) {
-      clientManagerPromise = User.findById(user.created_by).select('-password').lean();
+      clientManagerPromise = User.findById(user.created_by).select('-credentialHash').lean();
     }
 
     const companyId = userObj.company_id ? (userObj.company_id._id || userObj.company_id) : null;
 
     if (companyId) {
-      fallbackManagerPromise = User.findOne({ company_id: companyId, role: 'client_manager' }).select('-password').lean();
+      fallbackManagerPromise = User.findOne({ company_id: companyId, role: 'client_manager' }).select('-credentialHash').lean();
       adminUserPromise = User.findOne({ company_id: companyId, role: 'admin' }).select('email').lean();
     } else {
-      globalFallbackPromise = User.findOne({ role: 'client_manager' }).select('-password').lean();
+      globalFallbackPromise = User.findOne({ role: 'client_manager' }).select('-credentialHash').lean();
       globalAdminPromise = User.findOne({ role: 'admin' }).select('email').lean();
     }
 
@@ -495,7 +496,7 @@ const getClients = async (req, res) => {
     }
 
     const clients = await User.find(filter)
-      .select('-password')
+      .select('-credentialHash')
       .populate('assigned_to', 'owner_name email role')
       .lean();
 
@@ -601,7 +602,7 @@ const registerDirect = async (req, res) => {
       owner_name: name, 
       email: email.trim(), 
       phone: phone ? phone.trim() : undefined,
-      password: password || 'Default@123', 
+      credentialHash: await bcrypt.hash(password || 'Default@123', 12), 
       role: assignedRole,
       company_id: finalCompanyId
     });
@@ -716,7 +717,7 @@ const editUser = async (req, res) => {
     }
     
     if (password && password.trim() !== '') {
-      user.password = password;
+      user.credentialHash = await bcrypt.hash(password, 12);
     }
 
     await user.save();
@@ -747,7 +748,7 @@ const resetPassword = async (req, res) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
     
-    user.password = 'Default@123';
+    user.credentialHash = await bcrypt.hash('Default@123', 12);
     await user.save();
 
     if (req.user) {
@@ -826,7 +827,7 @@ const registerCompany = async (req, res) => {
     });
 
     const userResponse = user.toObject();
-    delete userResponse.password;
+    delete userResponse.credentialHash;
     // Attach company object so the frontend has full context
     userResponse.company_id = company.toObject();
 
@@ -1329,6 +1330,7 @@ const uploadProfileImage = async (req, res) => {
   try {
     const { id } = req.params;
     const User = require('../models/User');
+const bcrypt = require('bcryptjs');
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (!req.file) return res.status(400).json({ message: 'No image file uploaded' });
@@ -1354,6 +1356,7 @@ const removeProfileImage = async (req, res) => {
   try {
     const { id } = req.params;
     const User = require('../models/User');
+const bcrypt = require('bcryptjs');
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -1370,6 +1373,7 @@ const uploadEntityLogo = async (req, res) => {
   try {
     const { id, entityName } = req.params;
     const User = require('../models/User');
+const bcrypt = require('bcryptjs');
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
     if (!req.file) return res.status(400).json({ message: 'No image file uploaded' });
@@ -1407,6 +1411,7 @@ const removeEntityLogo = async (req, res) => {
   try {
     const { id, entityName } = req.params;
     const User = require('../models/User');
+const bcrypt = require('bcryptjs');
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -2510,7 +2515,7 @@ const getClientOnboardRequests = async (req, res) => {
       ];
     }
 
-    const users = await User.find(filter).select('-password').lean();
+    const users = await User.find(filter).select('-credentialHash').lean();
 
     const requests = [];
 
@@ -2728,15 +2733,15 @@ const changePassword = async (req, res) => {
     // User is already fetched and validated above
 
     // Verify old password
-    if (user.password_changed && user.password && user.password.trim() !== '') {
-      const isMatch = await user.comparePassword(oldPassword);
+    if (user.password_changed && user.credentialHash && user.credentialHash.trim() !== '') {
+      const isMatch = await bcrypt.compare(oldPassword, user.credentialHash);
       if (!isMatch) {
         return res.status(400).json({ message: 'Incorrect old password. Please try again.' });
       }
     }
 
-    // Update password (triggers pre-save bcrypt hook in User.js)
-    user.password = newPassword;
+    // Update password (triggers pre-save bcrypt hook in User.js) - wait, pre-save hook is removed, so we hash manually
+    user.credentialHash = await bcrypt.hash(newPassword, 12);
     user.password_changed = true;
     user.is_first_login = false;
     user.must_change_password = false;

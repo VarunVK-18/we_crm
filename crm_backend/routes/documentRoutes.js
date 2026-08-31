@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const Document = require('../models/Document');
 const multer = require('multer');
@@ -131,7 +132,7 @@ router.get('/documents/:id', async (req, res) => {
 // @desc    Upload & Extract OCR data from PDF Incorporation Certificate
 // @route   POST /api/documents/extract-incorporation
 // @access  Private
-router.post('/documents/extract-incorporation', upload.single('file'), async (req, res) => {
+router.post('/documents/extract-incorporation', upload.single('file'), compressUploads, async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });

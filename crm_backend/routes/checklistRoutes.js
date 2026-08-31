@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const {
   createChecklist,
@@ -49,21 +50,21 @@ router.patch('/checklists/:id', checkUser, permit('admin', 'manager', 'client_ma
 router.post('/checklists/:id/items', checkUser, permit('admin', 'manager', 'client_manager'), addChecklistItem);
 router.patch('/checklists/:id/items/:itemIndex', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), toggleChecklistItem);
 router.patch('/checklists/:id/items/:itemIndex/value', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), updateChecklistItemValue);
-router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadFinalDocuments);
+router.post('/checklists/:id/final-documents', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), compressUploads, uploadFinalDocuments);
 router.delete('/checklists/:id/final-documents/:docId', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), deleteFinalDocument);
-router.put('/checklists/:id/final-documents/:docId/reupload', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.single('final_file'), reuploadFinalDocument);
+router.put('/checklists/:id/final-documents/:docId/reupload', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.single('final_file'), compressUploads, reuploadFinalDocument);
 
 
 // Temporary / Action Required Documents
 const { uploadTemporaryDocuments, deleteTemporaryDocument, replyTemporaryDocument, attachDocumentAsTemporary } = require('../controllers/checklistController');
-router.post('/checklists/:id/temporary-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), uploadTemporaryDocuments);
+router.post('/checklists/:id/temporary-documents', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), upload.any(), compressUploads, uploadTemporaryDocuments);
 router.post('/checklists/:id/temporary-documents/from-document', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), attachDocumentAsTemporary);
 router.delete('/checklists/:id/temporary-documents/:docId', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), deleteTemporaryDocument);
-router.post('/checklists/:id/temporary-documents/:docId/reply', checkUser, permit('admin', 'customer', 'client_manager'), upload.single('reply_file'), replyTemporaryDocument);
+router.post('/checklists/:id/temporary-documents/:docId/reply', checkUser, permit('admin', 'customer', 'client_manager'), upload.single('reply_file'), compressUploads, replyTemporaryDocument);
 
 // Document upload route for Flutter customers
 const { uploadRequestedDocuments } = require('../controllers/checklistController');
-router.post('/checklists/:id/upload-documents', checkUser, upload.any(), uploadRequestedDocuments);
+router.post('/checklists/:id/upload-documents', checkUser, upload.any(), compressUploads, uploadRequestedDocuments);
 
 // Support ticket for a checklist
 router.post('/checklists/:id/support-ticket', checkUser, createSupportTicketForChecklist);
@@ -71,9 +72,9 @@ router.post('/checklists/:id/support-ticket', checkUser, createSupportTicketForC
 // Financial log for a checklist
 router.post('/checklists/:id/financial-logs', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), addFinancialLog);
 
-router.post('/checklists/:id/items/:itemId/expense', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.single('bill'), uploadExpenseBill);
+router.post('/checklists/:id/items/:itemId/expense', checkUser, permit('admin', 'manager', 'client_manager', 'filling_staff', 'account_manager'), upload.single('bill'), compressUploads, uploadExpenseBill);
 
 
-router.post('/checklists/:id/items/:itemId/reimburse', checkUser, permit('admin', 'manager'), upload.single('proof'), markExpensePaid);
+router.post('/checklists/:id/items/:itemId/reimburse', checkUser, permit('admin', 'manager'), upload.single('proof'), compressUploads, markExpensePaid);
 
 module.exports = router;

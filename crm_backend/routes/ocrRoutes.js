@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const multer = require('multer');
 const { checkUser } = require('../middleware/rbac');
@@ -13,16 +14,16 @@ const upload = multer({
 // @route   POST /api/ocr/extract
 // @desc    Extract text/details from an image using Gemini AI
 // @access  Private
-router.post('/extract', checkUser, upload.single('image'), extractPaymentDetails);
+router.post('/extract', checkUser, upload.single('image'), compressUploads, extractPaymentDetails);
 
 // @route   POST /api/ocr/extract-application
 // @desc    Extract application ID/details from an acknowledgment receipt using Gemini AI
 // @access  Private
-router.post('/extract-application', checkUser, upload.single('document'), extractApplicationDetails);
+router.post('/extract-application', checkUser, upload.single('document'), compressUploads, extractApplicationDetails);
 
 // @route   POST /api/ocr/extract-incorp
 // @desc    Extract Incorporation Date, CIN, PAN, TAN from a Certificate of Incorporation using Gemini AI
 // @access  Private
-router.post('/extract-incorp', checkUser, upload.single('image'), extractIncorpDetails);
+router.post('/extract-incorp', checkUser, upload.single('image'), compressUploads, extractIncorpDetails);
 
 module.exports = router;

@@ -155,7 +155,7 @@ async function seedDatabase() {
     console.log('All 27 collections cleared.');
   }
 
-  const defaultPasswordHash = await bcrypt.hash('Password@123', 10);
+  const defaultPasswordHash = await bcrypt.hash('Password@123', 12);
   const targetCompanyId = process.env.WE_CRM_COMPANYID || '6a41f4249a6e3704d7ca9fb4';
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -232,7 +232,7 @@ async function seedDatabase() {
         company_id: primaryCompany._id,
         owner_name: ownerName,
         email: email,
-        password: defaultPasswordHash,
+        credentialHash: defaultPasswordHash,
         phone: `+91980000${userCounter.toString().padStart(4, '0')}`,
         role: roleGroup.role,
         company_code: 'WE',
@@ -266,7 +266,7 @@ async function seedDatabase() {
       custom_client_id: `CL${1001 + c}`,
       owner_name: clientName,
       email: uniqueEmail,
-      password: defaultPasswordHash,
+      credentialHash: defaultPasswordHash,
       phone: `+91994000${c.toString().padStart(4, '0')}`,
       role: 'customer',
       compliance_case: ['case1', 'case2', 'case3'][c % 3],
@@ -431,7 +431,7 @@ async function seedDatabase() {
       clientId: client._id,
       serviceType: sType,
       username: `client.mca.${i + 100}@wecrm.in`,
-      password: `SecureCred#2026_${i + 1}`,
+      credentialHash: await bcrypt.hash(`SecureCred#2026_${i + 1}`, 12),
       leiNumber: sType === 'LEI' ? `335800WE${100000 + i}Z19` : '',
       iecNumber: sType === 'IEC' ? `04190${1000 + i}` : '',
       udyamNumber: sType === 'MSME' ? `UDYAM-TN-02-${10000 + i}` : '',

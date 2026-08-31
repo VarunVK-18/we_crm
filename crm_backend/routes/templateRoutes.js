@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const multer = require('multer');
 const { checkUser, permit } = require('../middleware/rbac');
@@ -16,6 +17,6 @@ router.use(permit('admin'));
 
 router.get('/checklists', getTemplates);
 router.post('/checklists', upsertTemplate);
-router.post('/checklists/:service_name/sop', upload.single('sop'), uploadSOP);
+router.post('/checklists/:service_name/sop', upload.single('sop'), compressUploads, uploadSOP);
 
 module.exports = router;

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
   // Link every user to a company (multi-tenant scoping)
@@ -23,16 +22,9 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
-  password: {
+  credentialHash: {
     type: String,
-    required: false,
-    default: '',
-    set: function(val) {
-      if (val === null || val === undefined) {
-        return '';
-      }
-      return String(val);
-    }
+    default: null
   },
   password_changed: {
     type: Boolean,
@@ -369,26 +361,5 @@ const UserSchema = new mongoose.Schema({
     }
   }]
 }, { timestamps: true });
-
-// Pre-save middleware to encrypt password before saving to database
-UserSchema.pre('save', async function() {
-  // If password is not set or empty, do not hash it
-  if (!this.password || typeof this.password !== 'string' || this.password.trim() === '') {
-    return;
-  }
-
-  // Only hash password if it has been modified or is new
-  if (!this.isModified('password')) {
-    return;
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-});
-
-// Method to compare candidate password with hashed password in database
-UserSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
 
 module.exports = mongoose.model('User', UserSchema);

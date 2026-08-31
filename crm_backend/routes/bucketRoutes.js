@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const { checkUser, permit } = require('../middleware/rbac');
 const multer = require('multer');
@@ -20,7 +21,7 @@ router.get('/requests', checkUser, permit('admin', 'client_manager'), getBucketR
 router.get('/count', checkUser, permit('admin', 'client_manager', 'filling_staff', 'account_manager'), getBucketCount);
 
 // Client manager claims a bucket request (supports optional COI file upload for compliance requests)
-router.post('/requests/:id/claim', checkUser, permit('admin', 'client_manager'), upload.single('coiFile'), claimBucketRequest);
+router.post('/requests/:id/claim', checkUser, permit('admin', 'client_manager'), upload.single('coiFile'), compressUploads, claimBucketRequest);
 
 // Admin/Manager direct assign
 router.post('/requests/direct-assign', checkUser, permit('admin', 'client_manager'), directAssignOpportunity);

@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
@@ -59,7 +60,7 @@ router.post('/register', (req, res, next) => {
     return checkUser(req, res, next);
   }
   next();
-}, preventAuditorWrite, upload.any(), registerUser);
+}, preventAuditorWrite, upload.any(), compressUploads, registerUser);
 router.post('/login', loginUser);
 router.post('/auth/change-password', changePassword);
 router.post('/users/change-password', changePassword);
@@ -70,16 +71,16 @@ router.post('/auth/client-onboard', clientOnboard);
 // User profile route
 router.get('/users/profile/:id', getUserProfile);
 router.patch('/users/profile/:id', checkUser, editClientProfile);
-router.post('/users/profile/:id/directors/:index/document', checkUser, upload.single('file'), uploadDirectorDocument);
-router.post('/users/profile/:id/subscribe-service', upload.any(), subscribeService);
-router.post('/users/profile/:id/pan', upload.single('panFile'), savePanDetails);
+router.post('/users/profile/:id/directors/:index/document', checkUser, upload.single('file'), compressUploads, uploadDirectorDocument);
+router.post('/users/profile/:id/subscribe-service', upload.any(), compressUploads, subscribeService);
+router.post('/users/profile/:id/pan', upload.single('panFile'), compressUploads, savePanDetails);
 router.put('/users/profile/:id/entities', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), updateClientEntities);
-router.post('/users/profile/:id/upload-image', upload.single('profileImage'), uploadProfileImage);
+router.post('/users/profile/:id/upload-image', upload.single('profileImage'), compressUploads, uploadProfileImage);
 router.delete('/users/profile/:id/remove-image', removeProfileImage);
-router.post('/users/profile/:id/entity/:entityName/upload-logo', upload.single('entityLogo'), uploadEntityLogo);
+router.post('/users/profile/:id/entity/:entityName/upload-logo', upload.single('entityLogo'), compressUploads, uploadEntityLogo);
 router.delete('/users/profile/:id/entity/:entityName/remove-logo', removeEntityLogo);
-router.put('/users/profile/:id/documents/reupload', checkUser, upload.single('file'), reuploadProfileDocument);
-router.post('/users/me/mca-profile', checkUser, upload.any(), updateMcaProfile);
+router.put('/users/profile/:id/documents/reupload', checkUser, upload.single('file'), compressUploads, reuploadProfileDocument);
+router.post('/users/me/mca-profile', checkUser, upload.any(), compressUploads, updateMcaProfile);
 
 // Client users listing & actions route
 router.get('/users/clients/summary', checkUser, getClientsSummary); // Lightweight client list for dashboard
@@ -92,7 +93,7 @@ router.patch('/users/clients/:id/assign', checkUser, preventAuditorWrite, permit
 router.patch('/users/clients/:id/onboarding', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), approveClient);
 router.patch('/users/clients/:id/compliance-radar', checkUser, preventAuditorWrite, permit('admin', 'client_manager', 'filling_staff'), toggleComplianceRadar);
 router.post('/users/clients/:id/outsource-service', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), outsourceService);
-router.post('/users/clients/external-onboard', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), upload.single('coiFile'), externalOnboard);
+router.post('/users/clients/external-onboard', checkUser, preventAuditorWrite, permit('admin', 'client_manager'), upload.single('coiFile'), compressUploads, externalOnboard);
 
 // Employee/Team routes
 router.get('/users/team-groups', checkUser, getTeamGroups);

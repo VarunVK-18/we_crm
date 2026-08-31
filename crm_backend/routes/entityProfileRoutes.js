@@ -1,4 +1,5 @@
 const express = require('express');
+const compressUploads = require('../middleware/compressUploads');
 const router = express.Router();
 const multer = require('multer');
 const {
@@ -17,6 +18,6 @@ router.get('/', getEntityProfile);
 router.put('/', updateEntityProfile);
 
 // PUT /api/entity-profile/document/:docKey  (upload/replace a document)
-router.put('/document/:docKey', upload.single('file'), uploadEntityDocument);
+router.put('/document/:docKey', upload.single('file'), compressUploads, uploadEntityDocument);
 
 module.exports = router;
