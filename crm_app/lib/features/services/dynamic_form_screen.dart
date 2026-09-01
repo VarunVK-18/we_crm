@@ -56,12 +56,30 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
     super.dispose();
   }
 
+  Map<String, dynamic> _prefillData = {};
+  List<dynamic> _prefillDocs = [];
+
   Future<void> _fetchSchema() async {
     try {
       final response = await http.get(Uri.parse('$kBaseUrl/api/forms/service/${Uri.encodeComponent(widget.order.serviceType)}'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         _schema = FormSchema.fromJson(data);
+        
+        // Fetch prefill data
+        try {
+          final prefillResponse = await http.get(Uri.parse('$kBaseUrl/api/orders/${widget.order.id}/prefill'));
+          if (prefillResponse.statusCode == 200) {
+            final prefillBody = json.decode(prefillResponse.body);
+            if (prefillBody['success'] == true && prefillBody['data'] != null) {
+              _prefillData = prefillBody['data']['formDetails'] ?? {};
+              _prefillDocs = prefillBody['data']['uploadedDocuments'] ?? [];
+            }
+          }
+        } catch (e) {
+          debugPrint('Failed to load prefill data: $e');
+        }
+
         _initializeFields(_schema!.fields, '');
         await _loadDraft();
       } else {
@@ -104,18 +122,8 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
   }
 
   void _initializeFields(List<FormFieldSchema> fields, String parentPath) {
-    // Entity-Isolated Profile: Read data ONLY for the current order's entity
-    // This prevents "Hands Together" data from bleeding into "Curious Wings" forms
-    final allProfileData = ref.read(userProfileProvider).value?.dynamicProfileData ?? {};
-    final entityName = widget.order.entityName;
-    // First try entity-specific data, then fall back to global (legacy) data
-    final entityProfile = allProfileData[entityName] is Map
-        ? Map<String, dynamic>.from(allProfileData[entityName] as Map)
-        : <String, dynamic>{};
-    final legacyProfile = Map<String, dynamic>.from(allProfileData)
-      ..remove(entityName); // strip out entity sub-maps, keep only root keys
-    // Merge: entity-specific takes priority over legacy global root keys
-    final userProfile = {...legacyProfile, ...entityProfile};
+    // Entity-Isolated Profile: Use the fetched prefillData which handles order details + master entity fallback
+    final userProfile = _prefillData;
 
     for (var field in fields) {
       String currentPath = parentPath.isEmpty ? field.name : '$parentPath.${field.name}';
@@ -234,9 +242,39 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
         String currentPath = parentPath.isEmpty ? field.name : '$parentPath.${field.name}';
         if (!_evaluateCondition(field.visibilityCondition, parentPath)) continue;
 
-        if (field.type == 'file' && field.required && _filePaths[currentPath] == null) {
-          _showError('Please upload ${field.label}');
-          filesValid = false;
+        if (field.type == 'file' && field.required) {
+          bool hasValidNewFile = _filePaths[currentPath] != null && _filePaths[currentPath]!.isNotEmpty;
+          
+          if (!hasValidNewFile) {
+            // Check if it has a prefill document, AND user hasn't explicitly removed it
+            final lowerFieldName = field.name.toLowerCase();
+            String targetDocType = '';
+            if (lowerFieldName.contains('pan')) targetDocType = 'pan';
+            else if (lowerFieldName.contains('aadhaar')) targetDocType = 'aadhaar';
+            else if (lowerFieldName.contains('incorporation') || lowerFieldName.contains('coi')) targetDocType = 'coi';
+            else if (lowerFieldName.contains('address') || lowerFieldName.contains('electricity')) targetDocType = 'addressProof';
+            else if (lowerFieldName.contains('photo')) targetDocType = 'directorPhoto';
+            else if (lowerFieldName.contains('bank')) targetDocType = 'bankStatement';
+            else if (lowerFieldName.contains('gst')) targetDocType = 'gst';
+            else if (lowerFieldName.contains('moa')) targetDocType = 'moa';
+            else if (lowerFieldName.contains('aoa')) targetDocType = 'aoa';
+            else if (lowerFieldName.contains('sales')) targetDocType = 'salesInvoice';
+            else if (lowerFieldName.contains('purchase')) targetDocType = 'purchaseBills';
+
+            dynamic existingDoc;
+            if (targetDocType.isNotEmpty) {
+              existingDoc = _prefillDocs.firstWhere((doc) => doc['documentType'] == targetDocType, orElse: () => null);
+            }
+            
+            // If user clicked 'Replace', _filePaths[currentPath] is empty string.
+            // If they haven't uploaded a new one, existingDoc is considered "removed" by the empty string.
+            bool isIntentionallyRemoved = _filePaths[currentPath] == '';
+            
+            if (existingDoc == null || isIntentionallyRemoved) {
+              _showError('Please upload ${field.label}');
+              filesValid = false;
+            }
+          }
         } else if (field.type == 'group') {
           validateFiles(field.subFields, currentPath);
         } else if (field.type == 'array') {
@@ -492,6 +530,32 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
 
   Widget _buildFileRow(FormFieldSchema field, String pathKey) {
     String? path = _filePaths[pathKey];
+    
+    // Check if we have an existing document from prefill
+    dynamic existingDoc;
+    final lowerFieldName = field.name.toLowerCase();
+    
+    // Fuzzy matching field name to prefill documentType
+    String targetDocType = '';
+    if (lowerFieldName.contains('pan')) targetDocType = 'pan';
+    else if (lowerFieldName.contains('aadhaar')) targetDocType = 'aadhaar';
+    else if (lowerFieldName.contains('incorporation') || lowerFieldName.contains('coi')) targetDocType = 'coi';
+    else if (lowerFieldName.contains('address') || lowerFieldName.contains('electricity')) targetDocType = 'addressProof';
+    else if (lowerFieldName.contains('photo')) targetDocType = 'directorPhoto';
+    else if (lowerFieldName.contains('bank')) targetDocType = 'bankStatement';
+    else if (lowerFieldName.contains('gst')) targetDocType = 'gst';
+    else if (lowerFieldName.contains('moa')) targetDocType = 'moa';
+    else if (lowerFieldName.contains('aoa')) targetDocType = 'aoa';
+    else if (lowerFieldName.contains('sales')) targetDocType = 'salesInvoice';
+    else if (lowerFieldName.contains('purchase')) targetDocType = 'purchaseBills';
+
+    if (targetDocType.isNotEmpty) {
+      existingDoc = _prefillDocs.firstWhere((doc) => doc['documentType'] == targetDocType, orElse: () => null);
+    }
+
+    // If user selected a new file, it overrides the existing one
+    final bool hasExisting = existingDoc != null && path == null;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -509,32 +573,70 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
             Text(field.description!, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey[500])),
           ],
           const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  path == null ? 'No file selected' : path.split(Platform.pathSeparator).last,
-                  style: GoogleFonts.inter(fontSize: 13, color: path == null ? Colors.grey[500] : AppTheme.corporateBlue),
-                  overflow: TextOverflow.ellipsis,
-                ),
+          
+          if (hasExisting)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.corporateBlue.withOpacity(0.1),
+                border: Border.all(color: AppTheme.corporateBlue.withOpacity(0.3)),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 8),
-              OutlinedButton(
-                onPressed: () => _pickFile(pathKey, field.allowedExtensions),
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: path == null ? Colors.grey[400]! : AppTheme.corporateBlue),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  minimumSize: const Size(80, 32),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                ),
-                child: Text(
-                  path == null ? 'Upload' : 'Change',
-                  style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: path == null ? Colors.black87 : AppTheme.corporateBlue),
-                ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: AppTheme.corporateBlue, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${existingDoc['name'] ?? 'Document'} (From Profile)',
+                      style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppTheme.corporateBlue),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        // We mark this path with empty string to signify intentional removal of existing doc, triggering upload UI
+                        _filePaths[pathKey] = ''; 
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(50, 30),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text('Replace', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.red)),
+                  )
+                ],
               ),
-            ],
-          ),
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    path == null || path.isEmpty ? 'No file selected' : path.split(Platform.pathSeparator).last,
+                    style: GoogleFonts.inter(fontSize: 13, color: path == null || path.isEmpty ? Colors.grey[500] : AppTheme.corporateBlue),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () => _pickFile(pathKey, field.allowedExtensions),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: path == null || path.isEmpty ? Colors.grey[400]! : AppTheme.corporateBlue),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    minimumSize: const Size(80, 32),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  child: Text(
+                    path == null || path.isEmpty ? 'Upload' : 'Change',
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: path == null || path.isEmpty ? Colors.black87 : AppTheme.corporateBlue),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

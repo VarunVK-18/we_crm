@@ -42,6 +42,7 @@ const upload = multer({
 router.get('/user/:userId', orderController.getUserOrders);
 router.get('/company/:companyId', checkUser, orderController.getCompanyOrders);
 router.get('/:id/form-details', checkUser, orderController.getOrderFormDetails);
+router.get('/:id/prefill', checkUser, orderController.getPrefillData);
 router.post('/', orderController.createOrder);
 router.put('/:id', checkUser, orderController.updateOrder);
 router.delete('/:id', checkUser, orderController.deleteOrder);

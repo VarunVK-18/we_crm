@@ -30,11 +30,11 @@ const getBucketRequests = async (req, res) => {
     if (status === 'all') {
       filter.$or = [
         { status: { $ne: 'open' } },
-        { status: 'open', source: { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm', 'we-crm-new'] } }
+        { status: 'open', source: { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm', 'we-crm-new', 'client_portal_subscription'] } }
       ];
     } else if (status === 'open') {
       filter.status = 'open';
-      filter.source = { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm', 'we-crm-new'] };
+      filter.source = { $in: ['dealvoice', 'we-crm-old', 'manual', 'we-crm', 'we-crm-new', 'client_portal_subscription'] };
     } else {
       filter.status = status;
     }

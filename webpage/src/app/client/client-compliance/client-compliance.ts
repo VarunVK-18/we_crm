@@ -115,25 +115,33 @@ export class ClientCompliance implements OnInit, OnDestroy {
     return Array.from(map.entries()).map(([key, items]) => ({ key, items }));
   });
   healthScore = computed(() => {
-    const pending = this.pendingTasks();
-    if (pending.length === 0) return 1.0;
+    const tasks = this.filteredTasks();
+    const u = this.user();
     
-    // 100% = No pending compliances
-    // 90% = Upcoming compliances only
-    // 75% = Due Soon compliances
-    // 50% = Critical compliances
-    // 0-25% = Overdue compliances
-    let minScore = 0.9;
-    for (const t of pending) {
-      if (t.status === 'Overdue') minScore = Math.min(minScore, 0.25);
-      else if (t.status === 'Critical') minScore = Math.min(minScore, 0.5);
-      else if (t.status === 'Due Soon') minScore = Math.min(minScore, 0.75);
+    // Part 1: Base Score from Company Profile (max 50 points)
+    const profileScore = (u?.company_id?.complianceScore || 0) / 100.0;
+    
+    // Part 2: Dynamic Compliance Score (max 50 points)
+    let dynamicScore = 50.0;
+    if (tasks.length > 0) {
+      const penalty = 50.0 / tasks.length;
+      for (const t of tasks) {
+        if (t.status === 'Overdue' || t.status === 'Critical') dynamicScore -= penalty;
+        else if (t.status === 'Due Soon') dynamicScore -= (penalty / 2);
+      }
     }
-    return minScore;
+    
+    if (dynamicScore < 0) dynamicScore = 0;
+    if (dynamicScore > 50) dynamicScore = 50;
+    
+    if (profileScore === 0 && tasks.length === 0) return 0.0;
+    
+    return ((profileScore * 100.0) + dynamicScore) / 100.0;
   });
 
   healthStatus = computed(() => {
     const score = this.healthScore();
+    if (score === 0.0) return 'PENDING SETUP';
     if (score >= 0.9) return 'EXCELLENT';
     if (score >= 0.75) return 'GOOD';
     if (score >= 0.5) return 'WARNING';
@@ -142,10 +150,11 @@ export class ClientCompliance implements OnInit, OnDestroy {
 
   healthMessage = computed(() => {
     const score = this.healthScore();
-    if (score >= 0.9) return 'Your compliance health is safe.';
-    if (score >= 0.75) return 'Some items are due soon.';
-    if (score >= 0.5) return 'Critical action required soon.';
-    return 'Action required: resolve overdue items.';
+    if (score === 0.0) return 'Complete your profile to get started.';
+    if (score >= 0.9) return 'Your compliance is up to date.';
+    if (score >= 0.75) return 'Looking good, but needs attention.';
+    if (score >= 0.5) return 'Immediate action required on pending tasks.';
+    return 'Critical compliance issues detected!';
   });
 
   urgentReminders = computed(() => {

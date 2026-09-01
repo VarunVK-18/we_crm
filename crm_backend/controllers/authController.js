@@ -1213,10 +1213,19 @@ const subscribeService = async (req, res) => {
         details.recommended_plan = calculatedPlan;
         details.service_fee = calculatedFee;
 
-        // Create a Bucket Request instead of a direct Checklist
+        // Create a Bucket Request so the manager is notified
+        await BucketRequest.create({
+          company_id: user.company_id,
+          client_id: user._id,
+          service_name: serviceName,
+          status: 'open',
+          source: 'client_portal_subscription',
+          client_name: user.owner_name || user.company_name || 'Client',
+          client_phone: user.phone || '',
+          client_email: user.email,
+          client_company_name: user.company_name || requestedEntityName || '',
+        });
 
-
-        // Removed BucketRequest creation - existing clients go directly to ServiceOrders (New Services)
         // Also create a ServiceOrder so it appears in the New Requests page
         const assignedManager = user.assigned_to ? await User.findById(user.assigned_to).lean() : null;
         const soManagerName = assignedManager ? (assignedManager.owner_name || assignedManager.email) : 'To be assigned';
@@ -1227,7 +1236,7 @@ const subscribeService = async (req, res) => {
           companyId: user.company_id,
           entityName: requestedEntityName,
           serviceType: serviceName,
-          status: 'pending',
+          status: 'notInitialized',
           stage: 'reqReceived',
           assignedExpert: soManagerName,
           expertPhone: soManagerPhone,

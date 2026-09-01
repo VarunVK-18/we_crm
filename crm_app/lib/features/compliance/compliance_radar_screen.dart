@@ -421,29 +421,12 @@ class ComplianceRadarScreen extends ConsumerWidget {
         .toList();
     final pendingCountStr = pendingReminders.length.toString().padLeft(2, '0');
 
-    // Calculate Health Score dynamically based on services and compliances
-    final outsourcedServicesList = user?.outsourcedServices ?? [];
-    final allOrders = ref.watch(serviceOrdersProvider).value ?? [];
-    final entityOrders = allOrders.where((o) => o.entityName == currentEntity).toList();
     final entityCompliances = reminders.where((r) => r.entityName == currentEntity).toList();
     
-    double serviceScore = 0.0;
-    bool hasIncorporation = entityOrders.any((o) => o.serviceType.contains('Incorporation') || o.serviceType.contains('Proprietorship')) || outsourcedServicesList.any((s) => s.contains('Incorporation') || s.contains('Proprietorship'));
-    bool hasMSME = entityOrders.any((o) => o.serviceType.contains('MSME')) || outsourcedServicesList.any((s) => s.contains('MSME'));
-    bool hasTrademark = entityOrders.any((o) => o.serviceType.contains('Trademark')) || outsourcedServicesList.any((s) => s.contains('Trademark'));
-    bool hasGST = entityOrders.any((o) => o.serviceType.contains('GST')) || outsourcedServicesList.any((s) => s.contains('GST'));
-    bool hasDPIIT = entityOrders.any((o) => o.serviceType.contains('DPIIT') || o.serviceType.contains('Startup India')) || outsourcedServicesList.any((s) => s.contains('DPIIT') || s.contains('Startup India'));
-    bool hasISO = entityOrders.any((o) => o.serviceType.contains('ISO')) || outsourcedServicesList.any((s) => s.contains('ISO'));
-
-    if (hasIncorporation) serviceScore += 10.0;
-    if (hasMSME) serviceScore += 8.0;
-    if (hasTrademark) serviceScore += 8.0;
-    if (hasGST) serviceScore += 8.0;
-    if (hasDPIIT) serviceScore += 8.0;
-    if (hasISO) serviceScore += 8.0;
-
-    if (serviceScore > 50.0) serviceScore = 50.0;
+    // Part 1: Base Score from Company Profile (max 50 points)
+    final profileScore = entityProfileAsync.value?.complianceScore?.toDouble() ?? 0.0;
     
+    // Part 2: Dynamic Compliance Score (max 50 points)
     double complianceScore = 50.0;
     if (entityCompliances.isNotEmpty) {
       double penaltyPerCompliance = 50.0 / entityCompliances.length;
@@ -460,14 +443,15 @@ class ComplianceRadarScreen extends ConsumerWidget {
     if (complianceScore > 50) complianceScore = 50;
     
     double scoreValue = 0.0;
-    if (serviceScore == 0.0 && entityCompliances.isEmpty) {
+    if (profileScore == 0.0 && entityCompliances.isEmpty) {
       scoreValue = 0.0;
     } else {
-      scoreValue = serviceScore + complianceScore;
+      scoreValue = profileScore + complianceScore;
     }
     
     final score = scoreValue / 100.0;
-    final isPendingSetup = serviceScore == 0.0 && entityCompliances.isEmpty;
+    final isPendingSetup = profileScore == 0.0 && entityCompliances.isEmpty;
+    
     final healthStatus = isPendingSetup
         ? 'PENDING SETUP'
         : score >= 0.9
@@ -478,14 +462,14 @@ class ComplianceRadarScreen extends ConsumerWidget {
                     ? 'WARNING'
                     : 'CRITICAL';
     final healthMessage = isPendingSetup
-        ? 'Complete your profile to unlock compliance tracking.'
+        ? 'Complete your profile to get started.'
         : score >= 0.9
-            ? 'Your entity compliance health is safe.'
+            ? 'Your compliance is up to date.'
             : score >= 0.75
-                ? 'Some items are due soon.'
+                ? 'Looking good, but needs attention.'
                 : score >= 0.5
-                    ? 'Critical action required soon.'
-                    : 'Action required: resolve overdue items.';
+                    ? 'Immediate action required on pending tasks.'
+                    : 'Critical compliance issues detected!';
 
     // Find the most urgent deadline dynamically
     final urgentReminder = pendingReminders.isEmpty

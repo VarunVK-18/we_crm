@@ -67,7 +67,7 @@ export class McaFormComponent implements OnInit, OnDestroy {
   ngOnDestroy() {}
 
   loadExistingData(id: string) {
-    this.api.get<any>(`orders/${id}/form-details`).subscribe({
+    this.api.get<any>(`orders/${id}/prefill`).subscribe({
       next: (res: any) => {
         if (res && res.data) {
           this.status = res.data.status;

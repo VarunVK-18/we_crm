@@ -1171,6 +1171,107 @@ exports.getOrderFormDetails = async (req, res) => {
     res.status(500).json({ message: 'Server error while fetching form details.', error: error.message });
   }
 };
+exports.getPrefillData = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const Checklist = require('../models/Checklist');
+    const EntityProfile = require('../models/EntityProfile');
+    
+    const order = await Checklist.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+    
+    const entityName = order.entity_name || order.company_name || 'default';
+
+    // 1. Fetch current order data
+    let formData = {};
+    if (order.details && order.details.dynamicForm) {
+      formData = order.details.dynamicForm.dynamicData || order.details.dynamicForm;
+    } else if (order.details && order.details.mcaForm) {
+      formData = order.details.mcaForm;
+    }
+
+    const orderDocs = [];
+    if (order.details && order.details.dynamicDocs) {
+      orderDocs.push(...order.details.dynamicDocs);
+    } else if (order.details && order.details.mcaDocs) {
+      orderDocs.push(...order.details.mcaDocs);
+    }
+
+    // 2. Fetch Entity Profile data
+    let profileData = {};
+    let profileDocs = [];
+    const uid = order.client_id ? order.client_id.toString() : (req.user ? req.user.id : null);
+    
+    if (uid) {
+      const profile = await EntityProfile.findOne({ uid, entityName });
+      if (profile) {
+        // Collect known fields
+        const knownFields = ['pan', 'email', 'phone', 'address', 'cin', 'incorporationDate', 'gstin', 'directorName', 'directorEmail', 'directorPhone', 'directorPan', 'directorDin', 'bankAccount', 'bankIfsc', 'bankName', 'tan'];
+        knownFields.forEach(k => { if (profile[k]) profileData[k] = profile[k]; });
+        
+        // Merge dynamic data
+        if (profile.dynamicProfileData) {
+          Object.assign(profileData, profile.dynamicProfileData);
+        }
+
+        // Collect documents
+        if (profile.panCardDocId) profileDocs.push({ documentType: 'pan', name: profile.panCardDocName, fileUrl: `/api/documents/${profile.panCardDocId}` });
+        if (profile.aadhaarDocId) profileDocs.push({ documentType: 'aadhaar', name: profile.aadhaarDocName, fileUrl: `/api/documents/${profile.aadhaarDocId}` });
+        if (profile.incorpCertDocId) profileDocs.push({ documentType: 'coi', name: profile.incorpCertDocName, fileUrl: `/api/documents/${profile.incorpCertDocId}` });
+        if (profile.addressProofDocId) profileDocs.push({ documentType: 'addressProof', name: profile.addressProofDocName, fileUrl: `/api/documents/${profile.addressProofDocId}` });
+        if (profile.directorPhotoDocId) profileDocs.push({ documentType: 'directorPhoto', name: profile.directorPhotoDocName, fileUrl: `/api/documents/${profile.directorPhotoDocId}` });
+        if (profile.bankDocId) profileDocs.push({ documentType: 'bankStatement', name: profile.bankDocName, fileUrl: `/api/documents/${profile.bankDocId}` });
+        if (profile.gstDocId) profileDocs.push({ documentType: 'gst', name: profile.gstDocName, fileUrl: `/api/documents/${profile.gstDocId}` });
+        if (profile.moaDocId) profileDocs.push({ documentType: 'moa', name: profile.moaDocName, fileUrl: `/api/documents/${profile.moaDocId}` });
+        if (profile.aoaDocId) profileDocs.push({ documentType: 'aoa', name: profile.aoaDocName, fileUrl: `/api/documents/${profile.aoaDocId}` });
+        if (profile.salesInvoiceDocId) profileDocs.push({ documentType: 'salesInvoice', name: profile.salesInvoiceDocName, fileUrl: `/api/documents/${profile.salesInvoiceDocId}` });
+        if (profile.purchaseBillsDocId) profileDocs.push({ documentType: 'purchaseBills', name: profile.purchaseBillsDocName, fileUrl: `/api/documents/${profile.purchaseBillsDocId}` });
+      }
+    }
+
+    // 3. Merge Strategy (Order wins over Entity Profile)
+    const finalData = { ...profileData, ...formData };
+    
+    // Map order docs format
+    const mappedOrderDocs = orderDocs.map(d => {
+      const n = (d.name || '').toLowerCase();
+      return {
+        documentType: n.includes("incorporation") || n.includes("coi") ? "coi" :
+                      n.includes("pan") ? "pan" :
+                      n.includes("aadhaar") ? "aadhaar" :
+                      n.includes("moa") ? "moa" :
+                      n.includes("aoa") ? "aoa" :
+                      n.includes("bank") ? "bankStatement" :
+                      n.includes("sales") ? "salesInvoice" :
+                      n.includes("purchase") ? "purchaseBills" :
+                      n.includes("address") || n.includes("electricity") ? "addressProof" :
+                      n.includes("photo") ? "directorPhoto" : "other",
+        name: d.name,
+        fileUrl: d.fileUrl
+      };
+    });
+
+    // Merge docs (order docs overwrite profile docs for the same type)
+    const finalDocsMap = new Map();
+    profileDocs.forEach(d => finalDocsMap.set(d.documentType, d));
+    mappedOrderDocs.forEach(d => finalDocsMap.set(d.documentType, d));
+
+    res.json({
+      success: true,
+      data: {
+        status: order.status,
+        formDetails: finalData,
+        uploadedDocuments: Array.from(finalDocsMap.values())
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching prefill data:', error);
+    res.status(500).json({ message: 'Server error while fetching prefill details.', error: error.message });
+  }
+};
 
 // Submit GST Compliance Form
 exports.submitGstComplianceForm = async (req, res) => {
@@ -2007,27 +2108,56 @@ exports.submitDynamicForm = async (req, res) => {
     if (order.client_id) {
       const user = await User.findById(order.client_id);
       if (user) {
-        const currentProfile = user.dynamicProfileData || {};
-
-        // Use the entity name from the order to namespace profile data
+        const EntityProfile = require('../models/EntityProfile');
         const entityName = order.entity_name || order.company_name || 'default';
-        const entityProfile = currentProfile[entityName] || {};
+        
+        let profile = await EntityProfile.findOne({ uid: user._id.toString(), entityName });
+        if (!profile) {
+          profile = new EntityProfile({ uid: user._id.toString(), entityName });
+        }
 
-        // Use the parsed dynamicData if available, otherwise fallback to root formData
         const newProfileData = formData.dynamicData || formData;
+        const knownFields = ['pan', 'email', 'phone', 'address', 'cin', 'incorporationDate', 'gstin', 'directorName', 'directorEmail', 'directorPhone', 'directorPan', 'directorDin', 'bankAccount', 'bankIfsc', 'bankName', 'tan'];
 
-        // Merge simple key-value pairs under the entity namespace
+        // Merge key-value pairs
         for (const [key, value] of Object.entries(newProfileData)) {
           if (value !== undefined && value !== null && value !== '') {
-            entityProfile[key] = value;
+            if (knownFields.includes(key)) {
+              profile[key] = value;
+            } else {
+              profile.dynamicProfileData = profile.dynamicProfileData || {};
+              profile.dynamicProfileData[key] = value;
+            }
+          }
+        }
+        profile.markModified('dynamicProfileData');
+
+        // Merge uploaded docs into EntityProfile
+        if (uploadedDocs && uploadedDocs.length > 0) {
+          for (const doc of uploadedDocs) {
+            const docName = (doc.name || '').toLowerCase();
+            const fileUrl = doc.fileUrl || '';
+            const docIdMatch = fileUrl.match(/\/api\/documents\/([a-fA-F0-9]{24})/);
+            const docId = docIdMatch ? docIdMatch[1] : '';
+
+            if (docId) {
+              if (docName.includes('pan')) { profile.panCardDocId = docId; profile.panCardDocName = doc.name; }
+              else if (docName.includes('aadhaar')) { profile.aadhaarDocId = docId; profile.aadhaarDocName = doc.name; }
+              else if (docName.includes('incorporation') || docName.includes('coi')) { profile.incorpCertDocId = docId; profile.incorpCertDocName = doc.name; }
+              else if (docName.includes('address') || docName.includes('electricity')) { profile.addressProofDocId = docId; profile.addressProofDocName = doc.name; }
+              else if (docName.includes('photo')) { profile.directorPhotoDocId = docId; profile.directorPhotoDocName = doc.name; }
+              else if (docName.includes('bank')) { profile.bankDocId = docId; profile.bankDocName = doc.name; }
+              else if (docName.includes('gst')) { profile.gstDocId = docId; profile.gstDocName = doc.name; }
+              else if (docName.includes('moa')) { profile.moaDocId = docId; profile.moaDocName = doc.name; }
+              else if (docName.includes('aoa')) { profile.aoaDocId = docId; profile.aoaDocName = doc.name; }
+              else if (docName.includes('sales')) { profile.salesInvoiceDocId = docId; profile.salesInvoiceDocName = doc.name; }
+              else if (docName.includes('purchase')) { profile.purchaseBillsDocId = docId; profile.purchaseBillsDocName = doc.name; }
+            }
           }
         }
 
-        currentProfile[entityName] = entityProfile;
-        user.dynamicProfileData = currentProfile;
-        user.markModified('dynamicProfileData');
-        await user.save();
-        console.log(`[SYNC] Synced dynamic profile data for user ${user._id} under entity "${entityName}"`);
+        await profile.save();
+        console.log(`[SYNC] Synced profile data and docs for user ${user._id} under entity "${entityName}" to EntityProfile`);
       }
     }
     

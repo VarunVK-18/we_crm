@@ -406,8 +406,8 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
           }
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Company Profile saved successfully!'),
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('Profile saved successfully! Your compliance score is ${score ?? _complianceScore}%'),
           backgroundColor: AppTheme.deepTeal,
         ));
         ref.invalidate(userProfileProvider);

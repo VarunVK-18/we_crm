@@ -244,6 +244,26 @@ export class Login implements OnInit {
       hasError = true;
     }
 
+    // Validate Phone Number
+    const phoneVal = this.phone().trim();
+    if (!phoneVal) {
+      this.phoneError.set('Phone number is required');
+      hasError = true;
+    } else if (!/^\d+$/.test(phoneVal)) {
+      this.phoneError.set('Phone number must contain only numbers');
+      hasError = true;
+    } else if (phoneVal.length !== 10) {
+      this.phoneError.set('Phone number must be exactly 10 digits');
+      hasError = true;
+    }
+
+    // Validate Service Selection
+    const serviceVal = this.companyType().trim();
+    if (!serviceVal) {
+      this.companyTypeError.set('Please select a service');
+      hasError = true;
+    }
+
     if (hasError) return;
 
     this.isLoading.set(true);

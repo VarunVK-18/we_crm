@@ -4,47 +4,36 @@ const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
-// Helper function to compress a PDF using Ghostscript
+const { compressPdfNative } = require('./compressPdfNative');
+
+// Helper function to compress a PDF using compressPdfNative
 const compressPDF = async (inputBuffer) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Check if Ghostscript is available
-      const gsCommand = os.platform() === 'win32' ? 'gswin64c' : 'gs';
-      
-      const tempInput = path.join(os.tmpdir(), `temp_in_${Date.now()}.pdf`);
-      const tempOutput = path.join(os.tmpdir(), `temp_out_${Date.now()}.pdf`);
-      
-      await fs.writeFile(tempInput, inputBuffer);
-      
-      const command = `${gsCommand} -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH -sOutputFile="${tempOutput}" "${tempInput}"`;
-      
-      exec(command, async (error) => {
-        if (error) {
-          // Ghostscript not found or failed, return original buffer gracefully
-          console.warn('[COMPRESSION] Ghostscript failed or not installed. Skipping PDF compression.');
-          await fs.unlink(tempInput).catch(() => {});
-          return resolve(inputBuffer);
-        }
-        
-        try {
-          const compressedBuffer = await fs.readFile(tempOutput);
-          await fs.unlink(tempInput).catch(() => {});
-          await fs.unlink(tempOutput).catch(() => {});
-          
-          // Only use compressed if it's actually smaller
-          if (compressedBuffer.length < inputBuffer.length) {
-            resolve(compressedBuffer);
-          } else {
-            resolve(inputBuffer);
-          }
-        } catch (readErr) {
-          resolve(inputBuffer); // Fallback
-        }
-      });
-    } catch (err) {
-      resolve(inputBuffer); // Fallback
+  try {
+    const compressedBuffer = await compressPdfNative(inputBuffer);
+    
+    // Only use compressed if it's actually smaller
+    if (compressedBuffer.length < inputBuffer.length) {
+      return compressedBuffer;
     }
-  });
+    return inputBuffer;
+  } catch (err) {
+    // If native rasterization fails (e.g. invalid/encrypted PDF), fallback to pdf-lib structural compression
+    console.warn('[COMPRESSION] Native rasterization failed. Attempting pdf-lib fallback compression.');
+    try {
+      const { PDFDocument } = require('pdf-lib');
+      const pdfDoc = await PDFDocument.load(inputBuffer, { ignoreEncryption: true });
+      const pdfBytes = await pdfDoc.save();
+      const fallbackBuffer = Buffer.from(pdfBytes);
+      
+      if (fallbackBuffer.length < inputBuffer.length) {
+        return fallbackBuffer;
+      }
+    } catch (fallbackErr) {
+      console.warn('[COMPRESSION] pdf-lib fallback also failed or skipped:', fallbackErr.message);
+    }
+    
+    return inputBuffer;
+  }
 };
 
 const compressUploads = async (req, res, next) => {
@@ -66,11 +55,12 @@ const compressUploads = async (req, res, next) => {
           // Compress Image using sharp
           try {
             const compressedBuffer = await sharp(file.buffer)
-              .resize(1920, 1920, {
+              .resize(2500, 2500, {
                 fit: sharp.fit.inside,
                 withoutEnlargement: true
               })
-              .jpeg({ quality: 75, progressive: true }) // Convert/compress to progressive JPEG
+              // Use high visual quality (90) which retains max visual fidelity without ballooning file sizes
+              .jpeg({ quality: 90, progressive: true, chromaSubsampling: '4:4:4' })
               .toBuffer();
               
             // Check if compressed is smaller

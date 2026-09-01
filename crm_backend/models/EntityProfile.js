@@ -46,6 +46,14 @@ const entityProfileSchema = new mongoose.Schema({
   bankDocName: { type: String, default: '' },
   gstDocId: { type: String, default: '' },              // GST certificate
   gstDocName: { type: String, default: '' },
+  moaDocId: { type: String, default: '' },              // MOA document
+  moaDocName: { type: String, default: '' },
+  aoaDocId: { type: String, default: '' },              // AOA document
+  aoaDocName: { type: String, default: '' },
+  salesInvoiceDocId: { type: String, default: '' },     // Sales Invoice
+  salesInvoiceDocName: { type: String, default: '' },
+  purchaseBillsDocId: { type: String, default: '' },    // Purchase Bills
+  purchaseBillsDocName: { type: String, default: '' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('EntityProfile', entityProfileSchema);

@@ -219,27 +219,31 @@
                 [class.error-border]="companyTypeError()"
                 required>
                 <option value="" disabled selected>Select a Service</option>
-                <option value="Private Limited Company">Private Limited Company</option>
-                <option value="Limited Liability Partnership (LLP)">Limited Liability Partnership (LLP)</option>
-                <option value="One Person Company (OPC)">One Person Company (OPC)</option>
-                <option value="Public Limited Company">Public Limited Company</option>
-                <option value="Section 8 Company">Section 8 Company</option>
-                <option value="Nidhi Company">Nidhi Company</option>
-                <option value="Producer Company">Producer Company</option>
-                <option value="Partnership Firm">Partnership Firm</option>
-                <option value="Sole Proprietorship">Sole Proprietorship</option>
-                <option value="GST Registration">GST Registration</option>
+                <option value="Private Limited Incorporation">Private Limited Incorporation</option>
+                <option value="LLP Incorporation">LLP Incorporation</option>
+                <option value="OPC Incorporation">OPC Incorporation</option>
+                <option value="MSME Registration">MSME Registration</option>
+                <option value="Proprietorship Registration">Proprietorship Registration</option>
+                <option value="MCA Compliance">MCA Compliance</option>
+                <option value="TDS Return Filing">TDS Return Filing</option>
+                <option value="PF Registration & Compliance">PF Registration & Compliance</option>
                 <option value="Trademark Registration">Trademark Registration</option>
-                <option value="MSME / Udyam Registration">MSME / Udyam Registration</option>
-                <option value="FSSAI License">FSSAI License</option>
-                <option value="Import Export Code (IEC)">Import Export Code (IEC)</option>
+                <option value="Copyright Registration">Copyright Registration</option>
+                <option value="Patent Registration">Patent Registration</option>
+                <option value="Income Tax Return (ITR)">Income Tax Return (ITR)</option>
+                <option value="GST Registration">GST Registration</option>
+                <option value="GST Returns Filing">GST Returns Filing</option>
+                <option value="GST Cancellation">GST Cancellation</option>
+                <option value="DPIIT Recognition">DPIIT Recognition</option>
                 <option value="ISO Certification">ISO Certification</option>
-                <option value="Digital Signature Certificate (DSC)">Digital Signature Certificate (DSC)</option>
-                <option value="Startup India Registration">Startup India Registration</option>
-                <option value="Legal Entity Identifier (LEI)">Legal Entity Identifier (LEI)</option>
-                <option value="BIS Registration">BIS Registration</option>
+                <option value="FSSAI Registration">FSSAI Registration</option>
+                <option value="DUNS Number">DUNS Number</option>
+                <option value="Import Export Code (IEC)">Import Export Code (IEC)</option>
+                <option value="BIS Certification">BIS Certification</option>
+                <option value="CE Certification">CE Certification</option>
                 <option value="RoHS Certification">RoHS Certification</option>
-                <option value="CE Mark Certification">CE Mark Certification</option>
+                <option value="LEI Registration">LEI Registration</option>
+                <option value="Digital Signature Certificate (DSC)">Digital Signature Certificate (DSC)</option>
               </select>
               <span *ngIf="companyTypeError()" class="validation-error-text">{{ companyTypeError() }}</span>
             </div>
