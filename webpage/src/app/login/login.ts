@@ -1,7 +1,7 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Api } from '../api';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmDialogService } from '../confirm-dialog/confirm-dialog.service';
@@ -27,7 +27,7 @@ export class Login implements OnInit {
   passwordError = signal('');
 
   // Registration state
-  isRegistering = signal(true);
+  isRegistering = signal(false);
 
   // Registration form inputs
   ownerName = signal('');
@@ -56,9 +56,18 @@ export class Login implements OnInit {
   dialogMessage = signal('');
   dialogIsError = signal(true);
 
-  constructor(private router: Router, private api: Api, private confirmDialog: ConfirmDialogService) {}
+  constructor(private router: Router, private api: Api, private confirmDialog: ConfirmDialogService, private route: ActivatedRoute) {}
 
   ngOnInit() {
+    // Check route to set initial form state
+    this.route.url.subscribe(url => {
+      if (url.length > 0 && url[0].path === 'signup') {
+        this.isRegistering.set(true);
+      } else {
+        this.isRegistering.set(false);
+      }
+    });
+
     // Check if user is already logged in
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
@@ -193,12 +202,12 @@ export class Login implements OnInit {
   }
 
   showRegisterForm() {
-    this.isRegistering.set(true);
+    this.router.navigate(['/signup']);
     this.clearErrors();
   }
 
   showLoginForm() {
-    this.isRegistering.set(false);
+    this.router.navigate(['/login']);
     this.clearErrors();
   }
 

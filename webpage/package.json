@@ -24,7 +24,7 @@
     "chart.js": "^4.5.1",
     "docxtemplater": "^3.69.3",
     "docxtemplater-image-module-free": "^1.1.1",
-    "exceljs": "^4.4.0",
+    "exceljs": "^3.4.0",
     "file-saver": "^2.0.5",
     "ng2-charts": "^10.0.0",
     "ng2-pdf-viewer": "^10.4.0",
@@ -47,5 +47,8 @@
     "tailwindcss": "^4.3.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
+  },
+  "overrides": {
+    "xmldom": "npm:@xmldom/xmldom@^0.8.0"
   }
 }

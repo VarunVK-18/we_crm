@@ -69,6 +69,7 @@ import { ClientDynamicFormComponent } from './client/forms/dynamic-form/client-d
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: Login },
+  { path: 'signup', component: Login },
   { path: 'privacypolicy', component: PrivacyPolicy },
   { 
     path: 'dashboard', 

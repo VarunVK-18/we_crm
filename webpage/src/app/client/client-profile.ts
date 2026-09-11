@@ -742,13 +742,13 @@ export class ClientProfile implements OnInit, OnDestroy {
   toggleEdit(card: string) {
     if (this.editingCard() !== card) {
       // Enter edit mode, copy user data
-      const current = this.user();
+      const current = this.activeEntity() || this.user();
       this.editData = {
-        company_name: current?.company_name || '',
+        company_name: current?.entityName || current?.company_name || '',
         owner_name: current?.owner_name || '',
         email: current?.email || '',
         phone: current?.phone || '',
-        business_type: current?.business_type || '',
+        business_type: current?.entityType || current?.business_type || '',
         address: current?.address || '',
         pan: current?.pan || '',
         pan_name: current?.pan_name || '',
@@ -757,12 +757,12 @@ export class ClientProfile implements OnInit, OnDestroy {
         gstin: current?.gstin || '',
         tan: current?.tan || '',
         cin: current?.cin || '',
-        incorporation_date: current?.incorporation_date || '',
+        incorporation_date: current?.date_of_incorporation || current?.incorporation_date || '',
         company_email: current?.company_email || '',
         main_division_description: current?.main_division_description || '',
         authorised_capital: current?.authorised_capital || '',
         paidup_capital: current?.paidup_capital || '',
-        total_obligation_of_contribution: current?.total_obligation_of_contribution || '',
+        total_obligation_of_contribution: current?.obligation_of_contribution || current?.total_obligation_of_contribution || '',
         address_type: current?.address_type || '',
         street_address_line_1: current?.street_address_line_1 || '',
         street_address_line_2: current?.street_address_line_2 || '',
@@ -770,7 +770,8 @@ export class ClientProfile implements OnInit, OnDestroy {
         state: current?.state || '',
         postal_code: current?.postal_code || '',
         main_division_no: current?.main_division_no || '',
-        company_type_expanded: current?.company_type_expanded || '',
+        company_type_expanded: current?.entityType || current?.company_type_expanded || '',
+        company_type: current?.company_type || '',
         class_of_company: current?.class_of_company || '',
         company_category: current?.company_category || '',
         company_subcategory: current?.company_subcategory || '',
@@ -798,13 +799,68 @@ export class ClientProfile implements OnInit, OnDestroy {
     if (!userId) return;
 
     this.isSaving.set(true);
-    this.api.patch<any>(`users/profile/${userId}`, this.editData).subscribe({
+    let payload: any = { ...this.editData };
+    
+    const sel = this.selectedEntity();
+    if (sel !== 'All') {
+      const u = this.user();
+      const entities = [...(u.client_entities || [])];
+      const idx = entities.findIndex(e => e.entityName && e.entityName.trim().toLowerCase() === sel.toLowerCase());
+      if (idx !== -1) {
+        entities[idx] = {
+          ...entities[idx],
+          entityName: payload.company_name,
+          entityType: payload.business_type || payload.company_type_expanded,
+          cin: payload.cin,
+          pan: payload.pan,
+          tan: payload.tan,
+          gstin: payload.gstin,
+          registration_number: payload.registration_number,
+          incorporationDate: payload.incorporation_date,
+          roc: payload.roc,
+          company_origin: payload.company_origin,
+          company_type: payload.company_type,
+          class_of_company: payload.class_of_company,
+          company_category: payload.company_category,
+          company_subcategory: payload.company_subcategory,
+          main_division_description: payload.main_division_description,
+          main_division_no: payload.main_division_no,
+          authorised_capital: payload.authorised_capital,
+          paidup_capital: payload.paidup_capital,
+          obligation_of_contribution: payload.total_obligation_of_contribution,
+          address_type: payload.address_type,
+          street_address_line_1: payload.street_address_line_1,
+          street_address_line_2: payload.street_address_line_2,
+          city: payload.city,
+          state: payload.state,
+          postal_code: payload.postal_code,
+          company_email: payload.company_email,
+          pan_name: payload.pan_name,
+          pan_father_name: payload.pan_father_name,
+          pan_dob: payload.pan_dob,
+          directorName: payload.owner_name,
+          email: payload.email,
+          phone: payload.phone
+        };
+        payload = { client_entities: entities };
+      }
+    }
+
+    this.api.patch<any>(`users/profile/${userId}`, payload).subscribe({
       next: (res) => {
         if (res.success && res.user) {
           this.user.set(res.user);
           localStorage.setItem('user', JSON.stringify(res.user));
-          this.directors.set(this.editData.directors);
+          if (this.editData.directors) {
+            this.directors.set(this.editData.directors);
+          }
           this.editingCard.set(null);
+          this.confirmDialog.confirm({
+            title: 'Success',
+            message: 'Profile updated successfully!',
+            hideCancel: true,
+            confirmText: 'OK'
+          });
         }
         this.isSaving.set(false);
       },

@@ -1494,7 +1494,7 @@ const editClientProfile = async (req, res) => {
       total_obligation_of_contribution, address_type, street_address_line_1, street_address_line_2,
       city, state, postal_code, main_division_no, company_type_expanded, class_of_company,
       company_category, company_subcategory, registration_number, company_origin, roc,
-      pan, pan_name, pan_father_name, pan_dob, tan, cin, gstin, website
+      pan, pan_name, pan_father_name, pan_dob, tan, cin, gstin, website, client_entities
     } = req.body;
     
     // Only update allowed fields
@@ -1532,7 +1532,8 @@ const editClientProfile = async (req, res) => {
       cin,
       gstin,
       website,
-      ...(directors !== undefined && { directors })
+      ...(directors !== undefined && { directors }),
+      ...(client_entities !== undefined && { client_entities })
     }, { new: true });
 
     if (!user) {
