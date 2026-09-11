@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const BucketRequest = require('../models/BucketRequest');
+const EntityProfile = require('../models/EntityProfile');
 
 // @desc    Receive client onboarding data from DealVoice / Softrate Sales CRM
 // @route   POST /api/intake/onboard
@@ -164,6 +165,43 @@ const onboardFromDealVoice = async (req, res) => {
         console.log(`[Intake] Added entity "${trimmedEntity}" to client ${clientUser.email}`);
       }
     }
+
+    // --- Seed EntityProfile from DealVoice data so autofill works immediately ---
+    try {
+      const profileEntityName = (entityName && entityName.trim()) || companyName || clientUser.company_name || 'default';
+      const profileUid = clientUser._id.toString();
+
+      const profileUpdates = {};
+      if (ownerName)           profileUpdates.directorName   = ownerName;
+      if (phone)               profileUpdates.phone          = phone;
+      if (email)               profileUpdates.email          = email.trim();
+      if (cin)                 profileUpdates.cin            = cin;
+      if (incorporationDate)   profileUpdates.incorporationDate = incorporationDate;
+      if (address)             profileUpdates.address        = address;
+
+      // Seed first director details if provided
+      if (Array.isArray(directors) && directors.length > 0) {
+        const d = directors[0];
+        if (d.pan)                profileUpdates.directorPan    = d.pan;
+        if (d.din)                profileUpdates.directorDin    = d.din;
+        if (d.email)              profileUpdates.directorEmail  = d.email;
+        if (d.phone || d.mobileNumber) profileUpdates.directorPhone = d.phone || d.mobileNumber;
+        const dirFullName = [d.firstName, d.lastName].filter(Boolean).join(' ');
+        if (dirFullName && !profileUpdates.directorName) profileUpdates.directorName = dirFullName;
+      }
+
+      if (Object.keys(profileUpdates).length > 0) {
+        await EntityProfile.findOneAndUpdate(
+          { uid: profileUid, entityName: profileEntityName },
+          { $setOnInsert: { uid: profileUid, entityName: profileEntityName }, $set: profileUpdates },
+          { upsert: true, new: true }
+        );
+        console.log(`[Intake] Seeded EntityProfile for uid=${profileUid}, entity="${profileEntityName}"`);
+      }
+    } catch (profileErr) {
+      console.error('[Intake] EntityProfile seed error (non-fatal):', profileErr.message);
+    }
+    // -----------------------------------------------------------------
 
     // Create a BucketRequest so all client managers are notified
     const existing = await BucketRequest.findOne({

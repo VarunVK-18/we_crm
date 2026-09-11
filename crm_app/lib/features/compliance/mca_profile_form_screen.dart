@@ -547,121 +547,9 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
 
 
 
-                  // ─── Section 1: Business Information ──────────────────────
-                  _buildSectionContainer(
-                    title: 'Business Information',
-                    icon: Icons.business_outlined,
-                    children: [
-                      _buildField('Company / Business Name', '', _companyNameController, isRequired: true),
-                      _buildField('Company PAN', '', _companyPanController, isRequired: true),
-                      _buildField('CIN (Company Identification No.)', '', _cinController),
-                      _buildField('Date of Incorporation', '', _incorporationDateController, isDate: true),
-                      _buildDropdownField('Type of Business Entity', _businessType, _businessTypes,
-                          (val) => setState(() => _businessType = val), isRequired: true),
-                      _buildField('Nature of Business / Activity', '', _natureOfBusinessController, isRequired: true),
-                      _buildRadioGroup(
-                        'Expected Annual Turnover',
-                        '',
-                        ['Less than ₹20 Lakhs', '₹20 Lakhs – ₹50 Lakhs', 'Above ₹50 Lakhs'],
-                        _annualTurnover,
-                        (v) => setState(() => _annualTurnover = v),
-                      ),
-                    ],
-                  ),
-
-                  // ─── Section 2: Contact & Address ─────────────────────────
-                  _buildSectionContainer(
-                    title: 'Contact & Address',
-                    icon: Icons.location_on_outlined,
-                    children: [
-                      _buildField('Registered Office Address', '', _registeredAddressController,
-                          isRequired: true, maxLines: 3),
-                      Row(
-                        children: [
-                          Expanded(child: _buildField('City', '', _cityController, isRequired: true)),
-                          const SizedBox(width: 12),
-                          Expanded(child: _buildField('State', '', _stateController, isRequired: true)),
-                        ],
-                      ),
-                      _buildField('PIN Code', '', _postalCodeController,
-                          isRequired: true, keyboardType: TextInputType.number),
-                      _buildField('Company Email', '', _companyEmailController,
-                          isRequired: true, keyboardType: TextInputType.emailAddress),
-                      PhoneInputField(
-                        controller: _companyPhoneController,
-                        label: 'Company Phone Number',
-                        isRequired: true,
-                      ),
-                    ],
-                  ),
-
-                  // ─── Section 3: Director / Authorized Signatory ───────────
-                  _buildSectionContainer(
-                    title: 'Director / Authorized Signatory',
-                    icon: Icons.person_outline,
-                    children: [
-                      _buildField('Director / Proprietor Name', '', _directorNameController, isRequired: true),
-                      _buildField('Director DIN', '', _directorDinController),
-                      _buildField('Director PAN', '', _directorPanController),
-                      _buildField('Director Aadhaar Number', '', _directorAadhaarController,
-                          keyboardType: TextInputType.number),
-                      _buildField('Director Email', '', _directorEmailController,
-                          keyboardType: TextInputType.emailAddress),
-                      PhoneInputField(
-                        controller: _directorMobileController,
-                        label: 'Director Mobile',
-                      ),
-                    ],
-                  ),
-
-                  // ─── Section 4: Registration Details (optional) ───────────
-                  _buildSectionContainer(
-                    title: 'Registration Details',
-                    icon: Icons.verified_outlined,
-                    subtitle: 'Optional — fill whatever applies to your business',
-                    children: [
-                      _buildField('GSTIN', '', _gstinController),
-                      _buildField('UDYAM / MSME Number', '', _udyamNumberController),
-                      _buildField('Trademark Registration No.', '', _trademarkNoController),
-                      _buildField('ISO Certificate No.', '', _isoCertNoController),
-                      _buildField('DPIIT Reference No.', '', _dpiitRefNoController),
-                      _buildField('MCA Portal Username', '', _mcaUsernameController),
-                      _buildPasswordField('MCA Portal Password', '', _mcaPasswordController),
-                    ],
-                  ),
-
-                  // ─── Section 5: Documents ─────────────────────────────────
-                  _buildSectionContainer(
-                    title: 'Documents',
-                    icon: Icons.attach_file_outlined,
-                    children: [
-                      _buildFileRow('Certificate of Incorporation (COI)', _coiPath,
-                          () => _pickFile((p) => setState(() => _coiPath = p)), isRequired: true),
-                      _buildFileRow('Company PAN Card', _panPath,
-                          () => _pickFile((p) => setState(() => _panPath = p)), isRequired: true),
-                      _buildFileRow('MOA (Memorandum of Association)', _moaPath,
-                          () => _pickFile((p) => setState(() => _moaPath = p))),
-                      _buildFileRow('AOA (Articles of Association)', _aoaPath,
-                          () => _pickFile((p) => setState(() => _aoaPath = p))),
-                      _buildFileRow('Director Aadhaar', _aadhaarPath,
-                          () => _pickFile((p) => setState(() => _aadhaarPath = p))),
-                      _buildFileRow('Director PAN', _directorPanPath,
-                          () => _pickFile((p) => setState(() => _directorPanPath = p))),
-                      _buildFileRow('GST Certificate', _gstCertPath,
-                          () => _pickFile((p) => setState(() => _gstCertPath = p))),
-                      _buildFileRow('UDYAM / MSME Certificate', _udyamCertPath,
-                          () => _pickFile((p) => setState(() => _udyamCertPath = p))),
-                      _buildFileRow('Trademark Certificate', _trademarkCertPath,
-                          () => _pickFile((p) => setState(() => _trademarkCertPath = p))),
-                      _buildFileRow('ISO Certificate', _isoCertPath,
-                          () => _pickFile((p) => setState(() => _isoCertPath = p))),
-                      _buildFileRow('Last FY Bank Statement', _bankStatementPath,
-                          () => _pickFile((p) => setState(() => _bankStatementPath = p))),
-                    ],
-                  ),
-                  
+                  // ─── Dynamic Fields from FormSchema ───────────────────────
                   _buildDynamicFields(),
-
+                  
                   const SizedBox(height: 8),
                   ElevatedButton(
                     onPressed: _submitDetails,
@@ -688,9 +576,9 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
     if (_schema == null || _schema!.fields.isEmpty) return const SizedBox.shrink();
 
     return _buildSectionContainer(
-      title: 'Additional Details',
-      icon: Icons.more_horiz,
-      subtitle: 'Custom fields requested by the administration',
+      title: 'Company Details',
+      icon: Icons.list_alt,
+      subtitle: 'Provide your company credentials and details',
       children: _schema!.fields.map((field) {
         if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
           TextInputType kbType = TextInputType.text;

@@ -62,7 +62,7 @@ export class NicFinder {
       }
     }
 
-    const limited = Array.from(matchedSet).slice(0, 100);
+    const limited = Array.from(matchedSet);
 
     const groups = limited.map(parent => {
       let children: NicCode[] = [];
@@ -90,18 +90,18 @@ export class NicFinder {
   }
 
   ngOnInit() {
-    this.http.get<any>('assets/json/NIC_2008_classification.json').subscribe({
+    this.http.get<any>('assets/json/NIC_major_content_complete.json').subscribe({
       next: (data) => {
         const codes: NicCode[] = [];
-        const sections = data?.NIC_2008?.sections || [];
+        const sections = data?.sections || [];
         for (const sec of sections) {
           for (const div of sec.divisions || []) {
-            if (div.division) {
+            if (div.code) {
               codes.push({
-                code: div.division,
+                code: div.code,
                 description: div.title,
                 type: 'Division',
-                section: sec.section || '',
+                section: sec.code || '',
                 sectionTitle: sec.title || ''
               });
             }
@@ -109,9 +109,9 @@ export class NicFinder {
               if (grp.code) {
                 codes.push({
                   code: grp.code,
-                  description: grp.description,
+                  description: grp.title,
                   type: 'Group',
-                  section: sec.section || '',
+                  section: sec.code || '',
                   sectionTitle: sec.title || ''
                 });
               }
@@ -119,19 +119,19 @@ export class NicFinder {
                 if (cls.code) {
                   codes.push({
                     code: cls.code,
-                    description: cls.description,
+                    description: cls.title,
                     type: 'Class',
-                    section: sec.section || '',
+                    section: sec.code || '',
                     sectionTitle: sec.title || ''
                   });
                 }
-                for (const sub of cls.sub_classes || []) {
+                for (const sub of cls.subclasses || []) {
                   if (sub.code) {
                     codes.push({
                       code: sub.code,
-                      description: sub.description,
+                      description: sub.title,
                       type: 'Sub-class',
-                      section: sec.section || '',
+                      section: sec.code || '',
                       sectionTitle: sec.title || ''
                     });
                   }

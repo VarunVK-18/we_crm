@@ -1,6 +1,53 @@
 import { DocumentMatcher } from './document-matcher';
 
 export class AutoFillUtils {
+
+  /**
+   * Main autofill entry — now fetches EntityProfile from the backend first.
+   * EntityProfile is the single source of truth updated on every form submission.
+   * Falls back to the User model (from DealVoice seed) if EntityProfile is empty.
+   */
+  static async autoFillWithProfile(
+    component: any,
+    entityName: string,
+    user: any,
+    apiService: any // ApiService instance so we can call GET /entity-profile
+  ) {
+    try {
+      const profileRes = await (apiService.get(`entity-profile?entityName=${encodeURIComponent(entityName)}`) as any).toPromise();
+      const profile = profileRes?.profile;
+
+      if (profile && Object.keys(profile).length > 0) {
+        // --- EntityProfile (freshest data: updated on every form submit) ---
+        this.setIfPropertyExists(component, ['panNumber', 'pan', 'companyPan'],                    profile.pan);
+        this.setIfPropertyExists(component, ['gst', 'gstNumber', 'gstin'],                         profile.gstin);
+        this.setIfPropertyExists(component, ['address', 'companyAddress', 'businessAddress', 'officeAddress'], profile.address);
+        this.setIfPropertyExists(component, ['tan', 'tanNumber'],                                  profile.tan);
+        this.setIfPropertyExists(component, ['cin', 'cinNumber'],                                  profile.cin);
+        this.setIfPropertyExists(component, ['incorporationDate'],                                 profile.incorporationDate);
+        this.setIfPropertyExists(component, ['email', 'businessEmail', 'companyEmail'],            profile.email);
+        this.setIfPropertyExists(component, ['phone', 'mobile', 'mobileNumber', 'contactNumber'],  profile.phone);
+        this.setIfPropertyExists(component, ['bankAccount', 'bankAccountNumber'],                  profile.bankAccount);
+        this.setIfPropertyExists(component, ['bankIfsc', 'ifscCode'],                              profile.bankIfsc);
+        this.setIfPropertyExists(component, ['bankName'],                                          profile.bankName);
+
+        // Director details from EntityProfile
+        this.setIfPropertyExists(component, ['directorName', 'dir1FullName', 'ownerName'],         profile.directorName);
+        this.setIfPropertyExists(component, ['directorEmail', 'dir1Email', 'dir1Mail'],            profile.directorEmail);
+        this.setIfPropertyExists(component, ['directorPhone', 'dir1Phone', 'dir1Mobile'],          profile.directorPhone);
+        this.setIfPropertyExists(component, ['directorPan', 'dir1Pan'],                            profile.directorPan);
+        this.setIfPropertyExists(component, ['directorDin', 'dir1Din'],                            profile.directorDin);
+      } else {
+        // Fallback: read from User model (DealVoice seed data)
+        this.autoFillTextData(component, entityName, user);
+      }
+    } catch (_) {
+      // If API fails, gracefully fall back to user model
+      this.autoFillTextData(component, entityName, user);
+    }
+  }
+
+  /** Legacy autofill from the User model — kept for backward compatibility. */
   static autoFillTextData(component: any, entityName: string, user: any) {
     if (!user) return;
     
@@ -23,12 +70,11 @@ export class AutoFillUtils {
     }
 
     // 2. Try to find the associated director details for personal info
-    // For now, if directors exist, we'll just take the first director (or owner) to populate personal details
     if (user.directors && user.directors.length > 0) {
       const mainDirector = user.directors[0];
       this.setIfPropertyExists(component, ['aadhaar', 'aadhaarNumber', 'ownerAadhaar'], mainDirector.aadhaar);
       if (!component.panNumber && !component.pan) {
-         this.setIfPropertyExists(component, ['panNumber', 'pan', 'ownerPan'], mainDirector.pan); // fallback to director pan if entity pan is missing
+         this.setIfPropertyExists(component, ['panNumber', 'pan', 'ownerPan'], mainDirector.pan);
       }
       this.setIfPropertyExists(component, ['mobile', 'mobileNumber', 'phone', 'contactNumber'], mainDirector.mobileNumber || mainDirector.phone);
       this.setIfPropertyExists(component, ['email', 'emailId', 'personalEmail'], mainDirector.email);

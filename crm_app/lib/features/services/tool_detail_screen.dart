@@ -138,50 +138,55 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
   Future<void> _loadNicData() async {
     setState(() => _isLoadingNic = true);
     try {
-      final String raw = await DefaultAssetBundle.of(context).loadString('assets/json/NIC_2008_classification.json');
+      final String raw = await DefaultAssetBundle.of(context).loadString('assets/json/NIC_major_content_complete.json');
       final parsed = json.decode(raw) as Map<String, dynamic>;
-      final sections = (parsed['NIC_2008']?['sections'] as List?) ?? [];
+      final sections = (parsed['sections'] as List?) ?? [];
       final List<Map<String, dynamic>> divisions = [];
       final List<Map<String, dynamic>> flat = [];
       for (final section in sections) {
         for (final div in (section['divisions'] as List? ?? [])) {
-          final divMap = {
-            'division': div['division'],
-            'title': div['title'],
-            'groups': div['groups'] ?? [],
-          };
-          divisions.add(divMap);
-          // build flat list for search
+          final List<Map<String, dynamic>> newGroups = [];
           for (final g in (div['groups'] as List? ?? [])) {
-            flat.add({
-              'code': g['code'],
-              'description': g['description'] ?? '',
-              'level': 'Group',
-              'divCode': div['division'],
-              'divTitle': div['title'],
-            });
+            final List<Map<String, dynamic>> newClasses = [];
             for (final c in (g['classes'] as List? ?? [])) {
-              flat.add({
-                'code': c['code'],
-                'description': c['description'] ?? '',
-                'level': 'Class',
-                'divCode': div['division'],
-                'divTitle': div['title'],
-                'groupCode': g['code'],
-              });
-              for (final s in (c['sub_classes'] as List? ?? [])) {
+              final List<Map<String, dynamic>> newSubClasses = [];
+              for (final s in (c['subclasses'] as List? ?? [])) {
+                newSubClasses.add({'code': s['code'], 'description': s['title'] ?? ''});
                 flat.add({
                   'code': s['code'],
-                  'description': s['description'] ?? '',
+                  'description': s['title'] ?? '',
                   'level': 'Sub-class',
-                  'divCode': div['division'],
+                  'divCode': div['code'],
                   'divTitle': div['title'],
                   'groupCode': g['code'],
                   'classCode': c['code'],
                 });
               }
+              newClasses.add({'code': c['code'], 'description': c['title'] ?? '', 'sub_classes': newSubClasses});
+              flat.add({
+                'code': c['code'],
+                'description': c['title'] ?? '',
+                'level': 'Class',
+                'divCode': div['code'],
+                'divTitle': div['title'],
+                'groupCode': g['code'],
+              });
             }
+            newGroups.add({'code': g['code'], 'description': g['title'] ?? '', 'classes': newClasses});
+            flat.add({
+              'code': g['code'],
+              'description': g['title'] ?? '',
+              'level': 'Group',
+              'divCode': div['code'],
+              'divTitle': div['title'],
+            });
           }
+          final divMap = {
+            'division': div['code'],
+            'title': div['title'],
+            'groups': newGroups,
+          };
+          divisions.add(divMap);
         }
       }
       // Sort divisions numerically
@@ -725,7 +730,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
           _nicSearchResults = _nicFlat.where((item) {
             return (item['code'] as String).toLowerCase().contains(lq) ||
                    (item['description'] as String).toLowerCase().contains(lq);
-          }).take(60).toList();
+          }).toList();
         }
       });
     }

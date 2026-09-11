@@ -292,7 +292,7 @@ export class PfForm implements OnInit {
 
   onEntityNameChange(newName: string) {
     if (this.currentUser) {
-      AutoFillUtils.autoFillTextData(this, newName, this.currentUser);
+      AutoFillUtils.autoFillWithProfile(this, newName, this.currentUser, this.api);
     }
   }
 }

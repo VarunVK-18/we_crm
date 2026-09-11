@@ -2,6 +2,68 @@ const ServiceOrder = require('../models/ServiceOrder');
 const User = require('../models/User');
 const { getNextServiceId } = require('../utils/counterHelper');
 
+// --- Profile Sync Helper Added ---
+const syncProfileData = async (order, formData, uploadedDocs) => {
+  try {
+    const User = require('../models/User');
+    if (!order || !order.client_id) return;
+    const user = await User.findById(order.client_id);
+    if (user) {
+      const EntityProfile = require('../models/EntityProfile');
+      const entityName = order.entity_name || order.company_name || 'default';
+      
+      let profile = await EntityProfile.findOne({ uid: user._id.toString(), entityName });
+      if (!profile) {
+        profile = new EntityProfile({ uid: user._id.toString(), entityName });
+      }
+
+      const newProfileData = formData.dynamicData || formData;
+      const knownFields = ['pan', 'email', 'phone', 'address', 'cin', 'incorporationDate', 'gstin', 'directorName', 'directorEmail', 'directorPhone', 'directorPan', 'directorDin', 'bankAccount', 'bankIfsc', 'bankName', 'tan'];
+
+      for (const [key, value] of Object.entries(newProfileData)) {
+        if (value !== undefined && value !== null && value !== '') {
+          if (knownFields.includes(key)) {
+            profile[key] = value;
+          } else {
+            profile.dynamicProfileData = profile.dynamicProfileData || {};
+            profile.dynamicProfileData[key] = value;
+          }
+        }
+      }
+      profile.markModified('dynamicProfileData');
+
+      if (uploadedDocs && uploadedDocs.length > 0) {
+        for (const doc of uploadedDocs) {
+          const docName = (doc.name || '').toLowerCase();
+          const fileUrl = doc.fileUrl || '';
+          const docIdMatch = fileUrl.match(/\/api\/documents\/([a-fA-F0-9]{24})/);
+          const docId = docIdMatch ? docIdMatch[1] : '';
+
+          if (docId) {
+            if (docName.includes('pan')) { profile.panCardDocId = docId; profile.panCardDocName = doc.name; }
+            else if (docName.includes('aadhaar')) { profile.aadhaarDocId = docId; profile.aadhaarDocName = doc.name; }
+            else if (docName.includes('incorporation') || docName.includes('coi')) { profile.incorpCertDocId = docId; profile.incorpCertDocName = doc.name; }
+            else if (docName.includes('address') || docName.includes('electricity')) { profile.addressProofDocId = docId; profile.addressProofDocName = doc.name; }
+            else if (docName.includes('photo')) { profile.directorPhotoDocId = docId; profile.directorPhotoDocName = doc.name; }
+            else if (docName.includes('bank')) { profile.bankDocId = docId; profile.bankDocName = doc.name; }
+            else if (docName.includes('gst')) { profile.gstDocId = docId; profile.gstDocName = doc.name; }
+            else if (docName.includes('moa')) { profile.moaDocId = docId; profile.moaDocName = doc.name; }
+            else if (docName.includes('aoa')) { profile.aoaDocId = docId; profile.aoaDocName = doc.name; }
+            else if (docName.includes('sales')) { profile.salesInvoiceDocId = docId; profile.salesInvoiceDocName = doc.name; }
+            else if (docName.includes('purchase')) { profile.purchaseBillsDocId = docId; profile.purchaseBillsDocName = doc.name; }
+          }
+        }
+      }
+      await profile.save();
+      console.log(`[SYNC] Synced profile data and docs for user ${user._id} under entity "${entityName}" to EntityProfile`);
+    }
+  } catch (err) {
+    console.error('[SYNC ERROR]', err);
+  }
+};
+// ----------------------------------
+
+
 function markClientFormFilled(order) {
   if (order.items && order.items.length > 0) {
     if (order.items[0].title === 'Client Form Filling' && !order.items[0].isChecked) {
@@ -465,6 +527,11 @@ exports.submitDpiitForm = async (req, res) => {
       markClientFormFilled(order);
     }
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -541,6 +608,11 @@ exports.submitIncorpForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -594,6 +666,11 @@ exports.submitTrademarkForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -686,6 +763,11 @@ exports.submitLlpForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -727,6 +809,11 @@ exports.submitMsmeForm = async (req, res) => {
       markClientFormFilled(order);
     }
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -784,6 +871,11 @@ exports.submitGstForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -826,6 +918,11 @@ exports.submitIsoForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -881,6 +978,11 @@ exports.submitleiForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -924,6 +1026,11 @@ exports.submitBisForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -981,6 +1088,11 @@ exports.submitFssaiForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1058,6 +1170,11 @@ exports.submitDscForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1130,6 +1247,11 @@ exports.submitMcaForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1327,6 +1449,11 @@ exports.submitGstComplianceForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1375,6 +1502,11 @@ exports.submitProprietorshipForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1421,6 +1553,11 @@ exports.submitTdsForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1468,6 +1605,11 @@ exports.submitItrForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1523,6 +1665,11 @@ exports.submitCeRohsForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1571,6 +1718,11 @@ exports.submitPfForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1619,6 +1771,11 @@ exports.submitPatentForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1663,6 +1820,11 @@ exports.submitGstCancellationForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1707,6 +1869,11 @@ exports.submitGstFilingForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1753,6 +1920,11 @@ exports.submitIecForm = async (req, res) => {
     order.markModified('details');
     markClientFormFilled(order);
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: '', order });
@@ -1786,6 +1958,11 @@ exports.addFinancialLog = async (req, res) => {
     });
     
     // Note: We no longer add to advanceAmountPaid here because updateOrder already sets it to the exact value.
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     // Try to update checklist as well
@@ -1868,6 +2045,11 @@ exports.submitDunsForm = async (req, res) => {
       markClientFormFilled(order);
     }
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.status(200).json({ success: true, message: 'DUNS form submitted successfully.', order });
@@ -2015,6 +2197,11 @@ exports.submitGstForm = async (req, res) => {
       formFillingItem.checkedAt = new Date();
     }
 
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await checklist.save();
 
     res.status(200).json({ success: true, message: 'GST form submitted successfully' });
@@ -2102,65 +2289,13 @@ exports.submitDynamicForm = async (req, res) => {
         order.markModified('items');
       }
     }
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
-    // Client Profile Sync: Entity-Isolated Autofill capability
-    if (order.client_id) {
-      const user = await User.findById(order.client_id);
-      if (user) {
-        const EntityProfile = require('../models/EntityProfile');
-        const entityName = order.entity_name || order.company_name || 'default';
-        
-        let profile = await EntityProfile.findOne({ uid: user._id.toString(), entityName });
-        if (!profile) {
-          profile = new EntityProfile({ uid: user._id.toString(), entityName });
-        }
-
-        const newProfileData = formData.dynamicData || formData;
-        const knownFields = ['pan', 'email', 'phone', 'address', 'cin', 'incorporationDate', 'gstin', 'directorName', 'directorEmail', 'directorPhone', 'directorPan', 'directorDin', 'bankAccount', 'bankIfsc', 'bankName', 'tan'];
-
-        // Merge key-value pairs
-        for (const [key, value] of Object.entries(newProfileData)) {
-          if (value !== undefined && value !== null && value !== '') {
-            if (knownFields.includes(key)) {
-              profile[key] = value;
-            } else {
-              profile.dynamicProfileData = profile.dynamicProfileData || {};
-              profile.dynamicProfileData[key] = value;
-            }
-          }
-        }
-        profile.markModified('dynamicProfileData');
-
-        // Merge uploaded docs into EntityProfile
-        if (uploadedDocs && uploadedDocs.length > 0) {
-          for (const doc of uploadedDocs) {
-            const docName = (doc.name || '').toLowerCase();
-            const fileUrl = doc.fileUrl || '';
-            const docIdMatch = fileUrl.match(/\/api\/documents\/([a-fA-F0-9]{24})/);
-            const docId = docIdMatch ? docIdMatch[1] : '';
-
-            if (docId) {
-              if (docName.includes('pan')) { profile.panCardDocId = docId; profile.panCardDocName = doc.name; }
-              else if (docName.includes('aadhaar')) { profile.aadhaarDocId = docId; profile.aadhaarDocName = doc.name; }
-              else if (docName.includes('incorporation') || docName.includes('coi')) { profile.incorpCertDocId = docId; profile.incorpCertDocName = doc.name; }
-              else if (docName.includes('address') || docName.includes('electricity')) { profile.addressProofDocId = docId; profile.addressProofDocName = doc.name; }
-              else if (docName.includes('photo')) { profile.directorPhotoDocId = docId; profile.directorPhotoDocName = doc.name; }
-              else if (docName.includes('bank')) { profile.bankDocId = docId; profile.bankDocName = doc.name; }
-              else if (docName.includes('gst')) { profile.gstDocId = docId; profile.gstDocName = doc.name; }
-              else if (docName.includes('moa')) { profile.moaDocId = docId; profile.moaDocName = doc.name; }
-              else if (docName.includes('aoa')) { profile.aoaDocId = docId; profile.aoaDocName = doc.name; }
-              else if (docName.includes('sales')) { profile.salesInvoiceDocId = docId; profile.salesInvoiceDocName = doc.name; }
-              else if (docName.includes('purchase')) { profile.purchaseBillsDocId = docId; profile.purchaseBillsDocName = doc.name; }
-            }
-          }
-        }
-
-        await profile.save();
-        console.log(`[SYNC] Synced profile data and docs for user ${user._id} under entity "${entityName}" to EntityProfile`);
-      }
-    }
-    
     res.status(200).json({ success: true, message: 'Dynamic form submitted successfully.', order });
   } catch (error) {
     console.error('Error submitting Dynamic form:', error);
@@ -2202,6 +2337,11 @@ exports.submitCopyrightForm = async (req, res) => {
     order.form_submitted = true;
     order.status = 'in_progress';
     order.stage = 'workInProgress';
+    
+    if (typeof syncProfileData === 'function') {
+      const _orderObj = typeof order !== 'undefined' ? order : (typeof checklist !== 'undefined' ? checklist : null);
+      if (_orderObj) await syncProfileData(_orderObj, typeof formData !== 'undefined' ? formData : req.body, typeof uploadedDocs !== 'undefined' ? uploadedDocs : []);
+    }
     await order.save();
 
     res.json({ success: true, message: 'Copyright form submitted successfully.', order });
