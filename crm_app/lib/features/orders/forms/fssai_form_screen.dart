@@ -86,7 +86,7 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
   Future<void> _loadEntityPrefill() async {
     final uid = ref.read(authStateProvider).value?.uid;
     if (uid == null) return;
-    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid, null);
     if (!mounted) return;
     setState(() {
       if (_fullNameController.text.isEmpty && profile.directorName.isNotEmpty)
@@ -646,3 +646,4 @@ class _FssaiFormScreenState extends ConsumerState<FssaiFormScreen> {
     );
   }
 }
+

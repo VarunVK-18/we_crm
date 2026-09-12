@@ -1841,7 +1841,7 @@ a.eab-value:hover {
 
 .metric-card .number {
   font-size: 32px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--palette-dark);
   line-height: 1;
 }

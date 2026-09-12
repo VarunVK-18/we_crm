@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, inject, ChangeDetectorRef, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, signal, inject, ChangeDetectorRef, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -14,8 +14,9 @@ import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
   templateUrl: './mca-form.html',
   styleUrls: ['../forms-shared.css', './mca-form.css']
 })
-export class McaFormComponent implements OnInit {
+export class McaFormComponent implements OnInit, OnChanges {
   @Input() isEmbedded = false;
+  @Input() currentEntity: string = '';
   @Output() formCompleted = new EventEmitter<void>();
 
   orderId = signal<string>('');
@@ -42,6 +43,19 @@ export class McaFormComponent implements OnInit {
   private confirmDialog = inject(ConfirmDialogService);
   private cdr = inject(ChangeDetectorRef);
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['currentEntity'] && !changes['currentEntity'].isFirstChange()) {
+      // Clear form data so it doesn't bleed over
+      this.formData = {};
+      this.files = {};
+      this.existingDocs = {};
+      if (this.schema && this.schema.fields) {
+        this.initFieldValues(this.schema.fields, '');
+      }
+      this.fetchProfileData();
+    }
+  }
+
   ngOnInit() {
     this.route.params.subscribe(params => {
       if (params['id']) this.orderId.set(params['id']);
@@ -59,6 +73,20 @@ export class McaFormComponent implements OnInit {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try { this.currentUser = JSON.parse(savedUser); } catch (e) {}
+    }
+
+    // Auto-prefill company name from the user profile so it's always present
+    if (this.currentUser) {
+      const autoName =
+        this.currentEntity ||
+        this.currentUser.companyName ||
+        this.currentUser.company_name ||
+        this.currentUser.client_entities?.[0]?.entityName ||
+        this.currentUser.client_entities?.[0]?.company_name ||
+        '';
+      if (autoName) {
+        this.formData['companyName'] = autoName;
+      }
     }
 
     if (this.orderId()) {
@@ -80,8 +108,21 @@ export class McaFormComponent implements OnInit {
   }
 
   fetchProfileData() {
-    const entityName = this.currentUser?.companyName || 'All Entities';
-    this.api.get<any>(`entity-profile?entityName=${encodeURIComponent(entityName)}`).subscribe({
+    const user = this.currentUser;
+    // Use currentEntity if available, else try all possible field names where the company/entity name might be stored
+    const entityName = this.currentEntity ||
+      user?.companyName ||
+      user?.company_name ||
+      user?.client_entities?.[0]?.entityName ||
+      user?.client_entities?.[0]?.company_name ||
+      '';
+
+    if (entityName && !this.formData['companyName']) {
+      this.formData['companyName'] = entityName;
+    }
+
+    const t = new Date().getTime();
+    this.api.get<any>(`entity-profile?entityName=${encodeURIComponent(entityName)}&_t=${t}`).subscribe({
       next: (res: any) => {
         if (res && res.profile) {
           const profile = res.profile;
@@ -120,6 +161,13 @@ export class McaFormComponent implements OnInit {
           mapExistingDoc('bankDocId', 'bankDocName', 'bankStatement');
           mapExistingDoc('moaDocId', 'moaDocName', 'moa');
           mapExistingDoc('aoaDocId', 'aoaDocName', 'aoa');
+          mapExistingDoc('udyamCertDocId', 'udyamCertDocName', 'udyamCert');
+          mapExistingDoc('trademarkCertDocId', 'trademarkCertDocName', 'trademarkCert');
+          mapExistingDoc('isoCertDocId', 'isoCertDocName', 'isoCert');
+          mapExistingDoc('salesInvoiceDocId', 'salesInvoiceDocName', 'salesInvoice');
+          mapExistingDoc('purchaseBillsDocId', 'purchaseBillsDocName', 'purchaseBills');
+
+          this.cdr.detectChanges();
         }
       },
       error: (err: any) => console.error('Error fetching profile:', err)
@@ -234,7 +282,7 @@ export class McaFormComponent implements OnInit {
 
   getFileName(pathKey: string): string {
     if (this.files[pathKey]) return this.files[pathKey].name;
-    if (this.existingDocs[pathKey]) return this.existingDocs[pathKey].split('/').pop() || 'Uploaded Document';
+    if (this.existingDocs[pathKey]) return this.existingDocs[pathKey].name;
     return '';
   }
 
@@ -326,7 +374,14 @@ export class McaFormComponent implements OnInit {
 
     if (missingFields.length > 0) {
       this.errorMessage.set(`Please complete all required fields: ${missingFields.slice(0, 3).join(', ')}${missingFields.length > 3 ? '...' : ''}`);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => {
+        const errorEl = document.querySelector('.error-banner');
+        if (errorEl) {
+          errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 50);
       return;
     }
 
@@ -381,8 +436,9 @@ export class McaFormComponent implements OnInit {
     Object.keys(this.formData).forEach(key => {
       formDataPayload.append(key, this.formData[key]);
     });
-    if (this.currentUser?.companyName) {
-      formDataPayload.append('entityName', this.currentUser.companyName);
+    const entityName = this.currentEntity || this.currentUser?.companyName;
+    if (entityName) {
+      formDataPayload.append('entityName', entityName);
     }
     Object.keys(this.files).forEach(key => {
       formDataPayload.append(key, this.files[key]);
@@ -399,15 +455,21 @@ export class McaFormComponent implements OnInit {
       next: (res: any) => {
         this.submitting.set(false);
         if (res && res.success !== false) {
-          this.success.set(true);
           if (this.orderId()) {
             this.draftService.clearDraft(this.orderId(), `DynamicForm_${this.serviceName()}`);
           }
+          const scoreMsg = res.complianceScore !== undefined ? ` Your compliance score is ${res.complianceScore}%` : '';
           if (this.isEmbedded) {
-            setTimeout(() => {
+            this.confirmDialog.confirm({
+              title: 'Success',
+              message: `Profile saved successfully!${scoreMsg}`,
+              confirmText: 'OK',
+              hideCancel: true
+            }).then(() => {
               this.formCompleted.emit();
-            }, 1000);
+            });
           } else {
+            this.success.set(true);
             setTimeout(() => {
               if (this.orderId()) {
                 this.router.navigate(['/client/service', this.orderId()]);

@@ -1573,8 +1573,8 @@ const updateMcaProfile = async (req, res) => {
       return res.status(400).json({ success: false, message: 'entityName is required' });
     }
 
-    // Upsert EntityProfile
-    let profile = await EntityProfile.findOne({ uid: req.user._id.toString(), entityName: targetEntityName });
+    const escapedTarget = targetEntityName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    let profile = await EntityProfile.findOne({ uid: req.user._id.toString(), entityName: { $regex: new RegExp('^' + escapedTarget + '$', 'i') } });
     if (!profile) {
       profile = new EntityProfile({ uid: req.user._id.toString(), entityName: targetEntityName });
     }
@@ -1724,16 +1724,102 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
       }
     }
 
-    // Calculate Compliance Score
+    // ── Weighted Compliance Score ─────────────────────────────────────────
+    // Calculate Compliance Score (Profile part max 50 points)
+    // Compliance tasks contribute the remaining 50 points (handled elsewhere)
     let score = 0;
-    if (profile.incorpCertDocId || profile.cin || profile.incorporationDate) score += 16;
-    if (profile.dynamicProfileData?.udyamCertFile || profile.dynamicProfileData?.udyamNumber) score += 3;
-    if (profile.dynamicProfileData?.trademarkCertFile || profile.dynamicProfileData?.trademarkNo) score += 10;
-    if (profile.gstDocId || profile.gstin) score += 5;
-    if (profile.dynamicProfileData?.dpiitRefNo) score += 12;
-    if (profile.dynamicProfileData?.isoCertFile || profile.dynamicProfileData?.isoCertNo) score += 4;
+    const isFilled = (val) => val !== null && val !== undefined && val.toString().trim() !== '';
+
+    const incorpFields = [profile.entityName, profile.pan, profile.cin, profile.incorporationDate, profile.incorpCertDocId, profile.panCardDocId];
+    let incorpCount = incorpFields.filter(isFilled).length;
+    score += (incorpCount / incorpFields.length) * 16; // Incorporation
+
+    const msmeFields = [profile.dynamicProfileData?.udyamNumber, profile.dynamicProfileData?.udyamCertFile || profile.udyamCertDocId];
+    let msmeCount = msmeFields.filter(isFilled).length;
+    score += (msmeCount / msmeFields.length) * 3; // MSME
+
+    const tmFields = [profile.dynamicProfileData?.trademarkNo, profile.dynamicProfileData?.trademarkCertFile || profile.trademarkCertDocId];
+    let tmCount = tmFields.filter(isFilled).length;
+    score += (tmCount / tmFields.length) * 10; // Trademark
+
+    const gstFields = [profile.gstin, profile.gstDocId];
+    let gstCount = gstFields.filter(isFilled).length;
+    score += (gstCount / gstFields.length) * 5; // GST
+
+    const dpiitFields = [profile.dynamicProfileData?.dpiitRefNo];
+    let dpiitCount = dpiitFields.filter(isFilled).length;
+    score += (dpiitCount / dpiitFields.length) * 12; // DPIIT
+
+    const isoFields = [profile.dynamicProfileData?.isoCertNo, profile.dynamicProfileData?.isoCertFile || profile.isoCertDocId];
+    let isoCount = isoFields.filter(isFilled).length;
+    score += (isoCount / isoFields.length) * 4; // ISO
     
-    profile.complianceScore = score > 100 ? 100 : score;
+    // Multiply by 2 so it is stored out of 100, which the frontend expects (it halves it to get back to 50 max)
+    profile.complianceScore = Math.min(100, Math.round(score * 2));
+
+    // ── Form Completion Percentage ─────────────────────────────────────────
+    // Calculate how many fields of the form are filled
+    let percentage = 0;
+    try {
+      const FormSchema = require('../models/FormSchema');
+      const formSchema = await FormSchema.findOne({ serviceName: 'Company Profile' });
+      if (formSchema && formSchema.fields && formSchema.fields.length > 0) {
+        const totalFields = formSchema.fields.length;
+        const fieldToProfileMap = {
+          companyName: () => profile.entityName,
+          companyPan: () => profile.pan,
+          cin: () => profile.cin,
+          incorporationDate: () => profile.incorporationDate,
+          businessType: () => profile.dynamicProfileData?.businessType,
+          natureOfBusiness: () => profile.dynamicProfileData?.natureOfBusiness,
+          annualTurnover: () => profile.dynamicProfileData?.annualTurnover,
+          registeredAddress: () => profile.address,
+          city: () => profile.dynamicProfileData?.city,
+          state: () => profile.dynamicProfileData?.state,
+          postalCode: () => profile.dynamicProfileData?.postalCode,
+          companyEmail: () => profile.email,
+          companyPhone: () => profile.phone,
+          directorName: () => profile.directorName,
+          directorDin: () => profile.directorDin,
+          directorPan: () => profile.directorPan,
+          directorAadhaar: () => profile.dynamicProfileData?.directorAadhaar,
+          directorEmail: () => profile.directorEmail,
+          directorMobile: () => profile.directorPhone,
+          gstin: () => profile.gstin,
+          udyamNumber: () => profile.dynamicProfileData?.udyamNumber,
+          trademarkNo: () => profile.dynamicProfileData?.trademarkNo,
+          isoCertNo: () => profile.dynamicProfileData?.isoCertNo,
+          dpiitRefNo: () => profile.dynamicProfileData?.dpiitRefNo,
+          mcaUsername: () => profile.dynamicProfileData?.mcaUsername,
+          mcaPassword: () => profile.dynamicProfileData?.mcaPassword,
+          coi: () => profile.incorpCertDocId,
+          pan: () => profile.panCardDocId,
+          moa: () => profile.moaDocId,
+          aoa: () => profile.aoaDocId,
+          aadhaar: () => profile.aadhaarDocId,
+          directorPanDoc: () => profile.directorPanDocId,
+          gstCert: () => profile.gstDocId,
+          udyamCert: () => profile.dynamicProfileData?.udyamCertFile || profile.udyamCertDocId,
+          trademarkCert: () => profile.dynamicProfileData?.trademarkCertFile || profile.trademarkCertDocId,
+          isoCert: () => profile.dynamicProfileData?.isoCertFile || profile.isoCertDocId,
+          bankStatement: () => profile.bankDocId,
+        };
+
+        let filledCount = 0;
+        for (const field of formSchema.fields) {
+          const getter = fieldToProfileMap[field.name];
+          let value = getter ? getter() : profile.dynamicProfileData?.[field.name];
+          if (value !== undefined && value !== null && value.toString().trim() !== '') {
+            filledCount++;
+          }
+        }
+        percentage = Math.round((filledCount / totalFields) * 100);
+      }
+    } catch (err) {
+      console.warn('Could not calculate completion percentage:', err.message);
+    }
+    
+    profile.profileCompletionPercentage = percentage;
     
     profile.markModified('dynamicProfileData');
     await profile.save();
@@ -1749,7 +1835,7 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
       complianceScore: profile.complianceScore
     });
   } catch (error) {
-    console.error('Error updating Company profile:', error);
+    console.error('Error updating Company profile:', error); require('fs').writeFileSync('c:/projects/we_crm/crm_backend/error.txt', error.stack || error.toString());
     res.status(500).json({ success: false, message: 'Server error while updating company profile.' });
   }
 };
@@ -2773,4 +2859,5 @@ module.exports.getClientOnboardRequests = getClientOnboardRequests;
 module.exports.approveEntity = approveEntity;
 module.exports.myEntities = myEntities;
 module.exports.changePassword = changePassword;
+
 

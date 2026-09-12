@@ -737,9 +737,11 @@ export class ClientProfile implements OnInit, OnDestroy {
 
   editingCard = signal<string | null>(null);
   isSaving = signal(false);
+  saveErrorMessage = signal<string | null>(null);
   editData: any = {};
 
   toggleEdit(card: string) {
+    this.saveErrorMessage.set(null);
     if (this.editingCard() !== card) {
       // Enter edit mode, copy user data
       const current = this.activeEntity() || this.user();
@@ -799,9 +801,12 @@ export class ClientProfile implements OnInit, OnDestroy {
     if (!userId) return;
 
     this.isSaving.set(true);
+    this.saveErrorMessage.set(null);
     let payload: any = { ...this.editData };
     
     const sel = this.selectedEntity();
+    let newEntityName: string | null = null;
+    
     if (sel !== 'All') {
       const u = this.user();
       const entities = [...(u.client_entities || [])];
@@ -811,40 +816,50 @@ export class ClientProfile implements OnInit, OnDestroy {
           ...entities[idx],
           entityName: payload.company_name,
           entityType: payload.business_type || payload.company_type_expanded,
-          cin: payload.cin,
-          pan: payload.pan,
-          tan: payload.tan,
-          gstin: payload.gstin,
-          registration_number: payload.registration_number,
-          incorporationDate: payload.incorporation_date,
-          roc: payload.roc,
-          company_origin: payload.company_origin,
-          company_type: payload.company_type,
-          class_of_company: payload.class_of_company,
-          company_category: payload.company_category,
-          company_subcategory: payload.company_subcategory,
-          main_division_description: payload.main_division_description,
-          main_division_no: payload.main_division_no,
-          authorised_capital: payload.authorised_capital,
-          paidup_capital: payload.paidup_capital,
-          obligation_of_contribution: payload.total_obligation_of_contribution,
-          address_type: payload.address_type,
-          street_address_line_1: payload.street_address_line_1,
-          street_address_line_2: payload.street_address_line_2,
-          city: payload.city,
-          state: payload.state,
-          postal_code: payload.postal_code,
-          company_email: payload.company_email,
-          pan_name: payload.pan_name,
-          pan_father_name: payload.pan_father_name,
-          pan_dob: payload.pan_dob,
-          directorName: payload.owner_name,
-          email: payload.email,
-          phone: payload.phone
+          cin: payload.cin === 'N/A' ? '' : payload.cin,
+          pan: payload.pan === 'N/A' ? '' : payload.pan,
+          tan: payload.tan === 'N/A' ? '' : payload.tan,
+          gstin: payload.gstin === 'N/A' ? '' : payload.gstin,
+          registration_number: payload.registration_number === 'N/A' ? '' : payload.registration_number,
+          incorporationDate: payload.incorporation_date && payload.incorporation_date !== 'N/A' ? payload.incorporation_date : null,
+          roc: payload.roc === 'N/A' ? '' : payload.roc,
+          company_origin: payload.company_origin === 'N/A' ? '' : payload.company_origin,
+          company_type: payload.company_type === 'N/A' ? '' : payload.company_type,
+          class_of_company: payload.class_of_company === 'N/A' ? '' : payload.class_of_company,
+          company_category: payload.company_category === 'N/A' ? '' : payload.company_category,
+          company_subcategory: payload.company_subcategory === 'N/A' ? '' : payload.company_subcategory,
+          main_division_description: payload.main_division_description === 'N/A' ? '' : payload.main_division_description,
+          main_division_no: payload.main_division_no === 'N/A' ? '' : payload.main_division_no,
+          authorised_capital: payload.authorised_capital === 'N/A' ? '' : payload.authorised_capital,
+          paidup_capital: payload.paidup_capital === 'N/A' ? '' : payload.paidup_capital,
+          obligation_of_contribution: payload.total_obligation_of_contribution === 'N/A' ? '' : payload.total_obligation_of_contribution,
+          address_type: payload.address_type === 'N/A' ? '' : payload.address_type,
+          street_address_line_1: payload.street_address_line_1 === 'N/A' ? '' : payload.street_address_line_1,
+          street_address_line_2: payload.street_address_line_2 === 'N/A' ? '' : payload.street_address_line_2,
+          city: payload.city === 'N/A' ? '' : payload.city,
+          state: payload.state === 'N/A' ? '' : payload.state,
+          postal_code: payload.postal_code === 'N/A' ? '' : payload.postal_code,
+          company_email: payload.company_email === 'N/A' ? '' : payload.company_email,
+          pan_name: payload.pan_name === 'N/A' ? '' : payload.pan_name,
+          pan_father_name: payload.pan_father_name === 'N/A' ? '' : payload.pan_father_name,
+          pan_dob: payload.pan_dob && payload.pan_dob !== 'N/A' ? payload.pan_dob : null,
+          directorName: payload.owner_name === 'N/A' ? '' : payload.owner_name,
+          email: payload.email === 'N/A' ? '' : payload.email,
+          phone: payload.phone === 'N/A' ? '' : payload.phone
         };
-        payload = { client_entities: entities };
+        payload = { 
+          client_entities: entities,
+          directors: this.editData.directors
+        };
+        
+        if (this.editData.company_name && this.editData.company_name.trim() !== sel) {
+          newEntityName = this.editData.company_name.trim();
+        }
       }
     }
+
+    if (payload.incorporation_date === '') payload.incorporation_date = null;
+    if (payload.pan_dob === '') payload.pan_dob = null;
 
     this.api.patch<any>(`users/profile/${userId}`, payload).subscribe({
       next: (res) => {
@@ -854,6 +869,11 @@ export class ClientProfile implements OnInit, OnDestroy {
           if (this.editData.directors) {
             this.directors.set(this.editData.directors);
           }
+          if (newEntityName) {
+            this.selectedEntity.set(newEntityName);
+            localStorage.setItem('client_selected_entity', newEntityName);
+            window.dispatchEvent(new CustomEvent('entityChanged', { detail: newEntityName }));
+          }
           this.editingCard.set(null);
           this.confirmDialog.confirm({
             title: 'Success',
@@ -861,11 +881,15 @@ export class ClientProfile implements OnInit, OnDestroy {
             hideCancel: true,
             confirmText: 'OK'
           });
+        } else {
+          this.saveErrorMessage.set(res.message || 'Failed to save profile. Unknown error.');
         }
         this.isSaving.set(false);
       },
       error: (err) => {
         console.error('Failed to save profile:', err);
+        const msg = err.error?.message || err.message || 'An unexpected error occurred while saving.';
+        this.saveErrorMessage.set(msg);
         this.isSaving.set(false);
       }
     });

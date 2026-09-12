@@ -306,7 +306,7 @@ export class Login implements OnInit {
       this.stateOfRegistration.set('');
       this.registerEmail.set('');
 
-      this.isRegistering.set(false);
+      this.router.navigate(['/login']);
 
     } catch (err: any) {
       console.error('Onboarding Error:', err);

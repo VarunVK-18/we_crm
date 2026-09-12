@@ -1,0 +1,9 @@
+MongoServerError: E11000 duplicate key error collection: test.entityprofiles index: uid_1 dup key: { uid: "6a7f6291748c5044db8a6d07" }
+    at InsertOneOperation.handleOk (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\operations\insert.js:51:19)
+    at executeOperationWithRetries (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\operations\execute_operation.js:194:34)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeOperation (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\operations\execute_operation.js:83:16)
+    at async Collection.insertOne (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\collection.js:154:16)
+    at async model.$__save (C:\projects\we_crm\crm_backend\node_modules\mongoose\lib\model.js:428:16)
+    at async model.save (C:\projects\we_crm\crm_backend\node_modules\mongoose\lib\model.js:667:5)
+    at async updateMcaProfile (C:\projects\we_crm\crm_backend\controllers\authController.js:1805:5)

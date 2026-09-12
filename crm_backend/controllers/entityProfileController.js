@@ -11,7 +11,10 @@ exports.getEntityProfile = async (req, res) => {
     
     const entityName = req.query.entityName;
     const query = { uid };
-    if (entityName) query.entityName = entityName;
+    if (entityName) {
+      const escapedEntity = entityName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.entityName = { $regex: new RegExp('^' + escapedEntity + '$', 'i') };
+    }
 
     const profile = await EntityProfile.findOne(query);
     return res.json({ profile: profile || {} });

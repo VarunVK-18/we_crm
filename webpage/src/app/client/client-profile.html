@@ -59,6 +59,13 @@
           </button>
         </div>
 
+        @if (saveErrorMessage()) {
+          <div style="background-color: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+            <span class="material-symbols-outlined" style="font-size: 20px;">error</span>
+            <span style="font-size: 14px; font-weight: 500;">{{ saveErrorMessage() }}</span>
+          </div>
+        }
+
         @if (activeTab() === 'overview') {
           <div class="info-grid">
             <!-- Basic Information Card -->

@@ -9,9 +9,15 @@
     <div class="df-sidebar">
       <div class="df-sidebar-header">
         <h2>Services</h2>
+        <input 
+          type="text" 
+          class="df-search-input" 
+          placeholder="Search services..." 
+          [(ngModel)]="searchQuery" 
+        />
       </div>
       <ul class="df-service-list">
-        <li *ngFor="let service of availableServices">
+        <li *ngFor="let service of filteredServices">
           <button 
             (click)="selectForm(service)"
             [class.active]="selectedForm?.serviceName === service"

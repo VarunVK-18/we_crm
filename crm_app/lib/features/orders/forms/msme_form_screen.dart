@@ -72,7 +72,7 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
   Future<void> _loadEntityPrefill() async {
     final uid = ref.read(authStateProvider).value?.uid;
     if (uid == null) return;
-    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid, null);
     if (!mounted) return;
     setState(() {
       if (_entrepreneurNameController.text.isEmpty && profile.directorName.isNotEmpty)
@@ -546,3 +546,4 @@ class _MsmeFormScreenState extends ConsumerState<MsmeFormScreen> {
     );
   }
 }
+

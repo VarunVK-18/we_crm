@@ -15,6 +15,13 @@ export class DynamicFormsComponent implements OnInit {
   selectedForm: any = null;
   loading: boolean = false;
   saveSuccess: boolean = false;
+  searchQuery: string = '';
+
+  get filteredServices() {
+    if (!this.searchQuery) return this.availableServices;
+    const lowerQ = this.searchQuery.toLowerCase();
+    return this.availableServices.filter(s => s.toLowerCase().includes(lowerQ));
+  }
 
   availableServices = [
     'Company Profile',

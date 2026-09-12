@@ -424,7 +424,8 @@ class ComplianceRadarScreen extends ConsumerWidget {
     final entityCompliances = reminders.where((r) => r.entityName == currentEntity).toList();
     
     // Part 1: Base Score from Company Profile (max 50 points)
-    final profileScore = entityProfileAsync.value?.complianceScore?.toDouble() ?? 0.0;
+    final profileScoreRaw = entityProfileAsync.value?.complianceScore?.toDouble() ?? 0.0;
+    final profileScore = profileScoreRaw / 2.0; // scale out of 100 to out of 50
     
     // Part 2: Dynamic Compliance Score (max 50 points)
     double complianceScore = 50.0;
@@ -443,7 +444,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
     if (complianceScore > 50) complianceScore = 50;
     
     double scoreValue = 0.0;
-    if (profileScore == 0.0 && entityCompliances.isEmpty) {
+    if (profileScoreRaw == 0.0 && entityCompliances.isEmpty) {
       scoreValue = 0.0;
     } else {
       scoreValue = profileScore + complianceScore;
@@ -541,8 +542,10 @@ class ComplianceRadarScreen extends ConsumerWidget {
                     color: AppTheme.deepTeal,
                     onRefresh: () async {
                       ref.invalidate(complianceRemindersProvider);
+                      ref.invalidate(entityProfileProvider);
                       try {
                         await ref.read(complianceRemindersProvider.future);
+                        await ref.read(entityProfileProvider.future);
                       } catch (_) {
       showGlobalError(_);}
                     },
@@ -707,14 +710,14 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                             width: 44.r,
                                             height: 44.r,
                                             child: CircularProgressIndicator(
-                                              value: (entityProfileAsync.value?.complianceScore ?? 0) / 100,
+                                              value: (entityProfileAsync.value?.profileCompletionPercentage ?? 0) / 100,
                                               strokeWidth: 3.r,
                                               backgroundColor: AppTheme.corporateBlue.withValues(alpha: 0.2),
                                               valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.corporateBlue),
                                             ),
                                           ),
                                           Text(
-                                            '${(entityProfileAsync.value?.complianceScore ?? 0).toInt()}%',
+                                            '${(entityProfileAsync.value?.profileCompletionPercentage ?? 0).toInt()}%',
                                             style: GoogleFonts.outfit(
                                               fontSize: 12.sp,
                                               fontWeight: FontWeight.w700,

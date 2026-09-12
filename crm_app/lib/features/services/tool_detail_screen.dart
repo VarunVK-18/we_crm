@@ -1,6 +1,7 @@
 import 'package:crm_app/core/utils/error_handler.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -12,6 +13,83 @@ import '../../core/constants/port.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../core/widgets/we_loader.dart';
+
+String _capitalizeWords(String text) {
+  if (text.isEmpty) return text;
+  return text.split(' ').map((word) {
+    if (word.isEmpty) return word;
+    return word[0].toUpperCase() + word.substring(1).toLowerCase();
+  }).join(' ');
+}
+
+Map<String, dynamic> _parseNicDataSync(String raw) {
+  final parsed = json.decode(raw) as Map<String, dynamic>;
+  final sections = (parsed['sections'] as List?) ?? [];
+  final List<Map<String, dynamic>> divisions = [];
+  final List<Map<String, dynamic>> flat = [];
+  for (final section in sections) {
+    for (final div in (section['divisions'] as List? ?? [])) {
+      final divTitle = _capitalizeWords(div['title'] ?? '');
+      final List<Map<String, dynamic>> newGroups = [];
+      for (final g in (div['groups'] as List? ?? [])) {
+        final gTitle = _capitalizeWords(g['title'] ?? '');
+        final List<Map<String, dynamic>> newClasses = [];
+        for (final c in (g['classes'] as List? ?? [])) {
+          final cTitle = _capitalizeWords(c['title'] ?? '');
+          final List<Map<String, dynamic>> newSubClasses = [];
+          for (final s in (c['subclasses'] as List? ?? [])) {
+            final sTitle = _capitalizeWords(s['title'] ?? '');
+            newSubClasses.add({'code': s['code'], 'description': sTitle});
+            flat.add({
+              'code': s['code'],
+              'lower_code': (s['code'] as String).toLowerCase(),
+              'description': sTitle,
+              'lower_description': sTitle.toLowerCase(),
+              'level': 'Sub-class',
+              'divCode': div['code'],
+              'divTitle': divTitle,
+              'groupCode': g['code'],
+              'classCode': c['code'],
+            });
+          }
+          newClasses.add({'code': c['code'], 'description': cTitle, 'sub_classes': newSubClasses});
+          flat.add({
+            'code': c['code'],
+            'lower_code': (c['code'] as String).toLowerCase(),
+            'description': cTitle,
+            'lower_description': cTitle.toLowerCase(),
+            'level': 'Class',
+            'divCode': div['code'],
+            'divTitle': divTitle,
+            'groupCode': g['code'],
+          });
+        }
+        newGroups.add({'code': g['code'], 'description': gTitle, 'classes': newClasses});
+        flat.add({
+          'code': g['code'],
+          'lower_code': (g['code'] as String).toLowerCase(),
+          'description': gTitle,
+          'lower_description': gTitle.toLowerCase(),
+          'level': 'Group',
+          'divCode': div['code'],
+          'divTitle': divTitle,
+        });
+      }
+      final divMap = {
+        'division': div['code'],
+        'title': divTitle,
+        'groups': newGroups,
+      };
+      divisions.add(divMap);
+    }
+  }
+  divisions.sort((a, b) {
+    final aNum = int.tryParse(a['division'] ?? '') ?? 0;
+    final bNum = int.tryParse(b['division'] ?? '') ?? 0;
+    return aNum.compareTo(bNum);
+  });
+  return {'divisions': divisions, 'flat': flat};
+}
 
 class ToolDetailScreen extends ConsumerStatefulWidget {
   final String toolName;
@@ -55,6 +133,7 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
   bool _isLoadingNic = false;
   List<Map<String, dynamic>> _nicFlat = []; // flat list for search
   final TextEditingController _nicSearchController = TextEditingController();
+  Timer? _nicSearchDebounce;
   String _nicSearchQuery = '';
   List<Map<String, dynamic>> _nicSearchResults = [];
 
@@ -139,65 +218,11 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
     setState(() => _isLoadingNic = true);
     try {
       final String raw = await DefaultAssetBundle.of(context).loadString('assets/json/NIC_major_content_complete.json');
-      final parsed = json.decode(raw) as Map<String, dynamic>;
-      final sections = (parsed['sections'] as List?) ?? [];
-      final List<Map<String, dynamic>> divisions = [];
-      final List<Map<String, dynamic>> flat = [];
-      for (final section in sections) {
-        for (final div in (section['divisions'] as List? ?? [])) {
-          final List<Map<String, dynamic>> newGroups = [];
-          for (final g in (div['groups'] as List? ?? [])) {
-            final List<Map<String, dynamic>> newClasses = [];
-            for (final c in (g['classes'] as List? ?? [])) {
-              final List<Map<String, dynamic>> newSubClasses = [];
-              for (final s in (c['subclasses'] as List? ?? [])) {
-                newSubClasses.add({'code': s['code'], 'description': s['title'] ?? ''});
-                flat.add({
-                  'code': s['code'],
-                  'description': s['title'] ?? '',
-                  'level': 'Sub-class',
-                  'divCode': div['code'],
-                  'divTitle': div['title'],
-                  'groupCode': g['code'],
-                  'classCode': c['code'],
-                });
-              }
-              newClasses.add({'code': c['code'], 'description': c['title'] ?? '', 'sub_classes': newSubClasses});
-              flat.add({
-                'code': c['code'],
-                'description': c['title'] ?? '',
-                'level': 'Class',
-                'divCode': div['code'],
-                'divTitle': div['title'],
-                'groupCode': g['code'],
-              });
-            }
-            newGroups.add({'code': g['code'], 'description': g['title'] ?? '', 'classes': newClasses});
-            flat.add({
-              'code': g['code'],
-              'description': g['title'] ?? '',
-              'level': 'Group',
-              'divCode': div['code'],
-              'divTitle': div['title'],
-            });
-          }
-          final divMap = {
-            'division': div['code'],
-            'title': div['title'],
-            'groups': newGroups,
-          };
-          divisions.add(divMap);
-        }
-      }
-      // Sort divisions numerically
-      divisions.sort((a, b) {
-        final aNum = int.tryParse(a['division'] ?? '') ?? 0;
-        final bNum = int.tryParse(b['division'] ?? '') ?? 0;
-        return aNum.compareTo(bNum);
-      });
+      final result = await compute(_parseNicDataSync, raw);
+      
       setState(() {
-        _nicDivisions = divisions;
-        _nicFlat = flat;
+        _nicDivisions = result['divisions'] as List<Map<String, dynamic>>;
+        _nicFlat = result['flat'] as List<Map<String, dynamic>>;
         _isLoadingNic = false;
       });
     } catch (e) {
@@ -721,17 +746,20 @@ class _ToolDetailScreenState extends ConsumerState<ToolDetailScreen> {
     }
 
     void doSearch(String q) {
-      setState(() {
-        _nicSearchQuery = q;
-        if (q.isEmpty) {
-          _nicSearchResults = [];
-        } else {
-          final lq = q.toLowerCase();
-          _nicSearchResults = _nicFlat.where((item) {
-            return (item['code'] as String).toLowerCase().contains(lq) ||
-                   (item['description'] as String).toLowerCase().contains(lq);
-          }).toList();
-        }
+      if (_nicSearchDebounce?.isActive ?? false) _nicSearchDebounce!.cancel();
+      _nicSearchDebounce = Timer(const Duration(milliseconds: 300), () {
+        setState(() {
+          _nicSearchQuery = q;
+          if (q.isEmpty) {
+            _nicSearchResults = [];
+          } else {
+            final lq = q.toLowerCase();
+            _nicSearchResults = _nicFlat.where((item) {
+              return (item['lower_code'] as String).contains(lq) ||
+                     (item['lower_description'] as String).contains(lq);
+            }).take(100).toList();
+          }
+        });
       });
     }
 

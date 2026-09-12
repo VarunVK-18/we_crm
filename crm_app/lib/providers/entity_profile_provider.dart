@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import '../core/constants/port.dart';
 import 'auth_provider.dart';
+import 'compliance_provider.dart';
 
 // ─── Model ──────────────────────────────────────────────────────────────────
 
@@ -31,6 +32,7 @@ class EntityProfile {
   final String bankIfsc;
   final String bankName;
   final int complianceScore;
+  final int profileCompletionPercentage;
 
   // Document references
   final EntityDocRef panCardDoc;
@@ -59,6 +61,7 @@ class EntityProfile {
     this.bankIfsc = '',
     this.bankName = '',
     this.complianceScore = 0,
+    this.profileCompletionPercentage = 0,
     this.panCardDoc = const EntityDocRef(docId: '', docName: ''),
     this.aadhaarDoc = const EntityDocRef(docId: '', docName: ''),
     this.incorpCertDoc = const EntityDocRef(docId: '', docName: ''),
@@ -87,6 +90,7 @@ class EntityProfile {
       bankIfsc: m['bankIfsc'] ?? '',
       bankName: m['bankName'] ?? '',
       complianceScore: (m['complianceScore'] as num?)?.toInt() ?? 0,
+      profileCompletionPercentage: (m['profileCompletionPercentage'] as num?)?.toInt() ?? 0,
       panCardDoc: EntityDocRef(docId: m['panCardDocId'] ?? '', docName: m['panCardDocName'] ?? ''),
       aadhaarDoc: EntityDocRef(docId: m['aadhaarDocId'] ?? '', docName: m['aadhaarDocName'] ?? ''),
       incorpCertDoc: EntityDocRef(docId: m['incorpCertDocId'] ?? '', docName: m['incorpCertDocName'] ?? ''),
@@ -103,10 +107,14 @@ class EntityProfile {
 
 class EntityCacheService {
   /// Fetch the entity profile from backend
-  Future<EntityProfile> fetchProfile(String uid) async {
+  Future<EntityProfile> fetchProfile(String uid, String? entityName) async {
     try {
+      final url = entityName != null && entityName.isNotEmpty && entityName != 'All Entities'
+          ? '$kBaseUrl/api/entity-profile?entityName=${Uri.encodeComponent(entityName)}'
+          : '$kBaseUrl/api/entity-profile';
+      
       final response = await http.get(
-        Uri.parse('$kBaseUrl/api/entity-profile'),
+        Uri.parse(url),
         headers: {'x-user-id': uid},
       ).timeout(const Duration(seconds: 10));
       if (response.statusCode == 200) {
@@ -177,6 +185,7 @@ final entityCacheServiceProvider = Provider<EntityCacheService>((ref) {
 /// Fetches the entity profile once per session (cached by Riverpod)
 final entityProfileProvider = FutureProvider<EntityProfile>((ref) async {
   final uid = ref.watch(authStateProvider).value?.uid;
+  final selectedEntity = ref.watch(selectedEntityProvider);
   if (uid == null) return const EntityProfile();
-  return ref.read(entityCacheServiceProvider).fetchProfile(uid);
+  return ref.read(entityCacheServiceProvider).fetchProfile(uid, selectedEntity);
 });

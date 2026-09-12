@@ -56,7 +56,7 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
   Future<void> _loadEntityPrefill() async {
     final uid = ref.read(authStateProvider).value?.uid;
     if (uid == null) return;
-    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid);
+    final profile = await ref.read(entityCacheServiceProvider).fetchProfile(uid, null);
     if (!mounted) return;
     setState(() {
       if (_companyNameController.text.isEmpty && profile.entityName.isNotEmpty)
@@ -428,3 +428,4 @@ class _LeiFormScreenState extends ConsumerState<LeiFormScreen> {
     );
   }
 }
+

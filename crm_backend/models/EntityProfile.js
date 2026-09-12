@@ -27,6 +27,7 @@ const entityProfileSchema = new mongoose.Schema({
   bankName: { type: String, default: '' },          // Bank name
   tan: { type: String, default: '' },               // TAN number
   complianceScore: { type: Number, default: 0 },    // Compliance Score out of 100
+  profileCompletionPercentage: { type: Number, default: 0 }, // Circular progress percentage
   dynamicProfileData: { type: mongoose.Schema.Types.Mixed, default: {} }, // Additional data
   
   // Common Document References (stores MongoDB Document _id strings)

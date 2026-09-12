@@ -49,6 +49,25 @@ export class ClientCompliance implements OnInit, OnDestroy {
     );
   });
 
+  mcaProfileSuccess = signal<boolean>(false);
+
+  onMcaFormCompleted() {
+    this.mcaProfileSuccess.set(true);
+    this.fetchEntityProfile();
+    // Reload user data so the form disappears
+    const uid = this.user()?._id || this.user()?.id;
+    if (!uid) return;
+    this.api.get<any>(`users/profile/${uid}`).subscribe({
+      next: (res) => {
+        const u = res.user || res;
+        if (u) {
+          this.user.set(u);
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+      }
+    });
+  }
+
   // Computed Values
   availableEntities = computed(() => {
     // Use a canonical (lowercase) key map to avoid case-duplicate entries
@@ -114,29 +133,31 @@ export class ClientCompliance implements OnInit, OnDestroy {
 
     return Array.from(map.entries()).map(([key, items]) => ({ key, items }));
   });
+
+  entityProfile = signal<any>(null);
+
   healthScore = computed(() => {
     const tasks = this.filteredTasks();
-    const u = this.user();
-    
-    // Part 1: Base Score from Company Profile (max 50 points)
-    const profileScore = (u?.company_id?.complianceScore || 0) / 100.0;
-    
-    // Part 2: Dynamic Compliance Score (max 50 points)
-    let dynamicScore = 50.0;
-    if (tasks.length > 0) {
-      const penalty = 50.0 / tasks.length;
-      for (const t of tasks) {
-        if (t.status === 'Overdue' || t.status === 'Critical') dynamicScore -= penalty;
-        else if (t.status === 'Due Soon') dynamicScore -= (penalty / 2);
+    const profile = this.entityProfile();
+        // Part 1: Base Score from Company Profile (max 50 points)
+      const profileScore = (profile?.complianceScore || 0) / 2.0;
+      
+      // Part 2: Dynamic Compliance Score (max 50 points)
+      let dynamicScore = 50.0;
+      if (tasks.length > 0) {
+        const penalty = 50.0 / tasks.length;
+        for (const t of tasks) {
+          if (t.status === 'Overdue' || t.status === 'Critical') dynamicScore -= penalty;
+          else if (t.status === 'Due Soon') dynamicScore -= (penalty / 2);
+        }
       }
-    }
-    
-    if (dynamicScore < 0) dynamicScore = 0;
-    if (dynamicScore > 50) dynamicScore = 50;
-    
-    if (profileScore === 0 && tasks.length === 0) return 0.0;
-    
-    return ((profileScore * 100.0) + dynamicScore) / 100.0;
+      
+      if (dynamicScore < 0) dynamicScore = 0;
+      if (dynamicScore > 50) dynamicScore = 50;
+      
+      if (profileScore === 0 && tasks.length === 0) return 0.0;
+      
+      return (profileScore + dynamicScore) / 100.0;
   });
 
   healthStatus = computed(() => {
@@ -237,6 +258,7 @@ export class ClientCompliance implements OnInit, OnDestroy {
     const name = (e as CustomEvent).detail as string;
     // Map global 'All' to compliance's 'All Entities' convention
     this.currentEntity.set(name === 'All' ? 'All Entities' : name);
+    this.fetchEntityProfile();
   };
 
   // --- Chat Feature ---
@@ -375,7 +397,8 @@ export class ClientCompliance implements OnInit, OnDestroy {
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      this.user.set(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      this.user.set(parsedUser);
       this.fetchReminders();
       this.fetchChecklists();
       this.fetchCertificates();
@@ -389,24 +412,28 @@ export class ClientCompliance implements OnInit, OnDestroy {
     const saved = localStorage.getItem('client_selected_entity');
     if (saved && saved !== 'All') {
       this.currentEntity.set(saved);
+    } else {
+      // Auto-derive entity from the user's company if not set
+      const u = this.user();
+      const derived = u?.company_name || u?.companyName || u?.client_entities?.[0]?.entityName || '';
+      if (derived) this.currentEntity.set(derived);
     }
     window.addEventListener('entityChanged', this.entityChangeHandler);
+    this.fetchEntityProfile();
   }
 
-  onMcaFormCompleted() {
-    // Reload user data so the form disappears
-    const uid = this.user()?._id || this.user()?.id;
-    if (!uid) return;
-    this.api.get<any>(`users/profile/${uid}`).subscribe({
+  fetchEntityProfile() {
+    const entity = this.currentEntity() === 'All Entities' ? '' : this.currentEntity();
+    const t = new Date().getTime();
+    this.api.get<any>(`entity-profile?entityName=${encodeURIComponent(entity)}&_t=${t}`).subscribe({
       next: (res) => {
-        const u = res.user || res;
-        if (u) {
-          this.user.set(u);
-          localStorage.setItem('user', JSON.stringify(u));
-        }
-      }
+        this.entityProfile.set(res.profile || {});
+      },
+      error: (err) => console.error('Failed to fetch entity profile:', err)
     });
   }
+
+
 
   ngOnDestroy() {
     window.removeEventListener('entityChanged', this.entityChangeHandler);
