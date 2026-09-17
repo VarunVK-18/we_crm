@@ -93,7 +93,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         screen: OrderTrackerScreen(),
       ),
       const NavigationItem(
-        label: 'Compliance',
+        label: 'Health Score',
         icon: HugeIcons.strokeRoundedShield01,
         screen: ComplianceRadarScreen(),
       ),

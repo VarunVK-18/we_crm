@@ -496,6 +496,9 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
                 setState(() {});
               }
             } : null,
+            textCapitalization: ((RegExp(r'\bpan\b', caseSensitive: false).hasMatch(field.name) || RegExp(r'\bpan\b', caseSensitive: false).hasMatch(field.label)) && !(RegExp(r'name|date|dob|first|last', caseSensitive: false).hasMatch(field.name) || RegExp(r'name|date|dob|first|last', caseSensitive: false).hasMatch(field.label)))
+                ? TextCapitalization.characters 
+                : TextCapitalization.none,
             decoration: InputDecoration(
               hintText: HintHelper.getExampleHint(field.label, hint: field.description),
               hintStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.grey.shade400),
@@ -518,8 +521,25 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
             ),
             validator: (v) {
               if (field.required && (v == null || v.trim().isEmpty)) return 'Required';
-              if (field.type == 'email' && v != null && v.isNotEmpty && !ValidationUtils.isValidEmail(v)) return 'Invalid email';
-              if (field.type == 'phone' && v != null && v.isNotEmpty && !ValidationUtils.isValidPhone(v)) return 'Invalid phone';
+              
+              if (v != null && v.isNotEmpty) {
+                 String strVal = v.trim();
+                 String lowerName = (field.name).toLowerCase();
+                 String lowerLabel = (field.label).toLowerCase();
+                 
+                 bool hasPan = RegExp(r'\bpan\b', caseSensitive: false).hasMatch(field.name) || RegExp(r'\bpan\b', caseSensitive: false).hasMatch(field.label);
+                 bool isNotNameOrDate = !(RegExp(r'name|date|dob|first|last', caseSensitive: false).hasMatch(field.name) || RegExp(r'name|date|dob|first|last', caseSensitive: false).hasMatch(field.label));
+
+                 if (hasPan && isNotNameOrDate) {
+                   if (!RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$').hasMatch(strVal)) return 'Invalid PAN format';
+                 } else if (lowerName.contains('aadhaar') || lowerLabel.contains('aadhaar')) {
+                   if (!RegExp(r'^\d{12}$').hasMatch(strVal)) return 'Aadhaar must be 12 digits';
+                 } else if (field.type == 'phone' || lowerName.contains('phone') || lowerLabel.contains('mobile')) {
+                   if (!RegExp(r'^\d{10}$').hasMatch(strVal)) return 'Phone must be 10 digits';
+                 } else if (field.type == 'email' || lowerName.contains('email') || lowerLabel.contains('mail')) {
+                   if (!ValidationUtils.isValidEmail(strVal)) return 'Invalid email address';
+                 }
+              }
               return null;
             },
           ),

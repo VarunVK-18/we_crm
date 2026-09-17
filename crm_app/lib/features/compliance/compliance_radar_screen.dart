@@ -423,35 +423,12 @@ class ComplianceRadarScreen extends ConsumerWidget {
 
     final entityCompliances = reminders.where((r) => r.entityName == currentEntity).toList();
     
-    // Part 1: Base Score from Company Profile (max 50 points)
-    final profileScoreRaw = entityProfileAsync.value?.complianceScore?.toDouble() ?? 0.0;
-    final profileScore = profileScoreRaw / 2.0; // scale out of 100 to out of 50
-    
-    // Part 2: Dynamic Compliance Score (max 50 points)
-    double complianceScore = 50.0;
-    if (entityCompliances.isNotEmpty) {
-      double penaltyPerCompliance = 50.0 / entityCompliances.length;
-      for (final comp in entityCompliances) {
-        if (comp.status == TaskStatus.critical || comp.status == TaskStatus.overdue) {
-          complianceScore -= penaltyPerCompliance;
-        } else if (comp.status == TaskStatus.dueSoon) {
-          complianceScore -= (penaltyPerCompliance / 2); // Half penalty for pending
-        }
-      }
-    }
-    
-    if (complianceScore < 0) complianceScore = 0;
-    if (complianceScore > 50) complianceScore = 50;
-    
-    double scoreValue = 0.0;
-    if (profileScoreRaw == 0.0 && entityCompliances.isEmpty) {
-      scoreValue = 0.0;
-    } else {
-      scoreValue = profileScore + complianceScore;
-    }
+    // The complianceScore is directly calculated out of 100 by the backend
+    // 50 max points from profile + 50 points if MCA compliance plan is active.
+    final scoreValue = entityProfileAsync.value?.complianceScore?.toDouble() ?? 0.0;
     
     final score = scoreValue / 100.0;
-    final isPendingSetup = profileScore == 0.0 && entityCompliances.isEmpty;
+    final isPendingSetup = scoreValue == 0.0 && entityCompliances.isEmpty;
     
     final healthStatus = isPendingSetup
         ? 'PENDING SETUP'

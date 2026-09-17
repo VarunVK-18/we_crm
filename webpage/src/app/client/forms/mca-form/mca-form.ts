@@ -334,9 +334,84 @@ export class McaFormComponent implements OnInit, OnChanges {
     this.draftService.saveDraft(this.orderId(), draftKey, this.formData);
   }
 
+  invalidFields = new Set<string>();
+  fieldErrors: Record<string, string> = {};
+
+  onTextInput(event: any, field: any, path: string) {
+    const lowerName = (field.name || '').toLowerCase();
+    const lowerLabel = (field.label || '').toLowerCase();
+    const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
+    const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
+    
+    if (hasPan && isNotNameOrDate) {
+      const upper = event.target.value.toUpperCase();
+      event.target.value = upper;
+      this.formData[path] = upper;
+    }
+    this.validateField(field, path);
+  }
+
+  validateField(f: any, currentPath: string): { isMissing: boolean, formatError: string } {
+    let isMissing = false;
+    let formatError = '';
+
+    if (f.type === 'file') {
+      if (f.required && !this.files[currentPath] && !this.existingDocs[currentPath]) {
+        isMissing = true;
+      }
+    } else if (f.type === 'checkbox') {
+      if (f.required && !this.formData[currentPath]) {
+        isMissing = true;
+      }
+    } else {
+      const val = this.formData[currentPath];
+      if (f.required && (val === undefined || val === null || String(val).trim() === '')) {
+        isMissing = true;
+      } else if (val !== undefined && val !== null && String(val).trim() !== '') {
+        const strVal = String(val).trim();
+        const lowerName = (f.name || '').toLowerCase();
+        const lowerLabel = (f.label || '').toLowerCase();
+
+        const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
+        const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
+
+        if (hasPan && isNotNameOrDate) {
+          if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(strVal)) {
+            formatError = 'Invalid PAN format. Example: ABCDE1234F';
+          }
+        } else if (lowerName.includes('aadhaar') || lowerLabel.includes('aadhaar')) {
+          if (!/^\d{12}$/.test(strVal)) {
+            formatError = 'Aadhaar must be exactly 12 digits.';
+          }
+        } else if (f.type === 'phone' || lowerName.includes('phone') || lowerLabel.includes('mobile')) {
+          if (!/^\d{10}$/.test(strVal)) {
+            formatError = 'Phone number must be exactly 10 digits.';
+          }
+        } else if (f.type === 'email' || lowerName.includes('email') || lowerLabel.includes('mail')) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strVal)) {
+            formatError = 'Invalid email address.';
+          }
+        }
+      }
+    }
+
+    if (isMissing || formatError) {
+      this.invalidFields.add(currentPath);
+      this.fieldErrors[currentPath] = formatError || 'This field is required.';
+    } else {
+      this.invalidFields.delete(currentPath);
+      delete this.fieldErrors[currentPath];
+    }
+    
+    return { isMissing, formatError };
+  }
+
   async submitForm() {
-    // 1. Validate required fields
-    const missingFields: string[] = [];
+    this.invalidFields.clear();
+    this.fieldErrors = {};
+    const missingFieldLabels: string[] = [];
+    const missingFieldPaths: string[] = [];
+
     const checkRequired = (fields: any[], parentPath: string) => {
       fields.forEach(f => {
         if (!this.isFieldVisible(f, parentPath)) return;
@@ -349,20 +424,11 @@ export class McaFormComponent implements OnInit, OnChanges {
           for (let i = 0; i < count; i++) {
             checkRequired(f.subFields, `${currentPath}[${i}]`);
           }
-        } else if (f.required) {
-          if (f.type === 'file') {
-            if (!this.files[currentPath] && !this.existingDocs[currentPath]) {
-              missingFields.push(f.label || f.name);
-            }
-          } else if (f.type === 'checkbox') {
-            if (!this.formData[currentPath]) {
-              missingFields.push(f.label || f.name);
-            }
-          } else {
-            const val = this.formData[currentPath];
-            if (val === undefined || val === null || String(val).trim() === '') {
-              missingFields.push(f.label || f.name);
-            }
+        } else if (f.required || (this.formData[currentPath] !== undefined && this.formData[currentPath] !== null && String(this.formData[currentPath]).trim() !== '')) {
+          const res = this.validateField(f, currentPath);
+          if (res.isMissing || res.formatError) {
+            missingFieldLabels.push(f.label || f.name);
+            missingFieldPaths.push(currentPath);
           }
         }
       });
@@ -372,16 +438,18 @@ export class McaFormComponent implements OnInit, OnChanges {
       checkRequired(this.schema.fields, '');
     }
 
-    if (missingFields.length > 0) {
-      this.errorMessage.set(`Please complete all required fields: ${missingFields.slice(0, 3).join(', ')}${missingFields.length > 3 ? '...' : ''}`);
+    if (missingFieldPaths.length > 0) {
+      this.errorMessage.set(`Please complete all required fields: ${missingFieldLabels.slice(0, 3).join(', ')}${missingFieldLabels.length > 3 ? '...' : ''}`);
+      
+      // Scroll to the first invalid field directly
       setTimeout(() => {
-        const errorEl = document.querySelector('.error-banner');
-        if (errorEl) {
-          errorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const firstErrorEl = document.getElementById('field-' + missingFieldPaths[0]);
+        if (firstErrorEl) {
+          firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-      }, 50);
+      }, 100);
       return;
     }
 

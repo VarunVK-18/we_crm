@@ -1448,6 +1448,30 @@ iconStyleData: const IconStyleData(
                               bool isFormValid = _formKey.currentState!.validate();
 
                               if (isFormValid && isTurnoverValid) {
+                                final bool? confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Confirm Request', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    content: Text('Are you sure you want to request "${widget.packageName}"? Our experts will review your request and reach out to you within 24 hours.'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context, false),
+                                        child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () => Navigator.pop(context, true),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.black,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                        child: const Text('Yes, Submit'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+
+                                if (confirm != true) return;
+
                                 setState(() => _isLoading = true);
                                 final success = await _submitServiceRequest();
                                 if (mounted) {

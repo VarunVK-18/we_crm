@@ -175,7 +175,10 @@ export class Login implements OnInit {
         message = err.message;
       }
 
-      if (message.toLowerCase().includes('password')) {
+      if (message === 'Invalid email or password') {
+        title = 'Login Failed';
+        message = 'Invalid email or password. Please try again.';
+      } else if (message.toLowerCase().includes('password')) {
         title = 'Wrong Password';
         message = 'The password you entered is incorrect. Please try again.';
       } else if (message.toLowerCase().includes('not found') || message.toLowerCase().includes('exist') || message.toLowerCase().includes('invalid')) {

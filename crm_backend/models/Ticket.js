@@ -56,21 +56,14 @@ const TicketSchema = new mongoose.Schema({
  * Generate a sequential ticket ID starting from 1001.
  * Format: INC1001, INC1002, etc.
  */
-TicketSchema.pre('save', async function(next) {
+TicketSchema.pre('save', async function() {
   if (!this.ticketId) {
-    try {
-      const counter = await GlobalCounter.findOneAndUpdate(
-        { entity: 'ticket' },
-        { $inc: { seq: 1 } },
-        { new: true, upsert: true, setDefaultsOnInsert: true }
-      );
-      this.ticketId = `INC${1000 + counter.seq}`;
-      next();
-    } catch (err) {
-      next(err);
-    }
-  } else {
-    next();
+    const counter = await GlobalCounter.findOneAndUpdate(
+      { entity: 'ticket' },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+    this.ticketId = `INC${1000 + counter.seq}`;
   }
 });
 

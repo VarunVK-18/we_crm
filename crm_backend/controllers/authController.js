@@ -1754,8 +1754,9 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
     let isoCount = isoFields.filter(isFilled).length;
     score += (isoCount / isoFields.length) * 4; // ISO
     
-    // Multiply by 2 so it is stored out of 100, which the frontend expects (it halves it to get back to 50 max)
-    profile.complianceScore = Math.min(100, Math.round(score * 2));
+    // Add 50 points if MCA compliance plan (Compliance Radar) is active
+    let mcaScore = user && user.in_compliance_radar ? 50 : 0;
+    profile.complianceScore = Math.min(100, Math.round(score) + mcaScore);
 
     // ── Form Completion Percentage ─────────────────────────────────────────
     // Calculate how many fields of the form are filled
