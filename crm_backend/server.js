@@ -10,8 +10,46 @@ require('./utils/firebase');
 const app = express();
 const PORT = process.env.PORT;
 
+// CORS Configuration
+const normalizeOrigin = (urlStr) => {
+  if (!urlStr) return '';
+  try {
+    const formatted = /^https?:\/\//i.test(urlStr.trim()) ? urlStr.trim() : `https://${urlStr.trim()}`;
+    return new URL(formatted).origin.toLowerCase();
+  } catch (err) {
+    return urlStr.trim().toLowerCase().replace(/\/+$/, '');
+  }
+};
+
+const rawOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim()).filter(Boolean)
+  : [];
+
+const allowedOriginsSet = new Set(rawOrigins.map(normalizeOrigin));
+
+rawOrigins.forEach(o => {
+  if (o.includes('localhost')) {
+    const clean = o.replace(/^https?:\/\//i, '').replace(/\/+$/, '');
+    allowedOriginsSet.add(`http://${clean}`);
+  }
+});
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const normalizedReqOrigin = normalizeOrigin(origin);
+    if (allowedOriginsSet.has('*') || allowedOriginsSet.has(normalizedReqOrigin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use((req, res, next) => { console.log('INCOMING:', req.method, req.url); next(); });
 app.use(express.json());
 const fs = require('fs');
@@ -49,7 +87,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
 }));
 
 // MongoDB Connection
-const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/we_crm';
+const mongoURI = process.env.MONGO_URI;
 console.log('Mongoose is attempting to connect to:', mongoURI);
 
 mongoose.connect(mongoURI)
