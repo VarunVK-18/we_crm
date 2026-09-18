@@ -43,7 +43,7 @@ export class ClientDynamicFormComponent implements OnInit {
     this.route.params.subscribe(params => {
       if (params['id']) this.orderId.set(params['id']);
       if (params['serviceName']) {
-        this.serviceName.set(decodeURIComponent(params['serviceName']));
+        this.serviceName.set(params['serviceName']);
       }
       this.loadData();
     });
@@ -250,16 +250,17 @@ export class ClientDynamicFormComponent implements OnInit {
   invalidFields = new Set<string>();
   fieldErrors: Record<string, string> = {};
 
-  onTextInput(event: any, field: any, path: string) {
+  onTextInput(val: string, field: any, path: string) {
     const lowerName = (field.name || '').toLowerCase();
     const lowerLabel = (field.label || '').toLowerCase();
     const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
     const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
     
     if (hasPan && isNotNameOrDate) {
-      const upper = event.target.value.toUpperCase();
-      event.target.value = upper;
+      const upper = (val || '').toUpperCase();
       this.formData[path] = upper;
+    } else {
+      this.formData[path] = val;
     }
     this.validateField(field, path);
   }
@@ -288,7 +289,12 @@ export class ClientDynamicFormComponent implements OnInit {
         const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
         const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
 
-        if (hasPan && isNotNameOrDate) {
+        if (f.validation?.regex) {
+          const re = new RegExp(f.validation.regex);
+          if (!re.test(strVal)) {
+            formatError = f.validation.errorMessage || 'Invalid format.';
+          }
+        } else if (hasPan && isNotNameOrDate) {
           if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(strVal)) {
             formatError = 'Invalid PAN format. Example: ABCDE1234F';
           }
@@ -304,16 +310,61 @@ export class ClientDynamicFormComponent implements OnInit {
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strVal)) {
             formatError = 'Invalid email address.';
           }
+        } else if (lowerName.includes('name') || lowerLabel.includes('name')) {
+          if (!/^(?=.*[a-zA-Z])[a-zA-Z0-9\s\.\-]+$/.test(strVal)) {
+            formatError = 'Name must contain at least one letter and can only include alphanumeric characters, spaces, dots, or hyphens.';
+          }
+        } else if (lowerName.includes('model') || lowerLabel.includes('model')) {
+          if (!/^[a-zA-Z0-9\s\.\-]+$/.test(strVal)) {
+            formatError = 'Model number must only contain alphanumeric characters, spaces, dots, or hyphens.';
+          }
+        } else if (lowerName === 'gstin' || lowerLabel.includes('gstin') || lowerLabel.includes('gst number')) {
+          if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(strVal)) {
+            formatError = 'Invalid GSTIN format. Example: 22AAAAA0000A1Z5';
+          }
+        } else if (lowerName === 'cin' || lowerLabel.includes('cin')) {
+          if (!/^([LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}|[A-Z]{3}-\d{4})$/i.test(strVal)) {
+            formatError = 'Invalid format. Provide a 21-character CIN or an 8-character LLPIN (e.g. AAA-1234).';
+          }
+        } else if (lowerName.includes('udyam') || lowerLabel.includes('udyam')) {
+          if (!/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/.test(strVal)) {
+            formatError = 'Invalid UDYAM format. Example: UDYAM-MH-18-0000001';
+          }
+        } else if (lowerName.includes('postalcode') || lowerName.includes('pincode') || lowerLabel.includes('postal code') || lowerLabel.includes('pin code')) {
+          if (!/^\d{6}$/.test(strVal)) {
+            formatError = 'PIN Code must be exactly 6 digits.';
+          }
+        } else if (lowerName === 'din' || lowerLabel.includes('din')) {
+          if (!/^\d{8}$/.test(strVal)) {
+            formatError = 'DIN must be exactly 8 digits.';
+          }
+        } else if (lowerName === 'tan' || lowerLabel === 'tan' || lowerLabel.includes('tan number')) {
+          if (!/^[A-Z]{4}[0-9]{5}[A-Z]{1}$/.test(strVal)) {
+            formatError = 'Invalid TAN format. Example: ABCD12345E';
+          }
+        } else if (lowerName.includes('ifsc') || lowerLabel.includes('ifsc')) {
+          if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(strVal)) {
+            formatError = 'Invalid IFSC format. Example: HDFC0001234';
+          }
+        } else if (lowerName.includes('account') || lowerLabel.includes('account')) {
+          if (!/^\d{9,18}$/.test(strVal)) {
+            formatError = 'Bank account number must be between 9 and 18 digits.';
+          }
         }
       }
     }
 
     if (isMissing || formatError) {
       this.invalidFields.add(currentPath);
-      this.fieldErrors[currentPath] = formatError || 'This field is required.';
+      this.fieldErrors = {
+        ...this.fieldErrors,
+        [currentPath]: formatError || 'This field is required.'
+      };
     } else {
       this.invalidFields.delete(currentPath);
-      delete this.fieldErrors[currentPath];
+      const newErrors = { ...this.fieldErrors };
+      delete newErrors[currentPath];
+      this.fieldErrors = newErrors;
     }
     
     return { isMissing, formatError };

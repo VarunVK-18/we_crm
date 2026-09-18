@@ -20,11 +20,47 @@ const syncProfileData = async (order, formData, uploadedDocs) => {
       const newProfileData = formData.dynamicData || formData;
       const knownFields = ['pan', 'email', 'phone', 'address', 'cin', 'incorporationDate', 'gstin', 'directorName', 'directorEmail', 'directorPhone', 'directorPan', 'directorDin', 'bankAccount', 'bankIfsc', 'bankName', 'tan'];
 
+      // Pull directors array from either formData (dynamic form) or order.details (legacy forms)
+      const directorsArray = (newProfileData.directors && Array.isArray(newProfileData.directors)) ? 
+          newProfileData.directors : 
+          (order.details && order.details.directors && Array.isArray(order.details.directors) ? order.details.directors : null);
+
+      if (directorsArray) {
+        profile.directors = directorsArray.map((dir, idx) => {
+          const findDocUrl = (fieldSuffix) => {
+            const pathPattern = `directors[${idx}].${fieldSuffix}`;
+            const doc = uploadedDocs && uploadedDocs.find(d => d.name === pathPattern);
+            if (doc && doc.fileUrl) {
+              const docIdMatch = doc.fileUrl.match(/\/api\/documents\/([a-fA-F0-9]{24})/);
+              return docIdMatch ? docIdMatch[1] : doc.fileUrl;
+            }
+            return '';
+          };
+          return {
+            fullName: dir.fullName || dir.name || '',
+            email: dir.email || '',
+            phone: dir.phone || '',
+            pan: dir.pan || '',
+            aadhaar: dir.aadhaar || '',
+            din: dir.din || '',
+            dob: dir.dob || null,
+            role: dir.role || '',
+            address: dir.address || '',
+            shareholding: dir.shareholding || 0,
+            photoDocId: findDocUrl('photo'),
+            signatureDocId: findDocUrl('signature'),
+            addressProofDocId: findDocUrl('addressProof'),
+            panDocId: findDocUrl('panDoc'),
+            aadhaarDocId: findDocUrl('aadhaarDoc')
+          };
+        });
+      }
+
       for (const [key, value] of Object.entries(newProfileData)) {
         if (value !== undefined && value !== null && value !== '') {
           if (knownFields.includes(key)) {
             profile[key] = value;
-          } else {
+          } else if (key !== 'directors') {
             profile.dynamicProfileData = profile.dynamicProfileData || {};
             profile.dynamicProfileData[key] = value;
           }
@@ -61,6 +97,7 @@ const syncProfileData = async (order, formData, uploadedDocs) => {
     console.error('[SYNC ERROR]', err);
   }
 };
+exports._syncProfileData = syncProfileData; // Exported for unit testing
 // ----------------------------------
 
 
@@ -1193,10 +1230,10 @@ exports.submitMcaForm = async (req, res) => {
     const files = req.files || {};
     const uploadedDocs = [];
 
-    if (files.coi) uploadedDocs.push({ name: "Certificate of Incorporation", fileUrl: files.coi[0].path });
-    else if (req.body.coi_existing) uploadedDocs.push({ name: "Certificate of Incorporation", fileUrl: req.body.coi_existing });
-    if (files.pan) uploadedDocs.push({ name: "PAN Card of the Company", fileUrl: files.pan[0].path });
-    else if (req.body.pan_existing) uploadedDocs.push({ name: "PAN Card of the Company", fileUrl: req.body.pan_existing });
+    if (files.incorpCert) uploadedDocs.push({ name: "Certificate of Incorporation", fileUrl: files.incorpCert[0].path });
+    else if (req.body.incorpCert_existing) uploadedDocs.push({ name: "Certificate of Incorporation", fileUrl: req.body.incorpCert_existing });
+    if (files.panCard) uploadedDocs.push({ name: "PAN Card of the Company", fileUrl: files.panCard[0].path });
+    else if (req.body.panCard_existing) uploadedDocs.push({ name: "PAN Card of the Company", fileUrl: req.body.panCard_existing });
     if (files.moa) uploadedDocs.push({ name: "Memorandum of Association (MOA)", fileUrl: files.moa[0].path });
     else if (req.body.moa_existing) uploadedDocs.push({ name: "Memorandum of Association (MOA)", fileUrl: req.body.moa_existing });
     if (files.aoa) uploadedDocs.push({ name: "Articles of Association (AOA)", fileUrl: files.aoa[0].path });
@@ -1207,6 +1244,12 @@ exports.submitMcaForm = async (req, res) => {
     else if (req.body.salesInvoice_existing) uploadedDocs.push({ name: "Sales Invoice copies of last FY", fileUrl: req.body.salesInvoice_existing });
     if (files.purchaseBills) uploadedDocs.push({ name: "Purchase bills of last FY", fileUrl: files.purchaseBills[0].path });
     else if (req.body.purchaseBills_existing) uploadedDocs.push({ name: "Purchase bills of last FY", fileUrl: req.body.purchaseBills_existing });
+    if (files.gstDoc) uploadedDocs.push({ name: "GST Certificate", fileUrl: files.gstDoc[0].path });
+    else if (req.body.gstDoc_existing) uploadedDocs.push({ name: "GST Certificate", fileUrl: req.body.gstDoc_existing });
+    if (files.directorPanDoc) uploadedDocs.push({ name: "Director PAN", fileUrl: files.directorPanDoc[0].path });
+    else if (req.body.directorPanDoc_existing) uploadedDocs.push({ name: "Director PAN", fileUrl: req.body.directorPanDoc_existing });
+    if (files.aadhaar) uploadedDocs.push({ name: "Director Aadhaar", fileUrl: files.aadhaar[0].path });
+    else if (req.body.aadhaar_existing) uploadedDocs.push({ name: "Director Aadhaar", fileUrl: req.body.aadhaar_existing });
 
     const Checklist = require('../models/Checklist');
     const order = await Checklist.findById(id);
@@ -2256,13 +2299,13 @@ exports.submitDynamicForm = async (req, res) => {
         let recommendedFee = 0;
         
         if (turnoverCategory.includes('20') && !turnoverCategory.includes('50')) {
-          recommendedPlan = 'Startup Plan';
+          recommendedPlan = 'Basic Plan';
           recommendedFee = 25000;
         } else if (turnoverCategory.includes('20') && turnoverCategory.includes('50')) {
-          recommendedPlan = 'Corporate Plan';
+          recommendedPlan = 'Startup Plan';
           recommendedFee = 35000;
         } else if (turnoverCategory.includes('50') && !turnoverCategory.includes('20')) {
-          recommendedPlan = 'Enterprise Plan';
+          recommendedPlan = 'Corporate Plan';
           recommendedFee = 50000;
         }
 

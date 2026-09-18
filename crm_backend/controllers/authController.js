@@ -1642,14 +1642,14 @@ const updateMcaProfile = async (req, res) => {
     
     // Handle file uploads directly to EntityProfile
     const fileFieldMap = {
-      coi: 'incorpCertDocId',
-      pan: 'panCardDocId',
+      incorpCert: 'incorpCertDocId',
+      panCard: 'panCardDocId',
       moa: 'moaDocId',
       aoa: 'aoaDocId',
       bankStatement: 'bankDocId',
       salesInvoice: 'salesInvoiceDocId',
       purchaseBills: 'purchaseBillsDocId',
-      gstCert: 'gstDocId',
+      gstDoc: 'gstDocId',
       aadhaar: 'aadhaarDocId',
       directorPanDoc: 'directorPanDocId',
       udyamCert: 'udyamCertDocId',
@@ -1679,7 +1679,7 @@ const updateMcaProfile = async (req, res) => {
         }
 
         // OCR logic for specific documents
-        if (['coi', 'pan', 'gstCert'].includes(file.fieldname)) {
+        if (['incorpCert', 'panCard', 'gstDoc'].includes(file.fieldname)) {
           try {
             const keys = [process.env.GEMINI_API_KEY1, process.env.GEMINI_API_KEY2, process.env.GEMINI_API_KEY3].filter(Boolean);
             const base64Data = file.buffer.toString('base64');
@@ -1730,7 +1730,7 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
     let score = 0;
     const isFilled = (val) => val !== null && val !== undefined && val.toString().trim() !== '';
 
-    const incorpFields = [profile.entityName, profile.pan, profile.cin, profile.incorporationDate, profile.incorpCertDocId, profile.panCardDocId];
+    const incorpFields = [profile.entityName, profile.pan, profile.cin, profile.incorporationDate, profile.incorpCertDocId || profile.dynamicProfileData?.incorpCertFile, profile.panCardDocId || profile.dynamicProfileData?.panCardFile];
     let incorpCount = incorpFields.filter(isFilled).length;
     score += (incorpCount / incorpFields.length) * 16; // Incorporation
 
@@ -1742,7 +1742,7 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
     let tmCount = tmFields.filter(isFilled).length;
     score += (tmCount / tmFields.length) * 10; // Trademark
 
-    const gstFields = [profile.gstin, profile.gstDocId];
+    const gstFields = [profile.gstin, profile.gstDocId || profile.dynamicProfileData?.gstDocFile];
     let gstCount = gstFields.filter(isFilled).length;
     score += (gstCount / gstFields.length) * 5; // GST
 
@@ -1754,9 +1754,11 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
     let isoCount = isoFields.filter(isFilled).length;
     score += (isoCount / isoFields.length) * 4; // ISO
     
-    // Add 50 points if MCA compliance plan (Compliance Radar) is active
-    let mcaScore = user && user.in_compliance_radar ? 50 : 0;
-    profile.complianceScore = Math.min(100, Math.round(score) + mcaScore);
+    // ── Weighted Compliance Score (Profile portion only - max 50 pts) ─────────
+    // NOTE: The +50 for an active MCA plan is computed at READ TIME in
+    // entityProfileController.getEntityProfile so it is always entity-scoped
+    // and automatically removed when the plan expires. We do NOT save it here.
+    profile.complianceScore = Math.min(50, Math.round(score));
 
     // ── Form Completion Percentage ─────────────────────────────────────────
     // Calculate how many fields of the form are filled
@@ -1765,7 +1767,6 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
       const FormSchema = require('../models/FormSchema');
       const formSchema = await FormSchema.findOne({ serviceName: 'Company Profile' });
       if (formSchema && formSchema.fields && formSchema.fields.length > 0) {
-        const totalFields = formSchema.fields.length;
         const fieldToProfileMap = {
           companyName: () => profile.entityName,
           companyPan: () => profile.pan,
@@ -1793,13 +1794,13 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
           dpiitRefNo: () => profile.dynamicProfileData?.dpiitRefNo,
           mcaUsername: () => profile.dynamicProfileData?.mcaUsername,
           mcaPassword: () => profile.dynamicProfileData?.mcaPassword,
-          coi: () => profile.incorpCertDocId,
-          pan: () => profile.panCardDocId,
+          incorpCert: () => profile.dynamicProfileData?.incorpCertFile || profile.incorpCertDocId,
+          panCard: () => profile.dynamicProfileData?.panCardFile || profile.panCardDocId,
           moa: () => profile.moaDocId,
           aoa: () => profile.aoaDocId,
           aadhaar: () => profile.aadhaarDocId,
           directorPanDoc: () => profile.directorPanDocId,
-          gstCert: () => profile.gstDocId,
+          gstDoc: () => profile.dynamicProfileData?.gstDocFile || profile.gstDocId,
           udyamCert: () => profile.dynamicProfileData?.udyamCertFile || profile.udyamCertDocId,
           trademarkCert: () => profile.dynamicProfileData?.trademarkCertFile || profile.trademarkCertDocId,
           isoCert: () => profile.dynamicProfileData?.isoCertFile || profile.isoCertDocId,
@@ -1807,14 +1808,27 @@ Return ONLY a valid JSON object with these keys (if not found, set to null). No 
         };
 
         let filledCount = 0;
-        for (const field of formSchema.fields) {
+        
+        // Flatten fields to handle groups
+        const flatFields = [];
+        const flatten = (fields) => {
+          fields.forEach(f => {
+            if (f.type === 'group' && f.subFields) flatten(f.subFields);
+            else flatFields.push(f);
+          });
+        };
+        flatten(formSchema.fields);
+        
+        const totalFields = flatFields.length;
+
+        for (const field of flatFields) {
           const getter = fieldToProfileMap[field.name];
           let value = getter ? getter() : profile.dynamicProfileData?.[field.name];
           if (value !== undefined && value !== null && value.toString().trim() !== '') {
             filledCount++;
           }
         }
-        percentage = Math.round((filledCount / totalFields) * 100);
+        percentage = totalFields > 0 ? Math.round((filledCount / totalFields) * 100) : 0;
       }
     } catch (err) {
       console.warn('Could not calculate completion percentage:', err.message);

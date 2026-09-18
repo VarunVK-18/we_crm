@@ -132,7 +132,7 @@
           </div>
         </div>
 
-        <!-- No Active Compliance Plans Card -->
+        <!-- Compliance Plans Card -->
         @if (activeSubscriptions().length === 0) {
           <div class="premium-plan-card" style="flex: 1.5; display: flex; flex-direction: column; justify-content: space-between; min-height: 140px; padding: 20px; box-sizing: border-box; text-align: left;">
             <div class="ppc-glow"></div>
@@ -142,6 +142,42 @@
                 <p style="font-size: 11px; color: rgba(255,255,255,0.6); margin: 0 0 12px 0; line-height: 1.4; max-width: 220px;">Protect your business by keeping your company compliant with MCA.</p>
               </div>
               <button [routerLink]="['/client/services']" [queryParams]="{ serviceName: 'MCA Compliance' }" style="width: 100%; padding: 10px; background: white; color: #1e293b; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; margin-top: auto; text-align: center;">Apply for MCA Compliance</button>
+            </div>
+          </div>
+        } @else {
+          <div class="premium-plan-card active-plan" style="flex: 1.5; display: flex; flex-direction: column; justify-content: space-between; min-height: 180px; padding: 24px; box-sizing: border-box; text-align: left; background: #0b1120; border-radius: 16px; border: none; font-family: 'Inter', sans-serif;">
+            <div class="ppc-content" style="display: flex; flex-direction: column; justify-content: space-between; height: 100%; width: 100%; position: relative; z-index: 2;">
+              <!-- Top Row -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px;">
+                <span style="font-size: 14px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px;">{{ activeSubscriptions()[0].planName || 'MCA Compliance Plan' }}</span>
+                <!-- Trophy Icon SVG -->
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fcd34d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                  <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                  <path d="M4 22h16"></path>
+                  <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                  <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                  <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                </svg>
+              </div>
+
+              <!-- Middle Text -->
+              <div style="margin-bottom: auto;">
+                <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0; line-height: 1.2;">Startup Doctor</h2>
+                <h2 style="font-size: 22px; font-weight: 700; color: #ffffff; margin: 0; line-height: 1.2;">{{ activeSubscriptions()[0].planName || 'MCA Compliance Plan' }}</h2>
+              </div>
+
+              <!-- Bottom Row -->
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 32px;">
+                <div>
+                  <div style="font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase;">STATUS</div>
+                  <div style="font-size: 16px; font-weight: 600; color: #6ee7b7;">Active</div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: 1px; margin-bottom: 4px; text-transform: uppercase;">EXPIRES</div>
+                  <div style="font-size: 16px; font-weight: 600; color: #ffffff;">{{ (activeSubscriptions()[0].expiryDate | date:'dd MMM yyyy') || ('31 Mar ' + (currentYear + 1)) }}</div>
+                </div>
+              </div>
             </div>
           </div>
         }
@@ -175,7 +211,7 @@
       }
 
       <!-- MCA Form Embedded -->
-      @if (user() && (entityProfile()?.profileCompletionPercentage || 0) < 100) {
+      @if (user()) {
         <div style="margin-bottom: 24px; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; background: var(--bg-primary);">
           <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-color); background: #f8fafc; display: flex; align-items: center; gap: 16px;">
             <div style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #e0e7ff; border-radius: 50%;">
@@ -192,7 +228,7 @@
               <p style="margin: 4px 0 0; font-size: 13px; color: #64748b;">Complete your company profile to get your compliance score.</p>
             </div>
           </div>
-          <app-mca-form [isEmbedded]="true" [currentEntity]="currentEntity() === 'All Entities' ? '' : currentEntity()" (formCompleted)="onMcaFormCompleted()"></app-mca-form>
+          <app-complete-company-profile-form [isEmbedded]="true" [currentEntity]="currentEntity() === 'All Entities' ? '' : currentEntity()" (formCompleted)="onMcaFormCompleted()"></app-complete-company-profile-form>
         </div>
       }
 

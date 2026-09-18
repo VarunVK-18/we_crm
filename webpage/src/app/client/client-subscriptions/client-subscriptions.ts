@@ -57,29 +57,45 @@ export class ClientSubscriptions implements OnInit, OnDestroy {
     });
   });
 
+  /** Extract entity name from a subscription — mirrors mobile _parseEntityName */
+  private getSubEntityName(sub: any): string {
+    const cl = sub.checklist_id || {};
+    if (cl.details) {
+      if (cl.details.entityName) return cl.details.entityName.trim();
+      if (cl.details.companyName) return cl.details.companyName.trim();
+      if (cl.details.proposed_company_name) return cl.details.proposed_company_name.trim();
+      if (cl.details.businessName) return cl.details.businessName.trim();
+    }
+    if (cl.entityName) return cl.entityName.trim();
+    if (cl.companyName) return cl.companyName.trim();
+    // Also check top-level fields on the subscription directly
+    if (sub.entityName) return sub.entityName.trim();
+    if (sub.companyName) return sub.companyName.trim();
+    return '';
+  }
+
   /** Subscriptions filtered by the selected entity */
   filteredActiveSubscriptions = computed(() => {
     const sel = this.selectedEntity();
-    if (sel === 'All') return this.activeSubscriptions();
-    
-    return this.activeSubscriptions().filter(sub => {
-      const checklist = sub.checklist_id || {};
-      const entityName = (
-        checklist.details?.entityName ||
-        checklist.details?.companyName ||
-        checklist.details?.proposed_company_name ||
-        checklist.details?.businessName ||
-        checklist.details?.entity_name ||
-        checklist.entityName || checklist.companyName || ''
-      ).trim();
-      
-      // If no entity name is attached, we can fallback to true to show it everywhere, 
-      // or false to hide it. Better to show if we can't figure it out.
+    const subs = this.activeSubscriptions();
+    if (sel === 'All') return subs;
+
+    return subs.filter(sub => {
+      const entityName = this.getSubEntityName(sub);
+      // If we can't determine entity, show it (legacy data) — same as mobile
       if (!entityName) return true;
-      
-      return entityName.toLowerCase() === sel.toLowerCase();
+      return entityName.toLowerCase() === sel.trim().toLowerCase();
     });
   });
+
+  /** Plan badge label — mirrors mobile planLabel logic */
+  getPlanLabel(sub: any): string {
+    const name = (sub.plan_name || '').toLowerCase();
+    if (name.includes('startup')) return 'STARTUP PLAN';
+    if (name.includes('corporate')) return 'CORPORATE PLAN';
+    if (name.includes('basic')) return 'BASIC PLAN';
+    return 'MCA COMPLIANCE';
+  }
 
   activeSubscriptionsList = computed(() => this.filteredActiveSubscriptions().filter(s => s.status === 'Active' || s.status === 'Pending'));
   expiringSubscriptionsList = computed(() => this.filteredActiveSubscriptions().filter(s => s.status === 'Expiring Soon'));

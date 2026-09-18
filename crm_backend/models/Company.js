@@ -31,6 +31,18 @@ const CompanySchema = new mongoose.Schema({
     enum: ['active', 'inactive'],
     default: 'active'
   },
+  directors: [{
+    fullName: { type: String, trim: true },
+    email: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    pan: { type: String, trim: true },
+    aadhaar: { type: String, trim: true },
+    din: { type: String, trim: true },
+    dob: { type: Date },
+    role: { type: String, trim: true },
+    address: { type: String, trim: true },
+    shareholding: { type: Number }
+  }],
   settings: {
     incorporation_fee: { type: Number, default: 5000 },
     default_filing_tax: { type: Number, default: 18 },

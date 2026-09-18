@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -30,7 +30,7 @@ import {
   templateUrl: './client-help-support.html',
   styleUrl: './client-help-support.css'
 })
-export class ClientHelpSupport implements OnInit {
+export class ClientHelpSupport implements OnInit, OnDestroy {
   user = signal<any>(null);
   clientManager = signal<any>(null);
   isLoadingManager = signal<boolean>(true);
@@ -44,6 +44,37 @@ export class ClientHelpSupport implements OnInit {
   // Computed KPIs
   openTicketsCount = computed(() => this.tickets().filter(t => t.status === 'Pending' || t.status === 'In Progress').length);
   resolvedTicketsCount = computed(() => this.tickets().filter(t => t.status === 'Resolved').length);
+  
+  // Entity filter (synced with topbar switcher via localStorage + custom event)
+  selectedEntity = signal<string>(localStorage.getItem('client_selected_entity') || 'All');
+  private entityChangeHandler = (e: Event) => {
+    const name = (e as CustomEvent).detail as string;
+    this.selectedEntity.set(name);
+  };
+
+  // Helper: resolve entity name from a checklist object
+  private resolveEntityName(order: any): string {
+    return (
+      order.entityName ||
+      order.companyName ||
+      order.details?.entityName ||
+      order.details?.companyName ||
+      order.details?.proposed_company_name ||
+      order.details?.businessName ||
+      order.details?.entity_name ||
+      ''
+    ).trim();
+  }
+
+  private matchesEntity(order: any): boolean {
+    const sel = this.selectedEntity();
+    if (sel === 'All') return true;
+    return this.resolveEntityName(order).toLowerCase() === sel.toLowerCase();
+  }
+
+  actionRequiredCount = computed(() => {
+    return this.activeOrders().filter(c => this.matchesEntity(c) && c.derivedStatus === 'action-required').length;
+  });
   constructor(
     private router: Router, 
     public api: Api,
@@ -60,6 +91,11 @@ export class ClientHelpSupport implements OnInit {
     this.fetchClientManager();
     this.fetchTickets();
     this.fetchOrders();
+    window.addEventListener('entityChanged', this.entityChangeHandler);
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('entityChanged', this.entityChangeHandler);
   }
 
   fetchClientManager() {
@@ -123,8 +159,18 @@ export class ClientHelpSupport implements OnInit {
         for (const c of checklists) {
           if (c.status === 'completed') {
             completed.push(c);
-          } else if (c.assigned_to && c.assigned_to.role !== 'client_manager') {
-            active.push(c);
+          } else {
+            const isAssigned = !!c.assigned_to;
+            if (isAssigned) {
+              const needsDocUpload = c.requestedDocuments?.some((doc: any) => !doc.isUploaded);
+              const clientFormSubmitted = c.details?.clientFormSubmitted === true;
+              if (needsDocUpload || !clientFormSubmitted || c.action_required) {
+                c.derivedStatus = 'action-required';
+              } else {
+                c.derivedStatus = 'in-progress';
+              }
+              active.push(c);
+            }
           }
         }
         this.activeOrders.set(active);

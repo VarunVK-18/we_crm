@@ -33,6 +33,8 @@ class EntityProfile {
   final String bankName;
   final int complianceScore;
   final int profileCompletionPercentage;
+  final bool hasActivePlan;
+  final Map<String, dynamic>? activePlan;  // {planName, expiryDate, status}
 
   // Document references
   final EntityDocRef panCardDoc;
@@ -62,6 +64,8 @@ class EntityProfile {
     this.bankName = '',
     this.complianceScore = 0,
     this.profileCompletionPercentage = 0,
+    this.hasActivePlan = false,
+    this.activePlan,
     this.panCardDoc = const EntityDocRef(docId: '', docName: ''),
     this.aadhaarDoc = const EntityDocRef(docId: '', docName: ''),
     this.incorpCertDoc = const EntityDocRef(docId: '', docName: ''),
@@ -91,6 +95,8 @@ class EntityProfile {
       bankName: m['bankName'] ?? '',
       complianceScore: (m['complianceScore'] as num?)?.toInt() ?? 0,
       profileCompletionPercentage: (m['profileCompletionPercentage'] as num?)?.toInt() ?? 0,
+      hasActivePlan: m['hasActivePlan'] as bool? ?? false,
+      activePlan: m['activePlan'] != null ? Map<String, dynamic>.from(m['activePlan']) : null,
       panCardDoc: EntityDocRef(docId: m['panCardDocId'] ?? '', docName: m['panCardDocName'] ?? ''),
       aadhaarDoc: EntityDocRef(docId: m['aadhaarDocId'] ?? '', docName: m['aadhaarDocName'] ?? ''),
       incorpCertDoc: EntityDocRef(docId: m['incorpCertDocId'] ?? '', docName: m['incorpCertDocName'] ?? ''),
