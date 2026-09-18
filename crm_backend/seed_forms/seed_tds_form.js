@@ -40,7 +40,7 @@ async function seedTdsForm() {
           subFields: [
             { name: 'tanAvailable', label: 'TAN Available?', type: 'dropdown', required: true, options: ['Yes', 'No'] },
             { name: 'tanNumber', label: 'TAN Number', type: 'text', required: true, visibilityConditionStr: '{"field": "tanAvailable", "equals": "Yes"}', description: 'Enter a valid TAN (e.g. ABCD12345E)' },
-            { name: 'natureOfBusiness', label: 'Nature of Business / Profession', type: 'text', required: true },
+            { name: 'natureOfBusiness', label: 'Nature of Business / Profession', type: 'text', required: true, validation: { regex: "^(?=.*[A-Za-z])[A-Za-z0-9\\\\s\\\\.,&'-]+$", errorMessage: "Must contain at least one letter. Special characters limited to .,&'-" } },
             { name: 'natureOfPayments', label: 'Nature of Payments / TDS Applicable On', type: 'text', required: true },
             { name: 'employeeCount', label: 'Number of Employees / Deductees', type: 'number', required: false },
             { name: 'deductorType', label: 'TDS Deductor Type', type: 'dropdown', required: true, options: ['Company', 'Firm', 'Individual / Proprietor', 'HUF', 'Trust', 'Other'] }

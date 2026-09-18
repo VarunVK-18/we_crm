@@ -20,14 +20,14 @@ import '../../providers/compliance_provider.dart';
 import '../../providers/entity_profile_provider.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
-class McaProfileFormScreen extends ConsumerStatefulWidget {
-  const McaProfileFormScreen({super.key});
+class CompleteCompanyProfileFormScreen extends ConsumerStatefulWidget {
+  const CompleteCompanyProfileFormScreen({super.key});
 
   @override
-  ConsumerState<McaProfileFormScreen> createState() => _McaProfileFormScreenState();
+  ConsumerState<CompleteCompanyProfileFormScreen> createState() => _CompleteCompanyProfileFormScreenState();
 }
 
-class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
+class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompanyProfileFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -149,18 +149,27 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
                 ? user!.clientEntities.first.entityName
                 : ''));
 
-    for (var field in fields) {
-      if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
-        _dynamicControllers[field.name] = TextEditingController();
-        if (field.name == 'companyName' && autoName.isNotEmpty) {
-           _dynamicControllers[field.name]!.text = autoName;
+    // Flatten group fields recursively
+    void processFields(List<FormFieldSchema> fieldList) {
+      for (var field in fieldList) {
+        if (field.type == 'group') {
+          processFields(field.subFields ?? []);
+          continue;
         }
-      } else if (field.type == 'dropdown' || field.type == 'checkbox') {
-        _dynamicFormData[field.name] = ValueNotifier<String?>(null);
-      } else if (field.type == 'file') {
-        _dynamicFilePaths[field.name] = null;
+        if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
+          _dynamicControllers[field.name] = TextEditingController();
+          if (field.name == 'companyName' && autoName.isNotEmpty) {
+             _dynamicControllers[field.name]!.text = autoName;
+          }
+        } else if (field.type == 'dropdown' || field.type == 'checkbox') {
+          _dynamicFormData[field.name] = ValueNotifier<String?>(null);
+        } else if (field.type == 'file') {
+          _dynamicFilePaths[field.name] = null;
+        }
       }
     }
+
+    processFields(fields);
   }
 
   Future<void> _fetchProfile() async {
@@ -443,13 +452,13 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
         }
       }
 
-      await addFile('coi', _coiPath);
-      await addFile('pan', _panPath);
+      await addFile('incorpCert', _coiPath);
+      await addFile('panCard', _panPath);
       await addFile('moa', _moaPath);
       await addFile('aoa', _aoaPath);
       await addFile('aadhaar', _aadhaarPath);
       await addFile('directorPanDoc', _directorPanPath);
-      await addFile('gstCert', _gstCertPath);
+      await addFile('gstDoc', _gstCertPath);
       await addFile('udyamCert', _udyamCertPath);
       await addFile('trademarkCert', _trademarkCertPath);
       await addFile('isoCert', _isoCertPath);
@@ -678,88 +687,207 @@ class _McaProfileFormScreenState extends ConsumerState<McaProfileFormScreen> {
   // ── Builders ───────────────────────────────────────────────────────────────
 
   Widget _buildDynamicFields() {
-    if (_schema == null || _schema!.fields.isEmpty) return const SizedBox.shrink();
+    if (_schema == null || _schema!.fields.isEmpty) {
+      // Fallback: show static hardcoded form sections if schema fails to load
+      return _buildStaticFallbackForm();
+    }
 
-    return _buildSectionContainer(
-      title: 'Company Details',
-      icon: Icons.list_alt,
-      subtitle: 'Provide your company credentials and details',
+    // Build section containers for each group, or inline for flat fields
+    final List<Widget> sections = [];
+
+    // Always show Business Type + Annual Turnover at the top
+    sections.add(
+      _buildSectionContainer(
+        title: 'Business Overview',
+        icon: Icons.business,
+        subtitle: 'Select your business type and turnover bracket',
+        children: [
+          _buildDropdownRow(
+            'Type of Business Entity',
+            _businessTypeNotifier,
+            _businessTypes,
+            (val) => _businessTypeNotifier.value = val,
+          ),
+          _buildDropdownRow(
+            'Annual Turnover',
+            _annualTurnoverNotifier,
+            _turnoverOptions,
+            (val) => _annualTurnoverNotifier.value = val ?? 'Less than ₹20 Lakhs',
+          ),
+        ],
+      ),
+    );
+
+    // Build remaining fields from schema, grouping by group type
+    for (final field in _schema!.fields) {
+      if (field.type == 'group') {
+        final subFields = field.subFields ?? [];
+        if (subFields.isEmpty) continue;
+        sections.add(
+          _buildSectionContainer(
+            title: field.label,
+            icon: _groupIcon(field.name),
+            subtitle: null,
+            children: subFields.map((sf) => _buildSchemaField(sf)).toList(),
+          ),
+        );
+      } else {
+        // Top-level non-group field
+        sections.add(_buildSchemaField(field));
+      }
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: sections);
+  }
+
+  IconData _groupIcon(String groupName) {
+    switch (groupName) {
+      case 'businessDetails': return Icons.list_alt;
+      case 'contactDetails': return Icons.location_on_outlined;
+      case 'directorDetails': return Icons.person_outline;
+      case 'taxDetails': return Icons.receipt_long_outlined;
+      case 'documents': return Icons.attach_file;
+      default: return Icons.folder_outlined;
+    }
+  }
+
+  Widget _buildSchemaField(FormFieldSchema field) {
+    if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
+      TextInputType kbType = TextInputType.text;
+      if (field.type == 'number') kbType = TextInputType.number;
+      if (field.type == 'email') kbType = TextInputType.emailAddress;
+      if (field.type == 'phone') kbType = TextInputType.phone;
+
+      if (field.type == 'phone') {
+        return PhoneInputField(
+          controller: _dynamicControllers[field.name] ?? TextEditingController(),
+          label: field.label,
+          isRequired: field.required,
+        );
+      }
+
+      return _buildField(
+        field.label,
+        '',
+        _dynamicControllers[field.name] ?? TextEditingController(),
+        isRequired: field.required,
+        keyboardType: kbType,
+        isDate: field.type == 'date',
+      );
+    } else if (field.type == 'dropdown' && field.options != null) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(field.label, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 13, color: AppTheme.deepTeal)),
+            const SizedBox(height: 8),
+            DropdownButtonFormField2<String>(
+              isExpanded: true,
+              style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.black87),
+              valueListenable: _dynamicFormData[field.name],
+              decoration: InputDecoration(
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              items: field.options!.map((opt) => DropdownItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
+              onChanged: (val) {
+                _dynamicFormData[field.name]!.value = val;
+              },
+              dropdownStyleData: DropdownStyleData(
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+              ),
+              menuItemStyleData: const MenuItemStyleData(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (field.type == 'file') {
+      return _buildFileRow(
+        field.label,
+        _dynamicFilePaths[field.name],
+        () => _pickFile((p) => setState(() => _dynamicFilePaths[field.name] = p)),
+        isRequired: field.required,
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  // Fallback static form shown if schema API fails
+  Widget _buildStaticFallbackForm() {
+    return Column(
       children: [
-        _buildDropdownRow(
-          'Type of Business Entity',
-          _businessTypeNotifier,
-          _businessTypes,
-          (val) => _businessTypeNotifier.value = val,
+        _buildSectionContainer(
+          title: 'Business Information',
+          icon: Icons.list_alt,
+          subtitle: 'Basic company information',
+          children: [
+            _buildField('Company Name', '', _companyNameController, isRequired: true),
+            _buildField('Company PAN', '', _companyPanController, isRequired: true),
+            _buildField('CIN Number', '', _cinController),
+            _buildField('Incorporation Date', '', _incorporationDateController, isDate: true),
+            _buildDropdownRow('Type of Business Entity', _businessTypeNotifier, _businessTypes, (val) => _businessTypeNotifier.value = val),
+            _buildField('Nature of Business', '', _natureOfBusinessController),
+            _buildDropdownRow('Annual Turnover', _annualTurnoverNotifier, _turnoverOptions, (val) => _annualTurnoverNotifier.value = val ?? 'Less than ₹20 Lakhs'),
+          ],
         ),
-        _buildDropdownRow(
-          'Annual Turnover',
-          _annualTurnoverNotifier,
-          _turnoverOptions,
-          (val) => _annualTurnoverNotifier.value = val ?? 'Less than ₹20 Lakhs',
+        _buildSectionContainer(
+          title: 'Contact & Address',
+          icon: Icons.location_on_outlined,
+          subtitle: '',
+          children: [
+            _buildField('Registered Address', '', _registeredAddressController, isRequired: true),
+            _buildField('City', '', _cityController),
+            _buildField('State', '', _stateController),
+            _buildField('Postal Code', '', _postalCodeController),
+            _buildField('Company Email', '', _companyEmailController, keyboardType: TextInputType.emailAddress, isRequired: true),
+            _buildField('Company Phone', '', _companyPhoneController, keyboardType: TextInputType.phone, isRequired: true),
+          ],
         ),
-        ..._schema!.fields.map((field) {
-        if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
-          TextInputType kbType = TextInputType.text;
-          if (field.type == 'number') kbType = TextInputType.number;
-          if (field.type == 'email') kbType = TextInputType.emailAddress;
-          if (field.type == 'phone') kbType = TextInputType.phone;
-          
-          if (field.type == 'phone') {
-            return PhoneInputField(
-              controller: _dynamicControllers[field.name] ?? TextEditingController(),
-              label: field.label,
-              isRequired: field.required,
-            );
-          }
-          
-          return _buildField(
-            field.label,
-            '',
-            _dynamicControllers[field.name] ?? TextEditingController(),
-            isRequired: field.required,
-            keyboardType: kbType,
-            isDate: field.type == 'date',
-          );
-        } else if (field.type == 'dropdown' && field.options != null) {
-           return Padding(
-             padding: const EdgeInsets.only(bottom: 20),
-             child: Column(
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 Text(field.label, style: GoogleFonts.inter(fontWeight: FontWeight.w400, fontSize: 13, color: AppTheme.deepTeal)),
-                 const SizedBox(height: 8),
-                 DropdownButtonFormField2<String>(
-                   isExpanded: true,
-                   style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.black87),
-                   valueListenable: _dynamicFormData[field.name],
-                   decoration: InputDecoration(
-                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                   ),
-                   items: field.options!.map((opt) => DropdownItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
-                   onChanged: (val) {
-                     _dynamicFormData[field.name]!.value = val;
-                   },
-                   dropdownStyleData: DropdownStyleData(
-                     decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-                   ),
-                   menuItemStyleData: const MenuItemStyleData(
-                     padding: EdgeInsets.symmetric(horizontal: 16),
-                   ),
-                 ),
-               ],
-             ),
-           );
-        } else if (field.type == 'file') {
-           return _buildFileRow(
-             field.label,
-             _dynamicFilePaths[field.name],
-             () => _pickFile((p) => setState(() => _dynamicFilePaths[field.name] = p)),
-             isRequired: field.required
-           );
-        }
-        return const SizedBox.shrink();
-      }),
+        _buildSectionContainer(
+          title: 'Director / Signatory',
+          icon: Icons.person_outline,
+          subtitle: '',
+          children: [
+            _buildField('Director Name', '', _directorNameController, isRequired: true),
+            _buildField('Director DIN', '', _directorDinController),
+            _buildField('Director PAN', '', _directorPanController),
+            _buildField('Director Aadhaar', '', _directorAadhaarController),
+            _buildField('Director Email', '', _directorEmailController, keyboardType: TextInputType.emailAddress),
+            _buildField('Director Mobile', '', _directorMobileController, keyboardType: TextInputType.phone),
+          ],
+        ),
+        _buildSectionContainer(
+          title: 'Tax & Certifications (Optional)',
+          icon: Icons.receipt_long_outlined,
+          subtitle: '',
+          children: [
+            _buildField('GSTIN', '', _gstinController),
+            _buildField('Udyam Number', '', _udyamNumberController),
+            _buildField('Trademark Number', '', _trademarkNoController),
+            _buildField('ISO Certificate No.', '', _isoCertNoController),
+            _buildField('DPIIT Ref. No.', '', _dpiitRefNoController),
+            _buildField('MCA Username', '', _mcaUsernameController),
+            _buildField('MCA Password', '', _mcaPasswordController),
+          ],
+        ),
+        _buildSectionContainer(
+          title: 'Required Documents',
+          icon: Icons.attach_file,
+          subtitle: '',
+          children: [
+            _buildFileRow('Incorporation Certificate (COI)', _coiPath, () => _pickFile((p) => setState(() => _coiPath = p)), isRequired: true),
+            _buildFileRow('Company PAN Card', _panPath, () => _pickFile((p) => setState(() => _panPath = p)), isRequired: true),
+            _buildFileRow('MOA', _moaPath, () => _pickFile((p) => setState(() => _moaPath = p))),
+            _buildFileRow('AOA', _aoaPath, () => _pickFile((p) => setState(() => _aoaPath = p))),
+            _buildFileRow('Aadhaar', _aadhaarPath, () => _pickFile((p) => setState(() => _aadhaarPath = p))),
+            _buildFileRow('Director PAN', _directorPanPath, () => _pickFile((p) => setState(() => _directorPanPath = p))),
+            _buildFileRow('GST Certificate', _gstCertPath, () => _pickFile((p) => setState(() => _gstCertPath = p))),
+            _buildFileRow('Bank Statement', _bankStatementPath, () => _pickFile((p) => setState(() => _bankStatementPath = p))),
+          ],
+        ),
       ],
     );
   }

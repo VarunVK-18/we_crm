@@ -12,8 +12,8 @@ const schema = {
       required: false,
       subFields: [
         { name: 'companyName', label: 'Company / Business Name', type: 'text', required: true },
-        { name: 'businessType', label: 'Business Type (LLP, Pvt Ltd, etc.)', type: 'text', required: true },
-        { name: 'natureOfBusiness', label: 'Nature of Business', type: 'text', required: true },
+        { name: 'businessType', label: 'Business Type (LLP, Pvt Ltd, etc.)', type: 'text', required: true, validation: { regex: "^(?=.*[A-Za-z])[A-Za-z0-9\\\\s\\\\.,&'-]+$", errorMessage: "Must contain at least one letter. Special characters limited to .,&'-" } },
+        { name: 'natureOfBusiness', label: 'Nature of Business', type: 'text', required: true, validation: { regex: "^(?=.*[A-Za-z])[A-Za-z0-9\\\\s\\\\.,&'-]+$", errorMessage: "Must contain at least one letter. Special characters limited to .,&'-" } },
         { name: 'cin', label: 'CIN (Corporate Identification Number)', type: 'text', required: false },
         { name: 'incorporationDate', label: 'Date of Incorporation (YYYY-MM-DD)', type: 'date', required: false },
         { name: 'annualTurnover', label: 'Annual Turnover', type: 'dropdown', required: true, options: ['Less than ₹20 Lakhs', '₹20-50 Lakhs', 'Greater than ₹50 Lakhs'] }
@@ -56,9 +56,9 @@ const schema = {
         { name: 'companyPan', label: 'Company PAN', type: 'text', required: false },
         { name: 'gstin', label: 'GSTIN', type: 'text', required: false },
         { name: 'udyamNumber', label: 'Udyam / MSME Number', type: 'text', required: false },
-        { name: 'trademarkNo', label: 'Trademark Application / Cert Number', type: 'text', required: false },
-        { name: 'dpiitRefNo', label: 'DPIIT Registration Number', type: 'text', required: false },
-        { name: 'isoCertNo', label: 'ISO Certificate Number', type: 'text', required: false }
+        { name: 'trademarkNo', label: 'Trademark Application / Cert Number', type: 'text', required: false, validation: { regex: "^[A-Za-z0-9/-]{3,30}$", errorMessage: "3–30 characters, letters/numbers, / and - allowed" } },
+        { name: 'dpiitRefNo', label: 'DPIIT Registration Number', type: 'text', required: false, validation: { regex: "^DIPP[0-9]{3,10}$", errorMessage: "Must start with DIPP followed by digits (e.g. DIPP123)" } },
+        { name: 'isoCertNo', label: 'ISO Certificate Number', type: 'text', required: false, validation: { regex: "^[A-Za-z0-9][A-Za-z0-9./-]{2,49}$", errorMessage: "3–50 characters, alphanumeric with /, ., - allowed" } }
       ]
     },
     {
@@ -79,7 +79,8 @@ const schema = {
   crossValidations: []
 };
 
-mongoose.connect('mongodb://193.203.161.48:27018/we_crm').then(async () => {
+const mongoURI = process.env.MONGO_URI || 'mongodb://193.203.161.48:27018/';
+mongoose.connect(mongoURI).then(async () => {
   const FormSchema = mongoose.connection.db.collection('formschemas');
   await FormSchema.updateOne({ serviceName: 'Company Profile' }, { $set: schema }, { upsert: true });
   console.log('Seeded Company Profile form schema!');

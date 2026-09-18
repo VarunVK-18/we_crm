@@ -1,9 +1,6 @@
-MongoServerError: E11000 duplicate key error collection: test.entityprofiles index: uid_1 dup key: { uid: "6a7f6291748c5044db8a6d07" }
-    at InsertOneOperation.handleOk (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\operations\insert.js:51:19)
-    at executeOperationWithRetries (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\operations\execute_operation.js:194:34)
+ValidationError: EntityProfile validation failed: pan: Cast to string failed for value "[ ' ABCDE1234F', ' ABCDE1234F' ]" (type Array) at path "pan", cin: Cast to string failed for value "[ 'U72200TN2020PTC123456', 'U72200TN2020PTC123456' ]" (type Array) at path "cin", incorporationDate: Cast to string failed for value "[ '2026-09-18', '2026-09-18' ]" (type Array) at path "incorporationDate", email: Cast to string failed for value "[ 'company@gmail.com', 'company@gmail.com' ]" (type Array) at path "email", phone: Cast to string failed for value "[ '1234567890', '1234567890' ]" (type Array) at path "phone", address: Cast to string failed for value "[ 'chennai', 'chennai' ]" (type Array) at path "address", gstin: Cast to string failed for value "[ '22AAAAA0000A1Z5', '22AAAAA0000A1Z5' ]" (type Array) at path "gstin", directorName: Cast to string failed for value "[ 'Yovel', 'Yovel' ]" (type Array) at path "directorName", directorEmail: Cast to string failed for value "[ 'yovel@gmail.com', 'yovel@gmail.com' ]" (type Array) at path "directorEmail", directorPhone: Cast to string failed for value "[ '1234567890', '1234567890' ]" (type Array) at path "directorPhone", directorPan: Cast to string failed for value "[ ' ABCDE1234F', ' ABCDE1234F' ]" (type Array) at path "directorPan", directorDin: Cast to string failed for value "[ '12345678', '12345678' ]" (type Array) at path "directorDin"
+    at Document.invalidate (C:\projects\we_crm\crm_backend\node_modules\mongoose\lib\document.js:3444:32)
+    at model.$set (C:\projects\we_crm\crm_backend\node_modules\mongoose\lib\document.js:1530:12)
+    at model.set [as pan] (C:\projects\we_crm\crm_backend\node_modules\mongoose\lib\helpers\document\compile.js:208:19)
+    at updateMcaProfile (C:\projects\we_crm\crm_backend\controllers\authController.js:1583:47)
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
-    at async executeOperation (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\operations\execute_operation.js:83:16)
-    at async Collection.insertOne (C:\projects\we_crm\crm_backend\node_modules\mongodb\lib\collection.js:154:16)
-    at async model.$__save (C:\projects\we_crm\crm_backend\node_modules\mongoose\lib\model.js:428:16)
-    at async model.save (C:\projects\we_crm\crm_backend\node_modules\mongoose\lib\model.js:667:5)
-    at async updateMcaProfile (C:\projects\we_crm\crm_backend\controllers\authController.js:1805:5)

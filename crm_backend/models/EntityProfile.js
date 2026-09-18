@@ -28,6 +28,26 @@ const entityProfileSchema = new mongoose.Schema({
   tan: { type: String, default: '' },               // TAN number
   complianceScore: { type: Number, default: 0 },    // Compliance Score out of 100
   profileCompletionPercentage: { type: Number, default: 0 }, // Circular progress percentage
+  
+  // Array to store dynamically generated directors/partners/proprietors
+  directors: [{
+    fullName: { type: String, trim: true },
+    email: { type: String, trim: true },
+    phone: { type: String, trim: true },
+    pan: { type: String, trim: true },
+    aadhaar: { type: String, trim: true },
+    din: { type: String, trim: true },
+    dob: { type: Date },
+    role: { type: String, trim: true },
+    address: { type: String, trim: true },
+    shareholding: { type: Number },
+    photoDocId: { type: String, default: '' },
+    signatureDocId: { type: String, default: '' },
+    addressProofDocId: { type: String, default: '' },
+    panDocId: { type: String, default: '' },
+    aadhaarDocId: { type: String, default: '' }
+  }],
+
   dynamicProfileData: { type: mongoose.Schema.Types.Mixed, default: {} }, // Additional data
   
   // Common Document References (stores MongoDB Document _id strings)

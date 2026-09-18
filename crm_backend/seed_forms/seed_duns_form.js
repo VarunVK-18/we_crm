@@ -72,7 +72,7 @@ async function seedDunsForm() {
           type: 'group',
           required: false,
           subFields: [
-            { name: 'natureOfBusiness', label: 'Nature of Business', type: 'text', required: true },
+            { name: 'natureOfBusiness', label: 'Nature of Business', type: 'text', required: true, validation: { regex: "^(?=.*[A-Za-z])[A-Za-z0-9\\\\s\\\\.,&'-]+$", errorMessage: "Must contain at least one letter. Special characters limited to .,&'-" } },
             { name: 'mainProducts', label: 'Main Products / Services', type: 'text', required: true },
             { name: 'annualRevenue', label: 'Annual Revenue (Approx)', type: 'dropdown', required: true, options: ['< 50 Lakhs', '50 Lakhs - 1 Crore', '1 Cr - 10 Cr', '10 – 30 Cr', '30 - 100 Cr', '100 - 250 Cr', '250 - 500 Cr', 'Above 500 Cr'] },
             { name: 'annualTurnover', label: 'Annual Turnover', type: 'number', required: true }

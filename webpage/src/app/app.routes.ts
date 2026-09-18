@@ -33,7 +33,7 @@ import { OpcForm } from './client/forms/opc-form/opc-form';
 import { GstComplianceForm } from './client/forms/gst-compliance-form/gst-compliance-form';
 import { LeiForm } from './client/forms/lei-form/lei-form';
 import { BisForm } from './client/forms/bis-form/bis-form';
-import { McaFormComponent } from './client/forms/mca-form/mca-form';
+import { CompleteCompanyProfileFormComponent } from './client/forms/complete-company-profile-form/complete-company-profile-form';
 import { ProprietorshipForm } from './client/forms/proprietorship-form/proprietorship-form';
 import { TdsForm } from './client/forms/tds-form/tds-form';
 import { ItrForm } from './client/forms/itr-form/itr-form';
@@ -119,8 +119,8 @@ export const routes: Routes = [
       { path: 'forms/lie/:id', component: LeiForm },
       { path: 'forms/lei/:id', component: LeiForm },
       { path: 'forms/bis/:id', component: BisForm },
-      { path: 'forms/mca/:id', component: McaFormComponent },
-      { path: 'forms/mca-profile', component: McaFormComponent },
+      { path: 'forms/mca/:id', component: CompleteCompanyProfileFormComponent },
+      { path: 'forms/mca-profile', component: CompleteCompanyProfileFormComponent },
       { path: 'forms/proprietorship/:id', component: ProprietorshipForm },
       { path: 'forms/tds/:id', component: TdsForm },
       { path: 'forms/itr/:id', component: ItrForm },

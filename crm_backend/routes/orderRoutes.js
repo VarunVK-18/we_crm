@@ -238,15 +238,18 @@ router.post(
 router.post(
   '/:id/submit-mca-form',
   checkUser,
-  upload.fields([
-    { name: 'coi', maxCount: 1 },
-    { name: 'pan', maxCount: 1 },
-    { name: 'moa', maxCount: 1 },
-    { name: 'aoa', maxCount: 1 },
-    { name: 'bankStatement', maxCount: 1 },
-    { name: 'salesInvoice', maxCount: 1 },
-    { name: 'purchaseBills', maxCount: 1 }
-  ]), compressUploads,
+    upload.fields([
+      { name: 'incorpCert', maxCount: 1 },
+      { name: 'panCard', maxCount: 1 },
+      { name: 'moa', maxCount: 1 },
+      { name: 'aoa', maxCount: 1 },
+      { name: 'bankStatement', maxCount: 1 },
+      { name: 'salesInvoice', maxCount: 1 },
+      { name: 'purchaseBills', maxCount: 1 },
+      { name: 'gstDoc', maxCount: 1 },
+      { name: 'directorPanDoc', maxCount: 1 },
+      { name: 'aadhaar', maxCount: 1 }
+    ]), compressUploads,
   saveFilesToDatabase,
   orderController.submitMcaForm
 );

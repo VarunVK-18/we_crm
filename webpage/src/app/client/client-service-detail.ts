@@ -202,7 +202,7 @@ export class ClientServiceDetail implements OnInit, OnDestroy {
     if (!serviceName) return;
     const orderId = this.order()?._id || this.order()?.id;
     if (orderId) {
-      this.router.navigate(['/client/forms/dynamic', encodeURIComponent(serviceName), orderId]);
+      this.router.navigate(['/client/forms/dynamic', serviceName, orderId]);
     }
   }
 

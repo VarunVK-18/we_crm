@@ -18,7 +18,7 @@ import '../../providers/auth_provider.dart';
 import 'package:crm_app/core/utils/http_client.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import '../orders/order_chat_screen.dart';
-import 'mca_profile_form_screen.dart';
+import 'complete_company_profile_form_screen.dart';
 import '../../providers/orders_provider.dart';
 import '../../providers/entity_profile_provider.dart';
 
@@ -653,7 +653,7 @@ class ComplianceRadarScreen extends ConsumerWidget {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => const McaProfileFormScreen(),
+                                    builder: (context) => const CompleteCompanyProfileFormScreen(),
                                   ),
                                 );
                               },

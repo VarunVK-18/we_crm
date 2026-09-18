@@ -40,7 +40,7 @@ async function seedProprietorshipForm() {
           required: false,
           subFields: [
             { name: 'businessName', label: 'Proposed Business / Trade Name', type: 'text', required: true },
-            { name: 'businessActivity', label: 'Nature of Business / Business Activity', type: 'text', required: true },
+            { name: 'businessActivity', label: 'Nature of Business / Business Activity', type: 'text', required: true, validation: { regex: "^(?=.*[A-Za-z])[A-Za-z0-9\\\\s\\\\.,&'-]+$", errorMessage: "Must contain at least one letter. Special characters limited to .,&'-" } },
             { name: 'businessAddress', label: 'Business Address', type: 'text', required: true },
             { name: 'businessState', label: 'State', type: 'text', required: true },
             { name: 'businessDistrict', label: 'District', type: 'text', required: false },

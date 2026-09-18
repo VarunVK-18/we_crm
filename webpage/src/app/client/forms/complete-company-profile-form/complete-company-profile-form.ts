@@ -6,15 +6,16 @@ import { Api } from '../../../api';
 import { DraftService } from '../../../services/draft.service';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @Component({
-  selector: 'app-mca-form',
+  selector: 'app-complete-company-profile-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, WeLoaderComponent],
-  templateUrl: './mca-form.html',
-  styleUrls: ['../forms-shared.css', './mca-form.css']
+  imports: [CommonModule, FormsModule, WeLoaderComponent, PdfViewerModule],
+  templateUrl: './complete-company-profile-form.html',
+  styleUrls: ['../forms-shared.css', './complete-company-profile-form.css']
 })
-export class McaFormComponent implements OnInit, OnChanges {
+export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
   @Input() isEmbedded = false;
   @Input() currentEntity: string = '';
   @Output() formCompleted = new EventEmitter<void>();
@@ -38,7 +39,7 @@ export class McaFormComponent implements OnInit, OnChanges {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   public location = inject(Location);
-  private api = inject(Api);
+  public api = inject(Api);
   private draftService = inject(DraftService);
   private confirmDialog = inject(ConfirmDialogService);
   private cdr = inject(ChangeDetectorRef);
@@ -54,6 +55,70 @@ export class McaFormComponent implements OnInit, OnChanges {
       }
       this.fetchProfileData();
     }
+  }
+
+  docViewerSrc = '';
+  docViewerName = '';
+  docViewerType = signal<'pdf' | 'image' | ''>('');
+  isDocViewerOpen = signal(false);
+  isDocViewerLoading = signal(false);
+
+  async openDocViewer(url: string, name: string, event: Event) {
+    event.preventDefault();
+    let finalUrl = url.startsWith('http') ? url : (this.api.serverUrl + 'api/documents/' + url);
+    this.docViewerName = name || 'Document';
+    this.docViewerType.set('');
+    this.isDocViewerLoading.set(true);
+    this.isDocViewerOpen.set(true);
+
+    try {
+      const res = await fetch(finalUrl, { headers: { 'Range': 'bytes=0-3' } });
+      if (!res.ok) {
+        alert('Document not found or no longer available.');
+        this.closeDocViewer();
+        return;
+      }
+      const buffer = await res.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+        this.docViewerType.set('pdf');
+      } else if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+        this.docViewerType.set('image');
+      } else if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
+        this.docViewerType.set('image');
+      } else if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) {
+        this.docViewerType.set('image');
+      } else {
+        const cType = res.headers.get('content-type') || '';
+        if (cType.includes('pdf')) this.docViewerType.set('pdf');
+        else if (cType.includes('image')) this.docViewerType.set('image');
+      }
+    } catch (e) {
+      const lowerUrl = finalUrl.toLowerCase();
+      if (lowerUrl.includes('.pdf') || lowerUrl.includes('pdf')) {
+        this.docViewerType.set('pdf');
+      } else if (lowerUrl.match(/\.(jpg|jpeg|png|gif|webp)/)) {
+        this.docViewerType.set('image');
+      }
+    }
+
+    this.docViewerSrc = finalUrl;
+    this.isDocViewerLoading.set(false);
+  }
+
+  closeDocViewer() {
+    this.isDocViewerOpen.set(false);
+    this.isDocViewerLoading.set(false);
+    this.docViewerSrc = '';
+    this.docViewerName = '';
+    this.docViewerType.set('');
+  }
+
+  forceDownload(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    let docName = this.docViewerName || 'document';
+    this.api.downloadFile(this.docViewerSrc, docName);
   }
 
   ngOnInit() {
@@ -145,27 +210,27 @@ export class McaFormComponent implements OnInit, OnChanges {
             Object.assign(this.formData, profile.dynamicProfileData);
           }
 
-          const mapExistingDoc = (docIdKey: string, docNameKey: string, formField: string) => {
+          const mapExistingDoc = (docIdKey: string, docNameKey: string, formField: string, fallbackKey: string) => {
              if (profile[docIdKey]) {
                 this.existingDocs[formField] = { fileUrl: profile[docIdKey], name: profile[docNameKey] || 'Uploaded Document' };
-             } else if (profile.dynamicProfileData && profile.dynamicProfileData[`${formField}File`]) {
-                this.existingDocs[formField] = { fileUrl: profile.dynamicProfileData[`${formField}File`], name: 'Uploaded Document' };
+             } else if (profile.dynamicProfileData && profile.dynamicProfileData[`${fallbackKey}File`]) {
+                this.existingDocs[formField] = { fileUrl: profile.dynamicProfileData[`${fallbackKey}File`], name: 'Uploaded Document' };
              }
           };
 
-          mapExistingDoc('incorpCertDocId', 'incorpCertDocName', 'coi');
-          mapExistingDoc('panCardDocId', 'panCardDocName', 'pan');
-          mapExistingDoc('directorPanDocId', 'directorPanDocName', 'directorPanDoc');
-          mapExistingDoc('aadhaarDocId', 'aadhaarDocName', 'aadhaar');
-          mapExistingDoc('gstDocId', 'gstDocName', 'gstCert');
-          mapExistingDoc('bankDocId', 'bankDocName', 'bankStatement');
-          mapExistingDoc('moaDocId', 'moaDocName', 'moa');
-          mapExistingDoc('aoaDocId', 'aoaDocName', 'aoa');
-          mapExistingDoc('udyamCertDocId', 'udyamCertDocName', 'udyamCert');
-          mapExistingDoc('trademarkCertDocId', 'trademarkCertDocName', 'trademarkCert');
-          mapExistingDoc('isoCertDocId', 'isoCertDocName', 'isoCert');
-          mapExistingDoc('salesInvoiceDocId', 'salesInvoiceDocName', 'salesInvoice');
-          mapExistingDoc('purchaseBillsDocId', 'purchaseBillsDocName', 'purchaseBills');
+          mapExistingDoc('incorpCertDocId', 'incorpCertDocName', 'documents.incorpCert', 'incorpCert');
+          mapExistingDoc('panCardDocId', 'panCardDocName', 'documents.panCard', 'panCard');
+          mapExistingDoc('directorPanDocId', 'directorPanDocName', 'documents.directorPanDoc', 'directorPanDoc');
+          mapExistingDoc('aadhaarDocId', 'aadhaarDocName', 'documents.aadhaar', 'aadhaar');
+          mapExistingDoc('gstDocId', 'gstDocName', 'documents.gstDoc', 'gstDoc');
+          mapExistingDoc('bankDocId', 'bankDocName', 'documents.bankStatement', 'bankStatement');
+          mapExistingDoc('moaDocId', 'moaDocName', 'documents.moa', 'moa');
+          mapExistingDoc('aoaDocId', 'aoaDocName', 'documents.aoa', 'aoa');
+          mapExistingDoc('udyamCertDocId', 'udyamCertDocName', 'documents.udyamCert', 'udyamCert');
+          mapExistingDoc('trademarkCertDocId', 'trademarkCertDocName', 'documents.trademarkCert', 'trademarkCert');
+          mapExistingDoc('isoCertDocId', 'isoCertDocName', 'documents.isoCert', 'isoCert');
+          mapExistingDoc('salesInvoiceDocId', 'salesInvoiceDocName', 'documents.salesInvoice', 'salesInvoice');
+          mapExistingDoc('purchaseBillsDocId', 'purchaseBillsDocName', 'documents.purchaseBills', 'purchaseBills');
 
           this.cdr.detectChanges();
         }
@@ -337,16 +402,17 @@ export class McaFormComponent implements OnInit, OnChanges {
   invalidFields = new Set<string>();
   fieldErrors: Record<string, string> = {};
 
-  onTextInput(event: any, field: any, path: string) {
+  onTextInput(val: string, field: any, path: string) {
     const lowerName = (field.name || '').toLowerCase();
     const lowerLabel = (field.label || '').toLowerCase();
     const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
     const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
     
     if (hasPan && isNotNameOrDate) {
-      const upper = event.target.value.toUpperCase();
-      event.target.value = upper;
+      const upper = (val || '').toUpperCase();
       this.formData[path] = upper;
+    } else {
+      this.formData[path] = val;
     }
     this.validateField(field, path);
   }
@@ -375,7 +441,12 @@ export class McaFormComponent implements OnInit, OnChanges {
         const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
         const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
 
-        if (hasPan && isNotNameOrDate) {
+        if (f.validation?.regex) {
+          const re = new RegExp(f.validation.regex);
+          if (!re.test(strVal)) {
+            formatError = f.validation.errorMessage || 'Invalid format.';
+          }
+        } else if (hasPan && isNotNameOrDate) {
           if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(strVal)) {
             formatError = 'Invalid PAN format. Example: ABCDE1234F';
           }
@@ -391,16 +462,61 @@ export class McaFormComponent implements OnInit, OnChanges {
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strVal)) {
             formatError = 'Invalid email address.';
           }
+        } else if (lowerName.includes('name') || lowerLabel.includes('name')) {
+          if (!/^(?=.*[a-zA-Z])[a-zA-Z0-9\s\.\-]+$/.test(strVal)) {
+            formatError = 'Name must contain at least one letter and can only include alphanumeric characters, spaces, dots, or hyphens.';
+          }
+        } else if (lowerName.includes('model') || lowerLabel.includes('model')) {
+          if (!/^[a-zA-Z0-9\s\.\-]+$/.test(strVal)) {
+            formatError = 'Model number must only contain alphanumeric characters, spaces, dots, or hyphens.';
+          }
+        } else if (lowerName === 'gstin' || lowerLabel.includes('gstin') || lowerLabel.includes('gst number')) {
+          if (!/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(strVal)) {
+            formatError = 'Invalid GSTIN format. Example: 22AAAAA0000A1Z5';
+          }
+        } else if (lowerName === 'cin' || lowerLabel.includes('cin')) {
+          if (!/^([LU][0-9]{5}[A-Z]{2}[0-9]{4}[A-Z]{3}[0-9]{6}|[A-Z]{3}-\d{4})$/i.test(strVal)) {
+            formatError = 'Invalid format. Provide a 21-character CIN or an 8-character LLPIN (e.g. AAA-1234).';
+          }
+        } else if (lowerName.includes('udyam') || lowerLabel.includes('udyam')) {
+          if (!/^UDYAM-[A-Z]{2}-\d{2}-\d{7}$/.test(strVal)) {
+            formatError = 'Invalid UDYAM format. Example: UDYAM-MH-18-0000001';
+          }
+        } else if (lowerName.includes('postalcode') || lowerName.includes('pincode') || lowerLabel.includes('postal code') || lowerLabel.includes('pin code')) {
+          if (!/^\d{6}$/.test(strVal)) {
+            formatError = 'PIN Code must be exactly 6 digits.';
+          }
+        } else if (lowerName === 'din' || lowerLabel.includes('din')) {
+          if (!/^\d{8}$/.test(strVal)) {
+            formatError = 'DIN must be exactly 8 digits.';
+          }
+        } else if (lowerName === 'tan' || lowerLabel === 'tan' || lowerLabel.includes('tan number')) {
+          if (!/^[A-Z]{4}[0-9]{5}[A-Z]{1}$/.test(strVal)) {
+            formatError = 'Invalid TAN format. Example: ABCD12345E';
+          }
+        } else if (lowerName.includes('ifsc') || lowerLabel.includes('ifsc')) {
+          if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(strVal)) {
+            formatError = 'Invalid IFSC format. Example: HDFC0001234';
+          }
+        } else if (lowerName.includes('account') || lowerLabel.includes('account')) {
+          if (!/^\d{9,18}$/.test(strVal)) {
+            formatError = 'Bank account number must be between 9 and 18 digits.';
+          }
         }
       }
     }
 
     if (isMissing || formatError) {
       this.invalidFields.add(currentPath);
-      this.fieldErrors[currentPath] = formatError || 'This field is required.';
+      this.fieldErrors = {
+        ...this.fieldErrors,
+        [currentPath]: formatError || 'This field is required.'
+      };
     } else {
       this.invalidFields.delete(currentPath);
-      delete this.fieldErrors[currentPath];
+      const newErrors = { ...this.fieldErrors };
+      delete newErrors[currentPath];
+      this.fieldErrors = newErrors;
     }
     
     return { isMissing, formatError };
@@ -501,60 +617,84 @@ export class McaFormComponent implements OnInit, OnChanges {
     });
 
     const formDataPayload = new FormData();
+    const appendedKeys = new Set<string>();
     Object.keys(this.formData).forEach(key => {
-      formDataPayload.append(key, this.formData[key]);
+      // Strip group prefixes (e.g. 'businessDetails.companyName' -> 'companyName')
+      const parts = key.split(/\.|\[|\]/).filter(s => s.length > 0);
+      const lastPart = parts[parts.length - 1];
+      
+      if (!appendedKeys.has(lastPart)) {
+        formDataPayload.append(lastPart, this.formData[key]);
+        appendedKeys.add(lastPart);
+      }
     });
     const entityName = this.currentEntity || this.currentUser?.companyName;
     if (entityName) {
       formDataPayload.append('entityName', entityName);
     }
     Object.keys(this.files).forEach(key => {
-      formDataPayload.append(key, this.files[key]);
+      const parts = key.split(/\.|\[|\]/).filter(s => s.length > 0);
+      const lastPart = parts[parts.length - 1];
+      formDataPayload.append(lastPart, this.files[key]);
     });
     Object.keys(this.existingDocs).forEach(key => {
-      formDataPayload.append(`${key}_existing`, this.existingDocs[key].fileUrl);
+      const parts = key.split(/\.|\[|\]/).filter(s => s.length > 0);
+      const lastPart = parts[parts.length - 1];
+      formDataPayload.append(`${lastPart}_existing`, this.existingDocs[key].fileUrl);
     });
 
-    const apiCall = this.orderId() 
-      ? this.api.post<any>(`orders/${this.orderId()}/submit-mca-form`, formDataPayload)
-      : this.api.post<any>(`users/me/mca-profile`, formDataPayload);
-
-    apiCall.subscribe({
-      next: (res: any) => {
-        this.submitting.set(false);
-        if (res && res.success !== false) {
-          if (this.orderId()) {
-            this.draftService.clearDraft(this.orderId(), `DynamicForm_${this.serviceName()}`);
-          }
-          const scoreMsg = res.complianceScore !== undefined ? ` Your compliance score is ${res.complianceScore}%` : '';
-          if (this.isEmbedded) {
-            this.confirmDialog.confirm({
-              title: 'Success',
-              message: `Profile saved successfully!${scoreMsg}`,
-              confirmText: 'OK',
-              hideCancel: true
-            }).then(() => {
-              this.formCompleted.emit();
-            });
-          } else {
-            this.success.set(true);
-            setTimeout(() => {
-              if (this.orderId()) {
-                this.router.navigate(['/client/service', this.orderId()]);
-              } else {
-                this.router.navigate(['/client/compliance']);
-              }
-            }, 2000);
-          }
+    const handleSuccess = (res: any) => {
+      this.submitting.set(false);
+      if (res && res.success !== false) {
+        if (this.orderId()) {
+          this.draftService.clearDraft(this.orderId(), `DynamicForm_${this.serviceName()}`);
+        }
+        const scoreMsg = res.complianceScore !== undefined ? ` Your compliance score is ${res.complianceScore}%` : '';
+        if (this.isEmbedded) {
+          this.confirmDialog.confirm({
+            title: 'Success',
+            message: `Profile saved successfully!${scoreMsg}`,
+            confirmText: 'OK',
+            hideCancel: true
+          }).then(() => {
+            this.formCompleted.emit();
+          });
         } else {
-          this.errorMessage.set(res.message || 'Failed to submit form.');
+          alert(`Profile saved successfully!${scoreMsg}`);
+          if (this.orderId()) {
+            this.router.navigate(['/client/service', this.orderId()]);
+          } else {
+            this.location.back();
+          }
+        }
+      } else {
+        this.errorMessage.set(res.message || 'Error occurred while saving profile.');
+      }
+    };
+
+    const handleError = (err: any) => {
+      this.submitting.set(false);
+      if (err.status === 400 && err.error && err.error.errors) {
+        this.errorMessage.set('Validation Error. Please check the fields.');
+      } else {
+        this.errorMessage.set(err.error?.message || err.message || 'An error occurred while saving.');
+      }
+    };
+
+    // Always update the central profile first to calculate the health score
+    this.api.post<any>(`users/me/mca-profile`, formDataPayload).subscribe({
+      next: (profileRes: any) => {
+        if (this.orderId()) {
+          // If this was filled from an order, also submit it to the order to advance service progress
+          this.api.post<any>(`orders/${this.orderId()}/submit-mca-form`, formDataPayload).subscribe({
+            next: (orderRes: any) => handleSuccess(profileRes),
+            error: handleError
+          });
+        } else {
+          handleSuccess(profileRes);
         }
       },
-      error: (err: any) => {
-        this.submitting.set(false);
-        const msg = err.error?.message || err.message || 'Failed to submit form. Please try again.';
-        this.errorMessage.set(msg);
-      }
+      error: handleError
     });
   }
 }

@@ -1,0 +1,212 @@
+[
+  {
+    "Name": "companyName",
+    "Label": "Company / Business Name",
+    "Type": "text",
+    "Validation": "Name (Alphanumeric/Spaces/Hyphens, ≥1 Letter)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "businessType",
+    "Label": "Business Type (LLP, Pvt Ltd, etc.)",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "natureOfBusiness",
+    "Label": "Nature of Business",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "cin",
+    "Label": "CIN (Corporate Identification Number)",
+    "Type": "text",
+    "Validation": "CIN Format (21 chars)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "incorporationDate",
+    "Label": "Date of Incorporation (YYYY-MM-DD)",
+    "Type": "date",
+    "Validation": "Date format (Browser native)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "annualTurnover",
+    "Label": "Annual Turnover",
+    "Type": "dropdown",
+    "Validation": "Selection (from options)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "companyEmail",
+    "Label": "Company Email",
+    "Type": "email",
+    "Validation": "Email Format",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "companyPhone",
+    "Label": "Company Phone",
+    "Type": "text",
+    "Validation": "Phone (10 Digits)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "registeredAddress",
+    "Label": "Registered Address",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "city",
+    "Label": "City",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "state",
+    "Label": "State",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "postalCode",
+    "Label": "Postal Code",
+    "Type": "text",
+    "Validation": "PIN Code (6 Digits)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "directorName",
+    "Label": "Director / Founder Name",
+    "Type": "text",
+    "Validation": "Name (Alphanumeric/Spaces/Hyphens, ≥1 Letter)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "directorEmail",
+    "Label": "Director Email",
+    "Type": "email",
+    "Validation": "Email Format",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "directorMobile",
+    "Label": "Director Mobile",
+    "Type": "text",
+    "Validation": "Phone (10 Digits)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "directorPan",
+    "Label": "Director PAN",
+    "Type": "text",
+    "Validation": "PAN Format (ABCDE1234F)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "directorAadhaar",
+    "Label": "Director Aadhaar",
+    "Type": "text",
+    "Validation": "Aadhaar (12 Digits)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "directorDin",
+    "Label": "Director DIN",
+    "Type": "text",
+    "Validation": "DIN (8 Digits)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "companyPan",
+    "Label": "Company PAN",
+    "Type": "text",
+    "Validation": "PAN Format (ABCDE1234F)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "gstin",
+    "Label": "GSTIN",
+    "Type": "text",
+    "Validation": "GSTIN Format (15 chars)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "udyamNumber",
+    "Label": "Udyam / MSME Number",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "trademarkNo",
+    "Label": "Trademark Application / Cert Number",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "dpiitRefNo",
+    "Label": "DPIIT Registration Number",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "isoCertNo",
+    "Label": "ISO Certificate Number",
+    "Type": "text",
+    "Validation": "Standard Text / Generic",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "incorpCert",
+    "Label": "Incorporation Certificate (COI)",
+    "Type": "file",
+    "Validation": "File Upload (Max 5MB)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "panCard",
+    "Label": "Company PAN Card",
+    "Type": "file",
+    "Validation": "PAN Format (ABCDE1234F)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "gstDoc",
+    "Label": "GST Certificate",
+    "Type": "file",
+    "Validation": "File Upload (Max 5MB)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "udyamCert",
+    "Label": "Udyam Certificate",
+    "Type": "file",
+    "Validation": "File Upload (Max 5MB)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "trademarkCert",
+    "Label": "Trademark Certificate",
+    "Type": "file",
+    "Validation": "File Upload (Max 5MB)",
+    "FormsAppearingIn": 1
+  },
+  {
+    "Name": "isoCert",
+    "Label": "ISO Certificate",
+    "Type": "file",
+    "Validation": "File Upload (Max 5MB)",
+    "FormsAppearingIn": 1
+  }
+]

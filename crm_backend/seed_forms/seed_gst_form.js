@@ -90,7 +90,7 @@ async function seedGstForm() {
           subFields: [
             { name: 'businessAddress', label: 'Business Address', type: 'text', required: true },
             { name: 'premisesType', label: 'Premises Type', type: 'dropdown', required: true, options: ['Own', 'Rented', 'Leased', 'Consent', 'Shared'] },
-            { name: 'businessDescription', label: 'Nature of Business Activity', type: 'text', required: true },
+            { name: 'businessDescription', label: 'Nature of Business Activity', type: 'text', required: true, validation: { regex: "^(?=.*[A-Za-z])[A-Za-z0-9\\\\s\\\\.,&'-]+$", errorMessage: "Must contain at least one letter. Special characters limited to .,&'-" } },
             { name: 'ebBill', label: 'Electricity Bill', type: 'file', required: true, allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' },
             { name: 'rentalAgreement', label: 'Rental/Lease Agreement', type: 'file', required: true, visibilityConditionStr: '{"field": "premisesType", "in": ["Rented", "Leased"]}', allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' },
             { name: 'propertyTaxReceipt', label: 'Property Tax Receipt', type: 'file', required: true, visibilityConditionStr: '{"field": "premisesType", "equals": "Own"}', allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'], description: 'Max 2 MB.' }

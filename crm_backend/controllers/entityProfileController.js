@@ -16,8 +16,76 @@ exports.getEntityProfile = async (req, res) => {
       query.entityName = { $regex: new RegExp('^' + escapedEntity + '$', 'i') };
     }
 
-    const profile = await EntityProfile.findOne(query);
-    return res.json({ profile: profile || {} });
+    let profile = await EntityProfile.findOne(query).lean();
+    
+    // Even if the user hasn't submitted the profile form for this entity yet,
+    // they might still have an active MCA subscription. Default to a virtual profile.
+    if (!profile) {
+      profile = { entityName: entityName === 'All Entities' ? '' : (entityName || '') };
+    }
+
+    const Subscription = require('../models/Subscription');
+    const now = new Date();
+
+    // Only find Active subscriptions that have not expired
+    const activeSubs = await Subscription.find({
+      client_id: uid,
+      status: 'Active',
+      expiry_date: { $gte: now }    // automatically respects financial-year expiry
+    }).populate('checklist_id', 'entityName companyName details');
+
+    // Helper to extract entity name mirroring mobile _parseEntityName
+    const getSubEntity = (sub) => {
+      const cl = sub.checklist_id || {};
+      if (cl.details) {
+        if (cl.details.entityName) return cl.details.entityName.trim().toLowerCase();
+        if (cl.details.companyName) return cl.details.companyName.trim().toLowerCase();
+        if (cl.details.proposed_company_name) return cl.details.proposed_company_name.trim().toLowerCase();
+        if (cl.details.businessName) return cl.details.businessName.trim().toLowerCase();
+      }
+      if (cl.entityName) return cl.entityName.trim().toLowerCase();
+      if (cl.companyName) return cl.companyName.trim().toLowerCase();
+      if (sub.entityName) return sub.entityName.trim().toLowerCase();
+      if (sub.companyName) return sub.companyName.trim().toLowerCase();
+      return '';
+    };
+
+    // Check if any active subscription belongs to THIS specific entity
+    const profileEntity = (profile.entityName || '').trim().toLowerCase();
+    const hasMatchingPlan = activeSubs.some(sub => {
+      const subEntity = getSubEntity(sub);
+      // Match if the subscription is for this entity, or entity is unknown (legacy)
+      return subEntity === profileEntity || subEntity === '';
+    });
+
+    // ── Migration guard: stored score must be profile-only (max 50) ──────────
+    // Old code incorrectly baked the +50 plan bonus into the DB. Clamp here
+    // so stale records don't double-count it.
+    const storedProfileScore = Math.min(50, profile.complianceScore || 0);
+
+    // Add the plan bonus at READ TIME — never persisted to DB
+    if (hasMatchingPlan) {
+      profile.complianceScore = storedProfileScore + 50;   // max 100
+      profile.hasActivePlan = true;
+      // Pass plan details to the client
+      const matchedSub = activeSubs.find(sub => {
+        const subEntity = getSubEntity(sub);
+        return subEntity === profileEntity || subEntity === '';
+      });
+      if (matchedSub) {
+        profile.activePlan = {
+          planName: matchedSub.plan_name,
+          expiryDate: matchedSub.expiry_date,
+          status: matchedSub.status
+        };
+      }
+    } else {
+      profile.complianceScore = storedProfileScore;        // max 50
+      profile.hasActivePlan = false;
+      profile.activePlan = null;
+    }
+
+    return res.json({ profile });
   } catch (err) {
     console.error('getEntityProfile error:', err);
     res.status(500).json({ message: 'Server error' });

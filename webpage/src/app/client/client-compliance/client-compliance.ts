@@ -6,12 +6,12 @@ import { Api } from '../../api';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Clock02Icon, Alert01Icon, CheckmarkCircle01Icon, ArrowUpRight01Icon, ArrowLeftRightIcon, AiSecurity01Icon, FilterIcon, DocumentAttachmentIcon } from '@hugeicons/core-free-icons';
 import { WeLoaderComponent } from '../../components/we-loader/we-loader';
-import { McaFormComponent } from '../forms/mca-form/mca-form';
+import { CompleteCompanyProfileFormComponent } from '../forms/complete-company-profile-form/complete-company-profile-form';
 
 @Component({
   selector: 'app-client-compliance',
   standalone: true,
-  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, McaFormComponent, RouterModule],
+  imports: [CommonModule, FormsModule, HugeiconsIconComponent, WeLoaderComponent, CompleteCompanyProfileFormComponent, RouterModule],
   templateUrl: './client-compliance.html',
   styleUrl: './client-compliance.css'
 })
@@ -28,7 +28,15 @@ export class ClientCompliance implements OnInit, OnDestroy {
   reminders = signal<any[]>([]);
   checklists = signal<any[]>([]);
   certificates = signal<any[]>([]);
-  activeSubscriptions = signal<any[]>([]);
+
+  // activeSubscriptions is now derived from entityProfile API response.
+  // The backend populates hasActivePlan + activePlan per-entity automatically.
+  activeSubscriptions = computed(() => {
+    const profile = this.entityProfile();
+    if (!profile?.hasActivePlan || !profile?.activePlan) return [];
+    return [profile.activePlan];
+  });
+
   isLoading = signal(true);
   user = signal<any>(null);
   isPendingModalOpen = signal(false);
@@ -36,6 +44,7 @@ export class ClientCompliance implements OnInit, OnDestroy {
   currentEntity = signal<string>('');
   taskFilter = signal<'pending' | 'completed' | 'all'>('pending');
   timelineTab = signal<'all' | 'pending' | 'completed'>('all');
+  currentYear = new Date().getFullYear();
 
   // Compliance Case State
   isCase1 = signal<boolean>(false);
@@ -142,7 +151,6 @@ export class ClientCompliance implements OnInit, OnDestroy {
     // 50 max points from profile + 50 points if MCA compliance plan is active.
     const score = profile?.complianceScore || 0;
     return score / 100.0;
-
   });
 
   healthStatus = computed(() => {
@@ -387,7 +395,6 @@ export class ClientCompliance implements OnInit, OnDestroy {
       this.fetchReminders();
       this.fetchChecklists();
       this.fetchCertificates();
-      this.fetchActiveSubscriptions();
       this.fetchUserComplianceProfile();
     } else {
       this.isLoading.set(false);
@@ -437,14 +444,8 @@ export class ClientCompliance implements OnInit, OnDestroy {
     });
   }
 
-  fetchActiveSubscriptions() {
-    this.api.get<any>('active-subscriptions').subscribe({
-      next: (res) => {
-        this.activeSubscriptions.set(res.subscriptions || []);
-      },
-      error: (err) => console.error('Failed to fetch active subscriptions:', err)
-    });
-  }
+  // activeSubscriptions is now derived from entityProfile (hasActivePlan/activePlan)
+  // and the subscription fetch has been removed — the backend computes it per entity.
 
   fetchUserComplianceProfile() {
     const uid = this.user()?._id || this.user()?.id;
