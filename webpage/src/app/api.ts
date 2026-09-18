@@ -9,6 +9,8 @@ export class Api {
 
 
   // private readonly baseUrl = 'http://localhost:5001/api';
+  // private readonly baseUrl = 'http://192.168.29.105:5001/api';
+
   private readonly baseUrl = 'https://aistartupdoctor.com/api';
 
 
@@ -19,6 +21,9 @@ export class Api {
 
   getFileUrl(fileUrl: string): string {
     if (!fileUrl) return '';
+    if (fileUrl.includes('localhost:5001')) {
+      fileUrl = fileUrl.replace('http://localhost:5001', this.serverUrl.replace(/\/$/, ''));
+    }
     if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://') || fileUrl.startsWith('data:')) return fileUrl;
     return this.serverUrl + fileUrl.replace(/^\//, '');
   }

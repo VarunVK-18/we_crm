@@ -365,3 +365,16 @@
 .btn-modal-save:hover {
   background: #eff6ff;
 }
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error .file-drop-area {
+  border-color: #ef4444;
+  background-color: #fef2f2;
+}
+.inline-error-text {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: block;
+}

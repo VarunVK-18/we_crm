@@ -80,7 +80,7 @@
 
             <!-- 3. DROPDOWN -->
             @else if (field.type === 'dropdown') {
-              <div class="form-group full-width">
+              <div class="form-group full-width" [id]="'field-' + currentPath" [class.has-error]="invalidFields.has(currentPath)">
                 <label>
                   {{ field.label }}
                   @if (field.required) { <span class="required-star">*</span> }
@@ -91,13 +91,14 @@
                     <option [value]="opt">{{ opt }}</option>
                   }
                 </select>
+                @if (invalidFields.has(currentPath)) { <span class="inline-error-text">This field is required.</span> }
                 @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
               </div>
             }
 
             <!-- 4. FILE UPLOAD -->
             @else if (field.type === 'file') {
-              <div class="form-group full-width file-upload-group">
+              <div class="form-group full-width file-upload-group" [id]="'field-' + currentPath" [class.has-error]="invalidFields.has(currentPath)">
                 <label>
                   {{ field.label }}
                   @if (field.required) { <span class="required-star">*</span> }
@@ -121,13 +122,14 @@
                     </label>
                   }
                 </div>
+                @if (invalidFields.has(currentPath)) { <span class="inline-error-text">This document is required.</span> }
                 @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
               </div>
             }
 
             <!-- 5. CHECKBOX -->
             @else if (field.type === 'checkbox') {
-              <div class="form-group full-width checkbox-group">
+              <div class="form-group full-width checkbox-group" [id]="'field-' + currentPath" [class.has-error]="invalidFields.has(currentPath)">
                 <label class="custom-checkbox-label">
                   <input type="checkbox" [(ngModel)]="formData[currentPath]" [name]="currentPath" (change)="saveDraft()">
                   <span class="checkbox-box"></span>
@@ -136,13 +138,14 @@
                     @if (field.required) { <span class="required-star">*</span> }
                   </span>
                 </label>
+                @if (invalidFields.has(currentPath)) { <span class="inline-error-text">You must agree/check this to proceed.</span> }
                 @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
               </div>
             }
 
             <!-- 6. STANDARD TEXT / NUMBER / EMAIL / PHONE / DATE -->
             @else {
-              <div class="form-group full-width">
+              <div class="form-group full-width" [id]="'field-' + currentPath" [class.has-error]="invalidFields.has(currentPath)">
                 <label>
                   {{ field.label }}
                   @if (field.required) { <span class="required-star">*</span> }
@@ -158,6 +161,7 @@
                 } @else {
                   <input type="text" [(ngModel)]="formData[currentPath]" [name]="currentPath" [required]="field.required" (change)="saveDraft()" [placeholder]="'Enter ' + field.label">
                 }
+                @if (invalidFields.has(currentPath)) { <span class="inline-error-text">This field is required.</span> }
                 @if (field.description) { <span class="field-hint">{{ field.description }}</span> }
               </div>
             }

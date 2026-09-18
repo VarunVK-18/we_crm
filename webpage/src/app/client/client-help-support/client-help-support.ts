@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Api } from '../../api';
+import { NotificationService } from '../services/notification.service';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import {
   CustomerSupportIcon,
@@ -43,17 +44,11 @@ export class ClientHelpSupport implements OnInit {
   // Computed KPIs
   openTicketsCount = computed(() => this.tickets().filter(t => t.status === 'Pending' || t.status === 'In Progress').length);
   resolvedTicketsCount = computed(() => this.tickets().filter(t => t.status === 'Resolved').length);
-  pendingDocsCount = computed(() => {
-    let count = 0;
-    for (const order of this.activeOrders()) {
-      if (order.items) {
-        count += order.items.filter((i: any) => !i.isChecked).length;
-      }
-    }
-    return count;
-  });
-
-  constructor(private router: Router, public api: Api) {}
+  constructor(
+    private router: Router, 
+    public api: Api,
+    public notifService: NotificationService
+  ) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');

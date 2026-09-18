@@ -137,27 +137,12 @@ export class ClientCompliance implements OnInit, OnDestroy {
   entityProfile = signal<any>(null);
 
   healthScore = computed(() => {
-    const tasks = this.filteredTasks();
     const profile = this.entityProfile();
-        // Part 1: Base Score from Company Profile (max 50 points)
-      const profileScore = (profile?.complianceScore || 0) / 2.0;
-      
-      // Part 2: Dynamic Compliance Score (max 50 points)
-      let dynamicScore = 50.0;
-      if (tasks.length > 0) {
-        const penalty = 50.0 / tasks.length;
-        for (const t of tasks) {
-          if (t.status === 'Overdue' || t.status === 'Critical') dynamicScore -= penalty;
-          else if (t.status === 'Due Soon') dynamicScore -= (penalty / 2);
-        }
-      }
-      
-      if (dynamicScore < 0) dynamicScore = 0;
-      if (dynamicScore > 50) dynamicScore = 50;
-      
-      if (profileScore === 0 && tasks.length === 0) return 0.0;
-      
-      return (profileScore + dynamicScore) / 100.0;
+    // The complianceScore is directly calculated out of 100 by the backend
+    // 50 max points from profile + 50 points if MCA compliance plan is active.
+    const score = profile?.complianceScore || 0;
+    return score / 100.0;
+
   });
 
   healthStatus = computed(() => {

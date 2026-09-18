@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
 import { Api } from '../../api';
+import { ConfirmDialogService } from '../../confirm-dialog/confirm-dialog.service';
 import {
   OfficeIcon,
   Briefcase01Icon,
@@ -299,7 +300,7 @@ export class ClientServicesComponent implements OnInit {
   formSubmitting = signal<boolean>(false);
   formSuccess = signal<boolean>(false);
 
-  constructor(public api: Api, private route: ActivatedRoute) { }
+  constructor(public api: Api, private route: ActivatedRoute, private confirmDialog: ConfirmDialogService) { }
 
   ngOnInit() {
     this.selectCategory('all');
@@ -606,7 +607,7 @@ export class ClientServicesComponent implements OnInit {
     return service?.documentsRequired || [];
   }
 
-  submitQuote() {
+  async submitQuote() {
     this.formSubmitting.set(true);
 
     const uid = this.user()?._id || this.user()?.id;
@@ -630,6 +631,18 @@ export class ClientServicesComponent implements OnInit {
         this.formSubmitting.set(false);
         return;
       }
+    }
+
+    const confirmed = await this.confirmDialog.confirm({
+      title: 'Confirm Request',
+      message: `Are you sure you want to request "${serviceName}"? Our experts will review your request and reach out to you within 24 hours.`,
+      confirmText: 'Yes, Submit',
+      cancelText: 'Cancel'
+    });
+
+    if (!confirmed) {
+      this.formSubmitting.set(false);
+      return;
     }
 
     const formData = new FormData();

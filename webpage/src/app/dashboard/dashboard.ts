@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { Router } from '@angular/router';
 import { Sidebar } from '../sidebar/sidebar';
 import { HugeiconsIconComponent } from '@hugeicons/angular';
@@ -105,7 +105,13 @@ export class Dashboard implements OnInit, OnDestroy {
     return this.notifService.notifications().filter((n: any) => n.type !== 'chat');
   });
 
-  constructor(private router: Router, public api: Api, public notifService: NotificationService, private confirmDialog: ConfirmDialogService) {}
+  constructor(
+    private router: Router, 
+    public api: Api, 
+    public notifService: NotificationService, 
+    private confirmDialog: ConfirmDialogService,
+    private location: Location
+  ) {}
 
   ngOnInit() {
     const savedUser = localStorage.getItem('user');
@@ -345,6 +351,9 @@ export class Dashboard implements OnInit, OnDestroy {
     
     if (tab === 'team') this.selectedEmployeeObj.set(null);
     
+    // Update the URL without reloading the page
+    this.location.replaceState(`/dashboard/${tab}`);
+
     // Reset breadcrumb trail for top-level navigation
     if (tab === 'dashboard') {
       this.navigationTrail.set([

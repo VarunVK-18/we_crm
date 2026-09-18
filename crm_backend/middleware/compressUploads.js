@@ -6,34 +6,20 @@ const os = require('os');
 
 const { compressPdfNative } = require('./compressPdfNative');
 
-// Helper function to compress a PDF using compressPdfNative
 const compressPDF = async (inputBuffer) => {
   try {
-    const compressedBuffer = await compressPdfNative(inputBuffer);
+    const { PDFDocument } = require('pdf-lib');
+    const pdfDoc = await PDFDocument.load(inputBuffer, { ignoreEncryption: true });
+    const pdfBytes = await pdfDoc.save();
+    const fallbackBuffer = Buffer.from(pdfBytes);
     
-    // Only use compressed if it's actually smaller
-    if (compressedBuffer.length < inputBuffer.length) {
-      return compressedBuffer;
+    if (fallbackBuffer.length < inputBuffer.length) {
+      return fallbackBuffer;
     }
-    return inputBuffer;
   } catch (err) {
-    // If native rasterization fails (e.g. invalid/encrypted PDF), fallback to pdf-lib structural compression
-    console.warn('[COMPRESSION] Native rasterization failed. Attempting pdf-lib fallback compression.');
-    try {
-      const { PDFDocument } = require('pdf-lib');
-      const pdfDoc = await PDFDocument.load(inputBuffer, { ignoreEncryption: true });
-      const pdfBytes = await pdfDoc.save();
-      const fallbackBuffer = Buffer.from(pdfBytes);
-      
-      if (fallbackBuffer.length < inputBuffer.length) {
-        return fallbackBuffer;
-      }
-    } catch (fallbackErr) {
-      console.warn('[COMPRESSION] pdf-lib fallback also failed or skipped:', fallbackErr.message);
-    }
-    
-    return inputBuffer;
+    console.warn('[COMPRESSION] pdf-lib structural compression failed:', err.message);
   }
+  return inputBuffer;
 };
 
 const compressUploads = async (req, res, next) => {

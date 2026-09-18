@@ -243,11 +243,26 @@ export class ClientTopbarComponent implements OnInit {
       if (url.includes('/profile')) {
         trail.push({ label: 'My Profile' });
         this.pageSubtitle.set('Account Details & Documents');
+      } else if (url.includes('/forms/')) {
+        trail.push({ label: 'My Services', path: '/client/ongoing-services' });
+        let formName = 'Complete Details';
+        if (url.includes('/forms/dynamic/')) {
+          const parts = url.split('/');
+          // Typical URL: /client/forms/dynamic/ServiceName/id
+          if (parts.length >= 5 && parts[4] !== 'null' && parts[4] !== 'undefined') {
+            formName = decodeURIComponent(parts[4]);
+          }
+        } else if (url.includes('/forms/mca')) {
+          formName = 'MCA Services Form';
+        }
+        trail.push({ label: formName });
+        this.pageSubtitle.set('Complete Details Form');
       } else if (url.includes('/service/')) {
+        trail.push({ label: 'My Services', path: '/client/ongoing-services' });
         trail.push({ label: 'Service Details' });
         this.pageSubtitle.set('Track your request progress');
       } else if (url.includes('/compliance')) {
-        trail.push({ label: 'Compliance' });
+        trail.push({ label: 'Health Score' });
         const usr = this.user();
         this.pageSubtitle.set('Track Your Compliance and Upcoming Deadlines');
       } else if (url.includes('/tools/nic-finder')) {
@@ -269,6 +284,7 @@ export class ClientTopbarComponent implements OnInit {
         trail.push({ label: 'Subscriptions' });
         this.pageSubtitle.set('Manage your subscription plans');
       } else if (url.includes('/support-tickets')) {
+        trail.push({ label: 'Help & Support', path: '/client/support' });
         trail.push({ label: 'Support Tickets' });
         this.pageSubtitle.set('View and manage your support requests');
       } else if (url.includes('/document-hub')) {
