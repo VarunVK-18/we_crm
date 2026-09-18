@@ -226,6 +226,70 @@ export class Login implements OnInit {
     this.registerEmailError.set('');
   }
 
+  onOwnerNameChange(val: string) {
+    this.ownerName.set(val);
+    const ownerVal = val.trim();
+    if (!ownerVal) {
+      this.ownerNameError.set('Name is required');
+    } else if (!/^[\p{L}\p{N}\s.,'-]+$/u.test(ownerVal)) {
+      this.ownerNameError.set('Name cannot contain emojis or special symbols');
+    } else if (!/[\p{L}]/u.test(ownerVal)) {
+      this.ownerNameError.set('Name must contain at least one letter');
+    } else {
+      this.ownerNameError.set('');
+    }
+  }
+
+  onRegisterEmailChange(val: string) {
+    this.registerEmail.set(val);
+    const emailVal = val.trim();
+    if (!emailVal) {
+      this.registerEmailError.set('Email is required');
+    } else if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(emailVal)) {
+      this.registerEmailError.set('Enter a valid email address');
+    } else {
+      this.registerEmailError.set('');
+    }
+  }
+
+  onPhoneChange(val: string) {
+    this.phone.set(val);
+    const phoneVal = val.trim();
+    if (!phoneVal) {
+      this.phoneError.set('Phone number is required');
+    } else if (!/^\d+$/.test(phoneVal)) {
+      this.phoneError.set('Phone number must contain only numbers');
+    } else if (phoneVal.length !== 10) {
+      this.phoneError.set('Phone number must be exactly 10 digits');
+    } else {
+      this.phoneError.set('');
+    }
+  }
+
+  onCompanyNameChange(val: string) {
+    this.companyName.set(val);
+    const companyVal = val.trim();
+    if (!companyVal) {
+      this.companyNameError.set('Company Name is required');
+    } else if (!/^[\p{L}\p{N}\s.,'&()-]+$/u.test(companyVal)) {
+      this.companyNameError.set('Company Name cannot contain emojis or special symbols');
+    } else if (!/[\p{L}]/u.test(companyVal)) {
+      this.companyNameError.set('Company Name must contain at least one letter');
+    } else {
+      this.companyNameError.set('');
+    }
+  }
+
+  onCompanyTypeChange(val: string) {
+    this.companyType.set(val);
+    const serviceVal = val.trim();
+    if (!serviceVal) {
+      this.companyTypeError.set('Please select a service');
+    } else {
+      this.companyTypeError.set('');
+    }
+  }
+
   async handleOnboardingSubmit() {
     // Reset errors
     this.clearErrors();
@@ -237,12 +301,24 @@ export class Login implements OnInit {
     if (!ownerVal) {
       this.ownerNameError.set('Name is required');
       hasError = true;
+    } else if (!/^[\p{L}\p{N}\s.,'-]+$/u.test(ownerVal)) {
+      this.ownerNameError.set('Name cannot contain emojis or special symbols');
+      hasError = true;
+    } else if (!/[\p{L}]/u.test(ownerVal)) {
+      this.ownerNameError.set('Name must contain at least one letter');
+      hasError = true;
     }
 
     // Validate Company Name
     const companyVal = this.companyName().trim();
     if (!companyVal) {
       this.companyNameError.set('Company Name is required');
+      hasError = true;
+    } else if (!/^[\p{L}\p{N}\s.,'&()-]+$/u.test(companyVal)) {
+      this.companyNameError.set('Company Name cannot contain emojis or special symbols');
+      hasError = true;
+    } else if (!/[\p{L}]/u.test(companyVal)) {
+      this.companyNameError.set('Company Name must contain at least one letter');
       hasError = true;
     }
 
