@@ -153,7 +153,7 @@
               <label class="input-label">Name</label>
               <input 
                 [ngModel]="ownerName()" 
-                (ngModelChange)="ownerName.set($event)" 
+                (ngModelChange)="onOwnerNameChange($event)" 
                 name="ownerName"
                 type="text" 
                 placeholder="Enter your name" 
@@ -168,7 +168,7 @@
               <label class="input-label">Email Address</label>
               <input 
                 [ngModel]="registerEmail()" 
-                (ngModelChange)="registerEmail.set($event)" 
+                (ngModelChange)="onRegisterEmailChange($event)" 
                 name="registerEmail"
                 type="email" 
                 placeholder="Enter email address" 
@@ -183,7 +183,7 @@
               <label class="input-label">Phone Number</label>
               <input 
                 [ngModel]="phone()" 
-                (ngModelChange)="phone.set($event)" 
+                (ngModelChange)="onPhoneChange($event)" 
                 name="phone"
                 type="tel" 
                 placeholder="Enter phone number" 
@@ -197,7 +197,7 @@
               <label class="input-label">Company Name</label>
               <input 
                 [ngModel]="companyName()" 
-                (ngModelChange)="companyName.set($event)" 
+                (ngModelChange)="onCompanyNameChange($event)" 
                 name="companyName"
                 type="text" 
                 placeholder="Enter company name" 
@@ -212,7 +212,7 @@
               <label class="input-label">Select a Service</label>
               <select 
                 [ngModel]="companyType()" 
-                (ngModelChange)="companyType.set($event)" 
+                (ngModelChange)="onCompanyTypeChange($event)" 
                 name="companyType"
                 class="styled-text-input" 
                 style="padding-left: 16px;"
