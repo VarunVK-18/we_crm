@@ -45,29 +45,14 @@ export class ClientDashboard implements OnInit, OnDestroy {
 
   // Compliance
   pendingTasks = signal<any[]>([]);
+  entityProfile = signal<any>(null);
+
   healthScore = computed(() => {
-    const tasks = this.pendingTasks().filter(t => this.matchesEntity(t));
-    const u = this.user();
-    
-    // Part 1: Base Score from Company Profile (max 50 points)
-    const profileScore = (u?.company_id?.complianceScore || 0) / 100.0;
-    
-    // Part 2: Dynamic Compliance Score (max 50 points)
-    let dynamicScore = 50.0;
-    if (tasks.length > 0) {
-      const penalty = 50.0 / tasks.length;
-      for (const t of tasks) {
-        if (t.status === 'Overdue' || t.status === 'Critical') dynamicScore -= penalty;
-        else if (t.status === 'Due Soon') dynamicScore -= (penalty / 2);
-      }
-    }
-    
-    if (dynamicScore < 0) dynamicScore = 0;
-    if (dynamicScore > 50) dynamicScore = 50;
-    
-    if (profileScore === 0 && tasks.length === 0) return 0.0;
-    
-    return ((profileScore * 100.0) + dynamicScore) / 100.0;
+    const profile = this.entityProfile();
+    // The complianceScore is directly calculated out of 100 by the backend
+    // 50 max points from profile + 50 points if MCA compliance plan is active.
+    const score = profile?.complianceScore || 0;
+    return score / 100.0;
   });
 
   // Banners
@@ -78,7 +63,19 @@ export class ClientDashboard implements OnInit, OnDestroy {
   private entityChangeHandler = (e: Event) => {
     const name = (e as CustomEvent).detail as string;
     this.selectedEntity.set(name);
+    this.fetchEntityProfile();
   };
+
+  fetchEntityProfile() {
+    const entity = this.selectedEntity() === 'All' ? '' : this.selectedEntity();
+    const t = new Date().getTime();
+    this.api.get<any>(`entity-profile?entityName=${encodeURIComponent(entity)}&_t=${t}`).subscribe({
+      next: (res) => {
+        this.entityProfile.set(res.profile || {});
+      },
+      error: (err) => console.error('Failed to fetch entity profile:', err)
+    });
+  }
 
   // Helper: resolve entity name from a checklist object
   private resolveEntityName(order: any): string {
@@ -180,6 +177,7 @@ export class ClientDashboard implements OnInit, OnDestroy {
     
     this.fetchBanners();
     this.fetchClientManager();
+    this.fetchEntityProfile();
     this.fetchOrders();
     this.fetchTickets();
     this.fetchReminders();

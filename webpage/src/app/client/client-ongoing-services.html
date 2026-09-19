@@ -27,6 +27,11 @@
               <span
                 style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
                 getTabCount('Action Required') }}</span></button>
+            <button class="tab-btn" [class.active]="activeTab() === 'Pending Registration'"
+              (click)="setTab('Pending Registration')" style="display: inline-flex; align-items: center;">Pending Registration
+              <span
+                style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
+                getTabCount('Pending Registration') }}</span></button>
             <button class="tab-btn" [class.active]="activeTab() === 'In Progress'" (click)="setTab('In Progress')"
               style="display: inline-flex; align-items: center;">In Progress <span
                 style="display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; border-radius: 10px; background-color: rgba(0,0,0,0.08); color: inherit; font-size: 11px; font-weight: 700; padding: 0 6px; margin-left: 8px;">{{
@@ -100,8 +105,8 @@
                 <td>
                   <span class="ho-status-badge" [ngClass]="order.derivedStatus" style="white-space: nowrap;">
                     <span class="ho-status-dot"></span>
-                    {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus ===
-                    'in-progress' ? 'In Progress' : (order.derivedStatus | titlecase)) }}
+                    {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'pending-registration' ? 'Waiting For Managers Approval' : (order.derivedStatus ===
+                    'in-progress' ? 'In Progress' : (order.derivedStatus | titlecase))) }}
                   </span>
                 </td>
                 <td>

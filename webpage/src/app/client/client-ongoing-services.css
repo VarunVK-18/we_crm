@@ -245,8 +245,19 @@
 }
 
 .ho-status-badge.action-required {
-  background: #ffe4e6;
-  color: #e11d48;
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+.ho-status-badge.action-required .ho-status-dot {
+  background-color: #ef4444;
+}
+
+.ho-status-badge.pending-registration {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+.ho-status-badge.pending-registration .ho-status-dot {
+  background-color: #d97706;
 }
 
 .ho-status-badge.completed {

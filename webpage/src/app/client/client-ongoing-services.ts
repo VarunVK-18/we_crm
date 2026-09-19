@@ -83,7 +83,9 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
         for (const c of services) {
           let status = c.status === 'completed' ? 'completed' : 'in-progress';
           
-          if (status === 'in-progress') {
+          if (c.status === 'notInitialized' || c.status === 'Not Initialized') {
+            status = 'pending-registration';
+          } else if (status === 'in-progress') {
             if (c.hasPendingDocUpload || !c.details?.clientFormSubmitted || c.action_required) {
               status = 'action-required';
             }
@@ -144,6 +146,8 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
 
     if (tabName === 'Action Required') {
       return orders.filter(o => o.derivedStatus === 'action-required').length;
+    } else if (tabName === 'Pending Registration') {
+      return orders.filter(o => o.derivedStatus === 'pending-registration').length;
     } else if (tabName === 'In Progress') {
       return orders.filter(o => o.derivedStatus === 'in-progress' || o.derivedStatus === 'active').length;
     } else if (tabName === 'Completed') {
@@ -159,6 +163,8 @@ export class ClientOngoingServices implements OnInit, OnDestroy {
     
     if (tab === 'Action Required') {
       orders = orders.filter(o => o.derivedStatus === 'action-required');
+    } else if (tab === 'Pending Registration') {
+      orders = orders.filter(o => o.derivedStatus === 'pending-registration');
     } else if (tab === 'In Progress') {
       orders = orders.filter(o => o.derivedStatus === 'in-progress' || o.derivedStatus === 'active');
     } else if (tab === 'Completed') {
