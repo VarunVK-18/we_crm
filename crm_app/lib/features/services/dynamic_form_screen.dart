@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:crm_app/core/utils/hint_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:crm_app/core/utils/form_ui_helper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -13,6 +14,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/utils/ocr_service.dart';
 import '../../core/utils/hint_helper.dart';
 import '../../core/utils/file_picker_util.dart';
 import '../../core/utils/error_handler.dart';
@@ -40,6 +42,7 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
   final Map<String, dynamic> _formData = {};
   final Map<String, TextEditingController> _controllers = {};
   final Map<String, String?> _filePaths = {};
+  final Map<String, bool> _ocrValidating = {};
   final Map<String, bool> _passwordVisibility = {};
 
   @override
@@ -54,6 +57,39 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
       controller.dispose();
     }
     super.dispose();
+  }
+
+  List<TextInputFormatter> _getFormatters(FormFieldSchema field) {
+    List<TextInputFormatter> formatters = [];
+    String lowerName = field.name.toLowerCase();
+    String lowerLabel = field.label.toLowerCase();
+    
+    bool hasPan = RegExp(r'\bpan\b').hasMatch(lowerName) || RegExp(r'\bpan\b').hasMatch(lowerLabel);
+    bool isNotNameOrDate = !RegExp(r'name|date|dob|first|last').hasMatch(lowerName) && !RegExp(r'name|date|dob|first|last').hasMatch(lowerLabel);
+
+    if ((hasPan && isNotNameOrDate) || 
+        lowerName.contains('gstin') || lowerLabel.contains('gstin') || lowerLabel.contains('gst number') ||
+        lowerName == 'cin' || lowerLabel.contains('cin') ||
+        lowerName.contains('ifsc') || lowerLabel.contains('ifsc') ||
+        lowerName.contains('tan') || lowerLabel.contains('tan') ||
+        lowerName.contains('lei') || lowerLabel.contains('lei')) {
+      formatters.add(TextInputFormatter.withFunction((oldValue, newValue) {
+        return newValue.copyWith(text: newValue.text.toUpperCase());
+      }));
+    }
+
+    if (lowerName.contains('aadhaar') || lowerLabel.contains('aadhaar')) {
+      formatters.add(FilteringTextInputFormatter.digitsOnly);
+      formatters.add(LengthLimitingTextInputFormatter(12));
+    } else if (field.type == 'phone' || lowerName.contains('phone') || lowerLabel.contains('mobile')) {
+      formatters.add(FilteringTextInputFormatter.digitsOnly);
+      formatters.add(LengthLimitingTextInputFormatter(10));
+    } else if (lowerName.contains('pin') || lowerLabel.contains('pin code') || lowerName.contains('postal')) {
+      formatters.add(FilteringTextInputFormatter.digitsOnly);
+      formatters.add(LengthLimitingTextInputFormatter(6));
+    }
+    
+    return formatters;
   }
 
   Map<String, dynamic> _prefillData = {};
@@ -199,12 +235,57 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
       );
       if (result != null && result.files.single.path != null) {
         if (!mounted) return;
-        setState(() {
-          _filePaths[pathKey] = result.files.single.path;
-        });
+        
+        final ext = result.files.single.extension?.toLowerCase() ?? '';
+        if (['jpg', 'jpeg', 'png', 'pdf'].contains(ext)) {
+          setState(() => _ocrValidating[pathKey] = true);
+          final ocrService = ref.read(ocrServiceProvider);
+          final res = await ocrService.validateDocument(result.files.single.path!, pathKey);
+          
+          if (!mounted) return;
+          setState(() => _ocrValidating[pathKey] = false);
+          
+          if (res['success'] == true) {
+            setState(() {
+              _filePaths[pathKey] = result.files.single.path;
+            });
+          } else {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                title: const Column(
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red, size: 48),
+                    SizedBox(height: 16),
+                    Text('Validation Failed', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                  ]
+                ),
+                content: Text(res['message'] ?? 'Invalid document.', textAlign: TextAlign.center),
+                actions: [
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Got it', style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                ],
+              )
+            );
+          }
+        } else {
+          setState(() {
+            _filePaths[pathKey] = result.files.single.path;
+          });
+        }
       }
     } catch (e) {
-      if (mounted) _showError('Error picking file: $e');
+      if (mounted) {
+        setState(() => _ocrValidating[pathKey] = false);
+        _showError('Error picking file: $e');
+      }
     }
   }
 
@@ -496,9 +577,7 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
                 setState(() {});
               }
             } : null,
-            textCapitalization: ((RegExp(r'\bpan\b', caseSensitive: false).hasMatch(field.name) || RegExp(r'\bpan\b', caseSensitive: false).hasMatch(field.label)) && !(RegExp(r'name|date|dob|first|last', caseSensitive: false).hasMatch(field.name) || RegExp(r'name|date|dob|first|last', caseSensitive: false).hasMatch(field.label)))
-                ? TextCapitalization.characters 
-                : TextCapitalization.none,
+            inputFormatters: _getFormatters(field),
             decoration: InputDecoration(
               hintText: HintHelper.getExampleHint(field.label, hint: field.description),
               hintStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.grey.shade400),
@@ -629,6 +708,18 @@ class _DynamicFormScreenState extends ConsumerState<DynamicFormScreen> {
                   )
                 ],
               ),
+            )
+          else if (_ocrValidating[pathKey] == true)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  width: 20, height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.corporateBlue)
+                ),
+                const SizedBox(width: 12),
+                Text('Analyzing Document...', style: GoogleFonts.inter(fontSize: 13, color: AppTheme.corporateBlue, fontWeight: FontWeight.w600)),
+              ],
             )
           else
             Row(

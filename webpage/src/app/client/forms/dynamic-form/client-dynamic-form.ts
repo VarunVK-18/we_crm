@@ -6,6 +6,7 @@ import { Api } from '../../../api';
 import { DraftService } from '../../../services/draft.service';
 import { ConfirmDialogService } from '../../../confirm-dialog/confirm-dialog.service';
 import { WeLoaderComponent } from '../../../components/we-loader/we-loader';
+import { AutoFillUtils } from '../../../utils/autofill-utils';
 
 @Component({
   selector: 'app-client-dynamic-form',
@@ -30,6 +31,10 @@ export class ClientDynamicFormComponent implements OnInit {
   formData: { [key: string]: any } = {};
   files: { [key: string]: File } = {};
   existingDocs: { [key: string]: any } = {};
+  ocrValidating: { [key: string]: boolean } = {};
+  
+  ocrErrorTitle = '';
+  ocrErrorMessage = '';
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -96,9 +101,16 @@ export class ClientDynamicFormComponent implements OnInit {
       next: (res: any) => {
         this.schema = res;
         this.initFieldValues(this.schema.fields || [], '');
+        
+        // Load any saved draft (which may contain empty strings if saved prematurely)
         this.loadSavedDraft();
-        this.loading.set(false);
-        this.cdr.detectChanges();
+        
+        // Auto-fill from profile data if fields are STILL empty after loading draft
+        const entityName = this.order?.client_id?.company_name || this.order?.entityName || this.order?.company_name || this.currentUser?.company_name || this.serviceName();
+        AutoFillUtils.autoFillWithProfile(this.formData, entityName, this.currentUser, this.api).then(() => {
+           this.loading.set(false);
+           this.cdr.detectChanges();
+        });
       },
       error: (err: any) => {
         console.error(err);
@@ -184,9 +196,41 @@ export class ClientDynamicFormComponent implements OnInit {
           return;
         }
       }
-      this.files[pathKey] = file;
-      this.saveDraft();
-      this.cdr.detectChanges();
+
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+        this.ocrValidating[pathKey] = true;
+        this.cdr.detectChanges();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fieldName', pathKey);
+
+        this.api.post<any>('ocr/validate', formData).subscribe({
+          next: (res) => {
+            this.ocrValidating[pathKey] = false;
+            if (res.success) {
+              this.files[pathKey] = file;
+              this.saveDraft();
+              this.cdr.detectChanges();
+            } else {
+              this.ocrErrorTitle = 'Validation Failed';
+              this.ocrErrorMessage = res.message || 'Invalid document.';
+              event.target.value = '';
+              this.cdr.detectChanges();
+            }
+          },
+          error: (err) => {
+            this.ocrValidating[pathKey] = false;
+            this.ocrErrorTitle = 'Validation Error';
+            this.ocrErrorMessage = err.error?.message || 'Failed to validate document. Please upload a clear and correct valid document.';
+            event.target.value = '';
+            this.cdr.detectChanges();
+          }
+        });
+      } else {
+        this.files[pathKey] = file;
+        this.saveDraft();
+        this.cdr.detectChanges();
+      }
     }
   }
 
@@ -256,12 +300,44 @@ export class ClientDynamicFormComponent implements OnInit {
     const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
     const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
     
-    if (hasPan && isNotNameOrDate) {
-      const upper = (val || '').toUpperCase();
-      this.formData[path] = upper;
-    } else {
-      this.formData[path] = val;
+    let formattedVal = val || '';
+
+    // 1. PAN / GSTIN / CIN / IFCS / TAN Masking (Force Uppercase)
+    if (
+      (hasPan && isNotNameOrDate) || 
+      lowerName.includes('gstin') || lowerLabel.includes('gstin') || lowerLabel.includes('gst number') ||
+      lowerName === 'cin' || lowerLabel.includes('cin') ||
+      lowerName.includes('ifsc') || lowerLabel.includes('ifsc') ||
+      lowerName.includes('tan') || lowerLabel.includes('tan') ||
+      lowerName.includes('lei') || lowerLabel.includes('lei')
+    ) {
+      formattedVal = formattedVal.toUpperCase();
     }
+    
+    // 2. Aadhaar Masking (Force digits only, max 12)
+    else if (lowerName.includes('aadhaar') || lowerLabel.includes('aadhaar')) {
+      formattedVal = formattedVal.replace(/\D/g, '').substring(0, 12);
+    }
+    
+    // 3. Phone Masking (Force digits only, max 10)
+    else if (field.type === 'phone' || lowerName.includes('phone') || lowerLabel.includes('mobile')) {
+      formattedVal = formattedVal.replace(/\D/g, '').substring(0, 10);
+    }
+    
+    // 4. PIN Code Masking (Force digits only, max 6)
+    else if (lowerName.includes('pin') || lowerLabel.includes('pin code') || lowerName.includes('postal')) {
+      formattedVal = formattedVal.replace(/\D/g, '').substring(0, 6);
+    }
+
+    if (this.formData[path] !== formattedVal) {
+      // Small timeout to allow Angular to register the forced change if user typed lowercase/letters
+      setTimeout(() => {
+        this.formData[path] = formattedVal;
+      });
+    } else {
+      this.formData[path] = formattedVal;
+    }
+
     this.validateField(field, path);
   }
 
@@ -492,5 +568,10 @@ export class ClientDynamicFormComponent implements OnInit {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
+  }
+
+  closeOcrError() {
+    this.ocrErrorTitle = '';
+    this.ocrErrorMessage = '';
   }
 }
