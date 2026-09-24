@@ -1610,6 +1610,21 @@ const updateMcaProfile = async (req, res) => {
         if (businessType) {
           user.client_entities[entityIndex].entityType = businessType;
         }
+
+        if (dynamicFields) {
+          if (dynamicFields.bankName || dynamicFields.accountNumber || dynamicFields.ifscCode || dynamicFields.accountType) {
+            if (!user.client_entities[entityIndex].bank_details) user.client_entities[entityIndex].bank_details = {};
+            if (dynamicFields.bankName) user.client_entities[entityIndex].bank_details.bankName = dynamicFields.bankName;
+            if (dynamicFields.accountNumber) user.client_entities[entityIndex].bank_details.accountNumber = dynamicFields.accountNumber;
+            if (dynamicFields.ifscCode) user.client_entities[entityIndex].bank_details.ifscCode = dynamicFields.ifscCode;
+            if (dynamicFields.accountType) user.client_entities[entityIndex].bank_details.accountType = dynamicFields.accountType;
+          }
+          if (dynamicFields.authorizedCapital !== undefined) user.client_entities[entityIndex].authorised_capital = dynamicFields.authorizedCapital;
+          if (dynamicFields.paidUpCapital !== undefined) user.client_entities[entityIndex].paidup_capital = dynamicFields.paidUpCapital;
+          if (dynamicFields.constitutionType !== undefined) user.client_entities[entityIndex].company_type = dynamicFields.constitutionType;
+          if (dynamicFields.natureOfBusiness !== undefined) user.client_entities[entityIndex].main_division_description = dynamicFields.natureOfBusiness;
+        }
+
         user.markModified('client_entities');
       }
     }

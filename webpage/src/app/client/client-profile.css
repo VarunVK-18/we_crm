@@ -519,6 +519,99 @@
   color: #065f46;
 }
 
+.profile-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.profile-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.elegant-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.elegant-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 12px 24px;
+  background: #ffffff;
+}
+
+.elegant-section-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.elegant-section-icon {
+  display: none; /* Hide icon to match screenshot */
+}
+
+.elegant-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.elegant-section-body {
+  padding: 0 0 12px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.elegant-section-group {
+  display: none; /* Hide group headers, we'll split them into cards if needed, or just let them stack */
+}
+
+.elegant-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px dashed #f1f5f9;
+}
+
+.elegant-field:last-child {
+  border-bottom: none;
+}
+
+.elegant-label {
+  flex: 0 0 200px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748b;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.elegant-value {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #0f172a;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
 .status-badge.inactive {
   background: rgba(239, 68, 68, 0.15);
   color: #b91c1c;

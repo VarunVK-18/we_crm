@@ -136,6 +136,19 @@ export class BisForm implements OnInit {
 
       } catch(e) {}
     }
+    // Auto-fill from EntityProfile on init (using order's entity name)
+    this.api.get<any>(`orders/${this.orderId()}`).subscribe({
+      next: (orderRes: any) => {
+        const entityName = orderRes?.entity_name || orderRes?.company_name || (this as any).legalName || (this as any).enterpriseName || (this as any).fullName || '';
+        if (entityName) {
+          AutoFillUtils.autoFillWithProfile(this, entityName, this.currentUser, this.api);
+        }
+      },
+      error: () => {
+        // Silently ignore - local autofill still applies
+      }
+    });
+
 
     const draft = this.draftService.loadDraft(this.orderId(), this.constructor.name);
       if (draft) {

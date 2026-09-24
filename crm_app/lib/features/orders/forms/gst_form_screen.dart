@@ -16,6 +16,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/order_model.dart';
 import '../../../providers/auth_provider.dart';
 import 'package:crm_app/core/utils/form_ui_helper.dart';
+import 'package:crm_app/core/utils/autofill_utils.dart';
+import 'package:crm_app/core/utils/document_matcher.dart';
 
 class GstFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -519,9 +521,42 @@ class _GstFormScreenState extends ConsumerState<GstFormScreen> {
   void _autoFillFromProfile() {
     final user = ref.read(userProfileProvider).value;
     if (user == null) return;
+    
     setState(() {
-      if (_businessEmailController.text.isEmpty && user.email.isNotEmpty) _businessEmailController.text = user.email;
-      if (_businessPhoneController.text.isEmpty && user.phone.isNotEmpty) _businessPhoneController.text = user.phone;
+      Map<String, TextEditingController> allControllers = {
+        'legalName': _legalNameController,
+        'panOfBusiness': _panOfBusinessController,
+        'businessEmail': _businessEmailController,
+        'businessPhone': _businessPhoneController,
+        'tradeName': _tradeNameController,
+        'incorpDate': _incorpDateController,
+        'dir1FullName': _dir1FullNameController,
+        'dir1FatherName': _dir1FatherNameController,
+        'dir1Dob': _dir1DobController,
+        'dir1Phone': _dir1PhoneController,
+        'dir1Mail': _dir1MailController,
+        'dir1Din': _dir1DinController,
+        'dir1Pan': _dir1PanController,
+        'dir1Address': _dir1AddressController,
+      };
+      
+      AutofillUtils.autoFillTextData(user, widget.order.details['entityName']?.toString() ?? '', allControllers);
+      
+      // Document Matcher
+      final String orderEntityName = widget.order.details['entityName']?.toString() ?? '';
+      
+      final Map<String, List<String>> keywordMap = {
+        'incorpCert': ['incorporation', 'incorp', 'coi'],
+        'companyPanFile': ['company pan', 'pan card', 'pan'],
+      };
+      
+      for (final entry in keywordMap.entries) {
+        final doc = DocumentMatcher.findExistingDoc(orderEntityName.isEmpty ? user.companyName : orderEntityName, user.onboardingDocuments, entry.value);
+        if (doc != null && doc['fileUrl'] != null) {
+          if (entry.key == 'incorpCert') _incorpCertPath = doc['fileUrl'];
+          if (entry.key == 'companyPanFile') _companyPanFilePath = doc['fileUrl'];
+        }
+      }
     });
   }
 

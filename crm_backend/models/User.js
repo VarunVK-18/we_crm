@@ -275,6 +275,12 @@ const UserSchema = new mongoose.Schema({
       coi: String,
         mcaUsername: String,
         mcaPassword: String,
+      bank_details: {
+        bankName: String,
+        accountNumber: String,
+        ifscCode: String,
+        accountType: String
+      },
       dsc: String,
         dscTokenPin: String,
         dscPassword: String,

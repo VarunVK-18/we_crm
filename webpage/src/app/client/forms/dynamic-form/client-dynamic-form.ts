@@ -32,7 +32,7 @@ export class ClientDynamicFormComponent implements OnInit {
   files: { [key: string]: File } = {};
   existingDocs: { [key: string]: any } = {};
   ocrValidating: { [key: string]: boolean } = {};
-  
+
   ocrErrorTitle = '';
   ocrErrorMessage = '';
 
@@ -60,7 +60,7 @@ export class ClientDynamicFormComponent implements OnInit {
 
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-      try { this.currentUser = JSON.parse(savedUser); } catch (e) {}
+      try { this.currentUser = JSON.parse(savedUser); } catch (e) { }
     }
 
     // 1. Fetch order details to know exact serviceType and entity
@@ -101,15 +101,15 @@ export class ClientDynamicFormComponent implements OnInit {
       next: (res: any) => {
         this.schema = res;
         this.initFieldValues(this.schema.fields || [], '');
-        
+
         // Load any saved draft (which may contain empty strings if saved prematurely)
         this.loadSavedDraft();
-        
+
         // Auto-fill from profile data if fields are STILL empty after loading draft
         const entityName = this.order?.client_id?.company_name || this.order?.entityName || this.order?.company_name || this.currentUser?.company_name || this.serviceName();
         AutoFillUtils.autoFillWithProfile(this.formData, entityName, this.currentUser, this.api).then(() => {
-           this.loading.set(false);
-           this.cdr.detectChanges();
+          this.loading.set(false);
+          this.cdr.detectChanges();
         });
       },
       error: (err: any) => {
@@ -299,12 +299,12 @@ export class ClientDynamicFormComponent implements OnInit {
     const lowerLabel = (field.label || '').toLowerCase();
     const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
     const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
-    
+
     let formattedVal = val || '';
 
     // 1. PAN / GSTIN / CIN / IFCS / TAN Masking (Force Uppercase)
     if (
-      (hasPan && isNotNameOrDate) || 
+      (hasPan && isNotNameOrDate) ||
       lowerName.includes('gstin') || lowerLabel.includes('gstin') || lowerLabel.includes('gst number') ||
       lowerName === 'cin' || lowerLabel.includes('cin') ||
       lowerName.includes('ifsc') || lowerLabel.includes('ifsc') ||
@@ -313,17 +313,17 @@ export class ClientDynamicFormComponent implements OnInit {
     ) {
       formattedVal = formattedVal.toUpperCase();
     }
-    
+
     // 2. Aadhaar Masking (Force digits only, max 12)
     else if (lowerName.includes('aadhaar') || lowerLabel.includes('aadhaar')) {
       formattedVal = formattedVal.replace(/\D/g, '').substring(0, 12);
     }
-    
+
     // 3. Phone Masking (Force digits only, max 10)
     else if (field.type === 'phone' || lowerName.includes('phone') || lowerLabel.includes('mobile')) {
       formattedVal = formattedVal.replace(/\D/g, '').substring(0, 10);
     }
-    
+
     // 4. PIN Code Masking (Force digits only, max 6)
     else if (lowerName.includes('pin') || lowerLabel.includes('pin code') || lowerName.includes('postal')) {
       formattedVal = formattedVal.replace(/\D/g, '').substring(0, 6);
@@ -386,9 +386,25 @@ export class ClientDynamicFormComponent implements OnInit {
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(strVal)) {
             formatError = 'Invalid email address.';
           }
-        } else if (lowerName.includes('name') || lowerLabel.includes('name')) {
-          if (!/^(?=.*[a-zA-Z])[a-zA-Z0-9\s\.\-]+$/.test(strVal)) {
-            formatError = 'Name must contain at least one letter and can only include alphanumeric characters, spaces, dots, or hyphens.';
+        } else if (/\bname\b|\bfirst\b|\blast\b|\bcompany\b|\bbusiness\b/.test(lowerName) || /\bname\b|\bfirst\b|\blast\b|\bcompany\b|\bbusiness\b/.test(lowerLabel)) {
+          if (!lowerName.includes('company') && !lowerLabel.includes('company') && !lowerName.includes('business') && !lowerLabel.includes('business')) {
+            if (/\d/.test(strVal)) {
+              formatError = 'Name cannot contain numbers.';
+            } else if (!/^[a-zA-Z\s\.\-]+$/.test(strVal)) {
+              formatError = 'Name can only include alphabets, spaces, dots, or hyphens.';
+            }
+          } else {
+            if (/[^a-zA-Z0-9\s\.\-]/.test(strVal)) {
+              formatError = 'Business name cannot contain special characters.';
+            } else if (!/^(?=.*[a-zA-Z])/.test(strVal)) {
+              formatError = 'Business name must contain at least one letter.';
+            }
+          }
+        } else if (lowerName.includes('place') || lowerLabel.includes('place')) {
+          if (/[^a-zA-Z0-9\s\.\-]/.test(strVal)) {
+            formatError = 'Place cannot contain special characters.';
+          } else if (!/^(?=.*[a-zA-Z])/.test(strVal)) {
+            formatError = 'Place must contain at least one letter.';
           }
         } else if (lowerName.includes('model') || lowerLabel.includes('model')) {
           if (!/^[a-zA-Z0-9\s\.\-]+$/.test(strVal)) {
@@ -442,7 +458,7 @@ export class ClientDynamicFormComponent implements OnInit {
       delete newErrors[currentPath];
       this.fieldErrors = newErrors;
     }
-    
+
     return { isMissing, formatError };
   }
 
@@ -480,7 +496,7 @@ export class ClientDynamicFormComponent implements OnInit {
 
     if (missingFieldPaths.length > 0) {
       this.errorMessage.set(`Please complete all required fields: ${missingFieldLabels.slice(0, 3).join(', ')}${missingFieldLabels.length > 3 ? '...' : ''}`);
-      
+
       // Scroll to the first invalid field directly
       setTimeout(() => {
         const firstErrorEl = document.getElementById('field-' + missingFieldPaths[0]);

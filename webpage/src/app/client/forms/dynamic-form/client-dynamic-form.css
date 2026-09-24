@@ -74,6 +74,12 @@
 }
 
 /* File Drop Area */
+.file-upload-group {
+  border: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
 .file-drop-area {
   border: 1.5px dashed #cbd5e1;
   border-radius: 12px;
@@ -167,6 +173,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .btn-remove-doc:hover {

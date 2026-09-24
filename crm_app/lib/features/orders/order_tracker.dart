@@ -350,8 +350,9 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       valueListenable: _selectedEntityNotifier,
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                        ),
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide.none,
@@ -385,7 +386,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                       selectedItemBuilder: (BuildContext context) {
                         return [
                           ...entities.map((e) => Transform.translate(
-                                offset: const Offset(-12, 0),
+                                offset: const Offset(0, 0),
                                 child: Text(
                                   e,
                                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
@@ -400,7 +401,7 @@ class _OrderTrackerScreenState extends ConsumerState<OrderTrackerScreen> {
                           (e) => DropdownItem<String>(
                             value: e,
                             child: Transform.translate(
-                              offset: const Offset(-12, 0),
+                              offset: const Offset(0, 0),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [

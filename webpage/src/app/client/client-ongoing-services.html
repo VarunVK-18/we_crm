@@ -105,7 +105,7 @@
                 <td>
                   <span class="ho-status-badge" [ngClass]="order.derivedStatus" style="white-space: nowrap;">
                     <span class="ho-status-dot"></span>
-                    {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'pending-registration' ? 'Waiting For Managers Approval' : (order.derivedStatus ===
+                    {{ order.derivedStatus === 'action-required' ? 'Action Required' : (order.derivedStatus === 'pending-registration' ? 'Pending Approval' : (order.derivedStatus ===
                     'in-progress' ? 'In Progress' : (order.derivedStatus | titlecase))) }}
                   </span>
                 </td>

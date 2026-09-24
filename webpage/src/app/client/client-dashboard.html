@@ -2,16 +2,16 @@
   <div class="hero-split-container">
     <!-- Main Welcome Banner (2.5/4 width) -->
     <header class="ho-hero">
-      <div class="ho-hero-content">
-        <h1 class="ho-hero-title" style="font-size: 32px; margin: 0;">Welcome,</h1>
-        <h2 style="font-size: 24px; font-weight: 600; color: #374151; margin: 0;">
+      <div class="ho-hero-content" style="display: flex; flex-direction: column; gap: 12px;">
+        <h1 class="ho-hero-title" style="font-size: 32px; margin: 0; line-height: 1.2;">Welcome,</h1>
+        <h2 style="font-size: 24px; font-weight: 600; color: #374151; margin: 0; line-height: 1.2;">
           @if (selectedEntity() !== 'All') {
           {{ selectedEntity() | titlecase }}
           } @else {
           {{ (user()?.company_name || user()?.owner_name || user()?.name || 'Client') | titlecase }}
           }
         </h2>
-        <p class="ho-hero-subtitle" style="font-size: 14px; margin-top: 24px;">Track the progress of your active services and
+        <p class="ho-hero-subtitle" style="font-size: 14px; margin: 0; line-height: 1.2;">Track the progress of your active services and
           requests from one place.</p>
       </div>
       <div class="ho-hero-illustration" style="opacity: 0.8; z-index: 5; right: -60px; bottom: -170px;">

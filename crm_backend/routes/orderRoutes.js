@@ -4,6 +4,7 @@ const router = express.Router();
 const orderController = require('../controllers/orderController');
 const { checkUser } = require('../middleware/rbac');
 const multer = require('multer');
+const ocrService = require('../services/ocrValidationService');
 
 const Document = require('../models/Document');
 
@@ -14,6 +15,47 @@ const saveFilesToDatabase = async (req, res, next) => {
     const filesArray = Array.isArray(req.files)
       ? req.files
       : Object.values(req.files).flat();
+
+    // --- OCR Validation Step ---
+    for (const file of filesArray) {
+      if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
+        const field = file.fieldname.toLowerCase();
+        let isPan = field.includes('pan');
+        let isAadhaar = field.includes('aadhaar');
+        let isGst = field.includes('gst');
+        let isCoi = field.includes('coi') || field.includes('incorpcert');
+        let isUdyam = field.includes('udyam');
+        let isTrademark = field.includes('trademark');
+        let isIso = field.includes('iso');
+
+        if (isPan || isAadhaar || isGst || isCoi || isUdyam || isTrademark || isIso) {
+          try {
+            const text = await ocrService.extractText(file.buffer, file.mimetype);
+            let isValid = true;
+            let docName = '';
+
+            if (isPan) { isValid = ocrService.validatePAN(text); docName = 'PAN Card'; }
+            else if (isAadhaar) { isValid = ocrService.validateAadhaar(text); docName = 'Aadhaar Card'; }
+            else if (isGst) { isValid = ocrService.validateGST(text); docName = 'GST Certificate'; }
+            else if (isCoi) { isValid = ocrService.validateCOI(text); docName = 'Incorporation Certificate'; }
+            else if (isUdyam) { isValid = ocrService.validateUdyam(text); docName = 'Udyam Certificate'; }
+            else if (isTrademark) { isValid = ocrService.validateTrademark(text); docName = 'Trademark Certificate'; }
+            else if (isIso) { isValid = ocrService.validateISO(text); docName = 'ISO Certificate'; }
+
+            if (!isValid) {
+              return res.status(400).json({ success: false, message: `Please upload a correct valid ${docName}` });
+            }
+          } catch (ocrErr) {
+            console.warn('[OCR Validation] Extraction error for', field, ocrErr);
+            // Fallthrough, maybe it was a PDF masquerading as image, or unreadable.
+            // To be safe and strict, block it.
+            return res.status(400).json({ success: false, message: `Could not read the uploaded document. Please upload a clear and correct valid document.` });
+          }
+        }
+      }
+    }
+    // ---------------------------
+
     for (const file of filesArray) {
       const newDoc = new Document({
         filename: file.originalname,

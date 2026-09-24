@@ -98,6 +98,17 @@ export class IecForm implements OnInit {
     this.route.params.subscribe(params => {
       this.orderId.set(params['id']);
     });
+
+    // Auto-fill from EntityProfile on init (using order's entity name)
+    this.api.get<any>(`orders/${this.orderId()}`).subscribe({
+      next: (orderRes: any) => {
+        const entityName = orderRes?.entity_name || orderRes?.company_name || '';
+        if (entityName) {
+          AutoFillUtils.autoFillWithProfile(this, entityName, this.currentUser, this.api);
+        }
+      },
+      error: () => {}
+    });
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {

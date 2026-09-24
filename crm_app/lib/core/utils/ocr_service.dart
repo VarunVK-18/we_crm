@@ -33,6 +33,27 @@ class OcrService {
       return null;
     }
   }
+
+  Future<Map<String, dynamic>> validateDocument(String filePath, String fieldName) async {
+    try {
+      final request = http_pkg.MultipartRequest('POST', Uri.parse('$kBaseUrl/api/ocr/validate'));
+      request.headers['x-user-id'] = uid;
+      request.fields['fieldName'] = fieldName;
+      request.files.add(await http_pkg.MultipartFile.fromPath('file', filePath));
+
+      final streamedResponse = await request.send().timeout(const Duration(seconds: 25));
+      final response = await http_pkg.Response.fromStream(streamedResponse);
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        return {'success': data['success'] ?? true, 'message': data['message'] ?? 'Validation passed'};
+      } else {
+        return {'success': false, 'message': data['message'] ?? 'Invalid document.'};
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Failed to validate document. Please upload a clear and correct valid document.'};
+    }
+  }
 }
 
 final ocrServiceProvider = Provider<OcrService>((ref) {

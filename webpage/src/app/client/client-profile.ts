@@ -800,8 +800,73 @@ export class ClientProfile implements OnInit, OnDestroy {
     const userId = this.user()?._id || this.user()?.id;
     if (!userId) return;
 
-    this.isSaving.set(true);
+    const card = this.editingCard();
     this.saveErrorMessage.set(null);
+
+    // Regex Patterns
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const phoneRegex = /^[6-9]\d{9}$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i;
+    const tanRegex = /^[A-Z]{4}[0-9]{5}[A-Z]{1}$/i;
+    const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/i;
+    const pinRegex = /^[1-9][0-9]{5}$/;
+
+    // Form Validation
+    if (card === 'general') {
+      if (!emailRegex.test(this.editData.email?.trim() || '')) {
+        this.saveErrorMessage.set('Please enter a valid email address.');
+        return;
+      }
+      if (!phoneRegex.test(this.editData.phone?.trim() || '')) {
+        this.saveErrorMessage.set('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+      if (this.editData.postal_code?.trim() && !pinRegex.test(this.editData.postal_code.trim())) {
+        this.saveErrorMessage.set('Please enter a valid 6-digit PIN code.');
+        return;
+      }
+    } else if (card === 'statutory') {
+      if (!this.editData.pan?.trim() && !this.editData.tan?.trim() && !this.editData.gstin?.trim()) {
+        this.saveErrorMessage.set('Please provide at least one statutory identifier (PAN, TAN, or GSTIN).');
+        return;
+      }
+      if (this.editData.pan?.trim() && !panRegex.test(this.editData.pan.trim())) {
+        this.saveErrorMessage.set('Please enter a valid 10-character PAN.');
+        return;
+      }
+      if (this.editData.tan?.trim() && !tanRegex.test(this.editData.tan.trim())) {
+        this.saveErrorMessage.set('Please enter a valid 10-character TAN.');
+        return;
+      }
+      if (this.editData.gstin?.trim() && !gstinRegex.test(this.editData.gstin.trim())) {
+        this.saveErrorMessage.set('Please enter a valid 15-character GSTIN.');
+        return;
+      }
+    } else if (card === 'company_details') {
+      // Basic validation for company details can be added here
+      if (!this.editData.cin?.trim()) {
+        // Optional validation
+      }
+    } else if (card === 'financial') {
+      // Basic validation for financial can be added here if needed
+    } else if (card === 'directors' && Array.isArray(this.editData.directors)) {
+      for (const d of this.editData.directors) {
+        if (!d.fullName?.trim() || !d.email?.trim() || !d.phone?.trim()) {
+          this.saveErrorMessage.set('Please fill out required fields for all directors (Name, Email, Phone).');
+          return;
+        }
+        if (!emailRegex.test(d.email.trim())) {
+          this.saveErrorMessage.set(`Please enter a valid email for director ${d.fullName}.`);
+          return;
+        }
+        if (!phoneRegex.test(d.phone.trim())) {
+          this.saveErrorMessage.set(`Please enter a valid 10-digit mobile number for director ${d.fullName}.`);
+          return;
+        }
+      }
+    }
+
+    this.isSaving.set(true);
     let payload: any = { ...this.editData };
     
     const sel = this.selectedEntity();

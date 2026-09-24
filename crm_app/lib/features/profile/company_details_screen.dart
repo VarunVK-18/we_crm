@@ -140,28 +140,31 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
     );
   }
 
-  Widget _buildIncorporationDetails(BuildContext context) {
+
+  Widget _buildFinancialDetails(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDetailCard('CIN (Corporate Identification Number)', widget.entity.cin, context),
-        _buildDetailCard('Incorporation Date', widget.entity.incorporationDate != null ? DateFormat('dd MMM yyyy').format(widget.entity.incorporationDate!) : '', context),
-        _buildDetailCard('PAN (Permanent Account Number)', widget.entity.pan, context),
-        _buildDetailCard('TAN (Tax Deduction and Collection Account Number)', widget.entity.tan, context),
-        _buildDetailCard('GSTIN', widget.entity.gstin, context),
-        _buildDetailCard('MSME Registration', widget.entity.msme, context),
-        _buildDetailCard('ISO Certification', widget.entity.iso, context),
-        _buildDetailCard('FSSAI License', widget.entity.fssai, context),
-        _buildDetailCard('Certificate of Incorporation (COI)', widget.entity.coi, context, showCopy: false),
-        _buildDetailCard('Digital Signature Certificate (DSC)', widget.entity.dsc, context, showCopy: false),
-        if (widget.entity.cin.isEmpty && widget.entity.pan.isEmpty && widget.entity.tan.isEmpty && 
-            widget.entity.coi.isEmpty && widget.entity.dsc.isEmpty && widget.entity.incorporationDate == null &&
-            widget.entity.gstin.isEmpty && widget.entity.msme.isEmpty && widget.entity.iso.isEmpty && widget.entity.fssai.isEmpty)
+        _buildDetailCard('Company Type', widget.entity.companyType, context),
+        _buildDetailCard('Authorised Capital', widget.entity.authorisedCapital, context),
+        _buildDetailCard('Paid-up Capital', widget.entity.paidupCapital, context),
+        
+        if (widget.entity.bankDetails != null && widget.entity.bankDetails!.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text('Bank Details', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.w600, color: const Color(0xFF312E81))),
+          const SizedBox(height: 12),
+          _buildDetailCard('Bank Name', widget.entity.bankDetails!['bankName']?.toString() ?? '', context),
+          _buildDetailCard('Account Number', widget.entity.bankDetails!['accountNumber']?.toString() ?? '', context),
+          _buildDetailCard('IFSC Code', widget.entity.bankDetails!['ifscCode']?.toString() ?? '', context),
+          _buildDetailCard('Account Type', widget.entity.bankDetails!['accountType']?.toString() ?? '', context),
+        ],
+
+        if (widget.entity.companyType.isEmpty && widget.entity.authorisedCapital.isEmpty && widget.entity.paidupCapital.isEmpty && widget.entity.bankDetails == null)
           Center(
             child: Padding(
               padding: const EdgeInsets.all(40.0),
               child: Text(
-                'No incorporation details available.',
+                'No financial details available.',
                 style: GoogleFonts.outfit(color: Colors.grey[500]),
               ),
             ),
@@ -170,6 +173,23 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
     );
   }
 
+  Widget _buildIncorporationDetails(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDetailCard('CIN', widget.entity.cin.isNotEmpty ? widget.entity.cin : '-', context, showCopy: widget.entity.cin.isNotEmpty),
+        _buildDetailCard('Date of Incorporation', widget.entity.incorporationDate != null ? DateFormat('dd MMM yyyy').format(widget.entity.incorporationDate!) : '-', context, showCopy: widget.entity.incorporationDate != null),
+        _buildDetailCard('PAN', widget.entity.pan.isNotEmpty ? widget.entity.pan : '-', context, showCopy: widget.entity.pan.isNotEmpty),
+        _buildDetailCard('TAN', widget.entity.tan.isNotEmpty ? widget.entity.tan : '-', context, showCopy: widget.entity.tan.isNotEmpty),
+        _buildDetailCard('GSTIN', widget.entity.gstin.isNotEmpty ? widget.entity.gstin : '-', context, showCopy: widget.entity.gstin.isNotEmpty),
+        _buildDetailCard('MSME / Udyam Number', widget.entity.msme.isNotEmpty ? widget.entity.msme : '-', context, showCopy: widget.entity.msme.isNotEmpty),
+        _buildDetailCard('ISO Certification', widget.entity.iso.isNotEmpty ? widget.entity.iso : '-', context, showCopy: widget.entity.iso.isNotEmpty),
+        _buildDetailCard('FSSAI License', widget.entity.fssai.isNotEmpty ? widget.entity.fssai : '-', context, showCopy: widget.entity.fssai.isNotEmpty),
+        _buildDetailCard('Certificate of Incorporation (COI)', widget.entity.coi.isNotEmpty ? widget.entity.coi : '-', context, showCopy: false),
+        _buildDetailCard('Digital Signature Certificate (DSC)', widget.entity.dsc.isNotEmpty ? widget.entity.dsc : '-', context, showCopy: false),
+      ],
+    );
+  }
   Widget _buildApplicationTracker(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -349,9 +369,9 @@ class _EntityExpandableCardState extends ConsumerState<_EntityExpandableCard> {
                       return AnimatedAlign(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeOutCubic,
-                        alignment: _selectedTabIndex == 0 ? Alignment.centerLeft : Alignment.centerRight,
+                        alignment: _selectedTabIndex == 0 ? Alignment.centerLeft : _selectedTabIndex == 1 ? Alignment.center : Alignment.centerRight,
                         child: Container(
-                          width: constraints.maxWidth / 2,
+                          width: constraints.maxWidth / 3,
                           height: 2,
                           color: AppTheme.deepTeal,
                         ),
@@ -497,7 +517,7 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
             mergedEntities[primaryCompanyName.toLowerCase()] = ClientEntity(
               entityName: primaryCompanyName,
               entityType: 'Company',
-              cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
+              cin: '', pan: '', tan: '', gstin: '', iec: '', lei: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
               trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
               patentApplicationNumber: '', patentStatus: '', patentNumber: '',
               copyrightRegistrationNumber: '', copyrightCertificate: '',
@@ -516,7 +536,7 @@ class _CompanyDetailsScreenState extends ConsumerState<CompanyDetailsScreen> {
                 ClientEntity(
                   entityName: selectedEntity,
                   entityType: 'Company',
-                  cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
+                  cin: '', pan: '', tan: '', gstin: '', iec: '', lei: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
                   trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
                   patentApplicationNumber: '', patentStatus: '', patentNumber: '',
                   copyrightRegistrationNumber: '', copyrightCertificate: '',

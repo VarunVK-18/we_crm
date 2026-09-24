@@ -19,22 +19,23 @@ export class AutoFillUtils {
 
       if (profile && Object.keys(profile).length > 0) {
         // --- EntityProfile (freshest data: updated on every form submit) ---
-        this.setIfPropertyExists(component, ['panNumber', 'pan', 'companyPan'],                    profile.pan);
+        this.setIfPropertyExists(component, ['companyName', 'companyLegalName', 'legalName', 'businessName', 'nameOfTheCompany', 'entityName', 'manufacturerName'], entityName);
+        this.setIfPropertyExists(component, ['panOfBusiness', 'companyPan', 'panNumber', 'pan'],                    profile.pan);
         this.setIfPropertyExists(component, ['gst', 'gstNumber', 'gstin'],                         profile.gstin);
-        this.setIfPropertyExists(component, ['address', 'companyAddress', 'businessAddress', 'officeAddress'], profile.address);
+        this.setIfPropertyExists(component, ['address', 'companyAddress', 'businessAddress', 'officeAddress', 'courierAddress'], profile.address);
         this.setIfPropertyExists(component, ['tan', 'tanNumber'],                                  profile.tan);
         this.setIfPropertyExists(component, ['cin', 'cinNumber'],                                  profile.cin);
-        this.setIfPropertyExists(component, ['incorporationDate'],                                 profile.incorporationDate);
+        this.setIfPropertyExists(component, ['incorporationDate', 'incorpDate', 'dateOfIncorporation'],                                 profile.incorporationDate);
         this.setIfPropertyExists(component, ['email', 'businessEmail', 'companyEmail'],            profile.email);
-        this.setIfPropertyExists(component, ['phone', 'mobile', 'mobileNumber', 'contactNumber'],  profile.phone);
-        this.setIfPropertyExists(component, ['bankAccount', 'bankAccountNumber'],                  profile.bankAccount);
+        this.setIfPropertyExists(component, ['phone', 'mobile', 'mobileNumber', 'contactNumber', 'whatsapp', 'businessPhone'],  profile.phone);
+        this.setIfPropertyExists(component, ['bankAccount', 'bankAccountNumber', 'accountNumber'],                  profile.bankAccount);
         this.setIfPropertyExists(component, ['bankIfsc', 'ifscCode'],                              profile.bankIfsc);
         this.setIfPropertyExists(component, ['bankName'],                                          profile.bankName);
 
         // Director details from EntityProfile
-        this.setIfPropertyExists(component, ['directorName', 'dir1FullName', 'ownerName'],         profile.directorName);
-        this.setIfPropertyExists(component, ['directorEmail', 'dir1Email', 'dir1Mail'],            profile.directorEmail);
-        this.setIfPropertyExists(component, ['directorPhone', 'dir1Phone', 'dir1Mobile'],          profile.directorPhone);
+        this.setIfPropertyExists(component, ['directorName', 'dir1FullName', 'ownerName', 'contactPerson', 'applicantName', 'signatoryName'],         profile.directorName);
+        this.setIfPropertyExists(component, ['directorEmail', 'dir1Email', 'dir1Mail', 'signatoryEmail'],            profile.directorEmail);
+        this.setIfPropertyExists(component, ['directorPhone', 'dir1Phone', 'dir1Mobile', 'signatoryMobile'],          profile.directorPhone);
         this.setIfPropertyExists(component, ['directorPan', 'dir1Pan'],                            profile.directorPan);
         this.setIfPropertyExists(component, ['directorDin', 'dir1Din'],                            profile.directorDin);
       } else {
@@ -56,15 +57,17 @@ export class AutoFillUtils {
       const matchedEntity = DocumentMatcher.findExistingEntity(entityName, user.client_entities);
       if (matchedEntity) {
         // Map entity fields to common component properties
-        this.setIfPropertyExists(component, ['panNumber', 'pan', 'companyPan'], matchedEntity.pan);
+        this.setIfPropertyExists(component, ['companyName', 'companyLegalName', 'legalName', 'businessName', 'nameOfTheCompany', 'entityName', 'manufacturerName'], entityName);
+        this.setIfPropertyExists(component, ['panOfBusiness', 'companyPan', 'panNumber', 'pan'], matchedEntity.pan);
         this.setIfPropertyExists(component, ['gst', 'gstNumber', 'gstin'], matchedEntity.gstin);
-        this.setIfPropertyExists(component, ['address', 'companyAddress', 'businessAddress', 'officeAddress'], matchedEntity.address || matchedEntity.registeredAddress);
+        this.setIfPropertyExists(component, ['address', 'companyAddress', 'businessAddress', 'officeAddress', 'courierAddress'], matchedEntity.address || matchedEntity.registeredAddress);
         this.setIfPropertyExists(component, ['tan', 'tanNumber'], matchedEntity.tan);
         this.setIfPropertyExists(component, ['cin', 'cinNumber'], matchedEntity.cin);
         this.setIfPropertyExists(component, ['iso', 'isoNumber'], matchedEntity.iso);
+        this.setIfPropertyExists(component, ['iec', 'iecCode', 'iecNumber'], matchedEntity.iec);
+        this.setIfPropertyExists(component, ['incorporationDate', 'incorpDate', 'dateOfIncorporation'], matchedEntity.incorporationDate);
         this.setIfPropertyExists(component, ['msme', 'msmeNumber', 'udyamNumber'], matchedEntity.msme);
         this.setIfPropertyExists(component, ['lei', 'leiNumber'], matchedEntity.lei);
-        this.setIfPropertyExists(component, ['iec', 'iecNumber'], matchedEntity.iec);
         this.setIfPropertyExists(component, ['fssai', 'fssaiNumber'], matchedEntity.fssai);
       }
     }
@@ -73,23 +76,38 @@ export class AutoFillUtils {
     if (user.directors && user.directors.length > 0) {
       const mainDirector = user.directors[0];
       this.setIfPropertyExists(component, ['aadhaar', 'aadhaarNumber', 'ownerAadhaar'], mainDirector.aadhaar);
-      if (!component.panNumber && !component.pan) {
-         this.setIfPropertyExists(component, ['panNumber', 'pan', 'ownerPan'], mainDirector.pan);
+      this.setIfPropertyExists(component, ['directorName', 'dir1FullName', 'ownerName', 'contactPerson', 'applicantName', 'signatoryName'], mainDirector.ownerName || mainDirector.directorName);
+      if (!component.panNumber && !component.pan && !component.panOfBusiness) {
+         this.setIfPropertyExists(component, ['panOfBusiness', 'ownerPan', 'panNumber', 'pan'], mainDirector.pan);
       }
-      this.setIfPropertyExists(component, ['mobile', 'mobileNumber', 'phone', 'contactNumber'], mainDirector.mobileNumber || mainDirector.phone);
-      this.setIfPropertyExists(component, ['email', 'emailId', 'personalEmail'], mainDirector.email);
+      this.setIfPropertyExists(component, ['mobile', 'mobileNumber', 'phone', 'contactNumber', 'whatsapp', 'businessPhone', 'signatoryMobile'], mainDirector.mobileNumber || mainDirector.phone);
+      this.setIfPropertyExists(component, ['email', 'emailId', 'personalEmail', 'businessEmail', 'companyEmail', 'signatoryEmail'], mainDirector.email);
     }
+
+    // Fallback to basic user profile details if director/entity info was missing
+    this.setIfPropertyExists(component, ['directorName', 'dir1FullName', 'ownerName', 'contactPerson', 'applicantName', 'signatoryName'], user.owner_name);
+    this.setIfPropertyExists(component, ['email', 'emailId', 'personalEmail', 'businessEmail', 'companyEmail', 'signatoryEmail'], user.email || user.company_email);
+    this.setIfPropertyExists(component, ['mobile', 'mobileNumber', 'phone', 'contactNumber', 'whatsapp', 'businessPhone', 'signatoryMobile'], user.phone);
   }
 
   private static setIfPropertyExists(component: any, possibleNames: string[], value: any) {
     if (!value) return;
+    const componentKeys = Object.keys(component);
+    
     for (const name of possibleNames) {
-      if (name in component) {
-        // Only override if the field is empty to prevent erasing user input
-        if (!component[name] || component[name] === '') {
-          component[name] = value;
+      const normalizedName = name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      
+      // Look for a matching key in the component
+      for (const compKey of componentKeys) {
+        // Direct match or dynamic form nested path match (e.g. '2. Company Details.Company Legal Name')
+        const normalizedCompKey = compKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+        if (normalizedCompKey === normalizedName || normalizedCompKey.endsWith(normalizedName)) {
+          // Only override if the field is empty to prevent erasing user input
+          if (!component[compKey] || component[compKey] === '') {
+            component[compKey] = value;
+          }
+          return; // Stop after finding the best match for these aliases
         }
-        break; // Stop after first match in the component
       }
     }
   }

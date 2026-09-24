@@ -35,6 +35,10 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
   formData: { [key: string]: any } = {};
   files: { [key: string]: File } = {};
   existingDocs: { [key: string]: any } = {};
+  ocrValidating: { [key: string]: boolean } = {};
+  
+  ocrErrorTitle = '';
+  ocrErrorMessage = '';
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -332,9 +336,42 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
           return;
         }
       }
-      this.files[pathKey] = file;
-      this.saveDraft();
-      this.cdr.detectChanges();
+
+      // Real-time OCR validation
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+        this.ocrValidating[pathKey] = true;
+        this.cdr.detectChanges();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fieldName', pathKey);
+
+        this.api.post<any>('ocr/validate', formData).subscribe({
+          next: (res) => {
+            this.ocrValidating[pathKey] = false;
+            if (res.success) {
+              this.files[pathKey] = file;
+              this.saveDraft();
+              this.cdr.detectChanges();
+            } else {
+              this.ocrErrorTitle = 'Validation Failed';
+              this.ocrErrorMessage = res.message || 'Invalid document.';
+              event.target.value = '';
+              this.cdr.detectChanges();
+            }
+          },
+          error: (err) => {
+            this.ocrValidating[pathKey] = false;
+            this.ocrErrorTitle = 'Validation Error';
+            this.ocrErrorMessage = err.error?.message || 'Failed to validate document. Please upload a clear and correct valid document.';
+            event.target.value = '';
+            this.cdr.detectChanges();
+          }
+        });
+      } else {
+        this.files[pathKey] = file;
+        this.saveDraft();
+        this.cdr.detectChanges();
+      }
     }
   }
 
@@ -441,10 +478,12 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
         const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
         const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
 
-        if (f.validation?.regex) {
-          const re = new RegExp(f.validation.regex);
+        const regexPattern = f.validation?.regex || f.validation?.pattern;
+        const regexMsg = f.validation?.errorMessage || f.validation?.message || 'Invalid format.';
+        if (regexPattern) {
+          const re = new RegExp(regexPattern);
           if (!re.test(strVal)) {
-            formatError = f.validation.errorMessage || 'Invalid format.';
+            formatError = regexMsg;
           }
         } else if (hasPan && isNotNameOrDate) {
           if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(strVal)) {
@@ -696,5 +735,10 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
       },
       error: handleError
     });
+  }
+
+  closeOcrError() {
+    this.ocrErrorTitle = '';
+    this.ocrErrorMessage = '';
   }
 }
