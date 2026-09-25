@@ -588,7 +588,8 @@
 }
 
 .elegant-section-group {
-  display: none; /* Hide group headers, we'll split them into cards if needed, or just let them stack */
+  display: none;
+  /* Hide group headers, we'll split them into cards if needed, or just let them stack */
 }
 
 .elegant-field {
@@ -634,7 +635,8 @@
   left: 100%;
   margin-left: 16px;
   background-color: transparent;
-  color: #0f172a; /* Black text */
+  color: #0f172a;
+  /* Black text */
   font-size: 12px;
   font-weight: 500;
   padding: 2px;
@@ -667,17 +669,47 @@
 }
 
 @keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(4px); }
-  15% { opacity: 1; transform: translateY(0); }
-  85% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-4px); }
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes fadeInOutRight {
-  0% { opacity: 0; transform: translate(-4px, -50%); }
-  15% { opacity: 1; transform: translate(0, -50%); }
-  85% { opacity: 1; transform: translate(0, -50%); }
-  100% { opacity: 0; transform: translate(4px, -50%); }
+  0% {
+    opacity: 0;
+    transform: translate(-4px, -50%);
+  }
+
+  15% {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
+  85% {
+    opacity: 1;
+    transform: translate(0, -50%);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(4px, -50%);
+  }
 }
 
 .status-badge.inactive {
@@ -996,13 +1028,16 @@
 .director-list-item {
   background: var(--background);
 }
+
 .director-list-item:hover {
   background: rgba(15, 23, 42, 0.035);
 }
+
 .director-list-item.active {
   background: #f5f3ff;
   border-color: #ddd6fe !important;
 }
+
 .director-list-item.active div:first-child {
   color: #7c3aed;
 }
@@ -1117,8 +1152,10 @@
 }
 
 .phn-badge.active {
-  background: #f3e8ff; /* Light purple or old color, we'll just use a subtle generic active color or stick to brand */
-  color: #7c3aed; /* Reusing some accent but keeping it subtle */
+  background: #f3e8ff;
+  /* Light purple or old color, we'll just use a subtle generic active color or stick to brand */
+  color: #7c3aed;
+  /* Reusing some accent but keeping it subtle */
   border: 1px solid #e9d5ff;
 }
 
