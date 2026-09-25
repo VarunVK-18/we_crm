@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit, OnDestroy } from '@angular/core';
+import { Component, signal, computed, OnInit, OnDestroy, ElementRef, Renderer2, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,7 +17,7 @@ import { ComplianceCalendarComponent } from './tools/compliance-calendar/complia
   templateUrl: './client-profile.html',
   styleUrl: './client-profile.css',
 })
-export class ClientProfile implements OnInit, OnDestroy {
+export class ClientProfile implements OnInit, OnDestroy, AfterViewInit {
   readonly DashboardSquareRemoveIcon = DashboardSquareRemoveIcon;
   readonly OfficeIcon = OfficeIcon;
   readonly Briefcase01Icon = Briefcase01Icon;
@@ -59,6 +59,7 @@ export class ClientProfile implements OnInit, OnDestroy {
 
   activeTab = signal('overview');
   documentSearchQuery = signal<string>('');
+  documentCategoryFilter = signal<string>('All Categories');
 
   setTab(tab: string) {
     this.activeTab.set(tab);
@@ -73,6 +74,7 @@ export class ClientProfile implements OnInit, OnDestroy {
   filteredDocuments = computed(() => {
     const sel = this.selectedEntity();
     const query = this.documentSearchQuery().toLowerCase();
+    const catFilter = this.documentCategoryFilter();
     
     let docs = this.allDocuments();
     
@@ -80,6 +82,17 @@ export class ClientProfile implements OnInit, OnDestroy {
       docs = docs.filter(doc => {
         const entityName = this.docEntityMap.get(doc._id) || '';
         return entityName.toLowerCase() === sel.toLowerCase();
+      });
+    }
+
+    if (catFilter !== 'All Categories') {
+      docs = docs.filter(doc => {
+        let type = 'Other Documents';
+        if (doc.sourceType === 'profile_document') type = 'Company Documents';
+        else if (doc.sourceType === 'requested_document') type = 'Requested Documents';
+        else if (doc.sourceType === 'final_document') type = 'Final Deliverables';
+        
+        return type === catFilter;
       });
     }
     
@@ -92,6 +105,30 @@ export class ClientProfile implements OnInit, OnDestroy {
     }
     
     return docs;
+  });
+
+  categorizedDocuments = computed(() => {
+    const docs = this.filteredDocuments();
+    const categories: { title: string, docs: any[] }[] = [
+      { title: 'Company Documents', docs: [] },
+      { title: 'Requested Documents', docs: [] },
+      { title: 'Final Deliverables', docs: [] },
+      { title: 'Other Documents', docs: [] }
+    ];
+
+    for (const doc of docs) {
+      if (doc.sourceType === 'profile_document') {
+        categories[0].docs.push(doc);
+      } else if (doc.sourceType === 'requested_document') {
+        categories[1].docs.push(doc);
+      } else if (doc.sourceType === 'final_document') {
+        categories[2].docs.push(doc);
+      } else {
+        categories[3].docs.push(doc);
+      }
+    }
+
+    return categories.filter(c => c.docs.length > 0);
   });
 
   allChecklists = signal<any[]>([]);
@@ -194,7 +231,7 @@ export class ClientProfile implements OnInit, OnDestroy {
         tan: u.tan || 'N/A',
         gstin: u.gstin || 'N/A',
         registration_number: u.registration_number || 'N/A',
-        date_of_incorporation: u.date_of_incorporation || 'N/A',
+        date_of_incorporation: u.date_of_incorporation || u.incorporation_date || 'N/A',
         roc: u.roc || 'N/A',
         company_origin: u.company_origin || 'N/A',
         company_type: u.company_type || 'N/A',
@@ -207,6 +244,9 @@ export class ClientProfile implements OnInit, OnDestroy {
         paidup_capital: u.paidup_capital || 'N/A',
         obligation_of_contribution: u.obligation_of_contribution || 'N/A',
         address_type: u.address_type || 'N/A',
+        door_number: u.door_number || 'N/A',
+        street_name: u.street_name || 'N/A',
+        area: u.area || 'N/A',
         street_address_line_1: u.street_address_line_1 || 'N/A',
         street_address_line_2: u.street_address_line_2 || 'N/A',
         city: u.city || 'N/A',
@@ -231,14 +271,14 @@ export class ClientProfile implements OnInit, OnDestroy {
     if (entity) {
       return {
         entityName: entity.entityName,
-        entityLogo: entity.entityLogo || '',
+        entityLogo: entity.entityLogo || u.profile_image || '',
         entityType: entity.entityType || 'COMPANY',
         cin: entity.cin || 'N/A',
         pan: entity.pan || 'N/A',
         tan: entity.tan || 'N/A',
         gstin: entity.gstin || 'N/A',
         registration_number: entity.registration_number || 'N/A',
-        date_of_incorporation: entity.incorporationDate || 'N/A',
+        date_of_incorporation: entity.date_of_incorporation || entity.incorporationDate || entity.incorporation_date || 'N/A',
         roc: entity.roc || 'N/A',
         company_origin: entity.company_origin || 'N/A',
         company_type: entity.company_type || 'N/A',
@@ -251,6 +291,9 @@ export class ClientProfile implements OnInit, OnDestroy {
         paidup_capital: entity.paidup_capital || 'N/A',
         obligation_of_contribution: entity.obligation_of_contribution || 'N/A',
         address_type: entity.address_type || 'N/A',
+        door_number: entity.door_number || 'N/A',
+        street_name: entity.street_name || 'N/A',
+        area: entity.area || 'N/A',
         street_address_line_1: entity.street_address_line_1 || 'N/A',
         street_address_line_2: entity.street_address_line_2 || 'N/A',
         city: entity.city || 'N/A',
@@ -306,6 +349,43 @@ export class ClientProfile implements OnInit, OnDestroy {
     };
   });
 
+  fullDetailedAddress = computed(() => {
+    const ent = this.activeEntity();
+    if (!ent) return 'N/A';
+    
+    const cleanPart = (str: any) => {
+      if (!str || str === 'N/A') return '';
+      return String(str).replace(/^,|,$/g, '').trim();
+    };
+
+    const door = cleanPart(ent.door_number);
+    const street = cleanPart(ent.street_name);
+    const area = cleanPart(ent.area);
+    const city = cleanPart(ent.city);
+    const state = cleanPart(ent.state);
+    const postal = cleanPart(ent.postal_code);
+
+    const firstParts = [door, street, area, city].filter(p => p.length > 0);
+    
+    let statePostal = '';
+    if (state && postal) {
+      statePostal = `${state} - ${postal}`;
+    } else if (state) {
+      statePostal = state;
+    } else if (postal) {
+      statePostal = postal;
+    }
+
+    if (statePostal) {
+      firstParts.push(statePostal);
+    }
+
+    let address = firstParts.join(', ');
+    address = address.replace(/,\s*,/g, ', ').replace(/\s+/g, ' ').trim();
+    
+    return address || 'N/A';
+  });
+
   get selectedEntityType(): string {
     const ent = this.activeEntity();
     if (!ent) return 'COMPANY';
@@ -327,7 +407,33 @@ export class ClientProfile implements OnInit, OnDestroy {
     return 'Not Incorporated';
   }
 
-  constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService) { }
+  constructor(private router: Router, public api: Api, private confirmDialog: ConfirmDialogService, private el: ElementRef, private renderer: Renderer2) { }
+
+  ngAfterViewInit() {
+    this.renderer.listen(this.el.nativeElement, 'click', (event) => {
+      const target = event.target as HTMLElement;
+      if (target.classList.contains('elegant-value') || target.classList.contains('copyable-text')) {
+        const text = target.innerText.trim();
+        if (text && text !== 'N/A') {
+          navigator.clipboard.writeText(text);
+          
+          const popup = this.renderer.createElement('span');
+          this.renderer.addClass(popup, 'copy-popup');
+          popup.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied`;
+          
+          this.renderer.setStyle(target, 'position', 'relative');
+          this.renderer.setStyle(target, 'cursor', 'pointer');
+          this.renderer.appendChild(target, popup);
+          
+          setTimeout(() => {
+            if (target.contains(popup)) {
+              this.renderer.removeChild(target, popup);
+            }
+          }, 1500);
+        }
+      }
+    });
+  }
 
   viewServiceDetails(serviceId: string) {
     this.router.navigate(['/client/service', serviceId]);
@@ -462,7 +568,11 @@ export class ClientProfile implements OnInit, OnDestroy {
           localStorage.setItem('user', JSON.stringify(res.user));
           let docs: any[] = [];
           if (res.user.onboarding_documents) {
-            docs = [...res.user.onboarding_documents.map((d: any) => ({ ...d, docType: d.name, sourceType: 'profile_document' }))];
+            docs = [...res.user.onboarding_documents.map((d: any) => {
+              const docId = d._id || Math.random().toString();
+              this.docEntityMap.set(docId, (d.entityName || res.user.company_name || '').trim());
+              return { ...d, _id: docId, docType: d.name, sourceType: 'profile_document' };
+            })];
           }
           let directorsList: any[] = [];
 
@@ -766,6 +876,9 @@ export class ClientProfile implements OnInit, OnDestroy {
         paidup_capital: current?.paidup_capital || '',
         total_obligation_of_contribution: current?.obligation_of_contribution || current?.total_obligation_of_contribution || '',
         address_type: current?.address_type || '',
+        door_number: current?.door_number || '',
+        street_name: current?.street_name || '',
+        area: current?.area || '',
         street_address_line_1: current?.street_address_line_1 || '',
         street_address_line_2: current?.street_address_line_2 || '',
         city: current?.city || '',
@@ -780,6 +893,7 @@ export class ClientProfile implements OnInit, OnDestroy {
         registration_number: current?.registration_number || '',
         company_origin: current?.company_origin || '',
         roc: current?.roc || '',
+        bank_details: current?.bank_details ? JSON.parse(JSON.stringify(current.bank_details)) : {},
         directors: JSON.parse(JSON.stringify(this.directors())).map((d: any) => {
           if (!d.firstName && !d.lastName && d.fullName) {
             const parts = d.fullName.trim().split(' ');
@@ -899,12 +1013,18 @@ export class ClientProfile implements OnInit, OnDestroy {
           paidup_capital: payload.paidup_capital === 'N/A' ? '' : payload.paidup_capital,
           obligation_of_contribution: payload.total_obligation_of_contribution === 'N/A' ? '' : payload.total_obligation_of_contribution,
           address_type: payload.address_type === 'N/A' ? '' : payload.address_type,
+          door_number: payload.door_number === 'N/A' ? '' : payload.door_number,
+          street_name: payload.street_name === 'N/A' ? '' : payload.street_name,
+          area: payload.area === 'N/A' ? '' : payload.area,
           street_address_line_1: payload.street_address_line_1 === 'N/A' ? '' : payload.street_address_line_1,
           street_address_line_2: payload.street_address_line_2 === 'N/A' ? '' : payload.street_address_line_2,
           city: payload.city === 'N/A' ? '' : payload.city,
           state: payload.state === 'N/A' ? '' : payload.state,
           postal_code: payload.postal_code === 'N/A' ? '' : payload.postal_code,
           company_email: payload.company_email === 'N/A' ? '' : payload.company_email,
+          website: payload.website === 'N/A' ? '' : payload.website,
+          bank_details: payload.bank_details || {},
+          date_of_incorporation: payload.incorporation_date && payload.incorporation_date !== 'N/A' ? payload.incorporation_date : null,
           pan_name: payload.pan_name === 'N/A' ? '' : payload.pan_name,
           pan_father_name: payload.pan_father_name === 'N/A' ? '' : payload.pan_father_name,
           pan_dob: payload.pan_dob && payload.pan_dob !== 'N/A' ? payload.pan_dob : null,

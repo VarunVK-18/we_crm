@@ -197,18 +197,25 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
           const profile = res.profile;
           
           if (profile.entityName) this.formData['companyName'] = profile.entityName;
-          if (profile.pan) this.formData['companyPan'] = profile.pan;
-          if (profile.cin) this.formData['cin'] = profile.cin;
-          if (profile.incorporationDate) this.formData['incorporationDate'] = profile.incorporationDate;
-          if (profile.email) this.formData['companyEmail'] = profile.email;
-          if (profile.phone) this.formData['companyPhone'] = profile.phone;
-          if (profile.address) this.formData['registeredAddress'] = profile.address;
-          if (profile.gstin) this.formData['gstin'] = profile.gstin;
-          if (profile.directorName) this.formData['directorName'] = profile.directorName;
-          if (profile.directorEmail) this.formData['directorEmail'] = profile.directorEmail;
-          if (profile.directorPhone) this.formData['directorMobile'] = profile.directorPhone;
-          if (profile.directorPan) this.formData['directorPan'] = profile.directorPan;
-          if (profile.directorDin) this.formData['directorDin'] = profile.directorDin;
+
+          const flatData = { ...profile, ...profile.dynamicProfileData };
+          // For explicit mappings that have different names in the schema vs DB:
+          if (profile.entityName) flatData['companyName'] = profile.entityName;
+          if (profile.pan) flatData['companyPan'] = profile.pan;
+          if (profile.email) flatData['companyEmail'] = profile.email;
+          if (profile.phone) flatData['companyPhone'] = profile.phone;
+          if (profile.address) flatData['registeredAddress'] = profile.address;
+          if (profile.directorPhone) flatData['directorMobile'] = profile.directorPhone;
+
+          // Because submitForm stripped the group prefixes (e.g. businessDetails.businessType -> businessType),
+          // we must map them back to the full dot-notation paths expected by the form schema.
+          Object.keys(this.formData).forEach(path => {
+             const parts = path.split(/\.|\[|\]/).filter(s => s.length > 0);
+             const lastPart = parts[parts.length - 1];
+             if (flatData[lastPart] !== undefined && flatData[lastPart] !== '') {
+                this.formData[path] = flatData[lastPart];
+             }
+          });
 
           if (profile.dynamicProfileData) {
             Object.assign(this.formData, profile.dynamicProfileData);
@@ -537,7 +544,7 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
           if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(strVal)) {
             formatError = 'Invalid IFSC format. Example: HDFC0001234';
           }
-        } else if (lowerName.includes('account') || lowerLabel.includes('account')) {
+        } else if ((lowerName.includes('account') || lowerLabel.includes('account')) && !lowerName.includes('type') && !lowerLabel.includes('type')) {
           if (!/^\d{9,18}$/.test(strVal)) {
             formatError = 'Bank account number must be between 9 and 18 digits.';
           }

@@ -523,7 +523,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 24px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .profile-col {
@@ -562,20 +562,29 @@
 }
 
 .elegant-section-icon {
-  display: none; /* Hide icon to match screenshot */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  margin-right: 12px;
 }
 
 .elegant-section-title {
+  font-family: var(--font-body);
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #000000;
   margin: 0;
 }
 
 .elegant-section-body {
-  padding: 0 0 12px 0;
-  display: flex;
-  flex-direction: column;
+  padding: 16px 24px 24px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 16px;
 }
 
 .elegant-section-group {
@@ -584,10 +593,11 @@
 
 .elegant-field {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 18px 24px;
-  border-bottom: 1px dashed #f1f5f9;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+  border-bottom: none;
+  gap: 4px;
 }
 
 .elegant-field:last-child {
@@ -595,21 +605,79 @@
 }
 
 .elegant-label {
-  flex: 0 0 200px;
-  font-size: 14px;
+  flex: none;
+  font-size: 12px;
   font-weight: 500;
-  color: #64748b;
+  color: #94a3b8;
   text-transform: none;
   letter-spacing: normal;
 }
 
 .elegant-value {
-  flex: 1;
+  flex: none;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: #0f172a;
   word-break: break-word;
   line-height: 1.5;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.elegant-value:hover {
+  opacity: 0.8;
+}
+
+.copy-popup {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  margin-left: 16px;
+  background-color: transparent;
+  color: #0f172a; /* Black text */
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  animation: fadeInOutRight 1.5s ease-in-out forwards;
+  pointer-events: none;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.copyable-text {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.copyable-text:hover {
+  opacity: 0.8;
+}
+
+.website-hover-container .website-edit-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.website-hover-container:hover .website-edit-btn {
+  opacity: 1;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(4px); }
+  15% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-4px); }
+}
+
+@keyframes fadeInOutRight {
+  0% { opacity: 0; transform: translate(-4px, -50%); }
+  15% { opacity: 1; transform: translate(0, -50%); }
+  85% { opacity: 1; transform: translate(0, -50%); }
+  100% { opacity: 0; transform: translate(4px, -50%); }
 }
 
 .status-badge.inactive {

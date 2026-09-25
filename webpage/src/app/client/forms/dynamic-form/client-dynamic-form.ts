@@ -438,7 +438,7 @@ export class ClientDynamicFormComponent implements OnInit {
           if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(strVal)) {
             formatError = 'Invalid IFSC format. Example: HDFC0001234';
           }
-        } else if (lowerName.includes('account') || lowerLabel.includes('account')) {
+        } else if ((lowerName.includes('account') || lowerLabel.includes('account')) && !lowerName.includes('type') && !lowerLabel.includes('type')) {
           if (!/^\d{9,18}$/.test(strVal)) {
             formatError = 'Bank account number must be between 9 and 18 digits.';
           }

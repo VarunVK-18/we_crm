@@ -1623,6 +1623,38 @@ const updateMcaProfile = async (req, res) => {
           if (dynamicFields.paidUpCapital !== undefined) user.client_entities[entityIndex].paidup_capital = dynamicFields.paidUpCapital;
           if (dynamicFields.constitutionType !== undefined) user.client_entities[entityIndex].company_type = dynamicFields.constitutionType;
           if (dynamicFields.natureOfBusiness !== undefined) user.client_entities[entityIndex].main_division_description = dynamicFields.natureOfBusiness;
+          
+          if (companyPan !== undefined) user.client_entities[entityIndex].pan = companyPan;
+          if (cin !== undefined) user.client_entities[entityIndex].cin = cin;
+          if (companyEmail !== undefined) {
+             user.client_entities[entityIndex].company_email = companyEmail;
+             user.client_entities[entityIndex].email = companyEmail;
+          }
+          if (companyPhone !== undefined) user.client_entities[entityIndex].phone = companyPhone;
+          if (registeredAddress !== undefined) user.client_entities[entityIndex].street_address_line_1 = registeredAddress;
+          if (gstin !== undefined) user.client_entities[entityIndex].gstin = gstin;
+          if (city !== undefined) user.client_entities[entityIndex].city = city;
+          if (state !== undefined) user.client_entities[entityIndex].state = state;
+          if (postalCode !== undefined) user.client_entities[entityIndex].postal_code = postalCode;
+          if (directorName !== undefined) user.client_entities[entityIndex].owner_name = directorName;
+
+          if (dynamicFields.registration_number !== undefined) user.client_entities[entityIndex].registration_number = dynamicFields.registration_number;
+          if (dynamicFields.roc !== undefined) user.client_entities[entityIndex].roc = dynamicFields.roc;
+          if (dynamicFields.company_origin !== undefined) user.client_entities[entityIndex].company_origin = dynamicFields.company_origin;
+          if (dynamicFields.class_of_company !== undefined) user.client_entities[entityIndex].class_of_company = dynamicFields.class_of_company;
+          if (dynamicFields.company_category !== undefined) user.client_entities[entityIndex].company_category = dynamicFields.company_category;
+          if (dynamicFields.company_subcategory !== undefined) user.client_entities[entityIndex].company_subcategory = dynamicFields.company_subcategory;
+          if (dynamicFields.main_division_no !== undefined) user.client_entities[entityIndex].main_division_no = dynamicFields.main_division_no;
+          if (dynamicFields.obligation_of_contribution !== undefined) user.client_entities[entityIndex].obligation_of_contribution = dynamicFields.obligation_of_contribution;
+          if (dynamicFields.address_type !== undefined) user.client_entities[entityIndex].address_type = dynamicFields.address_type;
+          if (dynamicFields.street_address_line_2 !== undefined) user.client_entities[entityIndex].street_address_line_2 = dynamicFields.street_address_line_2;
+          if (dynamicFields.website !== undefined) user.client_entities[entityIndex].website = dynamicFields.website;
+          if (dynamicFields.pan_name !== undefined) user.client_entities[entityIndex].pan_name = dynamicFields.pan_name;
+          if (dynamicFields.pan_father_name !== undefined) user.client_entities[entityIndex].pan_father_name = dynamicFields.pan_father_name;
+          if (dynamicFields.pan_dob !== undefined) user.client_entities[entityIndex].pan_dob = dynamicFields.pan_dob;
+          if (dynamicFields.owner_name !== undefined) user.client_entities[entityIndex].owner_name = dynamicFields.owner_name;
+          if (dynamicFields.email !== undefined) user.client_entities[entityIndex].email = dynamicFields.email;
+          if (dynamicFields.phone !== undefined) user.client_entities[entityIndex].phone = dynamicFields.phone;
         }
 
         user.markModified('client_entities');
@@ -1692,6 +1724,34 @@ const updateMcaProfile = async (req, res) => {
             profile.dynamicProfileData[`${file.fieldname}File`] = docId;
           }
         }
+
+        // Mirror document to user.onboarding_documents so it shows in the Profile Documents tab
+        if (!user.onboarding_documents) user.onboarding_documents = [];
+        const friendlyNameMap = {
+          incorpCert: 'Incorporation Certificate',
+          panCard: 'Company PAN Card',
+          moa: 'MOA',
+          aoa: 'AOA',
+          bankStatement: 'Bank Statement',
+          salesInvoice: 'Sales Invoice',
+          purchaseBills: 'Purchase Bills',
+          gstDoc: 'GST Certificate',
+          aadhaar: 'Director Aadhaar',
+          directorPanDoc: 'Director PAN',
+          udyamCert: 'Udyam Certificate',
+          trademarkCert: 'Trademark Certificate',
+          isoCert: 'ISO Certificate'
+        };
+        const docTypeName = friendlyNameMap[file.fieldname] || file.fieldname;
+        
+        user.onboarding_documents = user.onboarding_documents.filter(d => d.name !== docTypeName);
+        user.onboarding_documents.push({
+          name: docTypeName,
+          fileUrl: `api/documents/${docId}`,
+          uploadedAt: new Date(),
+          entityName: targetEntityName
+        });
+        user.markModified('onboarding_documents');
 
         // OCR logic for specific documents
         if (['incorpCert', 'panCard', 'gstDoc'].includes(file.fieldname)) {

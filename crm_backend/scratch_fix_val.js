@@ -18,21 +18,15 @@ mongoose.connect('mongodb://193.203.161.48:27018/').then(async () => {
         let nameLower = (field.name || '').toLowerCase();
         let labelLower = (field.label || '').toLowerCase();
 
-        // City & State
-        if (nameLower === 'city' || labelLower.includes('city') || 
-            nameLower === 'state' || labelLower.includes('state')) {
-          if (!field.validation) field.validation = {};
-          field.validation.pattern = '^[a-zA-Z\\\\s]+$';
-          field.validation.message = 'Only alphabets and spaces are allowed.';
-          modified = true;
-        }
-
         // Detailed Business Activity (min 20 chars)
-        if (nameLower.includes('activity') || labelLower.includes('activity') ||
+        if ((nameLower.includes('activity') || labelLower.includes('activity') ||
             nameLower.includes('nature') || labelLower.includes('nature') ||
-            nameLower.includes('description') || labelLower.includes('description')) {
-          if (!field.validation) field.validation = {};
-          field.validation.pattern = "^[a-zA-Z0-9\\\\s\\\\.,\\\\-\\\\/&'()]{20,}$";
+            nameLower.includes('description') || labelLower.includes('description')) &&
+            nameLower !== 'signature' && labelLower !== 'signature' && field.type !== 'file'
+            ) {
+          
+          // THIS is the correct string for Javascript's `new RegExp()` in the frontend!
+          field.validation.pattern = "^[a-zA-Z0-9\\s\\.,\\-\\/&'()]{20,}$";
           field.validation.message = 'Minimum 20 characters. Only alphanumeric, spaces, and basic punctuation allowed.';
           modified = true;
         }
@@ -50,7 +44,7 @@ mongoose.connect('mongodb://193.203.161.48:27018/').then(async () => {
     }
   }
 
-  console.log(`Successfully updated ${updatedCount} forms with new City/State/Activity rules!`);
+  console.log(`Successfully updated ${updatedCount} forms!`);
   process.exit(0);
 }).catch(err => {
   console.error(err);
