@@ -77,6 +77,18 @@ export class DunsForm implements OnInit {
       const id = params.get('id');
       if (id) {
         this.orderId.set(id);
+        // Auto-fill from EntityProfile on init
+        const savedUser = localStorage.getItem('user');
+        if (savedUser) { try { this.currentUser = JSON.parse(savedUser); } catch(e) {} }
+        this.api.get<any>(`orders/${id}`).subscribe({
+          next: (orderRes: any) => {
+            const entityName = orderRes?.entity_name || orderRes?.company_name || '';
+            if (entityName) {
+              AutoFillUtils.autoFillWithProfile(this, entityName, this.currentUser, this.api);
+            }
+          },
+          error: () => {}
+        });
       }
     });
   }

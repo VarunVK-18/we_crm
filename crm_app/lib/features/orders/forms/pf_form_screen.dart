@@ -14,6 +14,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../models/order_model.dart';
 import '../../../providers/auth_provider.dart';
 import 'package:crm_app/core/utils/form_ui_helper.dart';
+import 'package:crm_app/core/utils/autofill_utils.dart';
+import 'package:crm_app/core/utils/document_matcher.dart';
 
 class PfFormScreen extends ConsumerStatefulWidget {
   final ServiceOrder order;
@@ -302,10 +304,40 @@ class _PfFormScreenState extends ConsumerState<PfFormScreen> {
   void _autoFillFromProfile() {
     final user = ref.read(userProfileProvider).value;
     if (user == null) return;
+    
     setState(() {
-      if (_signatoryNameController.text.isEmpty && user.name.isNotEmpty) _signatoryNameController.text = user.name;
-      if (_signatoryEmailController.text.isEmpty && user.email.isNotEmpty) _signatoryEmailController.text = user.email;
-      if (_signatoryMobileController.text.isEmpty && user.phone.isNotEmpty) _signatoryMobileController.text = user.phone;
+      Map<String, TextEditingController> allControllers = {
+        'businessName': _businessNameController,
+        'panNumber': _panNumberController,
+        'doi': _doiController,
+        'businessAddress': _businessAddressController,
+        'state': _stateController,
+        'pinCode': _pinCodeController,
+        'signatoryName': _signatoryNameController,
+        'signatoryDesignation': _signatoryDesignationController,
+        'signatoryMobile': _signatoryMobileController,
+        'signatoryEmail': _signatoryEmailController,
+      };
+      
+      AutofillUtils.autoFillTextData(user, widget.order.details['entityName']?.toString() ?? '', allControllers);
+      
+      // Document Matcher
+      final String orderEntityName = widget.order.details['entityName']?.toString() ?? '';
+      
+      final Map<String, List<String>> keywordMap = {
+        'panCard': ['pan'],
+        'businessAddressProof': ['business address', 'rent agreement', 'eb bill', 'property tax'],
+        'incorpCert': ['incorporation', 'incorp', 'coi'],
+      };
+      
+      for (final entry in keywordMap.entries) {
+        final doc = DocumentMatcher.findExistingDoc(orderEntityName.isEmpty ? user.companyName : orderEntityName, user.onboardingDocuments, entry.value);
+        if (doc != null && doc['fileUrl'] != null) {
+          if (entry.key == 'panCard') _panCardPath = doc['fileUrl'];
+          if (entry.key == 'businessAddressProof') _businessAddressProofPath = doc['fileUrl'];
+          if (entry.key == 'incorpCert') _incorpCertPath = doc['fileUrl'];
+        }
+      }
     });
   }
 

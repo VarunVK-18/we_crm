@@ -183,6 +183,12 @@ export class LlpForm implements OnInit {
         for (let i = 0; i < count; i++) {
           this.addPerson();
         }
+
+        // Auto-fill from EntityProfile using the order's entity name
+        const entityName = order?.entity_name || order?.company_name || '';
+        if (entityName && this.currentUser) {
+          AutoFillUtils.autoFillWithProfile(this, entityName, this.currentUser, this.api);
+        }
       },
       error: (err) => {
         console.error('Error fetching order details:', err);

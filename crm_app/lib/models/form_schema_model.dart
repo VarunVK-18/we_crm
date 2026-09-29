@@ -1,3 +1,17 @@
+class FieldValidation {
+  final String pattern;
+  final String message;
+
+  FieldValidation({required this.pattern, required this.message});
+
+  factory FieldValidation.fromJson(Map<String, dynamic> json) {
+    return FieldValidation(
+      pattern: json['pattern'] ?? '',
+      message: json['message'] ?? 'Invalid format',
+    );
+  }
+}
+
 class ArrayConfig {
   final int? minItems;
   final int? maxItems;
@@ -41,6 +55,7 @@ class FormFieldSchema {
   final List<String>? allowedExtensions;
   final String? description;
   final Map<String, dynamic>? visibilityCondition;
+  final FieldValidation? validation;
   final ArrayConfig? arrayConfig;
   final List<FormFieldSchema> subFields;
 
@@ -53,6 +68,7 @@ class FormFieldSchema {
     this.allowedExtensions,
     this.description,
     this.visibilityCondition,
+    this.validation,
     this.arrayConfig,
     this.subFields = const [],
   });
@@ -67,6 +83,7 @@ class FormFieldSchema {
       allowedExtensions: (json['allowedExtensions'] as List<dynamic>?)?.map((e) => e.toString()).toList(),
       description: json['description'],
       visibilityCondition: json['visibilityCondition'],
+      validation: json['validation'] != null ? FieldValidation.fromJson(json['validation']) : null,
       arrayConfig: json['arrayConfig'] != null ? ArrayConfig.fromJson(json['arrayConfig']) : null,
       subFields: (json['subFields'] as List?)?.map((e) => FormFieldSchema.fromJson(e)).toList() ?? [],
     );

@@ -10,7 +10,6 @@ export class Api {
 
   // private readonly baseUrl = 'http://localhost:5001/api';
   // private readonly baseUrl = 'http://192.168.29.105:5001/api';
-
   private readonly baseUrl = 'https://aistartupdoctor.com/api';
 
 

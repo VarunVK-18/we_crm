@@ -48,7 +48,7 @@ class MyEntitiesScreen extends ConsumerWidget {
       mergedEntities[primaryCompanyName.toLowerCase()] = ClientEntity(
         entityName: primaryCompanyName,
         entityType: 'Company',
-        cin: '', pan: '', tan: '', gstin: '', 
+        cin: '', pan: '', tan: '', gstin: '', iec: '', lei: '',
         iso: '', msme: '', fssai: '', coi: '', dsc: '',
         trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
         patentApplicationNumber: '', patentStatus: '', patentNumber: '',
@@ -65,7 +65,7 @@ class MyEntitiesScreen extends ConsumerWidget {
         mergedEntities[name.toLowerCase()] = ClientEntity(
           entityName: name,
           entityType: 'Company', // fallback
-          cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
+          cin: '', pan: '', tan: '', gstin: '', iec: '', lei: '', iso: '', msme: '', fssai: '', coi: '', dsc: '',
           trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
           patentApplicationNumber: '', patentStatus: '', patentNumber: '',
           copyrightRegistrationNumber: '', copyrightCertificate: '',
@@ -602,7 +602,7 @@ class _EntityList extends ConsumerWidget {
       entity: ClientEntity(
         entityName: name,
         entityType: 'Pending',
-        cin: '', pan: '', tan: '', gstin: '', iso: '', msme: '',
+        cin: '', pan: '', tan: '', gstin: '', iec: '', lei: '', iso: '', msme: '',
         fssai: '', coi: '', dsc: '',
         trademarkApplicationNumber: '', trademarkStatus: '', trademarkCertificate: '',
         patentApplicationNumber: '', patentStatus: '', patentNumber: '',
@@ -665,7 +665,7 @@ class _EntityCard extends ConsumerWidget {
         if (data.isPending) {
           globalScaffoldMessengerKey.currentState?.showSnackBar(
             SnackBar(
-              content: const Text('This entity is waiting for manager approval.'),
+              content: const Text('This entity is pending approval.'),
               backgroundColor: Colors.black87,
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
@@ -763,7 +763,7 @@ class _EntityCard extends ConsumerWidget {
                         const Icon(LucideIcons.clock, size: 12, color: Colors.orange),
                         const SizedBox(width: 4),
                         Text(
-                          'Waiting for Approval',
+                          'Pending Approval',
                           style: GoogleFonts.inter(
                             fontSize: 11,
                             color: Colors.orange.shade700,

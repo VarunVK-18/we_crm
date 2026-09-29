@@ -35,6 +35,10 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
   formData: { [key: string]: any } = {};
   files: { [key: string]: File } = {};
   existingDocs: { [key: string]: any } = {};
+  ocrValidating: { [key: string]: boolean } = {};
+  
+  ocrErrorTitle = '';
+  ocrErrorMessage = '';
 
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -193,18 +197,25 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
           const profile = res.profile;
           
           if (profile.entityName) this.formData['companyName'] = profile.entityName;
-          if (profile.pan) this.formData['companyPan'] = profile.pan;
-          if (profile.cin) this.formData['cin'] = profile.cin;
-          if (profile.incorporationDate) this.formData['incorporationDate'] = profile.incorporationDate;
-          if (profile.email) this.formData['companyEmail'] = profile.email;
-          if (profile.phone) this.formData['companyPhone'] = profile.phone;
-          if (profile.address) this.formData['registeredAddress'] = profile.address;
-          if (profile.gstin) this.formData['gstin'] = profile.gstin;
-          if (profile.directorName) this.formData['directorName'] = profile.directorName;
-          if (profile.directorEmail) this.formData['directorEmail'] = profile.directorEmail;
-          if (profile.directorPhone) this.formData['directorMobile'] = profile.directorPhone;
-          if (profile.directorPan) this.formData['directorPan'] = profile.directorPan;
-          if (profile.directorDin) this.formData['directorDin'] = profile.directorDin;
+
+          const flatData = { ...profile, ...profile.dynamicProfileData };
+          // For explicit mappings that have different names in the schema vs DB:
+          if (profile.entityName) flatData['companyName'] = profile.entityName;
+          if (profile.pan) flatData['companyPan'] = profile.pan;
+          if (profile.email) flatData['companyEmail'] = profile.email;
+          if (profile.phone) flatData['companyPhone'] = profile.phone;
+          if (profile.address) flatData['registeredAddress'] = profile.address;
+          if (profile.directorPhone) flatData['directorMobile'] = profile.directorPhone;
+
+          // Because submitForm stripped the group prefixes (e.g. businessDetails.businessType -> businessType),
+          // we must map them back to the full dot-notation paths expected by the form schema.
+          Object.keys(this.formData).forEach(path => {
+             const parts = path.split(/\.|\[|\]/).filter(s => s.length > 0);
+             const lastPart = parts[parts.length - 1];
+             if (flatData[lastPart] !== undefined && flatData[lastPart] !== '') {
+                this.formData[path] = flatData[lastPart];
+             }
+          });
 
           if (profile.dynamicProfileData) {
             Object.assign(this.formData, profile.dynamicProfileData);
@@ -332,9 +343,42 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
           return;
         }
       }
-      this.files[pathKey] = file;
-      this.saveDraft();
-      this.cdr.detectChanges();
+
+      // Real-time OCR validation
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+        this.ocrValidating[pathKey] = true;
+        this.cdr.detectChanges();
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('fieldName', pathKey);
+
+        this.api.post<any>('ocr/validate', formData).subscribe({
+          next: (res) => {
+            this.ocrValidating[pathKey] = false;
+            if (res.success) {
+              this.files[pathKey] = file;
+              this.saveDraft();
+              this.cdr.detectChanges();
+            } else {
+              this.ocrErrorTitle = 'Validation Failed';
+              this.ocrErrorMessage = res.message || 'Invalid document.';
+              event.target.value = '';
+              this.cdr.detectChanges();
+            }
+          },
+          error: (err) => {
+            this.ocrValidating[pathKey] = false;
+            this.ocrErrorTitle = 'Validation Error';
+            this.ocrErrorMessage = err.error?.message || 'Failed to validate document. Please upload a clear and correct valid document.';
+            event.target.value = '';
+            this.cdr.detectChanges();
+          }
+        });
+      } else {
+        this.files[pathKey] = file;
+        this.saveDraft();
+        this.cdr.detectChanges();
+      }
     }
   }
 
@@ -441,10 +485,12 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
         const hasPan = /\bpan\b/.test(lowerName) || /\bpan\b/.test(lowerLabel);
         const isNotNameOrDate = !/name|date|dob|first|last/.test(lowerName) && !/name|date|dob|first|last/.test(lowerLabel);
 
-        if (f.validation?.regex) {
-          const re = new RegExp(f.validation.regex);
+        const regexPattern = f.validation?.regex || f.validation?.pattern;
+        const regexMsg = f.validation?.errorMessage || f.validation?.message || 'Invalid format.';
+        if (regexPattern) {
+          const re = new RegExp(regexPattern);
           if (!re.test(strVal)) {
-            formatError = f.validation.errorMessage || 'Invalid format.';
+            formatError = regexMsg;
           }
         } else if (hasPan && isNotNameOrDate) {
           if (!/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(strVal)) {
@@ -498,7 +544,7 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
           if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(strVal)) {
             formatError = 'Invalid IFSC format. Example: HDFC0001234';
           }
-        } else if (lowerName.includes('account') || lowerLabel.includes('account')) {
+        } else if ((lowerName.includes('account') || lowerLabel.includes('account')) && !lowerName.includes('type') && !lowerLabel.includes('type')) {
           if (!/^\d{9,18}$/.test(strVal)) {
             formatError = 'Bank account number must be between 9 and 18 digits.';
           }
@@ -696,5 +742,10 @@ export class CompleteCompanyProfileFormComponent implements OnInit, OnChanges {
       },
       error: handleError
     });
+  }
+
+  closeOcrError() {
+    this.ocrErrorTitle = '';
+    this.ocrErrorMessage = '';
   }
 }

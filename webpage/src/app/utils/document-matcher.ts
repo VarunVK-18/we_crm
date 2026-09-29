@@ -29,10 +29,17 @@ export class DocumentMatcher {
       
       // We extract the entity part of the document name. The backend saves it as "EntityName - fieldName"
       const parts = docName.split('-');
-      const docEntityPart = parts.length > 1 ? parts[0] : docName;
-      const normalizedDocEntity = this.normalizeEntityName(docEntityPart);
+      
+      let startsWithEntity = false;
+      if (parts.length > 1) {
+        const docEntityPart = parts[0];
+        const normalizedDocEntity = this.normalizeEntityName(docEntityPart);
+        startsWithEntity = !normalizedEntity || normalizedDocEntity.startsWith(normalizedEntity) || normalizedEntity.startsWith(normalizedDocEntity);
+      } else {
+        // If there is no entity prefix, treat it as a general document
+        startsWithEntity = true;
+      }
 
-      const startsWithEntity = !normalizedEntity || normalizedDocEntity.startsWith(normalizedEntity) || normalizedEntity.startsWith(normalizedDocEntity);
       const hasKeyword = keywords.some((k: string) => docName.includes(k.toLowerCase()));
 
       return startsWithEntity && hasKeyword;

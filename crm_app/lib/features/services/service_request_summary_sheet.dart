@@ -845,14 +845,14 @@ class _ServiceRequestSummarySheetState
               o.status != 'completed' && o.status != 'complete').firstOrNull;
 
       if (activeOrder != null) {
-        String statusText = 'Waiting for manager approval';
+        String statusText = 'Pending Approval';
         
         if (activeOrder.actionRequired) {
           statusText = 'Need to fill the form';
         } else if (activeOrder.stage == 'workInProgress' || activeOrder.stage == 'workAssigned') {
           statusText = 'Work in progress';
         } else if (activeOrder.status == 'notInitialized' || activeOrder.assignedExpert == 'To be assigned') {
-          statusText = 'Waiting for manager approval';
+          statusText = 'Pending Approval';
         } else {
           statusText = 'Work in progress';
         }

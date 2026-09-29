@@ -812,3 +812,10 @@ select.styled-text-input {
     max-width: 350px;
   }
 }
+
+/* Hide native browser password reveal icon (e.g. Edge) */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+

@@ -13,6 +13,8 @@ class ClientEntity {
   final String iso;
   final String msme;
   final String fssai;
+  final String iec;
+  final String lei;
   final String coi;
   final String dsc;
   final String trademarkApplicationNumber;
@@ -24,6 +26,12 @@ class ClientEntity {
   final String copyrightRegistrationNumber;
   final String copyrightCertificate;
   final DateTime? incorporationDate;
+  
+  // New Fields
+  final String companyType;
+  final String authorisedCapital;
+  final String paidupCapital;
+  final Map<String, dynamic>? bankDetails;
 
   ClientEntity({
     required this.entityName,
@@ -36,6 +44,8 @@ class ClientEntity {
     required this.iso,
     required this.msme,
     required this.fssai,
+    required this.iec,
+    required this.lei,
     required this.coi,
     required this.dsc,
     required this.trademarkApplicationNumber,
@@ -47,6 +57,10 @@ class ClientEntity {
     required this.copyrightRegistrationNumber,
     required this.copyrightCertificate,
     this.incorporationDate,
+    this.companyType = '',
+    this.authorisedCapital = '',
+    this.paidupCapital = '',
+    this.bankDetails,
   });
 
   factory ClientEntity.fromMap(Map<String, dynamic> data) {
@@ -61,6 +75,8 @@ class ClientEntity {
       iso: data['iso']?.toString() ?? '',
       msme: data['msme']?.toString() ?? '',
       fssai: data['fssai']?.toString() ?? '',
+      iec: data['iec']?.toString() ?? '',
+      lei: data['lei']?.toString() ?? '',
       coi: data['coi']?.toString() ?? '',
       dsc: data['dsc']?.toString() ?? '',
       trademarkApplicationNumber: data['trademarkApplicationNumber']?.toString() ?? '',
@@ -74,6 +90,10 @@ class ClientEntity {
       incorporationDate: data['incorporationDate'] != null 
           ? DateTime.tryParse(data['incorporationDate'].toString()) 
           : null,
+      companyType: data['company_type']?.toString() ?? '',
+      authorisedCapital: data['authorised_capital']?.toString() ?? '',
+      paidupCapital: data['paidup_capital']?.toString() ?? '',
+      bankDetails: data['bank_details'] as Map<String, dynamic>?,
     );
   }
 }

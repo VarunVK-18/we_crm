@@ -175,6 +175,13 @@ export class OpcForm implements OnInit {
         // Enforce exactly 2 persons: 1 Director, 1 Nominee
         this.addDirector('Director');
         this.addDirector('Nominee');
+
+        // Auto-fill from EntityProfile using the order's entity name
+        const order = res.checklists?.find((o: any) => o._id === this.orderId());
+        const entityName = order?.entity_name || order?.company_name || '';
+        if (entityName && this.currentUser) {
+          AutoFillUtils.autoFillWithProfile(this, entityName, this.currentUser, this.api);
+        }
       },
       error: (err) => {
         console.error('Error fetching order details:', err);

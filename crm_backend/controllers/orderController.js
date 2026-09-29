@@ -10,7 +10,18 @@ const syncProfileData = async (order, formData, uploadedDocs) => {
     const user = await User.findById(order.client_id);
     if (user) {
       const EntityProfile = require('../models/EntityProfile');
-      const entityName = order.entity_name || order.company_name || 'default';
+      
+      let entityName = order.entity_name || order.company_name;
+      if (!entityName && order.details) {
+         entityName = order.details.entityName || order.details.companyName || order.details.company_name || order.details.nameOfTheCompany;
+      }
+      if (!entityName && formData) {
+         entityName = formData.entityName || formData.companyName || formData.nameOfTheCompany;
+         if (!entityName && formData.dynamicData) {
+            entityName = formData.dynamicData.entityName || formData.dynamicData.companyName || formData.dynamicData.nameOfTheCompany;
+         }
+      }
+      if (!entityName) entityName = 'default';
       
       let profile = await EntityProfile.findOne({ uid: user._id.toString(), entityName });
       if (!profile) {
@@ -18,7 +29,7 @@ const syncProfileData = async (order, formData, uploadedDocs) => {
       }
 
       const newProfileData = formData.dynamicData || formData;
-      const knownFields = ['pan', 'email', 'phone', 'address', 'cin', 'incorporationDate', 'gstin', 'directorName', 'directorEmail', 'directorPhone', 'directorPan', 'directorDin', 'bankAccount', 'bankIfsc', 'bankName', 'tan'];
+      const knownFields = ['pan', 'email', 'phone', 'address', 'cin', 'incorporationDate', 'gstin', 'directorName', 'directorEmail', 'directorPhone', 'directorPan', 'directorDin', 'bankAccount', 'bankIfsc', 'bankName', 'tan', 'iso', 'iec', 'msme', 'lei', 'fssai'];
 
       // Pull directors array from either formData (dynamic form) or order.details (legacy forms)
       const directorsArray = (newProfileData.directors && Array.isArray(newProfileData.directors)) ? 
@@ -87,10 +98,33 @@ const syncProfileData = async (order, formData, uploadedDocs) => {
             else if (docName.includes('aoa')) { profile.aoaDocId = docId; profile.aoaDocName = doc.name; }
             else if (docName.includes('sales')) { profile.salesInvoiceDocId = docId; profile.salesInvoiceDocName = doc.name; }
             else if (docName.includes('purchase')) { profile.purchaseBillsDocId = docId; profile.purchaseBillsDocName = doc.name; }
+            else if (docName.includes('udyam') || docName.includes('msme')) { profile.udyamCertDocId = docId; profile.udyamCertDocName = doc.name; }
+            else if (docName.includes('trademark')) { profile.trademarkCertDocId = docId; profile.trademarkCertDocName = doc.name; }
+            else if (docName.includes('iso')) { profile.isoCertDocId = docId; profile.isoCertDocName = doc.name; }
           }
         }
       }
       await profile.save();
+      
+      // Also sync standard entity fields to user.client_entities for quick fallback access
+      if (user.client_entities && user.client_entities.length > 0 && entityName !== 'default') {
+        const clientEntity = user.client_entities.find(e => (e.entityName || '').toLowerCase() === entityName.toLowerCase());
+        if (clientEntity) {
+          if (profile.pan) clientEntity.pan = profile.pan;
+          if (profile.cin) clientEntity.cin = profile.cin;
+          if (profile.tan) clientEntity.tan = profile.tan;
+          if (profile.gstin) clientEntity.gstin = profile.gstin;
+          if (profile.iso) clientEntity.iso = profile.iso;
+          if (profile.iec) clientEntity.iec = profile.iec;
+          if (profile.msme) clientEntity.msme = profile.msme;
+          if (profile.fssai) clientEntity.fssai = profile.fssai;
+          if (profile.incorporationDate) clientEntity.incorporationDate = new Date(profile.incorporationDate);
+          
+          user.markModified('client_entities');
+          await user.save();
+        }
+      }
+      
       console.log(`[SYNC] Synced profile data and docs for user ${user._id} under entity "${entityName}" to EntityProfile`);
     }
   } catch (err) {
@@ -1370,6 +1404,62 @@ exports.getPrefillData = async (req, res) => {
     const uid = order.client_id ? order.client_id.toString() : (req.user ? req.user.id : null);
     
     if (uid) {
+      const User = require('../models/User');
+      const user = await User.findById(uid);
+      if (user) {
+        profileData['email'] = user.email;
+        profileData['phone'] = user.phone;
+        profileData['directorName'] = user.owner_name || user.name;
+        
+        if (user.directors && user.directors.length > 0) {
+          const dir = user.directors[0];
+          profileData['directorDin'] = dir.din;
+          profileData['directorPan'] = dir.pan;
+        }
+
+        if (user.client_entities && user.client_entities.length > 0) {
+          let entity = user.client_entities.find(e => {
+            if (!e.entityName || !entityName) return false;
+            const n1 = e.entityName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const n2 = entityName.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return n1.includes(n2) || n2.includes(n1);
+          });
+          if (!entity) entity = user.client_entities[0];
+          
+          if (entity) {
+            profileData['companyName'] = entity.entityName;
+            profileData['pan'] = entity.pan;
+            profileData['gstin'] = entity.gstin;
+            profileData['cin'] = entity.cin;
+            profileData['address'] = entity.address || user.address;
+            if (entity.incorporationDate) {
+               const date = new Date(entity.incorporationDate);
+               profileData['incorporationDate'] = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+            }
+          }
+        }
+
+        if (user.onboarding_documents && user.onboarding_documents.length > 0) {
+          user.onboarding_documents.forEach(d => {
+            const n = (d.name || '').toLowerCase();
+            const type = n.includes("incorporation") || n.includes("coi") ? "coi" :
+                         n.includes("pan") ? "pan" :
+                         n.includes("aadhaar") ? "aadhaar" :
+                         n.includes("moa") ? "moa" :
+                         n.includes("aoa") ? "aoa" :
+                         n.includes("bank") ? "bankStatement" :
+                         n.includes("sales") ? "salesInvoice" :
+                         n.includes("purchase") ? "purchaseBills" :
+                         n.includes("address") || n.includes("electricity") ? "addressProof" :
+                         n.includes("photo") ? "directorPhoto" : "other";
+            
+            if (type !== 'other') {
+              profileDocs.push({ documentType: type, name: d.name, fileUrl: d.fileUrl });
+            }
+          });
+        }
+      }
+
       const profile = await EntityProfile.findOne({ uid, entityName });
       if (profile) {
         // Collect known fields

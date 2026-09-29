@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ClientLayoutComponent as ClientLayout } from './client-layout';
@@ -9,6 +10,7 @@ describe('ClientLayout', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ClientLayout],
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ClientLayout);

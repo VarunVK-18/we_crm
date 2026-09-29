@@ -12,12 +12,12 @@ import 'package:crm_app/core/utils/http_client.dart' as http;
 
 import '../../core/constants/port.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/utils/validation_utils.dart';
-import '../../core/utils/form_ui_helper.dart';
+import '../../core/utils/ocr_service.dart';
 import '../../models/form_schema_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/compliance_provider.dart';
 import '../../providers/entity_profile_provider.dart';
+import '../../models/user_model.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 class CompleteCompanyProfileFormScreen extends ConsumerStatefulWidget {
@@ -30,13 +30,13 @@ class CompleteCompanyProfileFormScreen extends ConsumerStatefulWidget {
 class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompanyProfileFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  bool _obscurePassword = true;
   int _complianceScore = 0;
 
   FormSchema? _schema;
   final Map<String, ValueNotifier<String?>> _dynamicFormData = {};
   final Map<String, TextEditingController> _dynamicControllers = {};
   final Map<String, String?> _dynamicFilePaths = {};
+  final Map<String, bool> _ocrValidating = {};
 
   // ── Section 1: Business Information ─────────────────────────────────
   final _companyNameController = TextEditingController();
@@ -153,7 +153,7 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
     void processFields(List<FormFieldSchema> fieldList) {
       for (var field in fieldList) {
         if (field.type == 'group') {
-          processFields(field.subFields ?? []);
+          processFields(field.subFields);
           continue;
         }
         if (field.type == 'text' || field.type == 'number' || field.type == 'email' || field.type == 'phone' || field.type == 'date') {
@@ -187,25 +187,42 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
     try {
       final uri = Uri.parse('$kBaseUrl/api/entity-profile?entityName=${Uri.encodeComponent(entityName)}');
       final response = await http.get(uri, headers: {'x-user-id': uid});
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final profile = data['profile'] ?? {};
+      if (response.statusCode == 200 || response.statusCode == 404) {
+        Map<String, dynamic> profile = {};
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          profile = data['profile'] ?? {};
+        }
+        
+        final fallbackName = user?.name ?? '';
+        final fallbackEmail = user?.email ?? '';
+        final fallbackPhone = user?.phone ?? '';
+        
+        ClientEntity? matchedEntity;
+        if (user != null) {
+          try {
+            matchedEntity = user.clientEntities.firstWhere((e) => e.entityName == entityName);
+          } catch (_) {}
+        }
         
         setState(() {
           _companyNameController.text = profile['entityName']?.toString().isNotEmpty == true 
               ? profile['entityName'] 
               : entityName;
-          _companyPanController.text = profile['pan'] ?? '';
-          _cinController.text = profile['cin'] ?? '';
-          _incorporationDateController.text = profile['incorporationDate'] ?? '';
-          _companyEmailController.text = profile['email'] ?? '';
-          _companyPhoneController.text = profile['phone'] ?? '';
-          _registeredAddressController.text = profile['address'] ?? '';
-          _gstinController.text = profile['gstin'] ?? '';
+          _companyPanController.text = profile['pan'] ?? matchedEntity?.pan ?? '';
+          _cinController.text = profile['cin'] ?? matchedEntity?.cin ?? '';
           
-          _directorNameController.text = profile['directorName'] ?? '';
-          _directorEmailController.text = profile['directorEmail'] ?? '';
-          _directorMobileController.text = profile['directorPhone'] ?? '';
+          final matchedIncorpDate = matchedEntity?.incorporationDate?.toIso8601String().split('T')[0] ?? '';
+          _incorporationDateController.text = profile['incorporationDate'] ?? matchedIncorpDate;
+          
+          _companyEmailController.text = profile['email']?.toString().isNotEmpty == true ? profile['email'] : fallbackEmail;
+          _companyPhoneController.text = profile['phone']?.toString().isNotEmpty == true ? profile['phone'] : fallbackPhone;
+          _registeredAddressController.text = profile['address'] ?? '';
+          _gstinController.text = profile['gstin'] ?? matchedEntity?.gstin ?? '';
+          
+          _directorNameController.text = profile['directorName']?.toString().isNotEmpty == true ? profile['directorName'] : fallbackName;
+          _directorEmailController.text = profile['directorEmail']?.toString().isNotEmpty == true ? profile['directorEmail'] : fallbackEmail;
+          _directorMobileController.text = profile['directorPhone']?.toString().isNotEmpty == true ? profile['directorPhone'] : fallbackPhone;
           _directorPanController.text = profile['directorPan'] ?? '';
           _directorDinController.text = profile['directorDin'] ?? '';
           
@@ -231,9 +248,9 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
              _stateController.text = dyn['state'] ?? '';
              _postalCodeController.text = dyn['postalCode'] ?? '';
              _directorAadhaarController.text = dyn['directorAadhaar'] ?? '';
-             _udyamNumberController.text = dyn['udyamNumber'] ?? '';
+             _udyamNumberController.text = dyn['udyamNumber'] ?? matchedEntity?.msme ?? '';
              _trademarkNoController.text = dyn['trademarkNo'] ?? '';
-             _isoCertNoController.text = dyn['isoCertNo'] ?? '';
+             _isoCertNoController.text = dyn['isoCertNo'] ?? matchedEntity?.iso ?? '';
              _dpiitRefNoController.text = dyn['dpiitRefNo'] ?? '';
              if (dyn['businessType'] != null && _businessTypes.contains(dyn['businessType'])) {
                 _businessTypeNotifier.value = dyn['businessType'];
@@ -246,28 +263,77 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
              if (dyn['isoCertFile']?.toString().isNotEmpty == true) _isoCertPath = 'Uploaded';
              
              final rootMap = {
-               'companyName': profile['entityName']?.toString().isNotEmpty == true ? profile['entityName'] : entityName,
-               'companyPan': profile['pan'],
-               'cin': profile['cin'],
-               'incorporationDate': profile['incorporationDate'],
-               'companyEmail': profile['email'],
-               'companyPhone': profile['phone'],
+               'companyName': _companyNameController.text,
+               'companyPan': _companyPanController.text,
+               'cin': _cinController.text,
+               'incorporationDate': _incorporationDateController.text,
+               'companyEmail': _companyEmailController.text,
+               'companyPhone': _companyPhoneController.text,
                'registeredAddress': profile['address'],
-               'gstin': profile['gstin'],
-               'directorName': profile['directorName'],
-               'directorEmail': profile['directorEmail'],
-               'directorMobile': profile['directorPhone'],
-               'directorPan': profile['directorPan'],
-               'directorDin': profile['directorDin'],
+               'gstin': _gstinController.text,
+               'directorName': _directorNameController.text,
+               'directorEmail': _directorEmailController.text,
+               'directorMobile': _directorMobileController.text,
+               'directorPan': _directorPanController.text,
+               'directorDin': _directorDinController.text,
                'businessType': dyn['businessType'],
                'natureOfBusiness': dyn['natureOfBusiness'],
                'annualTurnover': dyn['annualTurnover'],
+               'tan': profile['tan'] ?? matchedEntity?.tan,
+               'iso': profile['iso'] ?? matchedEntity?.iso,
+               'iec': profile['iec'] ?? matchedEntity?.iec,
+               'msme': profile['msme'] ?? matchedEntity?.msme,
+               'lei': profile['lei'] ?? matchedEntity?.lei,
+               'fssai': profile['fssai'] ?? matchedEntity?.fssai,
              };
              
              // populate dynamic schema fields
              for (var key in _dynamicControllers.keys) {
                String? val = rootMap[key]?.toString();
                if (val == null || val.isEmpty) val = dyn[key]?.toString();
+               
+               // Fuzzy fallback for common dynamic form field names
+               if (val == null || val.isEmpty) {
+                 final norm = key.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+                 if (norm.endsWith('companyname') || norm.endsWith('companylegalname') || norm.endsWith('legalname') || norm.endsWith('businessname') || norm.endsWith('nameofthecompany') || norm.endsWith('manufacturername') || norm.endsWith('entityname')) {
+                   val = rootMap['companyName']?.toString() ?? entityName;
+                 } else if (norm.endsWith('email') && !norm.contains('director')) {
+                   val = rootMap['companyEmail']?.toString();
+                 } else if ((norm.endsWith('phone') || norm.endsWith('mobile') || norm.endsWith('contactnumber')) && !norm.contains('director')) {
+                   val = rootMap['companyPhone']?.toString();
+                 } else if (norm.endsWith('pan') && !norm.contains('director')) {
+                   val = rootMap['companyPan']?.toString();
+                 } else if (norm.endsWith('gst') || norm.endsWith('gstnumber') || norm.endsWith('gstin')) {
+                   val = rootMap['gstin']?.toString();
+                 } else if (norm.endsWith('address') || norm.endsWith('courieraddress') || norm.endsWith('officeaddress') || norm.endsWith('businessaddress')) {
+                   val = rootMap['registeredAddress']?.toString();
+                 } else if (norm.endsWith('directorname') || norm.endsWith('ownername') || norm.endsWith('contactperson') || norm.endsWith('applicantname')) {
+                   val = rootMap['directorName']?.toString();
+                 } else if (norm.endsWith('directormobile') || norm.endsWith('directorphone') || norm.endsWith('whatsapp')) {
+                   val = rootMap['directorMobile']?.toString();
+                 } else if (norm.endsWith('directoremail')) {
+                   val = rootMap['directorEmail']?.toString();
+                 } else if (norm.endsWith('directorpan')) {
+                   val = rootMap['directorPan']?.toString();
+                 } else if (norm.endsWith('tan') || norm.endsWith('tannumber')) {
+                   val = rootMap['tan']?.toString();
+                 } else if (norm.endsWith('cin') || norm.endsWith('cinnumber')) {
+                   val = rootMap['cin']?.toString();
+                 } else if (norm.endsWith('iso') || norm.endsWith('isonumber')) {
+                   val = rootMap['iso']?.toString();
+                 } else if (norm.endsWith('iec') || norm.endsWith('ieccode') || norm.endsWith('iecnumber')) {
+                   val = rootMap['iec']?.toString();
+                 } else if (norm.endsWith('msme') || norm.endsWith('msmenumber') || norm.endsWith('udyamnumber')) {
+                   val = rootMap['msme']?.toString();
+                 } else if (norm.endsWith('lei') || norm.endsWith('leinumber')) {
+                   val = rootMap['lei']?.toString();
+                 } else if (norm.endsWith('fssai') || norm.endsWith('fssainumber')) {
+                   val = rootMap['fssai']?.toString();
+                 } else if (norm.endsWith('incorporationdate')) {
+                   val = rootMap['incorporationDate']?.toString();
+                 }
+               }
+
                if (val != null && val.isNotEmpty) {
                  _dynamicControllers[key]!.text = val;
                } else if (key == 'companyName' && _dynamicControllers[key]!.text.isEmpty) {
@@ -275,7 +341,7 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
                }
              }
              
-               final rootFiles = {
+             final rootFiles = {
                  'coi': profile['incorpCertDocId'],
                  'pan': profile['panCardDocId'],
                  'moa': profile['moaDocId'],
@@ -345,7 +411,7 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
     super.dispose();
   }
 
-  Future<void> _pickFile(Function(String) onPicked,
+  Future<void> _pickFile(String pathKey, Function(String) onPicked,
       {List<String> allowedExtensions = const ['jpg', 'jpeg', 'png', 'pdf']}) async {
     FilePickerResult? result = await FilePickerUtil.pickFiles(
       type: FileType.custom,
@@ -360,9 +426,51 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
         ));
         return;
       }
-      setState(() {
-        onPicked(result.files.single.path!);
-      });
+      
+      final ext = result.files.single.extension?.toLowerCase() ?? '';
+      if (['jpg', 'jpeg', 'png', 'pdf'].contains(ext)) {
+        setState(() => _ocrValidating[pathKey] = true);
+        final ocrService = ref.read(ocrServiceProvider);
+        final res = await ocrService.validateDocument(result.files.single.path!, pathKey);
+        
+        if (!mounted) return;
+        setState(() => _ocrValidating[pathKey] = false);
+        
+        if (res['success'] == true) {
+          setState(() {
+            onPicked(result.files.single.path!);
+          });
+        } else {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: const Column(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red, size: 48),
+                  SizedBox(height: 16),
+                  Text('Validation Failed', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold)),
+                ]
+              ),
+              content: Text(res['message'] ?? 'Invalid document.', textAlign: TextAlign.center),
+              actions: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Got it', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
+            )
+          );
+        }
+      } else {
+        setState(() {
+          onPicked(result.files.single.path!);
+        });
+      }
     }
   }
 
@@ -721,7 +829,7 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
     // Build remaining fields from schema, grouping by group type
     for (final field in _schema!.fields) {
       if (field.type == 'group') {
-        final subFields = field.subFields ?? [];
+        final subFields = field.subFields;
         if (subFields.isEmpty) continue;
         sections.add(
           _buildSectionContainer(
@@ -774,7 +882,7 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
         keyboardType: kbType,
         isDate: field.type == 'date',
       );
-    } else if (field.type == 'dropdown' && field.options != null) {
+    } else if (field.type == 'dropdown') {
       return Padding(
         padding: const EdgeInsets.only(bottom: 20),
         child: Column(
@@ -790,7 +898,7 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
-              items: field.options!.map((opt) => DropdownItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
+              items: field.options.map((opt) => DropdownItem(value: opt, child: Text(opt, overflow: TextOverflow.ellipsis))).toList(),
               onChanged: (val) {
                 _dynamicFormData[field.name]!.value = val;
               },
@@ -807,8 +915,9 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
     } else if (field.type == 'file') {
       return _buildFileRow(
         field.label,
+        field.name,
         _dynamicFilePaths[field.name],
-        () => _pickFile((p) => setState(() => _dynamicFilePaths[field.name] = p)),
+        (p) => setState(() => _dynamicFilePaths[field.name] = p),
         isRequired: field.required,
       );
     }
@@ -878,14 +987,14 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
           icon: Icons.attach_file,
           subtitle: '',
           children: [
-            _buildFileRow('Incorporation Certificate (COI)', _coiPath, () => _pickFile((p) => setState(() => _coiPath = p)), isRequired: true),
-            _buildFileRow('Company PAN Card', _panPath, () => _pickFile((p) => setState(() => _panPath = p)), isRequired: true),
-            _buildFileRow('MOA', _moaPath, () => _pickFile((p) => setState(() => _moaPath = p))),
-            _buildFileRow('AOA', _aoaPath, () => _pickFile((p) => setState(() => _aoaPath = p))),
-            _buildFileRow('Aadhaar', _aadhaarPath, () => _pickFile((p) => setState(() => _aadhaarPath = p))),
-            _buildFileRow('Director PAN', _directorPanPath, () => _pickFile((p) => setState(() => _directorPanPath = p))),
-            _buildFileRow('GST Certificate', _gstCertPath, () => _pickFile((p) => setState(() => _gstCertPath = p))),
-            _buildFileRow('Bank Statement', _bankStatementPath, () => _pickFile((p) => setState(() => _bankStatementPath = p))),
+            _buildFileRow('Incorporation Certificate (COI)', 'coi', _coiPath, (p) => setState(() => _coiPath = p), isRequired: true),
+            _buildFileRow('Company PAN Card', 'pan', _panPath, (p) => setState(() => _panPath = p), isRequired: true),
+            _buildFileRow('MOA', 'moa', _moaPath, (p) => setState(() => _moaPath = p)),
+            _buildFileRow('AOA', 'aoa', _aoaPath, (p) => setState(() => _aoaPath = p)),
+            _buildFileRow('Aadhaar', 'aadhaar', _aadhaarPath, (p) => setState(() => _aadhaarPath = p)),
+            _buildFileRow('Director PAN', 'directorPan', _directorPanPath, (p) => setState(() => _directorPanPath = p)),
+            _buildFileRow('GST Certificate', 'gst', _gstCertPath, (p) => setState(() => _gstCertPath = p)),
+            _buildFileRow('Bank Statement', 'bank', _bankStatementPath, (p) => setState(() => _bankStatementPath = p)),
           ],
         ),
       ],
@@ -1096,177 +1205,11 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
     );
   }
 
-  Widget _buildDropdownField(
-    String label,
-    String? value,
-    List<String> options,
-    ValueChanged<String?> onChanged, {
-    bool isRequired = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w400, fontSize: 13, color: AppTheme.deepTeal),
-              children: [
-                if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          DropdownButtonFormField2<String>(
-            valueListenable: ValueNotifier(value),
-            isExpanded: true,
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: Colors.black87),
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300)),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.corporateBlue, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              filled: true,
-              fillColor: Colors.grey.shade50,
-            ),
-            hint: Text('Select type',
-                style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade400),
-                textAlign: TextAlign.left),
-            selectedItemBuilder: (context) => options
-                .map((o) => Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(o,
-                        style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.left)))
-                .toList(),
-            items: options
-                .map((o) => DropdownItem(
-                    value: o,
-                    child: Text(o,
-                        style: GoogleFonts.inter(fontSize: 13),
-                        overflow: TextOverflow.ellipsis)))
-                .toList(),
-            onChanged: onChanged,
-            validator: isRequired
-                ? (v) => (v == null || v.isEmpty) ? 'Required' : null
-                : null,
-            dropdownStyleData: DropdownStyleData(
-              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-            ),
-            menuItemStyleData: const MenuItemStyleData(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildPasswordField(String label, String hint, TextEditingController controller,
-      {bool isRequired = false}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w400, fontSize: 13, color: AppTheme.deepTeal),
-              children: [
-                if (isRequired) const TextSpan(text: ' *', style: TextStyle(color: Colors.red)),
-              ],
-            ),
-          ),
-          const SizedBox(height: 8),
-          TextFormField(
-            controller: controller,
-            obscureText: _obscurePassword,
-            style: GoogleFonts.inter(fontSize: 13, color: Colors.black87),
-            decoration: InputDecoration(
-              hintText: HintHelper.getExampleHint(label, hint: hint),
-              hintStyle: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade400),
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300)),
-              enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300)),
-              focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.corporateBlue, width: 1.5)),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              filled: true,
-              fillColor: Colors.grey.shade50,
-              suffixIcon: IconButton(
-                icon:
-                    Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey, size: 18),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRadioGroup(String label, String hint, List<String> options, String currentValue,
-      ValueChanged<String> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          RichText(
-            text: TextSpan(
-              text: label,
-              style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w400, fontSize: 13, color: AppTheme.deepTeal),
-              children: const [TextSpan(text: ' *', style: TextStyle(color: Colors.red))],
-            ),
-          ),
-          const SizedBox(height: 8),
-          ...options.map((option) => InkWell(
-                onTap: () => onChanged(option),
-                borderRadius: BorderRadius.circular(8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Radio<String>(
-                        value: option,
-                        groupValue: currentValue,
-                        onChanged: (v) { if (v != null) onChanged(v); },
-                        activeColor: AppTheme.corporateBlue,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        visualDensity: VisualDensity.compact,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                          child: Text(option,
-                              style: GoogleFonts.inter(fontSize: 13, color: AppTheme.deepTeal))),
-                    ],
-                  ),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFileRow(String label, String? path, VoidCallback onPick, {bool isRequired = false}) {
+  Widget _buildFileRow(String label, String pathKey, String? path, Function(String) onPick, {bool isRequired = false}) {
     final bool hasFile = path != null;
+    final bool isValidating = _ocrValidating[pathKey] == true;
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -1294,7 +1237,19 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
                 color: hasFile ? AppTheme.corporateBlue.withValues(alpha: 0.4) : Colors.grey.shade300,
               ),
             ),
-            child: Row(
+            child: isValidating 
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 20, height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.corporateBlue)
+                    ),
+                    const SizedBox(width: 12),
+                    Text('Analyzing Document...', style: GoogleFonts.inter(fontSize: 13, color: AppTheme.corporateBlue, fontWeight: FontWeight.w600)),
+                  ],
+                )
+              : Row(
               children: [
                 Icon(
                   hasFile ? Icons.check_circle_outline : Icons.upload_file_outlined,
@@ -1313,7 +1268,7 @@ class _CompleteCompanyProfileFormScreenState extends ConsumerState<CompleteCompa
                   ),
                 ),
                 OutlinedButton(
-                  onPressed: onPick,
+                  onPressed: () => _pickFile(pathKey, onPick),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(
                         color: hasFile ? AppTheme.corporateBlue : Colors.grey.shade400),

@@ -1,4 +1,5 @@
 const FormSchema = require('../models/FormSchema');
+const mongoose = require('mongoose');
 
 // Get all form schemas (Admin)
 exports.getAllForms = async (req, res) => {
@@ -14,20 +15,21 @@ exports.getAllForms = async (req, res) => {
 exports.getFormByServiceName = async (req, res) => {
   try {
     const requestedName = req.params.serviceName;
+    const collection = mongoose.connection.db.collection('formschemas');
     
     // Try exact case-sensitive match first
-    let form = await FormSchema.findOne({ serviceName: requestedName });
+    let form = await collection.findOne({ serviceName: requestedName });
     
     // Try exact case-insensitive match
     if (!form) {
-      form = await FormSchema.findOne({ 
+      form = await collection.findOne({ 
         serviceName: { $regex: new RegExp('^' + requestedName + '$', 'i') } 
       });
     }
 
     // Try partial match if still not found
     if (!form) {
-      form = await FormSchema.findOne({ 
+      form = await collection.findOne({ 
         serviceName: { $regex: new RegExp(requestedName, 'i') } 
       });
     }

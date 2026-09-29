@@ -5,7 +5,7 @@ const fieldSchema = new mongoose.Schema({
   label: { type: String, required: true }, // e.g., 'PAN Number'
   type: { 
     type: String, 
-    enum: ['text', 'number', 'email', 'file', 'dropdown', 'date', 'phone', 'group', 'array', 'checkbox'], 
+    enum: ['text', 'number', 'email', 'password', 'file', 'dropdown', 'date', 'phone', 'group', 'array', 'checkbox'], 
     required: true 
   },
   required: { type: Boolean, default: false },
@@ -17,8 +17,12 @@ const fieldSchema = new mongoose.Schema({
     minItems: { type: Number },
     maxItems: { type: Number },
     dynamicCountRef: { type: String } // e.g., 'assignedNumberOfDirectors'
+  },
+  validation: {
+    pattern: { type: String },
+    message: { type: String }
   }
-}, { _id: false });
+}, { _id: false, strict: false });
 
 // Self-referencing subFields to support nested arrays/groups
 fieldSchema.add({
@@ -43,6 +47,6 @@ const formSchemaSchema = new mongoose.Schema({
   subtitle: { type: String },
   fields: [fieldSchema],
   crossValidations: [crossValidationSchema]
-}, { timestamps: true });
+}, { timestamps: true, strict: false });
 
 module.exports = mongoose.model('FormSchema', formSchemaSchema);
